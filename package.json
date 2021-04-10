@@ -1,0 +1,74 @@
+{
+  "name": "webpack-demo1",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bip39": "^2.5.0",
+    "web3": "^1.2.4"
+  },
+  "devDependencies": {
+    "@babel/core": "7.7.7",
+    "@babel/plugin-proposal-class-properties": "7.7.4",
+    "@babel/plugin-proposal-decorators": "7.7.4",
+    "@babel/plugin-proposal-export-namespace-from": "7.7.4",
+    "@babel/plugin-proposal-function-sent": "7.7.4",
+    "@babel/plugin-proposal-json-strings": "7.7.4",
+    "@babel/plugin-proposal-numeric-separator": "7.7.4",
+    "@babel/plugin-proposal-throw-expressions": "7.7.4",
+    "@babel/plugin-syntax-dynamic-import": "7.7.4",
+    "@babel/plugin-syntax-import-meta": "7.7.4",
+    "@babel/plugin-transform-react-jsx": "^7.12.17",
+    "@babel/preset-env": "^7.13.15",
+    "babel-eslint": "10.1.0",
+    "babel-jest": "24.9.0",
+    "babel-loader": "8.0.6",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-airbnb": "4.4.0",
+    "babel-preset-es2015": "^6.18.0",
+    "babel-preset-stage-2": "^6.24.1",
+    "babel-preset-stage-3": "^6.17.0",
+    "babel-register": "^6.23.0",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb": "18.0.1",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-import-resolver-webpack": "0.12.0",
+    "eslint-loader": "3.0.3",
+    "eslint-plugin-html": "^6.0.0",
+    "eslint-plugin-import": "2.19.1",
+    "eslint-plugin-jsx-a11y": "6.2.3",
+    "eslint-plugin-node": "^9.1.0",
+    "eslint-plugin-react": "7.17.0",
+    "eslint-plugin-react-hooks": "^4.0.4",
+    "eslint-plugin-standard": "^4.0.0",
+    "eslint-plugin-truffle": "^0.3.1",
+    "standard": "^12.0.1",
+    "webpack": "4.41.5",
+    "webpack-bundle-analyzer": "^3.6.1",
+    "webpack-cli": "3.3.10",
+    "webpack-dev-server": "^3.11.0",
+    "webpack-obfuscator": "^0.27.4"
+  },
+  "eslintConfig": {
+    "extends": "react-app",
+    "parserOptions": {
+      "ecmaVersion": 2017,
+      "ecmaFeatures": {
+        "experimentalObjectRestSpread": true
+      }
+    }
+  },
+  "standard": {
+    "parser": "babel-eslint",
+    "ignore": [
+      "build/*",
+      "node_modules"
+    ]
+  }
+}

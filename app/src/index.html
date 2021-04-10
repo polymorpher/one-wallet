@@ -1,0 +1,248 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>2FA Ethereum Wallet</title>
+        <!-- Bootstrap -->
+        <link href="css/bootstrap.min.css" rel="stylesheet">
+        <link href="css/smart-otps.css" rel="stylesheet">
+    </head>
+    <body>
+        <script src="js/jquery.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+        <script src="main.js"></script>
+
+
+        <span id="no-auth-info" style="display: none;">!!! Running with authenticator from unit tests (all OTPs are ignored).</span>
+        <div id="starting-screen">
+            <div id="use-existing-wallet" class="container">
+                <h2>Use an Existing Smart-Contract Wallet</h2>
+                <h4>We found following addresses in your browser's local storage:</h4>
+                <ul id="existing-wallets">
+                    <li id="existing-wallet-template" style="display: none;">
+                        <span class="existing-wallet-content">
+                            <b>Name:</b> <span class="name">X</span> |
+                            <b>Address:</b> <span class="address">X</span> |
+                            <b>Owner:</b> <span class="owner">X</span> |
+                            <b>Leaves:</b> <span class="leaves">X</span> |
+                            <b>Subtree Leaves:</b> <span class="subtree-leaves">X</span> |
+                            <b>Hashchain Length:</b> <span class="hash-chain">X</span> |
+                            <b>Parent Tree Index:</b> <span class="parent-tree-idx">X</span> |
+                            <b>Created at:</b> <span class="created-at">X</span> |
+                            <b>Balance:</b> <span class="balance">X</span> ETH
+                        </span><br>
+                        <input type="text" class="seed-mnem-existing-wallet" size ="63" placeholder="Mnemonic of seed for the authenticator" style="display: none;" >
+                        <button class="btn-use">Use</button>
+                    </li>
+                </ul>
+                <button id="btn-delete-wallets-from-storage" onclick="App.deleteAllWalletsFromStorage()">Delete all wallets from local storage</button>
+                <hr>
+
+                <div id="import-wallet-from-address">
+                    <h3>You may also import (unsaved) existing wallet:</h3>
+                    <input type="text" id="imported-address" size ="40" placeholder="Address of the smart contract"><br>
+                    <input type="text" id="seed-mnem-imported-wallet" size ="63" placeholder="Mnemonic of seed for the authenticator" >
+                    <button onclick="App.importWalletByAddress()">Import</button>
+                </div>
+                <!-- *Note that non-existing addresses were filtered out. -->
+
+            </div>
+
+            <span class="auto-margin"><h4>== OR ==</h4></span>
+
+            <div id="deploy-form" class="container">
+                <div id="deploy-form-input" class="left-area">
+                    <h2>Deploy a New Smart-Contract Wallet</h2>
+                    <h4>Enter field's from your authenticator:</h4>
+                    <input type="text" id="number-of-leaves" size ="18" placeholder="Number of leaves">
+                    <input type="text" id="hash-chain-len" size ="15" placeholder="Hash chain length">
+                    <input type="text" id="seed-mnem-str" size ="63" placeholder="Mnemonic of seed"><br>
+                    <input type="text" id="number-of-subtree-leaves" size ="18" placeholder="Number of leaves in subtree"><br><br>
+
+                    <h4>Enter additional data: <button onclick="App.prefillAdditionalInputsOfDeploy()">Prefill</button></h4>
+                    <input type="text" id="owner-addr-init" size ="32" placeholder="Owner's address"><br />
+                    <input type="text" id="daily-limit-init" size ="32" placeholder="Daily limit in ETH (0 = disabled)"><br>
+                    <input type="text" id="last-res-timeout-init" size ="32" placeholder="Last resort timeout in days (0 = disabled)"><br>
+                    <input type="text" id="last-res-addr-init" size ="32" placeholder="Last resort address"><br />
+                    <button onclick="App.deployContract()">Deploy</button>
+                    <br /><br />
+                </div>
+                <div id="deploy-form-message" class="right-area">
+                        <span class="center" style="color: blue;">(Sign TX in Metamask and wait for blockchain response)</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="lifetime-area" style="display: none;">
+
+            <div class="container">
+                <div class="left-area">
+                    <h2>Information About the Wallet</h2>
+
+                    Owner of contract is:
+                    <span id="owner">(Contract is not deployed yet)</span>
+                    <br />
+
+                    Address of this contract is:
+                    <span id="contract-address">(Contract is not deployed yet)</span>
+                    <br />
+
+                    <span hidden>
+                        Address of wallet factory is:
+                        <span id="factory-address">(Contract factory is not deployed yet)</span>
+                        <br />
+                    </span>
+
+
+                    <span hidden>
+                        Root Hash:
+                        <span id=root-hash-value hidden>(Contract is not deployed yet)</span>
+                        <br />
+                    </span>
+
+
+                    Remaining OTPs:
+                    <span id=remaining-OTPs>(Contract is not deployed yet)</span>
+                    <br /><br />
+
+                    Last resort address is:
+                    <span id="last-resort-addr">(Contract is not deployed yet)</span>
+                    <br />
+
+                    Last resort timeout is:
+                    <span id="last-resort-timeout">(Contract is not deployed yet)</span> days
+                    <br />
+
+                    Remining days to timeout of last resort is:
+                    <span id="last-resort-remaining-days">(Contract is not deployed yet)</span> days
+                    <br />
+                    <button id="btn-send-to-last-resort-addr" onclick="App.sendToLastResortAddrAfterTimeout()" style="display: none;">
+                        Send remaining balance to the last resort address
+                    </button>
+                    <button id="btn-increase-evm-time" onclick="App.increaseEVMtimeBy1Day()" style="display: none;">Increase EVM time by 1 day</button>
+                    <br />
+
+
+                    Daily Limit is:
+                    <span id="daily-limit-value">(Contract is not deployed yet)</span> ETH
+                    <br />
+
+                    Available amount to spent today:
+                    <span id="daily-limit-available-to-spent">(Contract is not deployed yet)</span> ETH
+                    <br />
+
+
+                    The recent balance of contract is:
+                    <span id="balance">(Contract is not deployed yet)</span> ETH
+
+                    <button id="btn-refresh-info" onclick="App.refreshBufferAndupdateInfoArea()">Refresh Info</button><br />
+                    <br />
+                    <span id="deposit-assets-area" style="display: none;">
+                        <button id="deposit-assets-to-contract" onclick="App.depositAssetsToContract()">Deposit 0.3 Ether to contract</button>
+                    </span>
+                </div>
+
+                <!-- QR code scanning -->
+                <div id="qr-code-stuff" class="right-area" style="text-align: center;">
+                    <h3>Scanning QR code</h3>
+                    <span id="has-camera" style="display: none;">
+                        <b>Device has camera: </b><span id="cam-has-camera"></span><br>
+                    </span>
+                    <video muted playsinline id="qr-video" width="320" height="240"></video><br>
+                    <b>Provide OTP with ID: </b><h3><span class="requested-otp-id"></span></h3>
+                    <span id="cam-qr-result"></span><br>
+                    <span id="current-buffer-id" hidden></span> <!-- holds the actual idx in buffer to which is OTP scanned -->
+                </div>
+                <div id="clear"></div>
+            </div>
+
+            <div id="new-subtree-area" class="solid_border" style="display: none;">
+                <h2>Introduce a New Subtree</h2>
+                Note that after introducing a new subtree all previous unconfirmed operations will be canceled.<br>
+                <span id="new-subtree-otp-area">
+                    OTP with ID = <span id="new-subtree-otp-id" >X</span>:
+                    <input type="text" id="new-subtree-otp" size="63" placeholder="Enter mnemonic of OTP here" disabled="true">
+                    <button id="adjust-new-subtree-btn">Confirm</button>
+                    <span class="waiting-for-blockchain blinking">(Sign TX in Metamask and wait for blockchain response)</span>
+                </span>
+                <br />
+            </div>
+
+            <div id="new-parent-tree-area" class="solid_border" style="display: none;">
+                <h2>Introduce a New Parent Tree</h2>
+                Note that after introducing a new parent tree, all previous unconfirmed operations will be canceled.<br>
+                <span id="new-parent-tree-otp-area">
+                    OTP with ID = <span id="new-parent-otpid-displayed" >X</span>:
+                    <input type="text" id="new-parent-otp" size="63" placeholder="Enter mnemonic of the last OTP here" disabled="true">
+                    <input type="text" id="new-parent-auth-seed" size="63" placeholder="Enter mnemonic of Authenticator's seed here">
+                    <button id="confirm-new-parent-tree">Introduce a New Parent Tree</button>
+                </span>
+                <br />
+            </div>
+
+            <div id="init-oper" class="solid_border">
+                <h2>Initialize a New Operation</h2>
+
+                Type of operation:
+                <select id="init-oper-type">
+                    <option value="-1" class="default" selected="selected"> --select type of operation--</option>
+                    <option value="0">Transfer Funds</option>
+                    <option value="1">Set Daily Limit in ETH</option>
+                    <option value="2">Set Last Resort Address</option>
+                    <option value="3">Set Last Resort Timeout</option>
+                    <option value="4">Destruct Wallet</option>
+                </select>
+
+                </br>
+                <span id="wrapper-init-oper-param" style="display: none;">
+                    <span id="init-oper-param-label">Value:</span>
+                    <input type="text" id="init-oper-param" placeholder=""><br />
+                </span>
+
+                </br>
+                <span id="wrapper-init-oper-address" style="display: none;">
+                    <span id="init-oper-address-label">Address:</span>
+                    <input type="text" id="init-oper-address" placeholder=""><br />
+                </span>
+
+                </br>
+                <button id="init-oper-btn" onclick="App.initOper()">Submit Operation</button><br />
+            </div>
+
+            <div id="buffer-of-operations" class="solid_border">
+                <h2>List of Operations:<span id="label-buffer-isfull" style="color: red; display: none;"> (is Full)</span></h2>
+                <ul id="buffer-list">
+                    <li id="buffer-item-template" style="display: none;">
+                        <span class="buffer-otpid-wrapper" style="display: none;">
+                            <span class="oper-already-executed" style="display: none;">[Executed]</span>
+                            [OTP ID = <span title="otp id here" class="buffer-otpid"></span>]
+                        </span>
+                        <span class="buffer-content">Empty position</span><br />
+                        <span class="buffer-item-confirm-stuff" style="display: none;">
+                            <input type="text" class="confirm-oper-otp" size="63" placeholder="Enter mnemonic of OTP here" disabled="true" style="display: none;">
+
+                            <span class="enter-otp-area">
+                                <button class="enter-otp-qr">Scan QR</button>
+                                <b> OR </b>
+                                <button class="enter-otp-mnemonic">Enter Mnemonic</button>
+                            </span>
+                            <button class="confirm-oper-btn" style="display: none;">Confirm Operation</button>
+                            <span class="qr-code-just-scanning" style="color: blue; display: none;">(...Scanning QR code...)</span>
+                            <span class="is-invalidated" style="display: none;">(already invalidated)</span>
+                        </span>
+                        <span class="waiting-for-blockchain blinking">(Sign TX in Metamask and wait for blockchain response)</span>
+                    </li>
+                </ul>
+                <br />
+            </div>
+
+        </div>
+
+        <span class="auto-margin">
+            <b>Status of the most recent activity:</b> <span id="status" style="color: blue;" >--</span>
+            <span id="status-waiting-for-blockchain" class="waiting-for-blockchain blinking">(Sign TX in Metamask and wait for blockchain response)</span>
+        </span>
+
+        <span id="svg"></span>
+    </body>
+</html>

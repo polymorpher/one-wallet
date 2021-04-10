@@ -1,0 +1,45 @@
+{
+  "env": {
+    "browser": true,
+    "jest": true,
+    "truffle/globals": true
+  },
+  "extends": [
+    "standard",
+    "standard-jsx"
+  ],
+  "parser": "babel-eslint",
+  "rules": {
+    "no-underscore-dangle": 0,
+    "react/jsx-filename-extension": [
+      1,
+      {
+        "extensions": [
+          ".js",
+          ".jsx"
+        ]
+      }
+    ],
+    "import/prefer-default-export": 0,
+    "import/no-extraneous-dependencies": 1,
+    "no-await-in-loop": 1,
+    "comma-dangle": 0,
+    "no-console": 0,
+    "no-mixed-operators": 0,
+    "react/prop-types": 0,
+    "react/jsx-one-expression-per-line": 0,
+    "react/react-in-jsx-scope": 0,
+    "max-len": 0
+  },
+  "plugins": [
+    "react",
+    "react-hooks",
+    "truffle"
+  ],
+  "settings": {
+    "import/resolver": "webpack",
+    "react": {
+      "version": "latest"
+    }
+  }
+}

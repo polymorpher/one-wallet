@@ -1,0 +1,36 @@
+{
+  "name": "webpack-demo",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --mode production",
+    "dev": "webpack-dev-server --mode development --config webpack.config.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "webpack-cli": "^3.3.10"
+  },
+  "dependencies": {
+    "@babel/polyfill": "^7.7.0",
+    "@truffle/contract": "^4.1.1",
+    "bip39": "^2.5.0",
+    "copy-webpack-plugin": "^5.0.5",
+    "fs": "0.0.1-security",
+    "graceful-fs": "^4.1.11",
+    "json-file": "^0.1.0",
+    "jsonfile": "^4.0.0",
+    "jsqr": "^1.2.0",
+    "lodash": "^4.17.10",
+    "pseudomap": "^1.0.2",
+    "schema-utils": "^1.0.0",
+    "truffle-wallet-provider": "0.0.5",
+    "unorm": "^1.6.0",
+    "web3": "^1.2.4",
+    "webpack": "^4.41.2",
+    "xmlhttprequest": "^1.8.0"
+  }
+}

@@ -1,0 +1,77 @@
+.solid_border {
+    border-style: solid;
+    width: 900px;
+    margin: auto;
+}
+.auto-margin {
+    margin: auto;
+    text-align: center;
+    display: block;
+    width: 900px;
+}
+.waiting-for-blockchain {
+    color: blue;
+    display: none;
+}
+.container {
+    width: 900px;
+    /* background-color: #ffcc33; */
+    margin: auto;
+    border-style: solid;
+}
+.left-area {
+    width: 500px;
+    height: 450px;
+    float: left;
+    /* background-color: blue; */
+}
+.right-area {
+    width: 330px;
+    height: 450px;
+    float: right;
+    display: none;
+    border: 2px solid black;
+    overflow: auto;
+    background-color: lightcyan;
+    position: relative;
+}
+.center {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+  }
+.blinking {
+animation: blinker 1s linear infinite;
+}
+hr {
+    display: block;
+    margin-before: 0.5em;
+    margin-after: 0.2em;
+    margin-start: auto;
+    margin-end: auto;
+    overflow: hidden;
+    border-style: inset;
+    border-width: 1px;
+}
+
+
+
+
+#import-wallet-from-address {
+    margin: auto;
+    padding: 5px;
+}
+
+  @keyframes blinker {
+    50% {
+      opacity: 0;
+    }
+  }
+
+
+#clear {
+    clear: both;
+}

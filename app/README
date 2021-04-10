@@ -1,0 +1,128 @@
+Struktura slozky 'app'
+======================
+
+dist - Vystup prekladu
+node_modules - Potrebne knihovny z NodeJS
+package.json - Vytvorene NodeJS, obsahuje napr. informaci o primo vyuzitych
+               knihovnach, ktere pouzivaji pri vyvoji a ktere v produkci
+package-lock.json -
+src - Zdrojove kody
+webpack.config.js - Konfiguracni soubor pro webpacket
+
+TESTING 24 words SEED: change keep wagon hip insect clock true lonely time select remember layer ozone receive renew rifle shed grocery depart child alarm crew life finish
+TESTING 12 words SEED: night various pottery siren island monitor oven thunder cherry horn spoil monitor
+
+Jak na to
+=========
+
+Nejdrive se musi overit, ze slozka dist existuje. Nasledne je treba nainstalovat
+webpack knihovny globalne:
+$ mkdir ./app/dist
+$ npm install -g webpack webpack-dev-server webpack-cli
+$ npm install -g --save-dev truffle-wallet-provider bluebird
+
+Vyvoj, debug atd.
+-----------------
+
+Pro vyvoj je vhodne mit otevrene dva terminaly. V jednom pojede truffle
+a v druhem webpack development server.
+
+Truffle je klasika:
+$ truffle develop
+
+Pro spusteni "kompilace" a nasledne spusteni vyvojoveho web serveru v zlozke 'app':
+$ npm run dev --network test
+
+Webpack vezme nas 'index.js' ze 'src' a pribali k tomu vsechny knihovny, na
+kterych je zavisly. Vysledny soubor 'main.js' je pak zkopirovan do slozky
+'dist'. Tak samo soubor 'index.html' je zkopirovan do teto slozky.
+
+Vysledek pak lze najit na localhost:8080.
+
+Produkce
+--------
+
+$ npm run build
+
+Zatim s tim nemam moc zkusenosti, ale opet vsechno zabali do 'main.js'
+a nakopiruje do 'dist' i s 'index.html'. Vysledek je ale to, co by melo stacit
+uzivateli k tomu, aby mohl pouzivat naseho klienta bez zadnych toolu apod.
+
+
+Instalace knihoven
+==================
+
+Videl bych, ze asi bude lepsi udrzovat vsechny potrebne knihovny lokalne, at 
+v tom pak neni pripadne chaos. Kdyz se pouzije neco z globalniho repozitare,
+tak uz nelze spolehat na to, ze ten druhy z nas to bude mit.
+
+Kazdopadne, pokud je treba pridat knihovnu, pak napr. takto:
+$ npm install bip39 --save
+
+Prepinacem '--save' se rekne, ze tato knihovna se bude pripojovat k jednotnemu
+JS souboru pri "kompilaci". Melo by byt jedno jestli se jedna o vyvoj ci
+produkci. Pokud je treba pridat knihovna, ktera se vsak uplatni pouze pri
+vyvoji, pak se pouzije prepinac '--save-dev'.
+
+
+Poznamky
+========
+
+Posielanie Etherov na ropstene: http://faucet.ropsten.be:3001/
+
+Ziskanie adresy z "truffle console --network ropsten"
+    Promisify = require("bluebird")
+    Promisify.promisifyAll(web3.eth)
+    web3.eth.getAccountsAsync()
+
+Metamask 
+    -seed: valve mystery kid female economy shallow table path piano joke train expire
+    -Owner's PrivK: 921e53b3c1f69b386f48b2ce945e095fe0fb96bcd870102447169806a2231fac
+    -Owner's Address: 0x41bE05ee8D89c0Bc9cA87faC4488ad6e6A06D97E     
+    -Receiver of last resort funds:  0xE5987aD5605b456C1247180C4034587a94Da6A1D
+
+Ropsten:
+    -API KEY: a90cc477a3bc412fa17188bf63faa618
+    -API SECRET: 57f911280cdd4405ac03d51e06251934
+    -ENDPOINT: https://ropsten.infura.io/v3/a90cc477a3bc412fa17188bf63faa618    
+
+
+
+- To, co lze aktualne nalezt v slozce projektu je kombinace techto dvou
+tutorialu:
+https://webpack.js.org/guides/getting-started/
+https://github.com/truffle-box/webpack-box
+
+plus trochu me modifikace a vycisteni, protoze Visual Studio Code u toho hazelo
+miliardu warningu.
+
+- Prikazy pro npm 'dev' a 'build' jsou rucne vytvorene a lze je modifikovat
+v souboru 'package.json', "sekce" scripts. (btw, pokud config file nese nazev
+webpack.config.js, tak je cten automaticky, nemusi tedy byt uvedeny pri volani
+webpack)
+
+- Vsechny potrebne podpurne soubory (jako slovniky) se tahaji ze 'src' slozky.
+Takze dost mozna tak bude treba zrobit i CSS soubory apod. Anebo pak nejak
+modifikovat webpack.config.js, aby se i takove soubory kopirovaly do 'dist'.
+
+- JavaScript nemusi byt nutne objektove orientovany. V souboru 'simple.js' je
+ukazano, jak lze take pracovat. Osobne nevim, co je lepsi, zatim si nedokazu moc
+predstavit, jak to bude cele fungovat, pokud bychom chteli mit vice-strankovy
+web. Anebo jestli to nejak sikovne renderovat na jednu stranku ...
+
+- Visual Studio Code podporuje vyvoj s NodeJS, pravdepodobne bude mit i tedy
+nejakou dodatecnou nadstavbu pro webpack.
+
+- Z jednoho tutorialu jsem zamerne ve zdrojaku nechal import knihovny 'lodash'.
+Vlozil jsem tam komentar, k cemu by to melo byt dobre. Verim, ze by se nam to
+mohlo hodit.
+
+- Taky jsme se bavili o zakomponovani sifrovani pres AES, na to by kdyz tak mela
+byt vhodna knihovna:
+https://nodejs.org/api/crypto.html
+
+- Obecne pokud je treba pouzit neco, co uz by mohlo byt implementovane v nejake
+existujici knihovne, tak na googlu hledam neco jako "nodejs bip39" anebo
+"npm bip39". Anebo se da primo hledat na strance:
+https://www.npmjs.com/
+
