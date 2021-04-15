@@ -1,25 +1,25 @@
-var WalletHandle = artifacts.require('WalletHandle')
-var AuthenticatorMT = require('../lib/authenticator.js')
+const WalletHandle = artifacts.require('WalletHandle')
+let AuthenticatorMT = require('../lib/authenticator')
 
-var ac = require('../lib/auth_config.js') // Config of unit test authenticator
-var auth = new AuthenticatorMT(ac.PARENT_NUMBER_OF_LEAFS, ac.CHILD_NUMBER_OF_LEAFS, ac.CHILD_DEPTH_OF_CACHED_LAYER, ac.HASH_CHAIN_LEN, ac.MNEM_WORDS, 0, null, true)
+let ac = require('../lib/auth_config.js') // Config of unit test authenticator
+let auth = new AuthenticatorMT(ac.PARENT_NUMBER_OF_LEAFS, ac.CHILD_NUMBER_OF_LEAFS, ac.CHILD_DEPTH_OF_CACHED_LAYER, ac.HASH_CHAIN_LEN, ac.MNEM_WORDS, 0, null, true)
 auth.dumpAllOTPs()
 auth.dumpAllChildRootHashes()
 
-var dailyLimit = 0 // no limit
-var maxInactiveDays = 0 // no last resort timeout
+let dailyLimit = 0 // no limit
+let maxInactiveDays = 0 // no last resort timeout
 
 module.exports = function (deployer, network, accounts) {
-  var owner, receiverOfLastResortFunds
+  let owner, receiverOfLastResortFunds
 
   if (network === 'mainnet') {
-    throw new Error('Halt. Sanity check. Not ready for deployment to mainnet.')
-  } else if (network === 'ropsten') {
+    throw new Error('Not ready for mainnet deployment yet.')
+  } else if (network === 'testnet') {
     owner = '0x41bE05ee8D89c0Bc9cA87faC4488ad6e6A06D97E'
     receiverOfLastResortFunds = '0xE5987aD5605b456C1247180C4034587a94Da6A1D'
-  } else { // development & test networks
+  } else { // local
     owner = accounts[0]
-    receiverOfLastResortFunds = accounts[5]
+    receiverOfLastResortFunds = accounts[1]
   }
 
   console.log('Deploying WalletHandle to network', network, 'from', owner)
@@ -53,7 +53,7 @@ module.exports = function (deployer, network, accounts) {
 
 // NOTES
 //
-// var W3 = require('web3');
+// let W3 = require('web3');
 //
 // WalletHandle.deployed().then(function(instance){return instance.isCurrentMTConsistent()});
 // WalletHandle.deployed().then(function(instance){return instance.isCurrentMTConsistent.call()});

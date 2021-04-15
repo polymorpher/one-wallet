@@ -1,5 +1,5 @@
 {
-  "name": "webpack-demo1",
+  "name": "harmony-otp-demo",
   "version": "1.0.0",
   "description": "",
   "private": true,
@@ -11,7 +11,10 @@
   "license": "ISC",
   "dependencies": {
     "bip39": "^2.5.0",
-    "web3": "^1.2.4"
+    "web3": "^1.2.4",
+    "@harmony-js/core": "^0.1.57",
+    "@openzeppelin/contracts": "^4.0.0",
+    "dotenv": "^8.1.0"
   },
   "devDependencies": {
     "@babel/core": "7.7.7",
@@ -35,6 +38,7 @@
     "babel-preset-stage-2": "^6.24.1",
     "babel-preset-stage-3": "^6.17.0",
     "babel-register": "^6.23.0",
+    "copy-webpack-plugin": "^8.1.1",
     "eslint": "^6.8.0",
     "eslint-config-airbnb": "18.0.1",
     "eslint-config-standard": "^12.0.0",
@@ -49,7 +53,7 @@
     "eslint-plugin-standard": "^4.0.0",
     "eslint-plugin-truffle": "^0.3.1",
     "standard": "^12.0.1",
-    "webpack": "4.41.5",
+    "webpack": "^5.33.2",
     "webpack-bundle-analyzer": "^3.6.1",
     "webpack-cli": "3.3.10",
     "webpack-dev-server": "^3.11.0",
