@@ -33,5 +33,7 @@ Visit http://localhost:8082
 - [ ] Drain account function after all codes are expired.
 - [ ] Environment selector or indicator ?
 
-## References
+## Credits
 
+* Research paper: Ivan Homoliak & et al. https://arxiv.org/pdf/1812.03598.pdf
+* https://github.com/ivan-homoliak-sutd/SmartOTPs
