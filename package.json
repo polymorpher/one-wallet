@@ -1,0 +1,16 @@
+{
+  "scripts": {
+    "store-server": "cd 2fa-store-api && node -e 'require(\"./index.js\").server()'",
+    "test": "yarn _mocha --timeout 0"
+  },
+  "dependencies": {
+    "@zeit/ncc": "^0.22.3",
+    "aws-sdk": "^2.883.0",
+    "ethers": "^5.1.0",
+    "jssha": "^3.2.0",
+    "merkletreejs": "^0.2.18",
+    "node-uuid": "^1.4.8",
+    "totp-generator": "0.0.9",
+    "web3": "^1.3.5"
+  }
+}
