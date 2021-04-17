@@ -23,7 +23,7 @@ contract TOTPWallet {
         // fire off totp check
         require(address(this).balance >= amount);  
         require(_deriveChildTreeIdx(sides) == getCurrentCounter(), "unexpected counter value"); 
-        require(confirmMaterial.length, treeHeight+1, "unexpected proof");
+        //require(confirmMaterial.length, treeHeight+1, "unexpected proof");
 
         emit DebugEventN(_deriveChildTreeIdx(sides));
 
