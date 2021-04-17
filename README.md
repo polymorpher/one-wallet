@@ -2,7 +2,7 @@
 
 ## Webclient
 
-Check out demo at [https://hashmesan.github.io/harmony-totp/demo.html](https://hashmesan.github.io/harmony-totp/demo.html). 
+Check out demo at [https://hashmesan.github.io/harmony-totp/webclient/dist](https://hashmesan.github.io/harmony-totp/webclient/dist). 
 Compatible with Ethereum networks & Harmony on Metamask.
 
 ## Build smart contract
