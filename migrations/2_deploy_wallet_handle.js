@@ -1,7 +1,7 @@
 require('dotenv').config()
 const WalletHandle = artifacts.require('WalletHandle')
 const AuthenticatorMT = require('../lib/authenticator')
-
+const hcrypto = require('@harmony-js/crypto')
 const ac = require('../lib/auth_config.js') // Config of unit test authenticator
 const auth = new AuthenticatorMT(ac.PARENT_NUMBER_OF_LEAFS, ac.CHILD_NUMBER_OF_LEAFS, ac.CHILD_DEPTH_OF_CACHED_LAYER, ac.HASH_CHAIN_LEN, ac.MNEM_WORDS, 0, null, true)
 auth.dumpAllOTPs()
@@ -11,6 +11,12 @@ const dailyLimit = 0 // no limit
 const maxInactiveDays = 0 // no last resort timeout
 let ownerAddress = process.env['OWNER_ADDR']
 let lastResortAddress = process.env['LAST_RESORT_ADDR']
+if (ownerAddress.startsWith('one')) {
+  ownerAddress = hcrypto.fromBech32(ownerAddress)
+}
+if (lastResortAddress.startsWith('one')) {
+  lastResortAddress = hcrypto.fromBech32(lastResortAddress)
+}
 
 module.exports = function (deployer, network, accounts) {
   if (network === 'mainnet') {
