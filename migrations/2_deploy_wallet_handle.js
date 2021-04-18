@@ -13,6 +13,7 @@ const maxInactiveDays = 0 // no last resort timeout
 // let lastResortAddress = process.env['LAST_RESORT_ADDR']
 
 module.exports = function (deployer, network, accounts) {
+  process.env.NETWORK = network
   if (network === 'mainnet') {
     throw new Error('Not ready for mainnet deployment yet.')
     // owner = process.env['MAIN_OWNER_ADDR']

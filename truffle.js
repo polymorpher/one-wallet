@@ -1,31 +1,12 @@
 require('dotenv').config()
 const { TruffleProvider } = require('@harmony-js/core')
-const localUrl = process.env.LOCAL_URL
-const localPrivateKeys = process.env.LOCAL_PRIVATE_KEYS
+const { networkId,
+  gas: { gasLimit, gasPrice },
+  local: { url: localUrl, privateKeys: localPrivateKeys },
+  test: { privateKeys, url },
+  main: { privateKeys: mainPrivateKeys, url: mainUrl }
 
-const mnemonic = process.env.MNEMONIC
-const privateKey = process.env.PRIVATE_KEY
-const url = process.env.URL
-
-const mainMnemonic = process.env.MAIN_MNEMONIC
-const mainPrivateKey = process.env.MAIN_PRIVATE_KEY
-const mainUrl = process.env.MAIN_URL
-
-const gasLimit = parseInt(process.env.GAS_LIMIT)
-const gasPrice = parseInt(process.env.GAS_PRICE)
-
-// NOTE: should not use, because TruffleProvider uses hmy_ methods for RPC calls. The 1666600000 and 1666700000 are ETH compatible chains. We don't need them.
-// const networkId = {
-//   Mainnet: 1666600000,
-//   Testnet: 1666700000,
-//   Local: 1666700000,
-// }
-
-const networkId = {
-  Mainnet: 1,
-  Testnet: 2,
-  Local: 2,
-}
+} = require('./common')
 
 module.exports = {
   networks: {
@@ -52,12 +33,16 @@ module.exports = {
       provider: () => {
         const truffleProvider = new TruffleProvider(
           url,
-          { memonic: mnemonic },
+          { },
           { shardID: 0, chainId: networkId.Testnet },
           { gasLimit: gasLimit, gasPrice: gasPrice },
         )
-        const newAcc = truffleProvider.addByPrivateKey(privateKey)
-        truffleProvider.setSigner(newAcc)
+        const keys = privateKeys.split(',')
+        const accounts = []
+        keys.forEach(k => {
+          accounts.push(truffleProvider.addByPrivateKey(k))
+        })
+        truffleProvider.setSigner(accounts[0])
         return truffleProvider
       },
     },
@@ -66,12 +51,16 @@ module.exports = {
       provider: () => {
         const truffleProvider = new TruffleProvider(
           mainUrl,
-          { memonic: mainMnemonic },
+          { },
           { shardID: 0, chainId: networkId.Mainnet },
           { gasLimit: 672190, gasPrice: 1 },
         )
-        const newAcc = truffleProvider.addByPrivateKey(mainPrivateKey)
-        truffleProvider.setSigner(newAcc)
+        const keys = mainPrivateKeys.split(',')
+        const accounts = []
+        keys.forEach(k => {
+          accounts.push(truffleProvider.addByPrivateKey(k))
+        })
+        truffleProvider.setSigner(accounts[0])
         return truffleProvider
       },
     },
