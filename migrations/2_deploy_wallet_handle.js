@@ -1,28 +1,28 @@
+require('dotenv').config()
 const WalletHandle = artifacts.require('WalletHandle')
-let AuthenticatorMT = require('../lib/authenticator')
+const AuthenticatorMT = require('../lib/authenticator')
 
-let ac = require('../lib/auth_config.js') // Config of unit test authenticator
-let auth = new AuthenticatorMT(ac.PARENT_NUMBER_OF_LEAFS, ac.CHILD_NUMBER_OF_LEAFS, ac.CHILD_DEPTH_OF_CACHED_LAYER, ac.HASH_CHAIN_LEN, ac.MNEM_WORDS, 0, null, true)
+const ac = require('../lib/auth_config.js') // Config of unit test authenticator
+const auth = new AuthenticatorMT(ac.PARENT_NUMBER_OF_LEAFS, ac.CHILD_NUMBER_OF_LEAFS, ac.CHILD_DEPTH_OF_CACHED_LAYER, ac.HASH_CHAIN_LEN, ac.MNEM_WORDS, 0, null, true)
 auth.dumpAllOTPs()
 auth.dumpAllChildRootHashes()
 
-let dailyLimit = 0 // no limit
-let maxInactiveDays = 0 // no last resort timeout
+const dailyLimit = 0 // no limit
+const maxInactiveDays = 0 // no last resort timeout
+let ownerAddress = process.env['OWNER_ADDR']
+let lastResortAddress = process.env['LAST_RESORT_ADDR']
 
 module.exports = function (deployer, network, accounts) {
-  let owner, receiverOfLastResortFunds
-
   if (network === 'mainnet') {
     throw new Error('Not ready for mainnet deployment yet.')
-  } else if (network === 'testnet') {
-    owner = '0x41bE05ee8D89c0Bc9cA87faC4488ad6e6A06D97E'
-    receiverOfLastResortFunds = '0xE5987aD5605b456C1247180C4034587a94Da6A1D'
-  } else { // local
-    owner = accounts[0]
-    receiverOfLastResortFunds = accounts[1]
+    // owner = process.env['MAIN_OWNER_ADDR']
+    // receiverOfLastResortFunds = process.env['MAIN_OWNER_ADDR']
+  } else if (network === 'local') {
+    ownerAddress = process.env['LOCAL_OWNER_ADDR']
+    lastResortAddress = process.env['LOCAL_LAST_RESORT_ADDR']
   }
 
-  console.log('Deploying WalletHandle to network', network, 'from', owner)
+  console.log('Deploying WalletHandle to network', network, 'from', ownerAddress)
   console.log('\t --height of parent MT is ', auth.MT_parent_height,
     ';\n\t --height of child MT is ', auth.MT_child_height,
     ';\n\t --length of hash chain is ', auth._hashchain_len,
@@ -33,7 +33,7 @@ module.exports = function (deployer, network, accounts) {
     ';\n\t --the number of child leafs is ', auth._MT_child_numberOfLeafs,
     ';\n\t --the number of parent OTPs is ', auth._MT_parent_numberOfOTPs,
     ';\n\t --the number of child OTPs is ', auth._MT_child_numberOfOTPs,
-    ';\n\t --last resort address is ', receiverOfLastResortFunds,
+    ';\n\t --last resort address is ', lastResortAddress,
     ';\n\t --depth of child cached layer is ', auth.MT_child_depthOfCachedLayer,
     ';\n\t --cached layer of child MT is:\n', auth.getChildCachedLayer(0)
   )
@@ -44,7 +44,7 @@ module.exports = function (deployer, network, accounts) {
 
   deployer.deploy(WalletHandle, auth.MT_parent_rootHash, auth.MT_parent_height,
     auth.MT_child_height, auth.MT_child_depthOfCachedLayer, auth.getChildCachedLayer(0), ...auth.getAuthPath4ChildTree(0), auth._hashchain_len,
-    dailyLimit, receiverOfLastResortFunds, maxInactiveDays, { from: owner, gas: 90 * 1000 * 1000 }
+    dailyLimit, lastResortAddress, maxInactiveDays, { from: ownerAddress, gas: 90 * 1000 * 1000 }
   ).then(() => {
     console.log('Deployed WalletHandle with address', WalletHandle.address)
     console.log('\t \\/== Default gas estimate:', WalletHandle.class_defaults.gas) // class_defaults

@@ -10,11 +10,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bip39": "^2.5.0",
-    "web3": "^1.2.4",
     "@harmony-js/core": "^0.1.57",
     "@openzeppelin/contracts": "^4.0.0",
-    "dotenv": "^8.1.0"
+    "bip39": "^2.5.0",
+    "dotenv": "^8.1.0",
+    "web3": "^1.2.4"
   },
   "devDependencies": {
     "@babel/core": "7.7.7",
@@ -29,6 +29,7 @@
     "@babel/plugin-syntax-import-meta": "7.7.4",
     "@babel/plugin-transform-react-jsx": "^7.12.17",
     "@babel/preset-env": "^7.13.15",
+    "assert": "^1.5.0",
     "babel-eslint": "10.1.0",
     "babel-jest": "24.9.0",
     "babel-loader": "8.0.6",

@@ -1,5 +1,6 @@
 {
   "env": {
+    "es2020": true,
     "browser": true,
     "jest": true,
     "truffle/globals": true
@@ -7,12 +8,18 @@
   "extends": [
     "standard"
   ],
+  "globals": {
+    "artifacts": "readonly",
+    "contract": "readonly",
+    "assert": "readonly",
+    "web3": "readonly"
+  },
   "parser": "babel-eslint",
   "rules": {
+    "no-await-in-loop": 0,
     "no-underscore-dangle": 0,
     "import/prefer-default-export": 0,
     "import/no-extraneous-dependencies": 1,
-    "no-await-in-loop": 1,
     "comma-dangle": 0,
     "no-console": 0,
     "no-mixed-operators": 0,
