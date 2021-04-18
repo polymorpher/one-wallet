@@ -1,7 +1,8 @@
 require('dotenv').config()
 const { TruffleProvider } = require('@harmony-js/core')
 const localUrl = process.env.LOCAL_URL
-const localPrivateKey = process.env.LOCAL_PRIVATE_KEY
+const localPrivateKeys = process.env.LOCAL_PRIVATE_KEYS
+
 const mnemonic = process.env.MNEMONIC
 const privateKey = process.env.PRIVATE_KEY
 const url = process.env.URL
@@ -37,8 +38,12 @@ module.exports = {
           { shardID: 0, chainId: networkId.Local },
           { gasLimit: gasLimit, gasPrice: gasPrice },
         )
-        const newAcc = truffleProvider.addByPrivateKey(localPrivateKey)
-        truffleProvider.setSigner(newAcc)
+        const keys = localPrivateKeys.split(',')
+        const accounts = []
+        keys.forEach(k => {
+          accounts.push(truffleProvider.addByPrivateKey(k))
+        })
+        truffleProvider.setSigner(accounts[0])
         return truffleProvider
       },
     },
@@ -74,7 +79,8 @@ module.exports = {
 
   // Set default mocha options here, use special reporters etc.
   mocha: {
-    // timeout: 100000
+    timeout: 10 * 60 * 1000,
+    bail: true
   },
 
   // Configure your compilers

@@ -26,6 +26,9 @@ if (ac.CHILD_NUMBER_OF_LEAFS < Math.pow(2, 2)) {
   throw new Error('Minimum number of leaves in subtree for these unit tests is 4.')
 }
 
+// eslint-disable-next-line no-extend-native
+BigInt.prototype.toJSON = function () { return this.toString() }
+
 // describe.skip("Skipped ", function(){
 
 contract('WalletHandle - TEST SUITE 1 [Initial checks and a transfer]', function (accounts) {
@@ -162,14 +165,14 @@ contract('WalletHandle - TEST SUITE 1 [Initial checks and a transfer]', function
 
 // describe.skip("Skipped ", function(){
 
-contract('WaletHandle - TEST SUITE 2 [Deplete child tree OTPs, init new child tree ; deplete parent OTPs ; new parent tree]:', function (accounts) {
+contract('WalletHandle - TEST SUITE 2 [Deplete child tree OTPs, init new child tree ; deplete parent OTPs ; new parent tree]:', function (accounts) {
   const owner = accounts[0]
   const amount2Send = web3.utils.toWei('0.1', 'ether')
   const receiver = accounts[1]
   let contract
-  it('Bootstrap / send 50 Eth at contract', async () => {
+  it('Bootstrap / send 5 Eth at contract', async () => {
     const sender = accounts[5]
-    const initialAmount = web3.utils.toWei('20', 'ether')
+    const initialAmount = web3.utils.toWei('5', 'ether')
     const senderBalanceBefore = BigInt(await web3.eth.getBalance(sender))
     contract = await WalletHandle.deployed()
 
@@ -225,6 +228,7 @@ contract('WaletHandle - TEST SUITE 2 [Deplete child tree OTPs, init new child tr
         // confirm operations as well
         const tmpReceipt2 = await contract.confirmOper(...auth.getConfirmMaterial(currentOtpID), currentOtpID, { from: owner })
         console.log(`\t \\/== Gas used in confirm TRANSFER[${i}] = `, tmpReceipt2.receipt.gasUsed)
+        console.log('\t log', tmpReceipt2.logs[0])
         console.log('\t receipt', BigInt(tmpReceipt2.logs[0].args[1]))
         currentOtpID += 1
       }
@@ -465,6 +469,7 @@ contract('WaletHandle - TEST SUITE 2 [Deplete child tree OTPs, init new child tr
   it('Epilogue => reset authenticator to initial state', async () => {
     if (DO_TREE_DEPLETION) {
       auth = new AuthenticatorMT(ac.PARENT_NUMBER_OF_LEAFS, ac.CHILD_NUMBER_OF_LEAFS, ac.CHILD_DEPTH_OF_CACHED_LAYER, ac.HASH_CHAIN_LEN, ac.MNEM_WORDS, 0, null, true)
+      console.log(`AuthenticatorMT reset complete.`)
     }
   })
 })
@@ -473,7 +478,8 @@ contract('WaletHandle - TEST SUITE 2 [Deplete child tree OTPs, init new child tr
 
 // describe.skip("Skipped ", function(){
 
-contract('WaletHandle - TEST SUITE 3 [Playing with daily limits]:', function (accounts) {
+contract('WalletHandle - TEST SUITE 3 [Playing with daily limits]:', function (accounts) {
+  console.log('accounts', accounts)
   const owner = accounts[0]
   const tooBigAmount2Send = web3.utils.toWei('10', 'ether')
   const newDailyLimit = web3.utils.toWei('0.5', 'ether')
@@ -482,6 +488,7 @@ contract('WaletHandle - TEST SUITE 3 [Playing with daily limits]:', function (ac
   const nextSmallAmount = web3.utils.toWei('0.1', 'ether')
   const receiver = accounts[1]
   let contract
+  console.log('Starting daily limit tests...')
 
   it('Bootstrap / send 1 Eth at contract', async () => {
     const sender = accounts[1]
@@ -622,7 +629,7 @@ contract('WaletHandle - TEST SUITE 3 [Playing with daily limits]:', function (ac
     console.log(`\t \\/== Gas used in confirm TRANSFER:`, receipt2.receipt.gasUsed)
 
     const balanceAfter = BigInt(await web3.eth.getBalance(contract.address))
-    assert.equal(balanceBefore - BigInt(amountOutOfDailyLimit), balanceAfter)
+    assert.equal((balanceBefore - BigInt(amountOutOfDailyLimit)).toString(), balanceAfter.toString())
   })
 
   it('Exceed new daily limit by new accumulated transfer', async () => {
@@ -670,7 +677,7 @@ contract('WaletHandle - TEST SUITE 3 [Playing with daily limits]:', function (ac
     const currentOtpID2 = await contract.getCurrentOtpID.call()
     assert.equal(5, parseInt(currentOtpID2))
     const operation2 = await contract.pendingOpers.call(idxOfTx)
-    assert(!operation2[2]) // is pending == true
+    assert(!operation2[2], `Expected is Pending == true, got ${operation2}`) // is pending == true
 
     const balanceAfter = BigInt(await web3.eth.getBalance(contract.address))
     assert.equal(balanceBefore - BigInt(nextSmallAmount), balanceAfter)
@@ -681,7 +688,7 @@ contract('WaletHandle - TEST SUITE 3 [Playing with daily limits]:', function (ac
 
 // describe.skip("Skipped ", function(){
 
-contract('WaletHandle - TEST SUITE 4 [Playing with last resort stuff]:', function (accounts) {
+contract('WalletHandle - TEST SUITE 4 [Playing with last resort stuff]:', function (accounts) {
   const owner = accounts[0]
   const anybody = accounts[3]
   const receiverOfLastResortFunds = accounts[5]
@@ -717,8 +724,8 @@ contract('WaletHandle - TEST SUITE 4 [Playing with last resort stuff]:', functio
   it('Check last resort is off && receiver of last resort is account[5] && last active day is today', async () => {
     const lastResortInfo = await contract.lastResort.call()
     assert.equal(lastResortInfo[0], receiverOfLastResortFunds) // addr == account[5]
-    assert.equal(BigInt(lastResortInfo[1]), Math.floor(Date.now() / (24 * 3600 * 1000))) // lastActiveDay == today
-    assert.equal(BigInt(lastResortInfo[2]), 0) // timeoutDays == 0
+    assert.equal(parseInt(BigInt(lastResortInfo[1]).valueOf()), Math.floor(Date.now() / (24 * 3600 * 1000))) // lastActiveDay == today
+    assert.equal(parseInt(BigInt(lastResortInfo[2])), 0) // timeoutDays == 0
   })
 
   it('Check last resort is not set by calling send sendFundsToLastResortAddress (assuming deploy with timeout 0)', async () => {
@@ -726,7 +733,7 @@ contract('WaletHandle - TEST SUITE 4 [Playing with last resort stuff]:', functio
     assert.equal(balanceBefore, initialFunds)
 
     const tmpReceipt = await contract.sendFundsToLastResortAddress({ from: anybody })
-    console.log(`\t \\/== Gas used in disabled sendFundsToLastResortAddress invokation:`, tmpReceipt.receipt.gasUsed)
+    console.log(`\t \\/== Gas used in disabled sendFundsToLastResortAddress invocation:`, tmpReceipt.receipt.gasUsed)
 
     const balanceAfter = BigInt(await web3.eth.getBalance(contract.address))
     assert.equal(balanceBefore, balanceAfter)
@@ -782,7 +789,7 @@ contract('WaletHandle - TEST SUITE 4 [Playing with last resort stuff]:', functio
     const balanceBefore = BigInt(await web3.eth.getBalance(contract.address))
     assert.equal(balanceBefore, initialFunds)
 
-    increaseTime(3600 * 24 * 6) // shift time forward
+    await increaseTime(3600 * 24 * 6) // shift time forward
     // daysFromPrevTestSuites += 6
     const tmpReceipt = await contract.sendFundsToLastResortAddress({ from: anybody })
     console.log(`\t \\/== Gas used in sendFundsToLastResortAddress:`, tmpReceipt.receipt.gasUsed)
@@ -813,7 +820,7 @@ contract('WaletHandle - TEST SUITE 4 [Playing with last resort stuff]:', functio
 
 // describe.skip("Skipped ", function(){
 
-contract('WaletHandle - TEST SUITE 5 [Further playing with last resort stuff - changing address, shifting time ]:', function (accounts) {
+contract('WalletHandle - TEST SUITE 5 [Further playing with last resort stuff - changing address, shifting time ]:', function (accounts) {
   const owner = accounts[0]
   const anybody = accounts[3]
   const receiverOfLastResortFunds = accounts[5]
@@ -981,7 +988,7 @@ contract('WaletHandle - TEST SUITE 5 [Further playing with last resort stuff - c
   })
 
   it('Check sendFundsToLastResortAddress will work in next 1 day && contract was destroyed', async () => {
-    increaseTime(24 * 3600)
+    await increaseTime(24 * 3600)
     const balanceOfReceiverBefore = BigInt(await web3.eth.getBalance(newReceiverOfLastResortFunds))
     await contract.sendFundsToLastResortAddress({ from: anybody })
     const balanceOfReceiverAfter = BigInt(await web3.eth.getBalance(newReceiverOfLastResortFunds))
@@ -1013,7 +1020,7 @@ contract('WaletHandle - TEST SUITE 5 [Further playing with last resort stuff - c
 
 // describe.skip("Skipped ", function(){
 
-contract('WaletHandle - TEST SUITE 6 [Token depletion + immediate send to last resort address]:', function (accounts) {
+contract('WalletHandle - TEST SUITE 6 [Token depletion + immediate send to last resort address]:', function (accounts) {
   const owner = accounts[0]
   // const anybody = accounts[3]
   const receiverOfLastResortFunds = accounts[5]

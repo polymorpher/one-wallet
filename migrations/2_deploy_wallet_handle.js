@@ -9,14 +9,8 @@ auth.dumpAllChildRootHashes()
 
 const dailyLimit = 0 // no limit
 const maxInactiveDays = 0 // no last resort timeout
-let ownerAddress = process.env['OWNER_ADDR']
-let lastResortAddress = process.env['LAST_RESORT_ADDR']
-if (ownerAddress.startsWith('one')) {
-  ownerAddress = hcrypto.fromBech32(ownerAddress)
-}
-if (lastResortAddress.startsWith('one')) {
-  lastResortAddress = hcrypto.fromBech32(lastResortAddress)
-}
+// let ownerAddress = process.env['OWNER_ADDR']
+// let lastResortAddress = process.env['LAST_RESORT_ADDR']
 
 module.exports = function (deployer, network, accounts) {
   if (network === 'mainnet') {
@@ -24,8 +18,22 @@ module.exports = function (deployer, network, accounts) {
     // owner = process.env['MAIN_OWNER_ADDR']
     // receiverOfLastResortFunds = process.env['MAIN_OWNER_ADDR']
   } else if (network === 'local') {
-    ownerAddress = process.env['LOCAL_OWNER_ADDR']
-    lastResortAddress = process.env['LOCAL_LAST_RESORT_ADDR']
+    // ownerAddress = process.env['LOCAL_OWNER_ADDR']
+    // lastResortAddress = process.env['LOCAL_LAST_RESORT_ADDR']
+  }
+  console.log(`accounts (len=${accounts.length}):`, accounts)
+  let ownerAddress = accounts[0]
+  let lastResortAddress = accounts[5]
+
+  if (ownerAddress.startsWith('one')) {
+    console.log(`Converting ONE bech32 owner address... ${ownerAddress}`)
+    ownerAddress = hcrypto.fromBech32(ownerAddress)
+    console.log(`Converted to ${ownerAddress}`)
+  }
+  if (lastResortAddress.startsWith('one')) {
+    console.log(`Converting ONE bech32 last-resort address... ${lastResortAddress}`)
+    lastResortAddress = hcrypto.fromBech32(lastResortAddress)
+    console.log(`Converted to ${lastResortAddress}`)
   }
 
   console.log('Deploying WalletHandle to network', network, 'from', ownerAddress)
@@ -54,6 +62,8 @@ module.exports = function (deployer, network, accounts) {
   ).then(() => {
     console.log('Deployed WalletHandle with address', WalletHandle.address)
     console.log('\t \\/== Default gas estimate:', WalletHandle.class_defaults.gas) // class_defaults
+  }).catch(ex => {
+    console.error(ex)
   })
 }
 

@@ -2,7 +2,8 @@
 PRIVATE_KEY='0x...'
 MNEMONIC='<your mnemonic here>'
 URL='https://api.s0.b.hmny.io'
-OWNER_ADDR="<...>" # should be corresponding to PRIVATE_KEY
+# OWNER_ADDR should be corresponding to PRIVATE_KEY
+OWNER_ADDR="<...>"
 LAST_RESORT_ADDR="<...>"
 
 # main net
@@ -14,5 +15,5 @@ LOCAL_PRIVATE_KEY='...'
 LOCAL_URL='http://localhost:9500'
 
 # local
-GAS_LIMIT=6721900
-GAS_PRICE=1000000
+GAS_LIMIT=67219000
+GAS_PRICE=10000000
