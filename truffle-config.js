@@ -36,6 +36,21 @@ module.exports = {
      */
   
     networks: {
+      development: {
+        host: "127.0.0.1",
+        port: 9545, // port: 7545 for Ganashe
+        network_id: "*", // Match any network id
+        gas: 201000000,
+      },
+      advanced: {
+        port: 8777,             // Custom port
+        host: "127.0.0.1",     // Localhost (default: none)
+        network_id: 1234,       // Custom network
+        gas: 100111555,           // Gas sent with each transaction (default: ~6700000)
+        gasPrice: 200000  // 20 gwei (in wei) (default: 100 gwei)
+        // from: <address>,        // Account to send txs from (default: accounts[0])
+        // websockets: true        // Enable EventEmitter interface for web3 (default: false)
+      },
       // Useful for testing. The `development` name is special - truffle uses it by default
       // if it's defined here and no other network is specified at the command line.
       // You should run a client (like ganache-cli, geth or parity) in a separate terminal

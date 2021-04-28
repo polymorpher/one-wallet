@@ -6,6 +6,7 @@ contract TOTPWallet {
     bytes16 public rootHash;
     uint public timeOffset;
     address public drainAddr;
+    uint public withdrawLimit;
 
     event DebugEvent(bytes16 data);
     event DebugEventN(uint32 data);
@@ -13,14 +14,16 @@ contract TOTPWallet {
     event WalletTotpMismatch(bytes16 totp);
     event Deposit(address indexed sender, uint value);
 
-    constructor(bytes16 rootHash_, uint8 merkelHeight_, uint timePeriod_, uint timeOffset_, address drainAddr_) public {
+    constructor(bytes16 rootHash_, uint8 merkelHeight_, uint timePeriod_, uint timeOffset_, address drainAddr_, uint withdrawLimit_) public {
         rootHash = rootHash_;
         treeHeight = merkelHeight_;
         timePeriod = timePeriod_;
         timeOffset = timeOffset_;
         drainAddr = drainAddr_;
+        withdrawLimit = withdrawLimit_;
     }   
 
+    //TODO: Drain ERC20 tokens too
     function drain(bytes16[] memory confirmMaterial, bytes20 sides) public {
         bytes16 proof = evaluateProof(confirmMaterial, sides);
         if (proof==rootHash) {
@@ -34,18 +37,19 @@ contract TOTPWallet {
         require(_deriveChildTreeIdx(sides) == getCurrentCounter(), "unexpected counter value"); 
         //require(confirmMaterial.length, treeHeight+1, "unexpected proof");
 
-        emit DebugEventN(_deriveChildTreeIdx(sides));
+        //emit DebugEventN(_deriveChildTreeIdx(sides));
 
         return _reduceConfirmMaterial(confirmMaterial, sides);
     }
 
     function makeTransfer(address to, uint amount, bytes16[] memory confirmMaterial, bytes20 sides) public {
         // fire off totp check
-        require(address(this).balance >= amount);  
+        require(amount <= withdrawLimit, "over withdrawal limit");
+        require(address(this).balance >= amount, "not enough balance");  
         require(_deriveChildTreeIdx(sides) == getCurrentCounter(), "unexpected counter value"); 
         //require(confirmMaterial.length, treeHeight+1, "unexpected proof");
 
-        emit DebugEventN(_deriveChildTreeIdx(sides));
+        //emit DebugEventN(_deriveChildTreeIdx(sides));
 
         bytes16 proof = _reduceConfirmMaterial(confirmMaterial, sides);
         if (proof == rootHash) {
@@ -59,6 +63,12 @@ contract TOTPWallet {
     // 1609459200 is 2021-01-01 00:00:00
     function getCurrentCounter() public view returns (uint) {
         return (block.timestamp-timeOffset)/timePeriod;
+    }
+
+    function hasRemainingTokens() public view returns (bool) {
+        // timeOffset + (DURATION*2^depth) < current time
+        //uint lastTokenExpires = timeOffset + (timePeriod * (2**treeHeight));
+        return getCurrentCounter() < 2**uint(treeHeight);
     }
 
     function _deriveChildTreeIdx(bytes20 sides) private view returns (uint32) {
@@ -91,11 +101,11 @@ contract TOTPWallet {
 
 
     /// @dev Fallback function allows to deposit ether.
-    function()
+    function() public
         payable
     {
         if (msg.value > 0)
-            Deposit(msg.sender, msg.value);
+            emit Deposit(msg.sender, msg.value);
     }
 
 }
