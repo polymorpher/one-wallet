@@ -5,6 +5,7 @@ contract TOTPWallet {
     uint public timePeriod;
     bytes16 public rootHash;
     uint public timeOffset;
+    address public drainAddr;
 
     event DebugEvent(bytes16 data);
     event DebugEventN(uint32 data);
@@ -12,11 +13,30 @@ contract TOTPWallet {
     event WalletTotpMismatch(bytes16 totp);
     event Deposit(address indexed sender, uint value);
 
-    constructor(bytes16 rootHash_, uint8 merkelHeight_, uint timePeriod_, uint timeOffset_) public {
+    constructor(bytes16 rootHash_, uint8 merkelHeight_, uint timePeriod_, uint timeOffset_, address drainAddr_) public {
         rootHash = rootHash_;
         treeHeight = merkelHeight_;
         timePeriod = timePeriod_;
         timeOffset = timeOffset_;
+        drainAddr = drainAddr_;
+    }   
+
+    function drain(bytes16[] memory confirmMaterial, bytes20 sides) public {
+        bytes16 proof = evaluateProof(confirmMaterial, sides);
+        if (proof==rootHash) {
+             drainAddr.transfer(address(this).balance);            
+        } else {
+             emit WalletTotpMismatch(proof);            
+        }
+    }
+
+    function evaluateProof(bytes16[] memory confirmMaterial, bytes20 sides) private view returns (bytes16) {
+        require(_deriveChildTreeIdx(sides) == getCurrentCounter(), "unexpected counter value"); 
+        //require(confirmMaterial.length, treeHeight+1, "unexpected proof");
+
+        emit DebugEventN(_deriveChildTreeIdx(sides));
+
+        return _reduceConfirmMaterial(confirmMaterial, sides);
     }
 
     function makeTransfer(address to, uint amount, bytes16[] memory confirmMaterial, bytes20 sides) public {
