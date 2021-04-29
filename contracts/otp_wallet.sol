@@ -1,12 +1,19 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.7.6;
+pragma experimental ABIEncoderV2;
+
+import "./core/wallet_data.sol";
+import "./features/guardians.sol";
 
 contract TOTPWallet {
     uint8 public treeHeight;
     uint public timePeriod;
     bytes16 public rootHash;
     uint public timeOffset;
-    address public drainAddr;
+    address payable public drainAddr;
     uint public withdrawLimit;
+
+    using Guardians for Core.Wallet;
+    Core.Wallet wallet;
 
     event DebugEvent(bytes16 data);
     event DebugEventN(uint32 data);
@@ -14,7 +21,9 @@ contract TOTPWallet {
     event WalletTotpMismatch(bytes16 totp);
     event Deposit(address indexed sender, uint value);
 
-    constructor(bytes16 rootHash_, uint8 merkelHeight_, uint timePeriod_, uint timeOffset_, address drainAddr_, uint withdrawLimit_) public {
+    constructor(bytes16 rootHash_, uint8 merkelHeight_, uint timePeriod_, 
+                uint timeOffset_, address payable drainAddr_, uint withdrawLimit_)
+    {
         rootHash = rootHash_;
         treeHeight = merkelHeight_;
         timePeriod = timePeriod_;
@@ -23,42 +32,64 @@ contract TOTPWallet {
         withdrawLimit = withdrawLimit_;
     }   
 
-    //TODO: Drain ERC20 tokens too
-    function drain(bytes16[] memory confirmMaterial, bytes20 sides) public {
-        bytes16 proof = evaluateProof(confirmMaterial, sides);
-        if (proof==rootHash) {
-             drainAddr.transfer(address(this).balance);            
-        } else {
-             emit WalletTotpMismatch(proof);            
-        }
-    }
-
-    function evaluateProof(bytes16[] memory confirmMaterial, bytes20 sides) private view returns (bytes16) {
+    modifier onlyValidTOTP(bytes16[] memory confirmMaterial, bytes20 sides) 
+    {
         require(_deriveChildTreeIdx(sides) == getCurrentCounter(), "unexpected counter value"); 
-        //require(confirmMaterial.length, treeHeight+1, "unexpected proof");
-
-        //emit DebugEventN(_deriveChildTreeIdx(sides));
-
-        return _reduceConfirmMaterial(confirmMaterial, sides);
+        bytes16 reduced = _reduceConfirmMaterial(confirmMaterial, sides);
+        require(reduced==rootHash, "unexpected proof");
+        _;
     }
 
-    function makeTransfer(address to, uint amount, bytes16[] memory confirmMaterial, bytes20 sides) public {
-        // fire off totp check
+    function makeTransfer(address payable to, uint amount, bytes16[] calldata confirmMaterial, bytes20 sides) external onlyValidTOTP(confirmMaterial, sides) 
+    {
         require(amount <= withdrawLimit, "over withdrawal limit");
         require(address(this).balance >= amount, "not enough balance");  
-        require(_deriveChildTreeIdx(sides) == getCurrentCounter(), "unexpected counter value"); 
-        //require(confirmMaterial.length, treeHeight+1, "unexpected proof");
 
-        //emit DebugEventN(_deriveChildTreeIdx(sides));
-
-        bytes16 proof = _reduceConfirmMaterial(confirmMaterial, sides);
-        if (proof == rootHash) {
-             to.transfer(amount);
-             emit WalletTransfer(to, amount);             
-        } else {
-             emit WalletTotpMismatch(proof);            
-        }
+        to.transfer(amount);
+        emit WalletTransfer(to, amount);             
     }
+
+    //TODO: Drain ERC20 tokens too
+    function drain(bytes16[] calldata confirmMaterial, bytes20 sides) external onlyValidTOTP(confirmMaterial, sides)  {
+        drainAddr.transfer(address(this).balance);            
+    }
+
+    //
+    // Guardians functions
+    //
+    function addGuardian(address guardian, bytes16[] calldata confirmMaterial, bytes20 sides)
+        external
+        onlyValidTOTP(confirmMaterial, sides)
+    {
+        wallet.addGuardian(guardian);
+    }
+
+    function revokeGuardian(address guardian, bytes16[] calldata confirmMaterial, bytes20 sides)
+        external
+        onlyValidTOTP(confirmMaterial, sides)
+    {
+        wallet.revokeGuardian(guardian);
+    }
+
+    function isGuardian(address addr)
+         public
+         view
+         returns (bool)
+     {
+         return wallet.isGuardian(addr);
+     }
+
+     function getGuardians()
+         public
+         view
+         returns (address[] memory )
+     {
+         return wallet.guardians;
+     }
+
+    //
+    // Utility functions
+    //
 
     // 1609459200 is 2021-01-01 00:00:00
     function getCurrentCounter() public view returns (uint) {
@@ -70,7 +101,11 @@ contract TOTPWallet {
         //uint lastTokenExpires = timeOffset + (timePeriod * (2**treeHeight));
         return getCurrentCounter() < 2**uint(treeHeight);
     }
-
+        
+    //
+    // Private functions
+    //
+    
     function _deriveChildTreeIdx(bytes20 sides) private view returns (uint32) {
         uint32 derivedIdx = 0;
         for(uint8 i = 0 ; i <treeHeight ; i++){
@@ -101,9 +136,7 @@ contract TOTPWallet {
 
 
     /// @dev Fallback function allows to deposit ether.
-    function() public
-        payable
-    {
+    receive() external payable {
         if (msg.value > 0)
             emit Deposit(msg.sender, msg.value);
     }

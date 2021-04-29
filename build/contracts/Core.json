@@ -1,0 +1,460 @@
+{
+  "contractName": "Core",
+  "abi": [],
+  "metadata": "{\"compiler\":{\"version\":\"0.7.6+commit.7338295f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/home/quoc/Projects/harmony-totp-pure/contracts/core/wallet_data.sol\":\"Core\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/quoc/Projects/harmony-totp-pure/contracts/core/wallet_data.sol\":{\"keccak256\":\"0x3f7f71b1c74972eb311a4ab76a4c2158e76647e60181731582f02d2c926217d7\",\"urls\":[\"bzz-raw://60700bfafbd9b29e9ed9b63a4b56b07f520f23cc5997aea19f52efa63cfbb8ce\",\"dweb:/ipfs/QmZYtTNMexhgCphTdkioW6ZrqpHadm8HjUNmHgtawfaW9R\"]}},\"version\":1}",
+  "bytecode": "0x60566023600b82828239805160001a607314601657fe5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212200e69c6c082c742865f8eb8d553927b887725795773ed6157898be5c7b6e45dfc64736f6c63430007060033",
+  "deployedBytecode": "0x73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212200e69c6c082c742865f8eb8d553927b887725795773ed6157898be5c7b6e45dfc64736f6c63430007060033",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "59:273:0:-:0;;;;;;;;;;;;;;;;;;;;;;;;;",
+  "deployedSourceMap": "59:273:0:-:0;;;;;;;;",
+  "source": "pragma solidity ^0.7.6;\npragma experimental ABIEncoderV2;\n\nlibrary Core {\n    struct GuardianInfo {\n        bool exists;\n        uint128 index;\n    }   \n\n    struct Wallet { \n        // the list of guardians\n        address[] guardians;\n        // the info about guardians\n        mapping (address => GuardianInfo) info;    \n    }\n}\n",
+  "sourcePath": "/home/quoc/Projects/harmony-totp-pure/contracts/core/wallet_data.sol",
+  "ast": {
+    "absolutePath": "/home/quoc/Projects/harmony-totp-pure/contracts/core/wallet_data.sol",
+    "exportedSymbols": {
+      "Core": [
+        16
+      ]
+    },
+    "id": 17,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1,
+        "literals": [
+          "solidity",
+          "^",
+          "0.7",
+          ".6"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:0"
+      },
+      {
+        "id": 2,
+        "literals": [
+          "experimental",
+          "ABIEncoderV2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "24:33:0"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "library",
+        "fullyImplemented": true,
+        "id": 16,
+        "linearizedBaseContracts": [
+          16
+        ],
+        "name": "Core",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "canonicalName": "Core.GuardianInfo",
+            "id": 7,
+            "members": [
+              {
+                "constant": false,
+                "id": 4,
+                "mutability": "mutable",
+                "name": "exists",
+                "nodeType": "VariableDeclaration",
+                "scope": 7,
+                "src": "108:11:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bool",
+                  "typeString": "bool"
+                },
+                "typeName": {
+                  "id": 3,
+                  "name": "bool",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "108:4:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 6,
+                "mutability": "mutable",
+                "name": "index",
+                "nodeType": "VariableDeclaration",
+                "scope": 7,
+                "src": "129:13:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint128",
+                  "typeString": "uint128"
+                },
+                "typeName": {
+                  "id": 5,
+                  "name": "uint128",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "129:7:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "GuardianInfo",
+            "nodeType": "StructDefinition",
+            "scope": 16,
+            "src": "78:71:0",
+            "visibility": "public"
+          },
+          {
+            "canonicalName": "Core.Wallet",
+            "id": 15,
+            "members": [
+              {
+                "constant": false,
+                "id": 10,
+                "mutability": "mutable",
+                "name": "guardians",
+                "nodeType": "VariableDeclaration",
+                "scope": 15,
+                "src": "216:19:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                  "typeString": "address[]"
+                },
+                "typeName": {
+                  "baseType": {
+                    "id": 8,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "216:7:0",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "id": 9,
+                  "nodeType": "ArrayTypeName",
+                  "src": "216:9:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                    "typeString": "address[]"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 14,
+                "mutability": "mutable",
+                "name": "info",
+                "nodeType": "VariableDeclaration",
+                "scope": 15,
+                "src": "281:38:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_mapping$_t_address_$_t_struct$_GuardianInfo_$7_storage_$",
+                  "typeString": "mapping(address => struct Core.GuardianInfo)"
+                },
+                "typeName": {
+                  "id": 13,
+                  "keyType": {
+                    "id": 11,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "290:7:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "nodeType": "Mapping",
+                  "src": "281:33:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_mapping$_t_address_$_t_struct$_GuardianInfo_$7_storage_$",
+                    "typeString": "mapping(address => struct Core.GuardianInfo)"
+                  },
+                  "valueType": {
+                    "id": 12,
+                    "name": "GuardianInfo",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 7,
+                    "src": "301:12:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_GuardianInfo_$7_storage_ptr",
+                      "typeString": "struct Core.GuardianInfo"
+                    }
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "Wallet",
+            "nodeType": "StructDefinition",
+            "scope": 16,
+            "src": "158:172:0",
+            "visibility": "public"
+          }
+        ],
+        "scope": 17,
+        "src": "59:273:0"
+      }
+    ],
+    "src": "0:333:0"
+  },
+  "legacyAST": {
+    "attributes": {
+      "absolutePath": "/home/quoc/Projects/harmony-totp-pure/contracts/core/wallet_data.sol",
+      "exportedSymbols": {
+        "Core": [
+          16
+        ]
+      }
+    },
+    "children": [
+      {
+        "attributes": {
+          "literals": [
+            "solidity",
+            "^",
+            "0.7",
+            ".6"
+          ]
+        },
+        "id": 1,
+        "name": "PragmaDirective",
+        "src": "0:23:0"
+      },
+      {
+        "attributes": {
+          "literals": [
+            "experimental",
+            "ABIEncoderV2"
+          ]
+        },
+        "id": 2,
+        "name": "PragmaDirective",
+        "src": "24:33:0"
+      },
+      {
+        "attributes": {
+          "abstract": false,
+          "baseContracts": [
+            null
+          ],
+          "contractDependencies": [
+            null
+          ],
+          "contractKind": "library",
+          "fullyImplemented": true,
+          "linearizedBaseContracts": [
+            16
+          ],
+          "name": "Core",
+          "scope": 17
+        },
+        "children": [
+          {
+            "attributes": {
+              "canonicalName": "Core.GuardianInfo",
+              "name": "GuardianInfo",
+              "scope": 16,
+              "visibility": "public"
+            },
+            "children": [
+              {
+                "attributes": {
+                  "constant": false,
+                  "mutability": "mutable",
+                  "name": "exists",
+                  "scope": 7,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "bool",
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "name": "bool",
+                      "type": "bool"
+                    },
+                    "id": 3,
+                    "name": "ElementaryTypeName",
+                    "src": "108:4:0"
+                  }
+                ],
+                "id": 4,
+                "name": "VariableDeclaration",
+                "src": "108:11:0"
+              },
+              {
+                "attributes": {
+                  "constant": false,
+                  "mutability": "mutable",
+                  "name": "index",
+                  "scope": 7,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "uint128",
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "name": "uint128",
+                      "type": "uint128"
+                    },
+                    "id": 5,
+                    "name": "ElementaryTypeName",
+                    "src": "129:7:0"
+                  }
+                ],
+                "id": 6,
+                "name": "VariableDeclaration",
+                "src": "129:13:0"
+              }
+            ],
+            "id": 7,
+            "name": "StructDefinition",
+            "src": "78:71:0"
+          },
+          {
+            "attributes": {
+              "canonicalName": "Core.Wallet",
+              "name": "Wallet",
+              "scope": 16,
+              "visibility": "public"
+            },
+            "children": [
+              {
+                "attributes": {
+                  "constant": false,
+                  "mutability": "mutable",
+                  "name": "guardians",
+                  "scope": 15,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "address[]",
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "type": "address[]"
+                    },
+                    "children": [
+                      {
+                        "attributes": {
+                          "name": "address",
+                          "stateMutability": "nonpayable",
+                          "type": "address"
+                        },
+                        "id": 8,
+                        "name": "ElementaryTypeName",
+                        "src": "216:7:0"
+                      }
+                    ],
+                    "id": 9,
+                    "name": "ArrayTypeName",
+                    "src": "216:9:0"
+                  }
+                ],
+                "id": 10,
+                "name": "VariableDeclaration",
+                "src": "216:19:0"
+              },
+              {
+                "attributes": {
+                  "constant": false,
+                  "mutability": "mutable",
+                  "name": "info",
+                  "scope": 15,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "mapping(address => struct Core.GuardianInfo)",
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "type": "mapping(address => struct Core.GuardianInfo)"
+                    },
+                    "children": [
+                      {
+                        "attributes": {
+                          "name": "address",
+                          "type": "address"
+                        },
+                        "id": 11,
+                        "name": "ElementaryTypeName",
+                        "src": "290:7:0"
+                      },
+                      {
+                        "attributes": {
+                          "name": "GuardianInfo",
+                          "referencedDeclaration": 7,
+                          "type": "struct Core.GuardianInfo"
+                        },
+                        "id": 12,
+                        "name": "UserDefinedTypeName",
+                        "src": "301:12:0"
+                      }
+                    ],
+                    "id": 13,
+                    "name": "Mapping",
+                    "src": "281:33:0"
+                  }
+                ],
+                "id": 14,
+                "name": "VariableDeclaration",
+                "src": "281:38:0"
+              }
+            ],
+            "id": 15,
+            "name": "StructDefinition",
+            "src": "158:172:0"
+          }
+        ],
+        "id": 16,
+        "name": "ContractDefinition",
+        "src": "59:273:0"
+      }
+    ],
+    "id": 17,
+    "name": "SourceUnit",
+    "src": "0:333:0"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.7.6+commit.7338295f.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.3.4",
+  "updatedAt": "2021-04-29T19:16:03.304Z",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  }
+}

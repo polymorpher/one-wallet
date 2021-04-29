@@ -1,4 +1,6 @@
 const TOTPWallet = artifacts.require("TOTPWallet");
+const Guardians = artifacts.require("Guardians");
+
 const truffleAssert = require("truffle-assertions");
 const ethers = require("ethers");
 var merkle = require("../lib/merkle.js");
@@ -29,6 +31,8 @@ contract("OTPWallet", accounts => {
             leaves.push(h16(padNumber(web3.utils.toHex(getTOTP(startCounter+i)))));
         }
         const root = merkle.reduceMT(leaves);
+        const guardians = await Guardians.new();
+        await TOTPWallet.link("Guardians", guardians.address);
         var wallet = await TOTPWallet.new(root, depth, DURATION, timeOffset, drainAddr, web3.utils.toWei("0.01", "ether"));
 
         return {
