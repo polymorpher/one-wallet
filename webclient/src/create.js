@@ -11,7 +11,7 @@ class Create extends Component {
 
         var time = Math.floor((Date.now() / 1000));
         var timeOffset = time - (time% 300);        
-        this.state = {duration: 300, depth: 10, timeOffset: timeOffset, expires: 0, secret:"", creating: false};
+        this.state = {duration: 300, depth: 10, timeOffset: timeOffset, expires: 0, secret:"", creating: false, drainAddr: window.App.defaultAccount};
     }
 
     makeSecret() {
@@ -45,12 +45,11 @@ class Create extends Component {
             secret: secret,
             uri: uri,
             qr_fixed: qr_fixed,
-        })
+        }, this.update)
     }
     componentDidMount(){
-        console.log(this);
+        console.log(this, window.App.defaultAccount);
         this.makeSecret();
-        this.update();
     }
 
     create(e) {
@@ -58,7 +57,7 @@ class Create extends Component {
 
         e.preventDefault();
         var self = this;
-        truffleClient.createWallet(this.state.rootHash, this.state.depth, this.state.duration, this.state.timeOffset, this.state.leafs).then(e=>{
+        truffleClient.createWallet(this.state.rootHash, this.state.depth, this.state.duration, this.state.timeOffset, this.state.leafs, this.state.drainAddr).then(e=>{
             console.log(e);
             self.props.onCreated(e);
         });
@@ -66,6 +65,10 @@ class Create extends Component {
     }
     changeDepth(e) {
         this.setState({depth: parseInt(e.target.value)}, this.update);
+    }
+
+    changeDrainAddr(e) {
+        this.setState({drainAddr: e.target.value});
     }
     changeDuration(e){
         this.setState({duration: parseInt(e.target.value)},this.update);
@@ -137,7 +140,13 @@ class Create extends Component {
                                     <span className="input-group-text" id="basic-addon2">{new Date(this.state.expires*1000).toISOString()}</span>
                                 </div>
                             </div>
-                        </div>                                                 
+                        </div>                 
+                        <div className="form-group row">
+                            <label htmlFor="inputEmail3" className="col-sm-4 col-form-label">Drain Address</label>
+                            <div className="input-group col-sm-8">
+                                <input type="text" className="form-control" value={this.state.drainAddr}   onChange={this.changeDrainAddr.bind(this)} placeholder="0x..." aria-label="Recipient's username" aria-describedby="basic-addon2"/>
+                            </div>
+                        </div>                                                                       
                         <div className="form-group row mt-4">
                             <label htmlFor="inputEmail3" className="col-sm-4 col-form-label"></label>
                             <div className="col-sm-8">

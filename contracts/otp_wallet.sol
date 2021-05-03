@@ -11,7 +11,7 @@ contract TOTPWallet {
     using Guardians for Core.Wallet;
     using DailyLimit for Core.Wallet;
     using Recovery for Core.Wallet;
-    Core.Wallet wallet;
+    Core.Wallet public wallet;
 
     event DebugEvent(bytes16 data);
     event DebugEventN(uint32 data);
@@ -27,6 +27,7 @@ contract TOTPWallet {
         wallet.timeOffset = timeOffset_;
         wallet.drainAddr = drainAddr_;
         wallet.dailyLimit = dailyLimit_;
+
     }   
 
     modifier onlyValidTOTP(bytes16[] memory confirmMaterial, bytes20 sides) 

@@ -1,20 +1,36 @@
 import { default as Web3 } from 'web3'
 
 import walletArtifacts from '../../build/contracts/TOTPWallet.json'
+import dailyLimitArtifact from '../../build/contracts/DailyLimit.json'
+import guardiansArtifact from '../../build/contracts/Guardians.json'
+import recoveryArtifact from '../../build/contracts/Recovery.json'
+
 var contract = require("@truffle/contract");
 var TOTPWallet = contract(walletArtifacts)
+var DailyLimit = contract(dailyLimitArtifact)
+var Guardians = contract(guardiansArtifact)
+var Recovery = contract(recoveryArtifact)
+
+console.log(DailyLimit);
+
 TOTPWallet.setProvider(window.web3.currentProvider)
-var App = {}
+
+window.App = {}
 
 export async function refresh() {
     var _accounts = (undefined != window.ethereum)? await window.ethereum.enable(): await web3.eth.getAccounts();
     App.accounts = _accounts;
     App.defaultAccount = _accounts[0];
-    TOTPWallet.defaults({ from: App.defaultAccount, gas: 7.3 * 1000 * 1000, gasPrice: 20 * 1000000000 })
+    TOTPWallet.defaults({ from: App.defaultAccount, gas: 5000 * 1000, gasPrice: 20 * 1000000000 })
     console.log(App);
 }
-export function createWallet(rootHash, height, timePeriod, timeOffset, leafs) {
-    return TOTPWallet.new(rootHash, height, timePeriod, timeOffset).then(e=>{
+export async function createWallet(rootHash, height, timePeriod, timeOffset, leafs, drainAddr) {
+    await TOTPWallet.detectNetwork();
+    TOTPWallet.link("DailyLimit", "0xe99810556BbE9e2EAA48F84eE6450Aa5a18Fb2B4");
+    TOTPWallet.link("Guardians","0xf3ad04b291B3E3f441cFde0C7d41353361282bbb");
+    TOTPWallet.link("Recovery","0x1bE4e84647843b10bA8D3726F3baCcEC4950Bda5");
+        
+    return TOTPWallet.new(rootHash, height, timePeriod, timeOffset, drainAddr, web3.utils.toWei("0.01", "ether")).then(e=>{
         console.log(e);
         localStorage.setItem("wallet:"+e.address, JSON.stringify({
             tx: e.transactionHash,
@@ -26,11 +42,16 @@ export function createWallet(rootHash, height, timePeriod, timeOffset, leafs) {
 
 export async function loadWallet(address) {
     var wallet = await TOTPWallet.at(address);
+    var walletData = await wallet.wallet();
+    console.log(walletData);
     return {
-        rootHash: await wallet.rootHash(),
-        height: await wallet.treeHeight(),
-        timePeriod: await wallet.timePeriod(),
-        timeOffset: await wallet.timeOffset(),
+        rootHash: walletData.rootHash,
+        height: walletData.merkelHeight,
+        timePeriod: walletData.timePeriod,
+        timeOffset: walletData.timeOffset,
+        dailyLimit: walletData.dailyLimit,
+        spentToday: walletData.spentToday,
+        drainAddr: walletData.drainAddr,
         balance: await web3.eth.getBalance(address),
         contract: wallet
     }

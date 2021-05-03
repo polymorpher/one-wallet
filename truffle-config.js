@@ -24,6 +24,15 @@
 // const fs = require('fs');
 // const mnemonic = fs.readFileSync(".secret").toString().trim();
 
+const WalletProvider = require("truffle-wallet-provider");
+const Wallet = require('ethereumjs-wallet');
+
+let secrets = require('./secrets');
+let rinkebyPrivateKey = new Buffer(secrets.rinkeby, "hex");
+let rinkebyWallet = Wallet.fromPrivateKey(rinkebyPrivateKey);
+let rinkebyProvider = new WalletProvider(rinkebyWallet,  "https://rinkeby.infura.io/v3/e97751423883454abdbc93474d5e4ca7");
+
+
 module.exports = {
     /**
      * Networks define how you connect to your ethereum client and let you set the
@@ -87,6 +96,11 @@ module.exports = {
       // network_id: 2111,   // This network is yours, in the cloud.
       // production: true    // Treats this network as if it was a public net. (default: false)
       // }
+      rinkeby: {
+        provider: rinkebyProvider,
+        network_id: "4",
+        gas: 10000000
+      },
     },
   
     // Set default mocha options here, use special reporters etc.
