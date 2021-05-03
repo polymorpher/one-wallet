@@ -49,22 +49,10 @@ contract("OTPWallet", accounts => {
     it("checks for remaing token", async () => {
         var tmpWallet = web3.eth.accounts.create();
         var {startCounter, root, leaves, wallet} = await commons.createWallet(timeOffset - (Math.pow(2, 2) * DURATION),  DURATION, 2, tmpWallet.address);
-        var hasTokens = await wallet.hasRemainingTokens();
+        var hasTokens = await wallet.remainingTokens();
         console.log("counter=", (await wallet.getCurrentCounter()).toString());
         console.log(hasTokens);
         assert.equal(hasTokens, false);               
-    })
-
-    it("should not withdraw limit", async ()=> {
-        var tmpWallet = web3.eth.accounts.create();
-        var {startCounter, root, leaves, wallet} = await commons.createWallet(timeOffset,  DURATION, 16, tmpWallet.address);
-        await web3.eth.sendTransaction({from: accounts[0], to: wallet.address, value: web3.utils.toWei("1", "ether")});
-
-        var currentCounter = Math.floor(((Date.now() / 1000) - timeOffset) / DURATION);
-        var currentOTP = commons.getTOTP(startCounter + currentCounter);
-        var proof = merkle.getProof(leaves, currentCounter, commons.padNumber(web3.utils.toHex(currentOTP)))
-        var op =  wallet.makeTransfer(tmpWallet.address, web3.utils.toWei("0.011", "ether"), proof[0], proof[1]);
-        await truffleAssert.reverts(op, "over withdrawal limit");
     })
 
     const increaseTime = time => {

@@ -11,6 +11,11 @@ library Core {
         // the list of guardians
         address[] guardians;
         // the info about guardians
-        mapping (address => GuardianInfo) info;    
+        mapping (address => GuardianInfo) info;
+        
+            
+        uint dailyLimit;
+        uint lastDay;
+        uint spentToday;
     }
 }

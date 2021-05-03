@@ -23,6 +23,21 @@ yarn dev
 
 Visit http://localhost:8082
 
+## Wallet Design
+
+TOTP/Google Authenticator Unlocks wallet for:
+* Payment within the daily limit
+* Add / remove guardians
+* Drain account back address given at constructor
+
+There are limited number of tokens available on the wallet. Call getRemainingTokens() to check. 
+
+When TOTP/Google Authenticator Tokens depleted:
+* Drain account can request drain back
+* replenishMoreTokens() to add more tokens
+
+If you lose the Google Authenticator token, you can initiate recovery token via your guardians.
+* Requires Ceil(N/2) 
 
 ## TODO 
 

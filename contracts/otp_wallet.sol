@@ -3,6 +3,7 @@ pragma experimental ABIEncoderV2;
 
 import "./core/wallet_data.sol";
 import "./features/guardians.sol";
+import "./features/daily_limit.sol";
 
 contract TOTPWallet {
     uint8 public treeHeight;
@@ -10,9 +11,9 @@ contract TOTPWallet {
     bytes16 public rootHash;
     uint public timeOffset;
     address payable public drainAddr;
-    uint public withdrawLimit;
 
     using Guardians for Core.Wallet;
+    using DailyLimit for Core.Wallet;
     Core.Wallet wallet;
 
     event DebugEvent(bytes16 data);
@@ -22,14 +23,14 @@ contract TOTPWallet {
     event Deposit(address indexed sender, uint value);
 
     constructor(bytes16 rootHash_, uint8 merkelHeight_, uint timePeriod_, 
-                uint timeOffset_, address payable drainAddr_, uint withdrawLimit_)
+                uint timeOffset_, address payable drainAddr_, uint dailyLimit_)
     {
         rootHash = rootHash_;
         treeHeight = merkelHeight_;
         timePeriod = timePeriod_;
         timeOffset = timeOffset_;
         drainAddr = drainAddr_;
-        withdrawLimit = withdrawLimit_;
+        wallet.dailyLimit = dailyLimit_;
     }   
 
     modifier onlyValidTOTP(bytes16[] memory confirmMaterial, bytes20 sides) 
@@ -42,9 +43,10 @@ contract TOTPWallet {
 
     function makeTransfer(address payable to, uint amount, bytes16[] calldata confirmMaterial, bytes20 sides) external onlyValidTOTP(confirmMaterial, sides) 
     {
-        require(amount <= withdrawLimit, "over withdrawal limit");
+        require(wallet.isUnderLimit(amount), "over withdrawal limit");
         require(address(this).balance >= amount, "not enough balance");  
 
+        wallet.spentToday += amount;
         to.transfer(amount);
         emit WalletTransfer(to, amount);             
     }
@@ -88,6 +90,15 @@ contract TOTPWallet {
      }
 
     //
+    // Recovery functions
+    //
+
+    function recovery(bytes16 rootHash_, uint8 merkelHeight_, uint timePeriod_, 
+                uint timeOffset_) external {
+
+    }
+
+    //
     // Utility functions
     //
 
@@ -96,10 +107,10 @@ contract TOTPWallet {
         return (block.timestamp-timeOffset)/timePeriod;
     }
 
-    function hasRemainingTokens() public view returns (bool) {
+    function remainingTokens() public view returns (uint) {
         // timeOffset + (DURATION*2^depth) < current time
         //uint lastTokenExpires = timeOffset + (timePeriod * (2**treeHeight));
-        return getCurrentCounter() < 2**uint(treeHeight);
+        return 2**uint(treeHeight) - getCurrentCounter();
     }
         
     //
