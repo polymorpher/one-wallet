@@ -13,7 +13,7 @@ contract("Guardians", accounts => {
     it("should add guardian", async () => {
         var tmpWallet = web3.eth.accounts.create();
         var {startCounter, root, leaves, wallet} = await commons.createWallet(timeOffset, DURATION, 16, tmpWallet.address);
-        var proof = commons.getTOTPAndProof(leaves, timeOffset, DURATION);
+        var proof = await commons.getTOTPAndProof(leaves, timeOffset, DURATION);
         await wallet.addGuardian(tmpWallet.address, proof[0], proof[1]);
         var guardians = await wallet.getGuardians();
         console.log(guardians);
@@ -23,7 +23,7 @@ contract("Guardians", accounts => {
     it("should remove guardian", async () => {
         var tmpWallet = web3.eth.accounts.create();
         var {startCounter, root, leaves, wallet} = await commons.createWallet(timeOffset, DURATION, 16, tmpWallet.address);
-        var proof = commons.getTOTPAndProof(leaves, timeOffset, DURATION);
+        var proof = await commons.getTOTPAndProof(leaves, timeOffset, DURATION);
         await wallet.addGuardian(tmpWallet.address, proof[0], proof[1]);
         await wallet.revokeGuardian(tmpWallet.address, proof[0], proof[1]);
 

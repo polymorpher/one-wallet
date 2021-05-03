@@ -13,7 +13,7 @@ contract("DailyLimit", accounts => {
     it("should test for daily limit", async () => {
         var tmpWallet = web3.eth.accounts.create();
         var {startCounter, root, leaves, wallet} = await commons.createWallet(timeOffset, DURATION, 16, tmpWallet.address);
-        var proof = commons.getTOTPAndProof(leaves, timeOffset, DURATION);
+        var proof = await commons.getTOTPAndProof(leaves, timeOffset, DURATION);
 
         await web3.eth.sendTransaction({from: accounts[0], to: wallet.address, value: web3.utils.toWei("1", "ether")});
         await wallet.makeTransfer(tmpWallet.address, web3.utils.toWei("0.01", "ether"), proof[0], proof[1]);

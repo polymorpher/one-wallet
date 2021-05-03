@@ -4,32 +4,28 @@ pragma experimental ABIEncoderV2;
 import "./core/wallet_data.sol";
 import "./features/guardians.sol";
 import "./features/daily_limit.sol";
+import "./features/recovery.sol";
 
 contract TOTPWallet {
-    uint8 public treeHeight;
-    uint public timePeriod;
-    bytes16 public rootHash;
-    uint public timeOffset;
-    address payable public drainAddr;
 
     using Guardians for Core.Wallet;
     using DailyLimit for Core.Wallet;
+    using Recovery for Core.Wallet;
     Core.Wallet wallet;
 
     event DebugEvent(bytes16 data);
     event DebugEventN(uint32 data);
     event WalletTransfer(address to, uint amount);
-    event WalletTotpMismatch(bytes16 totp);
     event Deposit(address indexed sender, uint value);
 
     constructor(bytes16 rootHash_, uint8 merkelHeight_, uint timePeriod_, 
                 uint timeOffset_, address payable drainAddr_, uint dailyLimit_)
     {
-        rootHash = rootHash_;
-        treeHeight = merkelHeight_;
-        timePeriod = timePeriod_;
-        timeOffset = timeOffset_;
-        drainAddr = drainAddr_;
+        wallet.rootHash = rootHash_;
+        wallet.merkelHeight = merkelHeight_;
+        wallet.timePeriod = timePeriod_;
+        wallet.timeOffset = timeOffset_;
+        wallet.drainAddr = drainAddr_;
         wallet.dailyLimit = dailyLimit_;
     }   
 
@@ -37,7 +33,7 @@ contract TOTPWallet {
     {
         require(_deriveChildTreeIdx(sides) == getCurrentCounter(), "unexpected counter value"); 
         bytes16 reduced = _reduceConfirmMaterial(confirmMaterial, sides);
-        require(reduced==rootHash, "unexpected proof");
+        require(reduced==wallet.rootHash, "unexpected proof");
         _;
     }
 
@@ -53,7 +49,13 @@ contract TOTPWallet {
 
     //TODO: Drain ERC20 tokens too
     function drain(bytes16[] calldata confirmMaterial, bytes20 sides) external onlyValidTOTP(confirmMaterial, sides)  {
-        drainAddr.transfer(address(this).balance);            
+        wallet.drainAddr.transfer(address(this).balance);            
+    }
+
+    function drain() external {
+        require(msg.sender == wallet.drainAddr, "sender != drain");        
+        require(remainingTokens() <= 0, "not depleted tokens");
+        wallet.drainAddr.transfer(address(this).balance);            
     }
 
     //
@@ -93,9 +95,25 @@ contract TOTPWallet {
     // Recovery functions
     //
 
-    function recovery(bytes16 rootHash_, uint8 merkelHeight_, uint timePeriod_, 
-                uint timeOffset_) external {
+    function startRecovery(bytes16 rootHash_, uint8 merkelHeight_, uint timePeriod_, 
+                uint timeOffset_, bytes calldata signatures_) external {
+        wallet.startRecovery(rootHash_, merkelHeight_, timePeriod_, timeOffset_, signatures_);
+    }
 
+    function isRecovering() external view returns (bool) {
+        return wallet.recovery.rootHash != 0x0;
+    }
+
+    function cancelRecovery(bytes16[] calldata confirmMaterial, bytes20 sides) external onlyValidTOTP(confirmMaterial, sides) {
+        wallet.recovery = Core.RecoveryInfo(0, 0, 0, 0, 0);
+    }
+
+    function getRecovery() external view returns (bytes16, uint8, uint, uint) {
+        return (wallet.recovery.rootHash, wallet.recovery.merkelHeight, wallet.recovery.timePeriod, wallet.recovery.timeOffset);
+    }
+
+    function finalizeRecovery() external {
+        wallet.finalizeRecovery();
     }
 
     //
@@ -104,22 +122,18 @@ contract TOTPWallet {
 
     // 1609459200 is 2021-01-01 00:00:00
     function getCurrentCounter() public view returns (uint) {
-        return (block.timestamp-timeOffset)/timePeriod;
+        return (block.timestamp-wallet.timeOffset)/wallet.timePeriod;
     }
 
     function remainingTokens() public view returns (uint) {
         // timeOffset + (DURATION*2^depth) < current time
         //uint lastTokenExpires = timeOffset + (timePeriod * (2**treeHeight));
-        return 2**uint(treeHeight) - getCurrentCounter();
+        return 2**uint(wallet.merkelHeight) - getCurrentCounter();
     }
         
-    //
-    // Private functions
-    //
-    
     function _deriveChildTreeIdx(bytes20 sides) private view returns (uint32) {
         uint32 derivedIdx = 0;
-        for(uint8 i = 0 ; i <treeHeight ; i++){
+        for(uint8 i = 0 ; i <wallet.merkelHeight ; i++){
             if(byte(0x01) == sides[i]){
                 derivedIdx |=  uint32(0x01) << i;
             }
