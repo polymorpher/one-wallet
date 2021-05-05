@@ -115,3 +115,4 @@ out
 .pnp.*
 
 trash
+secrets.js

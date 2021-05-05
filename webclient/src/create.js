@@ -10,10 +10,14 @@ class Create extends Component {
         super(props);
 
         var time = Math.floor((Date.now() / 1000));
-        var timeOffset = time - (time% 300);        
-        this.state = {duration: 300, depth: 10, timeOffset: timeOffset, expires: 0, secret:"", creating: false, drainAddr: window.App.defaultAccount};
+        var timeOffset = time - (time% 30);        
+        this.state = {duration: 30, depth: 10, timeOffset: timeOffset, expires: 0, secret:"", creating: false, drainAddr: window.App.defaultAccount};
     }
 
+    generateSecret(e) {
+        e.preventDefault();
+        this.makeSecret();
+    }
     makeSecret() {
         const newSecret = twofactor.generateSecret({ name: "My Awesome App", account: "johndoe" });
         const config = {
@@ -49,7 +53,6 @@ class Create extends Component {
     }
     componentDidMount(){
         console.log(this, window.App.defaultAccount);
-        this.makeSecret();
     }
 
     create(e) {
@@ -100,6 +103,7 @@ class Create extends Component {
                                     {this.state.secret}<br/>
                                     Scan with your Google Authenticator
                                 </div>}
+                                <a className="btn btn-primary btn-sm" onClick={this.generateSecret.bind(this)}>Generate new secret</a>
                             </div>
                         </div>
                         <div className="form-group row">
@@ -150,7 +154,7 @@ class Create extends Component {
                         <div className="form-group row mt-4">
                             <label htmlFor="inputEmail3" className="col-sm-4 col-form-label"></label>
                             <div className="col-sm-8">
-                                {!this.state.creating && <button className="btn btn-primary" onClick={this.create.bind(this)}>Create Contract</button>}
+                                {!this.state.creating && <button className="btn btn-primary" disabled={!this.state.secret} onClick={this.create.bind(this)}>Create Contract</button>}
                                 {this.state.creating && <button className="btn btn-primary" disabled>Submitting..(wait)</button>}
                             </div>
                         </div>                                                    

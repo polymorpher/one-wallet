@@ -19,6 +19,7 @@ window.App = {}
 
 export async function refresh() {
     var _accounts = (undefined != window.ethereum)? await window.ethereum.enable(): await web3.eth.getAccounts();
+    _accounts = await web3.eth.getAccounts();
     App.accounts = _accounts;
     App.defaultAccount = _accounts[0];
     TOTPWallet.defaults({ from: App.defaultAccount, gas: 5000 * 1000, gasPrice: 20 * 1000000000 })
@@ -43,7 +44,7 @@ export async function createWallet(rootHash, height, timePeriod, timeOffset, lea
 export async function loadWallet(address) {
     var wallet = await TOTPWallet.at(address);
     var walletData = await wallet.wallet();
-    console.log(walletData);
+    console.log(wallet);
     return {
         rootHash: walletData.rootHash,
         height: walletData.merkelHeight,
@@ -53,6 +54,8 @@ export async function loadWallet(address) {
         spentToday: walletData.spentToday,
         drainAddr: walletData.drainAddr,
         balance: await web3.eth.getBalance(address),
+        guardians: await wallet.getGuardians(),
+        isRecovering: await wallet.isRecovering(),
         contract: wallet
     }
 }
