@@ -16,6 +16,10 @@ class MainScreen extends Component {
     }
 
     componentDidMount() {
+        var self = this;
+        truffleClient.load().then(e=>{
+            self.setState({network: App.network})
+        });
         var wallets = truffleClient.getWallets();
         this.setState({wallets})
     }
@@ -40,7 +44,8 @@ class MainScreen extends Component {
             <div>
                 <nav className="navbar navbar-expand-md navbar-dark bg-dark mb-4 d-flex justify-content-center">
                 <span className="navbar-text ">
-                    TOTP Smart Wallet Demo
+                    TOTP Smart Wallet Demo<br/>
+                    Network: {App.network}
                 </span>
                 </nav>
                 <main role="main" className="container" style={{"maxWidth": 700}}>

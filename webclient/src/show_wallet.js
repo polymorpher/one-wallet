@@ -238,7 +238,7 @@ class ShowWallet extends Component {
                                 <td>{this.state.wallet.guardians && this.state.wallet.guardians.join(" ")}</td>
                             </tr>
                             <tr>
-                                <th scope="row">ETH Balance</th>
+                                <th scope="row">Balance</th>
                                 <td>{this.state.wallet.balance && web3.utils.fromWei(this.state.wallet.balance).toString()}</td>
                             </tr>
                             <tr>

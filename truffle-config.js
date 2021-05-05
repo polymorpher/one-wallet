@@ -32,6 +32,13 @@ let rinkebyPrivateKey = new Buffer(secrets.rinkeby, "hex");
 let rinkebyWallet = Wallet.fromPrivateKey(rinkebyPrivateKey);
 let rinkebyProvider = new WalletProvider(rinkebyWallet,  "https://rinkeby.infura.io/v3/e97751423883454abdbc93474d5e4ca7");
 
+let harmonyTestNetProvider = new WalletProvider(
+              Wallet.fromPrivateKey(new Buffer(secrets.harmonytestnet, "hex")),  
+                "https://api.s0.b.hmny.io");
+
+let harmonyMainNetProvider = new WalletProvider(
+              Wallet.fromPrivateKey(new Buffer(secrets.harmonymainnet, "hex")),  
+                "https://api.harmony.one");
 
 module.exports = {
     /**
@@ -101,6 +108,16 @@ module.exports = {
         network_id: "4",
         gas: 10000000
       },
+      harmonytestnet: {
+        provider: harmonyTestNetProvider,
+        network_id: "1666700000",
+        gas: 10000000
+      },
+      harmonymainnet: {
+        provider: harmonyMainNetProvider,
+        network_id: "1666600000",
+        gas: 10000000
+      }            
     },
   
     // Set default mocha options here, use special reporters etc.
