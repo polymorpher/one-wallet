@@ -73,7 +73,7 @@ export async function createWallet(rootHash, height, timePeriod, timeOffset, lea
     TOTPWallet.link("Guardians",CONFIGS[App.chainId].Guardians);
     TOTPWallet.link("Recovery",CONFIGS[App.chainId].Recovery);
         
-    return TOTPWallet.new(rootHash, height, timePeriod, timeOffset, drainAddr, CONFIGS[chainId].limit).then(e=>{
+    return TOTPWallet.new(rootHash, height, timePeriod, timeOffset, drainAddr, CONFIGS[App.chainId].limit).then(e=>{
         console.log(e);
         localStorage.setItem("wallet:"+e.address, JSON.stringify({
             tx: e.transactionHash,
