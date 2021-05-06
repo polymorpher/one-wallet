@@ -39,12 +39,12 @@ var CONFIGS = {
         "Recovery" : "0xE168817e6d7066E2f2E4a85E26eaB47E0d82acF6",
         "limit":  Web3.utils.toWei("100", "ether"),   
       },
-      0x63564c40: {
-        "DailyLimit": "0x71B48CC260360950428fB842f5DD38cE873a11df",
-        "Guardians": "0xc44Ea215a81caC2e7E8aE23911D082EcB2a2D23C",
-        "Recovery" : "0xE168817e6d7066E2f2E4a85E26eaB47E0d82acF6",
-        "limit":  Web3.utils.toWei("100", "ether"),
-      } 
+    0x63564c40: {
+    "DailyLimit": "0xF05A07F42A79BcBBB5ab43726FA64c1e0f16C20c",
+    "Guardians": "0xd695cFb61410e5428Ff49ccFD87d3419D45c47fA",
+    "Recovery" : "0x0AD5a8c503B8e8a47D097f171Eb5BeD8D66d2ba1",
+    "limit":  Web3.utils.toWei("100", "ether"),
+    } 
 }
 window.App = {}
 
