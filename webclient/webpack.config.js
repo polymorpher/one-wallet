@@ -21,9 +21,12 @@ module.exports = {
           },
         ],
       },
-    entry: ['@babel/polyfill', './src/index.js'],
+    entry: {
+      main: ['@babel/polyfill', './src/index.js'],
+      worker: ['@babel/polyfill', './src/worker/generate.js'],
+    },
     output: {
-        filename: 'main.js',
+        filename: '[name].js',
         path: path.resolve(__dirname, 'dist')
     },
     resolve: {

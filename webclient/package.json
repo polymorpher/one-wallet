@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@babel/polyfill": "^7.7.0",
+    "@ramonak/react-progress-bar": "^3.1.0",
     "@truffle/contract": "^4.1.1",
     "b32": "^0.2.0",
     "babel-preset-stage-0": "^6.24.1",
@@ -34,6 +35,7 @@
     "lodash": "^4.17.10",
     "node-2fa": "^2.0.2",
     "otplib": "^12.0.1",
+    "prop-types": "^15.7.2",
     "pseudomap": "^1.0.2",
     "qrcode": "^1.4.4",
     "react": "^17.0.2",

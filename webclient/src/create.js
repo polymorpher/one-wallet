@@ -4,20 +4,46 @@ import crypto from "crypto";
 import b32 from "thirty-two";
 import wallet from "../../lib/wallet";
 import * as truffleClient from "./truffle_client";
+import ProgressBar from "@ramonak/react-progress-bar";
+
 
 class Create extends Component {
     constructor(props) {
         super(props);
 
+        this.worker = new Worker("worker.js");
+        this.worker.onmessage = this.receivedWorkerMessage.bind(this);
+
         var time = Math.floor((Date.now() / 1000));
         var timeOffset = time - (time% 30);        
-        this.state = {duration: 30, depth: 10, timeOffset: timeOffset, expires: 0, secret:"", creating: false, drainAddr: window.App.defaultAccount};
+        this.state = {duration: 30, depth: 18, timeOffset: timeOffset, expires: 0, secret:"", creating: false, drainAddr: window.App.defaultAccount};
     }
 
     generateSecret(e) {
         e.preventDefault();
         this.makeSecret();
     }
+
+    receivedWorkerMessage(event) {
+        if (event.data.status == "working") {
+            console.log(event.data.current/event.data.total);
+            this.setState({
+                current: Math.floor((event.data.current*100)/event.data.total)
+            })
+        }
+        if (event.data.status == "done") {
+            var mywallet = event.data.mywallet;
+            var expires =  this.state.timeOffset + (Math.pow(2, this.state.depth) * this.state.duration);
+            window.leafs = mywallet.leafs;
+            this.setState({
+                rootHash: mywallet.root,
+                expires: expires,
+                working: false
+            }) 
+            console.log("done", mywallet)   
+        }
+    }
+
     makeSecret() {
         const newSecret = twofactor.generateSecret({ name: "My Awesome App", account: "johndoe" });
         const config = {
@@ -60,7 +86,7 @@ class Create extends Component {
 
         e.preventDefault();
         var self = this;
-        truffleClient.createWallet(this.state.rootHash, this.state.depth, this.state.duration, this.state.timeOffset, this.state.leafs, this.state.drainAddr).then(e=>{
+        truffleClient.createWallet(this.state.rootHash, this.state.depth, this.state.duration, this.state.timeOffset, window.leafs, this.state.drainAddr).then(e=>{
             console.log(e);
             self.props.onCreated(e);
         });
@@ -78,12 +104,13 @@ class Create extends Component {
     }    
 
     update() {
-        var mywallet = wallet.generateWallet(this.state.secret, this.state.depth, this.state.duration, this.state.timeOffset)
-        var expires =  this.state.timeOffset + (Math.pow(2, this.state.depth) * this.state.duration);
-        this.setState({
-            rootHash: mywallet.root,
-            leafs: mywallet.leafs,
-            expires: expires
+        this.setState({working: true, current: 0});
+        //var mywallet = wallet.generateWallet(this.state.secret, this.state.depth, this.state.duration, this.state.timeOffset)
+        this.worker.postMessage({
+            secret: this.state.secret,
+            depth: this.state.depth, 
+            duration: this.state.duration, 
+            timeOffset: this.state.timeOffset            
         })
     }
     render() {
@@ -104,12 +131,13 @@ class Create extends Component {
                                     Scan with your Google Authenticator
                                 </div>}
                                 <a className="btn btn-primary btn-sm" onClick={this.generateSecret.bind(this)}>Generate new secret</a>
+                                {this.state.working && <ProgressBar completed={this.state.current}/>}
                             </div>
                         </div>
                         <div className="form-group row">
                             <label htmlFor="inputEmail3" className="col-sm-4 col-form-label">Merkle Hash</label>
                             <div className="col-sm-8">
-                                <input type="text" readOnly className="form-control" id="inputEmail3" value={this.state.rootHash}/>
+                                <input type="text" readOnly className="form-control" id="inputEmail3" placeholder="Not ready" value={this.state.rootHash}/>
                             </div>
                         </div>
                         <div className="form-group row">
