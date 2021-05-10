@@ -25,10 +25,15 @@ class ShowWallet extends Component {
 
     totpChanged(e) {
         this.setState({withdraw_totp: e.target.value})
-
+        var self = this;
         clearTimeout(this.timer);
         this.timer = setTimeout(() => {
             var proofs = wallet.getProofWithOTP(parseInt(e.target.value), this.leafs, this.state.wallet.timeOffset, this.state.wallet.timePeriod);
+            console.log(proofs)
+            if (proofs[0].includes(undefined)) {
+                console.log("Expired wallet; drain your account with your drain address then create new wallet OR recover your wallet with guardians")
+                self.setState({err: "Wallet expired - no more tokens; drain your account  and create new wallet OR recover your wallet with guardians"})
+            }
             this.setState({withdraw_totp: e.target.value, withdraw_proof: proofs[0], withdraw_sides: proofs[1]})
         }, 1000);
     }

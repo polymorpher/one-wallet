@@ -16,7 +16,7 @@ class Create extends Component {
 
         var time = Math.floor((Date.now() / 1000));
         var timeOffset = time - (time% 30);        
-        this.state = {duration: 30, depth: 18, timeOffset: timeOffset, expires: 0, secret:"", creating: false, drainAddr: window.App.defaultAccount};
+        this.state = {duration: 30, depth: 16, timeOffset: timeOffset, expires: 0, secret:"", creating: false, drainAddr: window.App.defaultAccount};
     }
 
     generateSecret(e) {
