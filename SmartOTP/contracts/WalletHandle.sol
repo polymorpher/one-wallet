@@ -75,7 +75,7 @@ contract WalletHandle {
 
     modifier m_checkMaxMinHeight (uint8 requestedHeightChild) {
         require(requestedHeightChild <= MAX_LEN_OF_PROOF, "Currently, maximum height of child Merkle Tree is 20.");
-        require(requestedHeightChild >= MIN_HEIGHT_SUBTREE, "Currently, minimum a subof child Merkle Tre1 is 1.");
+        require(requestedHeightChild >= MIN_HEIGHT_SUBTREE, "Currently, minimum height of a child Merkle Tree is 1.");
         // log0(strToBytes32("Requirement m_checkMaxMinHeight satisfied..."));
         _;
     }
@@ -346,7 +346,7 @@ contract WalletHandle {
 
     function _postCheckChildTreeConsistency(bytes16[] memory authPath, bytes20 sides, uint32 newChildTreeIdx) private view {
         // check consistency of cached layer against child root hash
-        require(_isCachedLayerConsistent(), "Cahed layer of child Merkle tree is not consitent.");
+        require(_isCachedLayerConsistent(), "Cached layer of child Merkle tree is not consistent.");
 
         // check consistency of child root hash against parent root hash
         require(_deriveChildTreeIdx(sides) == newChildTreeIdx, "Provided child tree index does not correspond to the expected one.");

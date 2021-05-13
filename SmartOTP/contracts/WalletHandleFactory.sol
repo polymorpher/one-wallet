@@ -24,6 +24,7 @@ contract WalletHandleFactory {
         );
         allWallets.push(address(wallet));
         emit WalletContractCreated(address(wallet));
+        return wallet;
     }
 
     function destruct() public {
