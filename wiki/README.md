@@ -1,4 +1,4 @@
-**DRAFT v0.0.7** | 2020-05-12
+**DRAFT v0.0.8** | 2020-05-13
 
 [1-Page Project Summary](http://harmony.one/1wallet)
 
@@ -9,44 +9,44 @@
 [Reference & Discussion](https://docs.google.com/document/d/1Ojyjm1MDT3CPHCOw36pCUQTSyRVdTI8XnEOb0m1VZkk/edit#heading=h.sbj5y85h1hg8)
 
 
-Table of Contents
-=================
+## Table of Contents
 
 * [Table of Contents](#table-of-contents)
-    * [Overview](#overview)
-    * [Technical Background](#technical-background)
-        * [Challenges with Two\-factor Authentication (2FA) on Blockchain](#challenges-with-two-factor-authentication-2fa-on-blockchain)
-        * [SmartOTP](#smartotp)
-            * [Key issues for adoption](#key-issues-for-adoption)
-            * [Notations](#notations)
-            * [Assumptions](#assumptions)
-            * [Security](#security)
-    * [ONE Wallet Technical Design](#one-wallet-technical-design)
-        * [Context](#context)
-        * [Components](#components)
-            * [Client](#client)
-                * [OTP Seed](#otp-seed)
-                * [OTP](#otp)
-                * [OTP Merkle Tree](#otp-merkle-tree)
-                * [OTP Proof](#otp-proof)
-                * [Visibility of OTP Merkle Tree](#visibility-of-otp-merkle-tree)
-                * [Enhanced Security Mode](#enhanced-security-mode)
-            * [Authenticator](#authenticator)
-                * [OTP Seed](#otp-seed-1)
-                * [OTP](#otp-1)
-            * [Smart Contract](#smart-contract)
-        * [Operations](#operations)
-            * [Creating Wallet](#creating-wallet)
-            * [Transfer Funds](#transfer-funds)
-                * [Small Transfer](#small-transfer)
-                * [Large Transfer](#large-transfer)
-            * [Guardian](#guardian)
-                * [Add](#add)
-                * [Remove](#remove)
-            * [Drain Funds](#drain-funds)
-            * [(TODO) Social Authentication](#todo-social-authentication)
-        * [Security](#security-1)
-        * [Open Problems](#open-problems)
+
+* [Overview](#overview)
+* [Technical Background](#technical-background)
+    * [Challenges with Two\-factor Authentication (2FA) on Blockchain](#challenges-with-two-factor-authentication-2fa-on-blockchain)
+    * [SmartOTP](#smartotp)
+        * [Key issues for adoption](#key-issues-for-adoption)
+        * [Notations](#notations)
+        * [Assumptions](#assumptions)
+        * [Security](#security)
+* [ONE Wallet Technical Design](#one-wallet-technical-design)
+    * [Context](#context)
+    * [Components](#components)
+        * [Client](#client)
+            * [OTP Seed](#otp-seed)
+            * [OTP](#otp)
+            * [OTP Merkle Tree](#otp-merkle-tree)
+            * [OTP Proof](#otp-proof)
+            * [Visibility of OTP Merkle Tree](#visibility-of-otp-merkle-tree)
+            * [Enhanced Security Mode](#enhanced-security-mode)
+        * [Authenticator](#authenticator)
+            * [OTP Seed](#otp-seed-1)
+            * [OTP](#otp-1)
+        * [Smart Contract](#smart-contract)
+    * [Operations](#operations)
+        * [Creating Wallet](#creating-wallet)
+        * [Transfer Funds](#transfer-funds)
+            * [Small Transfer](#small-transfer)
+            * [Large Transfer](#large-transfer)
+        * [Guardian](#guardian)
+            * [Add](#add)
+            * [Remove](#remove)
+        * [Drain Funds](#drain-funds)
+        * [(TODO) Social Authentication](#todo-social-authentication)
+    * [Security](#security-1)
+    * [Open Problems](#open-problems)
 
 
 ## Overview
@@ -125,15 +125,19 @@ The core of ONE Wallet is the client **C** and the smart contract **S**. A proof
 
 ### Context
 
-Since ONE Wallet is a smart contract wallet, it needs to be deployed by another wallet address. We assume wallet address was already created and managed by the user. This wallet address, having its own private key, needs also to assume the role to initiate operations and pay for gas cost. The user may use this address as a guardian (for fund reocvery).
+Since ONE Wallet is based on a smart contract, it has to be deployed (thus created) by another account. This operation costs gas, and the gas has to be paid by that account. We refer to that account as the owner account **O**. The owner account can be an existing wallet under the user's control, or a contract account created by Harmony specifically designated for this purpose. In either case, we assume it already exists. If it is an account under the user's control, the user may use it for fund recovery. For example, the user may add owner account's address as a guardian or as a last-resort drain. The user may also use it to add an extra layer of security, since the owner account would have its own private key **P** which can be used to sign transactions and initiate operations similar to the design in SmartOTP.
 
-At the next stage of development, we may generate and manage this wallet address on the user's behalf. But for now, we focus our discussion and analysis on the client **C**, the smart contract **S** only, and how the user **U** interact with them using their Google Authenticator **A**. We also limit our initial discussion to the additional authentication provided by authenticator **A** only, as opposed to many other possible forms of authentications (guardians, social login). To address security concerns and issues identified in previous sections, we also introduce an enhanced security mode which makes uses of multiple OTPs and counter-based OTPs, in addition to the default settings which only a single time-based OTP is used.
+At the next stage of development, we may generate and manage this wallet address on the user's behalf. But for now, we focus our discussion and analysis only on the client **C**, the smart contract **S**, and how the user **U** interact with them using their Google Authenticator **A**. We also limit our initial discussion and security analysis to the authentication and authorizations provided by authenticator **A**, as well as private key **P** and guardians in applicable scenarios. We will leave social login features to the next version. To address security concerns and issues identified in previous sections, we also introduce an enhanced security mode which makes uses of multiple OTPs and counter-based OTPs, in addition to the default settings which only a single time-based OTP is used.
 
 In the sections below, we first define the elements the wallet uses in its operations and refer back to the SmartOTP paper if a similar element is used in the design of SmartOTP. Afterwards, we show how each elemenet is used in operations between the user and the wallet.
 
 ### Components
 
 #### Client
+
+The Client is the primary interface which the user may create and manage their ONE Wallet. The Client can be a native program running on an operating system, a browser extension, or a mobile app. The Client is assumed to be not easily compromised, thus any credentials and non-public constructs stored at the Client is assumed to be secure unless an attacker specifically targets the Client.
+
+The Client holds constructs that are necessary to perform operations on the ONE Wallet. Some constructs are transient (e.g. OTP Seed) and must be destroyed as soon as they serve their purpose. Some constructs may become visible to the public over time (e.g. OTP Merkle Tree). We assume constructs such as owner account's private key **P** (if applicable) exists outside the Client in the current version. In later sections, we analyze the scenarios separately: the Client is compromised, the private key **P** is comrpomised, or both are compromised.
 
 ##### OTP Seed
 
@@ -194,11 +198,23 @@ The counter-based OTPs used in Enhanced Security Mode are generated only by requ
 
 <a name="f10">[10]</a>: See also a brief discussion in [RFC4224 Section 7.4 Resynchronization of the Counter](https://datatracker.ietf.org/doc/html/rfc4226#section-7.4)
 
-
-
 #### Smart Contract
 
+The Smart Contract (written in Solidity) defines the operations of the wallet described in the sections below. After the smart contract is deployed by owner's account, an ONE Wallet belonging to the user is created with a zero balance. The wallet can be funded by transferring funds to the deployed smart contract's address. The security parameters of the wallet are provided as part of the constructor of the smart contract at the time it is deployed. The security parameters includes but are not limited to: (1) the expected root hash(es) of the OTP Merkle Tree(s) and lifespan of the OTPs; (2) the daily spending limit(s); (3) the last-resort address which the funds should be drained to, in case of an account recovery; (4) whether enhanced security modes should be activated.
 
+The Smart Contracts are organized by modules:
+
+- Basic Wallet
+    - Daily Spending Limit
+    - Drain to Last Resort Account
+- Guardians
+- Enhanced Security Mode
+    - Private-key based authorization
+    - Counter-based OTP
+    - Deferred execution
+- (Coming soon) Social Identities
+    - Twitter
+    - Telegram
 
 
 ### Operations
