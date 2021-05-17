@@ -1,4 +1,4 @@
-**DRAFT v0.0.8** | 2020-05-13
+**DRAFT v0.0.10** | 2020-05-16
 
 [1-Page Project Summary](http://harmony.one/1wallet)
 
@@ -10,8 +10,6 @@
 
 
 ## Table of Contents
-
-* [Table of Contents](#table-of-contents)
 
 * [Overview](#overview)
 * [Technical Background](#technical-background)
@@ -30,23 +28,19 @@
             * [OTP Merkle Tree](#otp-merkle-tree)
             * [OTP Proof](#otp-proof)
             * [Visibility of OTP Merkle Tree](#visibility-of-otp-merkle-tree)
-            * [Enhanced Security Mode](#enhanced-security-mode)
+            * [Composable Authentication](#composable-authentication)
         * [Authenticator](#authenticator)
             * [OTP Seed](#otp-seed-1)
             * [OTP](#otp-1)
         * [Smart Contract](#smart-contract)
+            * [Basic Wallet](#basic-wallet)
+            * [Guardians](#guardians)
+            * [Composable Authentication](#composable-authentication-1)
+                * [Authentication with Private Key](#authentication-with-private-key)
+                * [Authentication with HOTP](#authentication-with-hotp)
     * [Operations](#operations)
-        * [Creating Wallet](#creating-wallet)
-        * [Transfer Funds](#transfer-funds)
-            * [Small Transfer](#small-transfer)
-            * [Large Transfer](#large-transfer)
-        * [Guardian](#guardian)
-            * [Add](#add)
-            * [Remove](#remove)
-        * [Drain Funds](#drain-funds)
-        * [(TODO) Social Authentication](#todo-social-authentication)
-    * [Security](#security-1)
-    * [Open Problems](#open-problems)
+* [Security Analysis](#security-analysis)
+* [Open Problems](#open-problems)
 
 
 ## Overview
@@ -65,9 +59,6 @@ Features:
     - **Fund recovery**: Set the last resort address for fund recovery so you would not lose all your funds even in the worst case
     - **Guardians**: Invite others to guard your wallet: establish identities, recover accounts, authorize sensitive transactions
     - **Multi-factor authentication**: Authorize sensitive operations (e.g., sending $100000, destroy wallet, adding/removing identities) using multiple mechanisms together (e.g., Twitter + Google Authenticator code + Guardian)
-
-
-[One Pager](http://harmony.one/1wallet) | [Roadmap](https://docs.google.com/document/d/1Ojyjm1MDT3CPHCOw36pCUQTSyRVdTI8XnEOb0m1VZkk/edit#heading=h.b6hs847sk2vn) | [Discussions](https://docs.google.com/document/d/1Ojyjm1MDT3CPHCOw36pCUQTSyRVdTI8XnEOb0m1VZkk/edit#heading=h.sbj5y85h1hg8)
 
 ONE Wallet runs on Harmony network, a fast blockchain based on proof-of-stakes consensus. It is compatible with apps that run on Ethereum, but substantially outperforms Ethereum in many ways (most significantly, fees and consensus time).
 
@@ -127,7 +118,7 @@ The core of ONE Wallet is the client **C** and the smart contract **S**. A proof
 
 Since ONE Wallet is based on a smart contract, it has to be deployed (thus created) by another account. This operation costs gas, and the gas has to be paid by that account. We refer to that account as the owner account **O**. The owner account can be an existing wallet under the user's control, or a contract account created by Harmony specifically designated for this purpose. In either case, we assume it already exists. If it is an account under the user's control, the user may use it for fund recovery. For example, the user may add owner account's address as a guardian or as a last-resort drain. The user may also use it to add an extra layer of security, since the owner account would have its own private key **P** which can be used to sign transactions and initiate operations similar to the design in SmartOTP.
 
-At the next stage of development, we may generate and manage this wallet address on the user's behalf. But for now, we focus our discussion and analysis only on the client **C**, the smart contract **S**, and how the user **U** interact with them using their Google Authenticator **A**. We also limit our initial discussion and security analysis to the authentication and authorizations provided by authenticator **A**, as well as private key **P** and guardians in applicable scenarios. We will leave social login features to the next version. To address security concerns and issues identified in previous sections, we also introduce an enhanced security mode which makes uses of multiple OTPs and counter-based OTPs, in addition to the default settings which only a single time-based OTP is used.
+At the next stage of development, we may generate and manage this wallet address on the user's behalf. But for now, we focus our discussion and analysis only on the client **C**, the smart contract **S**, and how the user **U** interact with them using their Google Authenticator **A**. We also limit our initial discussion and security analysis to the authentication and authorizations provided by authenticator **A**, as well as private key **P** and guardians in applicable scenarios. We will leave social login features to the next version. To address security concerns and issues identified in previous sections, we also introduce Composable Authentication which makes uses of multiple OTPs and counter-based OTPs, in addition to the default settings which only a single time-based OTP is used.
 
 In the sections below, we first define the elements the wallet uses in its operations and refer back to the SmartOTP paper if a similar element is used in the design of SmartOTP. Afterwards, we show how each elemenet is used in operations between the user and the wallet.
 
@@ -147,7 +138,7 @@ Note that, in SmartOTP paper, the seed is generated by the Authenticator instead
 
 ##### OTP
 
-OTP codes are generated and temporarily held at the Client only during the construction of OTP Merkle Tree, using exactly the same algorithms<sup>[6](#f6)</sup> the Authenticator would use. During OTP code generation, we enumerate possible input values (time or counter) for the OTP algorithms for a reasonably long foreseeble future. After the OTP Merkle Tree is generated, the OTPs are destroyed. The OTP codes themselves cannot be recovered from the Merkle Tree aside from using brute-force attacks. Since brute-force attacks on 1 million possible codes is trivially simple, if the OTP Merkle Tree is constructed using hashes of single OTP codes as leaves, the original OTP codes would be trivially recovered from the OTP Merkle Tree. In this scenario the OTP codes would not be able to offer an additional layer of security protection if the Client is compromised, sine the OTP Merkle Tree (see below) is stored in the Client. Nonethless, such OTP codes can still be useful in making small transfer convinient. See later sections for a detailed discussions. Additionally, our designs in the Enhanced Security Mode address this issue by grouping multiple OTPs together before they are hashed and used as leaves, thus makes brute-force attacks exceedingly difficult.
+OTP codes are generated and temporarily held at the Client only during the construction of OTP Merkle Tree, using exactly the same algorithms<sup>[6](#f6)</sup> the Authenticator would use. During OTP code generation, we enumerate possible input values (time or counter) for the OTP algorithms for a reasonably long foreseeble future. After the OTP Merkle Tree is generated, the OTPs are destroyed. The OTP codes themselves cannot be recovered from the Merkle Tree aside from using brute-force attacks. Since brute-force attacks on 1 million possible codes is trivially simple, if the OTP Merkle Tree is constructed using hashes of single OTP codes as leaves, the original OTP codes would be trivially recovered from the OTP Merkle Tree. In this scenario the OTP codes would not be able to offer an additional layer of security protection if the Client is compromised, sine the OTP Merkle Tree (see below) is stored in the Client. Nonethless, such OTP codes can still be useful in making small transfer convinient. See later sections for a detailed discussions. Additionally, our designs in the Composable Authentication address this issue by grouping multiple OTPs together before they are hashed and used as leaves, thus makes brute-force attacks exceedingly difficult.
 
 <a name="f6">[6]</a>: A [mathematical construction](https://www.wikiwand.com/en/HMAC-based_One-Time_Password) is provided on Wikipedia. A [step-by-step tutorial with code examples](https://hackernoon.com/how-to-implement-google-authenticator-two-factor-auth-in-javascript-091wy3vh3) are available at Hackernoon.
 
@@ -170,9 +161,9 @@ At any time an OTP Proof is submitted as proof and made public, only its immedia
 <a name="f8">[8]</a>: Collision to previously used code would still occur, since there are only 1,000,000 codes available for a 6-digit OTP code. However, such collision would not be based on any tractable pattern.
 
 
-##### Enhanced Security Mode
+##### Composable Authentication
 
-In Enhanced Security Mode, we use one or more additional counter-based OTP Seeds to configure the Authenticator, and generate associated OTP Merkle Tree accordingly. Different security levels may require different numbers of conseuctive OTPs to be provided to confirm a transaction. Thus, the OTPs must be first grouped together into n-tuples before being hashed and used as the leaves to generate the Merkle Tree, where n is the number of consecutive OTPs required.
+In Composable Authentication, we use one or more additional counter-based OTP Seeds to configure the Authenticator, and generate associated OTP Merkle Tree accordingly. Different security levels may require different numbers of conseuctive OTPs to be provided to confirm a transaction. Thus, the OTPs must be first grouped together into n-tuples before being hashed and used as the leaves to generate the Merkle Tree, where n is the number of consecutive OTPs required.
 
 #### Authenticator
 
@@ -188,19 +179,19 @@ The Authenticator acquires the OTP seed from the Client when a new wallet is cre
 
 It should be noted that Google Authenticator allows the user to export the seed at any time. Therefore, we need to consider two kinds of threats in our security analysis: (1) an attacker who gains visibility into one or more OTP codes, and (2) an attacker who temporarily gains physical or remote access to the user's phone, therefore is able to gain visibility into the OTP seed itself.
 
-In Enhanced Security Mode, counter-based OTPs are used in addition to time-based OTP. Extra OTP seeds  is stored on the Authenticator and the same analysis applies.
+In Composable Authentication, counter-based OTPs are used in addition to time-based OTP. Extra OTP seeds  is stored on the Authenticator and the same analysis applies.
 
 ##### OTP
 
 After the Authenticator is provided with OTP seed(s), the standard time-based OTPs are automatelly generated by Google Authenticator every 30 seconds (with an initial offset so to round off to nearest 30-second interval with respect to Unix epoch).
 
-The counter-based OTPs used in Enhanced Security Mode are generated only by request from the user (by clicking a refresh button). The OTPs do not expire or refresh themselves, but they are automatically masked by Google Authenticator after a period of inactivity. Under the hood, each time the user refreshes the counter-based OTP, the counter is increased by one. The counter value is a private state inside the Authenticator. Since the user may refresh for an arbitrary number of times, the counter value may be different from what the Client and the Smart Contract anticipates. Therefore, the Client must look ahead and resynchronize<sup>[10](#f10)</sup> its own counter as well as the Smart Contract's, such that all three components would have consistent view of the counter value while verifying the OTP codes. This can be achieved easily at the Client since it possesses the hashed values of (groups of) OTPs (as part of the OTP Merkle Tree stored at the Client), and it may simply look ahead the hash values one-by-one and increment its internal counter until it finds a hash value that matches the hash of the OTP(s) provided by the user. Afterwards, the Client can submit the new counter value to the Smart Contract to achieve resynchronization at the Smart Contract.
+The counter-based OTPs used in EComposable Authentication are generated only by request from the user (by clicking a refresh button). The OTPs do not expire or refresh themselves, but they are automatically masked by Google Authenticator after a period of inactivity. Under the hood, each time the user refreshes the counter-based OTP, the counter is increased by one. The counter value is a private state inside the Authenticator. Since the user may refresh for an arbitrary number of times, the counter value may be different from what the Client and the Smart Contract anticipates. Therefore, the Client must look ahead and resynchronize<sup>[10](#f10)</sup> its own counter as well as the Smart Contract's, such that all three components would have consistent view of the counter value while verifying the OTP codes. This can be achieved easily at the Client since it possesses the hashed values of (groups of) OTPs (as part of the OTP Merkle Tree stored at the Client), and it may simply look ahead the hash values one-by-one and increment its internal counter until it finds a hash value that matches the hash of the OTP(s) provided by the user. Afterwards, the Client can submit the new counter value to the Smart Contract to achieve resynchronization at the Smart Contract.
 
 <a name="f10">[10]</a>: See also a brief discussion in [RFC4224 Section 7.4 Resynchronization of the Counter](https://datatracker.ietf.org/doc/html/rfc4226#section-7.4)
 
 #### Smart Contract
 
-The Smart Contract (written in Solidity) defines the operations of the wallet described in the sections below. After the smart contract is deployed by owner's account, an ONE Wallet belonging to the user is created with a zero balance. The wallet can be funded by transferring funds to the deployed smart contract's address. The security parameters of the wallet are provided as part of the constructor of the smart contract at the time it is deployed. The security parameters includes but are not limited to: (1) the expected root hash(es) of the OTP Merkle Tree(s) and lifespan of the OTPs; (2) the daily spending limit(s); (3) the last-resort address which the funds should be drained to, in case of an account recovery; (4) whether enhanced security modes should be activated.
+The Smart Contract (written in Solidity) defines the operations of the wallet described in the sections below. After the smart contract is deployed by owner's account, an ONE Wallet belonging to the user is created with a zero balance. The wallet can be funded by transferring funds to the deployed smart contract's address. The security parameters of the wallet are provided as part of the constructor of the smart contract at the time it is deployed. The security parameters includes but are not limited to: (1) the expected root hash(es) of the OTP Merkle Tree(s) and lifespan of the OTPs; (2) the daily spending limit(s); (3) the last-resort address which the funds should be drained to, in case of an account recovery; (4) whether Composable Authentication should be activated.
 
 The Smart Contracts are organized by modules:
 
@@ -208,35 +199,120 @@ The Smart Contracts are organized by modules:
     - Daily Spending Limit
     - Drain to Last Resort Account
 - Guardians
-- Enhanced Security Mode
-    - Private-key based authorization
-    - Counter-based OTP
-    - Deferred execution
+- Composable Authentication
+    - With Private Key
+    - With Counter-Based OTP (HOTP)
 - (Coming soon) Social Identities
     - Twitter
     - Telegram
 
+##### Basic Wallet
+
+The Basic Wallet contract aims for simplicity, so new users can onboard quickly. It provides implementations to complete everday wallet operations with the least amount of frication. As such, operations defined in the Basic Wallet do not require two-factor authentications unless they exceed some limits set by the user, such as daily spending limit and per-transaction transfer limit. In absence of user-defined limits, a set of default limits are applied.
+
+The Basic Wallet contract defines:
+
+- Mechanisms for creating a wallet and default parameters
+- Functions for validating OTP codes given an OTP Proof
+- Process of initiating and completing an operation given a time-based OTP code and its OTP Proof
+- Constraints and execution steps for transfering funds
+- Fund recovery and wallet destruction processes
+
+The Basic Wallet maintains the states of:
+
+- Daily spending limits
+- Activation statuses of Guardian and Composable Authentication modules
+
+Unlike SmartOTP, operations (under limits) on the Basic Wallet do not start with a "pending" state, before they transition into a "confirmed" state by separate routines that validate OTP Proofs (including OTP codes). Transfers are subject to a small daily spending limit until the user has at least one guardian, at which time the daily spending limit would be lifted to a medium-sized value. Larger daily spending limits require the activation of Composable Authentication.
+
+A transfer can be initiated and completed within the same function call by providing only a valid OTP Proof, unless the total amount transferred within the last 24 hours exceeds the aforementioned medium-sized value. In the later case, the transfer would be processed by Composable Authentication module, where operations would begin with a "pending" state, and confirmed only when a required level of authentications is met.
+
+The daily spending limits and transfer limits for "small", "medium" and "larger" sizes are defined by the user at the time when the wallet is created. By default, the limits are set to the following. All USD amounts are converted to equivalent number of ONE computed at the Client by using 24h average exchange rate of ONE-USDT on Binance.
+
+- Small daily spending limit: \$500 USD
+- Medium daily spending limit: \$5000 USD
+- Larger daily spending limit: above \$5000 USD
+
+##### Guardians
+
+Guardians are other wallet accounts and users. They are wallet accounts designated by the user to protect the funds in the wallet. This includes offering one layer of security and authorizing legitimate transactions, alert the user and defer operations when the Guardian notices suspicious activities, and help a forgetful user recover their funds after they lose access to their own account.
+
+The Guardian contract defines how guardians are added, removed, and validated. The contract also defines how Guardians may:
+
+- initiate a recovery operation and drain funds to the last resort account
+- authorize activation of Composable Authentication
+- (Composable Authentication) serve as one authentication factor to increase spending limits
+- (Composable Authentication) confirm to deactivate Composable Authentication
+
+The only state the contract maintains is the list of addresses for the guardians.
+
+##### Composable Authentication
+
+Composable Authentication provides more authentication factors that can be composed together. This allows sensitive operations to set different number of factors required to confirm the operation, thus achieving different levels of security protection.
+
+At this time, Composable Authentication contracts provide two additional authenticaation factors: (1) private key, and (2) counter-based OTP (HOTP). In Composable Authentication contracts, operations (such as transfer) remain pending until they are confirmed by one or two factors of authorization, or abandoned (expired). The contract maintains the states of pending operations, and the activation statuses for each authentication factor.
+
+Composable Authentication must be activated if the user wants to increase the daily spending limit to a larger amount (above \$5000, by default). Otherwise, Composable Authentication is completely optional. Composable Authentication can be activated at any time by the user. If the user already has at least one guardian, activating Composable Authentication would require both a guardian's confirmation and the correct OTP Proof.
+
+Once activated, Composable Authentication can only be deactivated by one of the following methods:
+(1) Confirmations from all guardians, plus at least one authentication factor activated by the user in Composable Authentication.
+(2) All factors of authorization, activated by the user in Composable Authentication. If the user has a guardian, at least one confirmation from guardians.
+
+The daily spending limit may be further increased using Composable Authentication to "Large" or "No Limit" (for 24 hours).
+
+- Large daily spending limit \$25000 USD: requires confirmation from at least one factor using Composable Authentication.
+- No limit for 24 hours: requires confirmation from either:
+    - Two factors using Composable Authentication, or
+    - One factor using Composable Authentication, and one confirmation using Guardian
+
+The daily spending limit can also be decreased down to "Large" (\$25000), "Medium" (\$5000), "Small" (\$500), or "Zero" (\$0), using confirmation from at least one factor using Composable Authentication, or confirmation from a Guardian.
+
+In all above operations, standard time-based OTP Proof from Basic Wallet is still required to initiate the operations. The confirmation required by Composable Authentication may only confirm operations already initiated, but not to initiate new operations.
+
+
+###### Authentication with Private Key
+
+Authentication with Private Key behaves similar to the use of private keys in SmartOTP, but with a few differences.
+
+In SmartOTP, an operation must be initiated by providing a signature for the transaction, signed using owner account's private key. The operation is held on the smart contract as pending, until it is later confirmed by the client using an OTP Proof. In SmartOTP's design, the signature is produced by a hardware wallet (which possesses the private key). The hardware wallet is assumed to secure.
+
+Here, we do not use the signature to initiate an operation. The signature is used confirm an operation that is already pending (and initiated using an OTP Proof). SmartOTP enforces a rule that all operations must be initiated using the correct signature. Here, we do not enforce the rule. Any address on the network can initiate an operation on the wallet, using the correct OTP Proof.
+
+There are several reasons for this change:
+
+1. We aim for high usability. Only a subset of operations require higher security protection, thus two-factor (or more) authentication. The majority of operations are initiated by the Client using only OTP Proof. It would confuse the user to require a small subset of operations to be initiated by private key signatures.
+2. This change does not make the wallet less secure as long as the device holding the private key is different from the device running the Client. The transaction is still protected by at least two factors. If the Client is compromised, the attacker may initiate transactions but not to confirm them. If the private key is compromised, the attacker cannot do anything because no operation can be initiated using the private key.
+
+To elaborate, in our use case the device holding the private key does not need to be a hardware wallet, and the signature does not need to be transmitted by the client. Any program may transmit the signature and confirm the pending operation, as long as (a) it has the ability to store the private key securely; (b) it has the ability to sign a transaction given the transaction's parameters; (c) it has the ability to send a message to the smart contract wallet on Harmony network via RPC calls. As discussed above in (2), it would be best for the program to be on a separate device than the client, so they would not be compromised at the same time. For example, if the client is running as a browser extension on a desktop computer, the device holding the private key can be a simple mobile private-key based wallet, or a browser/desktop wallet on a different laptop computer.
+
+Authentication with Private Key can be activated in Composable Authentication contract, using a function that takes parameters of (1) the public key of the signer, and (2) the usual OTP Proof to initiate operations, and (3) The OTP Proof for Authentication with HOTP, if it is already activated.
+
+In practice, the public key can be transmitted between devices using a QR code, or by simply copying and pasting. After obtaining the public key, the client can call the function in the Composable Authentication contract with the required parameters.
+
+###### Authentication with HOTP
+
+Authentication with HOTP (i.e. counter-based OTP) allows operations to be confirmed by providing an extra OTP Proof. It behaves similar to standard time-based OTP as described in preceding sections and the SmartOTP paper. The difference here is the OTP Proof and OTP Merkle Trees are computed using a tuple of 3 counter-based OTP codes<sup>[11](#f11)</sup> concatenated together.
+
+During activation, a new OTP Seed is generated. The user is provided with a configuration QR-code for counter-based OTP, which the user must scan to add to Google Authenticator as a separate entry to the time-based OTP. The construction of the OTP Merkle Tree is same as the process in time-based OTP, except the OTP hashes are computed using tuples of 3 consecutive OTPs concatenated together.
+
+In counter-based OTP mode, Google Authenticator allows the user to refresh and skip an arbitrary number of OTPs. Therefore, when the user provides a tuple of 3 consecutive OTPs, there may be an offset of 0, 1, or 2 depending on how many they skipped. Since the number of skips is unknown to us and not tracked by Google Authenticator, we must account for all possible offsets. To do this, we must compute 3 OTP Merkle Trees, skipping the first 0, 1, 2 OTPs generated respectivefully, before grouping the OTPs into tuples of three, and hash the tuples and use them as leaves. This allows us to search in the list of leaves from each tree, to find which one aligns with the tuple provided by the user. To achieve this, we construct the OTP Proof in a manner identical to the process of computing OTP Proof with time-based OTP, except 3 consecutive OTPs are taken and concatenated before it is hashed and used to construct the proof. We may use the hash to find which OTP Merkle Tree the tuple corresponds to and to resynchronize the counter, by simply looking ahead (for a large but finite window size) using the list of the leaves for each OTP Merkle Tree, and stop at the first match.
+
+Authentication with HOTP can be activated in Composable Authentication contract using a function requires parameters of (1) the root hashes for all 3 OTP Merkle Trees (computed by the client<sup>[12](#f12)</sup>), and (2) the usual time-based OTP Proof to initiate operations.
+
+Operations can be confirmed using Authentication with HOTP by providing the OTP Proof computed by the client (based on 3-OTP tuple provided by the user), an updated counter-value to resynchronize the counters (to account for number of OTPs skipped by the user) and an integer value indicating which of the 3 OTP Merkle Trees are used.
+
+<a name="f11">[11]</a>: This represents 60-bit security, since each OTP 6-digit code provides 20-bit of security. On Stackoverflow, an answer to the question ["How reassuring is 64-bit (in)security?"](https://crypto.stackexchange.com/questions/63536/how-reassuring-is-64-bit-insecurity) provides an analysis for the cost to brute-force the pre-image of the hash using generic hardware. An attack is possible by first compromising the client to obtain the OTP Merkle Trees, then finding a hashed value in the leaves that is sufficiently ahead of the current counter, then computing the 3-OTP tuple by brute-force. However, such attack is unlikely to be worth the effort and the cost. We may also adjust the number of consecutive OTPs from 3 to 4 or 5 for users who require extra security protection. We may also provide 5-OTP as a separate factor of authorization.
+
+<a name="f12">[12]</a>: If we use the same client which computes the time-based OTP Proof and the client is compromised, technically the attacker may intercept the OTP codes and front-run any operation. For extra security, we may advise the user to use a client on another device to complete Authentication with HOTP. In practice, it may be cumbersome and it might be the case that only a small portion of users may elect to do that.
 
 ### Operations
 
-#### Creating Wallet
+See [Smart Contract References](https://github.com/polymorpher/one-wallet/wiki/Smart-Contract-Refnereces)
 
-#### Transfer Funds
+## Security Analysis
 
-##### Small Transfer
+TODO
 
-##### Large Transfer
+## Open Problems
 
-#### Guardian
-
-##### Add
-
-##### Remove
-
-#### Drain Funds
-
-#### (TODO) Social Authentication
-
-### Security
-
-### Open Problems
+TODO
