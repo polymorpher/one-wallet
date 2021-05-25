@@ -1,54 +1,32 @@
-# Harmony TOTP Smart Contract 
+# ONE Wallet
 
-## Webclient
+Here, you can find design and technical documentations for Harmony's ONE Wallet. It is still a work-in-progress.
 
-Check out demo at [https://hashmesan.github.io/harmony-totp/webclient/dist](https://hashmesan.github.io/harmony-totp/webclient/dist). 
-Compatible with Ethereum networks & Harmony on Metamask.
+Please visit the Wiki page: https://github.com/polymorpher/one-wallet/wiki
 
-## Build smart contract
+## Folders
 
-```
-yarn
-truffle build
-```
+### /SmartOTP
 
-## Setup WebClient
+This folder contains smart contract, testing, and authenticator code from [SmartOTP](https://github.com/ivan-homoliak-sutd/SmartOTPs) by Ivan Homoliak, re-written in ES2020 and modified for running on Harmony network.
 
-```
-yarn (at the base level)
-cd webclient
-yarn
-yarn dev
-```
+### /code
 
-Visit http://localhost:8082
+This folder contains code for ONE Wallet, that is in active development. The code is a continuation of the work from the [proof of concept and demo](https://github.com/hashmesan/harmony-totp) by Quoc Le.
 
-## Wallet Design
+### /wiki
 
-TOTP/Google Authenticator Unlocks wallet for:
-* Payment within the daily limit
-* Add / remove guardians
-* Drain account back address given at constructor
+This folder contains a synchronized version of the [Wiki](https://github.com/polymorpher/one-wallet/wiki). It is created so that other contributors can create pull requests and contribute to the wiki.
 
-There are limited number of tokens available on the wallet. Call getRemainingTokens() to check. 
+## Q & A
 
-When TOTP/Google Authenticator Tokens depleted:
-* Drain account can request drain back
-* replenishMoreTokens() to add more tokens
+For questions and discussions, please move to [issues page](https://github.com/polymorpher/one-wallet/issues).
 
-If you lose the Google Authenticator token, you can initiate recovery token via your guardians.
-* Requires Ceil(N/2) 
+## Contribute
 
-## TODO 
+The Wiki pages are mirrored in `/wiki` folder.
 
-- [ ] Change duration/depth does the work in webworker, and show progress wheel.
-- [ ] Update TOTP code show some progress / background since takes a while.
-- [ ] Investigate into IndexDB for larger storage. Current implementation will break at large depth with hashes greater than 5MB or 10MB depending on browser.
-- [ ] 2 TOTP code hashed together to generate stronger hashes.
-- [ ] Drain account function after all codes are expired.
-- [ ] Environment selector or indicator ?
+To contribute on the wiki, please submit pull requests to `.md` files in `/wiki` folder.
 
-## Credits
+If something is out-of-sync, please submit an issue.
 
-* Research paper: Ivan Homoliak & et al. https://arxiv.org/pdf/1812.03598.pdf
-* https://github.com/ivan-homoliak-sutd/SmartOTPs
