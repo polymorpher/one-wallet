@@ -1,18 +1,18 @@
 {
   "contractName": "DailyLimit",
   "abi": [],
-  "metadata": "{\"compiler\":{\"version\":\"0.7.6+commit.7338295f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"calcMaxWithdraw(Core.Wallet storage)\":{\"details\":\"Returns maximum withdraw amount.\",\"returns\":{\"_0\":\"Returns amount.\"}}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/home/quoc/Projects/harmony-totp-pure/contracts/features/daily_limit.sol\":\"DailyLimit\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/quoc/Projects/harmony-totp-pure/contracts/core/wallet_data.sol\":{\"keccak256\":\"0x6f4023d94334b041687193f5b2808ac177cbbbd0a7e511ff6318c904d8fece25\",\"urls\":[\"bzz-raw://5539c845e34ac5437a3c2444c85e199ef44d5136aa219b0861a4c21a50142ad5\",\"dweb:/ipfs/QmQsLehd5e2XyNovAJw6XqqPSSFEP8dMuzUHuah9c3rv1V\"]},\"/home/quoc/Projects/harmony-totp-pure/contracts/features/daily_limit.sol\":{\"keccak256\":\"0x331d80850a8c066b2c2f09f675c6e8fbd0925366524fb37c2be0dae4f40ce595\",\"urls\":[\"bzz-raw://1feb00ad63fb074005416008c20ebf8f99f3fdf2079522bad240a1ae2834f129\",\"dweb:/ipfs/QmUoHq81BPUbbptFpLAWwEKzRZYsPPUQ1Qx3GP8PsmZRVu\"]}},\"version\":1}",
-  "bytecode": "0x610100610026600b82828239805160001a60731461001957fe5b30600052607381538281f3fe730000000000000000000000000000000000000000301460806040526004361060335760003560e01c8063af949664146038575b600080fd5b818015604357600080fd5b50606d60048036036020811015605857600080fd5b81019080803590602001909291905050506083565b6040518082815260200191505060405180910390f35b60006201518082600701540142111560a0578160060154905060c5565b81600801548260060154101560b7576000905060c5565b816008015482600601540390505b91905056fea2646970667358221220eeaa5732b83cabd924de2b5ba59bc1a9bff7e2b885d0e1b5af1e37a2643c416b64736f6c63430007060033",
-  "deployedBytecode": "0x730000000000000000000000000000000000000000301460806040526004361060335760003560e01c8063af949664146038575b600080fd5b818015604357600080fd5b50606d60048036036020811015605857600080fd5b81019080803590602001909291905050506083565b6040518082815260200191505060405180910390f35b60006201518082600701540142111560a0578160060154905060c5565b81600801548260060154101560b7576000905060c5565b816008015482600601540390505b91905056fea2646970667358221220eeaa5732b83cabd924de2b5ba59bc1a9bff7e2b885d0e1b5af1e37a2643c416b64736f6c63430007060033",
+  "metadata": "{\"compiler\":{\"version\":\"0.7.6+commit.7338295f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"calcMaxWithdraw(Core.Wallet storage)\":{\"details\":\"Returns maximum withdraw amount.\",\"returns\":{\"_0\":\"Returns amount.\"}}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/polymorpher/git/one-wallet/code/contracts/features/daily_limit.sol\":\"DailyLimit\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/polymorpher/git/one-wallet/code/contracts/core/wallet_data.sol\":{\"keccak256\":\"0x6f4023d94334b041687193f5b2808ac177cbbbd0a7e511ff6318c904d8fece25\",\"urls\":[\"bzz-raw://5539c845e34ac5437a3c2444c85e199ef44d5136aa219b0861a4c21a50142ad5\",\"dweb:/ipfs/QmQsLehd5e2XyNovAJw6XqqPSSFEP8dMuzUHuah9c3rv1V\"]},\"/Users/polymorpher/git/one-wallet/code/contracts/features/daily_limit.sol\":{\"keccak256\":\"0x331d80850a8c066b2c2f09f675c6e8fbd0925366524fb37c2be0dae4f40ce595\",\"urls\":[\"bzz-raw://1feb00ad63fb074005416008c20ebf8f99f3fdf2079522bad240a1ae2834f129\",\"dweb:/ipfs/QmUoHq81BPUbbptFpLAWwEKzRZYsPPUQ1Qx3GP8PsmZRVu\"]}},\"version\":1}",
+  "bytecode": "0x610100610026600b82828239805160001a60731461001957fe5b30600052607381538281f3fe730000000000000000000000000000000000000000301460806040526004361060335760003560e01c8063af949664146038575b600080fd5b818015604357600080fd5b50606d60048036036020811015605857600080fd5b81019080803590602001909291905050506083565b6040518082815260200191505060405180910390f35b60006201518082600701540142111560a0578160060154905060c5565b81600801548260060154101560b7576000905060c5565b816008015482600601540390505b91905056fea26469706673582212204b6f8040d176aec22d0844220ac319e053c139aae346f4488911564ecfad614964736f6c63430007060033",
+  "deployedBytecode": "0x730000000000000000000000000000000000000000301460806040526004361060335760003560e01c8063af949664146038575b600080fd5b818015604357600080fd5b50606d60048036036020811015605857600080fd5b81019080803590602001909291905050506083565b6040518082815260200191505060405180910390f35b60006201518082600701540142111560a0578160060154905060c5565b81600801548260060154101560b7576000905060c5565b816008015482600601540390505b91905056fea26469706673582212204b6f8040d176aec22d0844220ac319e053c139aae346f4488911564ecfad614964736f6c63430007060033",
   "immutableReferences": {},
   "generatedSources": [],
   "deployedGeneratedSources": [],
   "sourceMap": "59:1146:1:-:0;;;;;;;;;;;;;;;;;;;;;;;;;",
   "deployedSourceMap": "59:1146:1:-:0;;;;;;;;;;;;;;;;;;;;;;;;868:331;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;954:4;1014:8;996:7;:15;;;:26;978:15;:44;974:87;;;1043:7;:18;;;1036:25;;;;974:87;1096:7;:18;;;1075:7;:18;;;:39;1071:65;;;1135:1;1128:8;;;;1071:65;1174:7;:18;;;1153:7;:18;;;:39;1146:46;;868:331;;;;:::o",
   "source": "pragma solidity ^0.7.6;\nimport \"../core/wallet_data.sol\";\n\nlibrary DailyLimit {\n    /*\n     * Internal functions\n     */\n    /// @dev Returns if amount is within daily limit and resets spentToday after one day.\n    /// @param amount Amount to withdraw.\n    /// @return Returns if amount is under daily limit.\n    function isUnderLimit(Core.Wallet storage _wallet, uint amount)\n        internal\n        returns (bool)\n    {\n        if (block.timestamp > _wallet.lastDay + 24 hours) {\n            _wallet.lastDay = block.timestamp;\n            _wallet.spentToday = 0;\n        }\n        if (_wallet.spentToday + amount > _wallet.dailyLimit || _wallet.spentToday + amount < _wallet.spentToday)\n            return false;\n        return true;\n    }\n\n    /*\n     * Web3 call functions\n     */\n    /// @dev Returns maximum withdraw amount.\n    /// @return Returns amount.\n    function calcMaxWithdraw(Core.Wallet storage _wallet)\n        public\n        returns (uint)\n    {\n        if (block.timestamp > _wallet.lastDay + 24 hours)\n            return _wallet.dailyLimit;\n        if (_wallet.dailyLimit < _wallet.spentToday)\n            return 0;\n        return _wallet.dailyLimit - _wallet.spentToday;\n    }    \n}",
-  "sourcePath": "/home/quoc/Projects/harmony-totp-pure/contracts/features/daily_limit.sol",
+  "sourcePath": "/Users/polymorpher/git/one-wallet/code/contracts/features/daily_limit.sol",
   "ast": {
-    "absolutePath": "/home/quoc/Projects/harmony-totp-pure/contracts/features/daily_limit.sol",
+    "absolutePath": "/Users/polymorpher/git/one-wallet/code/contracts/features/daily_limit.sol",
     "exportedSymbols": {
       "Core": [
         45
@@ -36,7 +36,7 @@
         "src": "0:23:1"
       },
       {
-        "absolutePath": "/home/quoc/Projects/harmony-totp-pure/contracts/core/wallet_data.sol",
+        "absolutePath": "/Users/polymorpher/git/one-wallet/code/contracts/core/wallet_data.sol",
         "file": "../core/wallet_data.sol",
         "id": 48,
         "nodeType": "ImportDirective",
@@ -1125,7 +1125,7 @@
   },
   "legacyAST": {
     "attributes": {
-      "absolutePath": "/home/quoc/Projects/harmony-totp-pure/contracts/features/daily_limit.sol",
+      "absolutePath": "/Users/polymorpher/git/one-wallet/code/contracts/features/daily_limit.sol",
       "exportedSymbols": {
         "Core": [
           45
@@ -1152,7 +1152,7 @@
       {
         "attributes": {
           "SourceUnit": 46,
-          "absolutePath": "/home/quoc/Projects/harmony-totp-pure/contracts/core/wallet_data.sol",
+          "absolutePath": "/Users/polymorpher/git/one-wallet/code/contracts/core/wallet_data.sol",
           "file": "../core/wallet_data.sol",
           "scope": 137,
           "symbolAliases": [
@@ -2361,6 +2361,12 @@
       "address": "0xCE4a0035f364e74df324e73E10B0D04B2e7Af995",
       "transactionHash": "0x54c9699177df5d1552bfc053611545df5f85ea66870736b39b27a5677c7d7a65"
     },
+    "5777": {
+      "events": {},
+      "links": {},
+      "address": "0xf817B8A47A42f1F273A67eBd633aC89f1165e399",
+      "transactionHash": "0x2ed61c4f8d1b6edca43c087383922f29b25e7100c300649b0a8fe43170dc9288"
+    },
     "1666600000": {
       "events": {},
       "links": {},
@@ -2375,7 +2381,7 @@
     }
   },
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-05-06T13:06:23.082Z",
+  "updatedAt": "2021-05-26T03:24:34.518Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",
