@@ -1,4 +1,4 @@
-var merkle = require('./merkle.js')
+const merkle = require('./merkle.js')
 const totp = require('./totp.js')
 const ethers = require('ethers')
 const ethAbi = require('web3-eth-abi')
@@ -7,39 +7,39 @@ const web3utils = require('web3-utils')
 console.log(totp)
 
 function h16 (a) { return web3utils.soliditySha3({ v: a, t: 'bytes', encoding: 'hex' }).substring(0, 34) }
-function h16a (a) { return web3utils.soliditySha3(a).substring(0, 34) }
+// function h16a (a) { return web3utils.soliditySha3(a).substring(0, 34) }
 function padNumber (x) { return web3utils.padRight(x, 32) }
 function getTOTP (secret, counter, duration) { return totp(secret, { period: duration, counter: counter }) }
 
 function generateWallet (secret, depth, duration, timeOffset, fProgress) {
-  var leafs = []
+  const leaves = []
   console.log('!!', secret, depth, duration, timeOffset)
-  var startCounter = timeOffset / duration
+  const startCounter = timeOffset / duration
   console.log('Start counter=', startCounter)
-  var percentMark = Math.floor(Math.pow(2, depth) / 50)
+  const percentMark = Math.floor(Math.pow(2, depth) / 50)
 
-  for (var i = 0; i < Math.pow(2, depth); i++) {
-    leafs.push(h16(padNumber(web3utils.toHex(getTOTP(secret, startCounter + i, duration)))))
+  for (let i = 0; i < Math.pow(2, depth); i++) {
+    leaves.push(h16(padNumber(web3utils.toHex(getTOTP(secret, startCounter + i, duration)))))
     // console.log(i, getTOTP(secret, startCounter+i, duration), leafs[leafs.length-1])
-    if (i % percentMark == 0 && fProgress) {
+    if (i % percentMark === 0 && fProgress) {
       fProgress(i, Math.pow(2, depth))
     }
   }
 
-  const root = merkle.reduceMT(leafs)
+  const root = merkle.reduceMT(leaves)
   console.log('root=' + root)
 
   return {
-    leafs: leafs,
+    leafs: leaves,
     root: root
   }
 }
 
 function getProofWithOTP (currentOTP, leafs, timeOffset, duration) {
-  var startCounter = timeOffset / duration
-  var currentCounter = Math.floor(((Date.now() / 1000) - timeOffset) / duration)
+  // const startCounter = timeOffset / duration
+  const currentCounter = Math.floor(((Date.now() / 1000) - timeOffset) / duration)
   console.log('CurrentCounter=', currentCounter, currentOTP)
-  var proof = merkle.getProof(leafs, currentCounter, padNumber(web3utils.toHex(currentOTP)))
+  const proof = merkle.getProof(leafs, currentCounter, padNumber(web3utils.toHex(currentOTP)))
 
   console.log(proof)
   // console.log("counter=", (await this.testWallet.getCurrentCounter()).toString());
@@ -84,16 +84,16 @@ async function signMessage (message, signer) {
   const normalizedSig = `${sig.substring(0, 130)}${v.toString(16)}`
   return normalizedSig
 }
-
-function sortWalletByAddress (wallets) {
-  return wallets.sort((s1, s2) => {
-    const bn1 = ethers.BigNumber.from(s1)
-    const bn2 = ethers.BigNumber.from(s2)
-    if (bn1.lt(bn2)) return -1
-    if (bn1.gt(bn2)) return 1
-    return 0
-  })
-}
+//
+// function sortWalletByAddress (wallets) {
+//   return wallets.sort((s1, s2) => {
+//     const bn1 = ethers.BigNumber.from(s1)
+//     const bn2 = ethers.BigNumber.from(s2)
+//     if (bn1.lt(bn2)) return -1
+//     if (bn1.gt(bn2)) return 1
+//     return 0
+//   })
+// }
 
 module.exports = {
   generateWallet,

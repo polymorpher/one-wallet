@@ -13,15 +13,15 @@ function padNumber (x) { return web3.utils.padRight(x, 32) }
 function getTOTP (counter, duration) { return totp('JBSWY3DPEHPK3PXP', { period: duration, counter: counter }) }
 
 function getLeavesAndRoot (timeOffset, duration, depth) {
-  var leaves = []
+  const leaves = []
   // 1year / 300 ~= 105120
   // 2^17 = 131072
   // 1609459200 is 2021-01-01 00:00:00 --
   // to save space, we're going to start from counter above!
-  var startCounter = timeOffset / duration
+  const startCounter = timeOffset / duration
   // console.log("Start counter=", startCounter);
 
-  for (var i = 0; i < Math.pow(2, depth); i++) {
+  for (let i = 0; i < Math.pow(2, depth); i++) {
     // console.log(i, web3.utils.padRight(getTOTP(startCounter+i),6));
     leaves.push(h16(padNumber(web3.utils.toHex(getTOTP(startCounter + i, duration)))))
   }
@@ -38,7 +38,7 @@ async function createWallet (timeOffset, duration, depth, drainAddr) {
   await TOTPWallet.link('DailyLimit', dailyLimit.address)
   await TOTPWallet.link('Recovery', recovery.address)
 
-  var wallet = await TOTPWallet.new(root, depth, duration, timeOffset, drainAddr, web3.utils.toWei('0.01', 'ether'))
+  const wallet = await TOTPWallet.new(root, depth, duration, timeOffset, drainAddr, web3.utils.toWei('0.01', 'ether'))
 
   return {
     startCounter,
@@ -52,10 +52,10 @@ async function getTOTPAndProof (leaves, timeOffset, duration) {
   const { timestamp } = await web3.eth.getBlock('latest')
   console.log('time=', timestamp)
 
-  var startCounter = timeOffset / duration
-  var currentCounter = Math.floor((timestamp - timeOffset) / duration)
-  var currentOTP = getTOTP(startCounter + currentCounter, duration)
-  var proof = merkle.getProof(leaves, currentCounter, padNumber(web3.utils.toHex(currentOTP)))
+  const startCounter = timeOffset / duration
+  const currentCounter = Math.floor((timestamp - timeOffset) / duration)
+  const currentOTP = getTOTP(startCounter + currentCounter, duration)
+  const proof = merkle.getProof(leaves, currentCounter, padNumber(web3.utils.toHex(currentOTP)))
   return proof
 }
 
@@ -96,16 +96,16 @@ async function signMessage (message, signer) {
   const normalizedSig = `${sig.substring(0, 130)}${v.toString(16)}`
   return normalizedSig
 }
-
-function sortWalletByAddress (wallets) {
-  return wallets.sort((s1, s2) => {
-    const bn1 = ethers.BigNumber.from(s1)
-    const bn2 = ethers.BigNumber.from(s2)
-    if (bn1.lt(bn2)) return -1
-    if (bn1.gt(bn2)) return 1
-    return 0
-  })
-}
+//
+// function sortWalletByAddress (wallets) {
+//   return wallets.sort((s1, s2) => {
+//     const bn1 = ethers.BigNumber.from(s1)
+//     const bn2 = ethers.BigNumber.from(s2)
+//     if (bn1.lt(bn2)) return -1
+//     if (bn1.gt(bn2)) return 1
+//     return 0
+//   })
+// }
 
 async function web3GetClient () {
   return new Promise((resolve, reject) => {

@@ -1,4 +1,4 @@
-const jsSHA = require('jssha/dist/sha1')
+const JSSHA = require('jssha')
 
 module.exports = function getToken (key, options) {
   options = options || {}
@@ -9,7 +9,7 @@ module.exports = function getToken (key, options) {
   key = base32tohex(key)
   epoch = Math.round(Date.now() / 1000.0)
   time = 'counter' in options ? leftpad(dec2hex(options.counter), 16, 0) : leftpad(dec2hex(Math.floor(epoch / options.period)), 16, '0')
-  shaObj = new jsSHA(options.algorithm, 'HEX')
+  shaObj = new JSSHA(options.algorithm, 'HEX')
   shaObj.setHMACKey(key, 'HEX')
   shaObj.update(time)
   hmac = shaObj.getHMAC('HEX')
