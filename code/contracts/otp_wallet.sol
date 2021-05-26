@@ -129,7 +129,9 @@ contract TOTPWallet {
     function remainingTokens() public view returns (uint) {
         // timeOffset + (DURATION*2^depth) < current time
         //uint lastTokenExpires = timeOffset + (timePeriod * (2**treeHeight));
-        return 2 ** uint(wallet.merkelHeight) - getCurrentCounter();
+        uint c = getCurrentCounter();
+        uint total = 2 ** uint(wallet.merkelHeight);
+        return total > c ? total - c : 0;
     }
 
     function _deriveChildTreeIdx(bytes20 sides) private view returns (uint32) {
