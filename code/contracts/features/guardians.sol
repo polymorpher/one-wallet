@@ -1,4 +1,3 @@
-
 pragma solidity ^0.7.6;
 
 import "../core/wallet_data.sol";
@@ -6,7 +5,7 @@ import "../core/wallet_data.sol";
 library Guardians
 {
     event GuardianAdded   (address guardian, uint effectiveTime);
-    event GuardianRemoved (address guardian, uint effectiveTime);    
+    event GuardianRemoved (address guardian, uint effectiveTime);
 
     /**
      * @notice Lets an authorised module add a guardian to a wallet.
@@ -67,4 +66,4 @@ library Guardians
     }
 
 }
- 
+

@@ -1,4 +1,5 @@
 pragma solidity ^0.7.6;
+
 import "../core/wallet_data.sol";
 
 library DailyLimit {
@@ -9,8 +10,8 @@ library DailyLimit {
     /// @param amount Amount to withdraw.
     /// @return Returns if amount is under daily limit.
     function isUnderLimit(Core.Wallet storage _wallet, uint amount)
-        internal
-        returns (bool)
+    internal
+    returns (bool)
     {
         if (block.timestamp > _wallet.lastDay + 24 hours) {
             _wallet.lastDay = block.timestamp;
@@ -27,13 +28,13 @@ library DailyLimit {
     /// @dev Returns maximum withdraw amount.
     /// @return Returns amount.
     function calcMaxWithdraw(Core.Wallet storage _wallet)
-        public
-        returns (uint)
+    public
+    returns (uint)
     {
         if (block.timestamp > _wallet.lastDay + 24 hours)
             return _wallet.dailyLimit;
         if (_wallet.dailyLimit < _wallet.spentToday)
             return 0;
         return _wallet.dailyLimit - _wallet.spentToday;
-    }    
+    }
 }

@@ -1,4 +1,5 @@
 pragma solidity ^0.7.6;
+
 import "../core/wallet_data.sol";
 
 library Recovery {
@@ -7,9 +8,9 @@ library Recovery {
         "startRecovery(bytes16, uint8, uint, uint)"
     );
 
-    function startRecovery(Core.Wallet storage wallet_, bytes16 rootHash_, uint8 merkelHeight_, uint timePeriod_, 
-                uint timeOffset_, bytes calldata signatures_) public {
-        
+    function startRecovery(Core.Wallet storage wallet_, bytes16 rootHash_, uint8 merkelHeight_, uint timePeriod_,
+        uint timeOffset_, bytes calldata signatures_) public {
+
         uint requiredSignatures = ceil(wallet_.guardians.length, 2);
         require(requiredSignatures * 65 == signatures_.length, "Wrong number of signatures");
 
@@ -28,7 +29,7 @@ library Recovery {
         wallet_.timePeriod = wallet_.recovery.timePeriod;
         wallet_.timeOffset = wallet_.recovery.timeOffset;
 
-        wallet_.recovery = Core.RecoveryInfo(0,0,0,0,0);
+        wallet_.recovery = Core.RecoveryInfo(0, 0, 0, 0, 0);
     }
 
     //
@@ -60,7 +61,8 @@ library Recovery {
             address signer = recoverSigner(_signHash, _signatures, i);
 
             if (signer <= lastSigner) {
-                return false; // Signers must be different
+                return false;
+                // Signers must be different
             }
             lastSigner = signer;
             isGuardian = isGuardianAddress(guardians, signer);
@@ -70,7 +72,7 @@ library Recovery {
         }
         return true;
     }
-    
+
     function isGuardianAddress(address[] memory _guardians, address _guardian) internal view returns (bool) {
         for (uint256 i = 0; i < _guardians.length; i++) {
             if (_guardian == _guardians[i]) {
@@ -81,9 +83,9 @@ library Recovery {
     }
 
     function getSignHash(bytes16 rootHash_, uint8 merkelHeight_, uint timePeriod_, uint timeOffset_)
-        internal
-        view
-        returns (bytes32)
+    internal
+    view
+    returns (bytes32)
     {
 
         bytes memory encodedData = abi.encode(
@@ -98,9 +100,9 @@ library Recovery {
             abi.encodePacked(
                 "\x19Ethereum Signed Message:\n32",
                 keccak256(encodedData)
-        ));
+            ));
     }
-        
+
     function recoverSigner(bytes32 _signedHash, bytes memory _signatures, uint _index) internal pure returns (address) {
         uint8 v;
         bytes32 r;
@@ -110,9 +112,9 @@ library Recovery {
         // for v we load 32 bytes ending with v (the first 31 come from s) then apply a mask
         // solhint-disable-next-line no-inline-assembly
         assembly {
-            r := mload(add(_signatures, add(0x20,mul(0x41,_index))))
-            s := mload(add(_signatures, add(0x40,mul(0x41,_index))))
-            v := and(mload(add(_signatures, add(0x41,mul(0x41,_index)))), 0xff)
+            r := mload(add(_signatures, add(0x20, mul(0x41, _index))))
+            s := mload(add(_signatures, add(0x40, mul(0x41, _index))))
+            v := and(mload(add(_signatures, add(0x41, mul(0x41, _index)))), 0xff)
         }
         require(v == 27 || v == 28, "Utils: bad v value in signature");
 
