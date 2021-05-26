@@ -6,7 +6,9 @@
     "truffle/globals": true
   },
   "extends": [
-    "standard"
+    "standard",
+    "standard-jsx",
+    "plugin:react/recommended"
   ],
   "globals": {
     "artifacts": "readonly",
@@ -23,20 +25,36 @@
     "comma-dangle": 0,
     "no-console": 0,
     "no-mixed-operators": 0,
-    "max-len": 0
+    "max-len": 0,
+    "react/jsx-filename-extension": [
+      1,
+      {
+        "extensions": [
+          ".js",
+          ".jsx"
+        ]
+      }
+    ]
   },
   "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
     "requireConfigFile": false,
     "ecmaVersion": 2020
   },
   "plugins": [
     "@babel",
-    "truffle"
+    "truffle",
+    "react",
+    "react-hooks"
   ],
   "settings": {
     "import/resolver": "webpack",
     "react": {
       "version": "latest"
     }
-  }
+  },
+  
 }
+
