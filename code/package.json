@@ -6,6 +6,7 @@
   },
   "license": "Apache 2.0",
   "dependencies": {
+    "dotenv": "^10.0.0",
     "ethereumjs-wallet": "0.6.5",
     "ethers": "^5.1.0",
     "jssha": "^3.2.0",
