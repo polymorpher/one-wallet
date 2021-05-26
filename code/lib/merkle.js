@@ -1,12 +1,12 @@
-// var W3 = require('web3');
+// const W3 = require('web3');
 const web3utils = require('web3-utils')
 function h (a) { return web3utils.soliditySha3({ v: a, t: 'bytes', encoding: 'hex' }).substring(0, 34) }
 
 function reduceMT (layer) {
   if (layer.length === 1) return layer[0]
   // console.log(`Tree Dump  ${layer.length}`, layer);
-  var reducedLayer = []
-  for (var i = 0; i <= (layer.length / 2) - 1; i++) {
+  const reducedLayer = []
+  for (let i = 0; i <= (layer.length / 2) - 1; i++) {
     reducedLayer[i] = h(concatB32(layer[2 * i], layer[2 * i + 1]))
   }
   // console.log("layer", reducedLayer)
@@ -14,8 +14,8 @@ function reduceMT (layer) {
 }
 
 function reduceMTByOneStep (layer) {
-  var reducedLayer = []
-  for (var i = 0; i <= (layer.length / 2) - 1; i++) {
+  const reducedLayer = []
+  for (let i = 0; i <= (layer.length / 2) - 1; i++) {
     reducedLayer[i] = h(concatB32(layer[2 * i], layer[2 * i + 1]))
   }
   return reducedLayer
@@ -72,7 +72,7 @@ function getProof (leaves, idx, data) {
 
   // proceed from bottom to top
   for (let layer = 0; layer < height; layer++) {
-    var siblingIdx = (idxInCurLayer % 2 === 0) ? idxInCurLayer + 1 : idxInCurLayer - 1
+    const siblingIdx = (idxInCurLayer % 2 === 0) ? idxInCurLayer + 1 : idxInCurLayer - 1
     ret.push(hashesOfCurLayer[siblingIdx])
     retSides += (idxInCurLayer % 2 === 0) ? MT_LEFT_SIDE : MT_RIGHT_SIDE
     hashesOfCurLayer = reduceMTByOneStep(hashesOfCurLayer)
@@ -86,6 +86,6 @@ module.exports = {
   getProof
 }
 
-// var res = reduceMT(["0x00000000000000000000000000000000","0x00000000000000000000000000000000"])
+// const res = reduceMT(["0x00000000000000000000000000000000","0x00000000000000000000000000000000"])
 // console.log(res);
 // console.log(concatB32("0x00000000000000000000000000000000","0x00000000000000000000000000000000"))
