@@ -233,8 +233,8 @@ class Create extends Component {
                 {!this.state.creating && <button
                   className='btn btn-primary' disabled={!this.state.secret}
                   onClick={this.create.bind(this)}
-                >Create Contract
-                </button>}
+                                         >Create Contract
+                                         </button>}
                 {this.state.creating && <button className='btn btn-primary' disabled>Submitting..(wait)</button>}
               </div>
             </div>

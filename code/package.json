@@ -41,6 +41,7 @@
     "babel-register": "^6.23.0",
     "bn.js": "^5.2.0",
     "copy-webpack-plugin": "^8.1.1",
+    "core-js": "^3.13.0",
     "eslint": "^7.26.0",
     "eslint-config-airbnb": "18.0.1",
     "eslint-config-standard": "^12.0.0",

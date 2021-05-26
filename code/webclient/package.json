@@ -12,15 +12,20 @@
   "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.13.15",
+    "@babel/plugin-syntax-jsx": "^7.12.13",
     "@babel/plugin-transform-react-jsx": "^7.12.17",
+    "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.13.15",
     "@babel/preset-react": "^7.13.13",
     "@ramonak/react-progress-bar": "^3.1.0",
     "@truffle/contract": "^4.1.1",
     "babel-loader": "^8.2.2",
+    "babel-preset-react": "^6.24.1",
     "bip39": "^2.5.0",
     "copy-webpack-plugin": "^5.0.5",
+    "core-js": "^3.13.0",
     "crypto": "^1.0.1",
+    "crypto-browserify": "^3.12.0",
     "eslint": "^7.26.0",
     "eslint-config-airbnb": "18.0.1",
     "eslint-config-standard": "^16.0.3",
@@ -35,6 +40,8 @@
     "jssha": "^3.2.0",
     "lodash": "^4.17.10",
     "node-2fa": "^2.0.2",
+    "os-browserify": "^0.3.0",
+    "path-browserify": "^1.0.1",
     "qrcode": "^1.4.4",
     "react": "^17.0.2",
     "schema-utils": "^1.0.0",
@@ -48,5 +55,26 @@
     "webpack-dev-server": "^3.11.0",
     "webpack-obfuscator": "^0.27.4",
     "xmlhttprequest": "^1.8.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "dependencies": {
+    "@babel/plugin-proposal-class-properties": "^7.13.0",
+    "@babel/plugin-syntax-dynamic-import": "^7.8.3",
+    "@babel/plugin-transform-react-constant-elements": "^7.13.13",
+    "@babel/plugin-transform-react-inline-elements": "^7.12.13",
+    "@babel/plugin-transform-runtime": "^7.14.3",
+    "@babel/runtime": "^7.14.0",
+    "babel-plugin-transform-react-remove-prop-types": "^0.4.24"
   }
 }
