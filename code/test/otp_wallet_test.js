@@ -1,4 +1,5 @@
 const commons = require('./commons.js')
+const BN = require('bn.js')
 
 const DURATION = 300
 const time = Math.floor((Date.now() / 1000))
@@ -28,12 +29,14 @@ contract('OTPWallet', accounts => {
     console.log('Balance=', newBalance)
     assert.equal(newBalance, web3.utils.toWei('1', 'ether'), 'withdraw amount is correct')
   })
-  it('checks for remaing token', async () => {
+  it('checks for remaining token', async () => {
     const tmpWallet = web3.eth.accounts.create()
     const { wallet } = await commons.createWallet(timeOffset - (Math.pow(2, 2) * DURATION), DURATION, 2, tmpWallet.address)
-    const hasTokens = await wallet.remainingTokens()
-    console.log('counter=', (await wallet.getCurrentCounter()).toString())
-    console.log(hasTokens)
-    assert.isTrue(hasTokens > 0)
+    const numTokensLeft = await wallet.remainingTokens()
+    const counter = await wallet.getCurrentCounter().then(e => e.toString())
+    console.log(`counter=${counter} | numTokensLeft=${numTokensLeft.toString()}`)
+    // const w = await wallet.wallet.call()
+    // console.log('merkelHeight', w.merkelHeight.toString())
+    assert.isTrue(numTokensLeft.eq(new BN(0)))
   })
 })
