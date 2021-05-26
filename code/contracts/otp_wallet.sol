@@ -18,15 +18,15 @@ contract TOTPWallet {
     event WalletTransfer(address to, uint amount);
     event Deposit(address indexed sender, uint value);
 
-    constructor(bytes16 rootHash_, uint8 merkelHeight_, uint timePeriod_,
-        uint timeOffset_, address payable drainAddr_, uint dailyLimit_)
+    constructor(bytes16 rootHash, uint8 height, uint interval,
+        uint startTime, address payable drainAddress, uint initialDailyLimit)
     {
-        wallet.rootHash = rootHash_;
-        wallet.merkelHeight = merkelHeight_;
-        wallet.timePeriod = timePeriod_;
-        wallet.timeOffset = timeOffset_;
-        wallet.drainAddr = drainAddr_;
-        wallet.dailyLimit = dailyLimit_;
+        wallet.rootHash = rootHash;
+        wallet.merkelHeight = height;
+        wallet.timePeriod = interval;
+        wallet.timeOffset = startTime;
+        wallet.drainAddr = drainAddress;
+        wallet.dailyLimit = initialDailyLimit;
 
     }
 

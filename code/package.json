@@ -4,9 +4,10 @@
     "lint": "eslint ./lib ./migrations ./test",
     "lint-fix": "eslint ./lib ./migrations ./test --fix"
   },
-  "license": "Apache 2.0",
+  "license": "Apache-2.0",
   "dependencies": {
     "dotenv": "^10.0.0",
+    "eslint-plugin-jsx": "^0.1.0",
     "ethereumjs-wallet": "0.6.5",
     "ethers": "^5.1.0",
     "jssha": "^3.2.0",
@@ -30,6 +31,7 @@
     "@babel/plugin-proposal-throw-expressions": "7.7.4",
     "@babel/plugin-syntax-dynamic-import": "7.7.4",
     "@babel/plugin-syntax-import-meta": "7.7.4",
+    "@babel/plugin-syntax-jsx": "^7.12.13",
     "@babel/plugin-transform-react-jsx": "^7.12.17",
     "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.14.2",
@@ -37,14 +39,16 @@
     "babel-jest": "24.9.0",
     "babel-loader": "8.0.6",
     "babel-register": "^6.23.0",
+    "bn.js": "^5.2.0",
     "copy-webpack-plugin": "^8.1.1",
     "eslint": "^7.26.0",
     "eslint-config-airbnb": "18.0.1",
     "eslint-config-standard": "^12.0.0",
+    "eslint-config-standard-jsx": "^10.0.0",
     "eslint-import-resolver-webpack": "0.12.0",
     "eslint-loader": "3.0.3",
     "eslint-plugin-html": "^6.0.0",
-    "eslint-plugin-import": "2.19.1",
+    "eslint-plugin-import": "^2.23.3",
     "eslint-plugin-jsx-a11y": "6.2.3",
     "eslint-plugin-node": "^9.1.0",
     "eslint-plugin-react": "7.17.0",
@@ -58,12 +62,6 @@
     "webpack-cli": "3.3.10",
     "webpack-dev-server": "^3.11.0",
     "webpack-obfuscator": "^0.27.4"
-  },
-  "eslintConfig": {
-    "extends": "standard",
-    "parserOptions": {
-      "ecmaVersion": 2020
-    }
   },
   "standard": {
     "parser": "babel-eslint",

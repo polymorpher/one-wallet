@@ -1,60 +1,60 @@
-{
-  "env": {
-    "es2020": true,
-    "browser": true,
-    "jest": true,
-    "truffle/globals": true
+module.exports = {
+  'env': {
+    'es2020': true,
+    'browser': true,
+    'jest': true,
+    'truffle/globals': true
   },
-  "extends": [
-    "standard",
-    "standard-jsx",
-    "plugin:react/recommended"
+  'extends': [
+    'plugin:react/recommended',
+    'plugin:jsx-a11y/recommended',
+    'standard-jsx',
+    'standard',
   ],
-  "globals": {
-    "artifacts": "readonly",
-    "contract": "readonly",
-    "assert": "readonly",
-    "web3": "readonly"
+  'globals': {
+    'artifacts': 'readonly',
+    'contract': 'readonly',
+    'assert': 'readonly',
+    'web3': 'readonly'
   },
-  "parser": "@babel/eslint-parser",
-  "rules": {
-    "no-await-in-loop": 0,
-    "no-underscore-dangle": 0,
-    "import/prefer-default-export": 0,
-    "import/no-extraneous-dependencies": 1,
-    "comma-dangle": 0,
-    "no-console": 0,
-    "no-mixed-operators": 0,
-    "max-len": 0,
-    "react/jsx-filename-extension": [
+  // 'parser': '@babel/eslint-parser',
+  'rules': {
+    'no-await-in-loop': 0,
+    'no-underscore-dangle': 0,
+    'import/prefer-default-export': 0,
+    'import/no-extraneous-dependencies': 1,
+    'comma-dangle': 0,
+    'no-console': 0,
+    'no-mixed-operators': 0,
+    'max-len': 0,
+    'react/jsx-filename-extension': [
       1,
       {
-        "extensions": [
-          ".js",
-          ".jsx"
+        'extensions': [
+          '.js',
+          '.jsx'
         ]
       }
     ]
   },
-  "parserOptions": {
-    "ecmaFeatures": {
-      "jsx": true
+  'parserOptions': {
+    'ecmaFeatures': {
+      'jsx': true
     },
-    "requireConfigFile": false,
-    "ecmaVersion": 2020
+    'requireConfigFile': false,
+    'ecmaVersion': 2020
   },
-  "plugins": [
-    "@babel",
-    "truffle",
-    "react",
-    "react-hooks"
+  'plugins': [
+    'jsx-a11y',
+    '@babel',
+    'truffle',
+    'react',
+    'react-hooks'
   ],
-  "settings": {
-    "import/resolver": "webpack",
-    "react": {
-      "version": "latest"
+  'settings': {
+    'import/resolver': 'webpack',
+    'react': {
+      'version': 'latest'
     }
   },
-  
 }
-

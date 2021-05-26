@@ -1,0 +1,1216 @@
+{
+  "contractName": "Core",
+  "abi": [],
+  "metadata": "{\"compiler\":{\"version\":\"0.7.6+commit.7338295f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/polymorpher/git/one-wallet/code/contracts/core/wallet_data.sol\":\"Core\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/polymorpher/git/one-wallet/code/contracts/core/wallet_data.sol\":{\"keccak256\":\"0x7afe6a1c6e4e03cab2f091fb65f99d485014692348b2d2d30ac7383c06582a38\",\"urls\":[\"bzz-raw://4f304002892eaf563bd6ebb39130ff847713062a38ebe43f9d18c8b9be3a3584\",\"dweb:/ipfs/QmScU2uGCbkP2X6gZqKm7RgoMF2FFBfgZ2GQPerb9g8MQ5\"]}},\"version\":1}",
+  "bytecode": "0x60566023600b82828239805160001a607314601657fe5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122009565cbd30ee280ee784d5d9bff87a40d0e14f4f73ab89696a0c566bb92c2eec64736f6c63430007060033",
+  "deployedBytecode": "0x73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122009565cbd30ee280ee784d5d9bff87a40d0e14f4f73ab89696a0c566bb92c2eec64736f6c63430007060033",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "59:715:0:-:0;;;;;;;;;;;;;;;;;;;;;;;;;",
+  "deployedSourceMap": "59:715:0:-:0;;;;;;;;",
+  "source": "pragma solidity ^0.7.6;\npragma experimental ABIEncoderV2;\n\nlibrary Core {\n    struct GuardianInfo {\n        bool exists;\n        uint128 index;\n    }\n\n    struct RecoveryInfo {\n        bytes16 rootHash;\n        uint8 merkelHeight;\n        uint timePeriod;\n        uint timeOffset;\n        uint expiration;\n    }\n\n    struct Wallet {\n        bytes16 rootHash;\n        uint8 merkelHeight;\n        uint timePeriod;\n        uint timeOffset;\n        address payable drainAddr;\n\n        // the list of guardians\n        address[] guardians;\n        // the info about guardians\n        mapping(address => GuardianInfo) info;\n\n\n        // daily limit\n        uint dailyLimit;\n        uint lastDay;\n        uint spentToday;\n\n        // recovery\n        RecoveryInfo recovery;\n    }\n}\n",
+  "sourcePath": "/Users/polymorpher/git/one-wallet/code/contracts/core/wallet_data.sol",
+  "ast": {
+    "absolutePath": "/Users/polymorpher/git/one-wallet/code/contracts/core/wallet_data.sol",
+    "exportedSymbols": {
+      "Core": [
+        45
+      ]
+    },
+    "id": 46,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1,
+        "literals": [
+          "solidity",
+          "^",
+          "0.7",
+          ".6"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:0"
+      },
+      {
+        "id": 2,
+        "literals": [
+          "experimental",
+          "ABIEncoderV2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "24:33:0"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "library",
+        "fullyImplemented": true,
+        "id": 45,
+        "linearizedBaseContracts": [
+          45
+        ],
+        "name": "Core",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "canonicalName": "Core.GuardianInfo",
+            "id": 7,
+            "members": [
+              {
+                "constant": false,
+                "id": 4,
+                "mutability": "mutable",
+                "name": "exists",
+                "nodeType": "VariableDeclaration",
+                "scope": 7,
+                "src": "108:11:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bool",
+                  "typeString": "bool"
+                },
+                "typeName": {
+                  "id": 3,
+                  "name": "bool",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "108:4:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 6,
+                "mutability": "mutable",
+                "name": "index",
+                "nodeType": "VariableDeclaration",
+                "scope": 7,
+                "src": "129:13:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint128",
+                  "typeString": "uint128"
+                },
+                "typeName": {
+                  "id": 5,
+                  "name": "uint128",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "129:7:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "GuardianInfo",
+            "nodeType": "StructDefinition",
+            "scope": 45,
+            "src": "78:71:0",
+            "visibility": "public"
+          },
+          {
+            "canonicalName": "Core.RecoveryInfo",
+            "id": 18,
+            "members": [
+              {
+                "constant": false,
+                "id": 9,
+                "mutability": "mutable",
+                "name": "rootHash",
+                "nodeType": "VariableDeclaration",
+                "scope": 18,
+                "src": "185:16:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bytes16",
+                  "typeString": "bytes16"
+                },
+                "typeName": {
+                  "id": 8,
+                  "name": "bytes16",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "185:7:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes16",
+                    "typeString": "bytes16"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 11,
+                "mutability": "mutable",
+                "name": "merkelHeight",
+                "nodeType": "VariableDeclaration",
+                "scope": 18,
+                "src": "211:18:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint8",
+                  "typeString": "uint8"
+                },
+                "typeName": {
+                  "id": 10,
+                  "name": "uint8",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "211:5:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 13,
+                "mutability": "mutable",
+                "name": "timePeriod",
+                "nodeType": "VariableDeclaration",
+                "scope": 18,
+                "src": "239:15:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 12,
+                  "name": "uint",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "239:4:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 15,
+                "mutability": "mutable",
+                "name": "timeOffset",
+                "nodeType": "VariableDeclaration",
+                "scope": 18,
+                "src": "264:15:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 14,
+                  "name": "uint",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "264:4:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 17,
+                "mutability": "mutable",
+                "name": "expiration",
+                "nodeType": "VariableDeclaration",
+                "scope": 18,
+                "src": "289:15:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 16,
+                  "name": "uint",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "289:4:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "RecoveryInfo",
+            "nodeType": "StructDefinition",
+            "scope": 45,
+            "src": "155:156:0",
+            "visibility": "public"
+          },
+          {
+            "canonicalName": "Core.Wallet",
+            "id": 44,
+            "members": [
+              {
+                "constant": false,
+                "id": 20,
+                "mutability": "mutable",
+                "name": "rootHash",
+                "nodeType": "VariableDeclaration",
+                "scope": 44,
+                "src": "341:16:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bytes16",
+                  "typeString": "bytes16"
+                },
+                "typeName": {
+                  "id": 19,
+                  "name": "bytes16",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "341:7:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes16",
+                    "typeString": "bytes16"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 22,
+                "mutability": "mutable",
+                "name": "merkelHeight",
+                "nodeType": "VariableDeclaration",
+                "scope": 44,
+                "src": "367:18:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint8",
+                  "typeString": "uint8"
+                },
+                "typeName": {
+                  "id": 21,
+                  "name": "uint8",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "367:5:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 24,
+                "mutability": "mutable",
+                "name": "timePeriod",
+                "nodeType": "VariableDeclaration",
+                "scope": 44,
+                "src": "395:15:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 23,
+                  "name": "uint",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "395:4:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 26,
+                "mutability": "mutable",
+                "name": "timeOffset",
+                "nodeType": "VariableDeclaration",
+                "scope": 44,
+                "src": "420:15:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 25,
+                  "name": "uint",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "420:4:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 28,
+                "mutability": "mutable",
+                "name": "drainAddr",
+                "nodeType": "VariableDeclaration",
+                "scope": 44,
+                "src": "445:25:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address_payable",
+                  "typeString": "address payable"
+                },
+                "typeName": {
+                  "id": 27,
+                  "name": "address",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "445:15:0",
+                  "stateMutability": "payable",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address_payable",
+                    "typeString": "address payable"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 31,
+                "mutability": "mutable",
+                "name": "guardians",
+                "nodeType": "VariableDeclaration",
+                "scope": 44,
+                "src": "514:19:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                  "typeString": "address[]"
+                },
+                "typeName": {
+                  "baseType": {
+                    "id": 29,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "514:7:0",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "id": 30,
+                  "nodeType": "ArrayTypeName",
+                  "src": "514:9:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                    "typeString": "address[]"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 35,
+                "mutability": "mutable",
+                "name": "info",
+                "nodeType": "VariableDeclaration",
+                "scope": 44,
+                "src": "579:37:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_mapping$_t_address_$_t_struct$_GuardianInfo_$7_storage_$",
+                  "typeString": "mapping(address => struct Core.GuardianInfo)"
+                },
+                "typeName": {
+                  "id": 34,
+                  "keyType": {
+                    "id": 32,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "587:7:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "nodeType": "Mapping",
+                  "src": "579:32:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_mapping$_t_address_$_t_struct$_GuardianInfo_$7_storage_$",
+                    "typeString": "mapping(address => struct Core.GuardianInfo)"
+                  },
+                  "valueType": {
+                    "id": 33,
+                    "name": "GuardianInfo",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 7,
+                    "src": "598:12:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_GuardianInfo_$7_storage_ptr",
+                      "typeString": "struct Core.GuardianInfo"
+                    }
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 37,
+                "mutability": "mutable",
+                "name": "dailyLimit",
+                "nodeType": "VariableDeclaration",
+                "scope": 44,
+                "src": "651:15:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 36,
+                  "name": "uint",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "651:4:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 39,
+                "mutability": "mutable",
+                "name": "lastDay",
+                "nodeType": "VariableDeclaration",
+                "scope": 44,
+                "src": "676:12:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 38,
+                  "name": "uint",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "676:4:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 41,
+                "mutability": "mutable",
+                "name": "spentToday",
+                "nodeType": "VariableDeclaration",
+                "scope": 44,
+                "src": "698:15:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 40,
+                  "name": "uint",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "698:4:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 43,
+                "mutability": "mutable",
+                "name": "recovery",
+                "nodeType": "VariableDeclaration",
+                "scope": 44,
+                "src": "744:21:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_struct$_RecoveryInfo_$18_storage_ptr",
+                  "typeString": "struct Core.RecoveryInfo"
+                },
+                "typeName": {
+                  "id": 42,
+                  "name": "RecoveryInfo",
+                  "nodeType": "UserDefinedTypeName",
+                  "referencedDeclaration": 18,
+                  "src": "744:12:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_RecoveryInfo_$18_storage_ptr",
+                    "typeString": "struct Core.RecoveryInfo"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "Wallet",
+            "nodeType": "StructDefinition",
+            "scope": 45,
+            "src": "317:455:0",
+            "visibility": "public"
+          }
+        ],
+        "scope": 46,
+        "src": "59:715:0"
+      }
+    ],
+    "src": "0:775:0"
+  },
+  "legacyAST": {
+    "attributes": {
+      "absolutePath": "/Users/polymorpher/git/one-wallet/code/contracts/core/wallet_data.sol",
+      "exportedSymbols": {
+        "Core": [
+          45
+        ]
+      }
+    },
+    "children": [
+      {
+        "attributes": {
+          "literals": [
+            "solidity",
+            "^",
+            "0.7",
+            ".6"
+          ]
+        },
+        "id": 1,
+        "name": "PragmaDirective",
+        "src": "0:23:0"
+      },
+      {
+        "attributes": {
+          "literals": [
+            "experimental",
+            "ABIEncoderV2"
+          ]
+        },
+        "id": 2,
+        "name": "PragmaDirective",
+        "src": "24:33:0"
+      },
+      {
+        "attributes": {
+          "abstract": false,
+          "baseContracts": [
+            null
+          ],
+          "contractDependencies": [
+            null
+          ],
+          "contractKind": "library",
+          "fullyImplemented": true,
+          "linearizedBaseContracts": [
+            45
+          ],
+          "name": "Core",
+          "scope": 46
+        },
+        "children": [
+          {
+            "attributes": {
+              "canonicalName": "Core.GuardianInfo",
+              "name": "GuardianInfo",
+              "scope": 45,
+              "visibility": "public"
+            },
+            "children": [
+              {
+                "attributes": {
+                  "constant": false,
+                  "mutability": "mutable",
+                  "name": "exists",
+                  "scope": 7,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "bool",
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "name": "bool",
+                      "type": "bool"
+                    },
+                    "id": 3,
+                    "name": "ElementaryTypeName",
+                    "src": "108:4:0"
+                  }
+                ],
+                "id": 4,
+                "name": "VariableDeclaration",
+                "src": "108:11:0"
+              },
+              {
+                "attributes": {
+                  "constant": false,
+                  "mutability": "mutable",
+                  "name": "index",
+                  "scope": 7,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "uint128",
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "name": "uint128",
+                      "type": "uint128"
+                    },
+                    "id": 5,
+                    "name": "ElementaryTypeName",
+                    "src": "129:7:0"
+                  }
+                ],
+                "id": 6,
+                "name": "VariableDeclaration",
+                "src": "129:13:0"
+              }
+            ],
+            "id": 7,
+            "name": "StructDefinition",
+            "src": "78:71:0"
+          },
+          {
+            "attributes": {
+              "canonicalName": "Core.RecoveryInfo",
+              "name": "RecoveryInfo",
+              "scope": 45,
+              "visibility": "public"
+            },
+            "children": [
+              {
+                "attributes": {
+                  "constant": false,
+                  "mutability": "mutable",
+                  "name": "rootHash",
+                  "scope": 18,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "bytes16",
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "name": "bytes16",
+                      "type": "bytes16"
+                    },
+                    "id": 8,
+                    "name": "ElementaryTypeName",
+                    "src": "185:7:0"
+                  }
+                ],
+                "id": 9,
+                "name": "VariableDeclaration",
+                "src": "185:16:0"
+              },
+              {
+                "attributes": {
+                  "constant": false,
+                  "mutability": "mutable",
+                  "name": "merkelHeight",
+                  "scope": 18,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "uint8",
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "name": "uint8",
+                      "type": "uint8"
+                    },
+                    "id": 10,
+                    "name": "ElementaryTypeName",
+                    "src": "211:5:0"
+                  }
+                ],
+                "id": 11,
+                "name": "VariableDeclaration",
+                "src": "211:18:0"
+              },
+              {
+                "attributes": {
+                  "constant": false,
+                  "mutability": "mutable",
+                  "name": "timePeriod",
+                  "scope": 18,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "uint256",
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "name": "uint",
+                      "type": "uint256"
+                    },
+                    "id": 12,
+                    "name": "ElementaryTypeName",
+                    "src": "239:4:0"
+                  }
+                ],
+                "id": 13,
+                "name": "VariableDeclaration",
+                "src": "239:15:0"
+              },
+              {
+                "attributes": {
+                  "constant": false,
+                  "mutability": "mutable",
+                  "name": "timeOffset",
+                  "scope": 18,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "uint256",
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "name": "uint",
+                      "type": "uint256"
+                    },
+                    "id": 14,
+                    "name": "ElementaryTypeName",
+                    "src": "264:4:0"
+                  }
+                ],
+                "id": 15,
+                "name": "VariableDeclaration",
+                "src": "264:15:0"
+              },
+              {
+                "attributes": {
+                  "constant": false,
+                  "mutability": "mutable",
+                  "name": "expiration",
+                  "scope": 18,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "uint256",
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "name": "uint",
+                      "type": "uint256"
+                    },
+                    "id": 16,
+                    "name": "ElementaryTypeName",
+                    "src": "289:4:0"
+                  }
+                ],
+                "id": 17,
+                "name": "VariableDeclaration",
+                "src": "289:15:0"
+              }
+            ],
+            "id": 18,
+            "name": "StructDefinition",
+            "src": "155:156:0"
+          },
+          {
+            "attributes": {
+              "canonicalName": "Core.Wallet",
+              "name": "Wallet",
+              "scope": 45,
+              "visibility": "public"
+            },
+            "children": [
+              {
+                "attributes": {
+                  "constant": false,
+                  "mutability": "mutable",
+                  "name": "rootHash",
+                  "scope": 44,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "bytes16",
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "name": "bytes16",
+                      "type": "bytes16"
+                    },
+                    "id": 19,
+                    "name": "ElementaryTypeName",
+                    "src": "341:7:0"
+                  }
+                ],
+                "id": 20,
+                "name": "VariableDeclaration",
+                "src": "341:16:0"
+              },
+              {
+                "attributes": {
+                  "constant": false,
+                  "mutability": "mutable",
+                  "name": "merkelHeight",
+                  "scope": 44,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "uint8",
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "name": "uint8",
+                      "type": "uint8"
+                    },
+                    "id": 21,
+                    "name": "ElementaryTypeName",
+                    "src": "367:5:0"
+                  }
+                ],
+                "id": 22,
+                "name": "VariableDeclaration",
+                "src": "367:18:0"
+              },
+              {
+                "attributes": {
+                  "constant": false,
+                  "mutability": "mutable",
+                  "name": "timePeriod",
+                  "scope": 44,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "uint256",
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "name": "uint",
+                      "type": "uint256"
+                    },
+                    "id": 23,
+                    "name": "ElementaryTypeName",
+                    "src": "395:4:0"
+                  }
+                ],
+                "id": 24,
+                "name": "VariableDeclaration",
+                "src": "395:15:0"
+              },
+              {
+                "attributes": {
+                  "constant": false,
+                  "mutability": "mutable",
+                  "name": "timeOffset",
+                  "scope": 44,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "uint256",
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "name": "uint",
+                      "type": "uint256"
+                    },
+                    "id": 25,
+                    "name": "ElementaryTypeName",
+                    "src": "420:4:0"
+                  }
+                ],
+                "id": 26,
+                "name": "VariableDeclaration",
+                "src": "420:15:0"
+              },
+              {
+                "attributes": {
+                  "constant": false,
+                  "mutability": "mutable",
+                  "name": "drainAddr",
+                  "scope": 44,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "address payable",
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "name": "address",
+                      "stateMutability": "payable",
+                      "type": "address payable"
+                    },
+                    "id": 27,
+                    "name": "ElementaryTypeName",
+                    "src": "445:15:0"
+                  }
+                ],
+                "id": 28,
+                "name": "VariableDeclaration",
+                "src": "445:25:0"
+              },
+              {
+                "attributes": {
+                  "constant": false,
+                  "mutability": "mutable",
+                  "name": "guardians",
+                  "scope": 44,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "address[]",
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "type": "address[]"
+                    },
+                    "children": [
+                      {
+                        "attributes": {
+                          "name": "address",
+                          "stateMutability": "nonpayable",
+                          "type": "address"
+                        },
+                        "id": 29,
+                        "name": "ElementaryTypeName",
+                        "src": "514:7:0"
+                      }
+                    ],
+                    "id": 30,
+                    "name": "ArrayTypeName",
+                    "src": "514:9:0"
+                  }
+                ],
+                "id": 31,
+                "name": "VariableDeclaration",
+                "src": "514:19:0"
+              },
+              {
+                "attributes": {
+                  "constant": false,
+                  "mutability": "mutable",
+                  "name": "info",
+                  "scope": 44,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "mapping(address => struct Core.GuardianInfo)",
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "type": "mapping(address => struct Core.GuardianInfo)"
+                    },
+                    "children": [
+                      {
+                        "attributes": {
+                          "name": "address",
+                          "type": "address"
+                        },
+                        "id": 32,
+                        "name": "ElementaryTypeName",
+                        "src": "587:7:0"
+                      },
+                      {
+                        "attributes": {
+                          "name": "GuardianInfo",
+                          "referencedDeclaration": 7,
+                          "type": "struct Core.GuardianInfo"
+                        },
+                        "id": 33,
+                        "name": "UserDefinedTypeName",
+                        "src": "598:12:0"
+                      }
+                    ],
+                    "id": 34,
+                    "name": "Mapping",
+                    "src": "579:32:0"
+                  }
+                ],
+                "id": 35,
+                "name": "VariableDeclaration",
+                "src": "579:37:0"
+              },
+              {
+                "attributes": {
+                  "constant": false,
+                  "mutability": "mutable",
+                  "name": "dailyLimit",
+                  "scope": 44,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "uint256",
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "name": "uint",
+                      "type": "uint256"
+                    },
+                    "id": 36,
+                    "name": "ElementaryTypeName",
+                    "src": "651:4:0"
+                  }
+                ],
+                "id": 37,
+                "name": "VariableDeclaration",
+                "src": "651:15:0"
+              },
+              {
+                "attributes": {
+                  "constant": false,
+                  "mutability": "mutable",
+                  "name": "lastDay",
+                  "scope": 44,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "uint256",
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "name": "uint",
+                      "type": "uint256"
+                    },
+                    "id": 38,
+                    "name": "ElementaryTypeName",
+                    "src": "676:4:0"
+                  }
+                ],
+                "id": 39,
+                "name": "VariableDeclaration",
+                "src": "676:12:0"
+              },
+              {
+                "attributes": {
+                  "constant": false,
+                  "mutability": "mutable",
+                  "name": "spentToday",
+                  "scope": 44,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "uint256",
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "name": "uint",
+                      "type": "uint256"
+                    },
+                    "id": 40,
+                    "name": "ElementaryTypeName",
+                    "src": "698:4:0"
+                  }
+                ],
+                "id": 41,
+                "name": "VariableDeclaration",
+                "src": "698:15:0"
+              },
+              {
+                "attributes": {
+                  "constant": false,
+                  "mutability": "mutable",
+                  "name": "recovery",
+                  "scope": 44,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "struct Core.RecoveryInfo",
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "name": "RecoveryInfo",
+                      "referencedDeclaration": 18,
+                      "type": "struct Core.RecoveryInfo"
+                    },
+                    "id": 42,
+                    "name": "UserDefinedTypeName",
+                    "src": "744:12:0"
+                  }
+                ],
+                "id": 43,
+                "name": "VariableDeclaration",
+                "src": "744:21:0"
+              }
+            ],
+            "id": 44,
+            "name": "StructDefinition",
+            "src": "317:455:0"
+          }
+        ],
+        "id": 45,
+        "name": "ContractDefinition",
+        "src": "59:715:0"
+      }
+    ],
+    "id": 46,
+    "name": "SourceUnit",
+    "src": "0:775:0"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.7.6+commit.7338295f.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.3.4",
+  "updatedAt": "2021-05-26T07:27:02.731Z",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  }
+}
