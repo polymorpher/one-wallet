@@ -1,20 +1,73 @@
 {
   "scripts": {
-    "store-server": "cd 2fa-store-api && node -e 'require(\"./index.js\").server()'",
-    "test": "yarn _mocha --timeout 0"
+    "test": "yarn _mocha --timeout 0",
+    "lint": "eslint ./lib ./migrations ./test",
+    "lint-fix": "eslint ./lib ./migrations ./test --fix"
   },
+  "license": "Apache 2.0",
   "dependencies": {
-    "@zeit/ncc": "^0.22.3",
-    "aws-sdk": "^2.883.0",
     "ethereumjs-wallet": "0.6.5",
     "ethers": "^5.1.0",
     "jssha": "^3.2.0",
     "merkletreejs": "^0.2.18",
-    "node-uuid": "^1.4.8",
-    "totp-generator": "0.0.9",
     "truffle-assertions": "^0.9.2",
     "truffle-wallet-provider": "^0.0.5",
     "web3": "^1.3.5",
-    "web3-eth-abi": "^1.3.5"
+    "web3-eth-abi": "^1.3.5",
+    "web3-utils": "^1.3.6"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.14.2",
+    "@babel/eslint-parser": "^7.14.2",
+    "@babel/eslint-plugin": "^7.13.16",
+    "@babel/plugin-proposal-class-properties": "7.7.4",
+    "@babel/plugin-proposal-decorators": "7.7.4",
+    "@babel/plugin-proposal-export-namespace-from": "7.7.4",
+    "@babel/plugin-proposal-function-sent": "7.7.4",
+    "@babel/plugin-proposal-json-strings": "7.7.4",
+    "@babel/plugin-proposal-numeric-separator": "7.7.4",
+    "@babel/plugin-proposal-throw-expressions": "7.7.4",
+    "@babel/plugin-syntax-dynamic-import": "7.7.4",
+    "@babel/plugin-syntax-import-meta": "7.7.4",
+    "@babel/plugin-transform-react-jsx": "^7.12.17",
+    "@babel/polyfill": "^7.12.1",
+    "@babel/preset-env": "^7.14.2",
+    "assert": "^1.5.0",
+    "babel-jest": "24.9.0",
+    "babel-loader": "8.0.6",
+    "babel-register": "^6.23.0",
+    "copy-webpack-plugin": "^8.1.1",
+    "eslint": "^7.26.0",
+    "eslint-config-airbnb": "18.0.1",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-import-resolver-webpack": "0.12.0",
+    "eslint-loader": "3.0.3",
+    "eslint-plugin-html": "^6.0.0",
+    "eslint-plugin-import": "2.19.1",
+    "eslint-plugin-jsx-a11y": "6.2.3",
+    "eslint-plugin-node": "^9.1.0",
+    "eslint-plugin-react": "7.17.0",
+    "eslint-plugin-react-hooks": "^4.0.4",
+    "eslint-plugin-standard": "^4.0.0",
+    "eslint-plugin-truffle": "^0.3.1",
+    "standard": "^12.0.1",
+    "webpack": "^5.33.2",
+    "webpack-bundle-analyzer": "^3.6.1",
+    "webpack-cli": "3.3.10",
+    "webpack-dev-server": "^3.11.0",
+    "webpack-obfuscator": "^0.27.4"
+  },
+  "eslintConfig": {
+    "extends": "standard",
+    "parserOptions": {
+      "ecmaVersion": 2020
+    }
+  },
+  "standard": {
+    "parser": "babel-eslint",
+    "ignore": [
+      "build/*",
+      "node_modules"
+    ]
   }
 }
