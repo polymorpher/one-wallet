@@ -1,14 +1,14 @@
-const merkle = require('./merkle.js')
-const totp = require('./totp.js')
-const ethers = require('ethers')
+const merkle = require('./merkle')
+const totp = require('./totp')
+const { utils: ethUtils } = require('ethers')
+const { toHex, padRight, soliditySha3 } = require('web3-utils')
 const ethAbi = require('web3-eth-abi')
-const web3utils = require('web3-utils')
 
 console.log(totp)
 
-function h16 (a) { return web3utils.soliditySha3({ v: a, t: 'bytes', encoding: 'hex' }).substring(0, 34) }
+function h16 (a) { return soliditySha3({ v: a, t: 'bytes', encoding: 'hex' }).substring(0, 34) }
 // function h16a (a) { return web3utils.soliditySha3(a).substring(0, 34) }
-function padNumber (x) { return web3utils.padRight(x, 32) }
+function padNumber (x) { return padRight(x, 32) }
 function getTOTP (secret, counter, duration) { return totp(secret, { period: duration, counter: counter }) }
 
 function generateWallet (secret, depth, duration, timeOffset, fProgress) {
@@ -19,7 +19,7 @@ function generateWallet (secret, depth, duration, timeOffset, fProgress) {
   const percentMark = Math.floor(Math.pow(2, depth) / 50)
 
   for (let i = 0; i < Math.pow(2, depth); i++) {
-    leaves.push(h16(padNumber(web3utils.toHex(getTOTP(secret, startCounter + i, duration)))))
+    leaves.push(h16(padNumber(toHex(getTOTP(secret, startCounter + i, duration)))))
     // console.log(i, getTOTP(secret, startCounter+i, duration), leafs[leafs.length-1])
     if (i % percentMark === 0 && fProgress) {
       fProgress(i, Math.pow(2, depth))
@@ -39,7 +39,7 @@ function getProofWithOTP (currentOTP, leafs, timeOffset, duration) {
   // const startCounter = timeOffset / duration
   const currentCounter = Math.floor(((Date.now() / 1000) - timeOffset) / duration)
   console.log('CurrentCounter=', currentCounter, currentOTP)
-  const proof = merkle.getProof(leafs, currentCounter, padNumber(web3utils.toHex(currentOTP)))
+  const proof = merkle.getProof(leafs, currentCounter, padNumber(toHex(currentOTP)))
 
   console.log(proof)
   // console.log("counter=", (await this.testWallet.getCurrentCounter()).toString());
@@ -62,7 +62,7 @@ async function signRecoveryOffchain (signers, rootHash, merkelHeight, timePeriod
 
 function getMessageHash (rootHash, merkelHeight, timePeriod, timeOffset) {
   const TYPE_STR = 'startRecovery(bytes16, uint8, uint, uint)'
-  const TYPE_HASH = ethers.utils.keccak256(Buffer.from(TYPE_STR))
+  const TYPE_HASH = ethUtils.keccak256(Buffer.from(TYPE_STR))
 
   // console.log(rootHash, merkelHeight, timePeriod, timeOffset, TYPE_HASH);
 
@@ -71,7 +71,7 @@ function getMessageHash (rootHash, merkelHeight, timePeriod, timeOffset) {
     [TYPE_HASH, rootHash, merkelHeight, timePeriod, timeOffset]
   )
 
-  const messageHash = ethers.utils.keccak256(encodedRequest)
+  const messageHash = ethUtils.keccak256(encodedRequest)
   return messageHash
 }
 

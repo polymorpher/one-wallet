@@ -1,24 +1,5 @@
 const JSSHA = require('jssha')
 
-module.exports = function getToken (key, options) {
-  options = options || {}
-  let epoch, time, shaObj, hmac, offset, otp
-  options.period = options.period || 30
-  options.algorithm = options.algorithm || 'SHA-1'
-  options.digits = options.digits || 6
-  key = base32tohex(key)
-  epoch = Math.round(Date.now() / 1000.0)
-  time = 'counter' in options ? leftpad(dec2hex(options.counter), 16, 0) : leftpad(dec2hex(Math.floor(epoch / options.period)), 16, '0')
-  shaObj = new JSSHA(options.algorithm, 'HEX')
-  shaObj.setHMACKey(key, 'HEX')
-  shaObj.update(time)
-  hmac = shaObj.getHMAC('HEX')
-  offset = hex2dec(hmac.substring(hmac.length - 1))
-  otp = (hex2dec(hmac.substr(offset * 2, 8)) & hex2dec('7fffffff')) + ''
-  otp = otp.substr(otp.length - options.digits, options.digits)
-  return otp
-}
-
 function hex2dec (s) {
   return parseInt(s, 16)
 }
@@ -52,4 +33,23 @@ function leftpad (str, len, pad) {
     str = Array(len + 1 - str.length).join(pad) + str
   }
   return str
+}
+
+module.exports = function getToken (key, options) {
+  options = options || {}
+  let epoch, time, shaObj, hmac, offset, otp
+  options.period = options.period || 30
+  options.algorithm = options.algorithm || 'SHA-1'
+  options.digits = options.digits || 6
+  key = base32tohex(key)
+  epoch = Math.round(Date.now() / 1000.0)
+  time = 'counter' in options ? leftpad(dec2hex(options.counter), 16, 0) : leftpad(dec2hex(Math.floor(epoch / options.period)), 16, '0')
+  shaObj = new JSSHA(options.algorithm, 'HEX')
+  shaObj.setHMACKey(key, 'HEX')
+  shaObj.update(time)
+  hmac = shaObj.getHMAC('HEX')
+  offset = hex2dec(hmac.substring(hmac.length - 1))
+  otp = (hex2dec(hmac.substr(offset * 2, 8)) & hex2dec('7fffffff')) + ''
+  otp = otp.substr(otp.length - options.digits, options.digits)
+  return otp
 }

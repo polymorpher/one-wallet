@@ -117,5 +117,5 @@ out
 trash
 secrets.js
 
-./build
+build
 webclient/dist

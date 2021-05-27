@@ -1,6 +1,5 @@
-// const W3 = require('web3');
-const web3utils = require('web3-utils')
-function h (a) { return web3utils.soliditySha3({ v: a, t: 'bytes', encoding: 'hex' }).substring(0, 34) }
+const { soliditySha3 } = require('web3-utils')
+function h (a) { return soliditySha3({ v: a, t: 'bytes', encoding: 'hex' }).substring(0, 34) }
 
 function reduceMT (layer) {
   if (layer.length === 1) return layer[0]

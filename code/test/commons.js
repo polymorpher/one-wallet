@@ -1,9 +1,9 @@
+const totp = require('../lib/totp')
+const merkle = require('../lib/merkle')
 const TOTPWallet = artifacts.require('TOTPWallet')
 const Guardians = artifacts.require('Guardians')
 const DailyLimit = artifacts.require('DailyLimit')
 const Recovery = artifacts.require('Recovery')
-const totp = require('../lib/totp.js')
-const merkle = require('../lib/merkle.js')
 const ethers = require('ethers')
 const ethAbi = require('web3-eth-abi')
 
