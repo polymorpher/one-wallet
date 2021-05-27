@@ -1,16 +1,17 @@
-import { default as Web3 } from 'web3'
+import Web3 from 'web3'
 
 import walletArtifacts from '../../build/contracts/TOTPWallet.json'
 import dailyLimitArtifact from '../../build/contracts/DailyLimit.json'
-import guardiansArtifact from '../../build/contracts/Guardians.json'
-import recoveryArtifact from '../../build/contracts/Recovery.json'
 
-const contract = require('@truffle/contract')
-
+import contract from '@truffle/contract'
 const TOTPWallet = contract(walletArtifacts)
 const DailyLimit = contract(dailyLimitArtifact)
-const Guardians = contract(guardiansArtifact)
-const Recovery = contract(recoveryArtifact)
+
+// import guardiansArtifact from '../../build/contracts/Guardians.json'
+// import recoveryArtifact from '../../build/contracts/Recovery.json'
+
+// const Guardians = contract(guardiansArtifact)
+// const Recovery = contract(recoveryArtifact)
 
 console.log(DailyLimit)
 

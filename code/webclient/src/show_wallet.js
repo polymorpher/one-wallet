@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
 import * as truffleClient from './truffle_client'
-import wallet from '../../lib/wallet'
 import crypto from 'crypto'
 import b32 from 'thirty-two'
+const wallet = require('../../lib/wallet')
 const twofactor = require('node-2fa')
 
 // props <ShowWallet address="0x..."/>

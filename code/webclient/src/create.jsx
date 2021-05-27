@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import crypto from 'crypto'
 import b32 from 'thirty-two'
-import wallet from '../../lib/wallet'
 import * as truffleClient from './truffle_client'
 import ProgressBar from '@ramonak/react-progress-bar'
 
@@ -129,13 +128,13 @@ class Create extends Component {
     return (
       <div className='card bg-light mb-3 mt-3'>
         <div className='card-header'>Create a wallet
-          <span
+          <button
             className='pull-right clickable close-icon' data-effect='fadeOut' onClick={(e) => {
               this.props.onClose()
               e.preventDefault()
             }}
           ><i className='fa fa-times' />
-          </span>
+          </button>
         </div>
         <div className='card-body'>
           <form>

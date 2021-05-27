@@ -4,8 +4,6 @@ const { utils: ethUtils } = require('ethers')
 const { toHex, padRight, soliditySha3 } = require('web3-utils')
 const ethAbi = require('web3-eth-abi')
 
-console.log(totp)
-
 function h16 (a) { return soliditySha3({ v: a, t: 'bytes', encoding: 'hex' }).substring(0, 34) }
 // function h16a (a) { return web3utils.soliditySha3(a).substring(0, 34) }
 function padNumber (x) { return padRight(x, 32) }

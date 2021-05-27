@@ -1,4 +1,4 @@
-import wallet from '../../../lib/wallet'
+const wallet = require('../../../lib/wallet')
 
 onmessage = function (event) {
   var mywallet = wallet.generateWallet(event.data.secret, event.data.depth,
