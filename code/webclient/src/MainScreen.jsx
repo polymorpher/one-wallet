@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
-import * as truffleClient from './truffle_client'
-import Create from './create'
-import ShowWallet from './show_wallet'
+import * as truffleClient from './truffleClient'
+import Create from './Create'
+import ShowWallet from './showWallet'
 
 class MainScreen extends Component {
   constructor (props) {
@@ -12,7 +12,7 @@ class MainScreen extends Component {
   componentDidMount () {
     var self = this
     truffleClient.load().then(e => {
-      self.setState({ network: App.network })
+      self.setState({ network: window.App.network })
     })
     var wallets = truffleClient.getWallets()
     this.setState({ wallets })
@@ -38,7 +38,7 @@ class MainScreen extends Component {
         <nav className='navbar navbar-expand-md navbar-dark bg-dark mb-4 d-flex justify-content-center'>
           <span className='navbar-text '>
                     TOTP Smart Wallet Demo<br />
-                    Network: {App.network}
+                    Network: {window.App.network}
           </span>
         </nav>
         <main role='main' className='container' style={{ 'maxWidth': 700 }}>

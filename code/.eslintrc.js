@@ -27,6 +27,7 @@ module.exports = {
     'no-console': 0,
     'no-mixed-operators': 0,
     'max-len': 0,
+    'react/prop-types': 'off',
     'react/jsx-filename-extension': [
       1,
       {

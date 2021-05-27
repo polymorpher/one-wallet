@@ -19,6 +19,7 @@ TOTPWallet.setProvider(window.web3.currentProvider)
 
 const networks = {
   0x4: 'rinkeby',
+  1337: 'dev', // ganache
   0x6357d2e0: 'harmony-testnet',
   0x6357d2e1: 'harmony-testnet',
   0x6357d2e2: 'harmony-testnet',
@@ -33,6 +34,12 @@ const CONFIGS = {
     DailyLimit: '0xe99810556BbE9e2EAA48F84eE6450Aa5a18Fb2B4',
     Guardians: '0xf3ad04b291B3E3f441cFde0C7d41353361282bbb',
     Recovery: '0x1bE4e84647843b10bA8D3726F3baCcEC4950Bda5',
+    limit: Web3.utils.toWei('0.01', 'ether'),
+  },
+  1337: {
+    DailyLimit: '0xe56931116EA32B3898fAc95174B68F8Ce9311824',
+    Guardians: '0xB066f5a3889373E166b1FDc6B190f9971a1Ae3b7',
+    Recovery: '0xDC6bf8965777729bdAcDc9699440D38399f4f3f2',
     limit: Web3.utils.toWei('0.01', 'ether'),
   },
   0x6357d2e0: {
@@ -51,31 +58,33 @@ const CONFIGS = {
 window.App = {}
 
 export async function refresh () {
-  let _accounts = (undefined != window.ethereum) ? await window.ethereum.enable() : await web3.eth.getAccounts()
-  _accounts = await web3.eth.getAccounts()
-  const chainId = parseInt(await ethereum.request({ method: 'eth_chainId' }))
-
-  App.chainId = chainId
-  App.network = networks[chainId]
+  if (!window.ethereum) {
+    await window.ethereum.enable()
+  }
+  let _accounts = await web3.eth.getAccounts()
+  const chainId = parseInt(await window.ethereum.request({ method: 'eth_chainId' }))
+  console.log(chainId)
+  window.App.chainId = chainId
+  window.App.network = networks[chainId]
 
   if (!(chainId in networks)) {
     alert(`Not supported chain id : ${chainId}`)
   }
 
-  console.log('Using network ', App.network)
+  console.log('Using network ', window.App.network)
 
-  App.accounts = _accounts
-  App.defaultAccount = _accounts[0]
-  TOTPWallet.defaults({ from: App.defaultAccount, gas: 5000 * 1000, gasPrice: 20 * 1000000000 })
-  console.log(App)
+  window.App.accounts = _accounts
+  window.App.defaultAccount = _accounts[0]
+  TOTPWallet.defaults({ from: window.App.defaultAccount, gas: 5000 * 1000, gasPrice: 20 * 1000000000 })
+  console.log(window.App)
 }
 export async function createWallet (rootHash, height, timePeriod, timeOffset, leafs, drainAddr) {
   await TOTPWallet.detectNetwork()
-  TOTPWallet.link('DailyLimit', CONFIGS[App.chainId].DailyLimit)
-  TOTPWallet.link('Guardians', CONFIGS[App.chainId].Guardians)
-  TOTPWallet.link('Recovery', CONFIGS[App.chainId].Recovery)
+  TOTPWallet.link('DailyLimit', CONFIGS[window.App.chainId].DailyLimit)
+  TOTPWallet.link('Guardians', CONFIGS[window.App.chainId].Guardians)
+  TOTPWallet.link('Recovery', CONFIGS[window.App.chainId].Recovery)
 
-  return TOTPWallet.new(rootHash, height, timePeriod, timeOffset, drainAddr, CONFIGS[App.chainId].limit).then((e) => {
+  return TOTPWallet.new(rootHash, height, timePeriod, timeOffset, drainAddr, CONFIGS[window.App.chainId].limit).then((e) => {
     console.log(e)
     localStorage.setItem(`wallet:${e.address}`, JSON.stringify({
       tx: e.transactionHash,
@@ -121,7 +130,7 @@ export async function load () {
     console.warn('Using web3 detected from external source.')
     window.web3 = new Web3(web3.currentProvider) // Use Mist/MetaMask's provider
     await refresh()
-    return App
+    return window.App
   }
 }
 // window.addEventListener('load', async () => {

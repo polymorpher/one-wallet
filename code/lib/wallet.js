@@ -9,15 +9,18 @@ function h16 (a) { return soliditySha3({ v: a, t: 'bytes', encoding: 'hex' }).su
 function padNumber (x) { return padRight(x, 32) }
 function getTOTP (secret, counter, duration) { return totp(secret, { period: duration, counter: counter }) }
 
-function generateWallet (secret, depth, duration, timeOffset, fProgress) {
+function generateWallet (secret, depth, refreshIntervalOTP, timeOffset, fProgress) {
+  if (!refreshIntervalOTP) {
+    return null
+  }
   const leaves = []
-  console.log('!!', secret, depth, duration, timeOffset)
-  const startCounter = timeOffset / duration
+  console.log('!!', secret, depth, refreshIntervalOTP, timeOffset)
+  const startCounter = timeOffset / refreshIntervalOTP
   console.log('Start counter=', startCounter)
   const percentMark = Math.floor(Math.pow(2, depth) / 50)
 
   for (let i = 0; i < Math.pow(2, depth); i++) {
-    leaves.push(h16(padNumber(toHex(getTOTP(secret, startCounter + i, duration)))))
+    leaves.push(h16(padNumber(toHex(getTOTP(secret, startCounter + i, refreshIntervalOTP)))))
     // console.log(i, getTOTP(secret, startCounter+i, duration), leafs[leafs.length-1])
     if (i % percentMark === 0 && fProgress) {
       fProgress(i, Math.pow(2, depth))

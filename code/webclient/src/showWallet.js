@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import * as truffleClient from './truffle_client'
+import * as truffleClient from './truffleClient'
 import crypto from 'crypto'
 import b32 from 'thirty-two'
 const wallet = require('../../lib/wallet')
@@ -298,12 +298,14 @@ class ShowWallet extends Component {
                     {this.state.submitting && <button className='btn btn-primary' disabled>Submitting..(wait)</button>}
                   </div>
 
-                  {this.state.success && <div className='mt-4 alert alert-primary' role='alert'>
+                  {this.state.success &&
+                    <div className='mt-4 alert alert-primary' role='alert'>
                                         Success: Transaction hash: <a target='_NEW' href={'https://rinkeby.etherscan.io/tx/' + this.state.success.tx}>{this.state.success.tx}</a>
-                                         </div>}
-                  {this.state.err && <div className='mt-4 alert alert-danger' role='alert'>
+                    </div>}
+                  {this.state.err &&
+                    <div className='mt-4 alert alert-danger' role='alert'>
                                         Error: {this.state.err} <a target='_NEW' href={'https://rinkeby.etherscan.io/address/' + this.props.wallet}>{this.props.wallet}</a>
-                                     </div>}
+                    </div>}
                 </div>
               </form>
             </div>
@@ -424,12 +426,14 @@ class ShowWallet extends Component {
                   {this.state.submitting && <button className='btn btn-primary' disabled>Submitting..(wait)</button>}
                 </div>
               </div>
-              {this.state.success && <div className='mt-4 alert alert-primary' role='alert'>
+              {this.state.success &&
+                <div className='mt-4 alert alert-primary' role='alert'>
                                 Success: Transaction hash: <a target='_NEW' href={'https://rinkeby.etherscan.io/tx/' + this.state.success.tx}>{this.state.success.tx}</a>
-                                     </div>}
-              {this.state.err && <div className='mt-4 alert alert-danger' role='alert'>
+                </div>}
+              {this.state.err &&
+                <div className='mt-4 alert alert-danger' role='alert'>
                                 Error: {this.state.err} <a target='_NEW' href={'https://rinkeby.etherscan.io/address/' + this.props.wallet}>{this.props.wallet}</a>
-                                 </div>}
+                </div>}
             </div>
             <div className='tab-pane fade show' id='nav-drain' role='tabpanel' aria-labelledby='nav-drain-tab'>
               <form>

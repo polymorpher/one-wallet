@@ -1,10 +1,9 @@
 import React, { Component } from 'react'
 import crypto from 'crypto'
 import b32 from 'thirty-two'
-import * as truffleClient from './truffle_client'
+import * as truffleClient from './truffleClient'
 import ProgressBar from '@ramonak/react-progress-bar'
-
-const twofactor = require('node-2fa')
+// const twofactor = require('node-2fa')
 
 class Create extends Component {
   constructor (props) {
@@ -32,13 +31,13 @@ class Create extends Component {
   }
 
   receivedWorkerMessage (event) {
-    if (event.data.status == 'working') {
+    if (event.data.status === 'working') {
       console.log(event.data.current / event.data.total)
       this.setState({
         current: Math.floor((event.data.current * 100) / event.data.total)
       })
     }
-    if (event.data.status == 'done') {
+    if (event.data.status === 'done') {
       var mywallet = event.data.mywallet
       var expires = this.state.timeOffset + (Math.pow(2, this.state.depth) * this.state.duration)
       window.leafs = mywallet.leafs
@@ -52,7 +51,7 @@ class Create extends Component {
   }
 
   makeSecret () {
-    const newSecret = twofactor.generateSecret({ name: 'My Awesome App', account: 'johndoe' })
+    // const newSecret = twofactor.generateSecret({ name: 'My Awesome App', account: 'johndoe' })
     const config = {
       name: encodeURIComponent('SmartWallet'),
       account: encodeURIComponent('User'),
@@ -73,7 +72,7 @@ class Create extends Component {
     const query = `?secret=${secret}&issuer=${config.name}`
     const encodedQuery = query.replace('?', '%3F').replace('&', '%26')
     const uri = `otpauth://totp/${config.name}${config.account}`
-    const qr_fixed = `https://chart.googleapis.com/chart?chs=166x166&chld=L|0&cht=qr&chl=${uri}${encodedQuery}`
+    const qrFixed = `https://chart.googleapis.com/chart?chs=166x166&chld=L|0&cht=qr&chl=${uri}${encodedQuery}`
 
     // var time = Math.floor((Date.now() / 1000));
     // var timeOffset = time - (time% 300);
@@ -81,7 +80,7 @@ class Create extends Component {
     this.setState({
       secret: secret,
       uri: uri,
-      qr_fixed: qr_fixed,
+      qr_fixed: qrFixed,
     }, this.update)
   }
 
@@ -143,11 +142,11 @@ class Create extends Component {
               <div className='col-sm-8'>
                 {this.state.secret &&
                   <div className='mb-4'>
-                    <img src={this.state.qr_fixed} /><br />
+                    <img src={this.state.qr_fixed} alt='' /><br />
                     {this.state.secret}<br />
                   Scan with your Google Authenticator
                   </div>}
-                <a className='btn btn-primary btn-sm' onClick={this.generateSecret.bind(this)}>Generate new secret</a>
+                <button className='btn btn-primary btn-sm' onClick={this.generateSecret.bind(this)}>Generate new secret</button>
                 {this.state.working && <ProgressBar completed={this.state.current} />}
               </div>
             </div>
@@ -227,13 +226,15 @@ class Create extends Component {
               </div>
             </div>
             <div className='form-group row mt-4'>
-              <label htmlFor='inputEmail3' className='col-sm-4 col-form-label' />
+              <span htmlFor='inputEmail3' className='col-sm-4 col-form-label' />
               <div className='col-sm-8'>
-                {!this.state.creating && <button
-                  className='btn btn-primary' disabled={!this.state.secret}
-                  onClick={this.create.bind(this)}
-                                         >Create Contract
-                                         </button>}
+                {!this.state.creating &&
+                  <button
+                    className='btn btn-primary' disabled={!this.state.secret}
+                    onClick={this.create.bind(this)}
+                  >
+                    Create Contract
+                  </button>}
                 {this.state.creating && <button className='btn btn-primary' disabled>Submitting..(wait)</button>}
               </div>
             </div>
