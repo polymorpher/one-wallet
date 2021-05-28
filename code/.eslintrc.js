@@ -28,6 +28,7 @@ module.exports = {
     'no-mixed-operators': 0,
     'max-len': 0,
     'react/prop-types': 'off',
+    'jsx-a11y/label-has-associated-control': 'off',
     'react/jsx-filename-extension': [
       1,
       {

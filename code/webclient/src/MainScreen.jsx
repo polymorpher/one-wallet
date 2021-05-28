@@ -1,74 +1,75 @@
-import React, { Component } from 'react'
+import React, { useEffect, useState } from 'react'
 import * as truffleClient from './truffleClient'
 import Create from './Create'
 import ShowWallet from './showWallet'
 
-class MainScreen extends Component {
-  constructor (props) {
-    super(props)
-    this.state = { wallets: [], create: false }
-  }
+const MainScreen = () => {
+  const [network, setNetwork] = useState()
+  const [wallets, setWallets] = useState()
+  const [loadedWallet, setLoadedWallet] = useState()
+  const [showCreate, setShowCreate] = useState()
+  useEffect(() => {
+    const f = async () => {
+      await truffleClient.load()
+      setNetwork(window.App.network)
+      const w = truffleClient.getWallets()
+      if (w) {
+        setWallets(w)
+      }
+    }
+    f()
+  }, [])
 
-  componentDidMount () {
-    var self = this
-    truffleClient.load().then(e => {
-      self.setState({ network: window.App.network })
-    })
-    var wallets = truffleClient.getWallets()
-    this.setState({ wallets })
+  const onSelected = (e) => {
+    if (!e.target) {
+      return
+    }
+    const o = e.target.selectedOptions[0]
+    if (!o) {
+      return
+    }
+    const w = o.getAttribute('data-wallet')
+    console.log(`selected ${e.target.value}  | data-wallet=${w}`)
+    setLoadedWallet(w)
   }
-
-  onSelect (e) {
-    console.log(e.target.value)
-    this.setState({ 'loaded': e.target.value })
+  const onCreated = (contract) => {
+    setShowCreate(true)
+    setLoadedWallet(contract.address)
   }
-  create (e) {
-    e.preventDefault()
-    this.setState({ create: true })
-  }
-  closeCreate () {
-    this.setState({ create: false })
-  }
-  onCreated (contract) {
-    this.setState({ create: false, loaded: contract.address })
-  }
-  render () {
-    return (
-      <div>
-        <nav className='navbar navbar-expand-md navbar-dark bg-dark mb-4 d-flex justify-content-center'>
-          <span className='navbar-text '>
+  return (
+    <div>
+      <nav className='navbar navbar-expand-md navbar-dark bg-dark mb-4 d-flex justify-content-center'>
+        <span className='navbar-text '>
                     TOTP Smart Wallet Demo<br />
-                    Network: {window.App.network}
-          </span>
-        </nav>
-        <main role='main' className='container' style={{ 'maxWidth': 700 }}>
-          <div className='row'>
-            <div className='col-sm-12'>
-              <div className='mb-3'>Choose Local Wallet:
-                <select
-                  className='form-control'
-                  onBlur={this.onSelect.bind(this)}
-                >
-                  <option>Choose one</option>
-                  {this.state.wallets.map(e => <option key={e.toString()}>{e}</option>)}
-                </select>
-              </div>
-              <i>or</i>
-              <div className='mt-3'>
-                {!this.state.create && <button className='btn btn-primary' onClick={this.create.bind(this)}>New Wallet</button>}
-                {this.state.create && <Create onClose={this.closeCreate.bind(this)} onCreated={this.onCreated.bind(this)} />}
-              </div>
+                    Network: {network}
+        </span>
+      </nav>
+      <main role='main' className='container' style={{ 'maxWidth': 700 }}>
+        <div className='row'>
+          <div className='col-sm-12'>
+            <div className='mb-3'>Choose Local Wallet:
+              <select
+                className='form-control'
+                onChange={onSelected}
+              >
+                <option>Choose one</option>
+                {wallets && wallets.map(e => <option key={e.toString()} data-wallet={e.toString()}>{e}</option>)}
+              </select>
+            </div>
+            <i>or</i>
+            <div className='mt-3'>
+              {!showCreate && <button className='btn btn-primary' onClick={() => setShowCreate(true)}>New Wallet</button>}
+              {showCreate && <Create onClose={() => setShowCreate(false)} onCreated={onCreated} />}
             </div>
           </div>
-          <div className='row'>
-            <div className='col-sm-12'>
-              {this.state.loaded && <ShowWallet wallet={this.state.loaded} />}
-            </div>
+        </div>
+        <div className='row'>
+          <div className='col-sm-12'>
+            {loadedWallet && <ShowWallet wallet={loadedWallet} />}
           </div>
-        </main>
-      </div>
-    )
-  }
+        </div>
+      </main>
+    </div>
+  )
 }
-
 export default MainScreen

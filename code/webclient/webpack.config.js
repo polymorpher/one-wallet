@@ -28,7 +28,7 @@ module.exports = {
     ],
   },
   entry: {
-    main: ['./src/index.jsx'],
+    main: ['./src/index.js'],
     worker: ['./src/worker/generate.js'],
   },
   devtool: 'source-map',

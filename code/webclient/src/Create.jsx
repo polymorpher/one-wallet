@@ -1,248 +1,223 @@
-import React, { Component } from 'react'
+import React, { useState, useEffect } from 'react'
 import crypto from 'crypto'
 import b32 from 'thirty-two'
 import * as truffleClient from './truffleClient'
 import ProgressBar from '@ramonak/react-progress-bar'
 // const twofactor = require('node-2fa')
 
-class Create extends Component {
-  constructor (props) {
-    super(props)
-
-    this.worker = new Worker('worker.js')
-    this.worker.onmessage = this.receivedWorkerMessage.bind(this)
-
-    var time = Math.floor((Date.now() / 1000))
-    var timeOffset = time - (time % 30)
-    this.state = {
-      duration: 30,
-      depth: 16,
-      timeOffset: timeOffset,
-      expires: 0,
-      secret: '',
-      creating: false,
-      drainAddr: window.App.defaultAccount
-    }
+const createOTPSeed = ({ otpInterval }) => {
+  // const newSecret = twofactor.generateSecret({ name: 'My Awesome App', account: 'johndoe' })
+  const config = {
+    name: encodeURIComponent('ONE Wallet'),
+    account: encodeURIComponent('User'),
+    step: encodeURIComponent(otpInterval),
   }
+  const bin = crypto.randomBytes(20)
+  const base32 = b32.encode(bin).toString('utf8').replace(/=/g, '')
 
-  generateSecret (e) {
-    e.preventDefault()
-    this.makeSecret()
-  }
+  const seed = base32
+    .toLowerCase()
+    .replace(/(\w{4})/g, '$1 ')
+    .trim()
+    .split(' ')
+    .join('')
+    .toUpperCase()
 
-  receivedWorkerMessage (event) {
-    if (event.data.status === 'working') {
-      console.log(event.data.current / event.data.total)
-      this.setState({
-        current: Math.floor((event.data.current * 100) / event.data.total)
-      })
-    }
-    if (event.data.status === 'done') {
-      var mywallet = event.data.mywallet
-      var expires = this.state.timeOffset + (Math.pow(2, this.state.depth) * this.state.duration)
-      window.leafs = mywallet.leafs
-      this.setState({
-        rootHash: mywallet.root,
-        expires: expires,
-        working: false
-      })
-      console.log('done', mywallet)
-    }
-  }
+  const query = `?secret=${seed}&issuer=${config.name}`
+  const encodedQuery = query.replace('?', '%3F').replace('&', '%26')
+  const uri = `otpauth://totp/${config.name}${config.account}`
+  const qrCodeUrl = `https://chart.googleapis.com/chart?chs=166x166&chld=L|0&cht=qr&chl=${uri}${encodedQuery}`
 
-  makeSecret () {
-    // const newSecret = twofactor.generateSecret({ name: 'My Awesome App', account: 'johndoe' })
-    const config = {
-      name: encodeURIComponent('SmartWallet'),
-      account: encodeURIComponent('User'),
-      step: encodeURIComponent(this.state.duration),
-    }
-
-    const bin = crypto.randomBytes(20)
-    const base32 = b32.encode(bin).toString('utf8').replace(/=/g, '')
-
-    const secret = base32
-      .toLowerCase()
-      .replace(/(\w{4})/g, '$1 ')
-      .trim()
-      .split(' ')
-      .join('')
-      .toUpperCase()
-
-    const query = `?secret=${secret}&issuer=${config.name}`
-    const encodedQuery = query.replace('?', '%3F').replace('&', '%26')
-    const uri = `otpauth://totp/${config.name}${config.account}`
-    const qrFixed = `https://chart.googleapis.com/chart?chs=166x166&chld=L|0&cht=qr&chl=${uri}${encodedQuery}`
-
-    // var time = Math.floor((Date.now() / 1000));
-    // var timeOffset = time - (time% 300);
-
-    this.setState({
-      secret: secret,
-      uri: uri,
-      qr_fixed: qrFixed,
-    }, this.update)
-  }
-
-  componentDidMount () {
-    console.log(this, window.App.defaultAccount)
-  }
-
-  create (e) {
-    this.setState({ creating: true })
-
-    e.preventDefault()
-    var self = this
-    truffleClient.createWallet(this.state.rootHash, this.state.depth, this.state.duration, this.state.timeOffset, window.leafs, this.state.drainAddr).then(e => {
-      console.log(e)
-      self.props.onCreated(e)
-    })
-    return false
-  }
-
-  changeDepth (e) {
-    this.setState({ depth: parseInt(e.target.value) }, this.update)
-  }
-
-  changeDrainAddr (e) {
-    this.setState({ drainAddr: e.target.value })
-  }
-
-  changeDuration (e) {
-    this.setState({ duration: parseInt(e.target.value) }, this.update)
-  }
-
-  update () {
-    this.setState({ working: true, current: 0 })
-    // var mywallet = wallet.generateWallet(this.state.secret, this.state.depth, this.state.duration, this.state.timeOffset)
-    this.worker.postMessage({
-      secret: this.state.secret,
-      depth: this.state.depth,
-      duration: this.state.duration,
-      timeOffset: this.state.timeOffset
-    })
-  }
-
-  render () {
-    return (
-      <div className='card bg-light mb-3 mt-3'>
-        <div className='card-header'>Create a wallet
-          <button
-            className='pull-right clickable close-icon' data-effect='fadeOut' onClick={(e) => {
-              this.props.onClose()
-              e.preventDefault()
-            }}
-          ><i className='fa fa-times' />
-          </button>
-        </div>
-        <div className='card-body'>
-          <form>
-            <div className='form-group row'>
-              <label htmlFor='inputEmail3' className='col-sm-4 col-form-label'>TOTP Secret</label>
-              <div className='col-sm-8'>
-                {this.state.secret &&
-                  <div className='mb-4'>
-                    <img src={this.state.qr_fixed} alt='' /><br />
-                    {this.state.secret}<br />
-                  Scan with your Google Authenticator
-                  </div>}
-                <button className='btn btn-primary btn-sm' onClick={this.generateSecret.bind(this)}>Generate new secret</button>
-                {this.state.working && <ProgressBar completed={this.state.current} />}
-              </div>
-            </div>
-            <div className='form-group row'>
-              <label htmlFor='inputEmail3' className='col-sm-4 col-form-label'>Merkle Hash</label>
-              <div className='col-sm-8'>
-                <input
-                  type='text' readOnly className='form-control' id='inputEmail3' placeholder='Not ready'
-                  value={this.state.rootHash}
-                />
-              </div>
-            </div>
-            <div className='form-group row'>
-              <label htmlFor='inputEmail3' className='col-sm-4 col-form-label'>Duration</label>
-              <div className='col-sm-8'>
-                <input
-                  type='number' className='form-control' id='inputEmail3' value={this.state.duration}
-                  onChange={this.changeDuration.bind(this)}
-                />
-              </div>
-            </div>
-            <div className='form-group row'>
-              <label htmlFor='inputEmail3' className='col-sm-4 col-form-label'>Tree Depth</label>
-              <div className='input-group col-sm-8'>
-                <input
-                  type='number' className='form-control' value={this.state.depth}
-                  onChange={this.changeDepth.bind(this)} placeholder="Recipient's username"
-                  aria-label="Recipient's username" aria-describedby='basic-addon2'
-                />
-                <div className='input-group-append'>
-                  <span className='input-group-text' id='basic-addon2'>{Math.pow(2, this.state.depth)} leafs</span>
-                </div>
-              </div>
-            </div>
-            <div className='form-group row'>
-              <label htmlFor='inputEmail3' className='col-sm-4 col-form-label'>Time Offset</label>
-              <div className='input-group col-sm-8'>
-                <input
-                  type='text' className='form-control' value={this.state.timeOffset}
-                  placeholder="Recipient's username" aria-label="Recipient's username"
-                  aria-describedby='basic-addon2'
-                />
-                <div className='input-group-append'>
-                  <span
-                    className='input-group-text'
-                    id='basic-addon2'
-                  >{new Date(this.state.timeOffset * 1000).toISOString()}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className='form-group row'>
-              <label htmlFor='inputEmail3' className='col-sm-4 col-form-label'>Expires</label>
-              <div className='input-group col-sm-8'>
-                <input
-                  type='text' readOnly className='form-control' value={this.state.expires}
-                  placeholder="Recipient's username" aria-label="Recipient's username"
-                  aria-describedby='basic-addon2'
-                />
-                <div className='input-group-append'>
-                  <span
-                    className='input-group-text'
-                    id='basic-addon2'
-                  >{new Date(this.state.expires * 1000).toISOString()}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className='form-group row'>
-              <label htmlFor='inputEmail3' className='col-sm-4 col-form-label'>Drain Address</label>
-              <div className='input-group col-sm-8'>
-                <input
-                  type='text' className='form-control' value={this.state.drainAddr}
-                  onChange={this.changeDrainAddr.bind(this)} placeholder='0x...' aria-label="Recipient's username"
-                  aria-describedby='basic-addon2'
-                />
-              </div>
-            </div>
-            <div className='form-group row mt-4'>
-              <span htmlFor='inputEmail3' className='col-sm-4 col-form-label' />
-              <div className='col-sm-8'>
-                {!this.state.creating &&
-                  <button
-                    className='btn btn-primary' disabled={!this.state.secret}
-                    onClick={this.create.bind(this)}
-                  >
-                    Create Contract
-                  </button>}
-                {this.state.creating && <button className='btn btn-primary' disabled>Submitting..(wait)</button>}
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
-    )
+  return {
+    seed,
+    uri,
+    qrCodeUrl
   }
 }
 
-export default Create
+const CreateWallet = ({ onCreated, onClose }) => {
+  const [worker, setWorker] = useState()
+  const [otpInterval, setOtpInterval] = useState(30) // seconds
+  const [otpMerkleTreeDepth, setTreeDepth] = useState(16)
+  const [walletEffectiveTime, setWalletEffectiveTime] = useState(0) // seconds
+  const [walletExpirationTime, setWalletExpirationTime] = useState(0) // seconds
+  const [drainAddress, setDrainAddress] = useState()
+  const [isCreationInProgress, setIsCreationInProgress] = useState()
+  const [isGeneratingLeaves, setIsGeneratingLeaves] = useState(false)
+  const [rootHash, setRootHash] = useState() // wallet
+  const [otpLeaves, setOtpLeaves] = useState()
+  const [generationProgress, setGenerationProgress] = useState(0)
+  const [authenticatorConfig, setAuthenticatorConfig] = useState({ seed: '' })
+
+  useEffect(() => {
+    const secondsNow = Math.floor((Date.now() / 1000))
+    setWalletEffectiveTime(secondsNow - (secondsNow % 30))
+    setDrainAddress(window.App.defaultAccount)
+    const worker = new Worker('worker.js')
+    worker.onmessage = (event) => {
+      const { status, current, total, mywallet } = event.data
+      if (status === 'working') {
+        console.log(`Completed ${(current / total * 100).toFixed(2)}%`)
+        setGenerationProgress(Math.floor(current / total * 100))
+      }
+      if (status === 'done') {
+        setWalletExpirationTime(walletEffectiveTime + (Math.pow(2, otpMerkleTreeDepth) * otpInterval))
+        setRootHash(mywallet.root)
+        setOtpLeaves(mywallet.leafs)
+        setIsCreationInProgress(false)
+        console.log('Received created wallet from worker:', mywallet)
+      }
+    }
+    setWorker(worker)
+  }, [])
+  useEffect(() => {
+    if (authenticatorConfig.seed) {
+      setIsGeneratingLeaves(true)
+      setGenerationProgress(0)
+      // TODO: fix worker parameter names
+      worker && worker.postMessage({
+        secret: authenticatorConfig.seed,
+        depth: otpMerkleTreeDepth,
+        duration: otpInterval,
+        timeOffset: walletEffectiveTime
+      })
+    }
+  }, [authenticatorConfig, otpInterval, drainAddress, otpMerkleTreeDepth])
+  const onCreateNewOTPSeed = (e) => {
+    e.preventDefault()
+    const { seed, uri, qrCodeUrl } = createOTPSeed(otpInterval)
+    setAuthenticatorConfig({ seed, uri, qrCodeUrl })
+    return false
+  }
+  const onCreateWallet = async () => {
+    setIsCreationInProgress(true)
+    const w = await truffleClient.createWallet(
+      rootHash,
+      otpMerkleTreeDepth,
+      otpInterval,
+      walletEffectiveTime,
+      otpLeaves,
+      drainAddress
+    )
+    console.log('[onCreateWallet] Created wallet', w)
+    onCreated && onCreated(w)
+  }
+  // TODO: break it down by parts
+  return (
+    <div className='card bg-light mb-3 mt-3'>
+      <div className='card-header'>Create a wallet
+        <button
+          className='pull-right clickable close-icon' data-effect='fadeOut'
+          onClick={(e) => {
+            onClose && onClose()
+          }}
+        ><i className='fa fa-times' />
+        </button>
+      </div>
+      <div className='card-body'>
+        <form>
+          <div className='form-group row'>
+            <label className='col-sm-4 col-form-label'>TOTP Secret</label>
+            <div className='col-sm-8'>
+              {authenticatorConfig.seed &&
+                <div className='mb-4'>
+                  <img src={authenticatorConfig.qrCodeUrl} alt='' /><br />
+                  {authenticatorConfig.seed}<br />
+                Scan with your Google Authenticator
+                </div>}
+              <button
+                className='btn btn-primary btn-sm'
+                style={{ marginBottom: 16 }}
+                onClick={onCreateNewOTPSeed}
+              >Generate new secret
+              </button>
+              {isGeneratingLeaves &&
+                <ProgressBar
+                  completed={generationProgress}
+                  transitionDuration='0s'
+                  transitionTimingFunction='linear'
+                />}
+            </div>
+          </div>
+          <div className='form-group row'>
+            <label className='col-sm-4 col-form-label'>Merkle Hash</label>
+            <div className='col-sm-8'>
+              <input
+                type='text' readOnly className='form-control'
+                value={rootHash}
+              />
+            </div>
+          </div>
+          <div className='form-group row'>
+            <label className='col-sm-4 col-form-label'>Duration</label>
+            <div className='col-sm-8'>
+              <input
+                type='number' className='form-control' value={otpInterval}
+                onChange={(e) => setOtpInterval(parseInt(e.target.value))}
+              />
+            </div>
+          </div>
+          <div className='form-group row'>
+            <label className='col-sm-4 col-form-label'>Tree Depth</label>
+            <div className='input-group col-sm-8'>
+              <input
+                type='number' className='form-control' value={otpMerkleTreeDepth}
+                onChange={(e) => setTreeDepth(parseInt(e.target.value))}
+              />
+              <div className='input-group-append'>
+                <span className='input-group-text' id='basic-addon2'>{Math.pow(2, otpMerkleTreeDepth)} leaves</span>
+              </div>
+            </div>
+          </div>
+          <div className='form-group row'>
+            <label className='col-sm-4 col-form-label'>Effective Time</label>
+            <div className='input-group col-sm-8'>
+              <input
+                type='text' className='form-control' value={walletEffectiveTime}
+                onChange={(e) => setWalletEffectiveTime(parseInt(e.target.value))}
+              />
+              <div className='input-group-append'>
+                <span className='input-group-text'>
+                  {new Date(walletEffectiveTime * 1000).toISOString()}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className='form-group row'>
+            <label className='col-sm-4 col-form-label'>Expiration Time</label>
+            <div className='input-group col-sm-8'>
+              <input type='text' readOnly className='form-control' value={walletExpirationTime} />
+              <div className='input-group-append'>
+                <span className='input-group-text'>{new Date(walletExpirationTime * 1000).toISOString()}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className='form-group row'>
+            <label className='col-sm-4 col-form-label'>Drain Address</label>
+            <div className='input-group col-sm-8'>
+              <input
+                type='text' className='form-control' value={drainAddress}
+                onChange={(e) => setDrainAddress(e.target.value)} placeholder='0x...'
+              />
+            </div>
+          </div>
+          <div className='form-group row mt-4'>
+            <label className='col-sm-4 col-form-label' />
+            <div className='col-sm-8'>
+              {!isCreationInProgress &&
+                <button
+                  className='btn btn-primary' disabled={!authenticatorConfig.seed}
+                  onClick={onCreateWallet}
+                >
+                Create Contract
+                </button>}
+              {isCreationInProgress && <button className='btn btn-primary' disabled>Submitting..(wait)</button>}
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+export default CreateWallet
