@@ -41,48 +41,49 @@ const CreateWallet = ({ onCreated, onClose }) => {
   const [otpMerkleTreeDepth, setTreeDepth] = useState(16)
   const [walletEffectiveTime, setWalletEffectiveTime] = useState(0) // seconds
   const [walletExpirationTime, setWalletExpirationTime] = useState(0) // seconds
-  const [drainAddress, setDrainAddress] = useState()
-  const [isCreationInProgress, setIsCreationInProgress] = useState()
+  const [drainAddress, setDrainAddress] = useState('')
+  const [isCreationInProgress, setIsCreationInProgress] = useState(false)
   const [isGeneratingLeaves, setIsGeneratingLeaves] = useState(false)
-  const [rootHash, setRootHash] = useState() // wallet
-  const [otpLeaves, setOtpLeaves] = useState()
+  const [rootHash, setRootHash] = useState('') // wallet
+  const [otpLeaves, setOtpLeaves] = useState([])
   const [generationProgress, setGenerationProgress] = useState(0)
-  const [authenticatorConfig, setAuthenticatorConfig] = useState({ seed: '' })
+  const [authenticatorConfig, setAuthenticatorConfig] = useState({ seed: '', uri: '', qrCodeUrl: '' })
 
   useEffect(() => {
     const secondsNow = Math.floor((Date.now() / 1000))
     setWalletEffectiveTime(secondsNow - (secondsNow % 30))
-    setDrainAddress(window.App.defaultAccount)
-    const worker = new Worker('worker.js')
+    setDrainAddress(window.App.defaultAccount || '')
+    const worker = new Worker('oneWalletWorker.js')
     worker.onmessage = (event) => {
-      const { status, current, total, mywallet } = event.data
+      const { status, current, total, wallet } = event.data
       if (status === 'working') {
         console.log(`Completed ${(current / total * 100).toFixed(2)}%`)
         setGenerationProgress(Math.floor(current / total * 100))
       }
       if (status === 'done') {
         setWalletExpirationTime(walletEffectiveTime + (Math.pow(2, otpMerkleTreeDepth) * otpInterval))
-        setRootHash(mywallet.root)
-        setOtpLeaves(mywallet.leafs)
+        setRootHash(wallet.root)
+        setOtpLeaves(wallet.leafs)
         setIsCreationInProgress(false)
-        console.log('Received created wallet from worker:', mywallet)
+        console.log('Received created wallet from worker:', wallet)
       }
     }
     setWorker(worker)
   }, [])
   useEffect(() => {
     if (authenticatorConfig.seed) {
+      console.log('posting to worker')
       setIsGeneratingLeaves(true)
       setGenerationProgress(0)
       // TODO: fix worker parameter names
       worker && worker.postMessage({
-        secret: authenticatorConfig.seed,
-        depth: otpMerkleTreeDepth,
-        duration: otpInterval,
-        timeOffset: walletEffectiveTime
+        otpSeed: authenticatorConfig.seed,
+        merkleTreeDepth: otpMerkleTreeDepth,
+        otpInterval: otpInterval,
+        effectiveTime: walletEffectiveTime
       })
     }
-  }, [authenticatorConfig, otpInterval, drainAddress, otpMerkleTreeDepth])
+  }, [authenticatorConfig, otpInterval, otpMerkleTreeDepth])
   const onCreateNewOTPSeed = (e) => {
     e.preventDefault()
     const { seed, uri, qrCodeUrl } = createOTPSeed(otpInterval)

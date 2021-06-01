@@ -7,7 +7,7 @@ const MainScreen = () => {
   const [network, setNetwork] = useState()
   const [wallets, setWallets] = useState()
   const [loadedWallet, setLoadedWallet] = useState()
-  const [showCreate, setShowCreate] = useState()
+  const [showCreate, setShowCreate] = useState(false)
   useEffect(() => {
     const f = async () => {
       await truffleClient.load()
@@ -58,7 +58,7 @@ const MainScreen = () => {
             </div>
             <i>or</i>
             <div className='mt-3'>
-              {!showCreate && <button className='btn btn-primary' onClick={() => setShowCreate(true)}>New Wallet</button>}
+              <button className='btn btn-primary' onClick={() => setShowCreate(true)} disabled={showCreate}>New Wallet</button>
               {showCreate && <Create onClose={() => setShowCreate(false)} onCreated={onCreated} />}
             </div>
           </div>

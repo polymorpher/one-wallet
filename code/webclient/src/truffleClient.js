@@ -13,8 +13,6 @@ const DailyLimit = contract(dailyLimitArtifact)
 // const Guardians = contract(guardiansArtifact)
 // const Recovery = contract(recoveryArtifact)
 
-console.log(DailyLimit)
-
 TOTPWallet.setProvider(window.web3.currentProvider)
 
 const networks = {
@@ -63,15 +61,13 @@ export async function refresh () {
   }
   let _accounts = await web3.eth.getAccounts()
   const chainId = parseInt(await window.ethereum.request({ method: 'eth_chainId' }))
-  console.log(chainId)
+  // console.log(chainId)
   window.App.chainId = chainId
   window.App.network = networks[chainId]
 
   if (!(chainId in networks)) {
     alert(`Not supported chain id : ${chainId}`)
   }
-
-  console.log('Using network ', window.App.network)
 
   window.App.accounts = _accounts
   window.App.defaultAccount = _accounts[0]
@@ -116,7 +112,7 @@ export async function loadWallet (address) {
 export function getWallets () {
   const wallets = []
   for (const key in localStorage) {
-    console.log(key)
+    // console.log(key)
     if (key.startsWith('wallet:')) {
       wallets.push(key.split(':')[1])
     }

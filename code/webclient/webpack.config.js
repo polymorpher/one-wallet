@@ -29,7 +29,7 @@ module.exports = {
   },
   entry: {
     main: ['./src/index.js'],
-    worker: ['./src/worker/generate.js'],
+    oneWalletWorker: ['./src/worker/oneWalletWorker.js'],
   },
   devtool: 'source-map',
   output: {
