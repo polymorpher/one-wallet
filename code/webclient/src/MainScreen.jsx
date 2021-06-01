@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import * as truffleClient from './truffleClient'
 import Create from './Create'
 import ShowWallet from './showWallet'
+import BenchmarkPage from './BenchmarkHash'
 
 const MainScreen = () => {
   const [network, setNetwork] = useState()
@@ -37,6 +38,7 @@ const MainScreen = () => {
     setLoadedWallet(contract.address)
   }
   return (
+
     <div>
       <nav className='navbar navbar-expand-md navbar-dark bg-dark mb-4 d-flex justify-content-center'>
         <span className='navbar-text '>
@@ -44,6 +46,7 @@ const MainScreen = () => {
                     Network: {network}
         </span>
       </nav>
+      <BenchmarkPage></BenchmarkPage>
       <main role='main' className='container' style={{ 'maxWidth': 700 }}>
         <div className='row'>
           <div className='col-sm-12'>

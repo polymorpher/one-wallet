@@ -24,12 +24,17 @@ module.exports = {
             ]
           }
         }
-      }
+      },
+      {
+        test: /\.css$/i,
+        use: ['style-loader', 'css-loader'],
+      },
     ],
   },
   entry: {
     main: ['./src/index.js'],
     oneWalletWorker: ['./src/worker/oneWalletWorker.js'],
+    hashBenchmark: ['./src/worker/hashBenchmark.js'],
   },
   devtool: 'source-map',
   output: {
