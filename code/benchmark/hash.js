@@ -159,7 +159,7 @@ const runBenchmark = async (size, onUpdate, workers) => {
         result.set(r, i * 32)
       }
     })
-  })
+  }, onUpdate)
   //
   await timer('ethers.keccak256', () => {
     return asyncWrapper(() => {
@@ -171,7 +171,6 @@ const runBenchmark = async (size, onUpdate, workers) => {
     })
   }, onUpdate)
   // //
-  console.log(IS_NODE)
   const decoder = IS_NODE ? new util.TextDecoder() : new TextDecoder()
   await timer('soliditySha3', () => {
     return asyncWrapper(() => {
