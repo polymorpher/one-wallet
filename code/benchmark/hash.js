@@ -4,9 +4,8 @@ const fastSHA256 = require('fast-sha256')
 const createKeccakHash = require('keccak')
 const { Keccak: SHA3Keccak } = require('sha3')
 const RIPEMD160 = require('ripemd160')
-const GPU = require('gpu.js')
 
-const IS_NODE = typeof navigator === 'undefined'
+const IS_NODE = (typeof navigator === 'undefined')
 const os = IS_NODE && require('os')
 const { Worker } = IS_NODE ? require('worker_threads') : {}
 const util = IS_NODE && require('util')
@@ -33,15 +32,45 @@ const asyncWrapper = (f) => {
   })
 }
 
-const runNodeParallelFastSHA256 = (data, result) => {
-  const numWorkers = os.cpus().length
-  counter = 0 // thread-safe because this is accessed in main thread only
-  
-  return new Promise((resolve, reject) => {
-    const workers = new Array(numWorkers)
-    const workerResults = new Array(numWorkers)
-    const workerDatas = new Array(numWorkers)
+const runParallelFastSHA256 = async (data, result, workers) => {
+  const numWorkers = workers.length
+  const workerResults = new Array(numWorkers)
+  const workerDatas = new Array(numWorkers)
+  const size = data.length / 32
+  for (let i = 0; i < numWorkers; i += 1) {
+    const sliceSize = Math.ceil(size / numWorkers)
+    const beginIndex = i * sliceSize
+    const endIndex = Math.min((i + 1) * sliceSize, size)
+    const workerResult = result.subarray(beginIndex * 32, endIndex * 32).slice().buffer
+    const workerData = data.subarray(beginIndex * 32, endIndex * 32).slice().buffer
+    workerDatas[i] = workerData
+    workerResults[i] = workerResult
+  }
+  console.time('parallelFastSHA256.inner')
+  for (let i = 0; i < numWorkers; i += 1) {
+    const sliceSize = Math.ceil(size / numWorkers)
+    const beginIndex = i * sliceSize
+    const endIndex = Math.min((i + 1) * sliceSize, size)
+    workers[i].postMessage({
+      id: i,
+      beginIndex,
+      endIndex,
+      workerData: workerDatas[i],
+      workerResult: workerResults[i]
+    }, [workerDatas[i], workerResults[i]])
+  }
+}
 
+const runNodeParallelFastSHA256 = async (data, result) => {
+  let counter = 0 // thread-safe because this is accessed in main thread only
+  const numWorkers = os.cpus().length
+
+  // Shared data model. Since 25% of users use browsers which don't support this, we are not going to test it for now. This should only affect setup time anyway.
+  // const sharedBuffer = new SharedArrayBuffer(data.length)
+  // const sharedData = new Uint8Array(sharedBuffer)
+  // sharedData.set(data)
+  const workers = new Array(numWorkers)
+  return new Promise((resolve, reject) => {
     for (let i = 0; i < numWorkers; i += 1) {
       workers[i] = new Worker(__dirname + '/nodeWorker.js')
       workers[i].on('message', ({ id }) => {
@@ -53,30 +82,31 @@ const runNodeParallelFastSHA256 = (data, result) => {
         }
       })
     }
-    for (let i = 0; i < numWorkers; i += 1) {
-      const sliceSize = Math.ceil(size / numWorkers)
-      const beginIndex = i * sliceSize
-      const endIndex = Math.min((i + 1) * sliceSize, size)
-      const workerResult = result.subarray(beginIndex * 32, endIndex * 32).slice().buffer
-      const workerData = data.subarray(beginIndex * 32, endIndex * 32).slice().buffer
-      workerDatas[i] = workerData
-      workerResults[i] = workerResult
-    }
-    console.time('parallelFastSHA256.inner')
-    for (let i = 0; i < numWorkers; i += 1) {
-      const sliceSize = Math.ceil(size / numWorkers)
-      const beginIndex = i * sliceSize
-      const endIndex = Math.min((i + 1) * sliceSize, size)
-      workers[i].postMessage({ id: i, beginIndex, endIndex, workerData: workerDatas[i], workerResult: workerResults[i] }, [workerDatas[i], workerResults[i]])
-    }
+    runParallelFastSHA256(data, result, workers)
   })
 }
 
-const runGPUFastSHA256 = (data, result) => {
-
+const runBrowserParallelSHA256 = (data, result, workers) => {
+  let counter = 0 // thread-safe because this is accessed in main thread only
+  const numWorkers = navigator.hardwareConcurrency
+  const size = data.length / 32
+  return new Promise((resolve, reject) => {
+    for (let i = 0; i < numWorkers; i += 1) {
+      workers[i].onmessage = (event) => {
+        const { id } = event.data
+        // console.log(`received result from worker ${id}`)
+        counter += 1
+        if (counter === numWorkers) {
+          console.timeEnd('parallelFastSHA256.inner')
+          resolve()
+        }
+      }
+    }
+    runParallelFastSHA256(data, result, workers)
+  })
 }
 
-const runBenchmark = async (size, onUpdate) => {
+const runBenchmark = async (size, onUpdate, workers) => {
   const rawData = new ArrayBuffer(size * 32)
   const data = new Uint8Array(rawData)
   const encoder = new TextEncoder()
@@ -94,9 +124,10 @@ const runBenchmark = async (size, onUpdate) => {
   await timer('parallelFastSHA256', async () => {
     if (typeof navigator === 'undefined') {
       // node.js
-      runNodeParallelFastSHA256(data, result)
+      await runNodeParallelFastSHA256(data, result)
     } else {
-      throw new Error('Not supported')
+      await runBrowserParallelSHA256(data, result, workers)
+      // throw new Error('Not supported')
     }
   }, onUpdate)
 
@@ -113,7 +144,7 @@ const runBenchmark = async (size, onUpdate) => {
     return new Promise((resolve, reject) => {
       for (let i = 0; i < size; i++) {
         const r = ethers.utils.sha256(Buffer.from(data.subarray(i * 32, i * 32 + 32).slice()))
-        result.set(r, i * 32)
+        result.set(Buffer.from(r.slice(2), 'hex'), i * 32)
       }
       resolve()
     })
@@ -135,18 +166,19 @@ const runBenchmark = async (size, onUpdate) => {
       for (let i = 0; i < size; i++) {
         const d = data.subarray(i * 32, i * 32 + 32).slice()
         const r = ethers.utils.keccak256(Buffer.from(d))
-        result.set(r, i * 32)
+        result.set(Buffer.from(r.slice(2), 'hex'), i * 32)
       }
     })
   }, onUpdate)
   // //
-  const decoder = new util.TextDecoder()
+  console.log(IS_NODE)
+  const decoder = IS_NODE ? new util.TextDecoder() : new TextDecoder()
   await timer('soliditySha3', () => {
     return asyncWrapper(() => {
       for (let i = 0; i < size; i++) {
         const d = data.subarray(i * 32, i * 32 + 32).slice()
         const r = soliditySha3({ v: decoder.decode(d), t: 'bytes' })
-        result.set(r, i * 32)
+        result.set(Buffer.from(r.slice(2), 'hex'), i * 32)
       }
     })
   }, onUpdate)
@@ -156,7 +188,7 @@ const runBenchmark = async (size, onUpdate) => {
       for (let i = 0; i < size; i++) {
         const keccakInstace = createKeccakHash('keccak256')
         const d = data.subarray(i * 32, i * 32 + 32).slice()
-        const r = keccakInstace.update(Buffer.from(d)).digest('hex')
+        const r = keccakInstace.update(Buffer.from(d)).digest()
         result.set(r, i * 32)
       }
     })
@@ -167,7 +199,7 @@ const runBenchmark = async (size, onUpdate) => {
       const hash = new SHA3Keccak(256)
       for (let i = 0; i < size; i++) {
         const d = data.subarray(i * 32, i * 32 + 32).slice()
-        const r = hash.update(Buffer.from(d)).digest('hex')
+        const r = hash.update(Buffer.from(d)).digest()
         result.set(r, i * 32)
       }
     })

@@ -6,8 +6,12 @@ onmessage = function (event) {
     return
   }
   if (action === 'runBenchmark') {
+    const subworkers = []
+    for (let i = 0; i < navigator.hardwareConcurrency; i += 1) {
+      subworkers.push(new Worker('sha256benchmarkWorker.js'))
+    }
     runBenchmark(size, (key, time) => {
       postMessage({ key, time })
-    })
+    }, subworkers)
   }
 }

@@ -35,6 +35,7 @@ module.exports = {
     main: ['./src/index.js'],
     oneWalletWorker: ['./src/worker/oneWalletWorker.js'],
     hashBenchmark: ['./src/worker/hashBenchmark.js'],
+    sha256benchmarkWorker: ['./src/worker/sha256benchmarkWorker.js'],
   },
   devtool: 'source-map',
   output: {
@@ -45,6 +46,9 @@ module.exports = {
   resolve: {
     modules: [path.resolve(__dirname, 'node_modules'), 'node_modules'],
     extensions: ['.jsx', '.js'],
+    alias:{
+      'worker_threads': false,
+    },
     fallback: {
       path: require.resolve('path-browserify'),
       os: require.resolve('os-browserify'),
