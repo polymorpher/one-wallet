@@ -2313,7 +2313,7 @@ Function
 while
 \series default
  
-\begin_inset Formula $t<T$
+\begin_inset Formula $t<t_{0}+T$
 \end_inset
 
 :
