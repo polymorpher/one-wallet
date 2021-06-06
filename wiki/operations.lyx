@@ -1,0 +1,1738 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\begin_modules
+eqs-within-sections
+figs-within-sections
+\end_modules
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 1in
+\topmargin 1in
+\rightmargin 1in
+\bottommargin 1in
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Standard
+Last Updated on 2020-06-06 (draft v0.0.1) based on 
+\begin_inset CommandInset href
+LatexCommand href
+name "ONE Wallet Wiki version 2020-05-23 (draft v0.1.4)"
+target "https://github.com/polymorpher/one-wallet/wiki/Home/4bda5a469429aa72749d3bfd9ac943b8931ba38e#social-people"
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
+Definitions and common notations
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="17" columns="2">
+<features tabularvalignment="middle">
+<column alignment="left" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Role
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Symbols
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+User
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathbb{U}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Client
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathbb{C}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Google Authenticator
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathbb{A}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Smart Contract Wallet
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathbb{S}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+(Trusted) Relayer
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathbb{R}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Harmony Blockchain
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathbb{H}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Keccak256 Hash Function
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $h_{3}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+SHA256 Hash Function
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $h_{2}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+SHA1 Hash Function
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $h_{1}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Base32 Encoding
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $B_{32}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Offline Message Transmission
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $A\stackrel{\circ}{\rightarrow}B$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+(e.g.
+ Air-gapped QR code scan)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Online Message Transmission
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $A\rightarrow B$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Sending Message 
+\begin_inset Formula $m$
+\end_inset
+
+ From 
+\begin_inset Formula $A$
+\end_inset
+
+ to 
+\begin_inset Formula $B$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $A\rightarrow B:m$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+(Signed by) Private Key of A
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $sk(A)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+(Encrypted by) Public Key of A
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $pk(A)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
+Key Varibles
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="3" columns="2">
+<features tabularvalignment="middle">
+<column alignment="left" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Role
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Symbols
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+OTP Seed
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+OTP Root Hash
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $r$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Creating a Wallet
+\end_layout
+
+\begin_layout Standard
+Triggered by the User at the Client.
+ The User chooses wallet configuration parameters 
+\begin_inset Formula $G$
+\end_inset
+
+ (such as last-resort address 
+\begin_inset Formula $addr_{recovery}$
+\end_inset
+
+, daily spending limit 
+\begin_inset Formula $limit_{daily}$
+\end_inset
+
+, and other things), wallet lifespan 
+\begin_inset Formula $T$
+\end_inset
+
+ (in seconds, defaults to 1 year), and wallet effective time 
+\begin_inset Formula $t_{0}$
+\end_inset
+
+ (in seconds, defaults to current time)
+\end_layout
+
+\begin_layout Subsection
+Actions by the Client
+\end_layout
+
+\begin_layout Enumerate
+Generate a 20-byte long random string 
+\begin_inset Formula $k'$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Compute OTP Seed 
+\begin_inset Formula $k:=B_{32}(k')$
+\end_inset
+
+, and the hash of OTP Seed 
+\begin_inset Formula $k_{h}:=h_{2}(k)$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Enumerate
+Generate a URI link encoding the OTP seed 
+\begin_inset Formula $k$
+\end_inset
+
+, using standard time-based OTP configuration (
+\begin_inset Formula $h_{1}$
+\end_inset
+
+ for hash function, 30-second refresh interval)
+\end_layout
+
+\begin_layout Enumerate
+Create a QR-code from the URI (version 6, byte mode, low error correction)
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+If Client is an mobile app, display an auto-setup button deep linked to
+ Google Authenticator app.
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Without waiting for Client to scan the QR code or click the auto-setup button
+ in previous step:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Compute the number of OTP Leaves required 
+\begin_inset Formula $n:=\exp(\lceil\log_{2}\frac{T}{30}\rceil)$
+\end_inset
+
+ and the depth of OTP Merkle Tree 
+\begin_inset Formula $d:=\lceil\log_{2}(n)\rceil$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Compute all OTPs 
+\begin_inset Formula $Q_{1...n}$
+\end_inset
+
+ for time interval 
+\begin_inset Formula $[t_{0},t_{0}+T]$
+\end_inset
+
+ using Algorithm 
+\begin_inset Formula $GenOTP(k,t_{0},T)$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Enumerate
+Compute all OTP Leaves for 
+\begin_inset Formula $i=1...n$
+\end_inset
+
+: 
+\begin_inset Formula $L_{i}^{0}=h_{2}(h_{2}(k_{h}\oplus Q_{i}))$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Compute OTP Merkle Tree for 
+\begin_inset Formula $j=1...d$
+\end_inset
+
+ and 
+\begin_inset Formula $i=1...\frac{n}{2^{j}}$
+\end_inset
+
+ : for 
+\begin_inset Formula $L_{i}^{-j}:=h_{2}(L_{2i-1}^{-j+1}\oplus L_{2i}^{-j+1})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Set OTP Root Hash 
+\begin_inset Formula $r:=L_{1}^{-d}$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Wait for User to confirm the completion of the actions in previous step.
+\end_layout
+
+\begin_layout Enumerate
+Inform the selected Relayer to create the wallet: 
+\begin_inset Formula $\mathbb{C}\to\mathbb{R}:\{r,t_{0},d,T,G\}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Destroy 
+\begin_inset Formula $Q_{1...n}$
+\end_inset
+
+ and 
+\begin_inset Formula $k$
+\end_inset
+
+.
+ Store 
+\begin_inset Formula $r,k_{h},t_{0},d,\{L_{i}^{-j}:\ j=1...d,\ i=1...\frac{n}{2^{j}}\}$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Enumerate
+Wait for confirmation from Relayer, and retrieve wallet address 
+\begin_inset Formula $addr(\mathbb{S})$
+\end_inset
+
+ and transaction id 
+\begin_inset Formula $id(tx_{create})$
+\end_inset
+
+ in the response.
+\end_layout
+
+\begin_layout Enumerate
+Verify 
+\begin_inset Formula $id(tx_{create})$
+\end_inset
+
+ is a completed transaction.
+ Store 
+\begin_inset Formula $addr(\mathbb{S})$
+\end_inset
+
+ and 
+\begin_inset Formula $id(tx_{create})$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Actions by the User
+\end_layout
+
+\begin_layout Enumerate
+Wait for Client to display QR Code or show auto-setup button
+\end_layout
+
+\begin_layout Enumerate
+Setup the Authenticator by scanning the QR Code or click the auto-step button:
+ 
+\begin_inset Formula $\mathbb{C}\stackrel{\circ}{\rightarrow}\mathbb{A}:\{k\}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+(Optional) backup the Authenticator setup QR Code 
+\begin_inset Formula $\mathbb{C}\stackrel{\circ}{\rightarrow}\mathbb{U}:\{k\}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Actions by the Authenticator
+\end_layout
+
+\begin_layout Enumerate
+Setup a new OTP code entry as per standard process based on OTP seed 
+\begin_inset Formula $k_{h}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Actions by the Relayer
+\end_layout
+
+\begin_layout Enumerate
+Wait for message 
+\begin_inset Formula $m_{create}\{r,t_{0},d,T,G\}$
+\end_inset
+
+ from Client
+\end_layout
+
+\begin_layout Enumerate
+Send transaction 
+\begin_inset Formula $tx_{create}:=\mathbb{S}_{new}(r,t_{0},d,T,G)$
+\end_inset
+
+ to Harmony blockchain and sign: 
+\begin_inset Formula $\mathbb{R}\to\mathbb{H}:\{tx_{create}\}_{sk(\mathbb{R})}$
+\end_inset
+
+ to create a new wallet 
+\begin_inset Formula $\mathbb{S}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Wait for confirmation from 
+\begin_inset Formula $\mathbb{H}$
+\end_inset
+
+.
+ Obtain transaction id 
+\begin_inset Formula $id(tx_{create})$
+\end_inset
+
+ and smart contract wallet's address 
+\begin_inset Formula $addr(\mathbb{S})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Return 
+\begin_inset Formula $id(tx_{create})$
+\end_inset
+
+ to Client: 
+\begin_inset Formula $\mathbb{R}\to\mathbb{C}:\{addr(\mathbb{S}),id(tx_{create})\}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Transferring Funds (Simple)
+\end_layout
+
+\begin_layout Standard
+This process is triggered by the User at the Client.
+ The User chooses the amount 
+\begin_inset Formula $tr_{amount}$
+\end_inset
+
+ and the destination address 
+\begin_inset Formula $tr_{dest}$
+\end_inset
+
+.
+ Here, we assume completing the transfer would not exceed the daily spending
+ limit set by the wallet, and 
+\begin_inset Formula $tr_{amount}$
+\end_inset
+
+ is below a limit that would require Composable Authentication.
+ 
+\end_layout
+
+\begin_layout Subsection
+Actions by the User
+\end_layout
+
+\begin_layout Enumerate
+Obtain the current OTP code on the Authenticator: 
+\begin_inset Formula $\mathbb{A}\stackrel{\circ}{\rightarrow}\mathbb{U}:\{Q^{t}\}$
+\end_inset
+
+ where 
+\begin_inset Formula $t$
+\end_inset
+
+ is current time, 
+\begin_inset Formula $Q^{t}:=Q_{\sigma(t)}$
+\end_inset
+
+ , and 
+\begin_inset Formula $\sigma(t):=\frac{t-t_{0}}{30}$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Enumerate
+Confirm transfer by providing the OTP code to Client: 
+\begin_inset Formula $\mathbb{U}\stackrel{\circ}{\rightarrow}\mathbb{C}:\{Q^{t}\}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Actions by the Client
+\end_layout
+
+\begin_layout Enumerate
+Wait for current OTP code 
+\begin_inset Formula $Q^{t}$
+\end_inset
+
+ from User.
+ Compute 
+\begin_inset Formula $\bar{Q}^{t}:=h_{2}(k_{h}\oplus Q^{t})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Denote 
+\begin_inset Formula $t':=\sigma(t)$
+\end_inset
+
+ .
+ Construct Merkle Branch: 
+\begin_inset Formula $\hat{P}^{t}:=\{\begin{cases}
+L_{t''}^{-j},L_{t''+1}^{-j} & t''\equiv1\ \mod2\\
+L_{t''-1}^{-j},L_{t''}^{-j} & t''\equiv0\ \mod2
+\end{cases}:\ t'':=\frac{t'}{2^{j}},\ j=1...d\}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Construct Merkle Path: 
+\begin_inset Formula $P^{t}:=\{L{}_{i}^{-j}:L'_{2*i-1}^{-j+1}\notin\hat{P}^{t}\ \wedge\ L'_{2*i}^{-j+1}\notin\hat{P}^{t}\ \wedge\ (i\ne t',j=0)\}$
+\end_inset
+
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+i.e.
+ remove a node if its child is also in Merkle Branch, and remove the leaf
+ corresponding to current OTP
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Construct Merkle Proof 
+\begin_inset Formula $(P^{t},\bar{Q}^{t}))$
+\end_inset
+
+ and message for commit 
+\begin_inset Formula $m_{commit}:=h_{3}(P^{t},\bar{Q}^{t},tr_{amount},tr_{dest})$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Enumerate
+Send commit message to Relayer: 
+\begin_inset Formula $\mathbb{C}\to\mathbb{R}:\{m_{commit},addr(\mathbb{S})\}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Wait for confirmation from Relayer and retrieve transaction id 
+\begin_inset Formula $id(tx_{commit})$
+\end_inset
+
+ in the response.
+\end_layout
+
+\begin_layout Enumerate
+Verify 
+\begin_inset Formula $id(tx_{transfer})$
+\end_inset
+
+ is finalized and wait for 1 more block (2 seconds)
+\end_layout
+
+\begin_layout Enumerate
+Send reveal message to Relayer: 
+\begin_inset Formula $\mathbb{C}\to\mathbb{R}:\{m_{reveal},addr(\mathbb{S})\}$
+\end_inset
+
+ where 
+\begin_inset Formula $m_{reveal}:=\{P^{t},\bar{Q}^{t},tr_{amount},tr_{dest}\}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Wait for confirmation from Relayer and retrieve transaction id 
+\begin_inset Formula $id(tx_{reveal})$
+\end_inset
+
+ in the response.
+\end_layout
+
+\begin_layout Enumerate
+Verify 
+\begin_inset Formula $id(tx_{reveal})$
+\end_inset
+
+ is finalized
+\end_layout
+
+\begin_layout Subsection
+Actions by the Authenticator
+\end_layout
+
+\begin_layout Enumerate
+Generate OTP code 
+\begin_inset Formula $Q^{t}$
+\end_inset
+
+ as per standard process for current time 
+\begin_inset Formula $t$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Actions by the Relayer
+\end_layout
+
+\begin_layout Enumerate
+Wait for message 
+\begin_inset Formula $\{m_{commit},addr(\mathbb{S})\}$
+\end_inset
+
+ from Client
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Send transaction 
+\begin_inset Formula $tx_{commit}:=\{\mathbb{S}_{commit}(m_{commit})\}$
+\end_inset
+
+ to contract 
+\begin_inset Formula $addr(\mathbb{S})$
+\end_inset
+
+ on Harmony Blockchain: 
+\begin_inset Formula $\mathbb{R}\to\mathbb{H}\to\mathbb{S}:\{tx_{commit}\}_{sk(\mathbb{R})}$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Enumerate
+Wait for confirmation from 
+\begin_inset Formula $\mathbb{H}$
+\end_inset
+
+ and obtain transaction id 
+\begin_inset Formula $id(tx_{commit})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Return 
+\begin_inset Formula $id(tx_{commit})$
+\end_inset
+
+ to Client: 
+\begin_inset Formula $\mathbb{R}\to\mathbb{C}:\{id(tx_{commit})\}$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Simutaneously, wait for message 
+\begin_inset Formula $\{m_{reveal}\{P^{t},\bar{Q}^{t},tr_{amount},tr_{dest}\},addr(\mathbb{S})\}$
+\end_inset
+
+ from Client
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Send transaction 
+\begin_inset Formula $tx_{reveal}:=\{\mathbb{S}_{reveal}(P^{t},\bar{Q}^{t},tr_{amount},tr_{dest})\}$
+\end_inset
+
+ to 
+\begin_inset Formula $addr(\mathbb{S})$
+\end_inset
+
+ on Harmony Blockchain: 
+\begin_inset Formula $\mathbb{R}\to\mathbb{H}\to\mathbb{S}:\{tx_{reveal}\}_{sk(\mathbb{R})}$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Enumerate
+Wait for confirmation from 
+\begin_inset Formula $\mathbb{H}$
+\end_inset
+
+ and obtain transaction id 
+\begin_inset Formula $id(tx_{reveal})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Return 
+\begin_inset Formula $id(tx_{reveal})$
+\end_inset
+
+ to Client: 
+\begin_inset Formula $\mathbb{R}\to\mathbb{C}:\{id(tx_{reveal})\}$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Subsection
+Actions by the Smart Contract
+\end_layout
+
+\begin_layout Enumerate
+On invocation of 
+\begin_inset Formula $\mathbb{S}_{commit}\{m_{commit}\}$
+\end_inset
+
+:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Add a map entry 
+\begin_inset Formula $m_{commit}\to t_{b}$
+\end_inset
+
+ to commit-table of 
+\begin_inset Formula $\mathbb{S}$
+\end_inset
+
+, where 
+\begin_inset Formula $t_{b}$
+\end_inset
+
+ is the current block's timestamp in seconds
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+On invocation of 
+\begin_inset Formula $\mathbb{S}_{reveal}\{P^{t},Q^{t},tr_{amount},tr_{dest}\}$
+\end_inset
+
+:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Lookup from commit-table at 
+\begin_inset Formula $\mathbb{S}$
+\end_inset
+
+ for map entry 
+\begin_inset Formula $t'_{b}:=h_{3}(P^{t},\bar{Q}^{t},tr_{amount},tr_{dest})$
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+If 
+\begin_inset Formula $t_{b}$
+\end_inset
+
+ does not exist, exit and emit error (rejection: transaction not committed)
+\end_layout
+
+\begin_layout Enumerate
+If 
+\begin_inset Formula $t'_{b}<t_{b}-30$
+\end_inset
+
+ (where 
+\begin_inset Formula $t_{b}$
+\end_inset
+
+ is the current block's timestamp in seconds), exit and emit error (rejection:
+ commit is too old)
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Verify that 
+\begin_inset Formula $\sum_{i,j:L_{i}^{-j+1}\in\bar{P}^{t}}2^{j}\zeta(i)=\lfloor\frac{t'_{b}-t_{0}}{30}\rfloor$
+\end_inset
+
+ where 
+\begin_inset Formula $\zeta(i)=\begin{cases}
+0 & i=2m+1\\
+1 & i=2m
+\end{cases}\ m\in\mathbb{Z}^{+}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Set 
+\begin_inset Formula $\bar{P}^{t}:=\{\begin{cases}
+h_{2}(\bar{Q}^{t}) & j=0,i=\sigma(t)\\
+L_{i}^{-j} & \text{otherwise}
+\end{cases}:L_{i}^{-j}\in P^{t}\}$
+\end_inset
+
+ .
+ Compute 
+\begin_inset Formula $L'_{i}^{-j}:=h_{2}(L'_{2i-1}^{-j+1}\oplus L'_{2i}^{-j+1})$
+\end_inset
+
+ recursively.
+\end_layout
+
+\begin_layout Enumerate
+Verify that 
+\begin_inset Formula $L'_{1}^{-d}=r$
+\end_inset
+
+.
+ If not successful, exit and emit error (rejection: bad proof)
+\end_layout
+
+\begin_layout Enumerate
+Verify that the current balance of 
+\begin_inset Formula $\mathbb{S}$
+\end_inset
+
+ is not less than 
+\begin_inset Formula $tr_{amount}$
+\end_inset
+
+.
+ Otherwise, exit and emit error (rejection: insufficient funds)
+\end_layout
+
+\begin_layout Enumerate
+Verify that the total amount transferred for the current 24-hour window
+ is not greater than 
+\begin_inset Formula $limit_{daily}-tr_{amount}$
+\end_inset
+
+.
+ Otherwise, exit and emit error (rejection: exceeds daily limit)
+\end_layout
+
+\begin_layout Enumerate
+Proceed with sending 
+\begin_inset Formula $tr_{amount}$
+\end_inset
+
+ from 
+\begin_inset Formula $\mathbb{S}$
+\end_inset
+
+ to 
+\begin_inset Formula $tr_{dest}$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Section
+Recovering Wallet
+\end_layout
+
+\begin_layout Standard
+This process is triggered by the User at the Client.
+ 
+\end_layout
+
+\begin_layout Subsection
+From Authenticator
+\end_layout
+
+\begin_layout Standard
+Here, it is assumed all information on the Client is lost.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Actions by the User
+\end_layout
+
+\begin_layout Enumerate
+Go to Google Authenticator and click 
+\begin_inset Quotes eld
+\end_inset
+
+...
+ - Export Accounts
+\begin_inset Quotes erd
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Enumerate
+Select the entry corresponding to the wallet and click 
+\begin_inset Quotes eld
+\end_inset
+
+export
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Scan the displayed QR code using the new Client: 
+\begin_inset Formula $\mathbb{A}\stackrel{\circ}{\rightarrow}\mathbb{C}:\{k\}$
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+If the new Client is running on a device without cameras, 
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Save the QR code as an image and transmit the image offline to the device
+ running the Client.
+ 
+\end_layout
+
+\begin_layout Enumerate
+Select the image using the file-selection prompt on the Client.
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Subsubsection
+Actions by the Client
+\end_layout
+
+\begin_layout Enumerate
+Wait for the User to trasnmit the QR code containing the OTP seed 
+\begin_inset Formula $k$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Compute the hash of OTP Seed 
+\begin_inset Formula $k_{h}:=h_{2}(k)$
+\end_inset
+
+ .
+ 
+\end_layout
+
+\begin_layout Enumerate
+Regenerate all information on the Client using the procedure in Section
+ 1.1 Step 5.
+\end_layout
+
+\begin_layout Subsection
+From Client
+\end_layout
+
+\begin_layout Standard
+In this case, it is assumed all information on the Authenticator is lost.
+\end_layout
+
+\begin_layout Subsubsection
+Actions by the User
+\end_layout
+
+\begin_layout Enumerate
+Go to Client and click 
+\begin_inset Quotes eld
+\end_inset
+
+I lost my authenticator.
+ Transfer all my funds to the last resort address
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+If last resort address is not set when the wallet was created, the user
+ may choose a new address 
+\begin_inset Formula $addr'_{recover}$
+\end_inset
+
+ to transfer the funds.
+ However, the transfer would be subject to daily spending limit.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Subsubsection
+Actions by the Client
+\end_layout
+
+\begin_layout Enumerate
+Check whether the wallet 
+\begin_inset Formula $\mathbb{S}$
+\end_inset
+
+ has a last resort address 
+\begin_inset Formula $addr_{recover}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+If 
+\begin_inset Formula $addr_{recover}$
+\end_inset
+
+ does not exist, set 
+\begin_inset Formula $tr_{address}:=addr'_{recover}$
+\end_inset
+
+ (provided by the User)
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Initiate the transfer protocol in Section 2.2.
+\end_layout
+
+\begin_layout Enumerate
+Brute-force current OTP code 
+\begin_inset Formula $Q^{t}$
+\end_inset
+
+ by enumerating for 
+\begin_inset Formula $0\le i<10^{6}$
+\end_inset
+
+, find 
+\begin_inset Formula $i$
+\end_inset
+
+ such that 
+\begin_inset Formula $h_{2}(h_{2}(k_{h}\oplus\bar{i}))=L_{\sigma(t)}^{0}$
+\end_inset
+
+ (where 
+\begin_inset Formula $t$
+\end_inset
+
+is current timestamp and 
+\begin_inset Formula $\sigma(t)$
+\end_inset
+
+ is defined in Section 2.1 Step 1)
+\end_layout
+
+\begin_layout Enumerate
+Continue with the protocol from Section 2.2 Step 2 using the brute-forced
+ OTP code, the transfer address 
+\begin_inset Formula $tr_{address}$
+\end_inset
+
+, and maximum transfer amount subject to daily limit 
+\begin_inset Formula $tr_{amount}:=limit_{daily}$
+\end_inset
+
+ .
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+If 
+\begin_inset Formula $addr_{recover}$
+\end_inset
+
+ does exist:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Brute force current OTP code 
+\begin_inset Formula $Q^{t}$
+\end_inset
+
+ as described above.
+\end_layout
+
+\begin_layout Enumerate
+Initiate the transfer protocol in Section 2.2 using the brute-forced OTP
+ code, but with following variations:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+The commit message in Step 4 is redefined as 
+\begin_inset Formula $m_{commit}:=h_{3}(P^{t},\bar{Q}^{t},o_{reocvery})$
+\end_inset
+
+ where 
+\begin_inset Formula $o_{reocvery}$
+\end_inset
+
+ is an enum value indicating this is an recovery operation
+\end_layout
+
+\begin_layout Enumerate
+The reveal message in Step 8 is redefined 
+\begin_inset Formula $m_{reveal}:=\{P^{t},\bar{Q}^{t},o_{reocvery}\}$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Subsubsection
+Actions by the Relayer
+\end_layout
+
+\begin_layout Standard
+The Relayer acts the same way as defined in Section 2.4 including the additional
+ support for recovery operation as described above.
+\end_layout
+
+\begin_layout Subsubsection
+Actions by the Smart Contract
+\end_layout
+
+\begin_layout Standard
+The Smart Contract follows the same protocol as described in Section 2.5,
+ but with following variations:
+\end_layout
+
+\begin_layout Enumerate
+On invocation of 
+\begin_inset Formula $\mathbb{S}_{reveal}\{P^{t},Q^{t},o_{recovery}\}$
+\end_inset
+
+:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Follow the same protocol as described in Section 2.5 Step (a) to (d).
+\end_layout
+
+\begin_layout Enumerate
+Transfer all remaining balance in 
+\begin_inset Formula $\mathbb{S}$
+\end_inset
+
+ to 
+\begin_inset Formula $addr_{recover}$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Section
+Guardians
+\end_layout
+
+\begin_layout Standard
+TODO.
+ See design in Wiki Section Guardian and subsequent discussion in Composable
+ Authenetication 
+\begin_inset CommandInset href
+LatexCommand href
+name "[Link]"
+target "https://github.com/polymorpher/one-wallet/wiki/Home/4bda5a469429aa72749d3bfd9ac943b8931ba38e#guardians"
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Add Guardian
+\end_layout
+
+\begin_layout Subsection
+Remove Guardian
+\end_layout
+
+\begin_layout Subsection
+Recovering Wallet From Guardian
+\end_layout
+
+\begin_layout Subsection
+Confirm Spending Limit Adjustment
+\end_layout
+
+\begin_layout Subsection
+Confirm a Pending Operation as Composable Authentication Factor
+\end_layout
+
+\begin_layout Section
+Composable Authentication
+\end_layout
+
+\begin_layout Standard
+TODO.
+ See design in Wiki Section Composable Authenetication: 
+\begin_inset CommandInset href
+LatexCommand href
+name "[Link]"
+target "https://github.com/polymorpher/one-wallet/wiki/Home/4bda5a469429aa72749d3bfd9ac943b8931ba38e#composable-authentication-1"
+literal "false"
+
+\end_inset
+
+ and a previous discussion: 
+\begin_inset CommandInset href
+LatexCommand href
+name "[Link]"
+target "https://github.com/polymorpher/one-wallet/wiki/Home/4bda5a469429aa72749d3bfd9ac943b8931ba38e#composable-authentication"
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Activating Private Key Signature Authentication
+\end_layout
+
+\begin_layout Subsection
+Activating HOTP Authentication
+\end_layout
+
+\begin_layout Subsection
+Recovering Wallet From Composable Authentication
+\end_layout
+
+\begin_layout Subsection
+Confirm Spending Limit Adjustment
+\end_layout
+
+\begin_layout Subsection
+Confirm a Pending Operation
+\end_layout
+
+\end_body
+\end_document
