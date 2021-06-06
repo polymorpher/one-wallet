@@ -7,6 +7,7 @@
 \textclass article
 \use_default_options true
 \begin_modules
+algorithm2e
 eqs-within-sections
 figs-within-sections
 \end_modules
@@ -20,7 +21,7 @@ figs-within-sections
 \font_typewriter "default" "default"
 \font_math "auto" "auto"
 \font_default_family default
-\use_non_tex_fonts false
+\use_non_tex_fonts true
 \font_sc false
 \font_osf false
 \font_sf_scale 100 100
@@ -87,7 +88,7 @@ figs-within-sections
 
 \begin_layout Standard
 \noindent
-Last Updated on 2020-06-06 (draft v0.0.2) based on 
+Last Updated on 2020-06-06 (draft v0.0.3) based on 
 \begin_inset CommandInset href
 LatexCommand href
 name "ONE Wallet Wiki version 2020-05-23 (draft v0.1.4)"
@@ -105,7 +106,7 @@ Definitions and common notations
 
 \begin_layout Standard
 \begin_inset Tabular
-<lyxtabular version="3" rows="24" columns="2">
+<lyxtabular version="3" rows="33" columns="2">
 <features tabularvalignment="middle">
 <column alignment="left" valignment="top">
 <column alignment="center" valignment="top">
@@ -272,6 +273,57 @@ Harmony Blockchain
 </cell>
 </row>
 <row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+HMAC function in RFC2104
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $H_{h}^{k}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+(with hash function 
+\begin_inset Formula $h$
+\end_inset
+
+ and key 
+\begin_inset Formula $k$
+\end_inset
+
+)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
 <cell alignment="left" valignment="top" usebox="none">
 \begin_inset Text
 
@@ -355,6 +407,64 @@ Base32 Encoding
 
 \begin_layout Plain Layout
 \begin_inset Formula $B_{32}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Concatenation of 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $A\oplus B$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Concatenation of 
+\begin_inset Formula $A_{1},...,A_{n}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\oplus_{i=1...n}A_{i}$
 \end_inset
 
 
@@ -704,8 +814,150 @@ Function
 \end_inset
 </cell>
 </row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Byte 0xff repeated for 
+\begin_inset Formula $t$
+\end_inset
+
+ times
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $(\text{0xff})^{t}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Bitwise AND between 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $A\land B$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Bitwise OR between 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $A\lor B$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Shift A by B bits to the left
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $A\ll B$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Shift A by B bits to the right
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $A\gg B$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
 </lyxtabular>
 
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage pagebreak
 \end_inset
 
 
@@ -1974,6 +2226,264 @@ Integer
 
 \end_layout
 
+\begin_layout Section*
+Helper Functions
+\end_layout
+
+\begin_layout Standard
+Generate OTP codes given Base32-encoded OTP seed 
+\begin_inset Formula $k$
+\end_inset
+
+, starting time 
+\begin_inset Formula $t_{0}$
+\end_inset
+
+ (in seconds), and duration 
+\begin_inset Formula $T$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\noindent
+
+\series bold
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout LyX-Code
+\noindent
+
+\series bold
+Function
+\series default
+ 
+\begin_inset Formula $GenOTP(k,t_{0},T)$
+\end_inset
+
+:
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+\noindent
+\begin_inset Formula $seed:=B_{32}^{-1}(k)$
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+\noindent
+\begin_inset Formula $t:=t_{0}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+\noindent
+\begin_inset Formula $codes:=[]$
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+\noindent
+
+\series bold
+while
+\series default
+ 
+\begin_inset Formula $t<T$
+\end_inset
+
+:
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+\noindent
+\begin_inset Formula $c:=(\text{0xff})^{8}\ensuremath{\land}(\oplus_{j=1...8}[(\text{0xff})\land(\lfloor\frac{t}{30}\rfloor\gg(8-j))]$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout LyX-Code
+\noindent
+\begin_inset Formula $hash:=H_{h_{1}}^{seed}(c)$
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+\noindent
+
+\series bold
+append
+\series default
+ 
+\begin_inset Formula $Truncate(hash)$
+\end_inset
+
+ 
+\series bold
+into
+\series default
+ 
+\begin_inset Formula $codes$
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+\noindent
+\begin_inset Formula $t\leftarrow t+30$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+\noindent
+
+\series bold
+return
+\series default
+ 
+\begin_inset Formula $codes$
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\end_deeper
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace bigskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\noindent
+
+\series bold
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout LyX-Code
+
+\series bold
+Function
+\series default
+ 
+\begin_inset Formula $Truncate(h)$
+\end_inset
+
+:
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+\begin_inset Formula $p:=h\land(\text{0x0f})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+\begin_inset Formula $x_{1}:=h[p]\land(\text{0x7f})\ll24$
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+\begin_inset Formula $x_{2}:=h[p+1]\land(\text{0xff})\ll16$
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+\begin_inset Formula $x_{3}:=h[p+2]\land(\text{0xff})\ll8$
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+\begin_inset Formula $x_{4}:=h[p+3]\land(\text{0xff})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+
+\series bold
+return
+\series default
+ 
+\begin_inset Formula $x_{1}\lor x_{2}\lor x_{3}\lor x_{4}$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section
 Creating a Wallet
 \end_layout
@@ -2090,7 +2600,11 @@ Compute all OTP Leaves for
 \end_inset
 
 : 
-\begin_inset Formula $L_{i}^{0}=h_{2}(h_{2}(k_{h}\oplus Q_{i}))$
+\begin_inset Formula 
+\[
+L_{i}^{0}=h_{2}(h_{2}(k_{h}\oplus Q_{i}))
+\]
+
 \end_inset
 
 
@@ -2105,8 +2619,12 @@ Compute OTP Merkle Tree for
 \begin_inset Formula $i=1...\frac{n}{2^{j}}$
 \end_inset
 
- : for 
-\begin_inset Formula $L_{i}^{-j}:=h_{2}(L_{2i-1}^{-j+1}\oplus L_{2i}^{-j+1})$
+ : 
+\begin_inset Formula 
+\[
+L_{i}^{-j}:=h_{2}(L_{2i-1}^{-j+1}\oplus L_{2i}^{-j+1})
+\]
+
 \end_inset
 
 
@@ -2127,7 +2645,11 @@ Wait for User to confirm the completion of the actions in previous step.
 
 \begin_layout Enumerate
 Inform the selected Relayer to create the wallet: 
-\begin_inset Formula $\mathbb{C}\to\mathbb{R}:\{r,t_{0},d,T,G\}$
+\begin_inset Formula 
+\[
+\mathbb{C}\to\mathbb{R}:\{r,t_{0},d,T,G\}
+\]
+
 \end_inset
 
 
@@ -2190,7 +2712,11 @@ Wait for Client to display QR Code or show auto-setup button
 \begin_layout Enumerate
 Setup the Authenticator by scanning the QR Code or click the auto-step button:
  
-\begin_inset Formula $\mathbb{C}\stackrel{\circ}{\rightarrow}\mathbb{A}:\{k\}$
+\begin_inset Formula 
+\[
+\mathbb{C}\stackrel{\circ}{\rightarrow}\mathbb{A}:\{k\}
+\]
+
 \end_inset
 
 
@@ -2198,7 +2724,11 @@ Setup the Authenticator by scanning the QR Code or click the auto-step button:
 
 \begin_layout Enumerate
 (Optional) backup the Authenticator setup QR Code 
-\begin_inset Formula $\mathbb{C}\stackrel{\circ}{\rightarrow}\mathbb{U}:\{k\}$
+\begin_inset Formula 
+\[
+\mathbb{C}\stackrel{\circ}{\rightarrow}\mathbb{U}:\{k\}
+\]
+
 \end_inset
 
 
@@ -2234,7 +2764,11 @@ Send transaction
 \end_inset
 
  to Harmony blockchain and sign: 
-\begin_inset Formula $\mathbb{R}\to\mathbb{H}:\{tx_{create}\}_{sk(\mathbb{R})}$
+\begin_inset Formula 
+\[
+\mathbb{R}\to\mathbb{H}:\{tx_{create}\}_{sk(\mathbb{R})}
+\]
+
 \end_inset
 
  to create a new wallet 
@@ -2267,7 +2801,11 @@ Return
 \end_inset
 
  to Client: 
-\begin_inset Formula $\mathbb{R}\to\mathbb{C}:\{addr(\mathbb{S}),id(tx_{create})\}$
+\begin_inset Formula 
+\[
+\mathbb{R}\to\mathbb{C}:\{addr(\mathbb{S}),id(tx_{create})\}
+\]
+
 \end_inset
 
 
@@ -2353,10 +2891,14 @@ Denote
 
  .
  Construct Merkle Branch: 
-\begin_inset Formula $\hat{P}^{t}:=\{\begin{cases}
+\begin_inset Formula 
+\[
+\hat{P}^{t}:=\{\begin{cases}
 L_{t''}^{-j},L_{t''+1}^{-j} & t''\equiv1\ \mod2\\
 L_{t''-1}^{-j},L_{t''}^{-j} & t''\equiv0\ \mod2
-\end{cases}:\ t'':=\frac{t'}{2^{j}},\ j=1...d\}$
+\end{cases}:\ t'':=\frac{t'}{2^{j}},\ j=1...d\}
+\]
+
 \end_inset
 
 
@@ -2364,7 +2906,11 @@ L_{t''-1}^{-j},L_{t''}^{-j} & t''\equiv0\ \mod2
 
 \begin_layout Enumerate
 Construct Merkle Path: 
-\begin_inset Formula $P^{t}:=\{L{}_{i}^{-j}:L{}_{2*i-1}^{-j+1}\notin\hat{P}^{t}\ \wedge\ L{}_{2*i}^{-j+1}\notin\hat{P}^{t}\ \wedge\ (i\ne t',j=0)\}$
+\begin_inset Formula 
+\[
+P^{t}:=\{L{}_{i}^{-j}:L{}_{2*i-1}^{-j+1}\notin\hat{P}^{t}\ \wedge\ L{}_{2*i}^{-j+1}\notin\hat{P}^{t}\ \wedge\ (i\ne t',j=0)\}
+\]
+
 \end_inset
 
  
@@ -2392,7 +2938,11 @@ Construct Merkle Proof
 
 \begin_layout Enumerate
 Send commit message to Relayer: 
-\begin_inset Formula $\mathbb{C}\to\mathbb{R}:\{m_{commit},addr(\mathbb{S})\}$
+\begin_inset Formula 
+\[
+\mathbb{C}\to\mathbb{R}:\{m_{commit},addr(\mathbb{S})\}
+\]
+
 \end_inset
 
 
@@ -2416,7 +2966,11 @@ Verify
 
 \begin_layout Enumerate
 Send reveal message to Relayer: 
-\begin_inset Formula $\mathbb{C}\to\mathbb{R}:\{m_{reveal},addr(\mathbb{S})\}$
+\begin_inset Formula 
+\[
+\mathbb{C}\to\mathbb{R}:\{m_{reveal},addr(\mathbb{S})\}
+\]
+
 \end_inset
 
  where 
@@ -2481,7 +3035,11 @@ Send transaction
 \end_inset
 
  on Harmony Blockchain: 
-\begin_inset Formula $\mathbb{R}\to\mathbb{H}\to\mathbb{S}:\{tx_{commit}\}_{sk(\mathbb{R})}$
+\begin_inset Formula 
+\[
+\mathbb{R}\to\mathbb{H}\to\mathbb{S}:\{tx_{commit}\}_{sk(\mathbb{R})}
+\]
+
 \end_inset
 
  
@@ -2523,7 +3081,11 @@ Simutaneously, wait for message
 \begin_deeper
 \begin_layout Enumerate
 Send transaction 
-\begin_inset Formula $tx_{reveal}:=\{\mathbb{S}_{reveal}(P^{t},\bar{Q}^{t},tr_{amount},tr_{dest})\}$
+\begin_inset Formula 
+\[
+tx_{reveal}:=\{\mathbb{S}_{reveal}(P^{t},\bar{Q}^{t},tr_{amount},tr_{dest})\}
+\]
+
 \end_inset
 
  to 
@@ -2531,7 +3093,11 @@ Send transaction
 \end_inset
 
  on Harmony Blockchain: 
-\begin_inset Formula $\mathbb{R}\to\mathbb{H}\to\mathbb{S}:\{tx_{reveal}\}_{sk(\mathbb{R})}$
+\begin_inset Formula 
+\[
+\mathbb{R}\to\mathbb{H}\to\mathbb{S}:\{tx_{reveal}\}_{sk(\mathbb{R})}
+\]
+
 \end_inset
 
  
@@ -2555,7 +3121,11 @@ Return
 \end_inset
 
  to Client: 
-\begin_inset Formula $\mathbb{R}\to\mathbb{C}:\{id(tx_{reveal})\}$
+\begin_inset Formula 
+\[
+\mathbb{R}\to\mathbb{C}:\{id(tx_{reveal})\}
+\]
+
 \end_inset
 
 
@@ -2607,7 +3177,11 @@ Lookup from commit-table at
 \end_inset
 
  for map entry 
-\begin_inset Formula $t'_{b}:=h_{3}(P^{t},\bar{Q}^{t},tr_{amount},tr_{dest})$
+\begin_inset Formula 
+\[
+t'_{b}:=h_{3}(P^{t},\bar{Q}^{t},tr_{amount},tr_{dest})
+\]
+
 \end_inset
 
 
@@ -2638,14 +3212,22 @@ If
 \end_deeper
 \begin_layout Enumerate
 Verify that 
-\begin_inset Formula $\sum_{i,j:L_{i}^{-j+1}\in\bar{P}^{t}}2^{j}\zeta(i)=\lfloor\frac{t'_{b}-t_{0}}{30}\rfloor$
+\begin_inset Formula 
+\[
+\sum_{i,j:L_{i}^{-j+1}\in\bar{P}^{t}}2^{j}\zeta(i)=\lfloor\frac{t'_{b}-t_{0}}{30}\rfloor
+\]
+
 \end_inset
 
  where 
-\begin_inset Formula $\zeta(i)=\begin{cases}
+\begin_inset Formula 
+\[
+\zeta(i)=\begin{cases}
 0 & i=2m+1\\
 1 & i=2m
-\end{cases}\ m\in\mathbb{Z}^{+}$
+\end{cases}\ m\in\mathbb{Z}^{+}
+\]
+
 \end_inset
 
 
@@ -2653,18 +3235,25 @@ Verify that
 
 \begin_layout Enumerate
 Set 
-\begin_inset Formula $\bar{P}^{t}:=\{\begin{cases}
+\begin_inset Formula 
+\[
+\bar{P}^{t}:=\{\begin{cases}
 h_{2}(\bar{Q}^{t}) & j=0,i=\sigma(t)\\
 \hat{L}_{i}^{-j} & \text{otherwise}
-\end{cases}:\hat{L}_{i}^{-j}\in P^{t}\}$
+\end{cases}:\hat{L}_{i}^{-j}\in P^{t}\}
+\]
+
 \end_inset
 
- .
- Compute 
-\begin_inset Formula $\hat{L}{}_{i}^{-j}:=h_{2}(\hat{L}{}_{2i-1}^{-j+1}\oplus\hat{L}{}_{2i}^{-j+1})$
+ Compute recursively: 
+\begin_inset Formula 
+\[
+\hat{L}{}_{i}^{-j}:=h_{2}(\hat{L}{}_{2i-1}^{-j+1}\oplus\hat{L}{}_{2i}^{-j+1})
+\]
+
 \end_inset
 
- recursively.
+
 \end_layout
 
 \begin_layout Enumerate
@@ -2901,7 +3490,11 @@ Brute-force current OTP code
 \end_inset
 
  such that 
-\begin_inset Formula $h_{2}(h_{2}(k_{h}\oplus\bar{i}))=L_{\sigma(t)}^{0}$
+\begin_inset Formula 
+\[
+h_{2}(h_{2}(k_{h}\oplus\bar{i}))=L_{\sigma(t)}^{0}
+\]
+
 \end_inset
 
  where: 
@@ -2928,6 +3521,10 @@ is current timestamp
 
  is the 4-byte big-endian representation of 
 \begin_inset Formula $i$
+\end_inset
+
+, i.e.: 
+\begin_inset Formula $\bar{i}:=(\text{0xff})^{4}\ensuremath{\land}(\oplus_{j=1...4}[(\text{0xff})^{1}\land(i\gg(4-j))]$
 \end_inset
 
  
@@ -2973,7 +3570,11 @@ Initiate the transfer protocol in Section 2.2 using the brute-forced OTP
 \begin_deeper
 \begin_layout Enumerate
 The commit message in Step 4 is redefined as 
-\begin_inset Formula $m_{commit}:=h_{3}(P^{t},\bar{Q}^{t},o_{reocvery})$
+\begin_inset Formula 
+\[
+m_{commit}:=h_{3}(P^{t},\bar{Q}^{t},o_{reocvery})
+\]
+
 \end_inset
 
  where 
@@ -2984,8 +3585,12 @@ The commit message in Step 4 is redefined as
 \end_layout
 
 \begin_layout Enumerate
-The reveal message in Step 8 is redefined 
-\begin_inset Formula $m_{reveal}:=\{P^{t},\bar{Q}^{t},o_{reocvery}\}$
+The reveal message in Step 8 is redefined as
+\begin_inset Formula 
+\[
+m_{reveal}:=\{P^{t},\bar{Q}^{t},o_{reocvery}\}
+\]
+
 \end_inset
 
 
