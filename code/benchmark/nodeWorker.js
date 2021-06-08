@@ -9,12 +9,10 @@ parentPort.once('message', ({ id, beginIndex, endIndex, workerData, workerResult
   const workerResultView = new Uint8Array(workerResult)
   for (let i = 0; i < endIndex - beginIndex; i += 1) {
     const a = workerDataView.subarray(i * 32, i * 32 + 32)
-    // const d = decoder.decode(a)
     const r = fastSHA256(a)
-    // for (let j = 0; j < r.length; j++) {
-    //   workerResultView[i * 32 + j] = r[j]
-    // }
+    const r2 = fastSHA256(r)
+    workerResultView.set(r2, i * 32)
   }
   // console.log(id, 'done')
-  parentPort.postMessage({ id }, [workerData, workerResult])
+  parentPort.postMessage({ id, workerData, workerResult }, [workerData, workerResult])
 })

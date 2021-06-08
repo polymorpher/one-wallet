@@ -46,8 +46,9 @@ module.exports = {
   resolve: {
     modules: [path.resolve(__dirname, 'node_modules'), 'node_modules'],
     extensions: ['.jsx', '.js'],
-    alias:{
+    alias: {
       'worker_threads': false,
+      'fs': false,
     },
     fallback: {
       path: require.resolve('path-browserify'),
