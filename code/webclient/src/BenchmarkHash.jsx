@@ -11,6 +11,15 @@ const Row = styled(BTRow)`
   margin-bottom: 16px;
 `
 
+const Check = styled(Form.Check)`
+  margin-left: 16px;
+`
+
+const FormRow = styled(Form.Row)`
+  flex-wrap: wrap;
+  display: flex;
+`
+
 const BenchmarkPage = () => {
   const [worker, setWorker] = useState()
   const [size, setSize] = useState(100000)
@@ -69,24 +78,26 @@ const BenchmarkPage = () => {
         <Form.Label>Number of hashes</Form.Label>
         <Form.Control type='text' value={size} onChange={(e) => setSize(parseInt(e.target.value))} />
       </Row>
-      <Form.Row>
-        <Form.Group>
-          <Form.Check type='checkbox' label='Include I/O' checked={includeIO} onChange={e => setIncludeIO(e.target.checked)} />
-          <Form.Check type='checkbox' label='parallelFastSHA256' checked={parallelFastSHA256} onChange={e => setParallelFastSHA256(e.target.checked)} />
-          <Form.Check type='checkbox' label='fastSHA256' checked={fastSHA256} onChange={e => setFastSHA256(e.target.checked)} />
-          <Form.Check type='checkbox' label='ethersSha256' checked={ethersSha256} onChange={e => setEthersSha256(e.target.checked)} />
-          <Form.Check type='checkbox' label='ripemd160' checked={ripemd160} onChange={e => setRipemd160(e.target.checked)} />
-          <Form.Check type='checkbox' label='ethersKeccak256' checked={ethersKeccak256} onChange={e => setEthersKeccak256(e.target.checked)} />
-          <Form.Check type='checkbox' label='soliditySha3 (slow)' checked={soliditySha3} onChange={e => setSoliditySha3(e.target.checked)} />
-          <Form.Check type='checkbox' label='keccak (quite slow)' checked={keccak} onChange={e => setKeccak(e.target.checked)} />
-          <Form.Check type='checkbox' label='SHA3Keccak (very slow!)' checked={SHA3Keccak} onChange={e => setSHA3Keccak(e.target.checked)} />
-        </Form.Group>
-      </Form.Row>
+
+      <Form.Group>
+        <FormRow>
+          <Check type='checkbox' label='Include I/O' checked={includeIO} onChange={e => setIncludeIO(e.target.checked)} />
+          <Check type='checkbox' label='parallelFastSHA256' checked={parallelFastSHA256} onChange={e => setParallelFastSHA256(e.target.checked)} />
+          <Check type='checkbox' label='fastSHA256' checked={fastSHA256} onChange={e => setFastSHA256(e.target.checked)} />
+          <Check type='checkbox' label='ethersSha256' checked={ethersSha256} onChange={e => setEthersSha256(e.target.checked)} />
+          <Check type='checkbox' label='ripemd160' checked={ripemd160} onChange={e => setRipemd160(e.target.checked)} />
+          <Check type='checkbox' label='ethersKeccak256' checked={ethersKeccak256} onChange={e => setEthersKeccak256(e.target.checked)} />
+          <Check type='checkbox' label='soliditySha3 (slow)' checked={soliditySha3} onChange={e => setSoliditySha3(e.target.checked)} />
+          <Check type='checkbox' label='keccak (quite slow)' checked={keccak} onChange={e => setKeccak(e.target.checked)} />
+          <Check type='checkbox' label='SHA3Keccak (very slow!)' checked={SHA3Keccak} onChange={e => setSHA3Keccak(e.target.checked)} />
+        </FormRow>
+      </Form.Group>
+
       <Row>
         <Button onClick={onRunBenchmark}>Run Benchmark</Button>
       </Row>
       <Row>
-        <Form.Control as='textarea' rows={20} value={output} readOnly />
+        <Form.Control as='textarea' rows={25} value={output} readOnly />
       </Row>
     </Container>
   )

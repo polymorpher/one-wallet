@@ -1,0 +1,11 @@
+$theme-colors: (
+        "primary": #30c5dc,
+        "danger": #63f4c1
+);
+
+
+@import '~bootstrap/scss/bootstrap.scss';
+
+.btn-primary{
+  color: #fafafa;
+}

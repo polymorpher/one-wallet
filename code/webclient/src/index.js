@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import MainScreen from './MainScreen'
-import 'bootstrap/dist/css/bootstrap.min.css'
+import './theme.scss'
 
 function init () {
   ReactDOM.render(<MainScreen />, document.getElementById('root'))

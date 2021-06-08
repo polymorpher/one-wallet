@@ -122,6 +122,7 @@ const runNodeParallelFastSHA256 = async (data, result, updater) => {
   let counter = 0 // thread-safe because this is accessed in main thread only
   const numWorkers = os.cpus().length
   const size = data.length / 32
+  // eslint-disable-next-line no-unused-vars
   const sliceSize = Math.ceil(size / numWorkers)
   // Shared data model. Since 25% of users use browsers which don't support this, we are not going to test it for now. This should only affect setup time anyway.
   // const sharedBuffer = new SharedArrayBuffer(data.length)
@@ -131,7 +132,7 @@ const runNodeParallelFastSHA256 = async (data, result, updater) => {
   const workers = new Array(numWorkers)
   return new Promise((resolve, reject) => {
     for (let i = 0; i < numWorkers; i += 1) {
-      workers[i] = new Worker(__dirname + '/nodeWorker.js')
+      workers[i] = new Worker(path.join(__dirname, 'nodeWorker.js'))
       workers[i].on('message', ({ id, workerResult }) => {
         // console.log(`received result from worker ${id}`)
         // This will slow things down by 30%+. In practice, we will store the results to DB from each worker, instead of aggregating at host.
@@ -153,11 +154,13 @@ const runBrowserParallelSHA256 = (data, result, workers, updater) => {
   let counter = 0 // thread-safe because this is accessed in main thread only
   const numWorkers = navigator.hardwareConcurrency
   const size = data.length / 32
+  // eslint-disable-next-line no-unused-vars
   const sliceSize = Math.ceil(size / numWorkers)
   const timer = {}
   return new Promise((resolve, reject) => {
     for (let i = 0; i < numWorkers; i += 1) {
       workers[i].onmessage = (event) => {
+        // eslint-disable-next-line no-unused-vars
         const { id, workerResult } = event.data
         // console.log(`received result from worker ${id}`)
         // This will slow things down by 30%+. In practice, we will store the results to DB from each worker, instead of aggregating at host.
@@ -274,10 +277,9 @@ const runBenchmark = async ({ size, onUpdate, workers, includeIO, seedHash, enab
       for (let i = 0; i < size; i++) {
         const ripemd160 = new RIPEMD160()
         const d = data.subarray(i * 32, i * 32 + 32).slice()
-        const b = Buffer.from(d)
-        const r = ripemd160.update(b).digest()
+        const r = ripemd160.update(Buffer.from(d)).digest()
         const ripemd160Step2 = new RIPEMD160()
-        const r2 = ripemd160Step2.update(b).digest()
+        const r2 = ripemd160Step2.update(Buffer.from(r)).digest()
         result.set(r2, i * 32)
       }
     })
@@ -310,7 +312,6 @@ const runBenchmark = async ({ size, onUpdate, workers, includeIO, seedHash, enab
       for (let i = 0; i < size; i++) {
         const d = data.subarray(i * 32, i * 32 + 32).slice()
         const r = soliditySha3({ v: decoder.decode(d), t: 'bytes' })
-        const d2 = Buffer.from(r.slice(2), 'hex')
         const r2 = soliditySha3({ v: r.slice(2), t: 'bytes' })
         result.set(Buffer.from(r2.slice(2), 'hex'), i * 32)
       }
