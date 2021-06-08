@@ -106,7 +106,7 @@ Definitions and common notations
 
 \begin_layout Standard
 \begin_inset Tabular
-<lyxtabular version="3" rows="33" columns="2">
+<lyxtabular version="3" rows="35" columns="2">
 <features tabularvalignment="middle">
 <column alignment="left" valignment="top">
 <column alignment="center" valignment="top">
@@ -863,7 +863,7 @@ Bitwise AND between
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $A\land B$
+\begin_inset Formula $A\mid B$
 \end_inset
 
 
@@ -894,7 +894,7 @@ Bitwise OR between
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $A\lor B$
+\begin_inset Formula $A\ \&\ B$
 \end_inset
 
 
@@ -941,6 +941,68 @@ Shift A by B bits to the right
 
 \begin_layout Plain Layout
 \begin_inset Formula $A\gg B$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Logical AND between 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $A\land B$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Logical OR between 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $A\lor B$
 \end_inset
 
 
@@ -2322,7 +2384,7 @@ while
 \begin_deeper
 \begin_layout LyX-Code
 \noindent
-\begin_inset Formula $c:=(\text{0xff})^{8}\ensuremath{\land}(\oplus_{j=1...8}[(\text{0xff})\land(\lfloor\frac{t}{30}\rfloor\gg(8-j))]$
+\begin_inset Formula $c:=(\text{0xff})^{8}\ \&\ (\oplus_{j=1...8}[(\text{0xff})\ \&\ (\lfloor\frac{t}{30}\rfloor\gg(8-j))]$
 \end_inset
 
  
@@ -2432,35 +2494,35 @@ Function
 
 \begin_deeper
 \begin_layout LyX-Code
-\begin_inset Formula $p:=h\land(\text{0x0f})$
+\begin_inset Formula $p:=h\ \&\ (\text{0x0f})$
 \end_inset
 
 
 \end_layout
 
 \begin_layout LyX-Code
-\begin_inset Formula $x_{1}:=h[p]\land(\text{0x7f})\ll24$
+\begin_inset Formula $x_{1}:=h[p]\ \&\ (\text{0x7f})\ll24$
 \end_inset
 
 
 \end_layout
 
 \begin_layout LyX-Code
-\begin_inset Formula $x_{2}:=h[p+1]\land(\text{0xff})\ll16$
+\begin_inset Formula $x_{2}:=h[p+1]\ \&\ (\text{0xff})\ll16$
 \end_inset
 
 
 \end_layout
 
 \begin_layout LyX-Code
-\begin_inset Formula $x_{3}:=h[p+2]\land(\text{0xff})\ll8$
+\begin_inset Formula $x_{3}:=h[p+2]\ \&\ (\text{0xff})\ll8$
 \end_inset
 
 
 \end_layout
 
 \begin_layout LyX-Code
-\begin_inset Formula $x_{4}:=h[p+3]\land(\text{0xff})$
+\begin_inset Formula $x_{4}:=h[p+3]\ \&\ (\text{0xff})$
 \end_inset
 
 
@@ -2472,7 +2534,7 @@ Function
 return
 \series default
  
-\begin_inset Formula $x_{1}\lor x_{2}\lor x_{3}\lor x_{4}$
+\begin_inset Formula $x_{1}\mid x_{2}\mid x_{3}\mid x_{4}$
 \end_inset
 
 
@@ -3524,7 +3586,7 @@ is current timestamp
 \end_inset
 
 , i.e.: 
-\begin_inset Formula $\bar{i}:=(\text{0xff})^{4}\ensuremath{\land}(\oplus_{j=1...4}[(\text{0xff})^{1}\land(i\gg(4-j))]$
+\begin_inset Formula $\bar{i}:=(\text{0xff})^{4}\ \&\ (\oplus_{j=1...4}[(\text{0xff})^{1}\ \&\ (i\gg(4-j))]$
 \end_inset
 
  
