@@ -50,7 +50,7 @@ contract ONEWallet {
         //        require(!commitLocked, "Cleanup in progress. Queue is temporarily locked. Please resubmit.");
         _cleanupCommits();
         (uint32 ct, bool completed) = _findCommit(hash);
-        require(ct == 0, "Commit already exists");
+        require(ct == 0 && !completed, "Commit already exists");
         Commit memory nc = Commit(hash, uint32(block.timestamp), false);
         commits.push(nc);
     }
