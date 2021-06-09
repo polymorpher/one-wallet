@@ -39,10 +39,11 @@ contract ONEWallet {
         dailyLimit = dailyLimit_;
     }
 
-    function retire() external
+    function retire() external returns (bool)
     {
-        require(uint32(block.timestamp) / interval - t0 > lifespan, "Too young to retire");
-        _drain();
+        require(uint32(block.timestamp) / interval - t0 > lifespan, "Too early to retire");
+        require(lastResortAddress != address(0), "Last resort address is not set");
+        return _drain();
     }
 
     function commit(bytes32 hash) external
@@ -74,7 +75,7 @@ contract ONEWallet {
         if (spentToday + amount > dailyLimit) {
             return false;
         }
-        bool success = dest.send(amount);
+        bool success = dest.send(amount); // we do not want to revert the whole transaction if this operation fails, since EOTP is already revealed
         if (!success) {
             return false;
         }
@@ -98,9 +99,8 @@ contract ONEWallet {
         return true;
     }
 
-    function _drain() internal {
-        require(lastResortAddress != address(0), "Last resort address is not provided");
-        lastResortAddress.transfer(address(this).balance);
+    function _drain() internal returns (bool) {
+        return lastResortAddress.send(address(this).balance);
     }
 
     modifier isValidIndex(uint32 index)
