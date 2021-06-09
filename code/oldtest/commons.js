@@ -1,5 +1,5 @@
-const totp = require('../lib/totp')
-const merkle = require('../lib/merkle')
+const totp = require('../oldlib/totp')
+const merkle = require('../oldlib/merkle')
 const TOTPWallet = artifacts.require('TOTPWallet')
 const Guardians = artifacts.require('Guardians')
 const DailyLimit = artifacts.require('DailyLimit')
