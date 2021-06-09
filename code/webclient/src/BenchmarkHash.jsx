@@ -64,14 +64,6 @@ const BenchmarkPage = () => {
     }
     setWorker(worker)
   }, [])
-  // const [parallelFastSHA256, setParallelFastSHA256] = useState(true)
-  // const [fastSHA256, setFastSHA256] = useState(true)
-  // const [ethersSha256, setEthersSha256] = useState(true)
-  // const [ripemd160, setRipemd160] = useState(true)
-  // const [ethersKeccak256, setEthersKeccak256] = useState(true)
-  // const [soliditySha3, setSoliditySha3] = useState(true)
-  // const [keccak, setKeccak] = useState(true)
-  // const [SHA3Keccak, setSHA3Keccak] = useState(true)
   return (
     <Container>
       <Row>
@@ -88,7 +80,7 @@ const BenchmarkPage = () => {
           <Check type='checkbox' label='ripemd160' checked={ripemd160} onChange={e => setRipemd160(e.target.checked)} />
           <Check type='checkbox' label='ethersKeccak256' checked={ethersKeccak256} onChange={e => setEthersKeccak256(e.target.checked)} />
           <Check type='checkbox' label='soliditySha3 (slow)' checked={soliditySha3} onChange={e => setSoliditySha3(e.target.checked)} />
-          <Check type='checkbox' label='keccak (quite slow)' checked={keccak} onChange={e => setKeccak(e.target.checked)} />
+          <Check type='checkbox' label='keccak (bit slow)' checked={keccak} onChange={e => setKeccak(e.target.checked)} />
           <Check type='checkbox' label='SHA3Keccak (very slow!)' checked={SHA3Keccak} onChange={e => setSHA3Keccak(e.target.checked)} />
         </FormRow>
       </Form.Group>
