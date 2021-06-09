@@ -19,6 +19,7 @@ contract ONEWallet {
         uint32 timestamp;
     }
 
+    bool commitLocked;
     Commit[] commits;
 
     uint256[64] ______gap;
@@ -37,7 +38,7 @@ contract ONEWallet {
 
     function commit(bytes32 hash) external
     {
-        _cleanupCommits();
+        require(!commitLocked, "Cleanup in progress. Queue is temporarily locked. Please resubmit.");
         uint32 ct = _findCommit(hash);
         require(ct == - 1, "Commit already exists");
         Commit memory nc = Commit(hash, uint32(block.timestamp));
@@ -49,6 +50,7 @@ contract ONEWallet {
     isCorrectProof(neighbors, index, eotp)
     returns (bool)
     {
+        _cleanupCommits();
         bytes packed = bytes.concat(neighbors, bytes32(bytes4(index)), eotp, bytes32(bytes20(dest)), bytes32(amount));
         require(_canReveal(packed), "Failed to reveal transfer");
         uint32 day = block.timestamp / 86400;
@@ -127,6 +129,7 @@ contract ONEWallet {
     // simple mechanism to prevent commits grow unbounded, if an attacker decides to spam commits (at their own expense)
     function _cleanupCommits() internal
     {
+        commitLocked = true;
         uint8 index = 0;
         uint32 bt = uint32(block.timestamp);
         for (uint8 i = 0; i < commits.length; i++) {
@@ -141,6 +144,7 @@ contract ONEWallet {
             commits[i - index] = commits[i];
         }
         commits.length = len - index;
+        commitLocked = false;
     }
 
     function _isRevealTimely(uint32 commitTime) view internal returns (bool)
@@ -150,9 +154,10 @@ contract ONEWallet {
 
     function _canReveal(bytes32 expectedHash) view internal returns (bool)
     {
-        byte32 h = sha256(expectedHash);
+        byte32 h = keccak256(expectedHash);
         uint32 ct = _findCommit(h);
         require(ct > 0, "Cannot find commit for this transaction");
+        // this should not happen (since old commit should be cleaned up already), but let's check just in case
         require(_isRevealTimely(ct), "Reveal is too late. Please re-commit");
         return true;
     }
