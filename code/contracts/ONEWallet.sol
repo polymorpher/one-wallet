@@ -32,9 +32,15 @@ contract ONEWallet {
         height = height_;
         interval = interval_;
         t0 = t0_;
-        lifespan_ = interval_;
+        lifespan_ = lifespan_;
         lastResortAddress = lastResortAddress_;
         dailyLimit = dailyLimit_;
+    }
+
+    function retire() external
+    {
+        require(uint32(block.timestamp) / interval - t0 > lifespan, "Too young to retire");
+        _drain();
     }
 
     function commit(bytes32 hash) external
