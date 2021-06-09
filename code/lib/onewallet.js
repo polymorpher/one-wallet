@@ -33,8 +33,8 @@ const genOTP = ({ seed, counter = Math.floor(Date.now() / 30000), n = 1, progres
 }
 
 const computeMerkleTree = ({ otpSeed, effectiveTime = Date.now(), duration = 3600 * 1000 * 24 * 365, progressObserver, otpInterval = 30000 }) => {
-  const height = Math.ceil(Math.log2(duration / otpInterval))
-  const n = Math.pow(2, height)
+  const height = Math.ceil(Math.log2(duration / otpInterval)) + 1
+  const n = Math.pow(2, height - 1)
   const reportInterval = Math.floor(n / 100)
   const counter = effectiveTime / otpInterval
   let seed = otpSeed
@@ -67,7 +67,7 @@ const computeMerkleTree = ({ otpSeed, effectiveTime = Date.now(), duration = 360
     }
   }
   layers.push(leaves)
-  for (let j = 1; j <= height; j += 1) {
+  for (let j = 1; j < height; j += 1) {
     const layer = new Uint8Array(n / (2 ** j))
     const lastLayer = layers[j - 1]
     for (let i = 0; i < n / (2 ** j); i += 1) {
@@ -77,27 +77,25 @@ const computeMerkleTree = ({ otpSeed, effectiveTime = Date.now(), duration = 360
     }
     layers.push(layer)
   }
-  const root = layers[height]
+  const root = layers[height - 1]
   console.log(`root: 0x${hexView(root)} tree height: ${layers.length}; leaves length: ${leaves.length}`)
   return {
     leaves, // =layers[0]
-    root, // =layers[height]
+    root, // =layers[height - 1]
     layers,
   }
 }
 
 const computeMerklePathByLeafIndex = ({ layers, index }) => {
-  const path = []
-  const indices = []
+  const neighbors = []
   let j = 0
   while (index > 0) {
     const neighbor = index % 2 === 0 ? index + 1 : index - 1
     const n = layers[j].subarray(neighbor * 32, neighbor * 32 + 32).slice()
-    path.push(n)
-    indices.push(neighbor)
+    neighbors.push(n)
     index >>= 2
   }
-  return { path, indices }
+  return neighbors
 }
 
 const selectMerklePath = ({ layers, timestamp = Date.now(), effectiveTime, otpInterval = 30000 }) => {
@@ -106,11 +104,11 @@ const selectMerklePath = ({ layers, timestamp = Date.now(), effectiveTime, otpIn
   }
   effectiveTime = Math.floor(effectiveTime / otpInterval) * otpInterval
   const index = Math.floor((timestamp - effectiveTime) / otpInterval)
-  return computeMerklePathByLeafIndex({ layers, index })
+  const neighbors = computeMerklePathByLeafIndex({ layers, index })
+  return { neighbors, index }
 }
 
 module.exports = {
   computeMerkleTree,
   selectMerklePath
-
 }
