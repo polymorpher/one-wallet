@@ -12,6 +12,7 @@
     "ethereumjs-wallet": "0.6.5",
     "ethers": "^5.3.0",
     "fast-sha256": "^1.3.0",
+    "hi-base32": "^0.5.1",
     "jssha": "^3.2.0",
     "keccak": "^3.0.1",
     "merkletreejs": "^0.2.18",
