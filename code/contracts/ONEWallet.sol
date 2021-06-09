@@ -112,6 +112,7 @@ contract ONEWallet {
 
     modifier isCorrectProof(bytes32[] calldata neighbors, uint32 index, bytes32 eotp)
     {
+        require(neighbors.length == height - 1, "Not enough neighbors provided");
         bytes32 h = sha256(bytes.concat(eotp));
         for (uint8 i = 0; i < height - 1; i++) {
             if (index & 0x01 == 0x01) {
