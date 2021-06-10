@@ -7,12 +7,16 @@ contract ONEWallet {
     uint8 interval; // otp interval in seconds, default is 30
     uint32 t0; // starting time block (effectiveTime (in ms) / interval)
     uint32 lifespan;  // in number of block (e.g. 1 block per [interval] seconds)
+    uint8 maxOperationsPerInterval; // number of transactions permitted per OTP interval. Each transaction shall have a unique nonce. The nonce is auto-incremented within each interval
 
-    // mutable
-    address payable lastResortAddress;
+    // global mutable
+    address payable lastResortAddress; // where money will be sent during a recovery process (or when the wallet is beyond its lifespan)
     uint256 dailyLimit; // uint128 is sufficient, but uint256 is more efficient since EVM works with 32-byte words.
-    uint256 spentToday;
+    uint256 spentToday; // note: instead of tracking the money spent for the last 24h, we are simply tracking money spent per 24h block based on UTC time. It is good enough for now, but we may want to change this later.
     uint32 lastTransferDay;
+
+    mapping(uint32 => uint8) nonces; // keys: otp index (=timestamp in seconds / interval - t0); values: the expected nonce for that otp interval. An reveal with a nonce less than the expected value will be rejected
+    uint32[] nonceTracker; // list of nonces keys that have a non-zero value. keys cannot possibly result a successful reveal (indices beyond REVEAL_MAX_DELAY old) are auto-deleted during a clean up procedure that is called every time the nonces are incremented for some key. For each deleted key, the corresponding key in nonces will also be deleted. So the size of nonceTracker and nonces are both bounded.
 
     struct Commit {
         bytes32 hash;
@@ -21,13 +25,13 @@ contract ONEWallet {
     }
 
     uint32 constant REVEAL_MAX_DELAY = 60;
+
     //    bool commitLocked; // not necessary at this time
+    Commit[] commits; // self-clean on commit (auto delete commits that are beyond REVEAL_MAX_DELAY), so it's bounded by the number of commits an attacker can spam within REVEAL_MAX_DELAY time in the worst case, which is not too bad.
 
-    Commit[] commits;
+    uint256[64] ______gap; // reserved space for future upgrade
 
-    uint256[64] ______gap;
-
-    constructor(bytes32 root_, uint8 height_, uint8 interval_, uint32 t0_, uint32 lifespan_,
+    constructor(bytes32 root_, uint8 height_, uint8 interval_, uint32 t0_, uint32 lifespan_, uint8 maxOperationsPerInterval_,
         address payable lastResortAddress_, uint256 dailyLimit_)
     {
         root = root_;
@@ -37,6 +41,7 @@ contract ONEWallet {
         lifespan_ = lifespan_;
         lastResortAddress = lastResortAddress_;
         dailyLimit = dailyLimit_;
+        maxOperationsPerInterval = maxOperationsPerInterval_;
     }
 
     function retire() external returns (bool)
@@ -44,6 +49,12 @@ contract ONEWallet {
         require(uint32(block.timestamp) / interval - t0 > lifespan, "Too early to retire");
         require(lastResortAddress != address(0), "Last resort address is not set");
         return _drain();
+    }
+
+    function getNonce() public view returns (uint8)
+    {
+        uint32 index = uint32(block.timestamp) / interval - t0;
+        return nonces[index];
     }
 
     function commit(bytes32 hash) external
@@ -56,17 +67,17 @@ contract ONEWallet {
         commits.push(nc);
     }
 
-    // TODO: during reveal, reject if index corresponds to a timestamp that is same as current block.timestamp, so we don't let the client accidentally leak EOTP that is still valid at the current time, which an attacker could use to commit and reveal a new transaction. This introduces a limitation that there would be a OTP_INTERVAL (=30 seconds by default) delay between commit and reveal, which translates to an unpleasant user experience. To fix this, we may slice OTP_INTERVAL further and use multiple EOTP per OTP_INTERVAL, and index the operations within an interval by an operation id. For a slice of size 16, we will need to generate a Merkle Tree 16 times as large. In this case, we would reject transactions only if both (1) the index corresponds to a timestamp that is same as current block.timestamp, and, (2) the operation id is not less than the id corresponding to the current timestamp's slice
-    function revealTransfer(bytes32[] calldata neighbors, uint32 index, bytes32 eotp, address payable dest, uint256 amount) external
-    isCorrectProof(neighbors, index, eotp)
+    // TODO (@polymorpher): during reveal, reject if index corresponds to a timestamp that is same as current block.timestamp, so we don't let the client accidentally leak EOTP that is still valid at the current time, which an attacker could use to commit and reveal a new transaction. This introduces a limitation that there would be a OTP_INTERVAL (=30 seconds by default) delay between commit and reveal, which translates to an unpleasant user experience. To fix this, we may slice OTP_INTERVAL further and use multiple EOTP per OTP_INTERVAL, and index the operations within an interval by an operation id. For a slice of size 16, we will need to generate a Merkle Tree 16 times as large. In this case, we would reject transactions only if both (1) the index corresponds to a timestamp that is same as current block.timestamp, and, (2) the operation id is not less than the id corresponding to the current timestamp's slice
+    function revealTransfer(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp, address payable dest, uint256 amount) external
+    isCorrectProof(neighbors, indexWithNonce, eotp)
     returns (bool)
     {
         bytes memory packedNeighbors = _pack(neighbors);
         bytes memory packed = bytes.concat(packedNeighbors,
-            bytes32(bytes4(index)), eotp, bytes32(bytes20(address(dest))), bytes32(amount));
+            bytes32(bytes4(indexWithNonce)), eotp, bytes32(bytes20(address(dest))), bytes32(amount));
         bytes32 commitHash = keccak256(bytes.concat(packed));
-        _revealPreCheck(commitHash, index);
-        _markCommitCompleted(commitHash);
+        _revealPreCheck(commitHash, indexWithNonce);
+        _completeReveal(commitHash);
         uint32 day = uint32(block.timestamp) / 86400;
         if (day > lastTransferDay) {
             spentToday = 0;
@@ -75,7 +86,8 @@ contract ONEWallet {
         if (spentToday + amount > dailyLimit) {
             return false;
         }
-        bool success = dest.send(amount); // we do not want to revert the whole transaction if this operation fails, since EOTP is already revealed
+        bool success = dest.send(amount);
+        // we do not want to revert the whole transaction if this operation fails, since EOTP is already revealed
         if (!success) {
             return false;
         }
@@ -83,15 +95,19 @@ contract ONEWallet {
         return true;
     }
 
-    function revealRecovery(bytes32[] calldata neighbors, uint32 index, bytes32 eotp) external
-    isCorrectProof(neighbors, index, eotp)
+    function revealRecovery(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp) external
+    isCorrectProof(neighbors, indexWithNonce, eotp)
     returns (bool)
     {
         bytes memory packedNeighbors = _pack(neighbors);
-        bytes memory packed = bytes.concat(packedNeighbors, bytes32(bytes4(index)), eotp);
+        bytes memory packed = bytes.concat(
+            packedNeighbors,
+            bytes32(bytes4(indexWithNonce)),
+            eotp
+        );
         bytes32 commitHash = keccak256(bytes.concat(packed));
-        _revealPreCheck(commitHash, index);
-        _markCommitCompleted(commitHash);
+        _revealPreCheck(commitHash, indexWithNonce);
+        _completeReveal(commitHash);
         if (lastResortAddress == address(0)) {
             return false;
         }
@@ -103,12 +119,13 @@ contract ONEWallet {
         return lastResortAddress.send(address(this).balance);
     }
 
-    modifier isValidIndex(uint32 index)
-    {
-        uint32 counter = uint32(block.timestamp) / interval - t0;
-        require(counter == index, "Code has incorrect timestamp");
-        _;
-    }
+    // not used at this time
+    //    modifier isValidIndex(uint32 index)
+    //    {
+    //        uint32 counter = uint32(block.timestamp) / interval - t0;
+    //        require(counter == index, "Code has incorrect timestamp");
+    //        _;
+    //    }
 
     modifier isCorrectProof(bytes32[] calldata neighbors, uint32 index, bytes32 eotp)
     {
@@ -146,22 +163,34 @@ contract ONEWallet {
     function _cleanupCommits() internal
     {
         //        commitLocked = true;
-        uint8 index = 0;
+        uint32 commitIndex = 0;
         uint32 bt = uint32(block.timestamp);
-        for (uint8 i = 0; i < commits.length; i++) {
+        for (uint32 i = 0; i < commits.length; i++) {
             Commit storage c = commits[i];
             if (c.timestamp >= bt - REVEAL_MAX_DELAY) {
-                index = i;
+                commitIndex = i;
                 break;
             }
         }
-        uint32 len = uint32(commits.length);
-        for (uint8 i = index; i < len; i++) {
-            commits[i - index] = commits[i];
+        if (commitIndex == 0) {
+            return;
         }
-        for (uint8 i = 0; i < index; i++) {
+        uint32 len = uint32(commits.length);
+
+        //        TODO (@polymorpher): replace below code with the commented out version, after solidity implements proper support for struct-array memory-storage copy operation
+        for (uint32 i = commitIndex; i < len; i++) {
+            commits[i - commitIndex] = commits[i];
+        }
+        for (uint32 i = 0; i < commitIndex; i++) {
             commits.pop();
         }
+        //        TODO (@polymorpher): Can't use below code because: std::exception::what: Copying of type struct ONEWallet.Commit memory[] memory to storage not yet supported.
+        //        Commit[] memory remainingCommits = new Commit[](len - commitIndex);
+        //        for (uint8 i = 0; i < remainingCommits.length; i++) {
+        //            remainingCommits[i] = commits[commitIndex + i];
+        //        }
+        //        commits = remainingCommits;
+
         //        commitLocked = false;
     }
 
@@ -170,31 +199,74 @@ contract ONEWallet {
         return block.timestamp - commitTime < REVEAL_MAX_DELAY;
     }
 
-    function _revealPreCheck(bytes32 hash, uint32 index) view internal
+    function _revealPreCheck(bytes32 hash, uint32 indexWithNonce) view internal
     {
+        uint32 index = indexWithNonce / maxOperationsPerInterval;
+        uint8 nonce = uint8(indexWithNonce % maxOperationsPerInterval);
         (uint32 ct, bool completed) = _findCommit(hash);
         require(ct > 0, "Cannot find commit for this transaction");
         uint32 counter = ct / interval - t0;
         require(counter == index, "Provided index does not match commit timestamp");
+        uint8 expectedNonce = nonces[counter];
+        require(nonce >= expectedNonce, "Nonce is too low");
         require(!completed, "Commit is already completed");
         // this should not happen (since old commit should be cleaned up already)
         require(_isRevealTimely(ct), "Reveal is too late. Please re-commit");
     }
 
-    function _markCommitCompleted(bytes32 hash) internal {
+    function _completeReveal(bytes32 hash) internal {
         for (uint8 i = 0; i < commits.length; i++) {
             Commit storage c = commits[i];
             if (c.hash == hash) {
                 c.completed = true;
+                uint32 index = uint32(c.timestamp) / interval - t0;
+                _incrementNonce(index);
+                _cleanupNonces();
                 return;
             }
         }
         revert("Invalid commit hash");
     }
 
+    function _cleanupNonces() internal {
+        uint32 tMin = uint32(block.timestamp) - REVEAL_MAX_DELAY;
+        uint32 indexMinUnadjusted = tMin / interval;
+        uint32 indexMin = 0;
+        if (indexMinUnadjusted > t0) {
+            indexMin = indexMinUnadjusted - t0;
+        }
+        uint32[] memory nonZeroNonces = new uint32[](nonceTracker.length);
+        uint32 numValidIndices = 0;
+        for (uint8 i = 0; i < nonceTracker.length; i++) {
+            uint32 index = nonceTracker[i];
+            if (index < indexMin) {
+                delete nonces[index];
+            } else {
+                nonZeroNonces[numValidIndices] = index;
+                numValidIndices++;
+
+            }
+        }
+        // TODO (@polymorpher): this is so stupid. Replace this with inline assembly later. https://ethereum.stackexchange.com/questions/51891/how-to-pop-from-decrease-the-length-of-a-memory-array-in-solidity
+        uint32[] memory reducedArray = new uint32[](numValidIndices);
+        for (uint8 i = 0; i < numValidIndices; i++) {
+            reducedArray[i] = nonZeroNonces[i];
+        }
+        nonceTracker = reducedArray;
+    }
+
+    function _incrementNonce(uint32 index) internal {
+        uint8 v = nonces[index];
+        if (v == 0) {
+            nonceTracker.push(index);
+        }
+        nonces[index] = v + 1;
+    }
+
     // same output as abi.encodePacked(x), but the behavior of abi.encodePacked is sort of uncertain
     function _pack(bytes32[] calldata x) pure internal returns (bytes memory)
     {
+        // TODO (@polymorpher): use assembly mstore and mload to do this, similar to _asByte32 below
         bytes memory r = new bytes(x.length * 32);
         for (uint8 i = 0; i < x.length; i++) {
             for (uint8 j = 0; j < 32; j++) {
@@ -203,4 +275,20 @@ contract ONEWallet {
         }
         return r;
     }
+
+    // not used at this time
+    //    function _asByte32(bytes memory b) pure internal returns (bytes32){
+    //        if (b.length == 0) {
+    //            return bytes32(0x0);
+    //        }
+    //        require(b.length <= 32, "input bytes are too long for _asByte32");
+    //        byte32 r;
+    //        uint8 len = (32 - b.length) * 8;
+    //        assembly{
+    //            r := mload(add(b, 32))
+    //            r := shr(len, r)
+    //            r := shl(len, r)
+    //        }
+    //        return r;
+    //    }
 }
