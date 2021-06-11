@@ -1,47 +1,45 @@
 const config = require('./config')
-const WalletProvider = require('truffle-wallet-provider')
-const Wallet = require('ethereumjs-wallet')
+const HDWalletProvider = require('@truffle/hdwallet-provider')
+const PrivateKeyProvider = require('truffle-privatekey-provider')
 
-const rinkebyProvider = config.eth.rinkeby.key && new WalletProvider(
-  Wallet.fromPrivateKey(Buffer.from(config.eth.rinkeby.key, 'hex')),
-  config.eth.rinkeby.url)
+const harmonyTestNetProvider = config.harmony.testnet.key && new HDWalletProvider({
+  privateKeys: [config.harmony.testnet.key],
+  providerOrUrl: config.harmony.testnet.url
+})
 
-const harmonyTestNetProvider = config.harmony.testnet.key && new WalletProvider(
-  Wallet.fromPrivateKey(Buffer.from(config.harmony.testnet.key, 'hex')),
-  'https://api.s0.b.hmny.io')
-
-const harmonyMainNetProvider = config.harmony.mainnet.key && new WalletProvider(
-  Wallet.fromPrivateKey(Buffer.from(config.harmony.mainnet.key, 'hex')),
-  'https://api.s0.t.hmny.io')
+const harmonyMainNetProvider = config.harmony.mainnet.key && new HDWalletProvider({
+  privateKeys: [config.harmony.mainnet.key],
+  providerOrUrl: config.harmony.mainnet.url,
+})
 
 module.exports = {
   networks: {
     dev: {
-      host: config.eth.ganache.host,
-      port: config.eth.ganache.port, // Ganache
+      // host: '127.0.0.1',
+      // port: 7545,
       network_id: '*', // Match any network id
       gas: config.gasLimit,
-    },
-    advanced: {
-      port: 8777, // Custom port
-      host: '127.0.0.1', // Localhost (default: none)
-      network_id: 1234, // Custom network
-      gas: config.gasLimit, // Gas sent with each transaction (default: ~6700000)
-      gasPrice: config.gasPrice // 20 gwei (in wei) (default: 100 gwei)
-      // from: <address>,        // Account to send txs from (default: accounts[0])
-      // websockets: true        // Enable EventEmitter interface for web3 (default: false)
+      gasPrice: config.gasPrice,
+      provider: new PrivateKeyProvider(
+        config.eth.ganache.key,
+        config.eth.ganache.url
+      ),
     },
     rinkeby: {
-      provider: rinkebyProvider,
       network_id: '4',
-      gas: config.gasLimit
+      gas: config.gasLimit,
+      gasPrice: config.gasPrice,
+      provider: new PrivateKeyProvider(
+        config.eth.rinkeby.key,
+        config.eth.rinkeby.url
+      ),
     },
     'harmony-testnet': {
       provider: harmonyTestNetProvider,
       network_id: '1666700000',
       gas: config.gasLimit
     },
-    'harmony-MAINnet': {
+    'harmony-mainnet': {
       provider: harmonyMainNetProvider,
       network_id: '1666600000',
       gas: config.gasLimit
@@ -57,14 +55,7 @@ module.exports = {
   // Configure your compilers
   compilers: {
     solc: {
-      version: '0.8.4',
-      // settings: {          // See the solidity docs for advice about optimization and evmVersion
-      //  optimizer: {
-      //    enabled: false,
-      //    runs: 200
-      //  },
-      //  evmVersion: "byzantium"
-      // }
+      version: '0.8.4'
     },
   },
 }
