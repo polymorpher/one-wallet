@@ -44,6 +44,8 @@ contract ONEWallet {
         maxOperationsPerInterval = maxOperationsPerInterval_;
     }
 
+    receive() external payable {}
+
     function retire() external returns (bool)
     {
         require(uint32(block.timestamp) / interval - t0 > lifespan, "Too early to retire");
