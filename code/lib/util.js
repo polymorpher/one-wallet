@@ -1,14 +1,17 @@
 const JSSHA = require('jssha')
+const utils = {
+  hexView: (bytes) => {
+    return bytes && Array.from(bytes).map(x => x.toString(16).padStart(2, '0')).join('')
+  },
 
-module.exports = {
-  hexView: (ar) => {
-    return ar.map(x => x.toString(16).padStart(2, '0')).join('')
+  hexString: (bytes) => {
+    return '0x' + utils.hexView(bytes)
   },
 
   genOTP: ({ seed, counter = Math.floor(Date.now() / 30000), n = 1, progressObserver }) => {
     const reportInterval = Math.floor(n / 100)
     const jssha = new JSSHA('SHA-1', 'UINT8ARRAY')
-    jssha.setHMACKey(seed)
+    jssha.setHMACKey(seed, 'UINT8ARRAY')
     const codes = new Uint8Array(n * 4)
     const v = new DataView(codes.buffer)
     const b = new DataView(new ArrayBuffer(8))
@@ -34,3 +37,4 @@ module.exports = {
     return codes
   }
 }
+module.exports = utils

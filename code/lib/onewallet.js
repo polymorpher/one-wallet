@@ -19,7 +19,7 @@ const computeMerkleTree = ({ otpSeed, effectiveTime = Date.now(), duration = 360
   }
   seed = seed.slice(0, 20)
   console.log('Generating Wallet with parameters', { seed, height, otpInterval, effectiveTime })
-  const otps = genOTP({ seed: otpSeed, counter, n, progressObserver })
+  const otps = genOTP({ seed, counter, n, progressObserver })
   // 4 bytes for OTP, 2 bytes for nonce, 26 bytes for seed hash
   const hseed = fastSHA256(seed).slice(0, 26)
   const leaves = new Uint8Array(n * 32)
@@ -45,11 +45,12 @@ const computeMerkleTree = ({ otpSeed, effectiveTime = Date.now(), duration = 360
   }
   layers.push(leaves)
   for (let j = 1; j < height; j += 1) {
-    const layer = new Uint8Array(n / (2 ** j))
+    const layer = new Uint8Array(n / (2 ** j) * 32)
     const lastLayer = layers[j - 1]
     for (let i = 0; i < n / (2 ** j); i += 1) {
       const d = lastLayer.subarray(2 * i * 32, 64)
       const h = fastSHA256(d)
+      console.log(`layer=${j}, index=${i}`)
       layer.set(h, i * 32)
     }
     layers.push(layer)
@@ -57,6 +58,7 @@ const computeMerkleTree = ({ otpSeed, effectiveTime = Date.now(), duration = 360
   const root = layers[height - 1]
   console.log(`root: 0x${hexView(root)} tree height: ${layers.length}; leaves length: ${leaves.length}`)
   return {
+    seed,
     leaves, // =layers[0]
     root, // =layers[height - 1]
     layers,
