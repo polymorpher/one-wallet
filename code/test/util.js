@@ -1,12 +1,14 @@
 const ONEWalletLib = require('../lib/onewallet')
+const ONEWalletUtil = require('../lib/util')
 const ONEWallet = artifacts.require('ONEWallet')
 const base32 = require('hi-base32')
+// const { utils: w3utils } = require('web3')
 // t0, lifespan, maxOperationsPerInterval, lastResortAddress, dailyLimit
 const INTERVAL = 30000
 const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval, lastResortAddress, dailyLimit }) => {
   const otpSeed = base32.encode('0xdeadbeef1234567890')
   effectiveTime = Math.floor(effectiveTime / INTERVAL) * INTERVAL
-  const { root, leaves, layers, maxOperationsPerInterval: slotSize } = ONEWalletLib.computeMerkleTree({
+  const { seed, root, leaves, layers, maxOperationsPerInterval: slotSize } = ONEWalletLib.computeMerkleTree({
     otpSeed, effectiveTime, maxOperationsPerInterval, duration })
   const height = layers.length
   const t0 = effectiveTime / INTERVAL
@@ -14,9 +16,15 @@ const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval,
   const interval = INTERVAL / 1000
   // constructor(bytes32 root_, uint8 height_, uint8 interval_, uint32 t0_, uint32 lifespan_, uint8 maxOperationsPerInterval_,
   //   address payable lastResortAddress_, uint256 dailyLimit_)
-  const wallet = await ONEWallet.new(root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit)
+  console.log('Creating ONEWallet contract with parameters', {
+    root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit
+  })
+  const wallet = await ONEWallet.new(
+    ONEWalletUtil.hexString(root), height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit
+  )
 
   return {
+    seed,
     wallet, // smart contract
     root, // uint8array
     client: {
