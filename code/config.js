@@ -3,10 +3,12 @@ require('dotenv').config()
 module.exports = {
   harmony: {
     testnet: {
-      key: process.env.HARMONY_TESTNET_KEY || ''
+      key: process.env.HARMONY_TESTNET_KEY || '',
+      url: 'https://api.s0.b.hmny.io'
     },
     mainnet: {
-      key: process.env.HARMONY_MAINNET_KEY || ''
+      key: process.env.HARMONY_MAINNET_KEY || '',
+      url: 'https://api.s0.t.hmny.io'
     }
   },
   eth: {
@@ -15,8 +17,7 @@ module.exports = {
       key: process.env.ETH_RINKEBY_KEY || '',
     },
     ganache: {
-      host: process.env.ETH_GANACHE_HOST || '127.0.0.1',
-      port: parseInt(process.env.ETH_GANACHE_HOST || 7545),
+      url: process.env.ETH_GANACHE_URL || 'http://127.0.0.1:7545',
       key: process.env.ETH_GANACHE_KEY,
     }
   },
