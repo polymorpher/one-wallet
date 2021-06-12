@@ -87,17 +87,17 @@ const selectMerkleNeighbors = ({
 }
 
 // neighbor, uint8array, 32
-// indexWithNonce, int
+// index, int, must be with nonce
 // eotp, uint8array, 32 (hash of eotp = neighbors' neighbor)
 // dest, hex string
 // amount, BN or number-string
-const computeTransferHash = ({ neighbor, indexWithNonce, eotp, dest, amount }) => {
+const computeTransferHash = ({ neighbor, index, eotp, dest, amount }) => {
   const destBytes = hexStringToBytes(dest, 32)
   const amountBytes = new BN(amount, 10).toArrayLike(Uint8Array, 'be', 32)
-  const indexWithNonceBytes = new BN(indexWithNonce, 10).toArrayLike(Uint8Array, 'be', 32)
+  const indexBytes = new BN(index, 10).toArrayLike(Uint8Array, 'be', 32)
   const input = new Uint8Array(160)
   input.set(neighbor)
-  input.set(indexWithNonceBytes, 32)
+  input.set(indexBytes, 32)
   input.set(eotp, 64)
   input.set(destBytes, 96)
   input.set(amountBytes, 128)
