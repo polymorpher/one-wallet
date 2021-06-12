@@ -1,4 +1,5 @@
 const TestUtil = require('./util')
+const unit = require('ethjs-unit')
 // const ONEWalletUtil = require('../lib/util')
 // const BN = require('bn.js')
 
@@ -7,9 +8,9 @@ const DURATION = INTERVAL * 8
 const SLOT_SIZE = 1
 const DAILY_LIMIT = 10
 
-contract('ONEWAllet', (accounts) => {
+contract('ONEWallet', (accounts) => {
   const EFFECTIVE_TIME = Math.floor(Date.now() / INTERVAL) * INTERVAL - DURATION / 2
-  const SMALL_AMOUNT = web3.utils.toWei('0.01', 'ether')
+  const SMALL_AMOUNT = unit.toWei('0.01', 'ether')
   it('must create wallet with expected parameters', async () => {
     const purse = web3.eth.accounts.create()
     const {
@@ -56,4 +57,40 @@ contract('ONEWAllet', (accounts) => {
     const balance = await web3.eth.getBalance(wallet.address)
     assert.equal(SMALL_AMOUNT, balance, 'Wallet has correct balance')
   })
+
+  // WIP
+  // it('must commit and reveal a transfer successfully', async () => {
+  //   const purse = web3.eth.accounts.create()
+  //   const {
+  //     seed,
+  //     wallet,
+  //     root,
+  //     client: {
+  //       leaves,
+  //       layers,
+  //     },
+  //     contract: {
+  //       slotSize,
+  //       t0,
+  //       lifespan,
+  //       interval
+  //     } } = await TestUtil.createWallet({
+  //     effectiveTime: EFFECTIVE_TIME,
+  //     duration: DURATION,
+  //     maxOperationsPerInterval: SLOT_SIZE,
+  //     lastResortAddress: purse.address,
+  //     dailyLimit: DAILY_LIMIT
+  //   })
+  //
+  //
+  //
+  //   await web3.eth.sendTransaction({
+  //     from: accounts[0],
+  //     to: wallet.address,
+  //     value: SMALL_AMOUNT
+  //   })
+  //   console.log(`Sent ${SMALL_AMOUNT} to ${wallet.address}`)
+  //   const balance = await web3.eth.getBalance(wallet.address)
+  //   assert.equal(SMALL_AMOUNT, balance, 'Wallet has correct balance')
+  // })
 })

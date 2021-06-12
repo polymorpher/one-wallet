@@ -20,7 +20,7 @@ module.exports = {
       network_id: '*', // Match any network id
       gas: config.gasLimit,
       gasPrice: config.gasPrice,
-      provider: new PrivateKeyProvider(
+      provider: config.eth.ganache.key && new PrivateKeyProvider(
         config.eth.ganache.key,
         config.eth.ganache.url
       ),
@@ -29,7 +29,7 @@ module.exports = {
       network_id: '4',
       gas: config.gasLimit,
       gasPrice: config.gasPrice,
-      provider: new PrivateKeyProvider(
+      provider: config.eth.rinkeby.key && new PrivateKeyProvider(
         config.eth.rinkeby.key,
         config.eth.rinkeby.url
       ),
