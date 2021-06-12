@@ -25,6 +25,7 @@ contract ONEWallet {
     }
 
     uint32 constant REVEAL_MAX_DELAY = 60;
+    uint32 constant SECONDS_PER_DAY = 86400;
 
     //    bool commitLocked; // not necessary at this time
     Commit[] commits; // self-clean on commit (auto delete commits that are beyond REVEAL_MAX_DELAY), so it's bounded by the number of commits an attacker can spam within REVEAL_MAX_DELAY time in the worst case, which is not too bad.
@@ -48,9 +49,15 @@ contract ONEWallet {
 
     function retire() external returns (bool)
     {
-        require(uint32(block.timestamp) / interval - t0 > lifespan, "Too early to retire");
+        require(uint32(block.timestamp / interval) - t0 > lifespan, "Too early to retire");
         require(lastResortAddress != address(0), "Last resort address is not set");
         return _drain();
+    }
+
+    function setLastResortAddressIfNull(address payable lastResortAddress_) external
+    {
+        require(lastResortAddress == address(0), "Last resort address is already set");
+        lastResortAddress = lastResortAddress_;
     }
 
     function getNonce() public view returns (uint8)
@@ -69,23 +76,25 @@ contract ONEWallet {
         commits.push(nc);
     }
 
-    // TODO (@polymorpher): during reveal, reject if index corresponds to a timestamp that is same as current block.timestamp, so we don't let the client accidentally leak EOTP that is still valid at the current time, which an attacker could use to commit and reveal a new transaction. This introduces a limitation that there would be a OTP_INTERVAL (=30 seconds by default) delay between commit and reveal, which translates to an unpleasant user experience. To fix this, we may slice OTP_INTERVAL further and use multiple EOTP per OTP_INTERVAL, and index the operations within an interval by an operation id. For a slice of size 16, we will need to generate a Merkle Tree 16 times as large. In this case, we would reject transactions only if both (1) the index corresponds to a timestamp that is same as current block.timestamp, and, (2) the operation id is not less than the id corresponding to the current timestamp's slice
     function revealTransfer(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp, address payable dest, uint256 amount) external
     isCorrectProof(neighbors, indexWithNonce, eotp)
     returns (bool)
     {
-        bytes memory packedNeighbors = _pack(neighbors);
-        bytes memory packed = bytes.concat(packedNeighbors,
+        //        bytes memory packedNeighbors = _pack(neighbors);
+        bytes memory packed = bytes.concat(neighbors[0],
             bytes32(bytes4(indexWithNonce)), eotp, bytes32(bytes20(address(dest))), bytes32(amount));
         bytes32 commitHash = keccak256(bytes.concat(packed));
         _revealPreCheck(commitHash, indexWithNonce);
         _completeReveal(commitHash);
-        uint32 day = uint32(block.timestamp) / 86400;
+        uint32 day = uint32(block.timestamp / SECONDS_PER_DAY);
         if (day > lastTransferDay) {
             spentToday = 0;
             lastTransferDay = day;
         }
         if (spentToday + amount > dailyLimit) {
+            return false;
+        }
+        if (address(this).balance < amount) {
             return false;
         }
         bool success = dest.send(amount);
@@ -101,9 +110,9 @@ contract ONEWallet {
     isCorrectProof(neighbors, indexWithNonce, eotp)
     returns (bool)
     {
-        bytes memory packedNeighbors = _pack(neighbors);
+        //        bytes memory packedNeighbors = _pack(neighbors);
         bytes memory packed = bytes.concat(
-            packedNeighbors,
+            neighbors[0],
             bytes32(bytes4(indexWithNonce)),
             eotp
         );
@@ -113,8 +122,7 @@ contract ONEWallet {
         if (lastResortAddress == address(0)) {
             return false;
         }
-        _drain();
-        return true;
+        return _drain();
     }
 
     function _drain() internal returns (bool) {
@@ -152,7 +160,7 @@ contract ONEWallet {
         if (hash == "") {
             return (0, false);
         }
-        for (uint8 i = 0; i < commits.length; i++) {
+        for (uint32 i = 0; i < commits.length; i++) {
             Commit storage c = commits[i];
             if (c.hash == hash) {
                 return (c.timestamp, c.completed);
@@ -208,7 +216,7 @@ contract ONEWallet {
         (uint32 ct, bool completed) = _findCommit(hash);
         require(ct > 0, "Cannot find commit for this transaction");
         uint32 counter = ct / interval - t0;
-        require(counter == index, "Provided index does not match commit timestamp");
+        require(counter == index, "Provided index does not match committed timestamp");
         uint8 expectedNonce = nonces[counter];
         require(nonce >= expectedNonce, "Nonce is too low");
         require(!completed, "Commit is already completed");
@@ -265,18 +273,19 @@ contract ONEWallet {
         nonces[index] = v + 1;
     }
 
+    // not used at this time
     // same output as abi.encodePacked(x), but the behavior of abi.encodePacked is sort of uncertain
-    function _pack(bytes32[] calldata x) pure internal returns (bytes memory)
-    {
-        // TODO (@polymorpher): use assembly mstore and mload to do this, similar to _asByte32 below
-        bytes memory r = new bytes(x.length * 32);
-        for (uint8 i = 0; i < x.length; i++) {
-            for (uint8 j = 0; j < 32; j++) {
-                r[i * 32 + j] = x[i][j];
-            }
-        }
-        return r;
-    }
+    //    function _pack(bytes32[] calldata x) pure internal returns (bytes memory)
+    //    {
+    //        // TODO (@polymorpher): use assembly mstore and mload to do this, similar to _asByte32 below
+    //        bytes memory r = new bytes(x.length * 32);
+    //        for (uint8 i = 0; i < x.length; i++) {
+    //            for (uint8 j = 0; j < 32; j++) {
+    //                r[i * 32 + j] = x[i][j];
+    //            }
+    //        }
+    //        return r;
+    //    }
 
     // not used at this time
     //    function _asByte32(bytes memory b) pure internal returns (bytes32){
