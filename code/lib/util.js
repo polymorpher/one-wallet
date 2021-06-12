@@ -35,12 +35,13 @@ const utils = {
   },
 
   timeToIndex: ({
-    effectiveTime, // assumed to be already adjusted and aligned to closest 30-second interval below
+    effectiveTime,
     time = Date.now(),
     interval = 30000,
     nonce = 0,
     maxOperationsPerInterval = 1
   }) => {
+    effectiveTime = Math.floor(effectiveTime / interval) * interval
     const index = (time - effectiveTime) / interval
     const indexWithNonce = index * maxOperationsPerInterval + nonce
     return indexWithNonce

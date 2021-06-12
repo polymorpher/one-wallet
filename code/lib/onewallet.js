@@ -68,33 +68,24 @@ const computeMerkleTree = ({ otpSeed, effectiveTime = Date.now(), duration = 360
   }
 }
 
-const _computeMerkleNeighbors = ({ layers, index, nonce, maxOperationsPerInterval }) => {
-  const neighbors = []
-  index = index * maxOperationsPerInterval + nonce
+const selectMerkleNeighbors = ({
+  layers, // layers or slices of the layers; layer 0 are the leaves; if they are slices, layerOffsets must contain the offsets of each slice
+  layerOffsets = new Array(layers.length), // if only a slice of each layer is provided (to save memory), provide the starting position of each slice
+  index // with nonce; to get the correct index, use util.timeToIndex
+}) => {
+  const r = []
   let j = 0
   while (index > 0) {
-    const neighbor = index % 2 === 0 ? index + 1 : index - 1
-    const n = layers[j].subarray(neighbor * 32, neighbor * 32 + 32).slice()
-    neighbors.push(n)
-    index >>= 2
+    const i = index % 2 === 0 ? index + 1 : index - 1
+    const p = i - layerOffsets[j]
+    const n = layers[j].subarray(p * 32, p * 32 + 32).slice()
+    r.push(n)
+    index >>= 1
+    j += 1
   }
-  return neighbors
+  return r
 }
 
-const computeMerkleNeighbors = ({
-  layers, timestamp = Date.now(),
-  effectiveTime, otpInterval = 30000,
-  maxOperationsPerInterval,
-  nonce = 0,
-}) => {
-  if (!layers) {
-    throw new Error('Merkle Tree must be provided as [layers]')
-  }
-  effectiveTime = Math.floor(effectiveTime / otpInterval) * otpInterval
-  const index = Math.floor((timestamp - effectiveTime) / otpInterval)
-  const neighbors = _computeMerkleNeighbors({ layers, index, nonce, maxOperationsPerInterval })
-  return { neighbors, index }
-}
 // neighbor, uint8array, 32
 // indexWithNonce, int
 // eotp, uint8array, 32 (hash of eotp = neighbors' neighbor)
@@ -113,29 +104,10 @@ const computeTransferHash = ({ neighbor, indexWithNonce, eotp, dest, amount }) =
   return keccak(input)
 }
 
-const selectNeighbors = ({
-  layers, // layers or slices of the layers; layer 0 are the leaves; if they are slices, layerOffsets must contain the offsets of each slice
-  layerOffsets = new Array(layers.length), // if only a slice of each layer is provided (to save memory), provide the starting position of each slice
-  index // with nonce; to get the correct index, use util.timeToIndex
-}) => {
-  const neighbors = []
-  let t = 0
-  for (let i = layers.length - 2; i >= 0; i -= 1) {
-    const bit = (index >> i) & 0x1
-    const indexAtLayer = t - layerOffsets[i] + (bit > 0 ? 0 : 1)
-    const neighbor = layers[i][indexAtLayer]
-    neighbors.push(neighbor)
-    if (bit > 0) {
-      t += (2 ** i)
-    }
-  }
-  return neighbors.reverse()
-}
-
 // otp, uint8array, 4
 // hseed, uint8array, 26, sha256 hash of the otp seed
 // nonce, positive integer (within 15-bit)
-const computeEOTP = ({ otp, hseed, nonce }) => {
+const computeEOTP = ({ otp, hseed, nonce = 0 }) => {
   const buffer = new Uint8Array(32)
   const nb = new Uint16Array([nonce])
   buffer.set(hseed.slice(0, 26))
@@ -155,9 +127,8 @@ const computeRecoveryHash = ({ leaf, indexWithNonce, eotp }) => {
 
 module.exports = {
   computeMerkleTree,
-  computeMerkleNeighbors,
   computeTransferHash,
   computeRecoveryHash,
-  selectNeighbors,
+  selectMerkleNeighbors,
   computeEOTP
 }
