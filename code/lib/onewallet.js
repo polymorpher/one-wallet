@@ -1,6 +1,7 @@
 const fastSHA256 = require('fast-sha256')
 const base32 = require('hi-base32')
-const { hexView, genOTP } = require('./util')
+const { hexView, genOTP, hexStringToBytes, keccak } = require('./util')
+const BN = require('bn.js')
 
 const computeMerkleTree = ({ otpSeed, effectiveTime = Date.now(), duration = 3600 * 1000 * 24 * 365, progressObserver, otpInterval = 30000, maxOperationsPerInterval = 1 }) => {
   maxOperationsPerInterval = 2 ** Math.ceil(Math.log2(maxOperationsPerInterval))
@@ -93,8 +94,36 @@ const computeMerkleNeighbors = ({
   const neighbors = _computeMerkleNeighbors({ layers, index, nonce, maxOperationsPerInterval })
   return { neighbors, index }
 }
+// leaf, uint8array, 32
+// indexWithNonce, int
+// eotp, uint8array, 32
+// dest, hex string
+// amount, BN
+const computeTransferHash = ({ leaf, indexWithNonce, eotp, dest, amount }) => {
+  const destBytes = hexStringToBytes(dest, 32)
+  const amountBytes = amount.toArrayLike(Uint8Array, 'be', 32)
+  const indexWithNonceBytes = new BN(indexWithNonce, 10).toArrayLike(Uint8Array, 'be', 32)
+  const input = new Uint8Array(160)
+  input.set(leaf)
+  input.set(indexWithNonceBytes, 32)
+  input.set(eotp, 64)
+  input.set(destBytes, 96)
+  input.set(amountBytes, 128)
+  return keccak(input)
+}
+
+const computeRecoveryHash = ({ leaf, indexWithNonce, eotp }) => {
+  const indexWithNonceBytes = new BN(indexWithNonce, 10).toArrayLike(Uint8Array, 'be', 32)
+  const input = new Uint8Array(96)
+  input.set(leaf)
+  input.set(indexWithNonceBytes, 32)
+  input.set(eotp, 64)
+  return keccak(input)
+}
 
 module.exports = {
   computeMerkleTree,
   computeMerkleNeighbors,
+  computeTransferHash,
+  computeRecoveryHash
 }

@@ -1,4 +1,5 @@
 const JSSHA = require('jssha')
+const createKeccakHash = require('keccak')
 const utils = {
   hexView: (bytes) => {
     return bytes && Array.from(bytes).map(x => x.toString(16).padStart(2, '0')).join('')
@@ -6,6 +7,31 @@ const utils = {
 
   hexString: (bytes) => {
     return '0x' + utils.hexView(bytes)
+  },
+
+  hexToBytes: (hex, length, padRight) => {
+    length = length || hex.length / 2
+    const ar = new Uint8Array(length)
+    for (let i = 0; i < hex.length / 2; i += 1) {
+      let j = i
+      if (padRight) {
+        j = length - hex.length + i
+      }
+      ar[j] = parseInt(hex.slice(i * 2, i * 2 + 2), 16)
+    }
+    return ar
+  },
+
+  // assume Buffer is poly-filled or loaded from https://github.com/feross/buffer
+  keccak: (bytes) => {
+    const k = createKeccakHash('keccak256')
+    // assume Buffer is poly-filled or loaded from https://github.com/feross/buffer
+    const hash = k.update(Buffer.from(bytes)).digest()
+    return new Uint8Array(hash)
+  },
+
+  hexStringToBytes: (hexStr, length) => {
+    return hexStr.startsWith('0x') ? utils.hexToBytes(hexStr.slice(2), length) : utils.hexToBytes(hexStr, length)
   },
 
   genOTP: ({ seed, counter = Math.floor(Date.now() / 30000), n = 1, progressObserver }) => {
