@@ -34,6 +34,18 @@ const utils = {
     return hexStr.startsWith('0x') ? utils.hexToBytes(hexStr.slice(2), length) : utils.hexToBytes(hexStr, length)
   },
 
+  timeToIndex: ({
+    effectiveTime, // assumed to be already adjusted and aligned to closest 30-second interval below
+    time = Date.now(),
+    interval = 30000,
+    nonce = 0,
+    maxOperationsPerInterval = 1
+  }) => {
+    const index = (time - effectiveTime) / interval
+    const indexWithNonce = index * maxOperationsPerInterval + nonce
+    return indexWithNonce
+  },
+
   genOTP: ({ seed, counter = Math.floor(Date.now() / 30000), n = 1, progressObserver }) => {
     const reportInterval = Math.floor(n / 100)
     const jssha = new JSSHA('SHA-1', 'UINT8ARRAY')

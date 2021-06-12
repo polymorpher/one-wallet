@@ -115,19 +115,13 @@ const computeTransferHash = ({ neighbor, indexWithNonce, eotp, dest, amount }) =
 
 const selectNeighbors = ({
   layers, // layers or slices of the layers; layer 0 are the leaves; if they are slices, layerOffsets must contain the offsets of each slice
-  effectiveTime, // assumed to be already adjusted and aligned to closest 30-second interval below
   layerOffsets = new Array(layers.length), // if only a slice of each layer is provided (to save memory), provide the starting position of each slice
-  time = Date.now(),
-  interval = 30000,
-  nonce = 0,
-  maxOperationsPerInterval = 1
+  index // with nonce; to get the correct index, use util.timeToIndex
 }) => {
   const neighbors = []
-  const index = (time - effectiveTime) / interval
-  const indexWithNonce = index * maxOperationsPerInterval + nonce
   let t = 0
   for (let i = layers.length - 2; i >= 0; i -= 1) {
-    const bit = (indexWithNonce >> i) & 0x1
+    const bit = (index >> i) & 0x1
     const indexAtLayer = t - layerOffsets[i] + (bit > 0 ? 0 : 1)
     const neighbor = layers[i][indexAtLayer]
     neighbors.push(neighbor)
@@ -135,10 +129,7 @@ const selectNeighbors = ({
       t += (2 ** i)
     }
   }
-  return {
-    neighbors: neighbors.reverse(),
-    indexWithNonce,
-  }
+  return neighbors.reverse()
 }
 
 // otp, uint8array, 4
