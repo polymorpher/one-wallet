@@ -6,7 +6,7 @@ const BN = require('bn.js')
 const computeMerkleTree = ({ otpSeed, effectiveTime = Date.now(), duration = 3600 * 1000 * 24 * 365, progressObserver, otpInterval = 30000, maxOperationsPerInterval = 1 }) => {
   maxOperationsPerInterval = 2 ** Math.ceil(Math.log2(maxOperationsPerInterval))
   maxOperationsPerInterval = Math.min(16, maxOperationsPerInterval)
-  const height = Math.ceil(Math.log2(duration / otpInterval)) + 1
+  const height = Math.ceil(Math.log2(duration / otpInterval * maxOperationsPerInterval)) + 1
   const n = Math.pow(2, height - 1)
   const reportInterval = Math.floor(n / 100)
   const counter = effectiveTime / otpInterval
@@ -60,6 +60,7 @@ const computeMerkleTree = ({ otpSeed, effectiveTime = Date.now(), duration = 360
   console.log(`root: 0x${hexView(root)} tree height: ${layers.length}; leaves length: ${leaves.length}`)
   return {
     seed,
+    hseed,
     leaves, // =layers[0]
     root, // =layers[height - 1]
     layers,
@@ -94,22 +95,62 @@ const computeMerkleNeighbors = ({
   const neighbors = _computeMerkleNeighbors({ layers, index, nonce, maxOperationsPerInterval })
   return { neighbors, index }
 }
-// leaf, uint8array, 32
+// neighbor, uint8array, 32
 // indexWithNonce, int
-// eotp, uint8array, 32
+// eotp, uint8array, 32 (hash of eotp = neighbors' neighbor)
 // dest, hex string
-// amount, BN
-const computeTransferHash = ({ leaf, indexWithNonce, eotp, dest, amount }) => {
+// amount, BN or number-string
+const computeTransferHash = ({ neighbor, indexWithNonce, eotp, dest, amount }) => {
   const destBytes = hexStringToBytes(dest, 32)
-  const amountBytes = amount.toArrayLike(Uint8Array, 'be', 32)
+  const amountBytes = new BN(amount, 10).toArrayLike(Uint8Array, 'be', 32)
   const indexWithNonceBytes = new BN(indexWithNonce, 10).toArrayLike(Uint8Array, 'be', 32)
   const input = new Uint8Array(160)
-  input.set(leaf)
+  input.set(neighbor)
   input.set(indexWithNonceBytes, 32)
   input.set(eotp, 64)
   input.set(destBytes, 96)
   input.set(amountBytes, 128)
   return keccak(input)
+}
+
+const selectNeighbors = ({
+  layers, // layers or slices of the layers; layer 0 are the leaves; if they are slices, layerOffsets must contain the offsets of each slice
+  effectiveTime, // assumed to be already adjusted and aligned to closest 30-second interval below
+  layerOffsets = new Array(layers.length), // if only a slice of each layer is provided (to save memory), provide the starting position of each slice
+  time = Date.now(),
+  interval = 30000,
+  nonce = 0,
+  maxOperationsPerInterval = 1
+}) => {
+  const neighbors = []
+  const index = (time - effectiveTime) / interval
+  const indexWithNonce = index * maxOperationsPerInterval + nonce
+  let t = 0
+  for (let i = layers.length - 2; i >= 0; i -= 1) {
+    const bit = (indexWithNonce >> i) & 0x1
+    const indexAtLayer = t - layerOffsets[i] + (bit > 0 ? 0 : 1)
+    const neighbor = layers[i][indexAtLayer]
+    neighbors.push(neighbor)
+    if (bit > 0) {
+      t += (2 ** i)
+    }
+  }
+  return {
+    neighbors: neighbors.reverse(),
+    indexWithNonce,
+  }
+}
+
+// otp, uint8array, 4
+// hseed, uint8array, 26, sha256 hash of the otp seed
+// nonce, positive integer (within 15-bit)
+const computeEOTP = ({ otp, hseed, nonce }) => {
+  const buffer = new Uint8Array(32)
+  const nb = new Uint16Array([nonce])
+  buffer.set(hseed.slice(0, 26))
+  buffer.set(nb, 26)
+  buffer.set(otp, 28)
+  return fastSHA256(buffer)
 }
 
 const computeRecoveryHash = ({ leaf, indexWithNonce, eotp }) => {
@@ -125,5 +166,7 @@ module.exports = {
   computeMerkleTree,
   computeMerkleNeighbors,
   computeTransferHash,
-  computeRecoveryHash
+  computeRecoveryHash,
+  selectNeighbors,
+  computeEOTP
 }
