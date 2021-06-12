@@ -8,7 +8,7 @@ const INTERVAL = 30000
 const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval, lastResortAddress, dailyLimit }) => {
   const otpSeed = base32.encode('0xdeadbeef1234567890')
   effectiveTime = Math.floor(effectiveTime / INTERVAL) * INTERVAL
-  const { seed, root, leaves, layers, maxOperationsPerInterval: slotSize } = ONEWalletLib.computeMerkleTree({
+  const { seed, hseed, root, leaves, layers, maxOperationsPerInterval: slotSize } = ONEWalletLib.computeMerkleTree({
     otpSeed, effectiveTime, maxOperationsPerInterval, duration })
   const height = layers.length
   const t0 = effectiveTime / INTERVAL
@@ -25,6 +25,7 @@ const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval,
 
   return {
     seed,
+    hseed,
     wallet, // smart contract
     root, // uint8array
     client: {
