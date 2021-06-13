@@ -1,10 +1,17 @@
 const ONEWalletLib = require('../lib/onewallet')
 const ONEWalletUtil = require('../lib/util')
 const ONEWallet = artifacts.require('ONEWallet')
+const config = require('../config')
 const base32 = require('hi-base32')
-// const { utils: w3utils } = require('web3')
-// t0, lifespan, maxOperationsPerInterval, lastResortAddress, dailyLimit
 const INTERVAL = 30000
+const Logger = {
+  debug: (...args) => {
+    if (config.verbose) {
+      console.log(...args)
+    }
+  }
+}
+
 const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval, lastResortAddress, dailyLimit }) => {
   const otpSeed = base32.encode('0xdeadbeef1234567890')
   effectiveTime = Math.floor(effectiveTime / INTERVAL) * INTERVAL
@@ -16,7 +23,7 @@ const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval,
   const interval = INTERVAL / 1000
   // constructor(bytes32 root_, uint8 height_, uint8 interval_, uint32 t0_, uint32 lifespan_, uint8 maxOperationsPerInterval_,
   //   address payable lastResortAddress_, uint256 dailyLimit_)
-  console.log('Creating ONEWallet contract with parameters', {
+  Logger.debug('Creating ONEWallet contract with parameters', {
     root: ONEWalletUtil.hexString(root), height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit
   })
   const wallet = await ONEWallet.new(
@@ -73,5 +80,6 @@ const increaseTime = async (seconds) => {
 }
 module.exports = {
   increaseTime,
-  createWallet
+  createWallet,
+  Logger,
 }

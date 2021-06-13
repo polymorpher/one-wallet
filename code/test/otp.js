@@ -2,6 +2,7 @@ const ONEUtil = require('../lib/util')
 const INTERVAL = 30000
 const DURATION = INTERVAL * 8
 const base32 = require('hi-base32')
+const { Logger } = require('./util')
 
 contract('ONEWallet', (accounts) => {
   // 2021-06-13T03:55:00.000Z
@@ -25,7 +26,7 @@ contract('ONEWallet', (accounts) => {
     assert(otpInts.map(e => e[1]).includes(singleOTPInt))
     assert(otpInts.find(e => e[1] === singleOTPInt)[0] === 1623556500000)
     const currentOTPInt = new DataView(currentOTP.buffer).getUint32(0, false)
-    console.log('compare this against current value in google authenticator',
+    Logger.debug('compare this against current value in google authenticator',
       currentOTPInt,
       `(time=${Math.floor(Date.now() / INTERVAL) * INTERVAL})`) // compare this against google authenticator
   })
