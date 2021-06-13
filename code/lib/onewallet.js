@@ -122,11 +122,14 @@ const computeEOTP = ({ otp, hseed, nonce = 0 }) => {
   return fastSHA256(buffer)
 }
 
-const computeRecoveryHash = ({ leaf, indexWithNonce, eotp }) => {
-  const indexWithNonceBytes = new BN(indexWithNonce, 10).toArrayLike(Uint8Array, 'be', 4)
+// neighbor, uint8array, 32
+// index, int, must be with nonce
+// eotp, uint8array, 32 (hash of eotp = neighbors' neighbor)
+const computeRecoveryHash = ({ neighbor, index, eotp }) => {
+  const indexBytes = new BN(index, 10).toArrayLike(Uint8Array, 'be', 4)
   const input = new Uint8Array(96)
-  input.set(leaf)
-  input.set(indexWithNonceBytes, 32)
+  input.set(neighbor)
+  input.set(indexBytes, 32)
   input.set(eotp, 64)
   return { hash: keccak(input), bytes: input }
 }
