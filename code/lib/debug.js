@@ -18,9 +18,9 @@ module.exports = {
       buffer.set(left)
       buffer.set(right, 32)
       hash = fastSHA256(buffer)
-      console.log({ i, bit: index & 0x1, left, right, hash })
+      console.log({ i, bit: index & 0x1, left: util.hexString(left), right: util.hexString(right), hash: util.hexString(hash) })
     }
-    console.log(`Final result`, { hash, root })
+    console.log(`Final result`, { hash: util.hexString(hash), root: util.hexString(root) })
   },
   printLayers: ({ layers }) => {
     for (let i = 0; i < layers.length; i += 1) {
