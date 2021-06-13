@@ -20,6 +20,7 @@ module.exports = {
       network_id: '*', // Match any network id
       gas: config.gasLimit,
       gasPrice: config.gasPrice,
+      websockets: true,
       provider: config.eth.ganache.key && new PrivateKeyProvider(
         config.eth.ganache.key,
         config.eth.ganache.url
