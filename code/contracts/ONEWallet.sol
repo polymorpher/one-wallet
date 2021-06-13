@@ -2,6 +2,13 @@
 pragma solidity ^0.8.4;
 
 contract ONEWallet {
+    //  This event is for debugging - should not be used in production
+    //    event CheckingCommit(bytes data, bytes32 hash);
+    event InsufficientFund(uint256 amount, uint256 balance, address dest);
+    event ExceedDailyLimit(uint256 amount, uint256 limit, uint256 current, address dest);
+    event UnknownTransferError(address dest);
+    event LastResortAddressNotSet();
+
     bytes32 root; // Note: @ivan brought up a good point in reducing this to 16-bytes so hash of two consecutive nodes can be done in a single word (to save gas and reduce blockchain clutter). Let's not worry about that for now and re-evalaute this later.
     uint8 height; // including the root. e.g. for a tree with 4 leaves, the height is 3.
     uint8 interval; // otp interval in seconds, default is 30
@@ -28,7 +35,7 @@ contract ONEWallet {
     uint32 constant SECONDS_PER_DAY = 86400;
 
     //    bool commitLocked; // not necessary at this time
-    Commit[] commits; // self-clean on commit (auto delete commits that are beyond REVEAL_MAX_DELAY), so it's bounded by the number of commits an attacker can spam within REVEAL_MAX_DELAY time in the worst case, which is not too bad.
+    Commit[] public commits; // self-clean on commit (auto delete commits that are beyond REVEAL_MAX_DELAY), so it's bounded by the number of commits an attacker can spam within REVEAL_MAX_DELAY time in the worst case, which is not too bad.
 
     uint256[64] ______gap; // reserved space for future upgrade
 
@@ -84,6 +91,7 @@ contract ONEWallet {
         bytes memory packed = bytes.concat(neighbors[0],
             bytes32(bytes4(indexWithNonce)), eotp, bytes32(bytes20(address(dest))), bytes32(amount));
         bytes32 commitHash = keccak256(bytes.concat(packed));
+//        emit CheckingCommit(packed, commitHash);
         _revealPreCheck(commitHash, indexWithNonce);
         _completeReveal(commitHash);
         uint32 day = uint32(block.timestamp / SECONDS_PER_DAY);
@@ -92,14 +100,17 @@ contract ONEWallet {
             lastTransferDay = day;
         }
         if (spentToday + amount > dailyLimit) {
+            emit ExceedDailyLimit(amount, dailyLimit, spentToday, dest);
             return false;
         }
         if (address(this).balance < amount) {
+            emit InsufficientFund(amount, address(this).balance, dest);
             return false;
         }
         bool success = dest.send(amount);
         // we do not want to revert the whole transaction if this operation fails, since EOTP is already revealed
         if (!success) {
+            emit UnknownTransferError(dest);
             return false;
         }
         spentToday += amount;
@@ -120,6 +131,7 @@ contract ONEWallet {
         _revealPreCheck(commitHash, indexWithNonce);
         _completeReveal(commitHash);
         if (lastResortAddress == address(0)) {
+            emit LastResortAddressNotSet();
             return false;
         }
         return _drain();
