@@ -79,12 +79,12 @@ const selectMerkleNeighbors = ({
     const i = index % 2 === 0 ? index + 1 : index - 1
     const p = i - (layerOffsets[j] || 0)
     const n = layers[j].subarray(p * 32, p * 32 + 32).slice()
-    console.log(`selectMerkleNeighbors`, { currentIndex: index,
-      layer: j,
-      indexAtLayer: i,
-      indexAtSlice: p,
-      node: hexView(n),
-      offset: layerOffsets[j] || 0 })
+    // console.log(`selectMerkleNeighbors`, { currentIndex: index,
+    //   layer: j,
+    //   indexAtLayer: i,
+    //   indexAtSlice: p,
+    //   node: hexView(n),
+    //   offset: layerOffsets[j] || 0 })
     r.push(n)
     index >>= 1
     j += 1
@@ -100,14 +100,14 @@ const selectMerkleNeighbors = ({
 const computeTransferHash = ({ neighbor, index, eotp, dest, amount }) => {
   const destBytes = hexStringToBytes(dest, 32)
   const amountBytes = new BN(amount, 10).toArrayLike(Uint8Array, 'be', 32)
-  const indexBytes = new BN(index, 10).toArrayLike(Uint8Array, 'be', 32)
+  const indexBytes = new BN(index, 10).toArrayLike(Uint8Array, 'be', 4)
   const input = new Uint8Array(160)
   input.set(neighbor)
   input.set(indexBytes, 32)
   input.set(eotp, 64)
   input.set(destBytes, 96)
   input.set(amountBytes, 128)
-  return keccak(input)
+  return { hash: keccak(input), bytes: input }
 }
 
 // otp, uint8array, 4
@@ -123,12 +123,12 @@ const computeEOTP = ({ otp, hseed, nonce = 0 }) => {
 }
 
 const computeRecoveryHash = ({ leaf, indexWithNonce, eotp }) => {
-  const indexWithNonceBytes = new BN(indexWithNonce, 10).toArrayLike(Uint8Array, 'be', 32)
+  const indexWithNonceBytes = new BN(indexWithNonce, 10).toArrayLike(Uint8Array, 'be', 4)
   const input = new Uint8Array(96)
   input.set(leaf)
   input.set(indexWithNonceBytes, 32)
   input.set(eotp, 64)
-  return keccak(input)
+  return { hash: keccak(input), bytes: input }
 }
 
 module.exports = {
