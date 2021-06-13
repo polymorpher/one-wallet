@@ -1,6 +1,7 @@
 const TestUtil = require('./util')
 const unit = require('ethjs-unit')
 const ONEUtil = require('../lib/util')
+const ONEDebugger = require('../lib/debug')
 const ONE = require('../lib/onewallet')
 // const BN = require('bn.js')
 
@@ -64,7 +65,7 @@ contract('ONEWallet', (accounts) => {
   // WIP
   it('must commit and reveal a transfer successfully', async () => {
     const purse = web3.eth.accounts.create()
-    const { seed, hseed, wallet, client: { layers } } = await TestUtil.createWallet({
+    const { seed, hseed, wallet, root, client: { layers } } = await TestUtil.createWallet({
       effectiveTime: EFFECTIVE_TIME,
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
@@ -78,9 +79,16 @@ contract('ONEWallet', (accounts) => {
       value: SMALL_AMOUNT
     })
 
+    ONEDebugger.printLayers({ layers })
+
     const otp = ONEUtil.genOTP({ seed })
     const index = ONEUtil.timeToIndex({ effectiveTime: EFFECTIVE_TIME })
     const eotp = ONE.computeEOTP({ otp, hseed })
+    console.log(`To compute neighbors`, {
+      otp: new DataView(otp.buffer).getUint32(0, false),
+      eotp: ONEUtil.hexString(eotp),
+      index
+    })
     const neighbors = ONE.selectMerkleNeighbors({ layers, index })
     const neighbor = neighbors[0]
     const transferHash = ONE.computeTransferHash({
@@ -90,11 +98,29 @@ contract('ONEWallet', (accounts) => {
       dest: purse.address,
       amount: SMALL_AMOUNT / 2
     })
-    await wallet.commit(transferHash)
+    console.log(`Committing transfer hash`, ONEUtil.hexString(transferHash))
+    await wallet.commit(ONEUtil.hexString(transferHash))
+    console.log(`Committed`)
     // function revealTransfer(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp, address payable dest, uint256 amount) external
     // isCorrectProof(neighbors, indexWithNonce, eotp)
     const neighborsEncoded = neighbors.map(n => ONEUtil.hexString(n))
-    await wallet.revealTransfer(neighborsEncoded, index, ONEUtil.hexString(eotp), purse.address, SMALL_AMOUNT / 2)
+    ONEDebugger.debugProof({ neighbors, height: layers.length, index, eotp, root })
+
+    console.log(`Revealing transfer with`, {
+      neighbors: neighborsEncoded,
+      indexWithNonce: index,
+      eotp: ONEUtil.hexString(eotp),
+      dest: purse.address,
+      amount: SMALL_AMOUNT / 2
+    })
+    const wouldSucceed = await wallet.revealTransfer.call(
+      neighborsEncoded, index, ONEUtil.hexString(eotp), purse.address, SMALL_AMOUNT / 2
+    )
+    console.log(`Reveal would succeed=${wouldSucceed}`)
+    await wallet.revealTransfer(
+      neighborsEncoded, index, ONEUtil.hexString(eotp), purse.address, SMALL_AMOUNT / 2
+    )
+    console.log(`Revealed`)
     const walletBalance = await web3.eth.getBalance(wallet.address)
     const purseBalance = await web3.eth.getBalance(purse.address)
     assert.equal(SMALL_AMOUNT / 2, walletBalance, 'Wallet has correct balance')
