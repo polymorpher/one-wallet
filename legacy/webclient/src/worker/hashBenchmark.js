@@ -1,4 +1,4 @@
-import { runBenchmark } from '../../../benchmark/hash'
+import { runBenchmark } from '../../../../benchmark/hash'
 onmessage = function (event) {
   const { action, caller, size, enabled, includeIO } = event.data
   console.log(event.data)

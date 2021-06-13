@@ -1,4 +1,4 @@
-const { generateWallet } = require('../../../oldlib/wallet')
+const { generateWallet } = require('../../../lib/wallet')
 
 onmessage = function (event) {
   const { otpSeed, merkleTreeDepth, otpInterval, effectiveTime } = event.data
