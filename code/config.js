@@ -22,5 +22,6 @@ module.exports = {
     }
   },
   gasLimit: process.env.GAS_LIMIT,
-  gasPrice: process.env.GAS_PRICE
+  gasPrice: process.env.GAS_PRICE,
+  verbose: process.env.VERBOSE === 'true' || process.env.VERBOSE === '1'
 }
