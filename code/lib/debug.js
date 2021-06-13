@@ -9,16 +9,17 @@ module.exports = {
     for (let i = 0; i < height - 1; i += 1) {
       let left, right
       if ((index & 0x1) === 0x1) {
-        left = neighbors[i]
-        right = hash
+        left = neighbors[i].slice()
+        right = hash.slice()
       } else {
-        left = hash
-        right = neighbors[i]
+        left = hash.slice()
+        right = neighbors[i].slice()
       }
       buffer.set(left)
       buffer.set(right, 32)
       hash = fastSHA256(buffer)
       console.log({ i, bit: index & 0x1, left: util.hexString(left), right: util.hexString(right), hash: util.hexString(hash) })
+      index >>= 1
     }
     console.log(`Final result`, { hash: util.hexString(hash), root: util.hexString(root) })
   },
