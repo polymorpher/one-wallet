@@ -1,5 +1,6 @@
 const fastSHA256 = require('fast-sha256')
 const base32 = require('hi-base32')
+// eslint-disable-next-line no-unused-vars
 const { hexView, genOTP, hexStringToBytes, keccak } = require('./util')
 const BN = require('bn.js')
 
