@@ -6,17 +6,21 @@ Please visit the Wiki page: https://github.com/polymorpher/one-wallet/wiki
 
 ## Folders
 
-### /SmartOTP
-
-This folder contains smart contract, testing, and authenticator code from [SmartOTP](https://github.com/ivan-homoliak-sutd/SmartOTPs) by Ivan Homoliak, re-written in ES2020 and modified for running on Harmony network.
-
 ### /code
 
-This folder contains code for ONE Wallet, that is in active development. The code is a continuation of the work from the [proof of concept and demo](https://github.com/hashmesan/harmony-totp) by Quoc Le.
+This folder contains code for ONE Wallet (under active development), per [Wiki](https://github.com/polymorpher/one-wallet/wiki) and [Protocol](https://github.com/polymorpher/one-wallet/blob/master/wiki/protocol.pdf) specification
 
 ### /wiki
 
 This folder contains a synchronized version of the [Wiki](https://github.com/polymorpher/one-wallet/wiki). It is created so that other contributors can create pull requests and contribute to the wiki.
+
+### /SmartOTP
+
+This folder contains smart contract, testing, and authenticator code from [SmartOTP](https://github.com/ivan-homoliak-sutd/SmartOTPs) by Ivan Homoliak, re-written in ES2020 and modified for running on Harmony network.
+
+### /legacy
+
+This folder contains legacy code that was originally forked from [an early demo](https://github.com/hashmesan/harmony-totp) written by Quoc Le, then went through multiple iterations of improvements and bug fixes, before being discontinued and preserved.
 
 ## Q & A
 
