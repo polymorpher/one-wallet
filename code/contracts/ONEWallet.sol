@@ -142,7 +142,7 @@ contract ONEWallet {
         require(neighbors.length == height - 1, "Not enough neighbors provided");
         bytes32 h = sha256(bytes.concat(eotp));
         for (uint8 i = 0; i < height - 1; i++) {
-            if (index & 0x01 == 0x01) {
+            if ((index & 0x01) == 0x01) {
                 h = sha256(bytes.concat(neighbors[i], h));
                 //                h = sha256(abi.encoderPacked(neighbors[i], h));
             } else {
