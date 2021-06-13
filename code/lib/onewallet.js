@@ -49,9 +49,9 @@ const computeMerkleTree = ({ otpSeed, effectiveTime = Date.now(), duration = 360
     const layer = new Uint8Array(n / (2 ** j) * 32)
     const lastLayer = layers[j - 1]
     for (let i = 0; i < n / (2 ** j); i += 1) {
-      const d = lastLayer.subarray(2 * i * 32, 64)
+      const d = lastLayer.subarray(2 * i * 32, 2 * i * 32 + 64)
       const h = fastSHA256(d)
-      console.log(`layer=${j}, index=${i}`)
+      // console.log(`layer=${j}, index=${i}`)
       layer.set(h, i * 32)
     }
     layers.push(layer)
@@ -77,8 +77,14 @@ const selectMerkleNeighbors = ({
   let j = 0
   while (index > 0) {
     const i = index % 2 === 0 ? index + 1 : index - 1
-    const p = i - layerOffsets[j]
+    const p = i - (layerOffsets[j] || 0)
     const n = layers[j].subarray(p * 32, p * 32 + 32).slice()
+    console.log(`selectMerkleNeighbors`, { currentIndex: index,
+      layer: j,
+      indexAtLayer: i,
+      indexAtSlice: p,
+      node: hexView(n),
+      offset: layerOffsets[j] || 0 })
     r.push(n)
     index >>= 1
     j += 1
