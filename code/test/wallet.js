@@ -174,7 +174,36 @@ contract('ONEWallet', (accounts) => {
     )
     const walletBalance = await web3.eth.getBalance(wallet.address)
     const purseBalance = await web3.eth.getBalance(purse.address)
-    assert.equal(ONE_DIME, walletBalance, 'Wallet has correct balance')
-    assert.equal(0, purseBalance, 'Purse has correct balance')
+    assert.equal(ONE_DIME, walletBalance, 'Wallet has original balance')
+    assert.equal(0, purseBalance, 'Purse has 0 balance')
+  })
+
+  it('must recover funds to last resort address', async () => {
+    const purse = web3.eth.accounts.create()
+    const { seed, hseed, wallet, client: { layers } } = await TestUtil.createWallet({
+      effectiveTime: EFFECTIVE_TIME,
+      duration: DURATION,
+      maxOperationsPerInterval: SLOT_SIZE,
+      lastResortAddress: purse.address,
+      dailyLimit: ONE_CENT
+    })
+    await web3.eth.sendTransaction({
+      from: accounts[0],
+      to: wallet.address,
+      value: ONE_DIME
+    })
+    const otp = ONEUtil.genOTP({ seed })
+    const index = ONEUtil.timeToIndex({ effectiveTime: EFFECTIVE_TIME })
+    const eotp = ONE.computeEOTP({ otp, hseed })
+    const neighbors = ONE.selectMerkleNeighbors({ layers, index })
+    const neighbor = neighbors[0]
+    const { hash: recoveryHash } = ONE.computeRecoveryHash({ neighbor, index, eotp })
+    const neighborsEncoded = neighbors.map(n => ONEUtil.hexString(n))
+    await wallet.commit(ONEUtil.hexString(recoveryHash))
+    await wallet.revealRecovery(neighborsEncoded, index, ONEUtil.hexString(eotp))
+    const walletBalance = await web3.eth.getBalance(wallet.address)
+    const purseBalance = await web3.eth.getBalance(purse.address)
+    assert.equal(0, walletBalance, 'Wallet has 0 balance')
+    assert.equal(ONE_DIME, purseBalance, 'Purse has entire balance')
   })
 })
