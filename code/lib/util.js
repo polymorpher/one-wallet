@@ -10,6 +10,9 @@ const utils = {
   },
 
   hexToBytes: (hex, length, padRight) => {
+    if (!hex) {
+      return
+    }
     length = length || hex.length / 2
     const ar = new Uint8Array(length)
     for (let i = 0; i < hex.length / 2; i += 1) {
@@ -42,7 +45,7 @@ const utils = {
     maxOperationsPerInterval = 1
   }) => {
     effectiveTime = Math.floor(effectiveTime / interval) * interval
-    const index = (time - effectiveTime) / interval
+    const index = Math.floor((time - effectiveTime) / interval)
     const indexWithNonce = index * maxOperationsPerInterval + nonce
     return indexWithNonce
   },
@@ -74,6 +77,6 @@ const utils = {
       }
     }
     return codes
-  }
+  },
 }
 module.exports = utils
