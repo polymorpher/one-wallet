@@ -17,7 +17,7 @@ const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval,
   // constructor(bytes32 root_, uint8 height_, uint8 interval_, uint32 t0_, uint32 lifespan_, uint8 maxOperationsPerInterval_,
   //   address payable lastResortAddress_, uint256 dailyLimit_)
   console.log('Creating ONEWallet contract with parameters', {
-    root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit
+    root: ONEWalletUtil.hexString(root), height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit
   })
   const wallet = await ONEWallet.new(
     ONEWalletUtil.hexString(root), height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit
