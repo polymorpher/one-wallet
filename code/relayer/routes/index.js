@@ -6,6 +6,13 @@ const { StatusCodes } = require('http-status-codes')
 const blockchain = require('../blockchain')
 const BN = require('bn.js')
 
+const checkParams = (params, res) => {
+  params = mapValues(params, e => e === undefined ? null : e)
+  if (values(params).includes(undefined) || values(params).includes(null)) {
+    return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Some parameters are missing', params })
+  }
+}
+
 router.use((req, res, next) => {
   const s = req.header('X-ONEWALLET-RELAYER-SECRET')
   if (s !== config.secret) {
@@ -24,6 +31,8 @@ router.use((req, res, next) => {
   next()
 })
 
+// TODO: rate limiting + fingerprinting + delay with backoff
+
 router.post('/new', async (req, res) => {
   let { root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit } = req.body
   // root is hex string, 32 bytes
@@ -37,14 +46,61 @@ router.post('/new', async (req, res) => {
   if (config.debug || config.verbose) {
     console.log(`[/new] `, { root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit })
   }
-  const params = mapValues({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit }, e => e === undefined ? null : e)
+  checkParams({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit }, res)
 
-  if (values(params).includes(undefined) || values(params).includes(null)) {
-    return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Some parameters are missing', params })
-  }
+  // TODO parameter verification
   try {
     const wallet = await req.contract.new(root, height, interval, t0, lifespan, slotSize, lastResortAddress, new BN(dailyLimit, 10))
     return res.json({ success: true, address: wallet.address })
+  } catch (ex) {
+    console.error(ex)
+    return { error: ex.toString() }
+  }
+})
+
+router.post('/commit', async (req, res) => {
+  let { hash, address } = req.body
+  if (config.debug || config.verbose) {
+    console.log(`[/commit] `, { hash, address })
+  }
+  if (!hash || !address) {
+    return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Hash or address is missing', params: { hash, address } })
+  }
+  if (hash.length !== 66) {
+    return res.status(StatusCodes.BAD_REQUEST).json({ error: 'hash must be a hex string with length 64 starting with 0x (to represent 32 bytes)', hash })
+  }
+  try {
+    const wallet = await req.contract.at(address)
+    const tx = await wallet.commit(hash)
+    return res.json({ success: true, tx })
+  } catch (ex) {
+    console.error(ex)
+    return { error: ex.toString() }
+  }
+})
+
+router.post('/reveal/transfer', async (req, res) => {
+  let { neighbors, index, eotp, dest, amount, address } = req.body
+  checkParams({ neighbors, index, eotp, dest, amount, address }, res)
+  // TODO parameter verification
+  try {
+    const wallet = await req.contract.at(address)
+    const tx = await wallet.revealTransfer(neighbors, index, eotp, dest, new BN(amount, 10))
+    return res.json({ success: true, tx })
+  } catch (ex) {
+    console.error(ex)
+    return { error: ex.toString() }
+  }
+})
+
+router.post('/reveal/recovery', async (req, res) => {
+  let { neighbors, index, eotp, address } = req.body
+  checkParams({ neighbors, index, eotp, address }, res)
+  // TODO parameter verification
+  try {
+    const wallet = await req.contract.at(address)
+    const tx = await wallet.revealTransfer(neighbors, index, eotp)
+    return res.json({ success: true, tx })
   } catch (ex) {
     console.error(ex)
     return { error: ex.toString() }
