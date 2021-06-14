@@ -1,16 +1,6 @@
 const config = require('./config')
-const HDWalletProvider = require('@truffle/hdwallet-provider')
 const PrivateKeyProvider = require('truffle-privatekey-provider')
-
-const harmonyTestNetProvider = config.harmony.testnet.key && new HDWalletProvider({
-  privateKeys: [config.harmony.testnet.key],
-  providerOrUrl: config.harmony.testnet.url
-})
-
-const harmonyMainNetProvider = config.harmony.mainnet.key && new HDWalletProvider({
-  privateKeys: [config.harmony.mainnet.key],
-  providerOrUrl: config.harmony.mainnet.url,
-})
+// const { TruffleProvider } = require('@harmony-js/core') // TODO
 
 module.exports = {
   networks: {
@@ -36,12 +26,18 @@ module.exports = {
       ),
     },
     'harmony-testnet': {
-      provider: harmonyTestNetProvider,
+      provider: config.harmony.testnet.key && new PrivateKeyProvider(
+        config.harmony.testnet.key,
+        config.harmony.testnet.url,
+      ),
       network_id: '1666700000',
       gas: config.gasLimit
     },
     'harmony-mainnet': {
-      provider: harmonyMainNetProvider,
+      provider: config.harmony.mainnet.key && new PrivateKeyProvider(
+        config.harmony.mainnet.key,
+        config.harmony.mainnet.url,
+      ),
       network_id: '1666600000',
       gas: config.gasLimit
     }
