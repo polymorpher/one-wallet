@@ -10,7 +10,9 @@
   "dependencies": {
     "@harmony-js/core": "^0.1.57",
     "@truffle/contract": "^4.3.20",
+    "@truffle/hdwallet-provider": "^1.4.0",
     "axios": "^0.21.1",
+    "bn.js": "^5.2.0",
     "body-parser": "^1.19.0",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.5",
@@ -21,15 +23,14 @@
     "http-status-codes": "^2.1.4",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
-    "morgan": "^1.10.0",
-    "truffle-privatekey-provider": "^1.5.0"
+    "morgan": "^1.10.0"
   },
   "eslintConfig": {
     "env": {
       "node": true
     },
     "rules": {
-      "import/no-extraneous-dependencies": 0
+      "import/no-extraneous-dependencies": 1
     }
   }
 }
