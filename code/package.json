@@ -7,6 +7,7 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
+    "@truffle/hdwallet-provider": "^1.4.0",
     "dotenv": "^10.0.0",
     "ethjs-unit": "^0.1.6",
     "fast-sha256": "^1.3.0",
@@ -16,10 +17,6 @@
     "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "truffle-privatekey-provider": "^1.5.0",
-    "@harmony-js/core": "^0.1.57",
-    "@harmony-js/crypto": "^0.1.56",
-    "eslint-plugin-jsx": "^0.1.0",
     "@babel/core": "^7.14.2",
     "@babel/eslint-parser": "^7.14.2",
     "@babel/eslint-plugin": "^7.13.16",
@@ -36,6 +33,8 @@
     "@babel/plugin-transform-react-jsx": "^7.12.17",
     "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.14.2",
+    "@harmony-js/core": "^0.1.57",
+    "@harmony-js/crypto": "^0.1.56",
     "assert": "^1.5.0",
     "babel-jest": "24.9.0",
     "babel-loader": "8.0.6",
@@ -51,6 +50,7 @@
     "eslint-loader": "3.0.3",
     "eslint-plugin-html": "^6.0.0",
     "eslint-plugin-import": "^2.23.3",
+    "eslint-plugin-jsx": "^0.1.0",
     "eslint-plugin-jsx-a11y": "6.2.3",
     "eslint-plugin-node": "^9.1.0",
     "eslint-plugin-react": "7.17.0",
