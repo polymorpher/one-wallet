@@ -107,4 +107,8 @@ router.post('/reveal/recovery', async (req, res) => {
   }
 })
 
+router.get('/health', async (req, res) => {
+  res.send('OK').end()
+})
+
 module.exports = router
