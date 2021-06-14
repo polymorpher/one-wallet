@@ -1,11 +1,14 @@
 {
+  "name": "one-wallet-core",
+  "version": "0.0.1",
+  "private": true,
+  "license": "Apache-2.0",
   "scripts": {
     "test": "truffle test --network=dev",
     "migrate": "truffle migrate --network=dev",
     "lint": "eslint ./lib ./migrations ./test",
     "lint-fix": "eslint ./lib ./migrations ./test --fix"
   },
-  "license": "Apache-2.0",
   "dependencies": {
     "@truffle/hdwallet-provider": "^1.4.0",
     "dotenv": "^10.0.0",
