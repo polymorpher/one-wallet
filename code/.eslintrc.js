@@ -1,15 +1,12 @@
 module.exports = {
+  root: true,
   'env': {
     'node': true,
     'es2020': true,
-    'browser': true,
     'jest': true,
     'truffle/globals': true,
   },
   'extends': [
-    'plugin:react/recommended',
-    'plugin:jsx-a11y/recommended',
-    'standard-jsx',
     'standard',
   ],
   'globals': {
@@ -28,36 +25,13 @@ module.exports = {
     'no-console': 0,
     'no-mixed-operators': 0,
     'max-len': 0,
-    'react/prop-types': 'off',
-    'jsx-a11y/label-has-associated-control': 'off',
-    'react/jsx-filename-extension': [
-      1,
-      {
-        'extensions': [
-          '.js',
-          '.jsx'
-        ]
-      }
-    ]
   },
   'parserOptions': {
-    'ecmaFeatures': {
-      'jsx': true
-    },
     'requireConfigFile': false,
     'ecmaVersion': 2020
   },
   'plugins': [
-    'jsx-a11y',
     '@babel',
     'truffle',
-    'react',
-    'react-hooks'
   ],
-  'settings': {
-    'import/resolver': 'webpack',
-    'react': {
-      'version': 'latest'
-    }
-  },
 }

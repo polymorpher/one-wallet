@@ -69,7 +69,6 @@
     "webpack-obfuscator": "^0.27.4"
   },
   "standard": {
-    "parser": "babel-eslint",
     "ignore": [
       "build/*",
       "node_modules"
