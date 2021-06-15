@@ -3,10 +3,10 @@ import { persistCombineReducers, persistReducer } from 'redux-persist'
 import { connectRouter } from 'connected-react-router'
 import * as reducers from './modules'
 import localForage from 'localforage'
-import { appId } from '../config'
+import config from '../config'
 
 const storage = localForage.createInstance({
-  name: appId,
+  name: config.appId,
   driver: localForage.INDEXEDDB,
   version: 1.0,
   storeName: 'ONEWalletState'

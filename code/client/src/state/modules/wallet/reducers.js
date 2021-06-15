@@ -1,12 +1,12 @@
 import { handleActions } from 'redux-actions'
 import walletActions from './actions'
-import { defaults } from '../../../config'
+import config from '../../../config'
 export const initialState = {
   wallets: {},
   layers: {}, // keys are addresses. Each value is an array of uint8array
   selected: undefined, // address in hex string, matching a key in wallets
-  network: defaults.network,
-  relayer: defaults.relayer,
+  network: config.defaults.network,
+  relayer: config.defaults.relayer,
   relayerSecret: undefined,
   provider: undefined,
   fetching: false,
