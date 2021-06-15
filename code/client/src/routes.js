@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { Route, Switch } from 'react-router-dom'
 import { persistStore } from 'redux-persist'
 import Paths from './constants/paths'
@@ -10,8 +10,11 @@ import CreatePage from './pages/Create'
 import ListPage from './pages/List'
 import RecoverPage from './pages/Recover'
 import TransferPage from './pages/Transfer'
+import RestorePage from './pages/Restore'
+import ShowPage from './pages/Show'
+import Welcome from './pages/Welcome'
 
-const LocalRoutes = ({ tier, loggedIn, authenticating, creationTime }) => {
+const LocalRoutes = () => {
   return (
     <Layout>
       <Layout.Sider trigger={null} collapsible collapsed={this.state.collapsed}>
@@ -24,18 +27,17 @@ const LocalRoutes = ({ tier, loggedIn, authenticating, creationTime }) => {
         <Switch>
           <Route path={Paths.create} component={CreatePage} />
           <Route path={Paths.list} component={ListPage} />
+          <Route path={Paths.restore} component={RestorePage} />
+          <Route path={Paths.show} component={ShowPage} />
           <Route path={Paths.recover} component={RecoverPage} />
           <Route path={Paths.transfer} component={TransferPage} />
-          <Route component={ListPage} />
+          <Route component={Welcome} />
         </Switch>
       </Layout.Content>
     </Layout>
   )
 }
 const Routes = () => {
-  const authenticating = useSelector(state => state.user.loading)
-  const loggedIn = useSelector(state => state.user.loggedIn)
-  const tier = useSelector(state => state.user.user && state.user.user.tier)
   const dispatch = useDispatch()
   const [rehydrated, setRehydrated] = useState(false)
   useEffect(() => {
@@ -60,7 +62,7 @@ const Routes = () => {
   return (
     <Switch>
       <Route>
-        <LocalRoutes tier={tier} authenticating={authenticating} loggedIn={loggedIn} />
+        <LocalRoutes />
       </Route>
     </Switch>
   )
