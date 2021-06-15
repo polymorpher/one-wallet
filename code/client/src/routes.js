@@ -15,11 +15,11 @@ import ShowPage from './pages/Show'
 import Welcome from './pages/Welcome'
 
 const LocalRoutes = () => {
+  // eslint-disable-next-line no-unused-vars
+  const [collapsed, setCollapsed] = useState(false)
   return (
     <Layout>
-      <Layout.Sider trigger={null} collapsible collapsed={this.state.collapsed}>
-        <SiderMenu />
-      </Layout.Sider>
+      <SiderMenu collapsed={collapsed} />
       <Layout.Header>
         <WalletHeader />
       </Layout.Header>

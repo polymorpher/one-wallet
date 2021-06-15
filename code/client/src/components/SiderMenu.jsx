@@ -3,9 +3,9 @@ import { Layout, Image, Menu } from 'antd'
 import { PlusCircleOutlined, UnorderedListOutlined, HistoryOutlined } from '@ant-design/icons'
 import HarmonyLogo from '../assets/harmony.svg'
 
-const SiderMenu = () => {
+const SiderMenu = ({ ...args }) => {
   return (
-    <Layout.Sider>
+    <Layout.Sider {...args}>
       {/* <Image src='/assets/harmony.svg' /> */}
       <Image src={HarmonyLogo} />
       <Menu theme='dark' mode='inline' defaultSelectedKeys={['1']}>
