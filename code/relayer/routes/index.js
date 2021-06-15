@@ -13,6 +13,10 @@ const checkParams = (params, res) => {
   }
 }
 
+router.get('/health', async (req, res) => {
+  res.send('OK').end()
+})
+
 router.use((req, res, next) => {
   const s = req.header('X-ONEWALLET-RELAYER-SECRET')
   if (s !== config.secret) {
@@ -107,8 +111,18 @@ router.post('/reveal/recovery', async (req, res) => {
   }
 })
 
-router.get('/health', async (req, res) => {
-  res.send('OK').end()
+router.post('/retire', async (req, res) => {
+  let { address } = req.body
+  checkParams({ address }, res)
+  // TODO parameter verification
+  try {
+    const wallet = await req.contract.at(address)
+    const tx = await wallet.retire()
+    return res.json({ success: true, tx })
+  } catch (ex) {
+    console.error(ex)
+    return { error: ex.toString() }
+  }
 })
 
 module.exports = router
