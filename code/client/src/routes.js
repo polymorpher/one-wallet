@@ -2,8 +2,6 @@ import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Route, Switch } from 'react-router-dom'
 import { persistStore } from 'redux-persist'
-// import queryString from 'query-string'
-// import styled from 'styled-components'
 import Paths from './constants/paths'
 import { Layout, Row, Spin } from 'antd'
 import SiderMenu from './components/SiderMenu'
@@ -42,8 +40,6 @@ const Routes = () => {
   const [rehydrated, setRehydrated] = useState(false)
   useEffect(() => {
     const store = require('./state/store')
-    dispatch(userActions.user.fetchUser())
-    dispatch(userActions.user.fetchSites())
     persistStore(store.default, null, () => {
       setRehydrated(true)
     })
