@@ -5,7 +5,7 @@ const store = localforage.createInstance({
   name: config.appId,
   driver: localforage.INDEXEDDB,
   version: 1.0,
-  storeName: 'ONEWalletLayersStorage',
+  storeName: 'ONEWalletStorage',
 })
 
 export default store

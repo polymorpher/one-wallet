@@ -9,7 +9,7 @@ const storage = localForage.createInstance({
   name: appId,
   driver: localForage.INDEXEDDB,
   version: 1.0,
-  storeName: 'wallet'
+  storeName: 'ONEWalletState'
 })
 
 const rootConfig = {
