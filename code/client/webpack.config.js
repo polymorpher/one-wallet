@@ -61,7 +61,7 @@ module.exports = {
   },
   entry: {
     main: ['./src/index.js'],
-    // oneWalletWorker: ['./src/worker/oneWalletWorker.js']
+    ONEWalletWorker: ['./src/worker/ONEWalletWorker.js']
   },
   devtool: 'source-map',
   output: {
