@@ -1,6 +1,6 @@
 import React from 'react'
 
 const List = () => {
-  return <></>
+  return <>List</>
 }
 export default List

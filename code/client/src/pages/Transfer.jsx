@@ -1,6 +1,6 @@
 import React from 'react'
 
 const Transfer = () => {
-  return <></>
+  return <>Transfer</>
 }
 export default Transfer

@@ -1,6 +1,6 @@
 import React from 'react'
 
 const Create = () => {
-  return <></>
+  return <>Create</>
 }
 export default Create

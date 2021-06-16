@@ -1,6 +1,6 @@
 import React from 'react'
 
 const Restore = () => {
-  return <></>
+  return <>Restore</>
 }
 export default Restore

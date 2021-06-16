@@ -1,6 +1,6 @@
 import React from 'react'
 
 const Recover = () => {
-  return <></>
+  return <>Recover</>
 }
 export default Recover

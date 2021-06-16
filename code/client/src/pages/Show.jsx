@@ -1,6 +1,6 @@
 import React from 'react'
 
 const Show = () => {
-  return <></>
+  return <>Show</>
 }
 export default Show
