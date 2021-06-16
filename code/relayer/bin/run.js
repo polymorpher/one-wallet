@@ -9,7 +9,7 @@ httpsServer.listen(process.env.HTTPS_PORT || 8443, () => {
   console.log(`HTTPS server listening on port ${addr.port} at ${addr.address}`)
 })
 
-httpServer.listen(process.env.PORT || 3000, () => {
+httpServer.listen(process.env.PORT || 3001, () => {
   const addr = httpServer.address()
   console.log(`HTTP server listening on port ${addr.port} at ${addr.address}`)
 })

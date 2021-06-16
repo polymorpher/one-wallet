@@ -23,12 +23,17 @@ const init = () => {
     const n = config.networks[k]
     console.log(n)
     if (n.key) {
-      networks.push(k)
-      if (k.startsWith('eth')) {
-        providers[k] = new HDWalletProvider({ privateKeys: [n.key], providerOrUrl: n.url })
-      } else {
-        // providers[k] = new HarmonyProvider(n.key, n.url, n.chainId) // TODO: try and debug later
-        providers[k] = new HDWalletProvider({ privateKeys: [n.key], providerOrUrl: n.url })
+      try {
+        if (k.startsWith('eth')) {
+          providers[k] = new HDWalletProvider({ privateKeys: [n.key], providerOrUrl: n.url })
+        } else {
+          // providers[k] = new HarmonyProvider(n.key, n.url, n.chainId) // TODO: try and debug later
+          providers[k] = new HDWalletProvider({ privateKeys: [n.key], providerOrUrl: n.url })
+        }
+        networks.push(k)
+      } catch (ex) {
+        console.error(ex)
+        console.trace(ex)
       }
     }
   })
