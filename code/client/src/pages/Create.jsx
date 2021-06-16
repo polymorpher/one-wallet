@@ -68,8 +68,14 @@ const Create = () => {
   const [lastResortAddress, setLastResortAddress] = useState()
   const [dailyLimit, setDailyLimit] = useState(1000)
 
-  const [lifespanVisible, setLifespanVisible] = useState(false)
+  const [worker, setWorker] = useState()
+  const [root, setRoot] = useState()
+  const [hseed, setHseed] = useState()
+  const [layers, setLayers] = useState()
+  const [slotSize, setSlotSize] = useState()
+  const [progress, setProgress] = useState(0)
 
+  const [lifespanVisible, setLifespanVisible] = useState(false)
   const [section, setSection] = useState(1)
   const [qrCodeData, setQRCodeData] = useState()
   const [showOtpVerification, setShowOtpVerification] = useState()
@@ -87,6 +93,15 @@ const Create = () => {
     })()
   }, [name])
 
+  useEffect(() => {
+    if (section === 2) {
+      console.log('posting to worker')
+      worker && worker.postMessage({
+        seed, effectiveTime: Date.now(), lifespan, slotSize
+      })
+    }
+  }, [section])
+
   const verifyOtp = () => {
     const expected = ONEUtil.genOTP({ seed })
     const code = new DataView(expected.buffer).getUint32(0, false).toString()
@@ -100,7 +115,37 @@ const Create = () => {
 
   const deploy = async () => {
     api.relayer.create({})
+
+    // const interval = 30
+    // const t0 = Math.floor(Date.now() / (1000 * interval))
+    // const slotSize = 1
+    // const height = Math.ceil(Math.log2(lifespan / (1000 * interval) * slotSize)) + 1
+    //
   }
+
+  const storeLayers = async () => {
+
+  }
+
+  useEffect(() => {
+    const worker = new Worker('ONEWalletWorker.js')
+    worker.onmessage = (event) => {
+      const { status, current, total, result } = event.data
+      if (status === 'working') {
+        console.log(`Completed ${(current / total * 100).toFixed(2)}%`)
+        setProgress(Math.floor(current / total * 100))
+      }
+      if (status === 'done') {
+        const { hseed, root, layers, maxOperationsPerInterval } = result
+        setRoot(root)
+        setHseed(hseed)
+        setLayers(layers)
+        setSlotSize(maxOperationsPerInterval)
+        console.log('Received created wallet from worker:', result)
+      }
+    }
+    setWorker(worker)
+  }, [])
 
   return (
     <>
