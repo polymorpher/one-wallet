@@ -10,7 +10,7 @@ const computeMerkleTree = ({ otpSeed, effectiveTime = Date.now(), duration = 360
   const height = Math.ceil(Math.log2(duration / otpInterval * maxOperationsPerInterval)) + 1
   const n = Math.pow(2, height - 1)
   const reportInterval = Math.floor(n / 100)
-  const counter = effectiveTime / otpInterval
+  const counter = Math.floor(effectiveTime / otpInterval)
   let seed = otpSeed
   if (seed.constructor.name !== 'Uint8Array') {
     if (typeof seed !== 'string') {
