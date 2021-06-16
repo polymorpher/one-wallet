@@ -1,8 +1,7 @@
 import axios from 'axios'
 import config from '../config'
-import store from '../state/store'
 import { isEqual } from 'lodash'
-// eslint-disable-next-line no-unused-vars
+
 const apiConfig = {
   relayer: config.defaults.relayer,
   network: config.defaults.network,
@@ -52,24 +51,24 @@ export default {
     }
   },
   relayer: {
-    create: async ({ secret, network, root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit }) => {
-      const { data } = await api.post('/new', { root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit }, headers(secret, network))
+    create: async ({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit }) => {
+      const { data } = await api.post('/new', { root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit })
       return data
     },
-    commit: async ({ secret, network, address, hash }) => {
-      const { data } = await api.post('/commit', { address, hash }, headers(secret, network))
+    commit: async ({ address, hash }) => {
+      const { data } = await api.post('/commit', { address, hash })
       return data
     },
-    revealTransfer: async ({ secret, network, neighbors, index, eotp, dest, amount, address }) => {
-      const { data } = await api.post('/reveal/transfer', { neighbors, index, eotp, dest, amount, address }, headers(secret, network))
+    revealTransfer: async ({ neighbors, index, eotp, dest, amount, address }) => {
+      const { data } = await api.post('/reveal/transfer', { neighbors, index, eotp, dest, amount, address })
       return data
     },
-    revealRecovery: async ({ secret, network, neighbors, index, eotp, address }) => {
-      const { data } = await api.post('/reveal/recovery', { neighbors, index, eotp, address }, headers(secret, network))
+    revealRecovery: async ({ neighbors, index, eotp, address }) => {
+      const { data } = await api.post('/reveal/recovery', { neighbors, index, eotp, address })
       return data
     },
-    retire: async ({ secret, network, address }) => {
-      const { data } = await api.post('/retire', { address }, headers(secret, network))
+    retire: async ({ address }) => {
+      const { data } = await api.post('/retire', { address })
       return data
     },
     health: async () => {
