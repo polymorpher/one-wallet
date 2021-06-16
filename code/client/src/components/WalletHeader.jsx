@@ -5,6 +5,7 @@ import { useRouteMatch } from 'react-router'
 import { titleCase } from 'title-case'
 import { useSelector, useDispatch } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
+import { SearchOutlined } from '@ant-design/icons'
 import config from '../config'
 
 const SelectorLabel = styled.span`
@@ -42,7 +43,8 @@ const RelayerSelector = () => {
     <>
       <SelectorLabel>Relayer</SelectorLabel>
       <Select
-        style={{ width: 200 }} dropdownMatchSelectWidth bordered={false} showSearch onChange={onChange}
+        suffixIcon={<SearchOutlined />}
+        style={{ width: 160 }} dropdownMatchSelectWidth bordered={false} showSearch onChange={onChange}
         value={relayer}
         onSearch={(v) => setInput(v)}
       >
