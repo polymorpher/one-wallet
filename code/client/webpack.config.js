@@ -6,6 +6,10 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 // const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 module.exports = {
+  devServer: {
+    port: 3000,
+    historyApiFallback: true,
+  },
   module: {
     rules: [
       {
@@ -34,8 +38,25 @@ module.exports = {
       },
       {
         test: /\.(scss|css)$/,
-        use: ['style-loader', 'css-loader', 'sass-loader', 'less-loader'],
+        use: ['style-loader', 'css-loader', 'sass-loader'],
       },
+      {
+        test: /\.less$/,
+        use: [
+          {
+            loader: 'style-loader',
+          }, {
+            loader: 'css-loader', // translates CSS into CommonJS
+          }, {
+            loader: 'less-loader',
+            options: {
+              lessOptions: {
+                javascriptEnabled: true,
+              }
+            }
+          }
+        ]
+      }
     ],
   },
   entry: {
@@ -46,7 +67,8 @@ module.exports = {
   output: {
     filename: '[name].js',
     path: path.resolve(__dirname, 'dist'),
-    clean: true
+    clean: true,
+    publicPath: '/'
   },
   resolve: {
     modules: [path.resolve(__dirname, 'node_modules'), 'node_modules'],
