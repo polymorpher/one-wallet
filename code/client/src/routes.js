@@ -18,25 +18,26 @@ const LocalRoutes = () => {
   // eslint-disable-next-line no-unused-vars
   const [collapsed, setCollapsed] = useState(false)
   return (
-    <Layout>
-      <SiderMenu collapsed={collapsed} />
-      <Layout.Header>
+    <Layout style={{ minHeight: '100vh' }}>
+      <SiderMenu collapsed={collapsed} onCollapse={(e) => setCollapsed(e)} />
+      <Layout>
         <WalletHeader />
-      </Layout.Header>
-      <Layout.Content>
-        <Switch>
-          <Route path={Paths.create} component={CreatePage} />
-          <Route path={Paths.list} component={ListPage} />
-          <Route path={Paths.restore} component={RestorePage} />
-          <Route path={Paths.show} component={ShowPage} />
-          <Route path={Paths.recover} component={RecoverPage} />
-          <Route path={Paths.transfer} component={TransferPage} />
-          <Route component={Welcome} />
-        </Switch>
-      </Layout.Content>
+        <Layout.Content style={{ padding: 32 }}>
+          <Switch>
+            <Route path={Paths.create} component={CreatePage} />
+            <Route path={Paths.list} component={ListPage} />
+            <Route path={Paths.restore} component={RestorePage} />
+            <Route path={Paths.show} component={ShowPage} />
+            <Route path={Paths.recover} component={RecoverPage} />
+            <Route path={Paths.transfer} component={TransferPage} />
+            <Route component={Welcome} />
+          </Switch>
+        </Layout.Content>
+      </Layout>
     </Layout>
   )
 }
+
 const Routes = () => {
   const dispatch = useDispatch()
   const [rehydrated, setRehydrated] = useState(false)
