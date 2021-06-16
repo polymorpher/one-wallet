@@ -1,16 +1,46 @@
 import axios from 'axios'
 import config from '../config'
-
+import store from '../state/store'
+import { isEqual } from 'lodash'
 // eslint-disable-next-line no-unused-vars
-const api = axios.create({
-  baseURL: config.defaults.relayer,
-  timeout: 10000,
-})
+const apiConfig = {
+  relayer: config.defaults.relayer,
+  network: config.defaults.network,
+  secret: ''
+}
 
-// TODO: use middleware later to load secret and network states, so we don't need to pass them in every function call
 const headers = (secret, network) => ({
   headers: { 'X-ONEWALLET-RELAYER-SECRET': secret, 'X-NETWORK': network }
 })
+
+let api = axios.create({
+  baseURL: config.defaults.relayer,
+  headers: headers(apiConfig.secret, apiConfig.network),
+  timeout: 10000,
+})
+
+export const initAPI = (store) => {
+  console.log(store)
+  store.subscribe(() => {
+    const state = store.getState()
+    const { relayer: relayerId, network, secret } = state.wallet
+    let relayer = relayerId
+    if (relayer && !relayer.startsWith('http')) {
+      relayer = config.relayers[relayer]
+      if (!relayer) {
+        relayer = config.defaults.relayer
+      }
+    }
+    if (!isEqual(apiConfig, { relayer, network, secret })) {
+      api = axios.create({
+        baseURL: relayer,
+        headers: headers(secret, network),
+        timeout: 10000,
+      })
+    }
+    console.log('api update: ', { relayer, network, secret })
+  })
+}
 
 export default {
   blockchain: {
