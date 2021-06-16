@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { PageHeader, Select } from 'antd'
+import { PageHeader, Select, Divider } from 'antd'
 import { useRouteMatch } from 'react-router'
 import { titleCase } from 'title-case'
 import { useSelector, useDispatch } from 'react-redux'
@@ -68,6 +68,7 @@ const WalletHeader = () => {
       subTitle={address || ''}
       extra={[
         <RelayerSelector key='relayer' />,
+        <Divider key='divider' type='vertical' />,
         <NetworkSelector key='network' />
       ]}
     />
