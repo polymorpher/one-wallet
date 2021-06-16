@@ -70,9 +70,11 @@ module.exports = {
     clean: true,
     publicPath: '/'
   },
+
   resolve: {
     modules: [path.resolve(__dirname, 'node_modules'), 'node_modules'],
-    extensions: ['.jsx', '.js']
+    extensions: ['.jsx', '.js'],
+    fallback: { stream: require.resolve('stream-browserify') }
   },
   plugins: [
     new webpack.ProvidePlugin({
