@@ -44,7 +44,7 @@ export default {
     getPrice: async () => {
       const { data } = await axios.get('https://api.binance.com/api/v3/ticker/24hr?symbol=ONEUSDT')
       const { lastPrice } = data
-      return lastPrice
+      return parseFloat(lastPrice)
     }
   },
   blockchain: {
@@ -52,7 +52,7 @@ export default {
       throw new Error('Not implemented')
     },
     getBalance: async ({ address }) => {
-      return { address, balance: 0 }
+      return 0
       // throw new Error('Not implemented')
     }
   },
