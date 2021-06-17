@@ -3,7 +3,6 @@ import walletActions from './actions'
 import config from '../../../config'
 export const initialState = {
   wallets: {},
-  layers: {}, // keys are addresses. Each value is an array of uint8array
   selected: undefined, // address in hex string, matching a key in wallets
   network: config.defaults.network,
   relayer: config.defaults.relayer,
@@ -29,19 +28,6 @@ const reducer = handleActions(
       ...state,
       fetching: false,
       error: action.payload,
-    }),
-    [walletActions.loadingWalletLayers]: (state, action) => ({
-      ...state,
-      loading: true,
-    }),
-    [walletActions.loadWalletLayers]: (state, action) => ({
-      ...state,
-      layers: { ...state.layers, [action.payload.address]: action.payload.layers },
-      loading: false,
-    }),
-    [walletActions.deleteWalletLayers]: (state, action) => ({
-      ...state,
-      layers: { ...state.layers, [action.payload]: undefined },
     }),
 
     [walletActions.updateWallet]: (state, action) => ({
