@@ -58,7 +58,7 @@ router.post('/new', async (req, res) => {
     return res.json({ success: true, address: wallet.address })
   } catch (ex) {
     console.error(ex)
-    return { error: ex.toString() }
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: ex.toString() })
   }
 })
 
@@ -79,7 +79,7 @@ router.post('/commit', async (req, res) => {
     return res.json({ success: true, tx })
   } catch (ex) {
     console.error(ex)
-    return { error: ex.toString() }
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: ex.toString() })
   }
 })
 
@@ -93,7 +93,7 @@ router.post('/reveal/transfer', async (req, res) => {
     return res.json({ success: true, tx })
   } catch (ex) {
     console.error(ex)
-    return { error: ex.toString() }
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: ex.toString() })
   }
 })
 
@@ -107,7 +107,7 @@ router.post('/reveal/recovery', async (req, res) => {
     return res.json({ success: true, tx })
   } catch (ex) {
     console.error(ex)
-    return { error: ex.toString() }
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: ex.toString() })
   }
 })
 
@@ -121,7 +121,7 @@ router.post('/retire', async (req, res) => {
     return res.json({ success: true, tx })
   } catch (ex) {
     console.error(ex)
-    return { error: ex.toString() }
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: ex.toString() })
   }
 })
 
