@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react'
-import ONEUtil from '../../../lib/util'
 import { useSelector, useDispatch } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
 import { values, sum } from 'lodash'
@@ -7,15 +6,7 @@ import { Card, Row, Space, Typography, message } from 'antd'
 import util from '../util'
 import { useHistory } from 'react-router'
 import Paths from '../constants/paths'
-const { Text, Link, Title } = Typography
-
-const computeBalance = (balance, price) => {
-  const ones = ONEUtil.toOne(balance || 0)
-  const formatted = util.formatNumber(ones)
-  const fiat = (price || 0) * parseFloat(ones)
-  const fiatFormatted = util.formatNumber(fiat)
-  return { balance, formatted, fiat, fiatFormatted }
-}
+const { Text, Title } = Typography
 
 const WalletCard = ({ wallet }) => {
   const history = useHistory()
@@ -24,7 +15,7 @@ const WalletCard = ({ wallet }) => {
   const balances = useSelector(state => state.wallet.balances)
   const balance = balances[address]
   const price = useSelector(state => state.wallet.price)
-  const { formatted, fiatFormatted } = computeBalance(balance, price)
+  const { formatted, fiatFormatted } = util.computeBalance(balance, price)
 
   useEffect(() => {
     dispatch(walletActions.fetchBalance({ address }))
@@ -56,7 +47,7 @@ const List = () => {
   const balances = useSelector(state => state.wallet.balances)
   const price = useSelector(state => state.wallet.price)
   const totalBalance = sum(values(balances))
-  const { formatted, fiatFormatted } = computeBalance(totalBalance, price)
+  const { formatted, fiatFormatted } = util.computeBalance(totalBalance, price)
 
   return (
     <>

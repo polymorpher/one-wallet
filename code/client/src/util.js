@@ -1,4 +1,5 @@
 import { message } from 'antd'
+import ONEUtil from '../../lib/util'
 
 export default {
   handleError: (ex) => {
@@ -30,5 +31,13 @@ export default {
       return address
     }
     return address.slice(0, 6) + '...' + address.slice(address.length - 3, address.length - 1)
+  },
+
+  computeBalance: (balance, price) => {
+    const ones = ONEUtil.toOne(balance || 0)
+    const formatted = exports.default.formatNumber(ones)
+    const fiat = (price || 0) * parseFloat(ones)
+    const fiatFormatted = exports.default.formatNumber(fiat)
+    return { balance, formatted, fiat, fiatFormatted }
   }
 }
