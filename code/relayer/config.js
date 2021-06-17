@@ -2,6 +2,7 @@ require('dotenv').config()
 const DEBUG = process.env['RELAYER_DEBUG'] === 'true' || process.env['RELAYER_DEBUG'] === '1'
 const config = {
   debug: DEBUG,
+  nullAddress: '0x0000000000000000000000000000000000000000',
   verbose: process.env['VERBOSE'] === 'true' || process.env['VERBOSE'] === '1',
   https: {
     only: process.env['HTTPS_ONLY'] === 'true' || process.env['HTTPS_ONLY'] === '1',

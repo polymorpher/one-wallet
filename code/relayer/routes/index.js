@@ -9,8 +9,10 @@ const BN = require('bn.js')
 const checkParams = (params, res) => {
   params = mapValues(params, e => e === undefined ? null : e)
   if (values(params).includes(undefined) || values(params).includes(null)) {
-    return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Some parameters are missing', params })
+    res.status(StatusCodes.BAD_REQUEST).json({ error: 'Some parameters are missing', params })
+    return false
   }
+  return true
 }
 
 router.get('/health', async (req, res) => {
@@ -45,12 +47,15 @@ router.post('/new', async (req, res) => {
   t0 = parseInt(t0)
   lifespan = parseInt(lifespan)
   slotSize = parseInt(slotSize)
+  lastResortAddress = lastResortAddress || config.nullAddress
   // lastResortAddress is hex string, 20 bytes
   // dailyLimit is a BN in string form
   if (config.debug || config.verbose) {
     console.log(`[/new] `, { root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit })
   }
-  checkParams({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit }, res)
+  if (!checkParams({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit }, res)) {
+    return
+  }
 
   // TODO parameter verification
   try {
@@ -85,7 +90,9 @@ router.post('/commit', async (req, res) => {
 
 router.post('/reveal/transfer', async (req, res) => {
   let { neighbors, index, eotp, dest, amount, address } = req.body
-  checkParams({ neighbors, index, eotp, dest, amount, address }, res)
+  if (!checkParams({ neighbors, index, eotp, dest, amount, address }, res)) {
+    return
+  }
   // TODO parameter verification
   try {
     const wallet = await req.contract.at(address)
@@ -99,7 +106,9 @@ router.post('/reveal/transfer', async (req, res) => {
 
 router.post('/reveal/recovery', async (req, res) => {
   let { neighbors, index, eotp, address } = req.body
-  checkParams({ neighbors, index, eotp, address }, res)
+  if (!checkParams({ neighbors, index, eotp, address }, res)) {
+    return
+  }
   // TODO parameter verification
   try {
     const wallet = await req.contract.at(address)
@@ -113,7 +122,9 @@ router.post('/reveal/recovery', async (req, res) => {
 
 router.post('/retire', async (req, res) => {
   let { address } = req.body
-  checkParams({ address }, res)
+  if (!checkParams({ address }, res)) {
+    return
+  }
   // TODO parameter verification
   try {
     const wallet = await req.contract.at(address)
