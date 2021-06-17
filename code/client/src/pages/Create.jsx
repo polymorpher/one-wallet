@@ -15,6 +15,7 @@ import qrcode from 'qrcode'
 import storage from '../storage'
 import walletActions from '../state/modules/wallet/actions'
 import WalletConstants from '../constants/wallet'
+import util from '../util'
 const { Text, Link, Title } = Typography
 
 const genName = () => uniqueNamesGenerator({
@@ -173,23 +174,8 @@ const Create = () => {
       message.success('Your wallet is deployed!')
       setSection(4)
     } catch (ex) {
-      console.trace(ex)
-      const error = ex.response?.data?.error || ex.toString()
-      const code = ex.response?.data?.code
-      if (code === 0) {
-        message.error('Relayer password is incorrect')
-      } else if (code === 1) {
-        message.error('Network is invalid')
-      } else {
-        message.error(`Failed to create wallet on blockchain. Error: ${error}`)
-      }
+      util.handleError(ex)
     }
-
-    // const interval = 30
-
-    // const slotSize = 1
-    // const height = Math.ceil(Math.log2(lifespan / (1000 * interval) * slotSize)) + 1
-    //
   }
 
   useEffect(() => {
