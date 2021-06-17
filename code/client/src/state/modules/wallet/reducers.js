@@ -3,6 +3,7 @@ import walletActions from './actions'
 import config from '../../../config'
 export const initialState = {
   wallets: {},
+  balances: {}, // address => amount in wei
   selected: undefined, // address in hex string, matching a key in wallets
   network: config.defaults.network,
   relayer: config.defaults.relayer,
@@ -25,6 +26,21 @@ const reducer = handleActions(
       fetching: false,
     }),
     [walletActions.fetchWalletFailed]: (state, action) => ({
+      ...state,
+      fetching: false,
+      error: action.payload,
+    }),
+
+    [walletActions.fetchBalance]: (state) => ({
+      ...state,
+      fetching: true,
+    }),
+    [walletActions.fetchBalanceSuccess]: (state, action) => ({
+      ...state,
+      balances: { ...state.balances, [action.payload.address]: action.payload.balance },
+      fetching: false,
+    }),
+    [walletActions.fetchBalanceFailed]: (state, action) => ({
       ...state,
       fetching: false,
       error: action.payload,
