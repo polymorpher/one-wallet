@@ -7,7 +7,7 @@ import api from '../api'
 import ONEUtil from '../../../lib/util'
 import { uniqueNamesGenerator, colors, animals } from 'unique-names-generator'
 import { Card, Input, Button, Row, Space, Typography, Slider, Image, message, Progress, Timeline } from 'antd'
-import { RedoOutlined } from '@ant-design/icons'
+import { RedoOutlined, LoadingOutlined } from '@ant-design/icons'
 import humanizeDuration from 'humanize-duration'
 import { Transition } from 'react-transition-group'
 import b32 from 'hi-base32'
@@ -99,6 +99,8 @@ const Create = () => {
   const [showOtpVerification, setShowOtpVerification] = useState()
   const [otp, setOtp] = useState('')
 
+  const [deploying, setDeploying] = useState()
+
   const getQRCodeUri = () => {
     // otpauth://TYPE/LABEL?PARAMETERS
     return `otpauth://totp/${name}?secret=${b32.encode(seed)}&issuer=ONE%20Wallet`
@@ -139,7 +141,7 @@ const Create = () => {
       message.error('Cannot store credentials of the wallet. Error: Root is not set')
       return
     }
-    return storage.setItem(root, layers)
+    return storage.setItem(ONEUtil.hexView(root), layers)
   }
 
   const deploy = async () => {
@@ -156,7 +158,7 @@ const Create = () => {
         lifespan: duration / WalletConstants.interval,
         slotSize,
         lastResortAddress,
-        dailyLimit: ONEUtil.toFraction(dailyLimit)
+        dailyLimit: ONEUtil.toFraction(dailyLimit).toString()
       })
       const wallet = {
         name,
@@ -168,9 +170,11 @@ const Create = () => {
         hseed,
         layers
       }
-      dispatch(walletActions.updateWallet(wallet))
       await storeLayers()
+      // console.log('Layers stored', r)
+      dispatch(walletActions.updateWallet(wallet))
       setAddress(address)
+      setDeploying(false)
       message.success('Your wallet is deployed!')
       setSection(4)
     } catch (ex) {
@@ -262,13 +266,16 @@ const Create = () => {
         <Row style={{ marginBottom: 48 }}>
           <Space direction='vertical' size='small'>
             <Hint>(Optional) Set up a fund recovery address:</Hint>
-            <InputBox margin={16} value={lastResortAddress} onChange={({ target: { value } }) => setLastResortAddress(value)} placeholder='0x......' />
+            <InputBox width={500} margin={16} value={lastResortAddress} onChange={({ target: { value } }) => setLastResortAddress(value)} placeholder='0x......' />
             <Hint>If you lost your authenticator, you can still transfer all your funds to that address</Hint>
           </Space>
         </Row>
         <Row style={{ marginBottom: 32 }}>
           <Space direction='vertical'>
-            <Button disabled={!root} type='primary' shape='round' size='large' onClick={() => deploy()}>Let's do it</Button>
+            <Space>
+              <Button disabled={!root && !deploying} type='primary' shape='round' size='large' onClick={() => deploy()}>Let's do it</Button>
+              {deploying && <LoadingOutlined />}
+            </Space>
             {!root &&
               <>
                 <Hint>One moment... we are still preparing your wallet</Hint>
