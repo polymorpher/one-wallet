@@ -3,9 +3,13 @@ const fetchWallet = createAction('FETCH_WALLET')
 const fetchWalletSuccess = createAction('FETCH_WALLET_SUCCESS')
 const fetchWalletFailed = createAction('FETCH_WALLET_FAILED')
 
-const fetchBalance = createAction('FETCH_WALLET')
-const fetchBalanceSuccess = createAction('FETCH_WALLET_SUCCESS')
-const fetchBalanceFailed = createAction('FETCH_WALLET_FAILED')
+const fetchBalance = createAction('FETCH_BALANCE')
+const fetchBalanceSuccess = createAction('FETCH_BALANCE_SUCCESS')
+const fetchBalanceFailed = createAction('FETCH_BALANCE_FAILED')
+
+const fetchPrice = createAction('FETCH_PRICE')
+const fetchPriceSuccess = createAction('FETCH_PRICE_SUCCESS')
+const fetchPriceFailed = createAction('FETCH_PRICE_FAILED')
 
 const updateWallet = createAction('UPDATE_WALLET')
 const selectWallet = createAction('SELECT_WALLET')
@@ -22,6 +26,9 @@ export default {
   fetchBalance,
   fetchBalanceSuccess,
   fetchBalanceFailed,
+  fetchPrice,
+  fetchPriceSuccess,
+  fetchPriceFailed,
   updateWallet,
   selectWallet,
   setRelayer,

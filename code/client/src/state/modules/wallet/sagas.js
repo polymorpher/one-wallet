@@ -8,7 +8,7 @@ function * handleFetchWallet () {
     yield put(walletActions.fetchWalletSuccess(wallet))
   } catch (err) {
     console.error(err)
-    yield put(walletActions.fetchWalletFailed(new Error('Failed to get wallet information on-chain. Please try again.')))
+    yield put(walletActions.fetchWalletFailed(new Error('Failed to get wallet information')))
   }
 }
 
@@ -18,7 +18,17 @@ function * handleFetchBalance () {
     yield put(walletActions.fetchBalanceSuccess({ address, balance }))
   } catch (err) {
     console.error(err)
-    yield put(walletActions.fetchBalanceFailed(new Error('Failed to get wallet information on-chain. Please try again.')))
+    yield put(walletActions.fetchBalanceFailed(new Error('Failed to get wallet balance')))
+  }
+}
+
+function * handleFetchPrice () {
+  try {
+    const price = yield call(api.binance.getPrice)
+    yield put(walletActions.fetchPriceSuccess(price))
+  } catch (err) {
+    console.error(err)
+    yield put(walletActions.fetchPriceFailed(new Error('Failed to get ONE/USDT price')))
   }
 }
 
@@ -26,6 +36,7 @@ function * walletSages () {
   yield all([
     takeLatest(walletActions.fetchWallet().type, handleFetchWallet),
     takeLatest(walletActions.fetchBalance().type, handleFetchBalance),
+    takeLatest(walletActions.fetchPrice().type, handleFetchPrice),
   ])
 }
 

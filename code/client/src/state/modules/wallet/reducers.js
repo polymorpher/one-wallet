@@ -46,6 +46,18 @@ const reducer = handleActions(
       error: action.payload,
     }),
 
+    [walletActions.fetchPrice]: (state) => ({
+      ...state,
+    }),
+    [walletActions.fetchPriceSuccess]: (state, action) => ({
+      ...state,
+      price: action.payload,
+    }),
+    [walletActions.fetchPriceFailed]: (state, action) => ({
+      ...state,
+      fetching: false,
+    }),
+
     [walletActions.updateWallet]: (state, action) => ({
       ...state,
       wallets: { ...state.wallets, [action.payload.address]: action.payload }

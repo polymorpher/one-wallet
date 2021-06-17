@@ -40,12 +40,20 @@ export const initAPI = (store) => {
 }
 
 export default {
+  binance: {
+    getPrice: async () => {
+      const { data } = await axios.get('https://api.binance.com/api/v3/ticker/24hr?symbol=ONEUSDT')
+      const { lastPrice } = data
+      return lastPrice
+    }
+  },
   blockchain: {
-    getWallet: async ({ provider, address }) => {
+    getWallet: async ({ address }) => {
       throw new Error('Not implemented')
     },
-    getBalance: async ({ provider, address }) => {
-      throw new Error('Not implemented')
+    getBalance: async ({ address }) => {
+      return { address, balance: 0 }
+      // throw new Error('Not implemented')
     }
   },
   relayer: {
