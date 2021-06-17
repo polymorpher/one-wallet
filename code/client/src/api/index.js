@@ -17,7 +17,6 @@ let api = axios.create({
 })
 
 export const initAPI = (store) => {
-  console.log(store)
   store.subscribe(() => {
     const state = store.getState()
     const { relayer: relayerId, network, relayerSecret: secret } = state.wallet
@@ -35,7 +34,7 @@ export const initAPI = (store) => {
         timeout: 10000,
       })
     }
-    console.log('api update: ', { relayer, network, secret })
+    // console.log('api update: ', { relayer, network, secret })
   })
 }
 
