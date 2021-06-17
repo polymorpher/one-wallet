@@ -23,5 +23,12 @@ export default {
     const order = Math.ceil(Math.log10(Math.max(number, 1)))
     const digits = Math.max(0, maxPrecision - order)
     return number.toFixed(digits)
+  },
+
+  ellipsisAddress: (address) => {
+    if (!address || address.length < 10) {
+      return address
+    }
+    return address.slice(0, 6) + '...' + address.slice(address.length - 3, address.length - 1)
   }
 }
