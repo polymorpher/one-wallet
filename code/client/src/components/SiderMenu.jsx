@@ -16,7 +16,7 @@ const Text = styled.p`
 const SiderMenu = ({ ...args }) => {
   const history = useHistory()
   const match = useRouteMatch('/:action')
-  const { action } = match.params
+  const { action } = match ? match.params : {}
   const nav = ({ key }) => {
     history.push(Paths[key])
   }

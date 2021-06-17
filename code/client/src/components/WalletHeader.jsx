@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 // import styled from 'styled-components'
 import { PageHeader, Select, Divider, Modal, Input, Typography, Space, Button } from 'antd'
 import { useRouteMatch, useHistory } from 'react-router'
@@ -7,7 +7,8 @@ import { useSelector, useDispatch } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
 import { SearchOutlined, LockOutlined } from '@ant-design/icons'
 import config from '../config'
-
+import util from '../util'
+import Paths from '../constants/paths'
 const { Text, Link } = Typography
 
 // const SelectorLabel = styled.span`
@@ -82,16 +83,16 @@ const SecretSettings = ({ visible, onClose }) => {
 
 const WalletHeader = () => {
   const history = useHistory()
-  const match = useRouteMatch('/:action')
-  const { action } = match.params
-  const address = useSelector(state => state.wallet.selected)
+  const match = useRouteMatch('/:action/:address?')
+  const { action, address } = match ? match.params : {}
+  const shortAddress = util.ellipsisAddress(address)
   const [settingsVisible, setSettingsVisible] = useState(false)
   return (
     <PageHeader
       style={{ background: '#ffffff' }}
-      onBack={() => history.goBack()}
+      onBack={action && (() => history.goBack())}
       title={titleCase(action || '')}
-      subTitle={address || ''}
+      subTitle={shortAddress || ''}
       extra={[
         <Button key='lock' shape='circle' icon={<LockOutlined />} onClick={() => setSettingsVisible(true)} />,
         <RelayerSelector key='relayer' />,
