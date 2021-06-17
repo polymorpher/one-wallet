@@ -174,7 +174,15 @@ const Create = () => {
       setSection(4)
     } catch (ex) {
       console.trace(ex)
-      message.error(`Failed to create wallet on blockchain. Error: ${ex.toString()}`)
+      const error = ex.response?.data?.error || ex.toString()
+      const code = ex.response?.data?.code
+      if (code === 0) {
+        message.error('Relayer password is incorrect')
+      } else if (code === 1) {
+        message.error('Network is invalid')
+      } else {
+        message.error(`Failed to create wallet on blockchain. Error: ${error}`)
+      }
     }
 
     // const interval = 30
@@ -189,7 +197,7 @@ const Create = () => {
     worker.onmessage = (event) => {
       const { status, current, total, stage, result } = event.data
       if (status === 'working') {
-        console.log(`Completed ${(current / total * 100).toFixed(2)}%`)
+        // console.log(`Completed ${(current / total * 100).toFixed(2)}%`)
         setProgress(Math.round(current / total * 100))
         setProgressStage(stage)
       }
