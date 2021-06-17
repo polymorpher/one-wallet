@@ -160,6 +160,7 @@ const Create = () => {
         lastResortAddress,
         dailyLimit: ONEUtil.toFraction(dailyLimit).toString()
       })
+      console.log('Deployed. Received contract address', address)
       const wallet = {
         name,
         address,
@@ -168,7 +169,6 @@ const Create = () => {
         duration,
         effectiveTime,
         hseed,
-        layers
       }
       await storeLayers()
       // console.log('Layers stored', r)
