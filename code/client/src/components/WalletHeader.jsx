@@ -86,13 +86,16 @@ const WalletHeader = () => {
   const match = useRouteMatch('/:action/:address?')
   const { action, address } = match ? match.params : {}
   const shortAddress = util.ellipsisAddress(address)
+  const wallets = useSelector(state => state.wallet.wallets)
+  const wallet = wallets[address] || {}
+  const subtitle = wallet.name ? `${wallet.name} (${shortAddress})` : shortAddress
   const [settingsVisible, setSettingsVisible] = useState(false)
   return (
     <PageHeader
       style={{ background: '#ffffff' }}
       onBack={action && (() => history.goBack())}
       title={titleCase(action || '')}
-      subTitle={shortAddress || ''}
+      subTitle={subtitle}
       extra={[
         <Button key='lock' shape='circle' icon={<LockOutlined />} onClick={() => setSettingsVisible(true)} />,
         <RelayerSelector key='relayer' />,
