@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import styled from 'styled-components'
+// import styled from 'styled-components'
 import { PageHeader, Select, Divider, Modal, Input, Typography, Space, Button } from 'antd'
 import { useRouteMatch, useHistory } from 'react-router'
 import { titleCase } from 'title-case'
@@ -10,9 +10,9 @@ import config from '../config'
 
 const { Text, Link } = Typography
 
-const SelectorLabel = styled.span`
-  margin: 16px;
-`
+// const SelectorLabel = styled.span`
+//   margin: 16px;
+// `
 const NetworkSelector = () => {
   const networkId = useSelector(state => state.wallet.network)
   const dispatch = useDispatch()
