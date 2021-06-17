@@ -22,12 +22,12 @@ export default {
   },
   relayers: {
     dev: {
-      name: 'Development',
+      name: 'Dev Relayer',
       // url: 'https://127.0.0.1:8443'
       url: 'https://dev.hiddenstate.xyz'
     },
     hiddenstate: {
-      name: 'Test Relayer ONE',
+      name: 'ONE Test Relayer',
       url: 'https://relayer.onewallet.hiddenstate.xyz'
     }
   }

@@ -8,9 +8,7 @@ const apiConfig = {
   secret: ''
 }
 
-const headers = (secret, network) => ({
-  headers: { 'X-ONEWALLET-RELAYER-SECRET': secret, 'X-NETWORK': network }
-})
+const headers = (secret, network) => ({ 'X-ONEWALLET-RELAYER-SECRET': secret, 'X-NETWORK': network })
 
 let api = axios.create({
   baseURL: config.defaults.relayer,
@@ -25,9 +23,9 @@ export const initAPI = (store) => {
     const { relayer: relayerId, network, secret } = state.wallet
     let relayer = relayerId
     if (relayer && !relayer.startsWith('http')) {
-      relayer = config.relayers[relayer]
+      relayer = config.relayers[relayer]?.url
       if (!relayer) {
-        relayer = config.defaults.relayer
+        relayer = config.relayers[config.defaults.relayer].url
       }
     }
     if (!isEqual(apiConfig, { relayer, network, secret })) {

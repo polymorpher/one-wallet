@@ -1,12 +1,14 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { PageHeader, Select, Divider } from 'antd'
+import { PageHeader, Select, Divider, Modal, Input, Typography, Space, Button } from 'antd'
 import { useRouteMatch, useHistory } from 'react-router'
 import { titleCase } from 'title-case'
 import { useSelector, useDispatch } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
-import { SearchOutlined } from '@ant-design/icons'
+import { SearchOutlined, LockOutlined } from '@ant-design/icons'
 import config from '../config'
+
+const { Text, Link } = Typography
 
 const SelectorLabel = styled.span`
   margin: 16px;
@@ -20,8 +22,8 @@ const NetworkSelector = () => {
   }
   return (
     <>
-      <SelectorLabel>Network</SelectorLabel>
-      <Select style={{ width: 160 }} bordered={false} value={networkId} onChange={onChange}>
+      {/* <SelectorLabel>Network</SelectorLabel> */}
+      <Select style={{ width: 200 }} bordered={false} value={networkId} onChange={onChange}>
         {Object.keys(networks).map(k => {
           return <Select.Option key={k} value={k}>{networks[k].name} </Select.Option>
         })}
@@ -41,10 +43,10 @@ const RelayerSelector = () => {
   }
   return (
     <>
-      <SelectorLabel>Relayer</SelectorLabel>
+      {/* <SelectorLabel>Relayer</SelectorLabel> */}
       <Select
         suffixIcon={<SearchOutlined />}
-        style={{ width: 160 }} dropdownMatchSelectWidth bordered={false} showSearch onChange={onChange}
+        style={{ width: 200 }} dropdownMatchSelectWidth bordered={false} showSearch onChange={onChange}
         value={relayer}
         onSearch={(v) => setInput(v)}
       >
@@ -57,12 +59,33 @@ const RelayerSelector = () => {
   )
 }
 
+const SecretSettings = ({ visible, onClose }) => {
+  const dispatch = useDispatch()
+  const relayerSecret = useSelector(state => state.wallet.relayerSecret)
+  const [secret, setSecret] = useState(relayerSecret)
+  const onSubmit = () => {
+    dispatch(walletActions.setRelayerSecret(secret))
+    onClose && onClose()
+  }
+  return (
+    <Modal title='Relayer password' visible={visible} onOk={onSubmit} onCancel={onClose}>
+      <Space direction='vertical'>
+        <Text>If your relayer is password protected, provide it here</Text>
+        <Input style={{ marginBottom: 24 }} value={secret} onChange={({ target: { value } }) => setSecret(value)} />
+        <Text type='secondary'>What is a relayer?</Text>
+        <Text type='secondary'>You need to pay for gas to do stuff on blockchain. Relayers are paying on your behalf. For testing, we are providing a relayer for free.</Text>
+        <Text type='secondary'>You may also set up your own relayer using <Link target='_blank' href='https://github.com/polymorpher/one-wallet/tree/master/code/relayer' rel='noreferrer'>our code on Github</Link></Text>
+      </Space>
+    </Modal>
+  )
+}
+
 const WalletHeader = () => {
   const history = useHistory()
   const match = useRouteMatch('/:action')
   const { action } = match.params
   const address = useSelector(state => state.wallet.selected)
-
+  const [settingsVisible, setSettingsVisible] = useState(false)
   return (
     <PageHeader
       style={{ background: '#ffffff' }}
@@ -70,9 +93,11 @@ const WalletHeader = () => {
       title={titleCase(action || '')}
       subTitle={address || ''}
       extra={[
+        <Button key='lock' shape='circle' icon={<LockOutlined />} onClick={() => setSettingsVisible(true)} />,
         <RelayerSelector key='relayer' />,
         <Divider key='divider' type='vertical' />,
-        <NetworkSelector key='network' />
+        <NetworkSelector key='network' />,
+        <SecretSettings key='settings' visible={settingsVisible} onClose={() => setSettingsVisible(false)} />
       ]}
     />
   )
