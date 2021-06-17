@@ -58,6 +58,9 @@ const computeMerkleTree = ({ otpSeed, effectiveTime = Date.now(), duration = 360
     layers.push(layer)
   }
   const root = layers[height - 1]
+  if (progressObserver) {
+    progressObserver(1, 1, 2)
+  }
   // console.log(`root: 0x${hexView(root)} tree height: ${layers.length}; leaves length: ${leaves.length}`)
   return {
     seed,
