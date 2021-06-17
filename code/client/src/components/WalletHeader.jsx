@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { PageHeader, Select, Divider } from 'antd'
-import { useRouteMatch } from 'react-router'
+import { useRouteMatch, useHistory } from 'react-router'
 import { titleCase } from 'title-case'
 import { useSelector, useDispatch } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
@@ -58,6 +58,7 @@ const RelayerSelector = () => {
 }
 
 const WalletHeader = () => {
+  const history = useHistory()
   const match = useRouteMatch('/:action')
   const { action } = match.params
   const address = useSelector(state => state.wallet.selected)
@@ -65,7 +66,7 @@ const WalletHeader = () => {
   return (
     <PageHeader
       style={{ background: '#ffffff' }}
-      onBack={() => null}
+      onBack={() => history.goBack()}
       title={titleCase(action || '')}
       subTitle={address || ''}
       extra={[
