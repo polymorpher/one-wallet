@@ -1,22 +1,24 @@
 const config = require('./config')
 const contract = require('@truffle/contract')
-// const { TruffleProvider } = require('@harmony-js/core')
+const { TruffleProvider } = require('@harmony-js/core')
+const { Account } = require('@harmony-js/account')
 const ONEWallet = require('../build/contracts/ONEWallet.json')
 const HDWalletProvider = require('@truffle/hdwallet-provider')
 
 let providers = {}; let contracts = {}; let networks = []
 
-// TODO: try later
-// const HarmonyProvider = ({ key, url, chainId, gasLimit, gasPrice }) => {
-//   const truffleProvider = new TruffleProvider(
-//     url,
-//     {},
-//     { shardID: 0, chainId },
-//     gasLimit && gasPrice && { gasLimit, gasPrice },
-//   )
-//   truffleProvider.addByPrivateKey(key)
-//   truffleProvider.setSigner(key)
-// }
+const HarmonyProvider = ({ key, url, chainId, gasLimit, gasPrice }) => {
+  const truffleProvider = new TruffleProvider(
+    url,
+    {},
+    { shardID: 0, chainId },
+    gasLimit && gasPrice && { gasLimit, gasPrice },
+  )
+  truffleProvider.addByPrivateKey(key)
+  const account = new Account(key)
+  truffleProvider.setSigner(account.checksumAddress)
+  return truffleProvider
+}
 
 const init = () => {
   Object.keys(config.networks).forEach(k => {
@@ -27,8 +29,8 @@ const init = () => {
         if (k.startsWith('eth')) {
           providers[k] = new HDWalletProvider({ privateKeys: [n.key], providerOrUrl: n.url })
         } else {
-          // providers[k] = new HarmonyProvider(n.key, n.url, n.chainId) // TODO: try and debug later
-          providers[k] = new HDWalletProvider({ privateKeys: [n.key], providerOrUrl: n.url })
+          providers[k] = HarmonyProvider({ key: n.key, url: n.url, chainId: n.chainId })
+          // providers[k] = new HDWalletProvider({ privateKeys: [n.key], providerOrUrl: n.url })
         }
         networks.push(k)
       } catch (ex) {
@@ -40,8 +42,11 @@ const init = () => {
   Object.keys(providers).forEach(k => {
     const c = contract(ONEWallet)
     c.setProvider(providers[k])
+    const key = config.networks[k].key
+    const account = new Account(key)
+    // console.log(k, account.address, account.bech32Address)
     c.defaults({
-      from: providers[k].getAddress(0)
+      from: account.address
     })
     contracts[k] = c
   })
@@ -52,9 +57,8 @@ const init = () => {
   })
 }
 
-init()
-
 module.exports = {
+  init,
   getNetworks: () => networks,
   getProvider: (network) => providers[network],
   getContract: (network) => contracts[network],
