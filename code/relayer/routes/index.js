@@ -20,11 +20,11 @@ router.get('/health', async (req, res) => {
 router.use((req, res, next) => {
   const s = req.header('X-ONEWALLET-RELAYER-SECRET')
   if (s !== config.secret) {
-    return res.status(StatusCodes.UNAUTHORIZED).json({ error: `Invalid X-ONEWALLET-RELAYER-SECRET: ${s}` })
+    return res.status(StatusCodes.UNAUTHORIZED).json({ error: `Invalid X-ONEWALLET-RELAYER-SECRET: ${s}`, code: 0 })
   }
   const network = req.header('X-NETWORK')
   if (!network) {
-    return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Must selected network in header X-NETWORK' })
+    return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Must selected network in header X-NETWORK', code: 1 })
   }
   if (!blockchain.getNetworks().includes(network)) {
     return res.status(StatusCodes.NOT_IMPLEMENTED).json({ error: `Unsupported network ${network}` })
