@@ -168,6 +168,7 @@ const Create = () => {
         root,
         duration,
         effectiveTime,
+        lastResortAddress,
         hseed,
       }
       await storeLayers()
@@ -235,7 +236,7 @@ const Create = () => {
         <Row>
           <Space direction='vertical'>
             <Heading>Now, scan the QR code with your Google Authenticator</Heading>
-            <Hint>You will be asked to enter one-time passwords when you transfer funds from your wallet. If you lost the data on your computer, you can also restore your wallet from your Google Authenticator.</Hint>
+            <Hint>You can restore your wallet from your Google Authenticator if you lost the data on your computer.</Hint>
             {qrCodeData && <Image src={qrCodeData} preview={false} width={400} />}
           </Space>
         </Row>
