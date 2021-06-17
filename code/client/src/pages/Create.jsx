@@ -149,6 +149,7 @@ const Create = () => {
       message.error('Cannot deploy wallet. Error: root is not set.')
       return
     }
+    setDeploying(true)
     try {
       const { address } = await api.relayer.create({
         root: ONEUtil.hexString(root),
@@ -164,15 +165,14 @@ const Create = () => {
       const wallet = {
         name,
         address,
-        balance: 0,
         root,
         duration,
         effectiveTime,
         hseed,
       }
       await storeLayers()
-      // console.log('Layers stored', r)
       dispatch(walletActions.updateWallet(wallet))
+      dispatch(walletActions.fetchWalletSuccess({ address, balance: 0 }))
       setAddress(address)
       setDeploying(false)
       message.success('Your wallet is deployed!')
