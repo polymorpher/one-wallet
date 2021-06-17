@@ -20,7 +20,7 @@ export const initAPI = (store) => {
   console.log(store)
   store.subscribe(() => {
     const state = store.getState()
-    const { relayer: relayerId, network, secret } = state.wallet
+    const { relayer: relayerId, network, relayerSecret: secret } = state.wallet
     let relayer = relayerId
     if (relayer && !relayer.startsWith('http')) {
       relayer = config.relayers[relayer]?.url
