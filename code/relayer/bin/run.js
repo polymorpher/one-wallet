@@ -4,7 +4,7 @@ const httpsServer = apps.httpsServer
 const httpServer = apps.httpServer
 console.log('Starting web server...')
 
-httpsServer.listen(process.env.HTTPS_PORT || 8443, () => {
+httpsServer.listen(process.env.HTTPS_PORT || 8445, () => {
   const addr = httpsServer.address()
   console.log(`HTTPS server listening on port ${addr.port} at ${addr.address}`)
 })

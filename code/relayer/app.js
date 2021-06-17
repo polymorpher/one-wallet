@@ -11,12 +11,18 @@ const https = require('https')
 const http = require('http')
 const env = process.env.NODE_ENV || 'development'
 const fs = require('fs')
+const blockchain = require('./blockchain')
 Error.stackTraceLimit = 100
 app.locals.ENV = env
 app.locals.ENV_DEVELOPMENT = env === 'development'
 
 app.set('trust proxy', true)
-
+try {
+  blockchain.init()
+} catch (ex) {
+  console.error(ex)
+  process.exit(1)
+}
 let httpServer, httpsServer
 
 let httpsOptions = {
@@ -37,8 +43,6 @@ if (config.https.only) {
   httpServer = http.createServer(app)
 }
 httpsServer = https.createServer(httpsOptions, app)
-
-console.log(config.https)
 
 app.use(bodyParser.json({
   verify: function (req, _res, buf) {
