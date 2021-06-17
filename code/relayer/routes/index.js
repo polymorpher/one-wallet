@@ -19,7 +19,7 @@ router.get('/health', async (req, res) => {
 
 router.use((req, res, next) => {
   const s = req.header('X-ONEWALLET-RELAYER-SECRET')
-  if (s !== config.secret) {
+  if (config.secret && (s !== config.secret)) {
     return res.status(StatusCodes.UNAUTHORIZED).json({ error: `Invalid X-ONEWALLET-RELAYER-SECRET: ${s}`, code: 0 })
   }
   const network = req.header('X-NETWORK')
