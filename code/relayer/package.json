@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "node ./bin/run.js",
-    "debug": "RELAYER_DEBUG=true node ./bin/run.js"
+    "debug": "CORS=* RELAYER_DEBUG=true node ./bin/run.js"
   },
   "dependencies": {
     "@harmony-js/core": "^0.1.57",

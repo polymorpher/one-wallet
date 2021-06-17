@@ -52,8 +52,8 @@ const init = () => {
   })
   console.log('init complete:', {
     networks,
-    providers,
-    contracts
+    providers: Object.keys(providers).map(k => providers[k].toString()),
+    contracts: Object.keys(contracts).map(k => contracts[k].toString()),
   })
 }
 
