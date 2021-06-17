@@ -6,5 +6,6 @@ export default {
   transfer: base + '/:address/transfer',
   recover: base + '/:address/recover',
   show: base + '/:address/show',
-  restore: base + '/restore'
+  restore: base + '/restore',
+  showAddress: (address) => base + `/${address}/show`
 }
