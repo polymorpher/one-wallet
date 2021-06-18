@@ -233,8 +233,8 @@ const Show = () => {
           <Button type='link' style={{ padding: 0 }} size='large' onClick={showRecovery} icon={<WarningOutlined />}>I lost my Google Authenticator</Button>
         </Row>
         <Row style={{ marginTop: 24 }}>
-          <Popconfirm title='Are you sure？'>
-            <Button type='link' style={{ color: 'red', padding: 0 }} size='large' onClick={onDeleteWallet} icon={<DeleteOutlined />}>Delete this wallet locally</Button>
+          <Popconfirm title='Are you sure？' onConfirm={onDeleteWallet}>
+            <Button type='link' style={{ color: 'red', padding: 0 }} size='large' icon={<DeleteOutlined />}>Delete this wallet locally</Button>
           </Popconfirm>
 
         </Row>
