@@ -14,11 +14,13 @@ export default {
     },
     'harmony-mainnet': {
       name: 'Harmony Mainnet',
-      url: 'https://api.s0.t.hmny.io'
+      url: 'https://api.s0.t.hmny.io',
+      chainId: 1,
     },
     'harmony-testnet': {
       name: 'Harmony Testnet',
-      url: 'https://api.s0.b.hmny.io'
+      url: 'https://api.s0.b.hmny.io',
+      chainId: 2,
     }
   },
   relayers: {
