@@ -39,6 +39,7 @@ const Show = () => {
   const wallet = wallets[address] || {}
   const [section, setSection] = useState(action)
   const [stage, setStage] = useState(0)
+  const network = useSelector(state => state.wallet.network)
 
   // const section =
 
@@ -175,7 +176,7 @@ const Show = () => {
   }
 
   // UI Rendering below
-  if (!wallet) {
+  if (!wallet || wallet.network !== network) {
     return <Redirect to={Paths.wallets} />
   }
   const title = (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router'
 import Paths from '../constants/paths'
 import api from '../api'
@@ -28,6 +28,7 @@ const genName = () => uniqueNamesGenerator({
 const Create = () => {
   const dispatch = useDispatch()
   const history = useHistory()
+  const network = useSelector(state => state.wallet.network)
   const [name, setName] = useState(genName())
   const otpSeedBuffer = new Uint8Array(20)
   // eslint-disable-next-line no-unused-vars
@@ -124,6 +125,7 @@ const Create = () => {
         lastResortAddress,
         dailyLimit: ONEUtil.toFraction(dailyLimit).toString(),
         hseed: ONEUtil.hexView(hseed),
+        network
       }
       await storeLayers()
       dispatch(walletActions.updateWallet(wallet))

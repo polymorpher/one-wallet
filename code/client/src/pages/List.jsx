@@ -46,13 +46,14 @@ const List = () => {
   const wallets = useSelector(state => state.wallet.wallets)
   const balances = useSelector(state => state.wallet.balances)
   const price = useSelector(state => state.wallet.price)
+  const network = useSelector(state => state.wallet.network)
   const totalBalance = sum(values(balances))
   const { formatted, fiatFormatted } = util.computeBalance(totalBalance, price)
 
   return (
     <>
       <Row gutter={24}>
-        {values(wallets).map(w => <Col key={w.address}><WalletCard wallet={w} /></Col>)}
+        {values(wallets).filter(w => w.network === network).map(w => <Col key={w.address}><WalletCard wallet={w} /></Col>)}
       </Row>
       <Row style={{ marginTop: 36 }}>
         <Space direction='vertical'>
