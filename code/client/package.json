@@ -67,6 +67,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^4.6.2",
+    "@harmony-js/core": "^0.1.57",
     "@reduxjs/toolkit": "^1.6.0",
     "antd": "^4.16.2",
     "axios": "^0.21.1",
