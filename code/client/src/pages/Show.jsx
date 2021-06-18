@@ -95,7 +95,11 @@ const Show = () => {
       setInputAmount(formatted)
     }
   }
-
+  const restart = () => {
+    setStage(0)
+    setOtpInput(0)
+    setInputAmount(0)
+  }
   const doSend = async () => {
     if (!transferTo) {
       return message.error('Transfer destination address is invalid')
@@ -110,14 +114,15 @@ const Show = () => {
     }
     console.log(wallet)
     const { hseed, root, effectiveTime } = wallet
-    const layers = await storage.getItem(ONEUtil.hexView(root))
+    const layers = await storage.getItem(root)
     if (!layers) {
+      console.log(layers)
       message.error('Cannot find pre-computed proofs for this wallet. Storage might be corrupted. Please restore the wallet from Google Authenticator.')
       return
     }
 
     const otp = ONEUtil.encodeNumericalOtp(parsedOtp)
-    const eotp = ONE.computeEOTP({ otp, hseed })
+    const eotp = ONE.computeEOTP({ otp, hseed: ONEUtil.hexToBytes(hseed) })
     const index = ONEUtil.timeToIndex({ effectiveTime })
     const neighbors = ONE.selectMerkleNeighbors({ layers, index })
     const neighbor = neighbors[0]
@@ -153,6 +158,7 @@ const Show = () => {
         })
         console.log('revealTx', revealTx)
         setStage(3)
+        message.success('Transfer completed! View transaction on block explorer')
       } catch (ex) {
         console.trace(ex)
         if (numAttemptsRemaining <= 0) {
@@ -251,6 +257,7 @@ const Show = () => {
         </Row>
       </AnimatedSection>
       <AnimatedSection
+        style={{ minWidth: 700 }}
         show={section === 'transfer'} title={<Title level={2}>Transfer</Title>} extra={[
           <Button key='close' type='text' icon={<CloseOutlined />} onClick={showStats} />
         ]}
@@ -278,14 +285,15 @@ const Show = () => {
           </Space>
         </Space>
         <Row justify='end' style={{ marginTop: 48 }}>
-          <Button type='primary' size='large' shape='round' disabled={stage > 0} onClick={doSend}>Send</Button>
+          {stage < 3 && <Button type='primary' size='large' shape='round' disabled={stage > 0} onClick={doSend}>Send</Button>}
+          {stage === 3 && <Button type='secondary' size='large' shape='round' onClick={restart}>Restart</Button>}
         </Row>
         {stage > 0 && (
-          <Row>
+          <Row style={{ marginTop: 32 }}>
             <Steps current={stage}>
-              <Step title='Prepare' description='Signing proofs for transfer' />
-              <Step title='Commit' description='Submitting proofs to blockchain' />
-              <Step title='Finalize' description='Confirm transaction on blockchain' />
+              <Step title='Prepare' description='Preparing signatures and proofs' />
+              <Step title='Commit' description='Submitting transaction signature to blockchain' />
+              <Step title='Finalize' description='Revealing proofs to complete transaction' />
             </Steps>
           </Row>)}
       </AnimatedSection>
