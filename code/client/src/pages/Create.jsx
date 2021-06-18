@@ -193,7 +193,7 @@ const Create = () => {
         <Row>
           <Space direction='vertical'>
             <Heading>Now, scan the QR code with your Google Authenticator</Heading>
-            <Hint>You can restore your wallet from your Google Authenticator if you lost the data on your computer.</Hint>
+            <Hint>You can restore your wallet from your Google Authenticator if you lost the data on your computer. You will also need to use the 6-digit code from Google Authenticator to authorize transfers. </Hint>
             {qrCodeData && <Image src={qrCodeData} preview={false} width={400} />}
           </Space>
         </Row>
