@@ -6,6 +6,7 @@ import { Card, Row, Space, Typography, message, Col } from 'antd'
 import util from '../util'
 import { useHistory, useLocation } from 'react-router'
 import Paths from '../constants/paths'
+import BN from 'bn.js'
 const { Text, Title } = Typography
 
 const WalletCard = ({ wallet }) => {
@@ -26,7 +27,7 @@ const WalletCard = ({ wallet }) => {
     <Card
       onClick={() => history.push(Paths.showAddress(address))}
       title={<Title level={2}>{name}</Title>}
-      hoverable style={{ borderRadius: 20, width: 320, height: 196 }}
+      hoverable style={{ borderRadius: 20, width: 360, height: 196 }}
       extra={<Space style={{ alignItems: 'baseline' }}><Title level={3} style={{ marginBottom: 0 }}>{formatted}</Title><Text type='secondary'>ONE</Text></Space>}
     >
       <Space direction='vertical' size='large'>
@@ -48,12 +49,11 @@ const List = () => {
   const balances = useSelector(state => state.wallet.balances)
   const price = useSelector(state => state.wallet.price)
   const network = useSelector(state => state.wallet.network)
-  const totalBalance = sum(values(balances))
+  const totalBalance = values(balances).reduce((a, b) => a.add(new BN(b, 10)), new BN(0)).toString()
   const { formatted, fiatFormatted } = util.computeBalance(totalBalance, price)
-
   return (
     <>
-      <Row gutter={24}>
+      <Row gutter={[24, 24]}>
         {values(wallets).filter(w => w.network === network).map(w => <Col key={w.address}><WalletCard wallet={w} /></Col>)}
       </Row>
       <Row style={{ marginTop: 36 }}>
