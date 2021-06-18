@@ -6,6 +6,7 @@ export default {
   defaults: {
     relayer: process.env.REACT_APP_RELAYER || 'dev',
     network: process.env.REACT_APP_NETWORK || 'eth-ganache',
+    relayerSecret: process.env.REACT_APP_RELAYER_SECRET,
   },
   networks: {
     'eth-ganache': {
@@ -27,12 +28,12 @@ export default {
   },
   relayers: {
     dev: {
-      name: 'Dev Relayer',
-      // url: 'https://127.0.0.1:8443'
-      url: 'https://dev.hiddenstate.xyz'
+      name: 'Local Relayer',
+      url: 'https://127.0.0.1:8443'
+      // url: 'https://dev.hiddenstate.xyz'
     },
     hiddenstate: {
-      name: 'ONE Test Relayer',
+      name: 'Test Relayer',
       url: 'https://relayer.onewallet.hiddenstate.xyz'
     }
   }

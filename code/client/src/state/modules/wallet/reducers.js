@@ -8,7 +8,7 @@ export const initialState = {
   selected: undefined, // address in hex string, matching a key in wallets
   network: config.defaults.network,
   relayer: config.defaults.relayer,
-  relayerSecret: undefined,
+  relayerSecret: config.defaults.relayerSecret,
   provider: undefined,
   fetching: false,
   loading: false,

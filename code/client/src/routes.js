@@ -27,7 +27,7 @@ const LocalRoutes = () => {
             <Route path={Paths.wallets} component={ListPage} />
             <Route path={Paths.restore} component={RestorePage} />
             <Route path={Paths.show} component={ShowPage} />
-            <Route component={Paths.create} />
+            <Route component={CreatePage} />
           </Switch>
         </Layout.Content>
       </Layout>
