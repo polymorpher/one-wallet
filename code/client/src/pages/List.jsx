@@ -4,12 +4,13 @@ import walletActions from '../state/modules/wallet/actions'
 import { values, sum } from 'lodash'
 import { Card, Row, Space, Typography, message, Col } from 'antd'
 import util from '../util'
-import { useHistory } from 'react-router'
+import { useHistory, useLocation } from 'react-router'
 import Paths from '../constants/paths'
 const { Text, Title } = Typography
 
 const WalletCard = ({ wallet }) => {
   const history = useHistory()
+  const location = useLocation()
   const { address, name } = wallet
   const dispatch = useDispatch()
   const balances = useSelector(state => state.wallet.balances)
@@ -19,7 +20,7 @@ const WalletCard = ({ wallet }) => {
 
   useEffect(() => {
     dispatch(walletActions.fetchBalance({ address }))
-  }, [])
+  }, [location])
 
   return (
     <Card
