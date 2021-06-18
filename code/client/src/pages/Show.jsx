@@ -17,6 +17,7 @@ import AnimatedSection from '../components/AnimatedSection'
 import { Hint, InputBox } from '../components/Text'
 import { isInteger } from 'lodash'
 import storage from '../storage'
+import BN from 'bn.js'
 const { Title, Text } = Typography
 const { Step } = Steps
 const TallRow = styled(Row)`
@@ -90,7 +91,8 @@ const Show = () => {
   } = util.toBalance(inputAmount || 0, price)
 
   const useMaxAmount = () => {
-    if (balance > dailyLimit) {
+    console.log(balance, formatted, dailyLimit, dailyLimitFormatted)
+    if (new BN(balance, 10).gt(new BN(dailyLimit, 10))) {
       setInputAmount(dailyLimitFormatted)
     } else {
       setInputAmount(formatted)
