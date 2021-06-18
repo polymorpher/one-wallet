@@ -71,6 +71,7 @@
     "@reduxjs/toolkit": "^1.6.0",
     "antd": "^4.16.2",
     "axios": "^0.21.1",
+    "bn.js": "^5.2.0",
     "connected-react-router": "^6.9.1",
     "hi-base32": "^0.5.1",
     "history": "4.10.1",
