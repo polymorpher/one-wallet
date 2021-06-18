@@ -7,11 +7,12 @@ import Routes from './routes'
 import { Provider } from 'react-redux'
 import { ConnectedRouter } from 'connected-react-router'
 import * as serviceWorker from './serviceWorker'
-import { initAPI } from './api'
+import { initAPI, initBlockchain } from './api'
 
 document.body.ontouchstart = function () {}
 
 initAPI(store)
+initBlockchain(store)
 
 rootSaga.run()
 
