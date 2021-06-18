@@ -13,6 +13,7 @@ const fetchPriceFailed = createAction('FETCH_PRICE_FAILED')
 
 const updateWallet = createAction('UPDATE_WALLET')
 const selectWallet = createAction('SELECT_WALLET')
+const deleteWallet = createAction('DELETE_WALLET')
 
 const setRelayer = createAction('SET_RELAYER')
 const setRelayerSecret = createAction('SET_RELAYER_SECRET')
@@ -31,6 +32,7 @@ export default {
   fetchPriceFailed,
   updateWallet,
   selectWallet,
+  deleteWallet,
   setRelayer,
   setRelayerSecret,
   setNetwork,

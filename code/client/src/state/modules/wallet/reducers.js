@@ -1,6 +1,7 @@
 import { handleActions } from 'redux-actions'
 import walletActions from './actions'
 import config from '../../../config'
+import { omit } from 'lodash'
 export const initialState = {
   wallets: {},
   balances: {}, // address => amount in wei
@@ -66,6 +67,11 @@ const reducer = handleActions(
     [walletActions.selectWallet]: (state, action) => ({
       ...state,
       selected: action.payload,
+    }),
+
+    [walletActions.deleteWallet]: (state, action) => ({
+      ...state,
+      wallets: omit(state.wallets, [action.payload])
     }),
 
     [walletActions.setRelayer]: (state, action) => ({
