@@ -8,11 +8,8 @@ import SiderMenu from './components/SiderMenu'
 import WalletHeader from './components/WalletHeader'
 import CreatePage from './pages/Create'
 import ListPage from './pages/List'
-import RecoverPage from './pages/Recover'
-import TransferPage from './pages/Transfer'
 import RestorePage from './pages/Restore'
 import ShowPage from './pages/Show'
-import Welcome from './pages/Welcome'
 import { walletActions } from './state/modules/wallet'
 import config from './config'
 
@@ -30,9 +27,7 @@ const LocalRoutes = () => {
             <Route path={Paths.wallets} component={ListPage} />
             <Route path={Paths.restore} component={RestorePage} />
             <Route path={Paths.show} component={ShowPage} />
-            <Route path={Paths.recover} component={RecoverPage} />
-            <Route path={Paths.transfer} component={TransferPage} />
-            <Route component={Welcome} />
+            <Route component={Paths.create} />
           </Switch>
         </Layout.Content>
       </Layout>
