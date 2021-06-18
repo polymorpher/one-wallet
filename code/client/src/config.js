@@ -10,11 +10,13 @@ export default {
   networks: {
     'eth-ganache': {
       name: 'Ethereum Ganache',
-      url: 'http://127.0.0.1:7545'
+      url: 'http://127.0.0.1:7545',
+      // explorer: 'https://explorer.harmony.one/#/tx/{{txId}}',
     },
     'harmony-mainnet': {
       name: 'Harmony Mainnet',
       url: 'https://api.s0.t.hmny.io',
+      explorer: 'https://explorer.harmony.one/#/tx/{{txId}}',
       chainId: 1,
     },
     'harmony-testnet': {
