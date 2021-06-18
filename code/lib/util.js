@@ -82,6 +82,12 @@ const utils = {
     return codes
   },
 
+  encodeNumericalOtp: (otp) => {
+    const b = new DataView(new ArrayBuffer(4))
+    b.setUint32(0, otp, false)
+    return new Uint8Array(b.buffer)
+  },
+
   toFraction: (ones, unit) => {
     return Conversion.toWei(ones, unit || 'ether')
   },
