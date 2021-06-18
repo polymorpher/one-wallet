@@ -2,21 +2,21 @@ import React, { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router'
 import Paths from '../constants/paths'
-import styled from 'styled-components'
 import api from '../api'
 import ONEUtil from '../../../lib/util'
 import { uniqueNamesGenerator, colors, animals } from 'unique-names-generator'
-import { Card, Input, Button, Row, Space, Typography, Slider, Image, message, Progress, Timeline } from 'antd'
+import { Button, Row, Space, Typography, Slider, Image, message, Progress, Timeline } from 'antd'
 import { RedoOutlined, LoadingOutlined } from '@ant-design/icons'
 import humanizeDuration from 'humanize-duration'
-import { Transition } from 'react-transition-group'
+import AnimatedSection from '../components/AnimatedSection'
 import b32 from 'hi-base32'
 import qrcode from 'qrcode'
 import storage from '../storage'
 import walletActions from '../state/modules/wallet/actions'
 import WalletConstants from '../constants/wallet'
 import util from '../util'
-const { Text, Link, Title } = Typography
+import { Hint, Heading, InputBox } from '../components/Text'
+const { Text, Link } = Typography
 
 const genName = () => uniqueNamesGenerator({
   dictionaries: [colors, animals],
@@ -24,53 +24,6 @@ const genName = () => uniqueNamesGenerator({
   separator: ' ',
   length: 1
 })
-
-const Section = styled(Card)`
-  padding: 32px;
-  position: absolute;
-`
-
-const Heading = styled(Title).attrs(() => ({ level: 2 }))`
-  //font-size: 24px;
-  //color: #1f1f1f;
-`
-
-const Hint = styled(Text).attrs(() => ({ type: 'secondary' }))`
-  font-size: 16px;
-  color: #888888;
-`
-
-const InputBox = styled(Input).attrs((props) => ({ size: props.size || 'large' }))`
-  width: ${props => props.width || '400px'};
-  margin-top: ${props => props.margin || '32px'};
-  margin-bottom: ${props => props.margin || '32px'};
-  border: none;
-  border-bottom: 1px dashed black;
-  &:hover{
-    border-bottom: 1px dashed black;
-  }
-`
-
-const defaultStyle = {
-  transition: 'opacity 300ms ease-in-out',
-  opacity: 0,
-}
-
-const transitionStyles = {
-  entering: { opacity: 1 },
-  entered: { opacity: 1, zIndex: 1 },
-  exiting: { opacity: 0 },
-  exited: { opacity: 0, zIndex: 0 },
-}
-
-const AnimatedSection = ({ show, children }) => (
-  <Transition in={show} timeout={300}>
-    {state => (
-      <Section style={{ ...defaultStyle, ...transitionStyles[state] }}>
-        {children}
-      </Section>
-    )}
-  </Transition>)
 
 const Create = () => {
   const dispatch = useDispatch()
@@ -165,15 +118,16 @@ const Create = () => {
       const wallet = {
         name,
         address,
-        root,
+        root: ONEUtil.hexString(root),
         duration,
         effectiveTime,
         lastResortAddress,
-        hseed,
+        dailyLimit: ONEUtil.toFraction(dailyLimit).toString(),
+        hseed: ONEUtil.hexString(hseed),
       }
       await storeLayers()
       dispatch(walletActions.updateWallet(wallet))
-      dispatch(walletActions.fetchWalletSuccess({ address, balance: 0 }))
+      dispatch(walletActions.fetchBalanceSuccess({ address, balance: 0 }))
       setAddress(address)
       setDeploying(false)
       message.success('Your wallet is deployed!')
