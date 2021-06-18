@@ -117,18 +117,18 @@ export default {
       return data
     },
     commit: async ({ address, hash }) => {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => resolve({ mock: true }), 2000)
-      })
-      // const { data } = await api.post('/commit', { address, hash })
-      // return data
+      // return new Promise((resolve, reject) => {
+      //   setTimeout(() => resolve({ mock: true }), 2000)
+      // })
+      const { data } = await api.post('/commit', { address, hash })
+      return data
     },
     revealTransfer: async ({ neighbors, index, eotp, dest, amount, address }) => {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => resolve({ mock: true }), 2000)
-      })
-      // const { data } = await api.post('/reveal/transfer', { neighbors, index, eotp, dest, amount, address })
-      // return data
+      // return new Promise((resolve, reject) => {
+      //   setTimeout(() => resolve({ mock: true }), 2000)
+      // })
+      const { data } = await api.post('/reveal/transfer', { neighbors, index, eotp, dest, amount, address })
+      return data
     },
     revealRecovery: async ({ neighbors, index, eotp, address }) => {
       const { data } = await api.post('/reveal/recovery', { neighbors, index, eotp, address })
