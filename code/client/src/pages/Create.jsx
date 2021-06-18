@@ -231,7 +231,7 @@ const Create = () => {
         <Row style={{ marginBottom: 32 }}>
           <Space direction='vertical'>
             <Space>
-              <Button disabled={!root || !deploying} type='primary' shape='round' size='large' onClick={() => deploy()}>Let's do it</Button>
+              <Button disabled={!root || deploying} type='primary' shape='round' size='large' onClick={() => deploy()}>Let's do it</Button>
               {deploying && <LoadingOutlined />}
             </Space>
             {!root &&
