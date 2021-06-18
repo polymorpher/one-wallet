@@ -51,7 +51,7 @@ export default {
   },
 
   toBalance: (formatted, price) => {
-    if (!exports.default.validBalance(formatted)) {
+    if (!exports.default.validBalance(formatted, true)) {
       return { balance: 0, formatted: '0', fiat: 0, fiatFormatted: '0', valid: false }
     }
     const f = parseFloat(formatted)
