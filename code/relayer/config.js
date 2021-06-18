@@ -31,7 +31,7 @@ const config = {
       key: process.env.ETH_GANACHE_KEY,
     },
   },
-  gasLimit: process.env.GAS_LIMIT,
-  gasPrice: process.env.GAS_PRICE,
+  gasLimit: parseInt(process.env.GAS_LIMIT || '210000'),
+  gasPrice: parseInt(process.env.GAS_PRICE || '200')
 }
 module.exports = config

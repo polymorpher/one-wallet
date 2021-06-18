@@ -29,7 +29,12 @@ const init = () => {
         if (k.startsWith('eth')) {
           providers[k] = new HDWalletProvider({ privateKeys: [n.key], providerOrUrl: n.url })
         } else {
-          providers[k] = HarmonyProvider({ key: n.key, url: n.url, chainId: n.chainId })
+          providers[k] = HarmonyProvider({ key: n.key,
+            url: n.url,
+            chainId: n.chainId,
+            // gasLimit: config.gasLimit,
+            // gasPrice: config.gasPrice
+          })
           // providers[k] = new HDWalletProvider({ privateKeys: [n.key], providerOrUrl: n.url })
         }
         networks.push(k)
