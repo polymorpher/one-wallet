@@ -13,6 +13,8 @@ import TransferPage from './pages/Transfer'
 import RestorePage from './pages/Restore'
 import ShowPage from './pages/Show'
 import Welcome from './pages/Welcome'
+import { walletActions } from './state/modules/wallet'
+import config from './config'
 
 const LocalRoutes = () => {
   // eslint-disable-next-line no-unused-vars
@@ -43,6 +45,10 @@ const Routes = () => {
   const [rehydrated, setRehydrated] = useState(false)
   useEffect(() => {
     const store = require('./state/store')
+    dispatch(walletActions.fetchPrice())
+    setInterval(() => {
+      dispatch(walletActions.fetchPrice())
+    }, config.priceRefreshInterval)
     persistStore(store.default, null, () => {
       setRehydrated(true)
     })
