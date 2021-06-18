@@ -38,6 +38,14 @@ const utils = {
     return hexStr.startsWith('0x') ? utils.hexToBytes(hexStr.slice(2), length) : utils.hexToBytes(hexStr, length)
   },
 
+  bytesEqual: (b1, b2) => {
+    if (b1.byteLength !== b2.byteLength) return false
+    for (let i = 0; i < b1.byteLength; i++) {
+      if (b1[i] !== b2[i]) return false
+    }
+    return true
+  },
+
   timeToIndex: ({
     effectiveTime,
     time = Date.now(),
