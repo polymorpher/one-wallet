@@ -5,7 +5,7 @@ import api from '../../../api'
 function * handleFetchWallet (action) {
   try {
     const { address } = action.payload
-    const { wallet } = yield call(api.blockchain.getWallet, address)
+    const { wallet } = yield call(api.blockchain.getWallet, { address })
     yield put(walletActions.fetchWalletSuccess(wallet))
   } catch (err) {
     console.error(err)
@@ -16,7 +16,7 @@ function * handleFetchWallet (action) {
 function * handleFetchBalance (action) {
   try {
     const { address } = action.payload
-    const balance = yield call(api.blockchain.getBalance, address)
+    const balance = yield call(api.blockchain.getBalance, { address })
     yield put(walletActions.fetchBalanceSuccess({ address, balance }))
   } catch (err) {
     console.error(err)
