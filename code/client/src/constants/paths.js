@@ -3,9 +3,7 @@ export default {
   root: base + '/',
   create: base + '/create',
   wallets: base + '/wallets',
-  transfer: base + '/transfer/:address',
-  recover: base + '/recover/:address',
-  show: base + '/show/:address',
+  show: base + '/show/:address/:action?',
   restore: base + '/restore',
-  showAddress: (address) => base + `/show/${address}`
+  showAddress: (address, action) => base + `/show/${address}${action ? `/${action}` : ''}`
 }
