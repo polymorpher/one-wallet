@@ -49,20 +49,17 @@ let web3; let one
 export const initBlockchain = (store) => {
   Object.keys(config.networks).forEach(k => {
     const n = config.networks[k]
-    console.log(n)
-    if (n.key) {
-      try {
-        if (k.startsWith('eth')) {
-          providers[k] = new Web3.providers.HttpProvider(n.url)
-        } else {
-          providers[k] = new TruffleProvider(n.url, {}, { shardId: 0, chainId: n.chainId })
-        }
-        web3instances[k] = new Web3(providers[k])
-        networks.push(k)
-      } catch (ex) {
-        console.error(ex)
-        console.trace(ex)
+    try {
+      if (k.startsWith('eth')) {
+        providers[k] = new Web3.providers.HttpProvider(n.url)
+      } else {
+        providers[k] = new TruffleProvider(n.url, {}, { shardId: 0, chainId: n.chainId })
       }
+      web3instances[k] = new Web3(providers[k])
+      networks.push(k)
+    } catch (ex) {
+      console.error(ex)
+      console.trace(ex)
     }
   })
   Object.keys(providers).forEach(k => {
@@ -82,11 +79,7 @@ export const initBlockchain = (store) => {
       one = contracts[activeNetwork]
     }
   })
-  console.log('init complete:', {
-    networks,
-    providers: Object.keys(providers).map(k => providers[k].toString()),
-    contracts: Object.keys(contracts).map(k => contracts[k].toString()),
-  })
+  console.log('blockchain init complete:', { networks })
 }
 
 export default {
