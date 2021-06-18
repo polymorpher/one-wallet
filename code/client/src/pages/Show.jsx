@@ -235,7 +235,7 @@ const Show = () => {
           <Col>
             <Space>
               <Tooltip title={lastResortAddress}>
-                <Hint copyable={lastResortAddress && { text: lastResortAddress }}>{util.ellipsisAddress(lastResortAddress) || 'Not set'}</Hint>
+                <Text copyable={lastResortAddress && { text: lastResortAddress }}>{util.ellipsisAddress(lastResortAddress) || 'Not set'}</Text>
               </Tooltip>
             </Space>
           </Col>
