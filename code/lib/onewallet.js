@@ -1,7 +1,7 @@
 const fastSHA256 = require('fast-sha256')
 const base32 = require('hi-base32')
 // eslint-disable-next-line no-unused-vars
-const { hexView, genOTP, hexStringToBytes, keccak } = require('./util')
+const { hexView, genOTP, hexStringToBytes, keccak, bytesEqual } = require('./util')
 const BN = require('bn.js')
 
 const computeMerkleTree = ({ otpSeed, effectiveTime = Date.now(), duration = 3600 * 1000 * 24 * 365, progressObserver, otpInterval = 30000, maxOperationsPerInterval = 1 }) => {
@@ -138,10 +138,29 @@ const computeRecoveryHash = ({ neighbor, index, eotp }) => {
   return { hash: keccak(input), bytes: input }
 }
 
+const bruteforceEOTP = ({ hseed, nonce = 0, leaf }) => {
+  const nonceBuffer = new Uint16Array([nonce])
+  const buffer = new Uint8Array(32)
+  const otpBuffer = new DataView(new ArrayBuffer(4))
+  for (let i = 0; i < 1000000; i += 1) {
+    otpBuffer.setUint32(0, i, false)
+    buffer.set(hseed)
+    buffer.set(nonceBuffer, hseed.length)
+    buffer.set(new Uint8Array(otpBuffer.buffer), hseed.length + 2)
+    const h = fastSHA256(buffer)
+    const hh = fastSHA256(h)
+    if (bytesEqual(hh, leaf)) {
+      return { eotp: h, otp: i }
+    }
+  }
+  return { }
+}
+
 module.exports = {
   computeMerkleTree,
   computeTransferHash,
   computeRecoveryHash,
   selectMerkleNeighbors,
-  computeEOTP
+  computeEOTP,
+  bruteforceEOTP
 }
