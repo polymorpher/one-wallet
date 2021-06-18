@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
 import { values, sum } from 'lodash'
-import { Card, Row, Space, Typography, message } from 'antd'
+import { Card, Row, Space, Typography, message, Col } from 'antd'
 import util from '../util'
 import { useHistory } from 'react-router'
 import Paths from '../constants/paths'
@@ -51,8 +51,8 @@ const List = () => {
 
   return (
     <>
-      <Row>
-        {values(wallets).map(w => <WalletCard key={w.address} wallet={w} />)}
+      <Row gutter={24}>
+        {values(wallets).map(w => <Col key={w.address}><WalletCard wallet={w} /></Col>)}
       </Row>
       <Row style={{ marginTop: 36 }}>
         <Space direction='vertical'>
