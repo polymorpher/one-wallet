@@ -15,6 +15,15 @@ const checkParams = (params, res) => {
   return true
 }
 
+const parseTx = (tx) => {
+  const txId = tx?.tx
+  const success = !!(txId)
+  const stack = tx?.receipt?.stack || ''
+  const nl = stack.indexOf('\n')
+  const error = stack && (nl > 0 ? stack.slice(0, nl) : stack)
+  return { success, txId, tx, error }
+}
+
 router.get('/health', async (req, res) => {
   res.send('OK').end()
 })
@@ -81,7 +90,7 @@ router.post('/commit', async (req, res) => {
   try {
     const wallet = await req.contract.at(address)
     const tx = await wallet.commit(hash)
-    return res.json({ success: true, tx })
+    return res.json(parseTx(tx))
   } catch (ex) {
     console.error(ex)
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: ex.toString() })
@@ -97,7 +106,7 @@ router.post('/reveal/transfer', async (req, res) => {
   try {
     const wallet = await req.contract.at(address)
     const tx = await wallet.revealTransfer(neighbors, index, eotp, dest, new BN(amount, 10))
-    return res.json({ success: true, tx })
+    return res.json(parseTx(tx))
   } catch (ex) {
     console.error(ex)
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: ex.toString() })
@@ -113,7 +122,7 @@ router.post('/reveal/recovery', async (req, res) => {
   try {
     const wallet = await req.contract.at(address)
     const tx = await wallet.revealTransfer(neighbors, index, eotp)
-    return res.json({ success: true, tx })
+    return res.json(parseTx(tx))
   } catch (ex) {
     console.error(ex)
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: ex.toString() })
@@ -129,7 +138,7 @@ router.post('/retire', async (req, res) => {
   try {
     const wallet = await req.contract.at(address)
     const tx = await wallet.retire()
-    return res.json({ success: true, tx })
+    return res.json(parseTx(tx))
   } catch (ex) {
     console.error(ex)
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: ex.toString() })
