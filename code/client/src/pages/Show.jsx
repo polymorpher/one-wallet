@@ -91,7 +91,6 @@ const Show = () => {
   } = util.toBalance(inputAmount || 0, price)
 
   const useMaxAmount = () => {
-    console.log(balance, formatted, dailyLimit, dailyLimitFormatted)
     if (new BN(balance, 10).gt(new BN(dailyLimit, 10))) {
       setInputAmount(dailyLimitFormatted)
     } else {
@@ -129,7 +128,7 @@ const Show = () => {
     const index = ONEUtil.timeToIndex({ effectiveTime })
     const neighbors = ONE.selectMerkleNeighbors({ layers, index })
     const neighbor = neighbors[0]
-    const commitHash = ONE.computeTransferHash({
+    const { hash: commitHash } = ONE.computeTransferHash({
       neighbor,
       index,
       eotp,
@@ -138,7 +137,7 @@ const Show = () => {
     })
     setStage(1)
     try {
-      const commitTx = await api.relayer.commit({ address, hash: commitHash })
+      const commitTx = await api.relayer.commit({ address, hash: ONEUtil.hexString(commitHash) })
       console.log('commitTx', commitTx)
     } catch (ex) {
       console.error(ex)
@@ -152,11 +151,11 @@ const Show = () => {
       try {
         // TODO: should reveal only when commit is confirmed and viewable on-chain. This should be fixed before releasing it to 1k+ users
         const revealTx = await api.relayer.revealTransfer({
-          neighbors,
+          neighbors: neighbors.map(n => ONEUtil.hexString(n)),
           index,
-          eotp,
+          eotp: ONEUtil.hexString(eotp),
           dest: transferTo,
-          amount: transferAmount,
+          amount: transferAmount.toString(),
           address
         })
         console.log('revealTx', revealTx)
