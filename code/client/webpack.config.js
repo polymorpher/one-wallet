@@ -84,6 +84,7 @@ module.exports = {
     }
   },
   plugins: [
+    new webpack.EnvironmentPlugin(['PUBLIC_URL', 'REACT_APP_NETWORK', 'REACT_APP_RELAYER', 'REACT_APP_RELAYER_SECRET']),
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],
     }),
