@@ -74,7 +74,14 @@ module.exports = {
   resolve: {
     modules: [path.resolve(__dirname, 'node_modules'), 'node_modules'],
     extensions: ['.jsx', '.js'],
-    fallback: { stream: require.resolve('stream-browserify') }
+    fallback: {
+      stream: require.resolve('stream-browserify'),
+      // TODO: remove later, after web3 is removed from dependency (for ethereum compatibility)
+      http: require.resolve('stream-http'),
+      os: require.resolve('os-browserify/browser'),
+      https: require.resolve('https-browserify'),
+      crypto: require.resolve('crypto-browserify')
+    }
   },
   plugins: [
     new webpack.ProvidePlugin({
