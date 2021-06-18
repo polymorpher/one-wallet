@@ -118,12 +118,12 @@ const Create = () => {
       const wallet = {
         name,
         address,
-        root: ONEUtil.hexString(root),
+        root: ONEUtil.hexView(root),
         duration,
         effectiveTime,
         lastResortAddress,
         dailyLimit: ONEUtil.toFraction(dailyLimit).toString(),
-        hseed: ONEUtil.hexString(hseed),
+        hseed: ONEUtil.hexView(hseed),
       }
       await storeLayers()
       dispatch(walletActions.updateWallet(wallet))
@@ -134,6 +134,7 @@ const Create = () => {
       setSection(4)
     } catch (ex) {
       util.handleError(ex)
+      setDeploying(false)
     }
   }
 
@@ -228,7 +229,7 @@ const Create = () => {
         <Row style={{ marginBottom: 32 }}>
           <Space direction='vertical'>
             <Space>
-              <Button disabled={!root && !deploying} type='primary' shape='round' size='large' onClick={() => deploy()}>Let's do it</Button>
+              <Button disabled={!root || !deploying} type='primary' shape='round' size='large' onClick={() => deploy()}>Let's do it</Button>
               {deploying && <LoadingOutlined />}
             </Space>
             {!root &&
