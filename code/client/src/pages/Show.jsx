@@ -72,6 +72,7 @@ const Show = () => {
     try {
       await storage.removeItem(root)
       message.success(`Wallet ${name} is deleted`)
+      history.push(Paths.wallets)
     } catch (ex) {
       console.error(ex)
       message.error(`Failed to delete wallet proofs. Error: ${ex}`)
