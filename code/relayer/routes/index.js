@@ -121,7 +121,7 @@ router.post('/reveal/recovery', async (req, res) => {
   // TODO parameter verification
   try {
     const wallet = await req.contract.at(address)
-    const tx = await wallet.revealTransfer(neighbors, index, eotp)
+    const tx = await wallet.revealRecovery(neighbors, index, eotp)
     return res.json(parseTx(tx))
   } catch (ex) {
     console.error(ex)
