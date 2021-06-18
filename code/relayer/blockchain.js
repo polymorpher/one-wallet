@@ -32,8 +32,8 @@ const init = () => {
           providers[k] = HarmonyProvider({ key: n.key,
             url: n.url,
             chainId: n.chainId,
-            gasLimit: config.gasLimit,
-            gasPrice: config.gasPrice
+            // gasLimit: config.gasLimit,
+            // gasPrice: config.gasPrice
           })
           // providers[k] = new HDWalletProvider({ privateKeys: [n.key], providerOrUrl: n.url })
         }
