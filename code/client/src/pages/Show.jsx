@@ -8,7 +8,7 @@ import util from '../util'
 import ONEUtil from '../../../lib/util'
 import ONE from '../../../lib/onewallet'
 import api from '../api'
-import { message, Space, Row, Col, Typography, Button, Steps, Popconfirm } from 'antd'
+import { message, Space, Row, Col, Typography, Button, Steps, Popconfirm, Tooltip } from 'antd'
 import { DeleteOutlined, WarningOutlined, CloseOutlined } from '@ant-design/icons'
 import styled from 'styled-components'
 import humanizeDuration from 'humanize-duration'
@@ -87,6 +87,14 @@ const Show = () => {
     balance: transferAmount,
     fiatFormatted: transferFiatAmountFormatted
   } = util.toBalance(inputAmount || 0, price)
+
+  const useMaxAmount = () => {
+    if (balance > dailyLimit) {
+      setInputAmount(dailyLimitFormatted)
+    } else {
+      setInputAmount(formatted)
+    }
+  }
 
   const doSend = async () => {
     if (!transferTo) {
@@ -215,18 +223,20 @@ const Show = () => {
           <Col span={12}> <Title level={3}>Daily Limit</Title></Col>
           <Col>
             <Space>
-              <Text>{formatted}</Text>
+              <Text>{dailyLimitFormatted}</Text>
               <Text type='secondary'>ONE</Text>
-              <Text>(≈ ${fiatFormatted}</Text>
+              <Text>(≈ ${dailyLimitFiatFormatted}</Text>
               <Text type='secondary'>USD)</Text>
             </Space>
           </Col>
         </TallRow>
-        <TallRow>
+        <TallRow align='middle'>
           <Col span={12}> <Title level={3}>Recovery Address</Title></Col>
           <Col>
             <Space>
-              <Hint ellipsis={{ tooltip: lastResortAddress }} copyable={!!(lastResortAddress)}>{util.ellipsisAddress(lastResortAddress) || 'Not set'}</Hint>
+              <Tooltip title={lastResortAddress}>
+                <Hint copyable={lastResortAddress && { text: lastResortAddress }}>{util.ellipsisAddress(lastResortAddress) || 'Not set'}</Hint>
+              </Tooltip>
             </Space>
           </Col>
         </TallRow>
@@ -254,7 +264,7 @@ const Show = () => {
             <Label><Hint>Amount</Hint></Label>
             <InputBox margin='auto' width={200} value={inputAmount} onChange={({ target: { value } }) => setInputAmount(value)} />
             <Hint>ONE</Hint>
-            <Button type='secondary' onClick={() => setInputAmount(formatted)}>max</Button>
+            <Button type='secondary' onClick={useMaxAmount}>max</Button>
           </Space>
           <Space align='end' size='large'>
             <Label><Hint /></Label>
