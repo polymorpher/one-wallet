@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useEffect, useState } from 'react'
 // import styled from 'styled-components'
 import { PageHeader, Select, Divider, Modal, Input, Typography, Space, Button } from 'antd'
@@ -8,7 +9,8 @@ import walletActions from '../state/modules/wallet/actions'
 import { SearchOutlined, LockOutlined } from '@ant-design/icons'
 import config from '../config'
 import util from '../util'
-import Paths from '../constants/paths'
+import { Hint } from '../components/Text'
+// import Paths from '../constants/paths'
 const { Text, Link } = Typography
 
 // const SelectorLabel = styled.span`
@@ -95,7 +97,7 @@ const WalletHeader = () => {
       style={{ background: '#ffffff' }}
       onBack={action && (() => history.goBack())}
       title={titleCase(action || '')}
-      subTitle={subtitle}
+      subTitle={<Hint>{subtitle}</Hint>}
       extra={[
         <Button key='lock' shape='circle' icon={<LockOutlined />} onClick={() => setSettingsVisible(true)} />,
         <RelayerSelector key='relayer' />,
