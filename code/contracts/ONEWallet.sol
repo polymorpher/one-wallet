@@ -9,18 +9,18 @@ contract ONEWallet {
     event UnknownTransferError(address dest);
     event LastResortAddressNotSet();
 
-    bytes32 public root; // Note: @ivan brought up a good point in reducing this to 16-bytes so hash of two consecutive nodes can be done in a single word (to save gas and reduce blockchain clutter). Let's not worry about that for now and re-evalaute this later.
-    uint8 public height; // including the root. e.g. for a tree with 4 leaves, the height is 3.
-    uint8 public interval; // otp interval in seconds, default is 30
-    uint32 public t0; // starting time block (effectiveTime (in ms) / interval)
-    uint32 public lifespan;  // in number of block (e.g. 1 block per [interval] seconds)
-    uint8 public maxOperationsPerInterval; // number of transactions permitted per OTP interval. Each transaction shall have a unique nonce. The nonce is auto-incremented within each interval
+    bytes32 root; // Note: @ivan brought up a good point in reducing this to 16-bytes so hash of two consecutive nodes can be done in a single word (to save gas and reduce blockchain clutter). Let's not worry about that for now and re-evalaute this later.
+    uint8 height; // including the root. e.g. for a tree with 4 leaves, the height is 3.
+    uint8 interval; // otp interval in seconds, default is 30
+    uint32 t0; // starting time block (effectiveTime (in ms) / interval)
+    uint32 lifespan;  // in number of block (e.g. 1 block per [interval] seconds)
+    uint8 maxOperationsPerInterval; // number of transactions permitted per OTP interval. Each transaction shall have a unique nonce. The nonce is auto-incremented within each interval
 
     // global mutable
-    address payable public lastResortAddress; // where money will be sent during a recovery process (or when the wallet is beyond its lifespan)
-    uint256 public dailyLimit; // uint128 is sufficient, but uint256 is more efficient since EVM works with 32-byte words.
-    uint256 public spentToday; // note: instead of tracking the money spent for the last 24h, we are simply tracking money spent per 24h block based on UTC time. It is good enough for now, but we may want to change this later.
-    uint32 public lastTransferDay;
+    address payable lastResortAddress; // where money will be sent during a recovery process (or when the wallet is beyond its lifespan)
+    uint256 dailyLimit; // uint128 is sufficient, but uint256 is more efficient since EVM works with 32-byte words.
+    uint256 spentToday; // note: instead of tracking the money spent for the last 24h, we are simply tracking money spent per 24h block based on UTC time. It is good enough for now, but we may want to change this later.
+    uint32 lastTransferDay;
 
     mapping(uint32 => uint8) nonces; // keys: otp index (=timestamp in seconds / interval - t0); values: the expected nonce for that otp interval. An reveal with a nonce less than the expected value will be rejected
     uint32[] nonceTracker; // list of nonces keys that have a non-zero value. keys cannot possibly result a successful reveal (indices beyond REVEAL_MAX_DELAY old) are auto-deleted during a clean up procedure that is called every time the nonces are incremented for some key. For each deleted key, the corresponding key in nonces will also be deleted. So the size of nonceTracker and nonces are both bounded.
@@ -61,10 +61,14 @@ contract ONEWallet {
         return _drain();
     }
 
-    function setLastResortAddressIfNull(address payable lastResortAddress_) external
+    function getInfo() external view returns (bytes32, uint8, uint8, uint32, uint32, uint8, address, uint256)
     {
-        require(lastResortAddress == address(0), "Last resort address is already set");
-        lastResortAddress = lastResortAddress_;
+        return (root, height, interval, t0, lifespan, maxOperationsPerInterval, lastResortAddress, dailyLimit);
+    }
+
+    function getCurrentSpending() external view returns (uint256, uint256)
+    {
+        return (spentToday, lastTransferDay);
     }
 
     function getNonce() public view returns (uint8)
@@ -91,7 +95,7 @@ contract ONEWallet {
         bytes memory packed = bytes.concat(neighbors[0],
             bytes32(bytes4(indexWithNonce)), eotp, bytes32(bytes20(address(dest))), bytes32(amount));
         bytes32 commitHash = keccak256(bytes.concat(packed));
-//        emit CheckingCommit(packed, commitHash);
+        //        emit CheckingCommit(packed, commitHash);
         _revealPreCheck(commitHash, indexWithNonce);
         _completeReveal(commitHash);
         uint32 day = uint32(block.timestamp / SECONDS_PER_DAY);
@@ -135,6 +139,21 @@ contract ONEWallet {
             return false;
         }
         return _drain();
+    }
+
+    function revealSetLastResortAddress(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp, address payable lastResortAddress_) external
+    {
+        require(lastResortAddress == address(0), "Last resort address is already set");
+        bytes memory packed = bytes.concat(
+            neighbors[0],
+            bytes32(bytes4(indexWithNonce)),
+            eotp,
+            bytes32(bytes20(address(lastResortAddress_)))
+        );
+        bytes32 commitHash = keccak256(bytes.concat(packed));
+        _revealPreCheck(commitHash, indexWithNonce);
+        _completeReveal(commitHash);
+        lastResortAddress = lastResortAddress_;
     }
 
     function _drain() internal returns (bool) {
