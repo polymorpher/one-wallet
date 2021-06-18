@@ -79,7 +79,7 @@ const selectMerkleNeighbors = ({
 }) => {
   const r = []
   let j = 0
-  while (index > 0) {
+  while (j < layers.length - 1) {
     const i = index % 2 === 0 ? index + 1 : index - 1
     const p = i - (layerOffsets[j] || 0)
     const n = layers[j].subarray(p * 32, p * 32 + 32).slice()
