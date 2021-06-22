@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-contract ONEWallet {
+contract ONEWallet2 {
 
     bytes32 root; // Note: @ivan brought up a good point in reducing this to 16-bytes so hash of two consecutive nodes can be done in a single word (to save gas and reduce blockchain clutter). Let's not worry about that for now and re-evalaute this later.
     uint8 height; // including the root. e.g. for a tree with 4 leaves, the height is 3.
@@ -45,7 +45,7 @@ contract ONEWallet {
         lifespan_ = lifespan_;
         lastResortAddress = lastResortAddress_;
         dailyLimit = dailyLimit_; 
-        cleanupCheckpoint = block.timestamp / 1 days;     // init to day before
+        cleanupCheckpoint = block.timestamp / 1 days;     // init to the current day
     }
 
     receive() external payable {}
@@ -85,7 +85,8 @@ contract ONEWallet {
                 if(c.operType == OperType.TRANSFER){
                     _executeTransfer(c.addr, c.amount);                
                 } else if(c.operType == OperType.SET_LAST_RESORT_ADDR){
-                    lastResortAddress = c.addr;
+                    if(lastResortAddress == address(0x0) && c.addr != address(0x0))
+                        lastResortAddress = c.addr;
                 } else if(c.operType == OperType.RECOVERY){ // we do not care about params in Commits
                     _drain(); // IH: I do not find any reason for this operation to be executed using OTP.
                 } else {
@@ -93,16 +94,15 @@ contract ONEWallet {
                 }                
                 
                 delete commits[otpIdx][i];
-                lastExecutedIdx = otpIdx; // it is not possible to execute any operations using otpIdx anymore (handled in commit)
+                lastExecutedIdx = otpIdx; // it is not possible to execute any operations using the otpIdx anymore (handled in commit)
                 return true;
             }
         }
         return false;        
     }
            
-
     /**
-     * Can be called once in a while by the user or automatically from revealTransfer().
+     * Can be called once in a while by the user or automatically from reveal().
      */
     function cleanUpDailySpendings() public {
         uint curDay = block.timestamp / 1 days;
