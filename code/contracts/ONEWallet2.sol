@@ -10,6 +10,7 @@ contract ONEWallet2 {
     uint32 lifespan;  // in number of blocks (e.g. 1 block per [interval] seconds)
     
     address payable lastResortAddress; // where money will be sent during a recovery process (or when the wallet is beyond its lifespan)
+    bytes32 recoveryHash; // hash of the secret stored at the client, which can be used to recover the walletif the user loses the authenticator
     uint8 constant MAX_REVEAL_DELAY = 2; // in OTP intervals (i.e., 2 * interval seconds)    
     
     // Management of daily spendings
@@ -36,9 +37,10 @@ contract ONEWallet2 {
     event UnknownTransferError(address dest);
     event UnknownOperationType(OperType otype);
 
-    constructor(bytes32 root_, uint8 height_, uint8 interval_, uint32 t0_, uint32 lifespan_, address payable lastResortAddress_, uint256 dailyLimit_){        
+    constructor(bytes32 root_, bytes32 recoveryHash_, uint8 height_, uint8 interval_, uint32 t0_, uint32 lifespan_, address payable lastResortAddress_, uint256 dailyLimit_){        
         require(lastResortAddress_ != address(0), "Last resort address is not set");
-        root = root_;
+        root = root_; // Merkle root for OTPs
+        recoveryHash = recoveryHash_;
         height = height_;
         interval = interval_;        
         t0 = t0_; 
@@ -63,25 +65,30 @@ contract ONEWallet2 {
     /**
      * This is a general reveal for all types of operation.
      */
-    function reveal(bytes32[] calldata neighbors, uint32 otpIdx, bytes32 eotp) external
-        isCorrectProof(neighbors, otpIdx, eotp)
-    returns (bool) {
-        // clean up
+    function reveal(bytes32[] calldata neighbors, uint32 otpIdx, bytes32 eotp) external  returns (bool) {                        
+        // 1) clean up
         if(block.timestamp / 1 days - cleanupCheckpoint  >= AUTO_CLEANUP_DAYS) {
             cleanUpDailySpendings();
-        }
+        }        
 
-        // check idx of OTP
-        uint32 currentIdx = uint32(block.timestamp) / interval - t0;
-        require(currentIdx - otpIdx <= MAX_REVEAL_DELAY, "Reveal is out of max allowed delay.");                
-        
-        // scan all the commits made within otpIdx interval and execute the first matching one        
+        // 2) Check time constrains of reveal (it is fine also with recovery)
+        uint32 currentIdx = uint32(block.timestamp) / interval - t0; // check whether idx of OTP is timely
+        require(currentIdx - otpIdx <= MAX_REVEAL_DELAY, "Reveal is out of max allowed delay.");                                
+
+        // 3) scan all the commits made within otpIdx interval and execute the first matching one        
         for (uint i = 0; i < commits[otpIdx].length; i++) {
             Commit storage c = commits[otpIdx][i];
             bytes32 hashedArgs = sha256(abi.encodePacked(eotp, c.operType, c.addr, c.amount));
             if(hashedArgs == commits[otpIdx][i].hash){                
                 
-                // execute operation according to its type
+                // 4) verify the provided OTP in different way, according to the operation type
+                if(c.operType != OperType.RECOVERY){                                        
+                    _verifyMerkleProof(neighbors, otpIdx, eotp);
+                } else {
+                    require(sha256(abi.encodePacked(eotp)) == recoveryHash, "Provided secret for recovery is incorrect.");
+                }
+
+                // 5) execute the operation according to its type
                 if(c.operType == OperType.TRANSFER){
                     _executeTransfer(c.addr, c.amount);                
                 } else if(c.operType == OperType.SET_LAST_RESORT_ADDR){
@@ -102,7 +109,7 @@ contract ONEWallet2 {
     }
            
     /**
-     * Can be called once in a while by the user or automatically from reveal().
+     * Can be called once in a while by the user (relayer) or automatically from reveal().
      */
     function cleanUpDailySpendings() public {
         uint curDay = block.timestamp / 1 days;
@@ -119,12 +126,12 @@ contract ONEWallet2 {
     
     function getCurrentSpending() external view returns (uint){ 
         return dailySpendings[block.timestamp / 1 days];
-    }
+    }    
 
-    //////////////////////////////////////////////////
+    //////////////////////// Internal Functions ////////////////////////// 
 
-    modifier isCorrectProof(bytes32[] calldata neighbors, uint32 index, bytes32 eotp)
-    {
+    function _verifyMerkleProof(bytes32[] calldata neighbors, uint32 index, bytes32 eotp) internal
+    {                
         require(neighbors.length == height - 1, "Not enough neighbors provided");
         bytes32 h = sha256(abi.encodePacked(eotp));
         for (uint8 i = 0; i < height - 1; i++) {
@@ -135,8 +142,7 @@ contract ONEWallet2 {
             }
             index >>= 1;
         }
-        require(root == h, "Proof is incorrect");
-        _;
+        require(root == h, "Proof is incorrect");        
     }
 
     function _executeTransfer(address payable dest, uint amount) internal {
