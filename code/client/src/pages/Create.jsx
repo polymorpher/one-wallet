@@ -16,6 +16,7 @@ import walletActions from '../state/modules/wallet/actions'
 import WalletConstants from '../constants/wallet'
 import util from '../util'
 import { Hint, Heading, InputBox } from '../components/Text'
+import OtpInput from 'react-otp-input'
 const { Text, Link } = Typography
 
 const genName = () => uniqueNamesGenerator({
@@ -50,7 +51,6 @@ const Create = () => {
   const [durationVisible, setDurationVisible] = useState(false)
   const [section, setSection] = useState(1)
   const [qrCodeData, setQRCodeData] = useState()
-  const [showOtpVerification, setShowOtpVerification] = useState()
   const [otp, setOtp] = useState('')
 
   const [deploying, setDeploying] = useState()
@@ -62,7 +62,7 @@ const Create = () => {
   useEffect(() => {
     (async function () {
       const uri = getQRCodeUri()
-      const data = await qrcode.toDataURL(uri, { errorCorrectionLevel: 'low', width: 400 })
+      const data = await qrcode.toDataURL(uri, { errorCorrectionLevel: 'low', width: 256 })
       setQRCodeData(data)
     })()
   }, [name])
@@ -78,14 +78,13 @@ const Create = () => {
     }
   }, [section])
 
-  const verifyOtp = () => {
+  const verifyOtp = (currentOtp) => {
     const expected = ONEUtil.genOTP({ seed })
     const code = new DataView(expected.buffer).getUint32(0, false).toString()
-    if (code.padStart(6, '0') !== otp.padStart(6, '0')) {
-      console.log(`Expected: ${code}. Got: ${otp}`)
+    if (code.padStart(6, '0') !== currentOtp.padStart(6, '0')) {
+      console.log(`Expected: ${code}. Got: ${currentOtp}`)
       message.error('Code is incorrect. Please try again.')
     } else {
-      message.success('Nice! Your code is correct!')
       setSection(3)
     }
   }
@@ -163,21 +162,23 @@ const Create = () => {
 
   return (
     <>
-      <AnimatedSection show={section === 1}>
+      <AnimatedSection show={section === 1} style={{ maxWidth: 640 }}>
         <Heading>What do you want to call your wallet?</Heading>
-        <Hint>This is stored on your computer only, to help you distinguish multiple wallets.</Hint>
-        <Row align='middle'>
-          <Space>
-            <InputBox value={name} onChange={({ target: { value } }) => setName(value)} />
-            <Button shape='circle' onClick={() => setName(genName())}><RedoOutlined /></Button>
+        <Hint>This is only stored on your computer to distinguish your wallets.</Hint>
+        <Row align='middle' style={{ marginBottom: 32, marginTop: 16 }}>
+          <Space size='large'>
+            <InputBox
+              prefix={<Button type='text' onClick={() => setName(genName())} style={{ }}><RedoOutlined /></Button>}
+              value={name} onChange={({ target: { value } }) => setName(value)}
+              style={{ padding: 0 }}
+            />
+            <Button type='primary' shape='round' size='large' onClick={() => setSection(2)}>Next</Button>
           </Space>
         </Row>
-        <Row style={{ marginBottom: 32 }}>
-          <Button type='primary' shape='round' size='large' onClick={() => setSection(2)}>Next</Button>
-        </Row>
+
         <Space direction='vertical'>
-          <Hint>Next, we will set up a ONE Wallet that lasts for a year. You may re-create a new wallet after a year and transfer the funds, or have the funds to be withdrawn to a pre-assigned address.</Hint>
-          <Link onClick={() => setDurationVisible(true)}>Need more or less than a year?</Link>
+          <Hint>Next, we will set up a ONE Wallet that expires in a year. When the wallet expires, you may create a new wallet and transfer the funds. The funds can also be recovered to an address you set later.</Hint>
+          <Link onClick={() => setDurationVisible(true)}>Need more time?</Link>
           {durationVisible &&
             <Space>
               <Slider
@@ -189,30 +190,42 @@ const Create = () => {
             </Space>}
         </Space>
       </AnimatedSection>
-      <AnimatedSection show={section === 2}>
+      <AnimatedSection show={section === 2} style={{ maxWidth: 640 }}>
         <Row>
           <Space direction='vertical'>
             <Heading>Now, scan the QR code with your Google Authenticator</Heading>
-            <Hint>You can restore your wallet from your Google Authenticator if you lost the data on your computer. You will also need to use the 6-digit code from Google Authenticator to authorize transfers. </Hint>
-            {qrCodeData && <Image src={qrCodeData} preview={false} width={400} />}
+            <Hint>You will need the 6-digit code from authenticator to transfer funds. You can also restore your wallet from authenticator to any computer.</Hint>
+            <Row justify='center'>
+              {qrCodeData && <Image src={qrCodeData} preview={false} width={256} />}
+            </Row>
           </Space>
         </Row>
         <Row>
-          <Space direction='vertical' size='large'>
-            <Hint>After you are done, let's verify your one-time password</Hint>
-            {!showOtpVerification && <Button type='primary' shape='round' size='large' onClick={() => setShowOtpVerification(true)}>I am ready</Button>}
-            {showOtpVerification &&
-              <Space>
-                <InputBox value={otp} onChange={({ target: { value } }) => setOtp(value)} />
-                <Button type='primary' shape='round' size='large' onClick={verifyOtp}>Next</Button>
-              </Space>}
+          <Space direction='vertical' size='large' align='center'>
+            <Hint>After you are done, please type in your 6-digit code from authenticator.</Hint>
+            <OtpInput
+              placeholder=''
+              value={otp}
+              onChange={e => {
+                setOtp(e)
+                if (e.length === 6) {
+                  verifyOtp(e)
+                }
+              }}
+              numInputs={6}
+              shouldAutoFocus
+              inputStyle={{ width: 32, borderRadius: 8, borderWidth: 1, height: 32, fontSize: 16, marginRight: 16 }}
+              separator={<span> </span>}
+            />
+            {/* <InputBox value={otp} onChange={({ target: { value } }) => setOtp(value)} /> */}
+            {/* <Button type='primary' shape='round' size='large' onClick={verifyOtp}>Next</Button> */}
           </Space>
         </Row>
       </AnimatedSection>
-      <AnimatedSection show={section === 3}>
+      <AnimatedSection show={section === 3} style={{ maxWidth: 640 }}>
         <Row>
           <Space direction='vertical'>
-            <Heading>Final step: deploy your ONE Wallet to blockchain</Heading>
+            <Heading>Final step: deploy your ONE Wallet</Heading>
           </Space>
         </Row>
         <Row style={{ marginBottom: 16 }}>
