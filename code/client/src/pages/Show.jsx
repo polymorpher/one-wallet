@@ -8,7 +8,7 @@ import util from '../util'
 import ONEUtil from '../../../lib/util'
 import ONE from '../../../lib/onewallet'
 import api from '../api'
-import { message, Space, Row, Col, Typography, Button, Steps, Popconfirm, Tooltip } from 'antd'
+import { message, Space, Row, Col, Typography, Button, Steps, Popconfirm, Tooltip, Modal, Input } from 'antd'
 import { DeleteOutlined, WarningOutlined, CloseOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import styled from 'styled-components'
 import humanizeDuration from 'humanize-duration'
@@ -61,6 +61,9 @@ const Show = () => {
   const { formatted, fiatFormatted } = util.computeBalance(balance, price)
   const { dailyLimit, lastResortAddress } = wallet
   const { formatted: dailyLimitFormatted, fiatFormatted: dailyLimitFiatFormatted } = util.computeBalance(dailyLimit, price)
+  const [newAddress, setNewAddress] = useState('')
+  const [isModalVisible, setIsModalVisible] = useState(false)
+  const [confirmLoading, setConfirmLoading] = useState(false)
 
   useEffect(() => {
     const m = matchPath(location.pathname, { path: Paths.show })
@@ -267,6 +270,17 @@ const Show = () => {
     tryReveal()
   }
 
+  const saveRecoveryAddress = async () => {
+    setConfirmLoading(true)
+
+    // TODO set recovery address to newAddress
+    setTimeout(() => {
+      console.log(newAddress)
+      setIsModalVisible(false)
+      setConfirmLoading(false)
+    }, 2000)
+  }
+
   // UI Rendering below
   if (!wallet || wallet.network !== network) {
     return <Redirect to={Paths.wallets} />
@@ -331,13 +345,25 @@ const Show = () => {
         </TallRow>
         <TallRow align='middle'>
           <Col span={12}> <Title level={3}>Recovery Address</Title></Col>
-          <Col>
-            <Space>
-              <Tooltip title={lastResortAddress}>
-                <Text copyable={lastResortAddress && { text: lastResortAddress }}>{util.ellipsisAddress(lastResortAddress) || 'Not set'}</Text>
-              </Tooltip>
-            </Space>
-          </Col>
+          {lastResortAddress ? (
+            <Col>
+              <Space>
+                <Tooltip title={lastResortAddress}>
+                  <Text copyable={lastResortAddress && { text: lastResortAddress }}>{util.ellipsisAddress(lastResortAddress)}</Text>
+                </Tooltip>
+              </Space>
+            </Col>
+          ) : (
+            <Col>
+              <Button type='primary' size='large' shape='round' onClick={() => setIsModalVisible(true)}> Set </Button>
+              <>
+                <Modal title='Set recovery address' visible={isModalVisible} onCancel={() => setIsModalVisible(false)} onOk={saveRecoveryAddress} confirmLoading={confirmLoading}>
+                  <Text>Enter your recovery address for this wallet</Text>
+                  <Input style={{ marginBottom: 24, marginTop: 10 }} value={newAddress} onChange={({ target: { value } }) => setNewAddress(value)} placeholder='one1...' />
+                </Modal>
+              </>
+            </Col>
+          )}
         </TallRow>
         <Row style={{ marginTop: 48 }}>
           <Button type='link' style={{ padding: 0 }} size='large' onClick={showRecovery} icon={<WarningOutlined />}>I lost my Google Authenticator</Button>
