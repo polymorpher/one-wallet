@@ -1,7 +1,7 @@
 export default {
   appId: 'ONEWallet',
   appName: 'ONE Wallet',
-  version: 'v0.0.1',
+  version: 'v0.1',
   priceRefreshInterval: 60 * 1000,
   defaults: {
     relayer: process.env.REACT_APP_RELAYER || 'dev',
