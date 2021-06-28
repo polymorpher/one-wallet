@@ -12,7 +12,18 @@ import { useWindowDimensions } from '../util'
 const Text = styled.p`
   color: #fafafa;
   text-align: center;
-  margin-bottom: 32px;
+`
+
+const Beta = styled.div`
+  background-color: #f0f2f5;
+  border: none;
+  color: #000000;
+  padding: 1px 5px;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 12px;
+  width: 70px;
+  margin: 20px auto;
 `
 
 const SiderMenu = ({ ...args }) => {
@@ -32,6 +43,7 @@ const SiderMenu = ({ ...args }) => {
         <Image preview={false} src={collapsed ? HarmonyIcon : HarmonyLogo} style={{ padding: collapsed ? 16 : 32 }} />
       </Row>
       {!collapsed && <Text>{config.appName} {config.version}</Text>}
+      {!collapsed && <Beta>Beta</Beta>}
       <Menu theme='dark' mode='inline' onClick={nav} selectedKeys={[action]}>
         <Menu.Item key='create' icon={<PlusCircleOutlined />}>Create</Menu.Item>
         <Menu.Item key='wallets' icon={<UnorderedListOutlined />}>Wallets</Menu.Item>
