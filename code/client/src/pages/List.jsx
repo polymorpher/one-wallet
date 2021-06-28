@@ -49,7 +49,8 @@ const List = () => {
   const balances = useSelector(state => state.wallet.balances)
   const price = useSelector(state => state.wallet.price)
   const network = useSelector(state => state.wallet.network)
-  const totalBalance = values(balances).reduce((a, b) => a.add(new BN(b, 10)), new BN(0)).toString()
+  const totalBalance = Object.keys(balances).filter(a => wallets[a].network === network).map(a => balances[a])
+    .reduce((a, b) => a.add(new BN(b, 10)), new BN(0)).toString()
   const { formatted, fiatFormatted } = util.computeBalance(totalBalance, price)
   return (
     <>
