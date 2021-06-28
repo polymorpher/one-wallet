@@ -253,8 +253,8 @@ const Create = () => {
                   />
                   <Space direction='vertical'>
                     <Timeline pending={progressStage < 2 && 'Securing your keyless ONE Wallet'}>
-                      <Timeline.Item color={progressStage < 1 ? 'grey' : 'green'}>Computing one-time password proofs</Timeline.Item>
-                      <Timeline.Item color={progressStage < 2 ? 'grey' : 'green'}>Hashing proofs as layers for blockchain</Timeline.Item>
+                      <Timeline.Item color={progressStage < 1 ? 'grey' : 'green'}>Computing proofs for each time interval</Timeline.Item>
+                      <Timeline.Item color={progressStage < 2 ? 'grey' : 'green'}>Preparing hashes for verification</Timeline.Item>
                     </Timeline>
                   </Space>
                 </Space>
