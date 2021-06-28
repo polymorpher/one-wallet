@@ -46,7 +46,7 @@ contract ONEWallet {
         height = height_;
         interval = interval_;
         t0 = t0_;
-        lifespan_ = lifespan_;
+        lifespan = lifespan_;
         lastResortAddress = lastResortAddress_;
         dailyLimit = dailyLimit_;
         maxOperationsPerInterval = maxOperationsPerInterval_;
