@@ -14,11 +14,9 @@ import { walletActions } from './state/modules/wallet'
 import config from './config'
 
 const LocalRoutes = () => {
-  // eslint-disable-next-line no-unused-vars
-  const [collapsed, setCollapsed] = useState(false)
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <SiderMenu collapsed={collapsed} onCollapse={(e) => setCollapsed(e)} />
+      <SiderMenu/>
       <Layout>
         <WalletHeader />
         <Layout.Content style={{ padding: 32 }}>
