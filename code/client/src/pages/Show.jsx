@@ -19,7 +19,6 @@ import { isInteger } from 'lodash'
 import storage from '../storage'
 import BN from 'bn.js'
 import config from '../config'
-import OtpInput from 'react-otp-input'
 import OtpBox from '../components/OtpBox'
 const { Title, Text, Link } = Typography
 const { Step } = Steps
