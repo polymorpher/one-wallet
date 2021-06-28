@@ -1,11 +1,13 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useHistory, useRouteMatch } from 'react-router'
-import { Layout, Image, Menu } from 'antd'
+import { Layout, Image, Menu, Row } from 'antd'
 import { PlusCircleOutlined, UnorderedListOutlined, HistoryOutlined } from '@ant-design/icons'
 import HarmonyLogo from '../assets/harmony.svg'
+import HarmonyIcon from '../assets/harmony-icon.svg'
 import config from '../config'
 import Paths from '../constants/paths'
 import styled from 'styled-components'
+import { useWindowDimensions } from '../util'
 
 const Text = styled.p`
   color: #fafafa;
@@ -14,17 +16,22 @@ const Text = styled.p`
 `
 
 const SiderMenu = ({ ...args }) => {
+  const { width } = useWindowDimensions()
   const history = useHistory()
+  const [collapsed, setCollapsed] = useState()
   const match = useRouteMatch('/:action')
   const { action } = match ? match.params : {}
   const nav = ({ key }) => {
     history.push(Paths[key])
   }
+  console.log(width)
   return (
-    <Layout.Sider {...args}>
+    <Layout.Sider collapsible={width < 900} onCollapse={c => setCollapsed(c)} {...args}>
       {/* <Image src='/assets/harmony.svg' /> */}
-      <Image preview={false} src={HarmonyLogo} style={{ padding: 32 }} />
-      <Text>{config.appName} {config.version}</Text>
+      <Row justify='center'>
+        <Image preview={false} src={collapsed ? HarmonyIcon : HarmonyLogo} style={{ padding: collapsed ? 16 : 32 }} />
+      </Row>
+      {!collapsed && <Text>{config.appName} {config.version}</Text>}
       <Menu theme='dark' mode='inline' onClick={nav} selectedKeys={[action]}>
         <Menu.Item key='create' icon={<PlusCircleOutlined />}>Create</Menu.Item>
         <Menu.Item key='wallets' icon={<UnorderedListOutlined />}>Wallets</Menu.Item>
