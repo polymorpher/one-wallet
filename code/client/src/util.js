@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { message } from 'antd'
 import ONEUtil from '../../lib/util'
 
@@ -71,4 +72,27 @@ export default {
     const fiatFormatted = exports.default.formatNumber(fiat)
     return { balance, formatted, fiat, fiatFormatted, valid: true }
   }
+}
+
+function getWindowDimensions () {
+  const { innerWidth: width, innerHeight: height } = window
+  return {
+    width,
+    height
+  }
+}
+
+export function useWindowDimensions () {
+  const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions())
+
+  useEffect(() => {
+    function handleResize () {
+      setWindowDimensions(getWindowDimensions())
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  return windowDimensions
 }
