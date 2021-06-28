@@ -17,6 +17,7 @@ import WalletConstants from '../constants/wallet'
 import util from '../util'
 import { Hint, Heading, InputBox } from '../components/Text'
 import OtpInput from 'react-otp-input'
+import OtpBox from '../components/OtpBox'
 const { Text, Link } = Typography
 
 const genName = () => uniqueNamesGenerator({
@@ -78,16 +79,19 @@ const Create = () => {
     }
   }, [section])
 
-  const verifyOtp = (currentOtp) => {
+  useEffect(() => {
+    if (otp.length !== 6) {
+      return
+    }
     const expected = ONEUtil.genOTP({ seed })
     const code = new DataView(expected.buffer).getUint32(0, false).toString()
-    if (code.padStart(6, '0') !== currentOtp.padStart(6, '0')) {
-      console.log(`Expected: ${code}. Got: ${currentOtp}`)
+    if (code.padStart(6, '0') !== otp.padStart(6, '0')) {
+      console.log(`Expected: ${code}. Got: ${otp}`)
       message.error('Code is incorrect. Please try again.')
     } else {
       setSection(3)
     }
-  }
+  }, [otp])
 
   const storeLayers = async () => {
     if (!root) {
@@ -203,22 +207,10 @@ const Create = () => {
         <Row>
           <Space direction='vertical' size='large' align='center'>
             <Hint>After you are done, please type in your 6-digit code from authenticator.</Hint>
-            <OtpInput
-              placeholder=''
+            <OtpBox
               value={otp}
-              onChange={e => {
-                setOtp(e)
-                if (e.length === 6) {
-                  verifyOtp(e)
-                }
-              }}
-              numInputs={6}
-              shouldAutoFocus
-              inputStyle={{ width: 32, borderRadius: 8, borderWidth: 1, height: 32, fontSize: 16, marginRight: 16 }}
-              separator={<span> </span>}
+              onChange={setOtp}
             />
-            {/* <InputBox value={otp} onChange={({ target: { value } }) => setOtp(value)} /> */}
-            {/* <Button type='primary' shape='round' size='large' onClick={verifyOtp}>Next</Button> */}
           </Space>
         </Row>
       </AnimatedSection>

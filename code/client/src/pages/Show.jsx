@@ -9,7 +9,7 @@ import ONEUtil from '../../../lib/util'
 import ONE from '../../../lib/onewallet'
 import api from '../api'
 import { message, Space, Row, Col, Typography, Button, Steps, Popconfirm, Tooltip } from 'antd'
-import { DeleteOutlined, WarningOutlined, CloseOutlined } from '@ant-design/icons'
+import { DeleteOutlined, WarningOutlined, CloseOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import styled from 'styled-components'
 import humanizeDuration from 'humanize-duration'
 import AnimatedSection from '../components/AnimatedSection'
@@ -19,6 +19,8 @@ import { isInteger } from 'lodash'
 import storage from '../storage'
 import BN from 'bn.js'
 import config from '../config'
+import OtpInput from 'react-otp-input'
+import OtpBox from '../components/OtpBox'
 const { Title, Text, Link } = Typography
 const { Step } = Steps
 const TallRow = styled(Row)`
@@ -355,28 +357,33 @@ const Show = () => {
         ]}
       >
         <Space direction='vertical' size='large'>
-          <Space align='end' size='large'>
+          <Space align='baseline' size='large'>
             <Label><Hint>To</Hint></Label>
             <InputBox margin='auto' width={440} value={transferTo} onChange={({ target: { value } }) => setTransferTo(value)} placeholder='0x...' />
           </Space>
-          <Space align='end' size='large'>
+          <Space align='baseline' size='large'>
             <Label><Hint>Amount</Hint></Label>
             <InputBox margin='auto' width={200} value={inputAmount} onChange={({ target: { value } }) => setInputAmount(value)} />
             <Hint>ONE</Hint>
-            <Button type='secondary' onClick={useMaxAmount}>max</Button>
+            <Button type='secondary' shape='round' onClick={useMaxAmount}>max</Button>
           </Space>
           <Space align='end' size='large'>
             <Label><Hint /></Label>
             <Title level={4} style={{ width: 200, textAlign: 'right', marginBottom: 0 }}>≈ ${transferFiatAmountFormatted}</Title>
             <Hint>USD</Hint>
           </Space>
-          <Space align='end' size='large'>
+          <Space align='baseline' size='large' style={{ marginTop: 16 }}>
             <Label><Hint>Code</Hint></Label>
-            <InputBox margin='auto' width={96} value={otpInput} onChange={({ target: { value } }) => setOtpInput(value)} />
-            <Hint>(6-digit code from Google Authenticator)</Hint>
+            <OtpBox
+              value={otpInput}
+              onChange={setOtpInput}
+            />
+            <Tooltip title='from your Google Authenticator'>
+              <QuestionCircleOutlined />
+            </Tooltip>
           </Space>
         </Space>
-        <Row justify='end' style={{ marginTop: 48 }}>
+        <Row justify='end' style={{ marginTop: 24 }}>
           {stage < 3 && <Button type='primary' size='large' shape='round' disabled={stage > 0} onClick={doSend}>Send</Button>}
           {stage === 3 && <Button type='secondary' size='large' shape='round' onClick={restart}>Restart</Button>}
         </Row>
