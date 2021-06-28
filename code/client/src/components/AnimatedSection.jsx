@@ -5,7 +5,7 @@ import { Card } from 'antd'
 
 const Section = styled(Card)`
   padding: 32px;
-  position: ${props => props.show ? 'relative' : 'fixed'};
+  position: ${props => props['data-show'] ? 'relative' : 'fixed'};
 `
 
 const defaultStyle = {
@@ -23,7 +23,7 @@ const transitionStyles = {
 const AnimatedSection = ({ show = true, children, style, ...params }) => (
   <Transition in={show} timeout={300}>
     {state => (
-      <Section show={show} style={{ ...defaultStyle, ...transitionStyles[state], ...style }} {...params}>
+      <Section data-show={show} style={{ ...defaultStyle, ...transitionStyles[state], ...style }} {...params}>
         {children}
       </Section>
     )}
