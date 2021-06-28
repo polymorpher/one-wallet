@@ -11,13 +11,13 @@ export default {
     relayerSecret: process.env.REACT_APP_RELAYER_SECRET,
   },
   networks: {
-    ...DEBUG && {
+    ...(DEBUG && {
       'eth-ganache': {
         name: 'Ethereum Ganache',
         url: 'http://127.0.0.1:7545',
       // explorer: 'https://explorer.harmony.one/#/tx/{{txId}}',
       }
-    },
+    }),
     'harmony-mainnet': {
       name: 'Harmony Mainnet',
       url: 'https://api.s0.t.hmny.io',
@@ -31,13 +31,13 @@ export default {
     }
   },
   relayers: {
-    ...DEBUG && {
+    ...(DEBUG && {
       dev: {
         name: 'Local Relayer',
         url: 'http://127.0.0.1:3001'
       // url: 'https://dev.hiddenstate.xyz'
       }
-    },
+    }),
     hiddenstate: {
       name: 'Test Relayer',
       url: 'https://relayer.onewallet.hiddenstate.xyz'
