@@ -71,7 +71,8 @@ const reducer = handleActions(
 
     [walletActions.deleteWallet]: (state, action) => ({
       ...state,
-      wallets: omit(state.wallets, [action.payload])
+      wallets: omit(state.wallets, [action.payload]),
+      balances: omit(state.balances, [action.payload.address])
     }),
 
     [walletActions.setRelayer]: (state, action) => ({
