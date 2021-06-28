@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useHistory, useRouteMatch } from 'react-router'
-import { Layout, Image, Menu, Row } from 'antd'
+import { Layout, Image, Menu, Row, Tag } from 'antd'
 import { PlusCircleOutlined, UnorderedListOutlined, HistoryOutlined } from '@ant-design/icons'
 import HarmonyLogo from '../assets/harmony.svg'
 import HarmonyIcon from '../assets/harmony-icon.svg'
@@ -12,18 +12,6 @@ import { useWindowDimensions } from '../util'
 const Text = styled.p`
   color: #fafafa;
   text-align: center;
-`
-
-const Beta = styled.div`
-  background-color: #f0f2f5;
-  border: none;
-  color: #000000;
-  padding: 1px 5px;
-  text-align: center;
-  text-decoration: none;
-  border-radius: 12px;
-  width: 70px;
-  margin: 20px auto;
 `
 
 const SiderMenu = ({ ...args }) => {
@@ -43,7 +31,7 @@ const SiderMenu = ({ ...args }) => {
         <Image preview={false} src={collapsed ? HarmonyIcon : HarmonyLogo} style={{ padding: collapsed ? 16 : 32 }} />
       </Row>
       {!collapsed && <Text>{config.appName} {config.version}</Text>}
-      {!collapsed && <Beta>Beta</Beta>}
+      {!collapsed && <Row justify='center' style={{ marginBottom: 10 }}><Tag color='#2db7f5'>Beta</Tag></Row>}
       <Menu theme='dark' mode='inline' onClick={nav} selectedKeys={[action]}>
         <Menu.Item key='create' icon={<PlusCircleOutlined />}>Create</Menu.Item>
         <Menu.Item key='wallets' icon={<UnorderedListOutlined />}>Wallets</Menu.Item>
