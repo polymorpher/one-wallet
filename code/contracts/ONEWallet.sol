@@ -34,6 +34,9 @@ contract ONEWallet {
     uint32 constant REVEAL_MAX_DELAY = 60;
     uint32 constant SECONDS_PER_DAY = 86400;
 
+    uint32 public constant majorVersion = 0x1; // a change would require client to migrate
+    uint32 public constant minorVersion = 0x1; // a change would not require the client to migrate
+
     //    bool commitLocked; // not necessary at this time
     Commit[] public commits; // self-clean on commit (auto delete commits that are beyond REVEAL_MAX_DELAY), so it's bounded by the number of commits an attacker can spam within REVEAL_MAX_DELAY time in the worst case, which is not too bad.
 
