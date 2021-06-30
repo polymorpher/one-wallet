@@ -129,6 +129,22 @@ router.post('/reveal/recovery', async (req, res) => {
   }
 })
 
+router.post('/reveal/set-recovery-address', async (req, res) => {
+  let { neighbors, index, eotp, address, lastResortAddress } = req.body
+  if (!checkParams({ neighbors, index, eotp, address, lastResortAddress }, res)) {
+    return
+  }
+  // TODO parameter verification
+  try {
+    const wallet = await req.contract.at(address)
+    const tx = await wallet.revealSetLastResortAddress(neighbors, index, eotp, lastResortAddress)
+    return res.json(parseTx(tx))
+  } catch (ex) {
+    console.error(ex)
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: ex.toString() })
+  }
+})
+
 router.post('/retire', async (req, res) => {
   let { address } = req.body
   if (!checkParams({ address }, res)) {

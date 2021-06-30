@@ -134,6 +134,10 @@ export default {
       const { data } = await api.post('/reveal/recovery', { neighbors, index, eotp, address })
       return data
     },
+    revealSetRecoveryAddress: async ({ neighbors, index, eotp, address, lastResortAddress }) => {
+      const { data } = await api.post('/reveal/set-recovery-address', { neighbors, index, eotp, address, lastResortAddress })
+      return data
+    },
     retire: async ({ address }) => {
       const { data } = await api.post('/retire', { address })
       return data
