@@ -20,6 +20,7 @@ import storage from '../storage'
 import BN from 'bn.js'
 import config from '../config'
 import OtpBox from '../components/OtpBox'
+import { getAddress } from '@harmony-js/crypto'
 const { Title, Text, Link } = Typography
 const { Step } = Steps
 const TallRow = styled(Row)`
@@ -38,6 +39,7 @@ const Show = () => {
   const wallets = useSelector(state => state.wallet.wallets)
   const match = useRouteMatch(Paths.show)
   const { address, action } = match ? match.params : {}
+  const oneAddress = getAddress(address).bech32
   const selectedAddress = useSelector(state => state.wallet.selected)
   const wallet = wallets[address] || {}
   const [section, setSection] = useState(action)
@@ -60,6 +62,7 @@ const Show = () => {
   const price = useSelector(state => state.wallet.price)
   const { formatted, fiatFormatted } = util.computeBalance(balance, price)
   const { dailyLimit, lastResortAddress } = wallet
+  const oneLastResort = lastResortAddress && getAddress(lastResortAddress).bech32
   const { formatted: dailyLimitFormatted, fiatFormatted: dailyLimitFiatFormatted } = util.computeBalance(dailyLimit, price)
 
   useEffect(() => {
@@ -274,7 +277,7 @@ const Show = () => {
   const title = (
     <Space size='large'>
       <Title level={2}>{wallet.name}</Title>
-      <Hint copyable>{address}</Hint>
+      <Hint copyable>{oneAddress}</Hint>
     </Space>
   )
   return (
@@ -333,8 +336,8 @@ const Show = () => {
           <Col span={12}> <Title level={3}>Recovery Address</Title></Col>
           <Col>
             <Space>
-              <Tooltip title={lastResortAddress}>
-                <Text copyable={lastResortAddress && { text: lastResortAddress }}>{util.ellipsisAddress(lastResortAddress) || 'Not set'}</Text>
+              <Tooltip title={oneLastResort}>
+                <Text copyable={oneLastResort && { text: oneLastResort }}>{oneLastResort && util.ellipsisAddress(oneLastResort) || 'Not set'}</Text>
               </Tooltip>
             </Space>
           </Col>
@@ -358,7 +361,7 @@ const Show = () => {
         <Space direction='vertical' size='large'>
           <Space align='baseline' size='large'>
             <Label><Hint>To</Hint></Label>
-            <InputBox margin='auto' width={440} value={transferTo} onChange={({ target: { value } }) => setTransferTo(value)} placeholder='0x...' />
+            <InputBox margin='auto' width={440} value={transferTo} onChange={({ target: { value } }) => setTransferTo(value)} placeholder='one1...' />
           </Space>
           <Space align='baseline' size='large'>
             <Label><Hint>Amount</Hint></Label>

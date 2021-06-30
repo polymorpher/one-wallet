@@ -7,12 +7,14 @@ import util from '../util'
 import { useHistory, useLocation } from 'react-router'
 import Paths from '../constants/paths'
 import BN from 'bn.js'
+import { getAddress } from '@harmony-js/crypto'
 const { Text, Title } = Typography
 
 const WalletCard = ({ wallet }) => {
   const history = useHistory()
   const location = useLocation()
   const { address, name } = wallet
+  const oneAddress = getAddress(address).bech32
   const dispatch = useDispatch()
   const balances = useSelector(state => state.wallet.balances)
   const balance = balances[address]
@@ -33,11 +35,11 @@ const WalletCard = ({ wallet }) => {
       <Space direction='vertical' size='large'>
         <Space><Title level={4}>≈ ${fiatFormatted}</Title><Text type='secondary'>USD</Text></Space>
         <Text
-          ellipsis={{ tooltip: address }} style={{ width: 196 }} onClick={() => {
-            navigator.clipboard.writeText(address)
+          ellipsis={{ tooltip: oneAddress }} style={{ width: 196 }} onClick={() => {
+            navigator.clipboard.writeText(oneAddress)
             message.info('Copied address to clipboard')
           }}
-        >{address}
+        >{oneAddress}
         </Text>
       </Space>
     </Card>
