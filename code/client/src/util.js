@@ -76,6 +76,14 @@ export default {
 
   filterNetworkWallets: (wallets, network) => {
     return values(wallets).filter(w => w.network === network)
+  },
+
+  getNetworkExplorerUrl: (wallet) => {
+    if (wallet.network === 'harmony-testnet') {
+      return `https://explorer.pops.one/#/address/${wallet.address}`
+    }
+
+    return `https://explorer.harmony.one/#/address/${wallet.address}`
   }
 }
 

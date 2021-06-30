@@ -30,6 +30,12 @@ const TallRow = styled(Row)`
 const Label = styled.div`
   width: 64px;
 `
+const ExplorerLink = styled.a`
+  color: #888888 !important;
+  &:hover {
+    opacity: 0.8;
+  }
+`
 
 const Show = () => {
   const history = useHistory()
@@ -274,7 +280,11 @@ const Show = () => {
   const title = (
     <Space size='large'>
       <Title level={2}>{wallet.name}</Title>
-      <Hint copyable>{address}</Hint>
+      <Text>
+        <ExplorerLink href={util.getNetworkExplorerUrl(wallet)} target='_blank' rel='noopener noreferrer'>
+          {address} <Text copyable={{ text: address }} />
+        </ExplorerLink>
+      </Text>
     </Space>
   )
   return (
@@ -333,9 +343,17 @@ const Show = () => {
           <Col span={12}> <Title level={3}>Recovery Address</Title></Col>
           <Col>
             <Space>
-              <Tooltip title={lastResortAddress}>
-                <Text copyable={lastResortAddress && { text: lastResortAddress }}>{util.ellipsisAddress(lastResortAddress) || 'Not set'}</Text>
-              </Tooltip>
+              {lastResortAddress ? (
+                <Space>
+                  <ExplorerLink href={util.getNetworkExplorerUrl(wallet)} target='_blank' rel='noopener noreferrer'>
+                    <Tooltip title={lastResortAddress}>
+                      {util.ellipsisAddress(lastResortAddress)}
+                    </Tooltip>
+                  </ExplorerLink> <Text copyable={{ text: lastResortAddress }} />
+                </Space>
+              ) : (
+                <Text>Not set</Text>
+              )}
             </Space>
           </Col>
         </TallRow>
