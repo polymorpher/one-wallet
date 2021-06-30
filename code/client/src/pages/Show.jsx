@@ -271,14 +271,41 @@ const Show = () => {
   }
 
   const saveRecoveryAddress = async () => {
+    // TODO use util.normalizeAddress function once merged
     setConfirmLoading(true)
 
-    // TODO set recovery address to newAddress
-    setTimeout(() => {
-      console.log(newAddress)
-      setIsModalVisible(false)
-      setConfirmLoading(false)
-    }, 2000)
+    const { hseed, root, effectiveTime } = wallet
+    const layers = await storage.getItem(root)
+    if (!layers) {
+      message.error('Cannot find pre-computed proofs for this wallet. Storage might be corrupted. Please restore the wallet from Google Authenticator.')
+      return
+    }
+    const index = ONEUtil.timeToIndex({ effectiveTime })
+    const leaf = layers[0].subarray(index * 32, index * 32 + 32).slice()
+    const { eotp } = ONE.bruteforceEOTP({ hseed: ONEUtil.hexToBytes(hseed), leaf })
+    if (!eotp) {
+      message.error('Pre-computed proofs are inconsistent. Recovery cannot proceed')
+      return
+    }
+    const neighbors = ONE.selectMerkleNeighbors({ layers, index })
+
+    const { success, txId, error } = await api.relayer.revealSetRecoveryAddress({
+      neighbors: neighbors.map(n => ONEUtil.hexString(n)),
+      index,
+      eotp: ONEUtil.hexString(eotp),
+      address,
+      lastResortAddress: newAddress
+    })
+
+    setIsModalVisible(false)
+    setConfirmLoading(false)
+
+    if (!success) {
+      message.error(`Transaction Failed: ${error}`)
+      return
+    }
+
+    message.success(`Recovery address set successfully`)
   }
 
   // UI Rendering below
