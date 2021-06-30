@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { message } from 'antd'
+import { fromBech32, HarmonyAddress, toBech32 } from '@harmony-js/crypto'
 import ONEUtil from '../../lib/util'
 
 export default {
@@ -71,6 +72,32 @@ export default {
     const fiat = (price || 0) * parseFloat(ones)
     const fiatFormatted = exports.default.formatNumber(fiat)
     return { balance, formatted, fiat, fiatFormatted, valid: true }
+  },
+
+  validateAddress: (address) => {
+    const errorMessage = 'Invalid address. Please check and try again.'
+
+    if (address.startsWith('one')) {
+      try {
+        HarmonyAddress.isValidBech32(address)
+        address = fromBech32(address)
+      } catch {
+        message.error(errorMessage)
+        return
+      }
+    } else if (address.startsWith('0x')) {
+      try {
+        HarmonyAddress.isValidBech32(toBech32(address))
+      } catch {
+        message.error(errorMessage)
+        return
+      }
+    } else {
+      message.error(errorMessage)
+      return
+    }
+
+    return address
   }
 }
 

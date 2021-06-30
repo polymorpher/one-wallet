@@ -112,9 +112,11 @@ const Show = () => {
     if (!transferTo) {
       return message.error('Transfer destination address is invalid')
     }
-    if (!transferAmount) {
+
+    if (!transferAmount || transferAmount.isZero() || transferAmount.isNeg()) {
       return message.error('Transfer amount is invalid')
     }
+
     const parsedOtp = parseInt(otpInput)
     if (!isInteger(parsedOtp) || !(parsedOtp < 1000000)) {
       message.error('Google Authenticator code is not valid')
@@ -135,21 +137,9 @@ const Show = () => {
     const neighbors = ONE.selectMerkleNeighbors({ layers, index })
     const neighbor = neighbors[0]
 
-    // Check for one address
-    let verifiedTransferTo = transferTo
-    if (verifiedTransferTo.startsWith('one')) {
-      if (!HarmonyAddress.isValidBech32(verifiedTransferTo)) {
-        console.error(`Invalid address: ${verifiedTransferTo}`)
-        return
-      }
-      verifiedTransferTo = fromBech32(verifiedTransferTo)
-    } else if (verifiedTransferTo.startsWith('0x')) {
-      if (!HarmonyAddress.isValidBech32(toBech32(verifiedTransferTo))) {
-        console.error(`Invalid address: ${verifiedTransferTo}`)
-        return
-      }
-    } else {
-      console.error(`Invalid address: ${verifiedTransferTo}`)
+    // Ensure valid address for both 0x and one1 formats
+    const validAddress = util.validateAddress(transferTo)
+    if (!validAddress) {
       return
     }
 
@@ -157,7 +147,7 @@ const Show = () => {
       neighbor,
       index,
       eotp,
-      dest: verifiedTransferTo,
+      dest: validAddress,
       amount: transferAmount,
     })
     setStage(1)
@@ -184,7 +174,7 @@ const Show = () => {
           neighbors: neighbors.map(n => ONEUtil.hexString(n)),
           index,
           eotp: ONEUtil.hexString(eotp),
-          dest: verifiedTransferTo,
+          dest: validAddress,
           amount: transferAmount.toString(),
           address
         })

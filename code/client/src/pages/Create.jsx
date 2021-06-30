@@ -107,23 +107,13 @@ const Create = () => {
       message.error('Cannot deploy wallet. Error: root is not set.')
       return
     }
-    // Check for one address
-    let verifiedLastResortAddress = lastResortAddress
-    if (verifiedLastResortAddress.startsWith('one')) {
-      if (!HarmonyAddress.isValidBech32(verifiedLastResortAddress)) {
-        console.error(`Invalid address: ${verifiedLastResortAddress}`)
-        return
-      }
-      verifiedLastResortAddress = fromBech32(verifiedLastResortAddress)
-    } else if (verifiedLastResortAddress.startsWith('0x')) {
-      if (!HarmonyAddress.isValidBech32(toBech32(verifiedLastResortAddress))) {
-        console.error(`Invalid address: ${verifiedLastResortAddress}`)
-        return
-      }
-    } else {
-      console.error(`Invalid address: ${verifiedLastResortAddress}`)
+
+    // Ensure valid address for both 0x and one1 formats
+    const validLastResortAddress = util.validateAddress(lastResortAddress)
+    if (!validLastResortAddress) {
       return
     }
+
     setDeploying(true)
     try {
       const { address } = await api.relayer.create({
@@ -133,7 +123,7 @@ const Create = () => {
         t0: effectiveTime / WalletConstants.interval,
         lifespan: duration / WalletConstants.interval,
         slotSize,
-        verifiedLastResortAddress,
+        validLastResortAddress,
         dailyLimit: ONEUtil.toFraction(dailyLimit).toString()
       })
       console.log('Deployed. Received contract address', address)
@@ -143,7 +133,7 @@ const Create = () => {
         root: ONEUtil.hexView(root),
         duration,
         effectiveTime,
-        verifiedLastResortAddress,
+        validLastResortAddress,
         dailyLimit: ONEUtil.toFraction(dailyLimit).toString(),
         hseed: ONEUtil.hexView(hseed),
         network
