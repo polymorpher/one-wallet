@@ -33,7 +33,7 @@ const SiderMenu = ({ ...args }) => {
         <Image preview={false} src={collapsed ? HarmonyIcon : HarmonyLogo} style={{ cursor: 'pointer', padding: collapsed ? 16 : 32 }} onClick={() => history.push('/')} />
       </Row>
       {!collapsed && <Text><a href='https://docs.harmony.one/home/developers/wallets/1wallet' target='_blank'>{config.appName} {config.version}</a></Text>}
-      {!collapsed && <Row justify='center' style={{ marginBottom: 10 }}><Tag color='#2db7f5'>Beta</Tag></Row>}
+      {!collapsed && <Row justify='center' style={{ marginBottom: 10 }}><Tag color='#0094c0'>Beta</Tag></Row>}
       <Menu theme='dark' mode='inline' onClick={nav} selectedKeys={[action]}>
         <Menu.Item key='create' icon={<PlusCircleOutlined />}>Create</Menu.Item>
         <Menu.Item key='wallets' icon={<UnorderedListOutlined />}>Wallets</Menu.Item>
