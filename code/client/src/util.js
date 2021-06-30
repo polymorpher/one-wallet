@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { message } from 'antd'
+import { values } from 'lodash'
 import ONEUtil from '../../lib/util'
 
 export default {
@@ -71,6 +72,10 @@ export default {
     const fiat = (price || 0) * parseFloat(ones)
     const fiatFormatted = exports.default.formatNumber(fiat)
     return { balance, formatted, fiat, fiatFormatted, valid: true }
+  },
+
+  filterNetworkWallets: (wallets, network) => {
+    return values(wallets).filter(w => w.network === network)
   }
 }
 
