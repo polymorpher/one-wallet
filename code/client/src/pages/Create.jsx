@@ -123,7 +123,7 @@ const Create = () => {
         t0: effectiveTime / WalletConstants.interval,
         lifespan: duration / WalletConstants.interval,
         slotSize,
-        normalizedAddress,
+        lastResortAddress: normalizedAddress,
         dailyLimit: ONEUtil.toFraction(dailyLimit).toString()
       })
       console.log('Deployed. Received contract address', address)
@@ -133,7 +133,7 @@ const Create = () => {
         root: ONEUtil.hexView(root),
         duration,
         effectiveTime,
-        normalizedAddress,
+        lastResortAddress: normalizedAddress,
         dailyLimit: ONEUtil.toFraction(dailyLimit).toString(),
         hseed: ONEUtil.hexView(hseed),
         network
