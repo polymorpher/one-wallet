@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { message } from 'antd'
 import { fromBech32, HarmonyAddress, toBech32 } from '@harmony-js/crypto'
+import { values } from 'lodash'
 import ONEUtil from '../../lib/util'
 
 export default {
@@ -101,7 +102,11 @@ export default {
     }
 
     return address
-  }
+  },
+
+  filterNetworkWallets: (wallets, network) => {
+    return values(wallets).filter(w => w.network === network)
+  },
 }
 
 function getWindowDimensions () {

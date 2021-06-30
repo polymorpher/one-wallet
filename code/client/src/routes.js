@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux'
-import { Route, Switch } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
+import { Route, Switch, Redirect } from 'react-router-dom'
 import { persistStore } from 'redux-persist'
 import Paths from './constants/paths'
 import { Layout, Row, Spin } from 'antd'
@@ -12,11 +12,16 @@ import RestorePage from './pages/Restore'
 import ShowPage from './pages/Show'
 import { walletActions } from './state/modules/wallet'
 import config from './config'
+import util from './util'
 
 const LocalRoutes = () => {
+  const wallets = useSelector(state => state.wallet.wallets)
+  const network = useSelector(state => state.wallet.network)
+  const networkWallets = util.filterNetworkWallets(wallets, network)
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <SiderMenu/>
+      <SiderMenu />
       <Layout>
         <WalletHeader />
         <Layout.Content style={{ padding: 32 }}>
@@ -25,7 +30,17 @@ const LocalRoutes = () => {
             <Route path={Paths.wallets} component={ListPage} />
             <Route path={Paths.restore} component={RestorePage} />
             <Route path={Paths.show} component={ShowPage} />
-            <Route component={CreatePage} />
+            <Route
+              exact
+              path='/'
+              render={() => {
+                return (
+                  networkWallets && networkWallets.length
+                    ? <Redirect to={Paths.wallets} component={ListPage} />
+                    : <Redirect to={Paths.create} component={CreatePage} />
+                )
+              }}
+            />
           </Switch>
         </Layout.Content>
       </Layout>
