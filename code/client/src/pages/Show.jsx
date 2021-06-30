@@ -20,7 +20,7 @@ import storage from '../storage'
 import BN from 'bn.js'
 import config from '../config'
 import OtpBox from '../components/OtpBox'
-import { getAddress } from '@harmony-js/crypto'
+import { fromBech32, HarmonyAddress, toBech32, getAddress } from '@harmony-js/crypto'
 const { Title, Text, Link } = Typography
 const { Step } = Steps
 const TallRow = styled(Row)`
@@ -134,11 +134,30 @@ const Show = () => {
     const index = ONEUtil.timeToIndex({ effectiveTime })
     const neighbors = ONE.selectMerkleNeighbors({ layers, index })
     const neighbor = neighbors[0]
+
+    // Check for one address
+    let verifiedTransferTo = transferTo
+    if (verifiedTransferTo.startsWith('one')) {
+      if (!HarmonyAddress.isValidBech32(verifiedTransferTo)) {
+        console.error(`Invalid address: ${verifiedTransferTo}`)
+        return
+      }
+      verifiedTransferTo = fromBech32(verifiedTransferTo)
+    } else if (verifiedTransferTo.startsWith('0x')) {
+      if (!HarmonyAddress.isValidBech32(toBech32(verifiedTransferTo))) {
+        console.error(`Invalid address: ${verifiedTransferTo}`)
+        return
+      }
+    } else {
+      console.error(`Invalid address: ${verifiedTransferTo}`)
+      return
+    }
+
     const { hash: commitHash } = ONE.computeTransferHash({
       neighbor,
       index,
       eotp,
-      dest: transferTo,
+      dest: verifiedTransferTo,
       amount: transferAmount,
     })
     setStage(1)
@@ -165,7 +184,7 @@ const Show = () => {
           neighbors: neighbors.map(n => ONEUtil.hexString(n)),
           index,
           eotp: ONEUtil.hexString(eotp),
-          dest: transferTo,
+          dest: verifiedTransferTo,
           amount: transferAmount.toString(),
           address
         })

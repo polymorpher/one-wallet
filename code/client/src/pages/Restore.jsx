@@ -194,7 +194,7 @@ const Restore = () => {
       <AnimatedSection show={section === 1} style={{ maxWidth: 640 }}>
         <Space direction='vertical' size='large'>
           <Heading>What is the address of the wallet?</Heading>
-          <InputBox margin='auto' width={440} value={addressInput} onChange={({ target: { value } }) => setAddressInput(value)} placeholder='0x...' />
+          <InputBox margin='auto' width={440} value={addressInput} onChange={({ target: { value } }) => setAddressInput(value)} placeholder='one1...' />
         </Space>
       </AnimatedSection>
       <AnimatedSection show={section === 2} style={{ maxWidth: 640 }}>
