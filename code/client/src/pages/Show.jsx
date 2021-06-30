@@ -138,8 +138,8 @@ const Show = () => {
     const neighbor = neighbors[0]
 
     // Ensure valid address for both 0x and one1 formats
-    const validAddress = util.validateAddress(transferTo)
-    if (!validAddress) {
+    const normalizedAddress = util.normalizedAddress(transferTo)
+    if (!normalizedAddress) {
       return
     }
 
@@ -147,7 +147,7 @@ const Show = () => {
       neighbor,
       index,
       eotp,
-      dest: validAddress,
+      dest: normalizedAddress,
       amount: transferAmount,
     })
     setStage(1)
@@ -174,7 +174,7 @@ const Show = () => {
           neighbors: neighbors.map(n => ONEUtil.hexString(n)),
           index,
           eotp: ONEUtil.hexString(eotp),
-          dest: validAddress,
+          dest: normalizedAddress,
           amount: transferAmount.toString(),
           address
         })

@@ -74,7 +74,7 @@ export default {
     return { balance, formatted, fiat, fiatFormatted, valid: true }
   },
 
-  validateAddress: (address) => {
+  normalizedAddress: (address) => {
     const errorMessage = 'Invalid address. Please check and try again.'
 
     if (address.startsWith('one')) {
@@ -82,6 +82,7 @@ export default {
         HarmonyAddress.isValidBech32(address)
         address = fromBech32(address)
       } catch {
+        console.error('Invalid one1 address')
         message.error(errorMessage)
         return
       }
@@ -89,10 +90,12 @@ export default {
       try {
         HarmonyAddress.isValidBech32(toBech32(address))
       } catch {
+        console.error('Invalid 0x address')
         message.error(errorMessage)
         return
       }
     } else {
+      console.error('Invalid address')
       message.error(errorMessage)
       return
     }

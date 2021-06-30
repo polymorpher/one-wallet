@@ -109,8 +109,8 @@ const Create = () => {
     }
 
     // Ensure valid address for both 0x and one1 formats
-    const validLastResortAddress = util.validateAddress(lastResortAddress)
-    if (!validLastResortAddress) {
+    const normalizedAddress = util.normalizedAddress(lastResortAddress)
+    if (!normalizedAddress) {
       return
     }
 
@@ -123,7 +123,7 @@ const Create = () => {
         t0: effectiveTime / WalletConstants.interval,
         lifespan: duration / WalletConstants.interval,
         slotSize,
-        validLastResortAddress,
+        normalizedAddress,
         dailyLimit: ONEUtil.toFraction(dailyLimit).toString()
       })
       console.log('Deployed. Received contract address', address)
@@ -133,7 +133,7 @@ const Create = () => {
         root: ONEUtil.hexView(root),
         duration,
         effectiveTime,
-        validLastResortAddress,
+        normalizedAddress,
         dailyLimit: ONEUtil.toFraction(dailyLimit).toString(),
         hseed: ONEUtil.hexView(hseed),
         network
