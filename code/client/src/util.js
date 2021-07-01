@@ -64,13 +64,35 @@ export default {
 
   normalizedAddress: (address) => {
     try {
-      address = new HarmonyAddress(address).basicHex
+      address = new HarmonyAddress(address).checksum
     } catch (ex) {
       const err = (address.startsWith('one') && AddressError.InvalidBech32Address(ex)) ||
         (address.startsWith('0x') && AddressError.InvalidHexAddress(ex)) || AddressError.Unknown(ex)
       if (err) throw err
     }
     return address
+  },
+
+  safeNormalizedAddress: (address) => {
+    try {
+      return exports.default.normalizedAddress(address)
+    } catch (ex) {
+      console.trace(ex)
+      return null
+    }
+  },
+
+  oneAddress: (address) => {
+    return new HarmonyAddress(address).bech32
+  },
+
+  safeOneAddress: (address) => {
+    try {
+      return exports.default.oneAddress(address)
+    } catch (ex) {
+      console.trace(ex)
+      return null
+    }
   },
 
   safeExec: (f, args, handler) => {
