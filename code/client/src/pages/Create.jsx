@@ -258,7 +258,7 @@ const Create = () => {
               value={lastResortAddress}
               onSearch={(v) => setLastResortAddress(v)}
             >
-              {Object.keys(wallets).map(k => {
+              {Object.keys(wallets).filter(k => wallets[k].network === network).map(k => {
                 return <Select.Option key={k} value={util.safeOneAddress(wallets[k].address)}>({wallets[k].name}) {util.safeOneAddress(wallets[k].address)} </Select.Option>
               })}
               {lastResortAddress && !wallets[util.safeNormalizedAddress(lastResortAddress)] && <Select.Option key={lastResortAddress} value={lastResortAddress}>{lastResortAddress}</Select.Option>}
