@@ -5,6 +5,7 @@ import contract from '@truffle/contract'
 import { TruffleProvider } from '@harmony-js/core'
 import Web3 from 'web3'
 import ONEWalletContract from '../../../build/contracts/ONEWallet.json'
+import WalletConstants from '../constants/wallet'
 
 const apiConfig = {
   relayer: config.defaults.relayer,
@@ -17,7 +18,7 @@ const headers = (secret, network) => ({ 'X-ONEWALLET-RELAYER-SECRET': secret, 'X
 let api = axios.create({
   baseURL: config.defaults.relayer,
   headers: headers(apiConfig.secret, apiConfig.network),
-  timeout: 10000,
+  timeout: 15000,
 })
 
 export const initAPI = (store) => {
@@ -35,7 +36,7 @@ export const initAPI = (store) => {
       api = axios.create({
         baseURL: relayer,
         headers: headers(secret, network),
-        timeout: 10000,
+        timeout: 15000,
       })
     }
     // console.log('api update: ', { relayer, network, secret })
@@ -91,19 +92,31 @@ export default {
     }
   },
   blockchain: {
-    getWallet: async ({ address }) => {
+    getWallet: async ({ address, raw }) => {
       const c = await one.at(address)
       const result = await c.getInfo()
       const [root, height, interval, t0, lifespan, maxOperationsPerInterval, lastResortAddress, dailyLimit] = Object.keys(result).map(k => result[k])
+      if (raw) {
+        return {
+          root,
+          height: height.toNumber(),
+          interval: interval.toNumber(),
+          t0: t0.toNumber(),
+          lifespan: lifespan.toNumber(),
+          maxOperationsPerInterval: maxOperationsPerInterval.toNumber(),
+          lastResortAddress,
+          dailyLimit: dailyLimit.toString(10)
+        }
+      }
+      // TODO: use smart contract interval value, after we fully support 60 second interval in client (and Android Google Authenticator supports that too)
       return {
-        root,
-        height: height.toNumber(),
-        interval: interval.toNumber(),
-        t0: t0.toNumber(),
-        lifespan: lifespan.toNumber(),
-        maxOperationsPerInterval: maxOperationsPerInterval.toNumber(),
+        address,
+        root: root.slice(2),
+        effectiveTime: t0.toNumber() * WalletConstants.interval,
+        duration: lifespan.toNumber() * WalletConstants.interval,
+        slotSize: maxOperationsPerInterval.toNumber(),
         lastResortAddress,
-        dailyLimit
+        dailyLimit: dailyLimit.toString(10)
       }
     },
     getBalance: async ({ address }) => {
