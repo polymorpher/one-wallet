@@ -23,7 +23,7 @@ const reducer = handleActions(
     }),
     [walletActions.fetchWalletSuccess]: (state, action) => ({
       ...state,
-      wallets: { ...state.wallets, [action.payload.address]: action.payload },
+      wallets: { ...state.wallets, [action.payload.address]: { ...state.wallets[action.payload.address], ...action.payload } },
       fetching: false,
     }),
     [walletActions.fetchWalletFailed]: (state, action) => ({

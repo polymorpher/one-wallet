@@ -101,7 +101,7 @@ const Restore = () => {
           const { hseed, root: computedRoot, layers } = result
           if (!ONEUtil.bytesEqual(ONEUtil.hexToBytes(root), computedRoot)) {
             console.error('Roots are not equal', root, ONEUtil.hexString(computedRoot))
-            message.error('Verification failed. Please try again or report the issue on Github')
+            message.error('Verification failed. Your authenticator QR code might correspond to a different contract address.')
             return
           }
           storage.setItem(root, layers)
@@ -149,25 +149,25 @@ const Restore = () => {
         }
         const {
           root,
-          t0,
-          lifespan,
-          maxOperationsPerInterval,
+          effectiveTime,
+          duration,
+          slotSize,
           lastResortAddress,
           dailyLimit
         } = await api.blockchain.getWallet({ address })
         console.log('Retrieved wallet:', {
           root,
-          t0,
-          lifespan,
-          maxOperationsPerInterval,
+          effectiveTime,
+          duration,
+          slotSize,
           lastResortAddress,
           dailyLimit
         })
         setAddress(address)
-        setRoot(root.slice(2))
-        setEffectiveTime(t0 * WalletConstants.interval)
-        setDuration(lifespan * WalletConstants.interval)
-        setSlotSize(maxOperationsPerInterval)
+        setRoot(root)
+        setEffectiveTime(effectiveTime)
+        setDuration(duration)
+        setSlotSize(slotSize)
         setLastResortAddress(lastResortAddress)
         setDailyLimit(dailyLimit)
         setSection(2)

@@ -29,14 +29,20 @@ const { Text, Link } = Typography
 //   length: 1
 // })
 
-const genName = () => randomWord()
+const genName = (existingNames) => {
+  const name = randomWord()
+  if (existingNames && existingNames.includes(name)) {
+    return genName()
+  }
+  return name
+}
 
 const Create = () => {
   const dispatch = useDispatch()
   const history = useHistory()
   const network = useSelector(state => state.wallet.network)
   const wallets = useSelector(state => state.wallet.wallets)
-  const [name, setName] = useState(genName())
+  const [name, setName] = useState(genName(Object.keys(wallets).map(k => wallets[k].name)))
   const otpSeedBuffer = new Uint8Array(20)
   // eslint-disable-next-line no-unused-vars
   const [seed, setSeed] = useState(window.crypto.getRandomValues(otpSeedBuffer))
@@ -252,7 +258,7 @@ const Create = () => {
               value={lastResortAddress}
               onSearch={(v) => setLastResortAddress(v)}
             >
-              {Object.keys(wallets).map(k => {
+              {Object.keys(wallets).filter(k => wallets[k].network === network).map(k => {
                 return <Select.Option key={k} value={util.safeOneAddress(wallets[k].address)}>({wallets[k].name}) {util.safeOneAddress(wallets[k].address)} </Select.Option>
               })}
               {lastResortAddress && !wallets[util.safeNormalizedAddress(lastResortAddress)] && <Select.Option key={lastResortAddress} value={lastResortAddress}>{lastResortAddress}</Select.Option>}

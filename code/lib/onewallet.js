@@ -114,6 +114,22 @@ const computeTransferHash = ({ neighbor, index, eotp, dest, amount }) => {
   return { hash: keccak(input), bytes: input }
 }
 
+// neighbor, uint8array, 32
+// index, int, must be with nonce
+// eotp, uint8array, 32 (hash of eotp = neighbors' neighbor)
+// address, hex string
+// amount, BN or number-string
+const computeSetRecoveryAddressHash = ({ neighbor, index, eotp, address }) => {
+  const addressBytes = hexStringToBytes(address, 32)
+  const indexBytes = new BN(index, 10).toArrayLike(Uint8Array, 'be', 4)
+  const input = new Uint8Array(128)
+  input.set(neighbor)
+  input.set(indexBytes, 32)
+  input.set(eotp, 64)
+  input.set(addressBytes, 96)
+  return { hash: keccak(input), bytes: input }
+}
+
 // otp, uint8array, 4
 // hseed, uint8array, 26, sha256 hash of the otp seed
 // nonce, positive integer (within 15-bit)
@@ -160,6 +176,7 @@ module.exports = {
   computeMerkleTree,
   computeTransferHash,
   computeRecoveryHash,
+  computeSetRecoveryAddressHash,
   selectMerkleNeighbors,
   computeEOTP,
   bruteforceEOTP
