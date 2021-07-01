@@ -44,10 +44,13 @@ const Show = () => {
   const dispatch = useDispatch()
   const wallets = useSelector(state => state.wallet.wallets)
   const match = useRouteMatch(Paths.show)
-  const { address, action } = match ? match.params : {}
-  const oneAddress = getAddress(address).bech32
+  const { address: routeAddress, action } = match ? match.params : {}
+  const oneAddress = util.safeOneAddress(routeAddress)
+  const address = util.safeNormalizedAddress(routeAddress)
   const selectedAddress = useSelector(state => state.wallet.selected)
+
   const wallet = wallets[address] || {}
+  console.log(address, wallets[address])
   const [section, setSection] = useState(action)
   const [stage, setStage] = useState(0)
   const network = useSelector(state => state.wallet.network)
@@ -294,7 +297,7 @@ const Show = () => {
       <Title level={2}>{wallet.name}</Title>
       <Text>
         <ExplorerLink copyable={{ text: oneAddress }} href={util.getNetworkExplorerUrl(wallet)}>
-          {address}
+          {oneAddress}
         </ExplorerLink>
       </Text>
     </Space>
