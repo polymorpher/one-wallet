@@ -50,12 +50,9 @@ const Show = () => {
   const selectedAddress = useSelector(state => state.wallet.selected)
 
   const wallet = wallets[address] || {}
-  console.log(address, wallets[address])
   const [section, setSection] = useState(action)
   const [stage, setStage] = useState(0)
   const network = useSelector(state => state.wallet.network)
-
-  // const section =
 
   useEffect(() => {
     if (!wallet) {
