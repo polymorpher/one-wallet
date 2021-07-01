@@ -15,9 +15,10 @@ import storage from '../storage'
 import walletActions from '../state/modules/wallet/actions'
 import WalletConstants from '../constants/wallet'
 import util from '../util'
+import { handleAPIError, handleAddressError } from '../handler'
 import { Hint, Heading, InputBox } from '../components/Text'
-import OtpInput from 'react-otp-input'
 import OtpBox from '../components/OtpBox'
+import { getAddress } from '@harmony-js/crypto'
 const { Text, Link } = Typography
 
 const genName = () => uniqueNamesGenerator({
@@ -106,6 +107,13 @@ const Create = () => {
       message.error('Cannot deploy wallet. Error: root is not set.')
       return
     }
+
+    // Ensure valid address for both 0x and one1 formats
+    const normalizedAddress = util.safeExec(util.normalizedAddress, [lastResortAddress], handleAddressError)
+    if (!normalizedAddress) {
+      return
+    }
+
     setDeploying(true)
     try {
       const { address } = await api.relayer.create({
@@ -115,7 +123,7 @@ const Create = () => {
         t0: effectiveTime / WalletConstants.interval,
         lifespan: duration / WalletConstants.interval,
         slotSize,
-        lastResortAddress,
+        lastResortAddress: normalizedAddress,
         dailyLimit: ONEUtil.toFraction(dailyLimit).toString()
       })
       console.log('Deployed. Received contract address', address)
@@ -125,7 +133,7 @@ const Create = () => {
         root: ONEUtil.hexView(root),
         duration,
         effectiveTime,
-        lastResortAddress,
+        lastResortAddress: normalizedAddress,
         dailyLimit: ONEUtil.toFraction(dailyLimit).toString(),
         hseed: ONEUtil.hexView(hseed),
         network
@@ -138,7 +146,7 @@ const Create = () => {
       message.success('Your wallet is deployed!')
       setSection(4)
     } catch (ex) {
-      util.handleError(ex)
+      handleAPIError(ex)
       setDeploying(false)
     }
   }
@@ -229,7 +237,7 @@ const Create = () => {
         <Row style={{ marginBottom: 48 }}>
           <Space direction='vertical' size='small'>
             <Hint>(Optional) Set up a fund recovery address:</Hint>
-            <InputBox width={500} margin={16} value={lastResortAddress} onChange={({ target: { value } }) => setLastResortAddress(value)} placeholder='0x......' />
+            <InputBox width={500} margin={16} value={lastResortAddress} onChange={({ target: { value } }) => setLastResortAddress(value)} placeholder='one1......' />
             <Hint>If you lost your authenticator, you can still transfer all your funds to that address</Hint>
           </Space>
         </Row>
@@ -273,7 +281,7 @@ const Create = () => {
           <Heading>You are all set!</Heading>
           <Space direction='vertical' size='small'>
             <Hint>Wallet Address</Hint>
-            <Text>{address}</Text>
+            <Text>{address && getAddress(address).bech32}</Text>
           </Space>
           <Button style={{ marginTop: 32 }} disabled={!address} type='primary' shape='round' size='large' onClick={() => history.push(Paths.showAddress(address))}>Go to My Wallet</Button>
         </Space>
