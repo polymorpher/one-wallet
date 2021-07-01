@@ -21,6 +21,7 @@ import BN from 'bn.js'
 import config from '../config'
 import OtpBox from '../components/OtpBox'
 import { fromBech32, HarmonyAddress, toBech32, getAddress } from '@harmony-js/crypto'
+import { handleAddressError } from '../handler'
 const { Title, Text, Link } = Typography
 const { Step } = Steps
 const TallRow = styled(Row)`
@@ -138,7 +139,7 @@ const Show = () => {
     const neighbor = neighbors[0]
 
     // Ensure valid address for both 0x and one1 formats
-    const normalizedAddress = util.normalizedAddress(transferTo)
+    const normalizedAddress = util.safeExec(util.normalizedAddress, [transferTo], handleAddressError)
     if (!normalizedAddress) {
       return
     }

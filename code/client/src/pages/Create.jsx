@@ -15,10 +15,10 @@ import storage from '../storage'
 import walletActions from '../state/modules/wallet/actions'
 import WalletConstants from '../constants/wallet'
 import util from '../util'
+import { handleAPIError, handleAddressError } from '../handler'
 import { Hint, Heading, InputBox } from '../components/Text'
-import OtpInput from 'react-otp-input'
 import OtpBox from '../components/OtpBox'
-import { fromBech32, HarmonyAddress, toBech32, getAddress } from '@harmony-js/crypto'
+import { getAddress } from '@harmony-js/crypto'
 const { Text, Link } = Typography
 
 const genName = () => uniqueNamesGenerator({
@@ -109,7 +109,7 @@ const Create = () => {
     }
 
     // Ensure valid address for both 0x and one1 formats
-    const normalizedAddress = util.normalizedAddress(lastResortAddress)
+    const normalizedAddress = util.safeExec(util.normalizedAddress, [lastResortAddress], handleAddressError)
     if (!normalizedAddress) {
       return
     }
@@ -146,7 +146,7 @@ const Create = () => {
       message.success('Your wallet is deployed!')
       setSection(4)
     } catch (ex) {
-      util.handleError(ex)
+      handleAPIError(ex)
       setDeploying(false)
     }
   }
