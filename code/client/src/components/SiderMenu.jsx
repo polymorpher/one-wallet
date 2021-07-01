@@ -31,11 +31,11 @@ const SiderMenu = ({ ...args }) => {
     <Layout.Sider collapsible={width < 900} onCollapse={c => setCollapsed(c)} {...args}>
       {/* <Image src='/assets/harmony.svg' /> */}
       <Row justify='center'>
-        <Link target='_blank' rel='noreferrer' href='https://docs.harmony.one/home/developers/wallets/1wallet' rel='noreferrer'>
+        <Link target='_blank' rel='noreferrer' href='https://harmony.one/'>
           <Image preview={false} src={collapsed ? HarmonyIcon : HarmonyLogo} style={{ cursor: 'pointer', padding: collapsed ? 16 : 32 }} onClick={() => history.push('/')} />
         </Link>
       </Row>
-      {!collapsed && <Text><Link href='https://docs.harmony.one/home/developers/wallets/1wallet' target='_blank' rel='noreferrer'>{config.appName} {config.version}</Link></Text>}
+      {!collapsed && <Text><Link href='https://harmony.one/1wallet' target='_blank' rel='noreferrer'>{config.appName} {config.version}</Link></Text>}
       {!collapsed && <Row justify='center' style={{ marginBottom: 10 }}><Tag color='#0094c0'>Beta</Tag></Row>}
       <Menu theme='dark' mode='inline' onClick={nav} selectedKeys={[action]}>
         <Menu.Item key='create' icon={<PlusCircleOutlined />}>Create</Menu.Item>
