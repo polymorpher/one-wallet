@@ -6,7 +6,7 @@ import { AddressError } from './constants/errors'
 
 export default {
   formatNumber: (number, maxPrecision) => {
-    maxPrecision = maxPrecision || 5
+    maxPrecision = maxPrecision || 4
     number = parseFloat(number)
     if (number < 10 ** (-maxPrecision)) {
       return '0'
