@@ -32,7 +32,7 @@ const LocalRoutes = () => {
             <Route path={Paths.show} component={ShowPage} />
             <Route
               exact
-              path='/'
+              path={Paths.root}
               render={() => {
                 return (
                   networkWallets && networkWallets.length
