@@ -9,7 +9,13 @@ import ONEUtil from '../../../lib/util'
 import ONE from '../../../lib/onewallet'
 import api from '../api'
 import { message, Space, Row, Col, Typography, Button, Steps, Popconfirm, Tooltip } from 'antd'
-import { DeleteOutlined, WarningOutlined, CloseOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+import {
+  DeleteOutlined,
+  WarningOutlined,
+  CloseOutlined,
+  QuestionCircleOutlined,
+  LoadingOutlined
+} from '@ant-design/icons'
 import styled from 'styled-components'
 import humanizeDuration from 'humanize-duration'
 import AnimatedSection from '../components/AnimatedSection'
@@ -61,7 +67,9 @@ const Show = () => {
     if (address && (address !== selectedAddress)) {
       dispatch(walletActions.selectWallet(address))
     }
-    dispatch(walletActions.fetchBalance({ address }))
+    const fetch = () => dispatch(walletActions.fetchBalance({ address }))
+    fetch()
+    setInterval(() => fetch(), WalletConstants.fetchBalanceFrequency)
   }, [])
   const balances = useSelector(state => state.wallet.balances)
   const balance = balances[address] || 0
@@ -122,13 +130,11 @@ const Show = () => {
     if (!transferAmount || transferAmount.isZero() || transferAmount.isNeg()) {
       return message.error('Transfer amount is invalid')
     }
-
     const parsedOtp = parseInt(otpInput)
     if (!isInteger(parsedOtp) || !(parsedOtp < 1000000)) {
       message.error('Google Authenticator code is not valid')
       return
     }
-    console.log(wallet)
     const { hseed, root, effectiveTime } = wallet
     const layers = await storage.getItem(root)
     if (!layers) {
@@ -197,6 +203,14 @@ const Show = () => {
         } else {
           message.success(<Text>Transfer completed! Copy transaction id: <Text copyable={{ text: txId }}>{util.ellipsisAddress(txId)} </Text></Text>, 10)
         }
+        WalletConstants.fetchDelaysAfterTransfer.forEach(t => {
+          setTimeout(() => {
+            dispatch(walletActions.fetchBalance({ address }))
+            if (wallets[normalizedAddress]) {
+              dispatch(walletActions.fetchBalance({ address: normalizedAddress }))
+            }
+          }, t)
+        })
       } catch (ex) {
         console.trace(ex)
         if (numAttemptsRemaining <= 0) {
@@ -208,7 +222,7 @@ const Show = () => {
         numAttemptsRemaining -= 1
         tryReveal()
       }
-    }, 5000)
+    }, WalletConstants.checkCommitInterval)
     tryReveal()
   }
 
@@ -415,8 +429,11 @@ const Show = () => {
           </Space>
         </Space>
         <Row justify='end' style={{ marginTop: 24 }}>
-          {stage < 3 && <Button type='primary' size='large' shape='round' disabled={stage > 0} onClick={doSend}>Send</Button>}
-          {stage === 3 && <Button type='secondary' size='large' shape='round' onClick={restart}>Restart</Button>}
+          <Space>
+            {stage > 0 && stage < 3 && <LoadingOutlined />}
+            {stage < 3 && <Button type='primary' size='large' shape='round' disabled={stage > 0} onClick={doSend}>Send</Button>}
+            {stage === 3 && <Button type='secondary' size='large' shape='round' onClick={restart}>Restart</Button>}
+          </Space>
         </Row>
         {stage > 0 && (
           <Row style={{ marginTop: 32 }}>
