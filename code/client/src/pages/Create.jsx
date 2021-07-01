@@ -5,8 +5,8 @@ import Paths from '../constants/paths'
 import api from '../api'
 import ONEUtil from '../../../lib/util'
 import { uniqueNamesGenerator, colors, animals } from 'unique-names-generator'
-import { Button, Row, Space, Typography, Slider, Image, message, Progress, Timeline } from 'antd'
-import { RedoOutlined, LoadingOutlined } from '@ant-design/icons'
+import { Button, Row, Space, Typography, Slider, Image, message, Progress, Timeline, Select } from 'antd'
+import { RedoOutlined, LoadingOutlined, SearchOutlined } from '@ant-design/icons'
 import humanizeDuration from 'humanize-duration'
 import AnimatedSection from '../components/AnimatedSection'
 import b32 from 'hi-base32'
@@ -32,13 +32,14 @@ const Create = () => {
   const dispatch = useDispatch()
   const history = useHistory()
   const network = useSelector(state => state.wallet.network)
+  const wallets = useSelector(state => state.wallet.wallets)
   const [name, setName] = useState(genName())
   const otpSeedBuffer = new Uint8Array(20)
   // eslint-disable-next-line no-unused-vars
   const [seed, setSeed] = useState(window.crypto.getRandomValues(otpSeedBuffer))
   const [duration, setDuration] = useState(WalletConstants.defaultDuration)
   const [lastResortAddress, setLastResortAddress] = useState()
-  const [dailyLimit, setDailyLimit] = useState(WalletConstants.defaultDailyLimit)
+  const [dailyLimit] = useState(WalletConstants.defaultDailyLimit)
 
   const [worker, setWorker] = useState()
   const [root, setRoot] = useState()
@@ -51,7 +52,7 @@ const Create = () => {
   const [effectiveTime, setEffectiveTime] = useState()
 
   const [durationVisible, setDurationVisible] = useState(false)
-  const [section, setSection] = useState(1)
+  const [section, setSection] = useState(2)
   const [qrCodeData, setQRCodeData] = useState()
   const [otp, setOtp] = useState('')
 
@@ -70,7 +71,7 @@ const Create = () => {
   }, [name])
 
   useEffect(() => {
-    if (section === 2) {
+    if (section === 2 && worker) {
       console.log('posting to worker')
       const t = Math.floor(Date.now() / WalletConstants.interval) * WalletConstants.interval
       setEffectiveTime(t)
@@ -78,7 +79,7 @@ const Create = () => {
         seed, effectiveTime: t, duration, slotSize, interval: WalletConstants.interval
       })
     }
-  }, [section])
+  }, [section, worker])
 
   useEffect(() => {
     if (otp.length !== 6) {
@@ -108,12 +109,14 @@ const Create = () => {
       return
     }
 
-    // Ensure valid address for both 0x and one1 formats
-    const normalizedAddress = util.safeExec(util.normalizedAddress, [lastResortAddress], handleAddressError)
-    if (!normalizedAddress) {
-      return
+    let normalizedAddress = ''
+    if (lastResortAddress !== '') {
+      // Ensure valid address for both 0x and one1 formats
+      normalizedAddress = util.safeExec(util.normalizedAddress, [lastResortAddress], handleAddressError)
+      if (!normalizedAddress) {
+        return
+      }
     }
-
     setDeploying(true)
     try {
       const { address } = await api.relayer.create({
@@ -144,7 +147,8 @@ const Create = () => {
       setAddress(address)
       setDeploying(false)
       message.success('Your wallet is deployed!')
-      setSection(4)
+      history.push(Paths.showAddress(address))
+      // setSection(4)
     } catch (ex) {
       handleAPIError(ex)
       setDeploying(false)
@@ -205,8 +209,9 @@ const Create = () => {
       <AnimatedSection show={section === 2} style={{ maxWidth: 640 }}>
         <Row>
           <Space direction='vertical'>
-            <Heading>Now, scan the QR code with your Google Authenticator</Heading>
-            <Hint>You will need the 6-digit code from authenticator to transfer funds. You can also restore your wallet from authenticator to any computer.</Hint>
+            {/* <Heading>Now, scan the QR code with your Google Authenticator</Heading> */}
+            <Heading>Create Your ONE Wallet</Heading>
+            <Hint>You need the 6-digit code from authenticator to transfer funds. You can restore your wallet using the authenticator on any device.</Hint>
             <Row justify='center'>
               {qrCodeData && <Image src={qrCodeData} preview={false} width={256} />}
             </Row>
@@ -225,26 +230,39 @@ const Create = () => {
       <AnimatedSection show={section === 3} style={{ maxWidth: 640 }}>
         <Row>
           <Space direction='vertical'>
-            <Heading>Final step: deploy your ONE Wallet</Heading>
+            <Heading>Prepare Your ONE Wallet</Heading>
           </Space>
         </Row>
-        <Row style={{ marginBottom: 16 }}>
-          <Space direction='vertical' size='small'>
-            <Hint>Set up a daily spending limit:</Hint>
-            <InputBox margin={16} width={200} value={dailyLimit} onChange={({ target: { value } }) => setDailyLimit(parseInt(value || 0))} suffix='ONE' />
-          </Space>
-        </Row>
+        {/* <Row style={{ marginBottom: 16 }}> */}
+        {/*  <Space direction='vertical' size='small'> */}
+        {/*    <Hint>Set up a daily spending limit:</Hint> */}
+        {/*    <InputBox margin={16} width={200} value={dailyLimit} onChange={({ target: { value } }) => setDailyLimit(parseInt(value || 0))} suffix='ONE' /> */}
+        {/*  </Space> */}
+        {/* </Row> */}
         <Row style={{ marginBottom: 48 }}>
           <Space direction='vertical' size='small'>
-            <Hint>(Optional) Set up a fund recovery address:</Hint>
-            <InputBox width={500} margin={16} value={lastResortAddress} onChange={({ target: { value } }) => setLastResortAddress(value)} placeholder='one1......' />
-            <Hint>If you lost your authenticator, you can still transfer all your funds to that address</Hint>
+            <Hint>Set up a fund recovery address:</Hint>
+            <Select
+              suffixIcon={<SearchOutlined />}
+              placeholder='one1......'
+              style={{ width: 500, borderBottom: '1px dashed black' }} bordered={false} showSearch onChange={(v) => setLastResortAddress(v)}
+              value={lastResortAddress}
+              onSearch={(v) => setLastResortAddress(v)}
+            >
+              {Object.keys(wallets).map(k => {
+                return <Select.Option key={k} value={util.safeOneAddress(wallets[k].address)}>({wallets[k].name}) {util.safeOneAddress(wallets[k].address)} </Select.Option>
+              })}
+              {lastResortAddress && !wallets[util.safeNormalizedAddress(lastResortAddress)] && <Select.Option key={lastResortAddress} value={lastResortAddress}>{lastResortAddress}</Select.Option>}
+              <Select.Option key='later' value=''> I want to do this later in my wallet </Select.Option>
+            </Select>
+            {/* <InputBox width={500} margin={16} value={lastResortAddress} onChange={({ target: { value } }) => setLastResortAddress(value)} placeholder='one1......' /> */}
+            <Hint>If you lost your authenticator, your can recover funds to this address</Hint>
           </Space>
         </Row>
         <Row style={{ marginBottom: 32 }}>
           <Space direction='vertical'>
             <Space>
-              <Button disabled={!root || deploying} type='primary' shape='round' size='large' onClick={() => deploy()}>Let's do it</Button>
+              <Button disabled={!root || deploying} type='primary' shape='round' size='large' onClick={() => deploy()}>Create Now</Button>
               {deploying && <LoadingOutlined />}
             </Space>
             {!root &&
@@ -273,6 +291,7 @@ const Create = () => {
           <Space direction='vertical'>
             <Hint>No private key. No mnemonic. Simple and Secure. </Hint>
             <Hint>To learn more, visit <Link href='https://github.com/polymorpher/one-wallet/wiki'>ONE Wallet Wiki</Link></Hint>
+            <Hint>In Beta, your wallet is subject to a daily spending limit of {WalletConstants.defaultDailyLimit} ONE</Hint>
           </Space>
         </Row>
       </AnimatedSection>
