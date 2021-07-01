@@ -30,8 +30,7 @@ const TallRow = styled(Row)`
 const Label = styled.div`
   width: 64px;
 `
-const ExplorerLink = styled.a`
-  color: #888888 !important;
+const ExplorerLink = styled(Link).attrs(e => ({ ...e, style: { color: '#888888' }, target: '_blank', rel: 'noopener noreferrer' }))`
   &:hover {
     opacity: 0.8;
   }
@@ -281,8 +280,8 @@ const Show = () => {
     <Space size='large'>
       <Title level={2}>{wallet.name}</Title>
       <Text>
-        <ExplorerLink href={util.getNetworkExplorerUrl(wallet)} target='_blank' rel='noopener noreferrer'>
-          {address} <Text copyable={{ text: address }} />
+        <ExplorerLink copyable={{ text: address }} href={util.getNetworkExplorerUrl(wallet)}>
+          {address}
         </ExplorerLink>
       </Text>
     </Space>
@@ -343,17 +342,19 @@ const Show = () => {
           <Col span={12}> <Title level={3}>Recovery Address</Title></Col>
           <Col>
             <Space>
-              {lastResortAddress ? (
-                <Space>
-                  <ExplorerLink href={util.getNetworkExplorerUrl(wallet)} target='_blank' rel='noopener noreferrer'>
+              {lastResortAddress
+                ? (
+                  <Space>
                     <Tooltip title={lastResortAddress}>
-                      {util.ellipsisAddress(lastResortAddress)}
+                      <ExplorerLink copyable href={util.getNetworkExplorerUrl(wallet)}>
+                        {util.ellipsisAddress(lastResortAddress)}
+                      </ExplorerLink>
                     </Tooltip>
-                  </ExplorerLink> <Text copyable={{ text: lastResortAddress }} />
-                </Space>
-              ) : (
-                <Text>Not set</Text>
-              )}
+                  </Space>
+                  )
+                : (
+                  <Text>Not set</Text>
+                  )}
             </Space>
           </Col>
         </TallRow>
