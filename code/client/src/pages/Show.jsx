@@ -20,7 +20,7 @@ import storage from '../storage'
 import BN from 'bn.js'
 import config from '../config'
 import OtpBox from '../components/OtpBox'
-import { fromBech32, HarmonyAddress, toBech32, getAddress } from '@harmony-js/crypto'
+import { getAddress } from '@harmony-js/crypto'
 import { handleAddressError } from '../handler'
 const { Title, Text, Link } = Typography
 const { Step } = Steps
