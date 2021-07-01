@@ -20,6 +20,8 @@ import storage from '../storage'
 import BN from 'bn.js'
 import config from '../config'
 import OtpBox from '../components/OtpBox'
+import { fromBech32, HarmonyAddress, toBech32, getAddress } from '@harmony-js/crypto'
+import { handleAddressError } from '../handler'
 const { Title, Text, Link } = Typography
 const { Step } = Steps
 const TallRow = styled(Row)`
@@ -43,6 +45,7 @@ const Show = () => {
   const wallets = useSelector(state => state.wallet.wallets)
   const match = useRouteMatch(Paths.show)
   const { address, action } = match ? match.params : {}
+  const oneAddress = getAddress(address).bech32
   const selectedAddress = useSelector(state => state.wallet.selected)
   const wallet = wallets[address] || {}
   const [section, setSection] = useState(action)
@@ -65,6 +68,7 @@ const Show = () => {
   const price = useSelector(state => state.wallet.price)
   const { formatted, fiatFormatted } = util.computeBalance(balance, price)
   const { dailyLimit, lastResortAddress } = wallet
+  const oneLastResort = lastResortAddress && getAddress(lastResortAddress).bech32
   const { formatted: dailyLimitFormatted, fiatFormatted: dailyLimitFiatFormatted } = util.computeBalance(dailyLimit, price)
 
   useEffect(() => {
@@ -114,9 +118,11 @@ const Show = () => {
     if (!transferTo) {
       return message.error('Transfer destination address is invalid')
     }
-    if (!transferAmount) {
+
+    if (!transferAmount || transferAmount.isZero() || transferAmount.isNeg()) {
       return message.error('Transfer amount is invalid')
     }
+
     const parsedOtp = parseInt(otpInput)
     if (!isInteger(parsedOtp) || !(parsedOtp < 1000000)) {
       message.error('Google Authenticator code is not valid')
@@ -136,11 +142,18 @@ const Show = () => {
     const index = ONEUtil.timeToIndex({ effectiveTime })
     const neighbors = ONE.selectMerkleNeighbors({ layers, index })
     const neighbor = neighbors[0]
+
+    // Ensure valid address for both 0x and one1 formats
+    const normalizedAddress = util.safeExec(util.normalizedAddress, [transferTo], handleAddressError)
+    if (!normalizedAddress) {
+      return
+    }
+
     const { hash: commitHash } = ONE.computeTransferHash({
       neighbor,
       index,
       eotp,
-      dest: transferTo,
+      dest: normalizedAddress,
       amount: transferAmount,
     })
     setStage(1)
@@ -167,7 +180,7 @@ const Show = () => {
           neighbors: neighbors.map(n => ONEUtil.hexString(n)),
           index,
           eotp: ONEUtil.hexString(eotp),
-          dest: transferTo,
+          dest: normalizedAddress,
           amount: transferAmount.toString(),
           address
         })
@@ -280,7 +293,7 @@ const Show = () => {
     <Space size='large'>
       <Title level={2}>{wallet.name}</Title>
       <Text>
-        <ExplorerLink copyable={{ text: address }} href={util.getNetworkExplorerUrl(wallet)}>
+        <ExplorerLink copyable={{ text: oneAddress }} href={util.getNetworkExplorerUrl(wallet)}>
           {address}
         </ExplorerLink>
       </Text>
@@ -345,9 +358,9 @@ const Show = () => {
               {lastResortAddress
                 ? (
                   <Space>
-                    <Tooltip title={lastResortAddress}>
-                      <ExplorerLink copyable href={util.getNetworkExplorerUrl(wallet)}>
-                        {util.ellipsisAddress(lastResortAddress)}
+                    <Tooltip title={oneLastResort}>
+                      <ExplorerLink copyable={oneLastResort && { text: oneLastResort }} href={util.getNetworkExplorerUrl(wallet)}>
+                        {util.ellipsisAddress(oneLastResort)}
                       </ExplorerLink>
                     </Tooltip>
                   </Space>
@@ -377,7 +390,7 @@ const Show = () => {
         <Space direction='vertical' size='large'>
           <Space align='baseline' size='large'>
             <Label><Hint>To</Hint></Label>
-            <InputBox margin='auto' width={440} value={transferTo} onChange={({ target: { value } }) => setTransferTo(value)} placeholder='0x...' />
+            <InputBox margin='auto' width={440} value={transferTo} onChange={({ target: { value } }) => setTransferTo(value)} placeholder='one1...' />
           </Space>
           <Space align='baseline' size='large'>
             <Label><Hint>Amount</Hint></Label>
