@@ -73,11 +73,11 @@ export default {
     return address
   },
 
-  safeNormalizedAddress: (address) => {
+  safeNormalizedAddress: (address, trace) => {
     try {
       return exports.default.normalizedAddress(address)
     } catch (ex) {
-      console.trace(ex)
+      trace && console.trace(ex)
       return null
     }
   },
@@ -86,11 +86,11 @@ export default {
     return new HarmonyAddress(address).bech32
   },
 
-  safeOneAddress: (address) => {
+  safeOneAddress: (address, trace) => {
     try {
       return exports.default.oneAddress(address)
     } catch (ex) {
-      console.trace(ex)
+      trace && console.trace(ex)
       return null
     }
   },
