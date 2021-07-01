@@ -8,7 +8,7 @@ import util from '../util'
 import ONEUtil from '../../../lib/util'
 import ONE from '../../../lib/onewallet'
 import api from '../api'
-import { message, Space, Row, Col, Typography, Button, Steps, Popconfirm, Tooltip, Modal, Input } from 'antd'
+import { message, Space, Row, Col, Typography, Button, Steps, Popconfirm, Tooltip } from 'antd'
 import {
   DeleteOutlined,
   WarningOutlined,
@@ -79,9 +79,6 @@ const Show = () => {
   const { dailyLimit, lastResortAddress } = wallet
   const oneLastResort = lastResortAddress && getAddress(lastResortAddress).bech32
   const { formatted: dailyLimitFormatted, fiatFormatted: dailyLimitFiatFormatted } = util.computeBalance(dailyLimit, price)
-  const [newAddress, setNewAddress] = useState('')
-  const [isModalVisible, setIsModalVisible] = useState(false)
-  const [confirmLoading, setConfirmLoading] = useState(false)
 
   useEffect(() => {
     const m = matchPath(location.pathname, { path: Paths.show })
@@ -89,9 +86,10 @@ const Show = () => {
     setSection(action)
   }, [location])
 
-  const showTransfer = () => { history.push(Paths.showAddress(address, 'transfer')) }
-  const showRecovery = () => { history.push(Paths.showAddress(address, 'recover')) }
-  const showStats = () => { history.push(Paths.showAddress(address)) }
+  const showTransfer = () => { history.push(Paths.showAddress(oneAddress, 'transfer')) }
+  const showRecovery = () => { history.push(Paths.showAddress(oneAddress, 'recover')) }
+  const showSetRecoveryAddress = () => { history.push(Paths.showAddress(oneAddress, 'setRecoveryAddress')) }
+  const showStats = () => { history.push(Paths.showAddress(oneAddress)) }
   const onDeleteWallet = async () => {
     const { root, name } = wallet
     dispatch(walletActions.deleteWallet(address))
@@ -170,13 +168,13 @@ const Show = () => {
     try {
       const { success, error } = await api.relayer.commit({ address, hash: ONEUtil.hexString(commitHash) })
       if (!success) {
-        message.error(`Cannot commit recovery transaction. Error: ${error}`)
+        message.error(`Cannot commit transfer. Reason: ${error}`)
         setStage(0)
         return
       }
     } catch (ex) {
       console.error(ex)
-      message.error('Failed to commit the transaction. Please try again. Error: ' + ex.toString())
+      message.error('Failed to commit. Error: ' + ex.toString())
       setStage(0)
       return
     }
@@ -305,42 +303,83 @@ const Show = () => {
     tryReveal()
   }
 
-  const saveRecoveryAddress = async () => {
-    // TODO use util.normalizeAddress function once merged
-    setConfirmLoading(true)
-
+  const doSetRecoveryAddress = async () => {
     const { hseed, root, effectiveTime } = wallet
     const layers = await storage.getItem(root)
     if (!layers) {
       message.error('Cannot find pre-computed proofs for this wallet. Storage might be corrupted. Please restore the wallet from Google Authenticator.')
       return
     }
+    const parsedOtp = parseInt(otpInput)
+    if (!isInteger(parsedOtp) || !(parsedOtp < 1000000)) {
+      message.error('Google Authenticator code is not valid')
+      return
+    }
+    const normalizedTransferTo = util.safeExec(util.normalizedAddress, [transferTo], handleAddressError)
+    if (!normalizedTransferTo) {
+      return
+    }
+    const otp = ONEUtil.encodeNumericalOtp(parsedOtp)
+    const eotp = ONE.computeEOTP({ otp, hseed: ONEUtil.hexToBytes(hseed) })
     const index = ONEUtil.timeToIndex({ effectiveTime })
-    const leaf = layers[0].subarray(index * 32, index * 32 + 32).slice()
-    const { eotp } = ONE.bruteforceEOTP({ hseed: ONEUtil.hexToBytes(hseed), leaf })
-    if (!eotp) {
-      message.error('Pre-computed proofs are inconsistent. Recovery cannot proceed')
-      return
-    }
     const neighbors = ONE.selectMerkleNeighbors({ layers, index })
+    const neighbor = neighbors[0]
 
-    const { success, txId, error } = await api.relayer.revealSetRecoveryAddress({
-      neighbors: neighbors.map(n => ONEUtil.hexString(n)),
+    const { hash: commitHash } = ONE.computeSetRecoveryAddressHash({
+      neighbor,
       index,
-      eotp: ONEUtil.hexString(eotp),
-      address,
-      lastResortAddress: newAddress
+      eotp,
+      address: normalizedTransferTo,
     })
-
-    setIsModalVisible(false)
-    setConfirmLoading(false)
-
-    if (!success) {
-      message.error(`Transaction Failed: ${error}`)
+    setStage(1)
+    try {
+      const { success, error } = await api.relayer.commit({ address, hash: ONEUtil.hexString(commitHash) })
+      if (!success) {
+        message.error(`Cannot commit. Reason: ${error}`)
+        setStage(0)
+        return
+      }
+    } catch (ex) {
+      console.error(ex)
+      message.error('Failed to commit. Error: ' + ex.toString())
+      setStage(0)
       return
     }
-
-    message.success('Recovery address set successfully')
+    setStage(2)
+    let numAttemptsRemaining = WalletConstants.maxTransferAttempts - 1
+    const tryReveal = () => setTimeout(async () => {
+      try {
+        // TODO: should reveal only when commit is confirmed and viewable on-chain. This should be fixed before releasing it to 1k+ users
+        // TODO: Prevent transfer more than maxOperationsPerInterval per interval (30 seconds)
+        const { success, error } = await api.relayer.revealSetRecoveryAddress({
+          neighbors: neighbors.map(n => ONEUtil.hexString(n)),
+          index,
+          eotp: ONEUtil.hexString(eotp),
+          lastResortAddress: normalizedTransferTo,
+          address
+        })
+        if (!success) {
+          message.error(`Transaction Failed: ${error}`)
+          setStage(0)
+          setOtpInput('')
+          return
+        }
+        setStage(3)
+        message.success(`Recovery address is set to ${transferTo}`)
+        showStats()
+      } catch (ex) {
+        console.trace(ex)
+        if (numAttemptsRemaining <= 0) {
+          message.error('Failed to finalize setting recovery address.')
+          setStage(0)
+          return
+        }
+        message.error(`Failed to finalize setting recovery address. Trying ${numAttemptsRemaining} more time`)
+        numAttemptsRemaining -= 1
+        tryReveal()
+      }
+    }, WalletConstants.checkCommitInterval)
+    tryReveal()
   }
 
   // UI Rendering below
@@ -358,11 +397,12 @@ const Show = () => {
     </Space>
   )
   return (
-    <Space size='large' wrap align='start'>
+    <>
+      {/* <Space size='large' wrap align='start'> */}
       <AnimatedSection
         show={!section}
         title={title}
-        style={{ minWidth: 480, minHeight: 320 }}
+        style={{ minWidth: 480, minHeight: 320, maxWidth: 720 }}
       >
         <Row style={{ marginTop: 16 }}>
           <Col span={12}>
@@ -411,29 +451,20 @@ const Show = () => {
         </TallRow>
         <TallRow align='middle'>
           <Col span={12}> <Title level={3}>Recovery Address</Title></Col>
-          {lastResortAddress
-            ? (
-              <Col>
-                <Space>
-                  <Tooltip title={oneLastResort}>
-                    <ExplorerLink copyable={oneLastResort && { text: oneLastResort }} href={util.getNetworkExplorerUrl(wallet)}>
-                      {util.ellipsisAddress(oneLastResort)}
-                    </ExplorerLink>
-                  </Tooltip>
-                </Space>
-              </Col>
-              )
-            : (
-              <Col>
-                <Button type='primary' size='large' shape='round' onClick={() => setIsModalVisible(true)}> Set </Button>
-                <>
-                  <Modal title='Set recovery address' visible={isModalVisible} onCancel={() => setIsModalVisible(false)} onOk={saveRecoveryAddress} confirmLoading={confirmLoading}>
-                    <Text>Enter your recovery address for this wallet</Text>
-                    <Input style={{ marginBottom: 24, marginTop: 10 }} value={newAddress} onChange={({ target: { value } }) => setNewAddress(value)} placeholder='one1...' />
-                  </Modal>
-                </>
-              </Col>
-              )}
+          {lastResortAddress &&
+            <Col>
+              <Space>
+                <Tooltip title={oneLastResort}>
+                  <ExplorerLink copyable={oneLastResort && { text: oneLastResort }} href={util.getNetworkExplorerUrl(wallet)}>
+                    {util.ellipsisAddress(oneLastResort)}
+                  </ExplorerLink>
+                </Tooltip>
+              </Space>
+            </Col>}
+          {!lastResortAddress &&
+            <Col>
+              <Button type='primary' size='large' shape='round' onClick={showSetRecoveryAddress}> Set </Button>
+            </Col>}
         </TallRow>
         <Row style={{ marginTop: 48 }}>
           <Button type='link' style={{ padding: 0 }} size='large' onClick={showRecovery} icon={<WarningOutlined />}>I lost my Google Authenticator</Button>
@@ -446,7 +477,7 @@ const Show = () => {
         </Row>
       </AnimatedSection>
       <AnimatedSection
-        style={{ minWidth: 700 }}
+        style={{ width: 720 }}
         show={section === 'transfer'} title={<Title level={2}>Transfer</Title>} extra={[
           <Button key='close' type='text' icon={<CloseOutlined />} onClick={showStats} />
         ]}
@@ -496,7 +527,7 @@ const Show = () => {
       </AnimatedSection>
       <AnimatedSection
         show={section === 'recover'}
-        style={{ minWidth: 700 }}
+        style={{ width: 720 }}
         title={<Title level={2}>Recover</Title>} extra={[
           <Button key='close' type='text' icon={<CloseOutlined />} onClick={showStats} />
         ]}
@@ -528,7 +559,45 @@ const Show = () => {
           </Space>}
 
       </AnimatedSection>
-    </Space>
+      <AnimatedSection
+        style={{ width: 720 }}
+        show={section === 'setRecoveryAddress'} title={<Title level={2}>Set Recovery Address</Title>} extra={[
+          <Button key='close' type='text' icon={<CloseOutlined />} onClick={showStats} />
+        ]}
+      >
+        <Space direction='vertical' size='large'>
+          <Hint>Note: You can only do this once!</Hint>
+          <Space align='baseline' size='large'>
+            <Label><Hint>Address</Hint></Label>
+            <InputBox margin='auto' width={440} value={transferTo} onChange={({ target: { value } }) => setTransferTo(value)} placeholder='one1...' />
+          </Space>
+          <Space align='baseline' size='large' style={{ marginTop: 16 }}>
+            <Label><Hint>Code</Hint></Label>
+            <OtpBox
+              value={otpInput}
+              onChange={setOtpInput}
+            />
+            <Tooltip title='from your Google Authenticator'>
+              <QuestionCircleOutlined />
+            </Tooltip>
+          </Space>
+        </Space>
+        <Row justify='end' style={{ marginTop: 24 }}>
+          <Space>
+            {stage > 0 && stage < 3 && <LoadingOutlined />}
+            <Button type='primary' size='large' shape='round' disabled={stage > 0} onClick={doSetRecoveryAddress}>Send</Button>
+          </Space>
+        </Row>
+        {stage > 0 && (
+          <Row style={{ marginTop: 32 }}>
+            <Steps current={stage}>
+              <Step title='Prepare' description='Preparing operation' />
+              <Step title='Commit' description='Committing operation' />
+              <Step title='Finalize' description='Submitting proofs' />
+            </Steps>
+          </Row>)}
+      </AnimatedSection>
+    </>
   )
 }
 export default Show
