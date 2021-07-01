@@ -149,25 +149,25 @@ const Restore = () => {
         }
         const {
           root,
-          t0,
-          lifespan,
-          maxOperationsPerInterval,
+          effectiveTime,
+          duration,
+          slotSize,
           lastResortAddress,
           dailyLimit
         } = await api.blockchain.getWallet({ address })
         console.log('Retrieved wallet:', {
           root,
-          t0,
-          lifespan,
-          maxOperationsPerInterval,
+          effectiveTime,
+          duration,
+          slotSize,
           lastResortAddress,
           dailyLimit
         })
         setAddress(address)
-        setRoot(root.slice(2))
-        setEffectiveTime(t0 * WalletConstants.interval)
-        setDuration(lifespan * WalletConstants.interval)
-        setSlotSize(maxOperationsPerInterval)
+        setRoot(root)
+        setEffectiveTime(effectiveTime)
+        setDuration(duration)
+        setSlotSize(slotSize)
         setLastResortAddress(lastResortAddress)
         setDailyLimit(dailyLimit)
         setSection(2)
