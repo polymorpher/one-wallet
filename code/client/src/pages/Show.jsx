@@ -70,6 +70,7 @@ const Show = () => {
     const fetch = () => dispatch(walletActions.fetchBalance({ address }))
     fetch()
     const handler = setInterval(() => fetch(), WalletConstants.fetchBalanceFrequency)
+    dispatch(walletActions.fetchWallet({ address }))
     return () => { clearInterval(handler) }
   }, [])
   const balances = useSelector(state => state.wallet.balances)
@@ -451,7 +452,7 @@ const Show = () => {
         </TallRow>
         <TallRow align='middle'>
           <Col span={12}> <Title level={3}>Recovery Address</Title></Col>
-          {lastResortAddress &&
+          {lastResortAddress && !util.isEmptyAddress(lastResortAddress) &&
             <Col>
               <Space>
                 <Tooltip title={oneLastResort}>
@@ -461,7 +462,7 @@ const Show = () => {
                 </Tooltip>
               </Space>
             </Col>}
-          {!lastResortAddress &&
+          {!(lastResortAddress && !util.isEmptyAddress(lastResortAddress)) &&
             <Col>
               <Button type='primary' size='large' shape='round' onClick={showSetRecoveryAddress}> Set </Button>
             </Col>}
@@ -535,7 +536,7 @@ const Show = () => {
         {lastResortAddress &&
           <>
             <Space direction='vertical' size='large'>
-              <Title level={2}>Your money is safe</Title>
+              <Title level={2}>Your funds are safe</Title>
               <Text>Since you already set a recover address, we can send all your remaining funds to that address.</Text>
               <Text>Do you want to proceed?</Text>
             </Space>
@@ -553,7 +554,7 @@ const Show = () => {
           </>}
         {!lastResortAddress &&
           <Space direction='vertical' size='large'>
-            <Title level={2}>Your money is safe</Title>
+            <Title level={2}>Your funds are safe</Title>
             <Text>You did not set a recovery address. We can still set one, using pre-computed proofs stored in your browser</Text>
             <Text>Please go back and check again once you finished.</Text>
           </Space>}
@@ -585,7 +586,7 @@ const Show = () => {
         <Row justify='end' style={{ marginTop: 24 }}>
           <Space>
             {stage > 0 && stage < 3 && <LoadingOutlined />}
-            <Button type='primary' size='large' shape='round' disabled={stage > 0} onClick={doSetRecoveryAddress}>Send</Button>
+            <Button type='primary' size='large' shape='round' disabled={stage > 0} onClick={doSetRecoveryAddress}>Set</Button>
           </Space>
         </Row>
         {stage > 0 && (
