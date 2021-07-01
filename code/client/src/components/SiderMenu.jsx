@@ -27,7 +27,6 @@ const SiderMenu = ({ ...args }) => {
   const nav = ({ key }) => {
     history.push(Paths[key])
   }
-  console.log(width)
   return (
     <Layout.Sider collapsible={width < 900} onCollapse={c => setCollapsed(c)} {...args}>
       {/* <Image src='/assets/harmony.svg' /> */}

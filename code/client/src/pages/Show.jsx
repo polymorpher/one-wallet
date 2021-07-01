@@ -291,7 +291,7 @@ const Show = () => {
   }
   const title = (
     <Space size='large' align='baseline'>
-      <Title level={2} onClick={changeName}>{wallet.name}</Title>
+      <Title level={2}>{wallet.name}</Title>
       <Text>
         <ExplorerLink copyable={{ text: oneAddress }} href={util.getNetworkExplorerUrl(wallet)}>
           {oneAddress}
