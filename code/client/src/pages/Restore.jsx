@@ -101,7 +101,7 @@ const Restore = () => {
           const { hseed, root: computedRoot, layers } = result
           if (!ONEUtil.bytesEqual(ONEUtil.hexToBytes(root), computedRoot)) {
             console.error('Roots are not equal', root, ONEUtil.hexString(computedRoot))
-            message.error('Verification failed. Please try again or report the issue on Github')
+            message.error('Verification failed. Your authenticator QR code might correspond to a different contract address.')
             return
           }
           storage.setItem(root, layers)
