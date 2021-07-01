@@ -24,6 +24,16 @@ const parseTx = (tx) => {
   return { success, txId, tx, error }
 }
 
+const REASON_GIVEN = 'Reason given: '
+const parseError = (ex) => {
+  let error = ex.toString()
+  if (error && error.indexOf(REASON_GIVEN) > 0) {
+    error = error.slice(error.indexOf(REASON_GIVEN) + REASON_GIVEN.length)
+    return { success: false, code: StatusCodes.OK, error }
+  }
+  return { success: false, code: StatusCodes.INTERNAL_SERVER_ERROR, error }
+}
+
 router.get('/health', async (req, res) => {
   res.send('OK').end()
 })
@@ -72,7 +82,8 @@ router.post('/new', async (req, res) => {
     return res.json({ success: true, address: wallet.address })
   } catch (ex) {
     console.error(ex)
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: ex.toString() })
+    const { code, error, success } = parseError(ex)
+    return res.status(code).json({ error, success })
   }
 })
 
@@ -93,7 +104,8 @@ router.post('/commit', async (req, res) => {
     return res.json(parseTx(tx))
   } catch (ex) {
     console.error(ex)
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: ex.toString() })
+    const { code, error, success } = parseError(ex)
+    return res.status(code).json({ error, success })
   }
 })
 
@@ -109,7 +121,8 @@ router.post('/reveal/transfer', async (req, res) => {
     return res.json(parseTx(tx))
   } catch (ex) {
     console.error(ex)
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: ex.toString() })
+    const { code, error, success } = parseError(ex)
+    return res.status(code).json({ error, success })
   }
 })
 
@@ -125,7 +138,8 @@ router.post('/reveal/recovery', async (req, res) => {
     return res.json(parseTx(tx))
   } catch (ex) {
     console.error(ex)
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: ex.toString() })
+    const { code, error, success } = parseError(ex)
+    return res.status(code).json({ error, success })
   }
 })
 
@@ -141,7 +155,8 @@ router.post('/reveal/set-recovery-address', async (req, res) => {
     return res.json(parseTx(tx))
   } catch (ex) {
     console.error(ex)
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: ex.toString() })
+    const { code, error, success } = parseError(ex)
+    return res.status(code).json({ error, success })
   }
 })
 
@@ -157,7 +172,8 @@ router.post('/retire', async (req, res) => {
     return res.json(parseTx(tx))
   } catch (ex) {
     console.error(ex)
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: ex.toString() })
+    const { code, error, success } = parseError(ex)
+    return res.status(code).json({ error, success })
   }
 })
 
