@@ -194,6 +194,11 @@ const Show = () => {
           address
         })
         if (!success) {
+          if (error.includes('Cannot find commit')) {
+            message.error(`Network busy. Trying ${numAttemptsRemaining} more time`)
+            numAttemptsRemaining -= 1
+            return tryReveal()
+          }
           message.error(`Transaction Failed: ${error}`)
           setStage(0)
           setOtpInput('')
@@ -278,6 +283,11 @@ const Show = () => {
           address
         })
         if (!success) {
+          if (error.includes('Cannot find commit')) {
+            message.error(`Network busy. Trying ${numAttemptsRemaining} more time`)
+            numAttemptsRemaining -= 1
+            return tryReveal()
+          }
           message.error(`Transaction Failed: ${error}`)
           setStage(0)
           return
@@ -361,12 +371,19 @@ const Show = () => {
         })
         if (!success) {
           message.error(`Transaction Failed: ${error}`)
+          // TODO: use error codes later
+          if (error.includes('Cannot find commit')) {
+            message.error(`Network busy. Trying ${numAttemptsRemaining} more time`)
+            numAttemptsRemaining -= 1
+            return tryReveal()
+          }
           setStage(0)
           setOtpInput('')
           return
         }
         setStage(3)
         message.success(`Recovery address is set to ${transferTo}`)
+        dispatch(walletActions.fetchWallet({ address }))
         showStats()
       } catch (ex) {
         console.trace(ex)
