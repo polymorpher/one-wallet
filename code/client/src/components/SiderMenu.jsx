@@ -31,7 +31,7 @@ const SiderMenu = ({ ...args }) => {
     <Layout.Sider collapsible={width < 900} onCollapse={c => setCollapsed(c)} {...args}>
       {/* <Image src='/assets/harmony.svg' /> */}
       <Row justify='center'>
-        <Link href='https://docs.harmony.one/home/developers/wallets/1wallet'>
+        <Link target='_blank' rel='noreferrer' href='https://docs.harmony.one/home/developers/wallets/1wallet' rel='noreferrer'>
           <Image preview={false} src={collapsed ? HarmonyIcon : HarmonyLogo} style={{ cursor: 'pointer', padding: collapsed ? 16 : 32 }} onClick={() => history.push('/')} />
         </Link>
       </Row>
