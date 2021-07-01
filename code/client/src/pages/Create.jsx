@@ -5,6 +5,7 @@ import Paths from '../constants/paths'
 import api from '../api'
 import ONEUtil from '../../../lib/util'
 import { uniqueNamesGenerator, colors, animals } from 'unique-names-generator'
+import { randomWord } from '../constants/words'
 import { Button, Row, Space, Typography, Slider, Image, message, Progress, Timeline, Select } from 'antd'
 import { RedoOutlined, LoadingOutlined, SearchOutlined } from '@ant-design/icons'
 import humanizeDuration from 'humanize-duration'
@@ -21,12 +22,14 @@ import OtpBox from '../components/OtpBox'
 import { getAddress } from '@harmony-js/crypto'
 const { Text, Link } = Typography
 
-const genName = () => uniqueNamesGenerator({
-  dictionaries: [colors, animals],
-  style: 'capital',
-  separator: ' ',
-  length: 1
-})
+// const genName = () => uniqueNamesGenerator({
+//   dictionaries: [colors, animals],
+//   style: 'capital',
+//   separator: ' ',
+//   length: 1
+// })
+
+const genName = () => randomWord()
 
 const Create = () => {
   const dispatch = useDispatch()
@@ -60,7 +63,7 @@ const Create = () => {
 
   const getQRCodeUri = () => {
     // otpauth://TYPE/LABEL?PARAMETERS
-    return `otpauth://totp/${name}?secret=${b32.encode(seed)}&issuer=ONE%20Wallet`
+    return `otpauth://totp/${name}?secret=${b32.encode(seed)}&issuer=Harmony`
   }
   useEffect(() => {
     (async function () {
