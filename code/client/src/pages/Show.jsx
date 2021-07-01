@@ -290,8 +290,8 @@ const Show = () => {
     return <Redirect to={Paths.wallets} />
   }
   const title = (
-    <Space size='large'>
-      <Title level={2}>{wallet.name}</Title>
+    <Space size='large' align='baseline'>
+      <Title level={2} onClick={changeName}>{wallet.name}</Title>
       <Text>
         <ExplorerLink copyable={{ text: oneAddress }} href={util.getNetworkExplorerUrl(wallet)}>
           {oneAddress}
