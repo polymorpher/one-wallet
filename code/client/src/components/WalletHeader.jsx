@@ -86,8 +86,10 @@ const SecretSettings = ({ visible, onClose }) => {
 const WalletHeader = () => {
   const history = useHistory()
   const match = useRouteMatch('/:action/:address?')
-  const { action, address } = match ? match.params : {}
-  const shortAddress = util.ellipsisAddress(address)
+  const { action, address: routeAddress } = match ? match.params : {}
+  const oneAddress = routeAddress && util.safeOneAddress(routeAddress) || ''
+  const address = routeAddress && util.safeNormalizedAddress(routeAddress) || ''
+  const shortAddress = util.ellipsisAddress(oneAddress)
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
   const subtitle = wallet.name ? `${wallet.name} (${shortAddress})` : shortAddress

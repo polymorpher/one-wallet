@@ -20,7 +20,7 @@ import storage from '../storage'
 import BN from 'bn.js'
 import config from '../config'
 import OtpBox from '../components/OtpBox'
-import { fromBech32, HarmonyAddress, toBech32, getAddress } from '@harmony-js/crypto'
+import { getAddress } from '@harmony-js/crypto'
 import { handleAddressError } from '../handler'
 const { Title, Text, Link } = Typography
 const { Step } = Steps
@@ -32,6 +32,11 @@ const TallRow = styled(Row)`
 const Label = styled.div`
   width: 64px;
 `
+const ExplorerLink = styled(Link).attrs(e => ({ ...e, style: { color: '#888888' }, target: '_blank', rel: 'noopener noreferrer' }))`
+  &:hover {
+    opacity: 0.8;
+  }
+`
 
 const Show = () => {
   const history = useHistory()
@@ -39,15 +44,15 @@ const Show = () => {
   const dispatch = useDispatch()
   const wallets = useSelector(state => state.wallet.wallets)
   const match = useRouteMatch(Paths.show)
-  const { address, action } = match ? match.params : {}
-  const oneAddress = getAddress(address).bech32
+  const { address: routeAddress, action } = match ? match.params : {}
+  const oneAddress = util.safeOneAddress(routeAddress)
+  const address = util.safeNormalizedAddress(routeAddress)
   const selectedAddress = useSelector(state => state.wallet.selected)
+
   const wallet = wallets[address] || {}
   const [section, setSection] = useState(action)
   const [stage, setStage] = useState(0)
   const network = useSelector(state => state.wallet.network)
-
-  // const section =
 
   useEffect(() => {
     if (!wallet) {
@@ -287,7 +292,11 @@ const Show = () => {
   const title = (
     <Space size='large'>
       <Title level={2}>{wallet.name}</Title>
-      <Hint copyable>{oneAddress}</Hint>
+      <Text>
+        <ExplorerLink copyable={{ text: oneAddress }} href={util.getNetworkExplorerUrl(wallet)}>
+          {oneAddress}
+        </ExplorerLink>
+      </Text>
     </Space>
   )
   return (
@@ -346,9 +355,19 @@ const Show = () => {
           <Col span={12}> <Title level={3}>Recovery Address</Title></Col>
           <Col>
             <Space>
-              <Tooltip title={oneLastResort}>
-                <Text copyable={oneLastResort && { text: oneLastResort }}>{oneLastResort && util.ellipsisAddress(oneLastResort) || 'Not set'}</Text>
-              </Tooltip>
+              {lastResortAddress
+                ? (
+                  <Space>
+                    <Tooltip title={oneLastResort}>
+                      <ExplorerLink copyable={oneLastResort && { text: oneLastResort }} href={util.getNetworkExplorerUrl(wallet)}>
+                        {util.ellipsisAddress(oneLastResort)}
+                      </ExplorerLink>
+                    </Tooltip>
+                  </Space>
+                  )
+                : (
+                  <Text>Not set</Text>
+                  )}
             </Space>
           </Col>
         </TallRow>
