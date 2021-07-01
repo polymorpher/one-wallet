@@ -230,6 +230,7 @@ const Create = () => {
           <Space direction='vertical' size='large' align='center'>
             <Hint>After you are done, please type in your 6-digit code from authenticator.</Hint>
             <OtpBox
+              shouldAutoFocus
               value={otp}
               onChange={setOtp}
             />
