@@ -69,7 +69,8 @@ const Show = () => {
     }
     const fetch = () => dispatch(walletActions.fetchBalance({ address }))
     fetch()
-    setInterval(() => fetch(), WalletConstants.fetchBalanceFrequency)
+    const handler = setInterval(() => fetch(), WalletConstants.fetchBalanceFrequency)
+    return () => { clearInterval(handler) }
   }, [])
   const balances = useSelector(state => state.wallet.balances)
   const balance = balances[address] || 0
@@ -150,8 +151,8 @@ const Show = () => {
     const neighbor = neighbors[0]
 
     // Ensure valid address for both 0x and one1 formats
-    const normalizedAddress = util.safeExec(util.normalizedAddress, [transferTo], handleAddressError)
-    if (!normalizedAddress) {
+    const normalizedTransferTo = util.safeExec(util.normalizedAddress, [transferTo], handleAddressError)
+    if (!normalizedTransferTo) {
       return
     }
 
@@ -159,7 +160,7 @@ const Show = () => {
       neighbor,
       index,
       eotp,
-      dest: normalizedAddress,
+      dest: normalizedTransferTo,
       amount: transferAmount,
     })
     setStage(1)
@@ -186,13 +187,14 @@ const Show = () => {
           neighbors: neighbors.map(n => ONEUtil.hexString(n)),
           index,
           eotp: ONEUtil.hexString(eotp),
-          dest: normalizedAddress,
+          dest: normalizedTransferTo,
           amount: transferAmount.toString(),
           address
         })
         if (!success) {
           message.error(`Transaction Failed: ${error}`)
           setStage(0)
+          setOtpInput('')
           return
         }
         setStage(3)
@@ -203,11 +205,12 @@ const Show = () => {
         } else {
           message.success(<Text>Transfer completed! Copy transaction id: <Text copyable={{ text: txId }}>{util.ellipsisAddress(txId)} </Text></Text>, 10)
         }
+        setOtpInput('')
         WalletConstants.fetchDelaysAfterTransfer.forEach(t => {
           setTimeout(() => {
             dispatch(walletActions.fetchBalance({ address }))
-            if (wallets[normalizedAddress]) {
-              dispatch(walletActions.fetchBalance({ address: normalizedAddress }))
+            if (wallets[normalizedTransferTo]) {
+              dispatch(walletActions.fetchBalance({ address: normalizedTransferTo }))
             }
           }, t)
         })
@@ -438,9 +441,9 @@ const Show = () => {
         {stage > 0 && (
           <Row style={{ marginTop: 32 }}>
             <Steps current={stage}>
-              <Step title='Prepare' description='Preparing transfer signatures and proofs' />
-              <Step title='Commit' description='Submitting transfer signature to blockchain' />
-              <Step title='Finalize' description='Showing proofs to complete transaction' />
+              <Step title='Prepare' description='Preparing transfer' />
+              <Step title='Commit' description='Committing transaction' />
+              <Step title='Finalize' description='Submitting proofs' />
             </Steps>
           </Row>)}
       </AnimatedSection>
