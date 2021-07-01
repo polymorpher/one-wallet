@@ -9,7 +9,13 @@ import ONEUtil from '../../../lib/util'
 import ONE from '../../../lib/onewallet'
 import api from '../api'
 import { message, Space, Row, Col, Typography, Button, Steps, Popconfirm, Tooltip, Modal, Input } from 'antd'
-import { DeleteOutlined, WarningOutlined, CloseOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+import {
+  DeleteOutlined,
+  WarningOutlined,
+  CloseOutlined,
+  QuestionCircleOutlined,
+  LoadingOutlined
+} from '@ant-design/icons'
 import styled from 'styled-components'
 import humanizeDuration from 'humanize-duration'
 import AnimatedSection from '../components/AnimatedSection'
@@ -20,6 +26,8 @@ import storage from '../storage'
 import BN from 'bn.js'
 import config from '../config'
 import OtpBox from '../components/OtpBox'
+import { getAddress } from '@harmony-js/crypto'
+import { handleAddressError } from '../handler'
 const { Title, Text, Link } = Typography
 const { Step } = Steps
 const TallRow = styled(Row)`
@@ -30,6 +38,11 @@ const TallRow = styled(Row)`
 const Label = styled.div`
   width: 64px;
 `
+const ExplorerLink = styled(Link).attrs(e => ({ ...e, style: { color: '#888888' }, target: '_blank', rel: 'noopener noreferrer' }))`
+  &:hover {
+    opacity: 0.8;
+  }
+`
 
 const Show = () => {
   const history = useHistory()
@@ -37,14 +50,15 @@ const Show = () => {
   const dispatch = useDispatch()
   const wallets = useSelector(state => state.wallet.wallets)
   const match = useRouteMatch(Paths.show)
-  const { address, action } = match ? match.params : {}
+  const { address: routeAddress, action } = match ? match.params : {}
+  const oneAddress = util.safeOneAddress(routeAddress)
+  const address = util.safeNormalizedAddress(routeAddress)
   const selectedAddress = useSelector(state => state.wallet.selected)
+
   const wallet = wallets[address] || {}
   const [section, setSection] = useState(action)
   const [stage, setStage] = useState(0)
   const network = useSelector(state => state.wallet.network)
-
-  // const section =
 
   useEffect(() => {
     if (!wallet) {
@@ -53,13 +67,17 @@ const Show = () => {
     if (address && (address !== selectedAddress)) {
       dispatch(walletActions.selectWallet(address))
     }
-    dispatch(walletActions.fetchBalance({ address }))
+    const fetch = () => dispatch(walletActions.fetchBalance({ address }))
+    fetch()
+    const handler = setInterval(() => fetch(), WalletConstants.fetchBalanceFrequency)
+    return () => { clearInterval(handler) }
   }, [])
   const balances = useSelector(state => state.wallet.balances)
   const balance = balances[address] || 0
   const price = useSelector(state => state.wallet.price)
   const { formatted, fiatFormatted } = util.computeBalance(balance, price)
   const { dailyLimit, lastResortAddress } = wallet
+  const oneLastResort = lastResortAddress && getAddress(lastResortAddress).bech32
   const { formatted: dailyLimitFormatted, fiatFormatted: dailyLimitFiatFormatted } = util.computeBalance(dailyLimit, price)
   const [newAddress, setNewAddress] = useState('')
   const [isModalVisible, setIsModalVisible] = useState(false)
@@ -112,7 +130,8 @@ const Show = () => {
     if (!transferTo) {
       return message.error('Transfer destination address is invalid')
     }
-    if (!transferAmount) {
+
+    if (!transferAmount || transferAmount.isZero() || transferAmount.isNeg()) {
       return message.error('Transfer amount is invalid')
     }
     const parsedOtp = parseInt(otpInput)
@@ -120,7 +139,6 @@ const Show = () => {
       message.error('Google Authenticator code is not valid')
       return
     }
-    console.log(wallet)
     const { hseed, root, effectiveTime } = wallet
     const layers = await storage.getItem(root)
     if (!layers) {
@@ -134,11 +152,18 @@ const Show = () => {
     const index = ONEUtil.timeToIndex({ effectiveTime })
     const neighbors = ONE.selectMerkleNeighbors({ layers, index })
     const neighbor = neighbors[0]
+
+    // Ensure valid address for both 0x and one1 formats
+    const normalizedTransferTo = util.safeExec(util.normalizedAddress, [transferTo], handleAddressError)
+    if (!normalizedTransferTo) {
+      return
+    }
+
     const { hash: commitHash } = ONE.computeTransferHash({
       neighbor,
       index,
       eotp,
-      dest: transferTo,
+      dest: normalizedTransferTo,
       amount: transferAmount,
     })
     setStage(1)
@@ -165,13 +190,14 @@ const Show = () => {
           neighbors: neighbors.map(n => ONEUtil.hexString(n)),
           index,
           eotp: ONEUtil.hexString(eotp),
-          dest: transferTo,
+          dest: normalizedTransferTo,
           amount: transferAmount.toString(),
           address
         })
         if (!success) {
           message.error(`Transaction Failed: ${error}`)
           setStage(0)
+          setOtpInput('')
           return
         }
         setStage(3)
@@ -182,6 +208,15 @@ const Show = () => {
         } else {
           message.success(<Text>Transfer completed! Copy transaction id: <Text copyable={{ text: txId }}>{util.ellipsisAddress(txId)} </Text></Text>, 10)
         }
+        setOtpInput('')
+        WalletConstants.fetchDelaysAfterTransfer.forEach(t => {
+          setTimeout(() => {
+            dispatch(walletActions.fetchBalance({ address }))
+            if (wallets[normalizedTransferTo]) {
+              dispatch(walletActions.fetchBalance({ address: normalizedTransferTo }))
+            }
+          }, t)
+        })
       } catch (ex) {
         console.trace(ex)
         if (numAttemptsRemaining <= 0) {
@@ -193,7 +228,7 @@ const Show = () => {
         numAttemptsRemaining -= 1
         tryReveal()
       }
-    }, 5000)
+    }, WalletConstants.checkCommitInterval)
     tryReveal()
   }
 
@@ -305,7 +340,7 @@ const Show = () => {
       return
     }
 
-    message.success(`Recovery address set successfully`)
+    message.success('Recovery address set successfully')
   }
 
   // UI Rendering below
@@ -313,9 +348,13 @@ const Show = () => {
     return <Redirect to={Paths.wallets} />
   }
   const title = (
-    <Space size='large'>
+    <Space size='large' align='baseline'>
       <Title level={2}>{wallet.name}</Title>
-      <Hint copyable>{address}</Hint>
+      <Text>
+        <ExplorerLink copyable={{ text: oneAddress }} href={util.getNetworkExplorerUrl(wallet)}>
+          {oneAddress}
+        </ExplorerLink>
+      </Text>
     </Space>
   )
   return (
@@ -372,25 +411,29 @@ const Show = () => {
         </TallRow>
         <TallRow align='middle'>
           <Col span={12}> <Title level={3}>Recovery Address</Title></Col>
-          {lastResortAddress ? (
-            <Col>
-              <Space>
-                <Tooltip title={lastResortAddress}>
-                  <Text copyable={lastResortAddress && { text: lastResortAddress }}>{util.ellipsisAddress(lastResortAddress)}</Text>
-                </Tooltip>
-              </Space>
-            </Col>
-          ) : (
-            <Col>
-              <Button type='primary' size='large' shape='round' onClick={() => setIsModalVisible(true)}> Set </Button>
-              <>
-                <Modal title='Set recovery address' visible={isModalVisible} onCancel={() => setIsModalVisible(false)} onOk={saveRecoveryAddress} confirmLoading={confirmLoading}>
-                  <Text>Enter your recovery address for this wallet</Text>
-                  <Input style={{ marginBottom: 24, marginTop: 10 }} value={newAddress} onChange={({ target: { value } }) => setNewAddress(value)} placeholder='one1...' />
-                </Modal>
-              </>
-            </Col>
-          )}
+          {lastResortAddress
+            ? (
+              <Col>
+                <Space>
+                  <Tooltip title={oneLastResort}>
+                    <ExplorerLink copyable={oneLastResort && { text: oneLastResort }} href={util.getNetworkExplorerUrl(wallet)}>
+                      {util.ellipsisAddress(oneLastResort)}
+                    </ExplorerLink>
+                  </Tooltip>
+                </Space>
+              </Col>
+              )
+            : (
+              <Col>
+                <Button type='primary' size='large' shape='round' onClick={() => setIsModalVisible(true)}> Set </Button>
+                <>
+                  <Modal title='Set recovery address' visible={isModalVisible} onCancel={() => setIsModalVisible(false)} onOk={saveRecoveryAddress} confirmLoading={confirmLoading}>
+                    <Text>Enter your recovery address for this wallet</Text>
+                    <Input style={{ marginBottom: 24, marginTop: 10 }} value={newAddress} onChange={({ target: { value } }) => setNewAddress(value)} placeholder='one1...' />
+                  </Modal>
+                </>
+              </Col>
+              )}
         </TallRow>
         <Row style={{ marginTop: 48 }}>
           <Button type='link' style={{ padding: 0 }} size='large' onClick={showRecovery} icon={<WarningOutlined />}>I lost my Google Authenticator</Button>
@@ -411,7 +454,7 @@ const Show = () => {
         <Space direction='vertical' size='large'>
           <Space align='baseline' size='large'>
             <Label><Hint>To</Hint></Label>
-            <InputBox margin='auto' width={440} value={transferTo} onChange={({ target: { value } }) => setTransferTo(value)} placeholder='0x...' />
+            <InputBox margin='auto' width={440} value={transferTo} onChange={({ target: { value } }) => setTransferTo(value)} placeholder='one1...' />
           </Space>
           <Space align='baseline' size='large'>
             <Label><Hint>Amount</Hint></Label>
@@ -436,15 +479,18 @@ const Show = () => {
           </Space>
         </Space>
         <Row justify='end' style={{ marginTop: 24 }}>
-          {stage < 3 && <Button type='primary' size='large' shape='round' disabled={stage > 0} onClick={doSend}>Send</Button>}
-          {stage === 3 && <Button type='secondary' size='large' shape='round' onClick={restart}>Restart</Button>}
+          <Space>
+            {stage > 0 && stage < 3 && <LoadingOutlined />}
+            {stage < 3 && <Button type='primary' size='large' shape='round' disabled={stage > 0} onClick={doSend}>Send</Button>}
+            {stage === 3 && <Button type='secondary' size='large' shape='round' onClick={restart}>Restart</Button>}
+          </Space>
         </Row>
         {stage > 0 && (
           <Row style={{ marginTop: 32 }}>
             <Steps current={stage}>
-              <Step title='Prepare' description='Preparing transfer signatures and proofs' />
-              <Step title='Commit' description='Submitting transfer signature to blockchain' />
-              <Step title='Finalize' description='Showing proofs to complete transaction' />
+              <Step title='Prepare' description='Preparing transfer' />
+              <Step title='Commit' description='Committing transaction' />
+              <Step title='Finalize' description='Submitting proofs' />
             </Steps>
           </Row>)}
       </AnimatedSection>

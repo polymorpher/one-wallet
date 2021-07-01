@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { useHistory } from 'react-router'
 import { Heading, Hint, InputBox } from '../components/Text'
 import AnimatedSection from '../components/AnimatedSection'
-import { Space, Typography, Steps, Row, Select, message, Progress, Timeline } from 'antd'
+import { Space, Steps, Row, Select, message, Progress, Timeline } from 'antd'
 import QrReader from 'react-qr-reader'
 import { MigrationPayload } from '../proto/oauthMigration'
 import api from '../api'
@@ -10,12 +11,14 @@ import WalletConstants from '../constants/wallet'
 import storage from '../storage'
 import { useDispatch, useSelector } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
-import { fromBech32, HarmonyAddress, toBech32 } from '@harmony-js/crypto'
+import util from '../util'
+import { handleAddressError } from '../handler'
+import Paths from '../constants/paths'
 
-const { Text } = Typography
 const { Step } = Steps
 
 const Restore = () => {
+  const history = useHistory()
   const [section, setSection] = useState(1)
   const network = useSelector(state => state.wallet.network)
   const wallets = useSelector(state => state.wallet.wallets)
@@ -29,6 +32,9 @@ const Restore = () => {
     const f = async () => {
       const d = await navigator.mediaDevices.enumerateDevices()
       const cams = d.filter(e => e.kind === 'videoinput')
+      if (cams.length <= 0) {
+        return message.error('Restore requires a camera to scan the QR code. Please use a device that has a camera.', 15)
+      }
       setVideoDevices(cams)
       setDevice(cams[0])
     }
@@ -48,7 +54,7 @@ const Restore = () => {
       try {
         const data = new URL(e).searchParams.get('data')
         const params = MigrationPayload.decode(Buffer.from(data, 'base64')).otpParameters
-        const filteredParams = params.filter(e => e.issuer === 'ONE Wallet')
+        const filteredParams = params.filter(e => e.issuer === 'ONE Wallet' || e.issuer === 'Harmony')
         if (filteredParams.length > 1) {
           message.error('You selected more than 1 ONE Wallet code to export. Please reselect on Google Authenticator')
           return
@@ -114,6 +120,7 @@ const Restore = () => {
           dispatch(walletActions.fetchBalance({ address }))
           console.log('Completed wallet restoration', wallet)
           message.success(`Wallet ${name} (${address}) is restored!`)
+          setTimeout(() => history.push(Paths.showAddress(address)), 1500)
         }
       }
       console.log('[Restore] Posting to worker')
@@ -129,23 +136,11 @@ const Restore = () => {
   useEffect(() => {
     const f = async () => {
       try {
-        let address = addressInput
-        if (!address) {
+        if (!addressInput || addressInput.length < 42) {
           return
         }
-        if (address.startsWith('one')) {
-          if (!HarmonyAddress.isValidBech32(address)) {
-            console.error(`Invalid address: ${address}`)
-            return
-          }
-          address = fromBech32(address)
-        } else if (address.startsWith('0x')) {
-          if (!HarmonyAddress.isValidBech32(toBech32(address))) {
-            console.error(`Invalid address: ${address}`)
-            return
-          }
-        } else {
-          console.error(`Invalid address: ${address}`)
+        const address = util.safeExec(util.normalizedAddress, [addressInput], handleAddressError)
+        if (!address) {
           return
         }
         if (wallets[address]) {
@@ -194,7 +189,7 @@ const Restore = () => {
       <AnimatedSection show={section === 1} style={{ maxWidth: 640 }}>
         <Space direction='vertical' size='large'>
           <Heading>What is the address of the wallet?</Heading>
-          <InputBox margin='auto' width={440} value={addressInput} onChange={({ target: { value } }) => setAddressInput(value)} placeholder='0x...' />
+          <InputBox margin='auto' width={440} value={addressInput} onChange={({ target: { value } }) => setAddressInput(value)} placeholder='one1...' />
         </Space>
       </AnimatedSection>
       <AnimatedSection show={section === 2} style={{ maxWidth: 640 }}>

@@ -1,23 +1,12 @@
 import { useState, useEffect } from 'react'
-import { message } from 'antd'
+import { HarmonyAddress } from '@harmony-js/crypto'
+import { values } from 'lodash'
 import ONEUtil from '../../lib/util'
+import { AddressError } from './constants/errors'
 
 export default {
-  handleError: (ex) => {
-    console.trace(ex)
-    const error = ex.response?.data?.error || ex.toString()
-    const code = ex.response?.data?.code
-    if (code === 0) {
-      message.error('Relayer password is incorrect')
-    } else if (code === 1) {
-      message.error('Network is invalid')
-    } else {
-      message.error(`Connection Error: ${error}`)
-    }
-  },
-
   formatNumber: (number, maxPrecision) => {
-    maxPrecision = maxPrecision || 5
+    maxPrecision = maxPrecision || 4
     number = parseFloat(number)
     if (number < 10 ** (-maxPrecision)) {
       return '0'
@@ -71,6 +60,62 @@ export default {
     const fiat = (price || 0) * parseFloat(ones)
     const fiatFormatted = exports.default.formatNumber(fiat)
     return { balance, formatted, fiat, fiatFormatted, valid: true }
+  },
+
+  normalizedAddress: (address) => {
+    try {
+      address = new HarmonyAddress(address).checksum
+    } catch (ex) {
+      const err = (address.startsWith('one') && AddressError.InvalidBech32Address(ex)) ||
+        (address.startsWith('0x') && AddressError.InvalidHexAddress(ex)) || AddressError.Unknown(ex)
+      if (err) throw err
+    }
+    return address
+  },
+
+  safeNormalizedAddress: (address, trace) => {
+    try {
+      return exports.default.normalizedAddress(address)
+    } catch (ex) {
+      trace && console.trace(ex)
+      return null
+    }
+  },
+
+  oneAddress: (address) => {
+    return new HarmonyAddress(address).bech32
+  },
+
+  safeOneAddress: (address, trace) => {
+    try {
+      return exports.default.oneAddress(address)
+    } catch (ex) {
+      trace && console.trace(ex)
+      return null
+    }
+  },
+
+  safeExec: (f, args, handler) => {
+    if (typeof f !== 'function') {
+      return f
+    }
+    try {
+      return f(...args)
+    } catch (ex) {
+      handler && handler(ex)
+    }
+  },
+
+  filterNetworkWallets: (wallets, network) => {
+    return values(wallets).filter(w => w.network === network)
+  },
+
+  getNetworkExplorerUrl: (wallet) => {
+    if (wallet.network === 'harmony-testnet') {
+      return `https://explorer.pops.one/#/address/${wallet.address}`
+    }
+
+    return `https://explorer.harmony.one/#/address/${wallet.address}`
   }
 }
 
