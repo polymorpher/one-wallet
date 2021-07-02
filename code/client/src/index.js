@@ -10,10 +10,11 @@ import * as serviceWorker from './serviceWorker'
 import { initAPI, initBlockchain } from './api'
 import * as Sentry from '@sentry/react'
 import { Integrations } from '@sentry/tracing'
+import config from './config'
 
-if (process.env.NODE_ENV === 'production') {
+if (!config.debug) {
   Sentry.init({
-    dsn: process.env.SENTRY_DSN,
+    dsn: config.defaults.sentryDsn,
     integrations: [new Integrations.BrowserTracing()],
     tracesSampleRate: 1.0
   })
