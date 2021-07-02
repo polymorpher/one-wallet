@@ -80,6 +80,7 @@
     "jsqr": "^1.2.0",
     "localforage": "^1.9.0",
     "lodash": "^4.17.10",
+    "pluralize": "^8.0.0",
     "protobuf.js": "^1.1.2",
     "protobufjs": "^6.11.2",
     "qrcode": "^1.4.4",

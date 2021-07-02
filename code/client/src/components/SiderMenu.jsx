@@ -1,13 +1,14 @@
 import React, { useState } from 'react'
 import { useHistory, useRouteMatch } from 'react-router'
-import { Layout, Image, Menu, Row, Tag, Typography } from 'antd'
+import { Layout, Image, Menu, Row, Typography } from 'antd'
 import { PlusCircleOutlined, UnorderedListOutlined, HistoryOutlined } from '@ant-design/icons'
 import HarmonyLogo from '../assets/harmony.svg'
 import HarmonyIcon from '../assets/harmony-icon.svg'
 import config from '../config'
 import Paths from '../constants/paths'
 import styled from 'styled-components'
-import { useWindowDimensions } from '../util'
+import util, { useWindowDimensions } from '../util'
+import Pluralize from 'pluralize'
 
 const { Link } = Typography
 
@@ -18,6 +19,11 @@ const Text = styled.p`
     color: #fafafa;
   }
 `
+
+const Stats = styled.p`
+  color: #ccc;
+`
+
 const SiderMenu = ({ ...args }) => {
   const { width } = useWindowDimensions()
   const history = useHistory()
@@ -27,16 +33,19 @@ const SiderMenu = ({ ...args }) => {
   const nav = ({ key }) => {
     history.push(Paths[key])
   }
+  const stats = util.getWalletStats()
+
   return (
     <Layout.Sider collapsible={width < 900} onCollapse={c => setCollapsed(c)} {...args}>
       {/* <Image src='/assets/harmony.svg' /> */}
       <Row justify='center'>
-        <Link target='_blank' rel='noreferrer' href='https://harmony.one/'>
+        <Link target='_blank' rel='noopener noreferrer' href='https://harmony.one/'>
           <Image preview={false} src={collapsed ? HarmonyIcon : HarmonyLogo} style={{ cursor: 'pointer', padding: collapsed ? 16 : 32 }} onClick={() => history.push('/')} />
         </Link>
       </Row>
-      {!collapsed && <Text><Link href='https://harmony.one/1wallet' target='_blank' rel='noreferrer'>{config.appName} {config.version}</Link></Text>}
-      {!collapsed && <Row justify='center' style={{ marginBottom: 10 }}><Tag color='#0094c0'>Beta</Tag></Row>}
+      {!collapsed && <Text><Link href='https://harmony.one/1wallet' target='_blank' rel='noopener noreferrer'>{config.appName} {config.version}</Link></Text>}
+      <Row justify='center'><Stats>{stats.totalWallets.toLocaleString()} {Pluralize('wallet', stats.totalWallets)}</Stats></Row>
+      <Row justify='center' style={{ marginBottom: 10 }}><Stats>{stats.totalOnes.toLocaleString()} ONE</Stats></Row>
       <Menu theme='dark' mode='inline' onClick={nav} selectedKeys={[action]}>
         <Menu.Item key='create' icon={<PlusCircleOutlined />}>Create</Menu.Item>
         <Menu.Item key='wallets' icon={<UnorderedListOutlined />}>Wallets</Menu.Item>
