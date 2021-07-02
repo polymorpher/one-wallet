@@ -8,6 +8,16 @@ import { Provider } from 'react-redux'
 import { ConnectedRouter } from 'connected-react-router'
 import * as serviceWorker from './serviceWorker'
 import { initAPI, initBlockchain } from './api'
+import * as Sentry from '@sentry/react'
+import { Integrations } from '@sentry/tracing'
+
+if (process.env.NODE_ENV === 'production') {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    integrations: [new Integrations.BrowserTracing()],
+    tracesSampleRate: 1.0
+  })
+}
 
 document.body.ontouchstart = function () {}
 
