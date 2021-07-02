@@ -9,6 +9,7 @@ export default {
     relayer: process.env.REACT_APP_RELAYER || (DEBUG ? 'dev' : 'hiddenstate'),
     network: process.env.REACT_APP_NETWORK || (DEBUG ? 'eth-ganache' : 'harmony-mainnet'),
     relayerSecret: process.env.REACT_APP_RELAYER_SECRET,
+    sentryDsn: process.env.SENTRY_DSN
   },
   networks: {
     ...(DEBUG && {
