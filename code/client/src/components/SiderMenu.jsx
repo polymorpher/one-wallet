@@ -7,7 +7,8 @@ import HarmonyIcon from '../assets/harmony-icon.svg'
 import config from '../config'
 import Paths from '../constants/paths'
 import styled from 'styled-components'
-import util, { useWindowDimensions } from '../util'
+import { useWindowDimensions } from '../util'
+import api from '../api'
 
 const { Link } = Typography
 
@@ -19,8 +20,8 @@ const Text = styled.p`
   }
 `
 
-const Stats = styled.p`
-  color: #ccc;
+const Stats = styled(Text)`
+  opacity: 65%;
 `
 
 const SiderMenu = ({ ...args }) => {
@@ -36,7 +37,7 @@ const SiderMenu = ({ ...args }) => {
 
   useEffect(() => {
     async function getStats () {
-      const statsData = await util.getWalletStats()
+      const statsData = await api.walletStats.getStats()
       setStats(statsData)
     }
     getStats()
@@ -51,8 +52,8 @@ const SiderMenu = ({ ...args }) => {
         </Link>
       </Row>
       {!collapsed && <Text><Link href='https://harmony.one/1wallet' target='_blank' rel='noopener noreferrer'>{config.appName} {config.version}</Link></Text>}
-      <Row justify='center'><Stats>{stats && stats.count.toLocaleString()} wallets</Stats></Row>
-      <Row justify='center' style={{ marginBottom: 10 }}><Stats>{stats && stats.totalAmount.toLocaleString()} ONE</Stats></Row>
+      {stats && <Row justify='center'><Stats>{stats.count.toLocaleString()} wallets</Stats></Row>}
+      {stats && <Row justify='center' style={{ marginBottom: 10 }}><Stats>{stats.totalAmount.toLocaleString()} ONE</Stats></Row>}
       <Menu theme='dark' mode='inline' onClick={nav} selectedKeys={[action]}>
         <Menu.Item key='create' icon={<PlusCircleOutlined />}>Create</Menu.Item>
         <Menu.Item key='wallets' icon={<UnorderedListOutlined />}>Wallets</Menu.Item>

@@ -4,7 +4,6 @@ import { isInteger, values } from 'lodash'
 import ONEUtil from '../../lib/util'
 import { AddressError } from './constants/errors'
 import config from './config'
-import api from './api'
 
 export default {
   formatNumber: (number, maxPrecision) => {
@@ -134,21 +133,6 @@ export default {
       return null
     }
     return parsedOtp
-  },
-
-  getWalletStats: async () => {
-    try {
-      const response = await api.walletStats.getStats()
-      const bi = BigInt(response.totalAmount) / BigInt(10 ** 14)
-      const totalAmount = Math.round(parseInt(bi.toString()) / 10000)
-
-      return {
-        count: response.count,
-        totalAmount: totalAmount
-      }
-    } catch (err) {
-      console.error(err)
-    }
   }
 }
 
