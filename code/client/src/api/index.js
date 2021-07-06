@@ -99,7 +99,9 @@ export default {
       let majorVersion = new BN(0)
       let minorVersion = new BN(0)
       try {
-        [majorVersion, minorVersion] = await c.getVersion()
+        const versionResult = await c.getVersion()
+        majorVersion = versionResult[0]
+        minorVersion = versionResult[1]
       } catch (ex) {
         console.trace(ex)
       }
