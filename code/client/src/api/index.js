@@ -105,8 +105,7 @@ export default {
         majorVersion = versionResult[0]
         minorVersion = versionResult[1]
       } catch (ex) {
-        Sentry.captureException(ex)
-        console.trace(ex)
+        console.log(`Failed to get wallet version. Wallet might be too old. Error: ${ex.toString()}`)
       }
       const [root, height, interval, t0, lifespan, maxOperationsPerInterval, lastResortAddress, dailyLimit] = Object.keys(result).map(k => result[k])
       if (raw) {
@@ -142,7 +141,8 @@ export default {
     },
     getCommits: async ({ address }) => {
       const c = await one.at(address)
-      const [hashes, args, timestamps, completed] = c.commits()
+      const result = await c.getCommits()
+      const [hashes, args, timestamps, completed] = Object.keys(result).map(k => result[k])
       const commits = []
       for (let i = 0; i < hashes.length; i += 1) {
         commits.push({ hash: hashes[i], args: args[i], timestamp: timestamps[i], completed: completed[i] })

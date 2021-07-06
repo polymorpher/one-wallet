@@ -5,15 +5,32 @@ import { message } from 'antd'
 import api from './index'
 import WalletConstants from '../constants/wallet'
 import util from '../util'
+import walletActions from '../state/modules/wallet/actions'
+
+export const EotpBuilders = {
+  fromOtp: ({ otp, wallet }) => {
+    const { hseed } = wallet
+    const encodedOtp = ONEUtil.encodeNumericalOtp(otp)
+    return ONE.computeEOTP({ otp: encodedOtp, hseed: ONEUtil.hexToBytes(hseed) })
+  },
+  recovery: ({ wallet, layers }) => {
+    const { hseed, effectiveTime } = wallet
+    const index = ONEUtil.timeToIndex({ effectiveTime })
+    const leaf = layers[0].subarray(index * 32, index * 32 + 32).slice()
+    const { eotp } = ONE.bruteforceEOTP({ hseed: ONEUtil.hexToBytes(hseed), leaf })
+    return eotp
+  }
+}
 
 export const Flows = {
   commitReveal: async ({
-    otp, wallet, layers, commitHashGenerator, commitHashArgs,
+    otp, eotpBuilder = EotpBuilders.fromOtp,
+    wallet, layers, commitHashGenerator, commitHashArgs,
     beforeCommit, afterCommit, onCommitError, onCommitFailure,
     revealAPI, revealArgs, onRevealFailure, onRevealSuccess, onRevealError, onRevealAttemptFailed,
     beforeReveal
   }) => {
-    const { hseed, effectiveTime, root, address } = wallet
+    const { effectiveTime, root, address } = wallet
     if (!layers) {
       layers = await storage.getItem(root)
       if (!layers) {
@@ -22,8 +39,11 @@ export const Flows = {
         return
       }
     }
-    const encodedOtp = ONEUtil.encodeNumericalOtp(otp)
-    const eotp = ONE.computeEOTP({ otp: encodedOtp, hseed: ONEUtil.hexToBytes(hseed) })
+    const eotp = eotpBuilder({ otp, wallet, layers })
+    if (!eotp) {
+      message.error('Local state verification failed.')
+      return
+    }
     const index = ONEUtil.timeToIndex({ effectiveTime })
     const neighbors = ONE.selectMerkleNeighbors({ layers, index })
     const neighbor = neighbors[0]
@@ -89,6 +109,8 @@ export const SecureFlows = {
     beforeReveal = async (commitHash) => {
       _beforeReveal && _beforeReveal()
       const commits = await api.blockchain.getCommits({ address })
+      commitHash = ONEUtil.hexString(commitHash)
+      console.log({ commitHash, commits })
       if (!commits || !commits.find(c => c.hash === commitHash)) {
         throw new Error('Commit not yet confirmed by blockchain')
       }
@@ -102,9 +124,24 @@ export const SecureFlows = {
 export const SmartFlows = {
   commitReveal: async ({ wallet, ...args }) => {
     if (util.isWalletOutdated(wallet)) {
-      message.warning('You are using an outdated wallet, which is less secure than the current version. Please move your funds to a new wallet.')
+      message.warning('You are using an outdated wallet, which is less secure than the current version. Please move your funds to a new wallet.', 15)
       return Flows.commitReveal({ ...args, wallet })
     }
     return SecureFlows.commitReveal({ ...args, wallet })
+  }
+}
+
+export const Chaining = {
+  refreshBalance: (dispatch, addresses) => {
+    if (!addresses || !dispatch) {
+      return
+    }
+    WalletConstants.fetchDelaysAfterTransfer.forEach(t => {
+      setTimeout(() => {
+        addresses.forEach(address => {
+          dispatch(walletActions.fetchBalance({ address }))
+        })
+      }, t)
+    })
   }
 }

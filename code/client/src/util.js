@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { HarmonyAddress } from '@harmony-js/crypto'
-import { values } from 'lodash'
+import { isInteger, values } from 'lodash'
 import ONEUtil from '../../lib/util'
 import { AddressError } from './constants/errors'
 import * as Sentry from '@sentry/browser'
@@ -132,6 +132,14 @@ export default {
 
   isWalletOutdated: (wallet) => {
     return !wallet.majorVersion || !(wallet.majorVersion >= config.minWalletVersion)
+  },
+
+  parseOtp: otpInput => {
+    const parsedOtp = parseInt(otpInput)
+    if (!isInteger(parsedOtp) || !(parsedOtp < 1000000)) {
+      return null
+    }
+    return parsedOtp
   }
 }
 

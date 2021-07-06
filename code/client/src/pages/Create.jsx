@@ -223,7 +223,7 @@ const Create = () => {
           <Space direction='vertical'>
             {/* <Heading>Now, scan the QR code with your Google Authenticator</Heading> */}
             <Heading>Create Your ONE Wallet</Heading>
-            <Hint>You need the 6-digit code from authenticator to transfer funds. You can restore your wallet using the authenticator on any device.</Hint>
+            <Hint>You need the 6-digit code from Google authenticator to transfer funds. You can restore your wallet using Google authenticator on any device.</Hint>
             <Row justify='center'>
               {qrCodeData && <Image src={qrCodeData} preview={false} width={256} />}
             </Row>
@@ -231,7 +231,7 @@ const Create = () => {
         </Row>
         <Row>
           <Space direction='vertical' size='large' align='center'>
-            <Hint>After you are done, please type in your 6-digit code from authenticator.</Hint>
+            <Hint>After you are done, type in the 6-digit code from Google authenticator.</Hint>
             <OtpBox
               shouldAutoFocus
               value={otp}
