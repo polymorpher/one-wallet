@@ -103,7 +103,7 @@ export default {
         majorVersion = versionResult[0]
         minorVersion = versionResult[1]
       } catch (ex) {
-        console.trace(ex)
+        console.log(`Failed to get wallet version. Wallet might be too old. Error: ${ex.toString()}`)
       }
       const [root, height, interval, t0, lifespan, maxOperationsPerInterval, lastResortAddress, dailyLimit] = Object.keys(result).map(k => result[k])
       if (raw) {
