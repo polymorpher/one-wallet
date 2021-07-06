@@ -34,7 +34,7 @@ contract ONEWallet {
     uint32 constant REVEAL_MAX_DELAY = 60;
     uint32 constant SECONDS_PER_DAY = 86400;
 
-    uint32 public constant majorVersion = 0x1; // a change would require client to migrate
+    uint32 public constant majorVersion = 0x2; // a change would require client to migrate
     uint32 public constant minorVersion = 0x1; // a change would not require the client to migrate
 
     //    bool commitLocked; // not necessary at this time
@@ -69,6 +69,11 @@ contract ONEWallet {
         return (root, height, interval, t0, lifespan, maxOperationsPerInterval, lastResortAddress, dailyLimit);
     }
 
+    function getVersion() external pure returns (uint32, uint32)
+    {
+        return (majorVersion, minorVersion);
+    }
+
     function getCurrentSpending() external view returns (uint256, uint256)
     {
         return (spentToday, lastTransferDay);
@@ -78,6 +83,22 @@ contract ONEWallet {
     {
         uint32 index = uint32(block.timestamp) / interval - t0;
         return nonces[index];
+    }
+
+    function getCommits() public view returns (bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory)
+    {
+        // will be used in the next version
+        bytes32[] memory args = new bytes32[](commits.length);
+
+        bytes32[] memory hashes = new bytes32[](commits.length);
+        uint32[] memory timestamps = new uint32[](commits.length);
+        bool[] memory completed = new bool[](commits.length);
+        for (uint32 i = 0; i < commits.length; i++) {
+            hashes[i] = commits[i].hash;
+            timestamps[i] = commits[i].timestamp;
+            completed[i] = commits[i].completed;
+        }
+        return (hashes, args, timestamps, completed);
     }
 
     function commit(bytes32 hash) external
