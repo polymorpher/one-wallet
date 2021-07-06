@@ -137,7 +137,12 @@ export default {
     },
     getCommits: async ({ address }) => {
       const c = await one.at(address)
-      // c.commits()
+      const [hashes, args, timestamps, completed] = c.commits()
+      const commits = []
+      for (let i = 0; i < hashes.length; i += 1) {
+        commits.push({ hash: hashes[i], args: args[i], timestamp: timestamps[i], completed: completed[i] })
+      }
+      return commits
     }
   },
   relayer: {
