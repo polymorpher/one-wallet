@@ -139,7 +139,8 @@ export default {
     },
     getCommits: async ({ address }) => {
       const c = await one.at(address)
-      const [hashes, args, timestamps, completed] = c.commits()
+      const result = await c.getCommits()
+      const [hashes, args, timestamps, completed] = Object.keys(result).map(k => result[k])
       const commits = []
       for (let i = 0; i < hashes.length; i += 1) {
         commits.push({ hash: hashes[i], args: args[i], timestamp: timestamps[i], completed: completed[i] })
