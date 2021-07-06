@@ -1,5 +1,7 @@
 require('dotenv').config()
 const createError = require('http-errors')
+const rateLimit = require('express-rate-limit')
+const Fingerprint = require('express-fingerprint')
 const express = require('express')
 const path = require('path')
 const cookieParser = require('cookie-parser')
@@ -46,6 +48,14 @@ if (config.https.only) {
 }
 httpsServer = https.createServer(httpsOptions, app)
 
+app.use(Fingerprint({
+  parameters: [
+    Fingerprint.useragent,
+    Fingerprint.acceptHeaders,
+    Fingerprint.geoip,
+  ]
+}))
+
 app.use(bodyParser.json({
   verify: function (req, _res, buf) {
     req.rawBody = buf
@@ -75,7 +85,7 @@ if (config.corsOrigins) {
   })
 }
 
-app.use(express.static(path.join(__dirname, 'public')))
+app.use(express.static(path.join(__dirname, 'public')), rateLimit({ windowMs: 1000 * 60, max: 6 }))
 app.options('*', async (_req, res) => res.end())
 app.use('/', _index)
 

@@ -1,7 +1,7 @@
 // eslint-disable-next-line no-unused-vars
 import React from 'react'
 import styled from 'styled-components'
-import { Input, Typography } from 'antd'
+import { Input, Typography, Card } from 'antd'
 
 const { Text, Title } = Typography
 
@@ -25,3 +25,9 @@ export const InputBox = styled(Input).attrs((props) => ({ size: props.size || 'l
     border-bottom: 1px dashed black;
   }
 `
+
+export const Warning = ({ children, ...props }) =>
+  <Card style={{ borderRadius: 8, backgroundColor: '#f3cbcb', fontSize: 16 }} bodyStyle={{ padding: 16, paddingLeft: 24, paddingRight: 24 }}>
+    <Text>{children}
+    </Text>
+  </Card>

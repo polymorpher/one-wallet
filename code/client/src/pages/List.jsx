@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
-import { values, sum } from 'lodash'
-import { Card, Row, Space, Typography, message, Col } from 'antd'
+import { values } from 'lodash'
+import { Card, Row, Space, Typography, message, Col, Tag } from 'antd'
 import util from '../util'
 import { useHistory, useLocation } from 'react-router'
 import Paths from '../constants/paths'
@@ -16,14 +16,16 @@ const WalletCard = ({ wallet }) => {
   const { address, name } = wallet
   const oneAddress = getAddress(address).bech32
   const dispatch = useDispatch()
-  const balances = useSelector(state => state.wallet.balances)
-  const balance = balances[address]
+  const balance = useSelector(state => state.wallet.balances[address])
   const price = useSelector(state => state.wallet.price)
   const { formatted, fiatFormatted } = util.computeBalance(balance, price)
 
+  const walletOutdated = util.isWalletOutdated(wallet)
+
   useEffect(() => {
     dispatch(walletActions.fetchBalance({ address }))
-  }, [location])
+    dispatch(walletActions.fetchWallet({ address }))
+  }, [location.pathname])
 
   return (
     <Card
@@ -41,7 +43,9 @@ const WalletCard = ({ wallet }) => {
           }}
         >{oneAddress}
         </Text>
+        {walletOutdated && <Tag color='warning' style={{ position: 'absolute', bottom: 16, right: 16 }}>needs attention</Tag>}
       </Space>
+
     </Card>
   )
 }

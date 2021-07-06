@@ -5,6 +5,7 @@ const router = express.Router()
 const { StatusCodes } = require('http-status-codes')
 const blockchain = require('../blockchain')
 const BN = require('bn.js')
+const rateLimit = require('express-rate-limit')
 
 const checkParams = (params, res) => {
   params = mapValues(params, e => e === undefined ? null : e)
@@ -34,7 +35,35 @@ const parseError = (ex) => {
   return { success: false, code: StatusCodes.INTERNAL_SERVER_ERROR, error }
 }
 
-router.get('/health', async (req, res) => {
+const generalLimiter = (args) => rateLimit({
+  windowMs: 1000 * 60,
+  max: 6,
+  keyGenerator: req => req.fingerprint?.hash || '',
+  ...args,
+
+})
+
+const walletAddressLimiter = (args) => rateLimit({
+  windowMs: 1000 * 60,
+  keyGenerator: req => req.body.address || '',
+  ...args,
+
+})
+
+const rootHashLimiter = args => rateLimit({
+  windowMs: 1000 * 60,
+  keyGenerator: req => req.body.root || '',
+  ...args,
+})
+
+const globalLimiter = args => rateLimit({
+  windowMs: 1000 * 60,
+  keyGenerator: req => '',
+  ...args,
+})
+
+router.get('/health', generalLimiter(), async (req, res) => {
+  console.log(req.fingerprint)
   res.send('OK').end()
 })
 
@@ -58,7 +87,7 @@ router.use((req, res, next) => {
 
 // TODO: rate limiting + fingerprinting + delay with backoff
 
-router.post('/new', async (req, res) => {
+router.post('/new', rootHashLimiter({ max: 6 }), generalLimiter({ max: 1 }), globalLimiter({ max: 250 }), async (req, res) => {
   let { root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit } = req.body
   // root is hex string, 32 bytes
   height = parseInt(height)
@@ -87,7 +116,7 @@ router.post('/new', async (req, res) => {
   }
 })
 
-router.post('/commit', async (req, res) => {
+router.post('/commit', generalLimiter({ max: 30 }), walletAddressLimiter({ max: 30 }), async (req, res) => {
   let { hash, address } = req.body
   if (config.debug || config.verbose) {
     console.log(`[/commit] `, { hash, address })
@@ -109,7 +138,7 @@ router.post('/commit', async (req, res) => {
   }
 })
 
-router.post('/reveal/transfer', async (req, res) => {
+router.post('/reveal/transfer', generalLimiter({ max: 30 }), walletAddressLimiter({ max: 30 }), async (req, res) => {
   let { neighbors, index, eotp, dest, amount, address } = req.body
   if (!checkParams({ neighbors, index, eotp, dest, amount, address }, res)) {
     return
@@ -126,7 +155,7 @@ router.post('/reveal/transfer', async (req, res) => {
   }
 })
 
-router.post('/reveal/recovery', async (req, res) => {
+router.post('/reveal/recovery', generalLimiter({ max: 30 }), walletAddressLimiter({ max: 30 }), async (req, res) => {
   let { neighbors, index, eotp, address } = req.body
   if (!checkParams({ neighbors, index, eotp, address }, res)) {
     return
@@ -143,7 +172,7 @@ router.post('/reveal/recovery', async (req, res) => {
   }
 })
 
-router.post('/reveal/set-recovery-address', async (req, res) => {
+router.post('/reveal/set-recovery-address', generalLimiter({ max: 30 }), walletAddressLimiter({ max: 30 }), async (req, res) => {
   let { neighbors, index, eotp, address, lastResortAddress } = req.body
   if (!checkParams({ neighbors, index, eotp, address, lastResortAddress }, res)) {
     return
@@ -160,7 +189,7 @@ router.post('/reveal/set-recovery-address', async (req, res) => {
   }
 })
 
-router.post('/retire', async (req, res) => {
+router.post('/retire', generalLimiter({ max: 6 }), walletAddressLimiter({ max: 6 }), async (req, res) => {
   let { address } = req.body
   if (!checkParams({ address }, res)) {
     return

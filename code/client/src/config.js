@@ -4,11 +4,13 @@ export default {
   appId: 'ONEWallet',
   appName: 'ONE Wallet',
   version: 'v0.1',
+  minWalletVersion: parseInt(process.env.MIN_WALLET_VERSION || 0),
   priceRefreshInterval: 60 * 1000,
   defaults: {
     relayer: process.env.REACT_APP_RELAYER || (DEBUG ? 'dev' : 'hiddenstate'),
     network: process.env.REACT_APP_NETWORK || (DEBUG ? 'eth-ganache' : 'harmony-mainnet'),
     relayerSecret: process.env.REACT_APP_RELAYER_SECRET,
+    sentryDsn: process.env.SENTRY_DSN
   },
   networks: {
     ...(DEBUG && {

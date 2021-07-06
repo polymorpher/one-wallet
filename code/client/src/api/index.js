@@ -6,6 +6,7 @@ import { TruffleProvider } from '@harmony-js/core'
 import Web3 from 'web3'
 import ONEWalletContract from '../../../build/contracts/ONEWallet.json'
 import WalletConstants from '../constants/wallet'
+import BN from 'bn.js'
 
 const apiConfig = {
   relayer: config.defaults.relayer,
@@ -95,6 +96,15 @@ export default {
     getWallet: async ({ address, raw }) => {
       const c = await one.at(address)
       const result = await c.getInfo()
+      let majorVersion = new BN(0)
+      let minorVersion = new BN(0)
+      try {
+        const versionResult = await c.getVersion()
+        majorVersion = versionResult[0]
+        minorVersion = versionResult[1]
+      } catch (ex) {
+        console.log(`Failed to get wallet version. Wallet might be too old. Error: ${ex.toString()}`)
+      }
       const [root, height, interval, t0, lifespan, maxOperationsPerInterval, lastResortAddress, dailyLimit] = Object.keys(result).map(k => result[k])
       if (raw) {
         return {
@@ -105,7 +115,9 @@ export default {
           lifespan: lifespan.toNumber(),
           maxOperationsPerInterval: maxOperationsPerInterval.toNumber(),
           lastResortAddress,
-          dailyLimit: dailyLimit.toString(10)
+          dailyLimit: dailyLimit.toString(10),
+          majorVersion: majorVersion ? majorVersion.toNumber() : 0,
+          minorVersion: minorVersion ? minorVersion.toNumber() : 0,
         }
       }
       // TODO: use smart contract interval value, after we fully support 60 second interval in client (and Android Google Authenticator supports that too)
@@ -116,12 +128,24 @@ export default {
         duration: lifespan.toNumber() * WalletConstants.interval,
         slotSize: maxOperationsPerInterval.toNumber(),
         lastResortAddress,
-        dailyLimit: dailyLimit.toString(10)
+        dailyLimit: dailyLimit.toString(10),
+        majorVersion: majorVersion ? majorVersion.toNumber() : 0,
+        minorVersion: minorVersion ? minorVersion.toNumber() : 0,
       }
     },
     getBalance: async ({ address }) => {
       const balance = await web3.eth.getBalance(address)
       return balance
+    },
+    getCommits: async ({ address }) => {
+      const c = await one.at(address)
+      const result = await c.getCommits()
+      const [hashes, args, timestamps, completed] = Object.keys(result).map(k => result[k])
+      const commits = []
+      for (let i = 0; i < hashes.length; i += 1) {
+        commits.push({ hash: hashes[i], args: args[i], timestamp: timestamps[i], completed: completed[i] })
+      }
+      return commits
     }
   },
   relayer: {

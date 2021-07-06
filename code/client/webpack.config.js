@@ -84,7 +84,15 @@ module.exports = {
     }
   },
   plugins: [
-    new webpack.EnvironmentPlugin({ PUBLIC_URL: '', REACT_APP_NETWORK: '', REACT_APP_RELAYER: '', REACT_APP_RELAYER_SECRET: 'onewallet', DEBUG: false }),
+    new webpack.EnvironmentPlugin({
+      PUBLIC_URL: '',
+      REACT_APP_NETWORK: '',
+      REACT_APP_RELAYER: '',
+      REACT_APP_RELAYER_SECRET: 'onewallet',
+      DEBUG: false,
+      MIN_WALLET_VERSION: 0,
+      SENTRY_DSN: '', // dev
+    }),
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],
     }),

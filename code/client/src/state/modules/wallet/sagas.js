@@ -1,4 +1,4 @@
-import { put, all, call, takeLatest } from 'redux-saga/effects'
+import { put, all, call, takeLatest, takeEvery } from 'redux-saga/effects'
 import walletActions from './actions'
 import api from '../../../api'
 
@@ -36,8 +36,8 @@ function * handleFetchPrice () {
 
 function * walletSages () {
   yield all([
-    takeLatest(walletActions.fetchWallet().type, handleFetchWallet),
-    takeLatest(walletActions.fetchBalance().type, handleFetchBalance),
+    takeEvery(walletActions.fetchWallet().type, handleFetchWallet),
+    takeEvery(walletActions.fetchBalance().type, handleFetchBalance),
     takeLatest(walletActions.fetchPrice().type, handleFetchPrice),
   ])
 }

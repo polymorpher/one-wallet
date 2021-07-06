@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
-import { useSelector } from 'react-redux'
 import { HarmonyAddress } from '@harmony-js/crypto'
-import { values } from 'lodash'
+import { isInteger, values } from 'lodash'
 import ONEUtil from '../../lib/util'
 import { AddressError } from './constants/errors'
-import BN from 'bn.js'
+import config from './config'
+import api from '../api'
 
 export default {
   formatNumber: (number, maxPrecision) => {
@@ -124,24 +124,24 @@ export default {
     return `https://explorer.harmony.one/#/address/${wallet.address}`
   },
 
-  getWalletStats: () => {
-    // TODO TEMP! fetch real stats when implemented
-    const wallets = useSelector(state => state.wallet.wallets)
-    const balances = useSelector(state => state.wallet.balances)
-    const price = useSelector(state => state.wallet.price)
-    const network = useSelector(state => state.wallet.network)
-    const totalBalance = Object.keys(balances).filter(a => wallets[a] && wallets[a].network === network).map(a => balances[a])
-      .reduce((a, b) => a.add(new BN(b, 10)), new BN(0)).toString()
-    const { formatted, fiatFormatted } = exports.default.computeBalance(totalBalance, price)
-    const networkWallets = exports.default.filterNetworkWallets(wallets, network)
+  isWalletOutdated: (wallet) => {
+    return !wallet.majorVersion || !(wallet.majorVersion >= config.minWalletVersion)
+  },
 
-    let stats = {
-      totalWallets: networkWallets.length,
-      totalOnes: formatted,
-      totalFiat: fiatFormatted
+  parseOtp: otpInput => {
+    const parsedOtp = parseInt(otpInput)
+    if (!isInteger(parsedOtp) || !(parsedOtp < 1000000)) {
+      return null
     }
+    return parsedOtp
+  },
 
-    return stats
+  getWalletStats: async () => {
+    try {
+      const stats = await api.walletStats.getStats()
+      console.log(stats)
+    } catch (err) {
+      console.error(err)
   }
 }
 

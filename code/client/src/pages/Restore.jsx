@@ -29,17 +29,23 @@ const Restore = () => {
   const [device, setDevice] = useState()
   const ref = useRef()
   useEffect(() => {
+    const numAttempts = 0
     const f = async () => {
       const d = await navigator.mediaDevices.enumerateDevices()
       const cams = d.filter(e => e.kind === 'videoinput')
       if (cams.length <= 0) {
         return message.error('Restore requires a camera to scan the QR code. Please use a device that has a camera.', 15)
       }
+      if (cams.length === 1 && !cams[0].label && numAttempts < 5) {
+        setTimeout(() => f(), 2500)
+        console.log('got empty labels. retrying in 2.5s')
+      }
+      // console.log(cams)
       setVideoDevices(cams)
       setDevice(cams[0])
     }
-    f()
-  }, [])
+    section === 2 && videoDevices.length === 0 && f()
+  }, [section])
   const onChange = (v) => {
     const d = videoDevices.find(e => e.deviceId === v)
     setDevice(d)
@@ -190,6 +196,7 @@ const Restore = () => {
         <Space direction='vertical' size='large'>
           <Heading>What is the address of the wallet?</Heading>
           <InputBox margin='auto' width={440} value={addressInput} onChange={({ target: { value } }) => setAddressInput(value)} placeholder='one1...' />
+          <Hint>Next, we will ask for your permission to use your computer's camera. We need that to scan the QR code exported from your Google Authenticator.</Hint>
         </Space>
       </AnimatedSection>
       <AnimatedSection show={section === 2} style={{ maxWidth: 640 }}>
