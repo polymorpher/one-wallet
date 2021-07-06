@@ -101,7 +101,9 @@ export default {
       let majorVersion = new BN(0)
       let minorVersion = new BN(0)
       try {
-        [majorVersion, minorVersion] = await c.getVersion()
+        const versionResult = await c.getVersion()
+        majorVersion = versionResult[0]
+        minorVersion = versionResult[1]
       } catch (ex) {
         Sentry.captureException(ex)
         console.trace(ex)
@@ -140,7 +142,12 @@ export default {
     },
     getCommits: async ({ address }) => {
       const c = await one.at(address)
-      // c.commits()
+      const [hashes, args, timestamps, completed] = c.commits()
+      const commits = []
+      for (let i = 0; i < hashes.length; i += 1) {
+        commits.push({ hash: hashes[i], args: args[i], timestamp: timestamps[i], completed: completed[i] })
+      }
+      return commits
     }
   },
   relayer: {

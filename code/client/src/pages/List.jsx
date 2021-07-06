@@ -22,7 +22,7 @@ const WalletCard = ({ wallet }) => {
   const price = useSelector(state => state.wallet.price)
   const { formatted, fiatFormatted } = util.computeBalance(balance, price)
 
-  const walletOutdated = !wallet.majorVersion || !(wallet.majorVersion >= config.minWalletVersion)
+  const walletOutdated = util.isWalletOutdated(wallet)
 
   useEffect(() => {
     dispatch(walletActions.fetchBalance({ address }))
