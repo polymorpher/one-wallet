@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useHistory, useRouteMatch } from 'react-router'
 import { Layout, Image, Menu, Row, Typography } from 'antd'
 import { PlusCircleOutlined, UnorderedListOutlined, HistoryOutlined } from '@ant-design/icons'
@@ -8,7 +8,6 @@ import config from '../config'
 import Paths from '../constants/paths'
 import styled from 'styled-components'
 import util, { useWindowDimensions } from '../util'
-import Pluralize from 'pluralize'
 
 const { Link } = Typography
 
@@ -33,7 +32,15 @@ const SiderMenu = ({ ...args }) => {
   const nav = ({ key }) => {
     history.push(Paths[key])
   }
-  const stats = util.getWalletStats()
+  const [stats, setStats] = useState(null)
+
+  useEffect(() => {
+    async function getStats () {
+      const statsData = await util.getWalletStats()
+      setStats(statsData)
+    }
+    getStats()
+  }, [])
 
   return (
     <Layout.Sider collapsible={width < 900} onCollapse={c => setCollapsed(c)} {...args}>
@@ -44,8 +51,8 @@ const SiderMenu = ({ ...args }) => {
         </Link>
       </Row>
       {!collapsed && <Text><Link href='https://harmony.one/1wallet' target='_blank' rel='noopener noreferrer'>{config.appName} {config.version}</Link></Text>}
-      <Row justify='center'><Stats>{stats.totalWallets.toLocaleString()} {Pluralize('wallet', stats.totalWallets)}</Stats></Row>
-      <Row justify='center' style={{ marginBottom: 10 }}><Stats>{stats.totalOnes.toLocaleString()} ONE</Stats></Row>
+      <Row justify='center'><Stats>{stats && stats.count.toLocaleString()} wallets</Stats></Row>
+      <Row justify='center' style={{ marginBottom: 10 }}><Stats>{stats && stats.totalAmount.toLocaleString()} ONE</Stats></Row>
       <Menu theme='dark' mode='inline' onClick={nav} selectedKeys={[action]}>
         <Menu.Item key='create' icon={<PlusCircleOutlined />}>Create</Menu.Item>
         <Menu.Item key='wallets' icon={<UnorderedListOutlined />}>Wallets</Menu.Item>

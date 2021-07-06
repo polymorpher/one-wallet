@@ -92,6 +92,12 @@ export default {
       return parseFloat(lastPrice)
     }
   },
+  walletStats: {
+    getStats: async () => {
+      const { data } = await axios.get('https://explorer-v2-api.hmny.io/v0/1wallet/metrics')
+      return data
+    }
+  },
   blockchain: {
     getWallet: async ({ address, raw }) => {
       const c = await one.at(address)
