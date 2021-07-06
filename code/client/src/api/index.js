@@ -6,6 +6,7 @@ import { TruffleProvider } from '@harmony-js/core'
 import Web3 from 'web3'
 import ONEWalletContract from '../../../build/contracts/ONEWallet.json'
 import WalletConstants from '../constants/wallet'
+import BN from 'bn.js'
 
 const apiConfig = {
   relayer: config.defaults.relayer,
@@ -95,7 +96,14 @@ export default {
     getWallet: async ({ address, raw }) => {
       const c = await one.at(address)
       const result = await c.getInfo()
-      const [root, height, interval, t0, lifespan, maxOperationsPerInterval, lastResortAddress, dailyLimit, majorVersion, minorVersion] = Object.keys(result).map(k => result[k])
+      let majorVersion = new BN(0)
+      let minorVersion = new BN(0)
+      try {
+        [majorVersion, minorVersion] = await c.getVersion()
+      } catch (ex) {
+        console.trace(ex)
+      }
+      const [root, height, interval, t0, lifespan, maxOperationsPerInterval, lastResortAddress, dailyLimit] = Object.keys(result).map(k => result[k])
       if (raw) {
         return {
           root,
