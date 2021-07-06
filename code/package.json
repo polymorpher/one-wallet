@@ -7,7 +7,8 @@
     "test": "truffle test --network=dev",
     "migrate": "truffle migrate --network=dev",
     "lint": "eslint ./lib ./migrations ./test",
-    "lint-fix": "eslint ./lib ./migrations ./test --fix"
+    "lint-fix": "eslint ./lib ./migrations ./test --fix",
+    "console": "node --experimental-repl-await"
   },
   "dependencies": {
     "@truffle/hdwallet-provider": "^1.4.0",
@@ -38,6 +39,7 @@
     "@babel/preset-env": "^7.14.2",
     "@harmony-js/core": "^0.1.57",
     "@harmony-js/crypto": "^0.1.56",
+    "@truffle/contract": "^4.3.23",
     "assert": "^1.5.0",
     "babel-jest": "24.9.0",
     "babel-loader": "8.0.6",

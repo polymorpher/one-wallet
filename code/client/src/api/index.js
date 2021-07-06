@@ -95,7 +95,7 @@ export default {
     getWallet: async ({ address, raw }) => {
       const c = await one.at(address)
       const result = await c.getInfo()
-      const [root, height, interval, t0, lifespan, maxOperationsPerInterval, lastResortAddress, dailyLimit] = Object.keys(result).map(k => result[k])
+      const [root, height, interval, t0, lifespan, maxOperationsPerInterval, lastResortAddress, dailyLimit, majorVersion, minorVersion] = Object.keys(result).map(k => result[k])
       if (raw) {
         return {
           root,
@@ -105,7 +105,9 @@ export default {
           lifespan: lifespan.toNumber(),
           maxOperationsPerInterval: maxOperationsPerInterval.toNumber(),
           lastResortAddress,
-          dailyLimit: dailyLimit.toString(10)
+          dailyLimit: dailyLimit.toString(10),
+          majorVersion: majorVersion ? majorVersion.toNumber() : 0,
+          minorVersion: minorVersion ? minorVersion.toNumber() : 0,
         }
       }
       // TODO: use smart contract interval value, after we fully support 60 second interval in client (and Android Google Authenticator supports that too)
@@ -116,12 +118,18 @@ export default {
         duration: lifespan.toNumber() * WalletConstants.interval,
         slotSize: maxOperationsPerInterval.toNumber(),
         lastResortAddress,
-        dailyLimit: dailyLimit.toString(10)
+        dailyLimit: dailyLimit.toString(10),
+        majorVersion: majorVersion ? majorVersion.toNumber() : 0,
+        minorVersion: minorVersion ? minorVersion.toNumber() : 0,
       }
     },
     getBalance: async ({ address }) => {
       const balance = await web3.eth.getBalance(address)
       return balance
+    },
+    getCommits: async ({ address }) => {
+      const c = await one.at(address)
+      // c.commits()
     }
   },
   relayer: {

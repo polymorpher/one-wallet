@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
-import { values, sum } from 'lodash'
-import { Card, Row, Space, Typography, message, Col } from 'antd'
+import { values } from 'lodash'
+import { Card, Row, Space, Typography, message, Col, Tag } from 'antd'
 import util from '../util'
 import { useHistory, useLocation } from 'react-router'
 import Paths from '../constants/paths'
 import BN from 'bn.js'
 import { getAddress } from '@harmony-js/crypto'
+import config from '../config'
 const { Text, Title } = Typography
 
 const WalletCard = ({ wallet }) => {
@@ -21,8 +22,11 @@ const WalletCard = ({ wallet }) => {
   const price = useSelector(state => state.wallet.price)
   const { formatted, fiatFormatted } = util.computeBalance(balance, price)
 
+  const walletOutdated = !wallet.majorVersion || !(wallet.majorVersion >= config.minWalletVersion)
+
   useEffect(() => {
     dispatch(walletActions.fetchBalance({ address }))
+    dispatch(walletActions.fetchWallet({ address }))
   }, [location])
 
   return (
@@ -41,7 +45,9 @@ const WalletCard = ({ wallet }) => {
           }}
         >{oneAddress}
         </Text>
+        {walletOutdated && <Tag color='warning' style={{ position: 'absolute', bottom: 16, right: 16 }}>needs attention</Tag>}
       </Space>
+
     </Card>
   )
 }

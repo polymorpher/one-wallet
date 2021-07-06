@@ -20,7 +20,7 @@ import styled from 'styled-components'
 import humanizeDuration from 'humanize-duration'
 import AnimatedSection from '../components/AnimatedSection'
 
-import { Hint, InputBox } from '../components/Text'
+import { Hint, InputBox, Warning } from '../components/Text'
 import { isInteger } from 'lodash'
 import storage from '../storage'
 import BN from 'bn.js'
@@ -59,6 +59,8 @@ const Show = () => {
   const [section, setSection] = useState(action)
   const [stage, setStage] = useState(0)
   const network = useSelector(state => state.wallet.network)
+
+  const walletOutdated = !wallet.majorVersion || !(wallet.majorVersion >= config.minWalletVersion)
 
   useEffect(() => {
     if (!wallet) {
@@ -422,6 +424,7 @@ const Show = () => {
         title={title}
         style={{ minWidth: 480, minHeight: 320, maxWidth: 720 }}
       >
+        {walletOutdated && <Warning>Your wallet is outdated. Some information may be displayed incorrectly. Some features might not function. Your balance is still displayed correctly, and you can still send funds. <br/><br/>Please create a new wallet and move your funds as soon as possible.</Warning>}
         <Row style={{ marginTop: 16 }}>
           <Col span={12}>
             <Title level={3} style={{ marginRight: 48 }}>Balance</Title>
