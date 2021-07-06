@@ -2901,6 +2901,11 @@ express-fingerprint@^1.2.2:
     traverse "^0.6.6"
     useragent "^2.3.0"
 
+express-rate-limit@^5.3.0:
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/express-rate-limit/-/express-rate-limit-5.3.0.tgz#e7b9d3c2e09ece6e0406a869b2ce00d03fe48aea"
+  integrity sha512-qJhfEgCnmteSeZAeuOKQ2WEIFTX5ajrzE0xS6gCOBCoRQcU+xEzQmgYQQTpzCcqUAAzTEtu4YEih4pnLfvNtew==
+
 express-slow-down@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/express-slow-down/-/express-slow-down-1.4.0.tgz#89e0aef6c3bb3602b70f06e0824889bd2362cc21"
