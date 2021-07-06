@@ -7,6 +7,7 @@ import Web3 from 'web3'
 import ONEWalletContract from '../../../build/contracts/ONEWallet.json'
 import WalletConstants from '../constants/wallet'
 import BN from 'bn.js'
+import * as Sentry from '@sentry/browser'
 
 const apiConfig = {
   relayer: config.defaults.relayer,
@@ -60,6 +61,7 @@ export const initBlockchain = (store) => {
       web3instances[k] = new Web3(providers[k])
       networks.push(k)
     } catch (ex) {
+      Sentry.captureException(ex)
       console.error(ex)
       console.trace(ex)
     }
@@ -101,6 +103,7 @@ export default {
       try {
         [majorVersion, minorVersion] = await c.getVersion()
       } catch (ex) {
+        Sentry.captureException(ex)
         console.trace(ex)
       }
       const [root, height, interval, t0, lifespan, maxOperationsPerInterval, lastResortAddress, dailyLimit] = Object.keys(result).map(k => result[k])

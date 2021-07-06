@@ -28,6 +28,7 @@ import config from '../config'
 import OtpBox from '../components/OtpBox'
 import { getAddress } from '@harmony-js/crypto'
 import { handleAddressError } from '../handler'
+import * as Sentry from '@sentry/browser'
 const { Title, Text, Link } = Typography
 const { Step } = Steps
 const TallRow = styled(Row)`
@@ -101,6 +102,7 @@ const Show = () => {
       message.success(`Wallet ${name} is deleted`)
       history.push(Paths.wallets)
     } catch (ex) {
+      Sentry.captureException(ex)
       console.error(ex)
       message.error(`Failed to delete wallet proofs. Error: ${ex}`)
     }
@@ -176,6 +178,7 @@ const Show = () => {
         return
       }
     } catch (ex) {
+      Sentry.captureException(ex)
       console.error(ex)
       message.error('Failed to commit. Error: ' + ex.toString())
       setStage(0)
@@ -224,6 +227,7 @@ const Show = () => {
           }, t)
         })
       } catch (ex) {
+        Sentry.captureException(ex)
         console.trace(ex)
         if (numAttemptsRemaining <= 0) {
           message.error('Failed to finalize transfer. Please try again later.')
@@ -268,6 +272,7 @@ const Show = () => {
         return
       }
     } catch (ex) {
+      Sentry.captureException(ex)
       console.error(ex)
       message.error('Failed to commit the recovery transaction. Error: ' + ex.toString())
       setStage(0)
@@ -302,6 +307,7 @@ const Show = () => {
           message.success(<Text>Recovery is completed! Copy transaction id: <Text copyable={{ text: txId }}>{util.ellipsisAddress(txId)} </Text></Text>, 10)
         }
       } catch (ex) {
+        Sentry.captureException(ex)
         console.trace(ex)
         if (numAttemptsRemaining <= 0) {
           message.error('Failed to finalize recovery. Please try again later.')
@@ -353,6 +359,7 @@ const Show = () => {
         return
       }
     } catch (ex) {
+      Sentry.captureException(ex)
       console.error(ex)
       message.error('Failed to commit. Error: ' + ex.toString())
       setStage(0)
@@ -388,6 +395,7 @@ const Show = () => {
         dispatch(walletActions.fetchWallet({ address }))
         showStats()
       } catch (ex) {
+        Sentry.captureException(ex)
         console.trace(ex)
         if (numAttemptsRemaining <= 0) {
           message.error('Failed to finalize setting recovery address.')

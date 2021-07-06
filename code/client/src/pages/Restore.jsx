@@ -14,6 +14,7 @@ import walletActions from '../state/modules/wallet/actions'
 import util from '../util'
 import { handleAddressError } from '../handler'
 import Paths from '../constants/paths'
+import * as Sentry from '@sentry/browser'
 
 const { Step } = Steps
 
@@ -63,6 +64,7 @@ const Restore = () => {
         setSecret(secret)
         setName(name)
       } catch (ex) {
+        Sentry.captureException(ex)
         console.error(ex)
         message.error(`Failed to parse QR code. Error: ${ex.toString()}`)
       }
@@ -128,6 +130,7 @@ const Restore = () => {
         seed: secret, effectiveTime, duration, slotSize, interval: WalletConstants.interval
       })
     } catch (ex) {
+      Sentry.captureException(ex)
       console.error(ex)
       message.error(`Unexpected error during restoration: ${ex.toString()}`)
     }
@@ -172,6 +175,7 @@ const Restore = () => {
         setDailyLimit(dailyLimit)
         setSection(2)
       } catch (ex) {
+        Sentry.captureException(ex)
         console.error(ex)
         message.error(`Cannot retrieve wallet at address ${address}. Error: ${ex.toString()}`)
       }

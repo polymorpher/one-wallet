@@ -3,6 +3,7 @@ import { HarmonyAddress } from '@harmony-js/crypto'
 import { values } from 'lodash'
 import ONEUtil from '../../lib/util'
 import { AddressError } from './constants/errors'
+import * as Sentry from '@sentry/browser'
 
 export default {
   formatNumber: (number, maxPrecision) => {
@@ -68,7 +69,10 @@ export default {
     } catch (ex) {
       const err = (address.startsWith('one') && AddressError.InvalidBech32Address(ex)) ||
         (address.startsWith('0x') && AddressError.InvalidHexAddress(ex)) || AddressError.Unknown(ex)
-      if (err) throw err
+      if (err) {
+        Sentry.captureException(err)
+        throw err
+      }
     }
     return address
   },
@@ -77,6 +81,7 @@ export default {
     try {
       return exports.default.normalizedAddress(address)
     } catch (ex) {
+      Sentry.captureException(ex)
       trace && console.trace(ex)
       return null
     }
@@ -90,6 +95,7 @@ export default {
     try {
       return exports.default.oneAddress(address)
     } catch (ex) {
+      Sentry.captureException(ex)
       trace && console.trace(ex)
       return null
     }
@@ -106,6 +112,7 @@ export default {
     try {
       return f(...args)
     } catch (ex) {
+      Sentry.captureException(ex)
       handler && handler(ex)
     }
   },

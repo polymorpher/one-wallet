@@ -20,7 +20,9 @@ import { handleAPIError, handleAddressError } from '../handler'
 import { Hint, Heading, InputBox } from '../components/Text'
 import OtpBox from '../components/OtpBox'
 import { getAddress } from '@harmony-js/crypto'
+import * as Sentry from '@sentry/browser'
 const { Text, Link } = Typography
+
 
 // const genName = () => uniqueNamesGenerator({
 //   dictionaries: [colors, animals],
@@ -159,6 +161,7 @@ const Create = () => {
       history.push(Paths.showAddress(address))
       // setSection(4)
     } catch (ex) {
+      Sentry.captureException(ex)
       handleAPIError(ex)
       setDeploying(false)
     }
