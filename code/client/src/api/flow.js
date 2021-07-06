@@ -5,6 +5,7 @@ import { message } from 'antd'
 import api from './index'
 import WalletConstants from '../constants/wallet'
 import util from '../util'
+import walletActions from '../state/modules/wallet/actions'
 
 export const Flows = {
   commitReveal: async ({
@@ -89,6 +90,8 @@ export const SecureFlows = {
     beforeReveal = async (commitHash) => {
       _beforeReveal && _beforeReveal()
       const commits = await api.blockchain.getCommits({ address })
+      commitHash = ONEUtil.hexString(commitHash)
+      console.log({ commitHash, commits })
       if (!commits || !commits.find(c => c.hash === commitHash)) {
         throw new Error('Commit not yet confirmed by blockchain')
       }
@@ -106,5 +109,20 @@ export const SmartFlows = {
       return Flows.commitReveal({ ...args, wallet })
     }
     return SecureFlows.commitReveal({ ...args, wallet })
+  }
+}
+
+export const Chaining = {
+  refreshBalance: (dispatch, addresses) => {
+    if (!addresses || !dispatch) {
+      return
+    }
+    WalletConstants.fetchDelaysAfterTransfer.forEach(t => {
+      setTimeout(() => {
+        addresses.forEach(address => {
+          dispatch(walletActions.fetchBalance({ address }))
+        })
+      }, t)
+    })
   }
 }
