@@ -3,6 +3,7 @@ import { HarmonyAddress } from '@harmony-js/crypto'
 import { values } from 'lodash'
 import ONEUtil from '../../lib/util'
 import { AddressError } from './constants/errors'
+import config from './config'
 
 export default {
   formatNumber: (number, maxPrecision) => {
@@ -120,6 +121,10 @@ export default {
     }
 
     return `https://explorer.harmony.one/#/address/${wallet.address}`
+  },
+
+  isWalletOutdated: (wallet) => {
+    return !wallet.majorVersion || !(wallet.majorVersion >= config.minWalletVersion)
   }
 }
 

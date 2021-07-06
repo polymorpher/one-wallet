@@ -60,7 +60,7 @@ const Show = () => {
   const [stage, setStage] = useState(0)
   const network = useSelector(state => state.wallet.network)
 
-  const walletOutdated = !wallet.majorVersion || !(wallet.majorVersion >= config.minWalletVersion)
+  const walletOutdated = util.isWalletOutdated(wallet)
 
   useEffect(() => {
     if (!wallet) {
@@ -424,7 +424,7 @@ const Show = () => {
         title={title}
         style={{ minWidth: 480, minHeight: 320, maxWidth: 720 }}
       >
-        {walletOutdated && <Warning>Your wallet is outdated. Some information may be displayed incorrectly. Some features might not function. Your balance is still displayed correctly, and you can still send funds. <br/><br/>Please create a new wallet and move your funds as soon as possible.</Warning>}
+        {walletOutdated && <Warning>Your wallet is outdated. Some information may be displayed incorrectly. Some features might not function. Your balance is still displayed correctly, and you can still send funds. <br /><br />Please create a new wallet and move your funds as soon as possible.</Warning>}
         <Row style={{ marginTop: 16 }}>
           <Col span={12}>
             <Title level={3} style={{ marginRight: 48 }}>Balance</Title>
