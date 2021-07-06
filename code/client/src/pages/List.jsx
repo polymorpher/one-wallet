@@ -8,7 +8,6 @@ import { useHistory, useLocation } from 'react-router'
 import Paths from '../constants/paths'
 import BN from 'bn.js'
 import { getAddress } from '@harmony-js/crypto'
-import config from '../config'
 const { Text, Title } = Typography
 
 const WalletCard = ({ wallet }) => {
@@ -17,8 +16,7 @@ const WalletCard = ({ wallet }) => {
   const { address, name } = wallet
   const oneAddress = getAddress(address).bech32
   const dispatch = useDispatch()
-  const balances = useSelector(state => state.wallet.balances)
-  const balance = balances[address]
+  const balance = useSelector(state => state.wallet.balances[address])
   const price = useSelector(state => state.wallet.price)
   const { formatted, fiatFormatted } = util.computeBalance(balance, price)
 
@@ -27,7 +25,7 @@ const WalletCard = ({ wallet }) => {
   useEffect(() => {
     dispatch(walletActions.fetchBalance({ address }))
     dispatch(walletActions.fetchWallet({ address }))
-  }, [location])
+  }, [location.pathname])
 
   return (
     <Card
