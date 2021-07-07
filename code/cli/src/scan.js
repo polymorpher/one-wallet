@@ -1,6 +1,6 @@
 const React = require('react')
 const { useState, useEffect } = React
-const { render, Text, Newline, Box, useStdout, useApp } = require('ink')
+const { render, Text, Newline, Box, useStdout } = require('ink')
 const b32 = require('hi-base32')
 const { Worker } = require('worker_threads')
 const qrcode = require('qrcode')
@@ -24,7 +24,6 @@ const getQRCodeUri = ({ name, seed }) => {
 }
 
 const NewWallet = ({ network }) => {
-  const { exit } = useApp()
   // eslint-disable-next-line no-unused-vars
   const { write: log } = useStdout()
   // eslint-disable-next-line no-unused-vars
@@ -54,7 +53,6 @@ const NewWallet = ({ network }) => {
         if (current % PROGRESS_REPORT_INTERVAL === 0) {
           setProgress(Math.round(current / total * 100))
         }
-
         setProgressStage(stage)
       }
       if (status === 'done') {
@@ -130,7 +128,6 @@ const NewWallet = ({ network }) => {
         <Text color={progressStage === 1 ? 'yellow' : (progressStage < 1 ? 'grey' : 'green')}>Preparing signatures {progressStage === 1 && `${progress}%`}</Text>
         <Text color={progressStage < 2 ? 'grey' : 'green'}>Done!</Text>
       </Box>
-
     </>
   )
 }
