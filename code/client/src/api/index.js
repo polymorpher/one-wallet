@@ -7,6 +7,7 @@ import Web3 from 'web3'
 import ONEWalletContract from '../../../build/contracts/ONEWallet.json'
 import WalletConstants from '../constants/wallet'
 import BN from 'bn.js'
+import ONEUtil from '../../../lib/util'
 
 const apiConfig = {
   relayer: config.defaults.relayer,
@@ -90,6 +91,21 @@ export default {
       const { data } = await axios.get('https://api.binance.com/api/v3/ticker/24hr?symbol=ONEUSDT')
       const { lastPrice } = data
       return parseFloat(lastPrice)
+    }
+  },
+  walletStats: {
+    getStats: async () => {
+      try {
+        const { data } = await axios.get('https://explorer-v2-api.hmny.io/v0/1wallet/metrics')
+        const totalAmount = Math.round(ONEUtil.toOne(new BN(data.totalAmount)))
+
+        return {
+          count: data.count,
+          totalAmount: totalAmount
+        }
+      } catch (err) {
+        console.error(err)
+      }
     }
   },
   blockchain: {
