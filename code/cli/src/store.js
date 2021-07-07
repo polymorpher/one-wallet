@@ -47,6 +47,14 @@ const storeIncompleteWallet = async ({ state, layers }) => {
   ])
 }
 
+const loadIncompleteWallet = async () => {
+  const file = path.join(StoreManager.path, 'temp')
+  const stateJson = await fs.readFile(file, { encoding: 'utf-8' })
+  const state = JSON.parse(stateJson)
+  const { layers, error } = await loadWalletLayers({ path: 'temp' })
+  return { state, layers, error }
+}
+
 const ONE_WALLET_PATTERN = /^(one1[0-9a-z]+)-([a-zA-Z-]+)$/
 
 const listWallets = async () => {
@@ -101,9 +109,9 @@ const loadWalletState = async ({ address, name }) => {
   }
 }
 
-const loadWalletLayers = async ({ address, name }) => {
+const loadWalletLayers = async ({ address, name, path }) => {
   try {
-    const { file } = findWallet({ address, name })
+    const { file } = path ? { file: path } : findWallet({ address, name })
     const p = path.join(StoreManager.path, file)
     const layers = []
     const layersBin = await fs.readFile(p + '.tree')
@@ -122,4 +130,4 @@ const loadWalletLayers = async ({ address, name }) => {
   }
 }
 
-module.exports = { ensureDir, storeIncompleteWallet, completeWallet, updateStorePath, loadWalletState, loadWalletLayers, setLogger, saveToMain, readMain }
+module.exports = { ensureDir, storeIncompleteWallet, completeWallet, updateStorePath, loadWalletState, loadWalletLayers, setLogger, saveToMain, readMain, loadIncompleteWallet }

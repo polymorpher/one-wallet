@@ -1,12 +1,13 @@
+// eslint-disable-next-line no-unused-vars
 const config = require('./config')
 const cmd = require('./cmd')
 const store = require('./src/store')
 const importJSX = require('import-jsx')
 const NewWallet = importJSX('./src/scan')
-const rl = require('readline').createInterface({
-  input: process.stdin,
-  output: process.stdout
-})
+// const rl = require('readline').createInterface({
+//   input: process.stdin,
+//   output: process.stdout
+// })
 
 const isCommand = (command) => cmd._[0] === command
 
@@ -25,6 +26,8 @@ async function main () {
   await store.ensureDir()
   if (isCommand('scan')) {
     NewWallet({ network: cmd.network })
+  } else if (isCommand('make')) {
+
   }
   // hang()
   // process.exit(0)
