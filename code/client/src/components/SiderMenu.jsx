@@ -53,8 +53,14 @@ const SiderMenu = ({ ...args }) => {
       {!collapsed && <Row justify='center' style={{ marginBottom: 24 }}><SiderLink href='https://harmony.one/1wallet'>{config.appName} {config.version}</SiderLink></Row>}
       <Row style={{ marginBottom: 16 }} justify='center'>
         <div>
-          {stats && <Row style={{ marginBottom: 8 }}><Tag color='dimgray' style={{ margin: 0 }}>total wallets</Tag><Tag color='lightseagreen'>{stats.count.toLocaleString()}</Tag></Row>}
-          {stats && <Row><Tag color='dimgray' style={{ margin: 0 }}>total assets</Tag><Tag color='steelblue'>{stats.totalAmount.toLocaleString()} ONE</Tag></Row>}
+          {stats && <Row style={{ marginBottom: 8 }}>
+            <Tag color='dimgray' style={{ margin: 0, width: 56, borderRadius: 0 }}>wallets</Tag>
+            <Tag color='lightseagreen' style={{ width: 64, borderRadius: 0, textAlign: 'center' }}>{stats.count.toLocaleString()}</Tag>
+          </Row>}
+          {stats && <Row>
+            <Tag color='dimgray' style={{ margin: 0, width: 56, borderRadius: 0 }}>assets</Tag>
+            <Tag color='steelblue' style={{ width: 64, borderRadius: 0, textAlign: 'center' }}>{stats.totalAmount.toLocaleString()} ①</Tag>
+          </Row>}
         </div>
       </Row>
 
