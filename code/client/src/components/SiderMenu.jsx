@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useHistory, useRouteMatch } from 'react-router'
-import { Layout, Image, Menu, Row, Typography } from 'antd'
+import { Layout, Image, Menu, Row, Typography, Tag } from 'antd'
 import { PlusCircleOutlined, UnorderedListOutlined, HistoryOutlined } from '@ant-design/icons'
 import HarmonyLogo from '../assets/harmony.svg'
 import HarmonyIcon from '../assets/harmony-icon.svg'
@@ -10,18 +10,17 @@ import styled from 'styled-components'
 import { useWindowDimensions } from '../util'
 import api from '../api'
 
-const { Link } = Typography
+const { Link, Text } = Typography
 
-const Text = styled.p`
-  color: #fafafa;
-  text-align: center;
-  a, a:hover {
-    color: #fafafa;
+const SiderLink = styled(Link).attrs((e) => ({
+  ...e,
+  style: { color: '#fafafa', ...e.style },
+  target: '_blank',
+  rel: 'noopener noreferrer'
+}))`
+  &:hover {
+    opacity: 0.8;
   }
-`
-
-const Stats = styled(Text)`
-  opacity: 65%;
 `
 
 const SiderMenu = ({ ...args }) => {
@@ -47,13 +46,18 @@ const SiderMenu = ({ ...args }) => {
     <Layout.Sider collapsible={width < 900} onCollapse={c => setCollapsed(c)} {...args}>
       {/* <Image src='/assets/harmony.svg' /> */}
       <Row justify='center'>
-        <Link target='_blank' rel='noopener noreferrer' href='https://harmony.one/'>
+        <SiderLink href='https://harmony.one/'>
           <Image preview={false} src={collapsed ? HarmonyIcon : HarmonyLogo} style={{ cursor: 'pointer', padding: collapsed ? 16 : 32 }} onClick={() => history.push('/')} />
-        </Link>
+        </SiderLink>
       </Row>
-      {!collapsed && <Text><Link href='https://harmony.one/1wallet' target='_blank' rel='noopener noreferrer'>{config.appName} {config.version}</Link></Text>}
-      {stats && <Row justify='center'><Stats>{stats.count.toLocaleString()} wallets</Stats></Row>}
-      {stats && <Row justify='center' style={{ marginBottom: 10 }}><Stats>{stats.totalAmount.toLocaleString()} ONE</Stats></Row>}
+      {!collapsed && <Row justify='center' style={{ marginBottom: 24 }}><SiderLink href='https://harmony.one/1wallet'>{config.appName} {config.version}</SiderLink></Row>}
+      <Row style={{ marginBottom: 16 }} justify='center'>
+        <div>
+          {stats && <Row style={{ marginBottom: 8 }}><Tag color='dimgray' style={{ margin: 0 }}>total wallets</Tag><Tag color='lightseagreen'>{stats.count.toLocaleString()}</Tag></Row>}
+          {stats && <Row><Tag color='dimgray' style={{ margin: 0 }}>total assets</Tag><Tag color='steelblue'>{stats.totalAmount.toLocaleString()} ONE</Tag></Row>}
+        </div>
+      </Row>
+
       <Menu theme='dark' mode='inline' onClick={nav} selectedKeys={[action]}>
         <Menu.Item key='create' icon={<PlusCircleOutlined />}>Create</Menu.Item>
         <Menu.Item key='wallets' icon={<UnorderedListOutlined />}>Wallets</Menu.Item>
