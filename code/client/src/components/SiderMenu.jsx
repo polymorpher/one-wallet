@@ -58,11 +58,11 @@ const SiderMenu = ({ ...args }) => {
         <div>
           {stats && <div style={{ marginBottom: 10 }}>
             <Row justify='center'><Text style={{ color: '#fafafa', marginBottom: 5 }}>Total Accounts</Text></Row>
-            <Row justify='center'><Tag color='dimgray'>{stats.count.toLocaleString()}</Tag></Row>
+            <Row justify='center'><Tag color='dimgray' style={{ marginRight: 0 }}>{stats.count.toLocaleString()}</Tag></Row>
           </div>}
           {stats && <div>
             <Row justify='center'><Text style={{ color: '#fafafa', marginBottom: 5 }}>Total Balance</Text></Row>
-            <Row justify='center'><Tag color='steelblue'>{stats.totalAmount.toLocaleString()} ONE</Tag></Row>
+            <Row justify='center'><Tag color='steelblue' style={{ marginRight: 0 }}>{stats.totalAmount.toLocaleString()} ONE</Tag></Row>
           </div>}
         </div>
       </Row>
