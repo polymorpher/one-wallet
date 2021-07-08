@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useHistory, useRouteMatch } from 'react-router'
-import { Layout, Image, Menu, Row, Typography, Tag, Divider } from 'antd'
+import { Layout, Image, Menu, Row, Typography, Tag, Divider, Tooltip } from 'antd'
 import { PlusCircleOutlined, UnorderedListOutlined, HistoryOutlined } from '@ant-design/icons'
 import HarmonyLogo from '../assets/harmony.svg'
 import HarmonyIcon from '../assets/harmony-icon.svg'
@@ -57,12 +57,16 @@ const SiderMenu = ({ ...args }) => {
       <Row style={{ marginBottom: 16 }} justify='center'>
         <div>
           {stats && <div style={{ marginBottom: 10 }}>
-            <Row justify='center'><Text style={{ color: '#fafafa', marginBottom: 5 }}>Total Accounts</Text></Row>
-            <Row justify='center'><Tag color='dimgray' style={{ marginRight: 0 }}>{stats.count.toLocaleString()}</Tag></Row>
+            <Tooltip title='Total number of 1wallets created globally. Calculated daily.' color='dimgray' key='dimgray'>
+              <Row justify='center'><Text style={{ color: '#fafafa', marginBottom: 5 }}>Total Accounts</Text></Row>
+              <Row justify='center'><Tag color='dimgray' style={{ marginRight: 0 }}>{stats.count.toLocaleString()}</Tag></Row>
+            </Tooltip>
           </div>}
           {stats && <div>
-            <Row justify='center'><Text style={{ color: '#fafafa', marginBottom: 5 }}>Total Balance</Text></Row>
-            <Row justify='center'><Tag color='steelblue' style={{ marginRight: 0 }}>{stats.totalAmount.toLocaleString()} ONE</Tag></Row>
+            <Tooltip title='Total number of ONEs stored on 1wallets globally. Calculated daily.' color='steelblue' key='steelblue'>
+              <Row justify='center'><Text style={{ color: '#fafafa', marginBottom: 5 }}>Total Balance</Text></Row>
+              <Row justify='center'><Tag color='steelblue' style={{ marginRight: 0 }}>{stats.totalAmount.toLocaleString()} ONE</Tag></Row>
+            </Tooltip>
           </div>}
         </div>
       </Row>
