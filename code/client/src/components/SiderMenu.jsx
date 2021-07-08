@@ -57,13 +57,13 @@ const SiderMenu = ({ ...args }) => {
       <Row style={{ marginBottom: 16 }} justify='center'>
         <div>
           {stats && <div style={{ marginBottom: 10 }}>
-            <Tooltip title='Total number of 1wallets created globally. Calculated daily.' color='dimgray' key='dimgray'>
+            <Tooltip title='Total number of 1Wallets created globally. Calculated daily.' color='dimgray' key='dimgray'>
               <Row justify='center'><Text style={{ color: '#fafafa', marginBottom: 5 }}>Total Accounts</Text></Row>
               <Row justify='center'><Tag color='dimgray' style={{ marginRight: 0 }}>{stats.count.toLocaleString()}</Tag></Row>
             </Tooltip>
           </div>}
           {stats && <div>
-            <Tooltip title='Total number of ONEs stored on 1wallets globally. Calculated daily.' color='steelblue' key='steelblue'>
+            <Tooltip title='Total number of ONEs stored on 1Wallets globally. Calculated daily.' color='steelblue' key='steelblue'>
               <Row justify='center'><Text style={{ color: '#fafafa', marginBottom: 5 }}>Total Balance</Text></Row>
               <Row justify='center'><Tag color='steelblue' style={{ marginRight: 0 }}>{stats.totalAmount.toLocaleString()} ONE</Tag></Row>
             </Tooltip>
