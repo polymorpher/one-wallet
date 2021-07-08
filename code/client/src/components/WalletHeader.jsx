@@ -101,9 +101,9 @@ const WalletHeader = () => {
       title={titleCase(action || '')}
       subTitle={<Hint>{subtitle}</Hint>}
       extra={[
-        <Button key='lock' shape='circle' icon={<LockOutlined />} onClick={() => setSettingsVisible(true)} />,
-        <RelayerSelector key='relayer' />,
-        <Divider key='divider' type='vertical' />,
+        // <Button key='lock' shape='circle' icon={<LockOutlined />} onClick={() => setSettingsVisible(true)} />,
+        // <RelayerSelector key='relayer' />,
+        // <Divider key='divider' type='vertical' />,
         <NetworkSelector key='network' />,
         <SecretSettings key='settings' visible={settingsVisible} onClose={() => setSettingsVisible(false)} />
       ]}

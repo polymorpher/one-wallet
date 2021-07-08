@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useHistory, useRouteMatch } from 'react-router'
-import { Layout, Image, Menu, Row, Typography, Tag } from 'antd'
+import { Layout, Image, Menu, Row, Typography, Tag, Divider } from 'antd'
 import { PlusCircleOutlined, UnorderedListOutlined, HistoryOutlined } from '@ant-design/icons'
 import HarmonyLogo from '../assets/harmony.svg'
 import HarmonyIcon from '../assets/harmony-icon.svg'
@@ -51,18 +51,23 @@ const SiderMenu = ({ ...args }) => {
         </SiderLink>
       </Row>
       {!collapsed && <Row justify='center' style={{ marginBottom: 24 }}><SiderLink href='https://harmony.one/1wallet'>{config.appName} {config.version}</SiderLink></Row>}
+
+      <Divider style={{ borderColor: '#fafafa', opacity: 0.5, color: '#fafafa', fontSize: 14 }}>Global 1Wallet Usage</Divider>
+
       <Row style={{ marginBottom: 16 }} justify='center'>
         <div>
-          {stats && <Row style={{ marginBottom: 8 }}>
-            <Tag color='dimgray' style={{ margin: 0, width: 56, borderRadius: 0 }}>wallets</Tag>
-            <Tag color='lightseagreen' style={{ width: 64, borderRadius: 0, textAlign: 'center' }}>{stats.count.toLocaleString()}</Tag>
-          </Row>}
-          {stats && <Row>
-            <Tag color='dimgray' style={{ margin: 0, width: 56, borderRadius: 0 }}>assets</Tag>
-            <Tag color='steelblue' style={{ width: 64, borderRadius: 0, textAlign: 'center' }}>{stats.totalAmount.toLocaleString()} ①</Tag>
-          </Row>}
+          {stats && <div style={{ marginBottom: 10 }}>
+            <Row justify='center'><Text style={{ color: '#fafafa', marginBottom: 5 }}>Total Accounts</Text></Row>
+            <Row justify='center'><Tag color='dimgray'>{stats.count.toLocaleString()}</Tag></Row>
+          </div>}
+          {stats && <div>
+            <Row justify='center'><Text style={{ color: '#fafafa', marginBottom: 5 }}>Total Balance</Text></Row>
+            <Row justify='center'><Tag color='steelblue'>{stats.totalAmount.toLocaleString()} ONE</Tag></Row>
+          </div>}
         </div>
       </Row>
+
+      <Divider style={{ borderColor: '#fafafa', opacity: 0.5 }} />
 
       <Menu theme='dark' mode='inline' onClick={nav} selectedKeys={[action]}>
         <Menu.Item key='create' icon={<PlusCircleOutlined />}>Create</Menu.Item>
