@@ -52,9 +52,9 @@ const SiderMenu = ({ ...args }) => {
       </Row>
       {!collapsed && <Row justify='center' style={{ marginBottom: 24 }}><SiderLink href='https://harmony.one/1wallet'>{config.appName} {config.version}</SiderLink></Row>}
 
-      <Divider style={{ borderColor: '#fafafa', opacity: 0.5, color: '#fafafa', fontSize: 14 }}>Global Usage</Divider>
+      {!collapsed && <Divider style={{ borderColor: '#fafafa', opacity: 0.5, color: '#fafafa', fontSize: 14 }}>Global Usage</Divider>}
 
-      <Row style={{ marginBottom: 16 }} justify='center'>
+      {!collapsed && <Row style={{ marginBottom: 16 }} justify='center'>
         <div>
           {stats && <div style={{ marginBottom: 10 }}>
             <Tooltip title='Total number of 1Wallets created globally. Calculated daily.' color='dimgray' key='dimgray'>
@@ -69,9 +69,9 @@ const SiderMenu = ({ ...args }) => {
             </Tooltip>
           </div>}
         </div>
-      </Row>
+      </Row>}
 
-      <Divider style={{ borderColor: '#fafafa', opacity: 0.5 }} />
+      {!collapsed && <Divider style={{ borderColor: '#fafafa', opacity: 0.5 }} />}
 
       <Menu theme='dark' mode='inline' onClick={nav} selectedKeys={[action]}>
         <Menu.Item key='create' icon={<PlusCircleOutlined />}>Create</Menu.Item>
