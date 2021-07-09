@@ -26,13 +26,13 @@ const SiderLink = styled(Link).attrs((e) => ({
 const SiderMenu = ({ ...args }) => {
   const { width } = useWindowDimensions()
   const history = useHistory()
-  const [collapsed, setCollapsed] = useState()
   const match = useRouteMatch('/:action')
   const { action } = match ? match.params : {}
   const nav = ({ key }) => {
     history.push(Paths[key])
   }
   const [stats, setStats] = useState(null)
+  const isMobile = width < 992
 
   useEffect(() => {
     async function getStats () {
@@ -43,15 +43,15 @@ const SiderMenu = ({ ...args }) => {
   }, [])
 
   return (
-    <Layout.Sider collapsible={width < 900} onCollapse={c => setCollapsed(c)} {...args}>
+    <Layout.Sider collapsed={isMobile}>
       {/* <Image src='/assets/harmony.svg' /> */}
       <Row justify='center'>
         <SiderLink href='https://harmony.one/'>
-          <Image preview={false} src={collapsed ? HarmonyIcon : HarmonyLogo} style={{ cursor: 'pointer', padding: collapsed ? 16 : 32 }} onClick={() => history.push('/')} />
+          <Image preview={false} src={isMobile ? HarmonyIcon : HarmonyLogo} style={{ cursor: 'pointer', padding: isMobile ? 16 : 32 }} onClick={() => history.push('/')} />
         </SiderLink>
       </Row>
-      {!collapsed && <Row justify='center' style={{ marginBottom: 24 }}><SiderLink href='https://harmony.one/1wallet'>{config.appName} {config.version}</SiderLink></Row>}
-      <Row style={{ marginBottom: 16 }} justify='center'>
+      {!isMobile && <Row justify='center' style={{ marginBottom: 24 }}><SiderLink href='https://harmony.one/1wallet'>{config.appName} {config.version}</SiderLink></Row>}
+      {!isMobile && <Row style={{ marginBottom: 16 }} justify='center'>
         <div>
           {stats && <Row style={{ marginBottom: 8 }}>
             <Tag color='dimgray' style={{ margin: 0, width: 56, borderRadius: 0 }}>wallets</Tag>
@@ -62,7 +62,7 @@ const SiderMenu = ({ ...args }) => {
             <Tag color='steelblue' style={{ width: 64, borderRadius: 0, textAlign: 'center' }}>{stats.totalAmount.toLocaleString()} ①</Tag>
           </Row>}
         </div>
-      </Row>
+      </Row>}
 
       <Menu theme='dark' mode='inline' onClick={nav} selectedKeys={[action]}>
         <Menu.Item key='create' icon={<PlusCircleOutlined />}>Create</Menu.Item>

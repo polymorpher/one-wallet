@@ -4,7 +4,7 @@ import { useHistory, useRouteMatch, Redirect, useLocation, matchPath } from 'rea
 import Paths from '../constants/paths'
 import WalletConstants from '../constants/wallet'
 import walletActions from '../state/modules/wallet/actions'
-import util from '../util'
+import util, { useWindowDimensions } from '../util'
 import ONE from '../../../lib/onewallet'
 import api from '../api'
 import { message, Space, Row, Col, Typography, Button, Steps, Popconfirm, Tooltip } from 'antd'
@@ -30,6 +30,7 @@ import { handleAddressError } from '../handler'
 import { SmartFlows, Chaining, EotpBuilders } from '../api/flow'
 const { Title, Text, Link } = Typography
 const { Step } = Steps
+
 const TallRow = styled(Row)`
   margin-top: 32px;
   margin-bottom: 32px;
@@ -266,17 +267,21 @@ const Show = () => {
       </Text>
     </Space>
   )
+
+  const { width } = useWindowDimensions()
+  const isMobile = width < 992
+
   return (
     <>
       {/* <Space size='large' wrap align='start'> */}
       <AnimatedSection
         show={!section}
         title={title}
-        style={{ minWidth: 480, minHeight: 320, maxWidth: 720 }}
+        style={{ minHeight: 320, maxWidth: 720 }}
       >
         {walletOutdated && <Warning>Your wallet is outdated. Some information may be displayed incorrectly. Some features might not function. Your balance is still displayed correctly, and you can still send funds. <br /><br />Please create a new wallet and move your funds as soon as possible.</Warning>}
         <Row style={{ marginTop: 16 }}>
-          <Col span={12}>
+          <Col span={isMobile ? 24 : 12}>
             <Title level={3} style={{ marginRight: 48 }}>Balance</Title>
           </Col>
           <Col>
@@ -287,7 +292,7 @@ const Show = () => {
           </Col>
         </Row>
         <Row>
-          <Col span={12} />
+          <Col span={isMobile ? 24 : 12} />
           <Col>
             <Space>
               <Title level={4}>≈ ${fiatFormatted}</Title>
@@ -296,21 +301,21 @@ const Show = () => {
           </Col>
         </Row>
         <Row style={{ marginTop: 16 }}>
-          <Col span={12} />
+          <Col span={isMobile ? 24 : 12} />
           <Col>
             <Button type='primary' size='large' shape='round' onClick={showTransfer}> Send </Button>
           </Col>
         </Row>
         <TallRow align='middle'>
-          <Col span={12}> <Title level={3}>Created On</Title></Col>
+          <Col span={isMobile ? 24 : 12}> <Title level={3}>Created On</Title></Col>
           <Col> <Text>{new Date(wallet.effectiveTime).toLocaleString()}</Text> </Col>
         </TallRow>
         <TallRow align='middle'>
-          <Col span={12}> <Title level={3}>Expires In</Title></Col>
+          <Col span={isMobile ? 24 : 12}> <Title level={3}>Expires In</Title></Col>
           <Col> <Text>{humanizeDuration(wallet.duration, { units: ['y', 'mo', 'd'], round: true })}</Text> </Col>
         </TallRow>
         <TallRow>
-          <Col span={12}> <Title level={3}>Daily Limit</Title></Col>
+          <Col span={isMobile ? 24 : 12}> <Title level={3}>Daily Limit</Title></Col>
           <Col>
             <Space>
               <Text>{dailyLimitFormatted}</Text>
@@ -321,7 +326,7 @@ const Show = () => {
           </Col>
         </TallRow>
         <TallRow align='middle'>
-          <Col span={12}> <Title level={3}>Recovery Address</Title></Col>
+          <Col span={isMobile ? 24 : 12}> <Title level={3}>Recovery Address</Title></Col>
           {lastResortAddress && !util.isEmptyAddress(lastResortAddress) &&
             <Col>
               <Space>
