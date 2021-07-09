@@ -52,19 +52,19 @@ const SiderMenu = ({ ...args }) => {
       </Row>
       {!collapsed && <Row justify='center' style={{ marginBottom: 24 }}><SiderLink href='https://harmony.one/1wallet'>{config.appName} {config.version}</SiderLink></Row>}
 
-      <Divider style={{ borderColor: '#fafafa', opacity: 0.5, color: '#fafafa', fontSize: 14 }}>Global 1Wallet Usage</Divider>
+      <Divider style={{ borderColor: '#fafafa', opacity: 0.5, color: '#fafafa', fontSize: 14 }}>Global Usage</Divider>
 
       <Row style={{ marginBottom: 16 }} justify='center'>
         <div>
           {stats && <div style={{ marginBottom: 10 }}>
             <Tooltip title='Total number of 1Wallets created globally. Calculated daily.' color='dimgray' key='dimgray'>
-              <Row justify='center'><Text style={{ color: '#fafafa', marginBottom: 5 }}>Total Accounts</Text></Row>
+              <Row justify='center'><Text style={{ color: '#fafafa', marginBottom: 5 }}>Accounts</Text></Row>
               <Row justify='center'><Tag color='dimgray' style={{ marginRight: 0 }}>{stats.count.toLocaleString()}</Tag></Row>
             </Tooltip>
           </div>}
           {stats && <div>
             <Tooltip title='Total number of ONEs stored on 1Wallets globally. Calculated daily.' color='steelblue' key='steelblue'>
-              <Row justify='center'><Text style={{ color: '#fafafa', marginBottom: 5 }}>Total Balance</Text></Row>
+              <Row justify='center'><Text style={{ color: '#fafafa', marginBottom: 5 }}>Balance</Text></Row>
               <Row justify='center'><Tag color='steelblue' style={{ marginRight: 0 }}>{stats.totalAmount.toLocaleString()} ONE</Tag></Row>
             </Tooltip>
           </div>}
