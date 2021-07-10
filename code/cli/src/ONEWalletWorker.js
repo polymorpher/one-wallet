@@ -1,5 +1,5 @@
-const ONE = require('../../lib/onewallet')
-const { parentPort } = require('worker_threads')
+import ONE from '../../lib/onewallet'
+import { parentPort } from 'worker_threads'
 
 parentPort.once('message', ({ seed, effectiveTime, duration, slotSize, interval } = {}) => {
   if (!seed) {

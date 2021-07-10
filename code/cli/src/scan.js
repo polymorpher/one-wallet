@@ -1,20 +1,18 @@
-const React = require('react')
-const { useState, useEffect } = React
-const { render, Text, Newline, Box, useStdout } = require('ink')
-const b32 = require('hi-base32')
-const { Worker } = require('worker_threads')
-const qrcode = require('qrcode')
-const path = require('path')
-// const ONE = require('../../lib/onewallet')
-const ONENames = require('../../lib/names')
-const ONEUtil = require('../../lib/util')
-const crypto = require('crypto')
-const Gradient = require('ink-gradient')
-const BigText = require('ink-big-text')
-const config = require('../config')
-const Constants = require('../constants')
-const store = require('./store')
-// const why = require('why-is-node-running')
+import React, { useEffect, useState } from 'react'
+import { Box, Newline, render, Text, useStdout } from 'ink'
+import store from './store'
+import Constants from './constants'
+import config from './config'
+import BigText from 'ink-big-text'
+import Gradient from 'ink-gradient'
+import crypto from 'crypto'
+import ONEUtil from '../../lib/util'
+import ONENames from '../../lib/names'
+import path from 'path'
+import qrcode from 'qrcode'
+import { Worker } from 'worker_threads'
+import b32 from 'hi-base32'
+
 const PROGRESS_REPORT_INTERVAL = 1
 
 const getQRCodeUri = ({ name, seed }) => {
@@ -130,7 +128,7 @@ const NewWallet = ({ seed, name, data }) => {
   )
 }
 
-module.exports = () => {
+export default () => {
   const seed = new Uint8Array(crypto.randomBytes(20).buffer)
   const name = ONENames.randomWord(3, '-')
   const uri = getQRCodeUri({ name, seed })

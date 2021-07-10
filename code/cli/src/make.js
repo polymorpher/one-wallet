@@ -1,10 +1,10 @@
-const ONE = require('../../lib/onewallet')
-const config = require('../config')
-const Constants = require('../constants')
-const store = require('./store')
+import ONE from '../../lib/onewallet'
+import config from './config'
+import Constants from './constants'
+import store from './store'
 
 const MakeWallet = () => {
 
 }
 
-module.exports = MakeWallet
+export default MakeWallet

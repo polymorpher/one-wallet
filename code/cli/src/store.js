@@ -1,7 +1,8 @@
-const fs = require('fs').promises
-const path = require('path')
-const config = require('../config')
-const { HarmonyAddress } = require('@harmony-js/crypto')
+import { promises as fs } from 'fs'
+import path from 'path'
+import config from './config'
+import { HarmonyAddress } from '@harmony-js/crypto'
+
 const StoreManager = {
   path: config.defaultStorePath,
   logger: config.debug ? console.log : () => {}
@@ -130,4 +131,4 @@ const loadWalletLayers = async ({ address, name, path }) => {
   }
 }
 
-module.exports = { ensureDir, storeIncompleteWallet, completeWallet, updateStorePath, loadWalletState, loadWalletLayers, setLogger, saveToMain, readMain, loadIncompleteWallet }
+export default { ensureDir, storeIncompleteWallet, completeWallet, updateStorePath, loadWalletState, loadWalletLayers, setLogger, saveToMain, readMain, loadIncompleteWallet }
