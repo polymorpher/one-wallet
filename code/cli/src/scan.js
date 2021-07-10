@@ -23,27 +23,53 @@ const getQRCodeUri = ({ name, seed }) => {
   return `otpauth://totp/${name}?secret=${b32.encode(seed)}&issuer=Harmony`
 }
 
-const NewWallet = ({ network }) => {
+const QRCode = ({ data }) => {
+  const rows = []
+  for (let i = 0; i < data.size; i += 1) {
+    const buffer = []
+    for (let j = 0; j < data.size; j += 1) {
+      if (data.get(i, j)) {
+        buffer.push(<Text backgroundColor='#000000' key={`${i}-${j}`}>{'\u3000'}</Text>)
+      } else {
+        buffer.push(<Text backgroundColor='#ffffff' key={`${i}-${j}`}>{'\u3000'}</Text>)
+      }
+    }
+    rows.push(<Text key={`r-${i}`}><Text>{buffer}</Text><Newline /></Text>)
+  }
+  if (!data) {
+    return <></>
+  }
+  return <Text>{rows}</Text>
+}
+
+const Header = () => {
+  return (
+    <>
+      <Box marginBottom={2}>
+        <Gradient colors={['#30c5dc', '#01e6a3']}>
+          <BigText text='ONE Wallet' />
+          <Text>CLI version {config.version}</Text>
+        </Gradient>
+      </Box>
+      <Box marginBottom={2} flexDirection='column'>
+        <Text>Please scan the QR code using your Google Authenticator.</Text>
+        <Text>You need the 6-digit code from Google authenticator to transfer funds. You can restore your wallet using Google authenticator on any device.</Text>
+      </Box>
+    </>
+  )
+}
+
+const NewWallet = ({ seed, name, data }) => {
   // eslint-disable-next-line no-unused-vars
   const { write: log } = useStdout()
   // eslint-disable-next-line no-unused-vars
   const [duration, setDuration] = useState(Constants.defaultDuration)
-  const [seed] = useState(new Uint8Array(crypto.randomBytes(20).buffer))
-  const [name] = useState(ONENames.randomWord(3, '-'))
-  const [data, setData] = useState()
-
   const [progress, setProgress] = useState(0)
   const [progressStage, setProgressStage] = useState(-1)
   const [worker, setWorker] = useState()
   // eslint-disable-next-line no-unused-vars
   const [slotSize, setSlotSize] = useState(1)
   const [effectiveTime, setEffectiveTime] = useState()
-
-  useEffect(() => {
-    const uri = getQRCodeUri({ name, seed })
-    const code = qrcode.create(uri, { errorCorrectionLevel: 'low' })
-    setData(code.modules)
-  }, [])
 
   useEffect(() => {
     const worker = new Worker(path.join(__dirname, 'ONEWalletWorker.js'))
@@ -64,7 +90,6 @@ const NewWallet = ({ network }) => {
           effectiveTime,
           slotSize,
           hseed: ONEUtil.hexView(hseed),
-          network
         }
         await store.storeIncompleteWallet({ state, layers })
         worker.terminate()
@@ -87,35 +112,8 @@ const NewWallet = ({ network }) => {
     }
   }, [worker])
 
-  if (!data) {
-    return <></>
-  }
-
-  const rows = []
-  for (let i = 0; i < data.size; i += 1) {
-    const buffer = []
-    for (let j = 0; j < data.size; j += 1) {
-      if (data.get(i, j)) {
-        buffer.push(<Text backgroundColor='#000000' key={`${i}-${j}`}>{'\u3000'}</Text>)
-      } else {
-        buffer.push(<Text backgroundColor='#ffffff' key={`${i}-${j}`}>{'\u3000'}</Text>)
-      }
-    }
-    rows.push(<Text key={`r-${i}`}><Text>{buffer}</Text><Newline /></Text>)
-  }
   return (
     <>
-      <Box marginBottom={2}>
-        <Gradient colors={['#30c5dc', '#01e6a3']}>
-          <BigText text='ONE Wallet' />
-          <Text>CLI version {config.version}</Text>
-        </Gradient>
-      </Box>
-      <Box marginBottom={2} flexDirection='column'>
-        <Text>Please scan the QR code using your Google Authenticator.</Text>
-        <Text>You need the 6-digit code from Google authenticator to transfer funds. You can restore your wallet using Google authenticator on any device.</Text>
-      </Box>
-      <Text>{rows}</Text>
       <Box marginY={2} flexDirection='column'>
         <Text>After you are done, use</Text>
         <Box borderStyle='single'><Text>1wallet make {'<recovery-address> <code>'}</Text></Box>
@@ -126,10 +124,19 @@ const NewWallet = ({ network }) => {
         <Text>Building wallet...</Text>
         <Text color={progressStage === 0 ? 'yellow' : (progressStage < 0 ? 'grey' : 'green')}>Securing the wallet {progressStage === 0 && `${progress}%`}</Text>
         <Text color={progressStage === 1 ? 'yellow' : (progressStage < 1 ? 'grey' : 'green')}>Preparing signatures {progressStage === 1 && `${progress}%`}</Text>
-        <Text color={progressStage < 2 ? 'grey' : 'green'}>Done!</Text>
+        <Text color={progressStage < 2 ? 'grey' : 'green'}>Finalizing</Text>
       </Box>
     </>
   )
 }
 
-module.exports = () => render(<NewWallet />)
+module.exports = () => {
+  const seed = new Uint8Array(crypto.randomBytes(20).buffer)
+  const name = ONENames.randomWord(3, '-')
+  const uri = getQRCodeUri({ name, seed })
+  const code = qrcode.create(uri, { errorCorrectionLevel: 'low' })
+  const data = code.modules
+  render(<Header />).unmount()
+  render(<QRCode data={data} />).unmount()
+  render(<NewWallet seed={seed} name={name} />)
+}
