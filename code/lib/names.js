@@ -1,4 +1,4 @@
-export const list = [
+const list = [
   'abandon',
   'ability',
   'able',
@@ -2049,7 +2049,15 @@ export const list = [
   'zoo'
 ]
 
-export const randomWord = () => {
-  const word = list[Math.floor(Math.random() * list.length)]
-  return word.charAt(0).toUpperCase() + word.slice(1)
+const randomWord = (numWords = 1, delim = ' ') => {
+  const words = []
+  for (let i = 0; i < numWords; i += 1) {
+    let word = list[Math.floor(Math.random() * list.length)]
+    word = word.charAt(0).toUpperCase() + word.slice(1)
+    words.push(word)
+  }
+
+  return words.join(delim)
 }
+
+module.exports = { randomWord }

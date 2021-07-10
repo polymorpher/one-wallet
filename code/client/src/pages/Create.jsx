@@ -4,8 +4,8 @@ import { useHistory } from 'react-router'
 import Paths from '../constants/paths'
 import api from '../api'
 import ONEUtil from '../../../lib/util'
+import ONENames from '../../../lib/names'
 // import { uniqueNamesGenerator, colors, animals } from 'unique-names-generator'
-import { randomWord } from '../constants/words'
 import { Button, Row, Space, Typography, Slider, Image, message, Progress, Timeline, Select } from 'antd'
 import { RedoOutlined, LoadingOutlined, SearchOutlined } from '@ant-design/icons'
 import humanizeDuration from 'humanize-duration'
@@ -32,7 +32,7 @@ const { Text, Link } = Typography
 // })
 
 const genName = (existingNames) => {
-  const name = randomWord()
+  const name = ONENames.randomWord()
   if (existingNames && existingNames.includes(name)) {
     return genName()
   }
@@ -56,7 +56,7 @@ const Create = () => {
   const [root, setRoot] = useState()
   const [hseed, setHseed] = useState()
   const [layers, setLayers] = useState()
-  const [slotSize, setSlotSize] = useState()
+  const [slotSize, setSlotSize] = useState(1)
   const [progress, setProgress] = useState(0)
   const [progressStage, setProgressStage] = useState(0)
   const [address, setAddress] = useState() // '0x12345678901234567890'
@@ -146,11 +146,12 @@ const Create = () => {
         address,
         root: ONEUtil.hexView(root),
         duration,
+        slotSize,
         effectiveTime,
         lastResortAddress: normalizedAddress,
         dailyLimit: ONEUtil.toFraction(dailyLimit).toString(),
         hseed: ONEUtil.hexView(hseed),
-        network
+        network,
       }
       await storeLayers()
       dispatch(walletActions.updateWallet(wallet))

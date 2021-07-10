@@ -6,7 +6,7 @@ import { useRouteMatch, useHistory } from 'react-router'
 import { titleCase } from 'title-case'
 import { useSelector, useDispatch } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
-import { SearchOutlined, LockOutlined } from '@ant-design/icons'
+import { SearchOutlined, LockOutlined, CloseOutlined, SettingOutlined } from '@ant-design/icons'
 import config from '../config'
 import util from '../util'
 import { Hint } from '../components/Text'
@@ -94,6 +94,7 @@ const WalletHeader = () => {
   const wallet = wallets[address] || {}
   const subtitle = wallet.name ? `${wallet.name} (${shortAddress})` : shortAddress
   const [settingsVisible, setSettingsVisible] = useState(false)
+  const [relayerEditVisible, setRelayerEditVisible] = useState(false)
   return (
     <PageHeader
       style={{ background: '#ffffff' }}
@@ -101,9 +102,13 @@ const WalletHeader = () => {
       title={titleCase(action || '')}
       subTitle={<Hint>{subtitle}</Hint>}
       extra={[
-        <Button key='lock' shape='circle' icon={<LockOutlined />} onClick={() => setSettingsVisible(true)} />,
-        <RelayerSelector key='relayer' />,
-        <Divider key='divider' type='vertical' />,
+        <Button key='toggle' shape='circle' icon={relayerEditVisible ? <CloseOutlined /> : <SettingOutlined />} onClick={() => setRelayerEditVisible(!relayerEditVisible)} />,
+        relayerEditVisible &&
+          <Space size='small' key='relayer'>
+            <Button shape='circle' icon={<LockOutlined />} onClick={() => setSettingsVisible(true)} />
+            <RelayerSelector />
+            <Divider type='vertical' />
+          </Space>,
         <NetworkSelector key='network' />,
         <SecretSettings key='settings' visible={settingsVisible} onClose={() => setSettingsVisible(false)} />
       ]}
