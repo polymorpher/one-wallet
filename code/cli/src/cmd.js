@@ -48,4 +48,4 @@ const argv = yargs(hideBin(process.argv))
   .strict()
   .argv
 
-module.exports = argv
+export default argv

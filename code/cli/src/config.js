@@ -1,7 +1,9 @@
-require('dotenv').config()
+import dotenv from 'dotenv'
+dotenv.config()
+
 const DEBUG = process.env.DEBUG
 
-module.exports = {
+export default {
   appId: 'ONEWallet',
   appName: 'ONE Wallet',
   version: 'v0.1',

@@ -1,9 +1,13 @@
 // eslint-disable-next-line no-unused-vars
-const config = require('./config')
-const cmd = require('./cmd')
-const store = require('./src/store')
-const importJSX = require('import-jsx')
-const NewWallet = importJSX('./src/scan')
+import config from './config.js'
+import cmd from './cmd'
+import store from './store'
+import NewWallet from './scan'
+
+// const cmd = require('./cmd')
+// const store = require('./src/store')
+// const importJSX = require('import-jsx')
+// const NewWallet = importJSX('./src/scan')
 // const rl = require('readline').createInterface({
 //   input: process.stdin,
 //   output: process.stdout
