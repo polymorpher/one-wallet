@@ -1,7 +1,7 @@
 // eslint-disable-next-line no-unused-vars
 import React, { useEffect, useState } from 'react'
 // import styled from 'styled-components'
-import { PageHeader, Select, Divider, Modal, Input, Typography, Space, Button, Row } from 'antd'
+import { PageHeader, Select, Divider, Modal, Input, Typography, Space, Button } from 'antd'
 import { useRouteMatch, useHistory } from 'react-router'
 import { titleCase } from 'title-case'
 import { useSelector, useDispatch } from 'react-redux'
@@ -102,11 +102,13 @@ const WalletHeader = () => {
       title={titleCase(action || '')}
       subTitle={<Hint>{subtitle}</Hint>}
       extra={[
-        <span key='edit'>{!relayerEditVisible && <Button shape='circle' icon={<SettingOutlined />} onClick={() => setRelayerEditVisible(true)} />}</span>,
-        <span key='close'>{relayerEditVisible && <Button shape='circle' icon={<CloseOutlined />} onClick={() => setRelayerEditVisible(false)} />}</span>,
-        <span key='lock' style={{ margin: relayerEditVisible ? 5 : 0 }}>{relayerEditVisible && <Button shape='circle' icon={<LockOutlined />} onClick={() => setSettingsVisible(true)} />}</span>,
-        <span key='relayer' style={{ margin: relayerEditVisible ? 5 : 0 }}>{relayerEditVisible && <RelayerSelector />}</span>,
-        <span key='divider' style={{ margin: relayerEditVisible ? 5 : 0 }}>{relayerEditVisible && <Divider type='vertical' />}</span>,
+        <Button key='toggle' shape='circle' icon={relayerEditVisible ? <CloseOutlined /> : <SettingOutlined />} onClick={() => setRelayerEditVisible(!relayerEditVisible)} />,
+        relayerEditVisible &&
+          <Space size='small'>
+            <Button shape='circle' icon={<LockOutlined />} onClick={() => setSettingsVisible(true)} />
+            <RelayerSelector />
+            <Divider type='vertical' />
+          </Space>,
         <NetworkSelector key='network' />,
         <SecretSettings key='settings' visible={settingsVisible} onClose={() => setSettingsVisible(false)} />
       ]}
