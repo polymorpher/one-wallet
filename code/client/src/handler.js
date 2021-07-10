@@ -1,4 +1,5 @@
 import { message } from 'antd'
+import * as Sentry from '@sentry/browser'
 
 export const handleAPIError = (ex) => {
   console.trace(ex)
@@ -11,6 +12,7 @@ export const handleAPIError = (ex) => {
   } else {
     message.error(`Connection Error: ${error}`)
   }
+  Sentry.captureException(ex)
 }
 
 export const handleAddressError = (err) => {
