@@ -104,7 +104,7 @@ const WalletHeader = () => {
       extra={[
         <Button key='toggle' shape='circle' icon={relayerEditVisible ? <CloseOutlined /> : <SettingOutlined />} onClick={() => setRelayerEditVisible(!relayerEditVisible)} />,
         relayerEditVisible &&
-          <Space size='small'>
+          <Space size='small' key='relayer'>
             <Button shape='circle' icon={<LockOutlined />} onClick={() => setSettingsVisible(true)} />
             <RelayerSelector />
             <Divider type='vertical' />
