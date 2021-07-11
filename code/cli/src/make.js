@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Box, render, Text, useStdout } from 'ink'
+import { render, Text, useStdout } from 'ink'
 import { HarmonyAddress } from '@harmony-js/crypto'
 import ONE from '../../lib/onewallet'
 import Constants from './constants'
@@ -7,7 +7,7 @@ import { loadIncompleteWallet, completeWallet, saveToMain } from './store'
 import { getState } from './state'
 import { api } from '../../lib/api'
 import ONEUtil from '../../lib/util'
-import { stringify } from './util'
+import Info from './info'
 
 const MakeWallet = ({ lastResortAddress, otpInput }) => {
   const { network } = getState().wallet
@@ -78,7 +78,6 @@ const MakeWallet = ({ lastResortAddress, otpInput }) => {
   if (error) {
     return <Text color='red'>{error}</Text>
   }
-  const stringifiedWallet = wallet && stringify(wallet)
   return (
     <>
       {!wallet && <Text>Deploying wallet...</Text>}
@@ -87,23 +86,7 @@ const MakeWallet = ({ lastResortAddress, otpInput }) => {
           <Text>
           Wallet deployed:
           </Text>
-          <Box flexDirection='column'>
-            <Text>{'-'.repeat(113)}</Text>
-            {
-              Object.keys(stringifiedWallet).map(k => {
-                return (
-                  <Box key={k} flexDirection='column'>
-                    <Box>
-                      <Box width={30}><Text>{k} </Text></Box>
-                      <Text> | </Text>
-                      <Box width={80}><Text>{stringifiedWallet[k]}</Text></Box>
-                    </Box>
-                    <Text>{'-'.repeat(113)}</Text>
-                  </Box>
-                )
-              })
-            }
-          </Box>
+          <Info wallet={wallet} />
         </>}
     </>
   )
