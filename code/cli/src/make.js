@@ -23,7 +23,11 @@ const MakeWallet = ({ lastResortAddress, otpInput }) => {
       const { effectiveTime, slotSize, hseed, root, duration, name } = state
       const index = ONEUtil.timeToIndex({ effectiveTime, maxOperationsPerInterval: slotSize })
       const leaf = layers[0].subarray(index * 32, index * 32 + 32)
-      const otp = ONEUtil.encodeNumericalOtp(parseInt(otpInput))
+      const otpNum = parseInt(otpInput)
+      if (isNaN(otpNum)) {
+        return setError('Authenticator code is invalid: ' + otpInput)
+      }
+      const otp = ONEUtil.encodeNumericalOtp(otpNum)
       const eotp = ONE.computeEOTP({ hseed: ONEUtil.hexToBytes(hseed), otp })
       const computedLeaf = ONEUtil.sha256(eotp)
       if (!ONEUtil.bytesEqual(computedLeaf, leaf)) {
