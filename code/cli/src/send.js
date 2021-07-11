@@ -6,7 +6,7 @@ import { loadWalletState, loadWalletLayers } from './store'
 import { getState } from './state'
 import { api } from '../../lib/api'
 import { toBalance } from './util'
-import { SecureFlows } from '../../lib/api/flow'
+import { SmartFlows } from '../../lib/api/flow'
 import Spinner from 'ink-spinner'
 import config from './config'
 
@@ -64,21 +64,21 @@ const DoSend = ({ destInput, amountInput, otpInput, name, address }) => {
         setError(`Failed to finalize transaction. Error: ${ex.toString()}`)
         process.exit(1)
       }
-      const onRevealAttemptFailed = (numAttemptsRemaining) => {
-        setError(`Failed to finalize transaction. Trying ${numAttemptsRemaining} more time`)
+      const onRevealAttemptFailed = (numAttemptsRemaining, ex) => {
+        setError(`Failed to finalize transaction. Trying ${numAttemptsRemaining} more time. Error: ${ex.toString()}`)
       }
 
       const onRevealSuccess = (txId) => {
         setStage(3)
         setError(null)
         if (config.networks[network].explorer) {
-          const link = config.networks[network].explorer.replaceAll('{{txId}}', txId)
+          const link = config.networks[network].explorer.replace('{{txId}}', txId)
           setSuccess(`Done! View transaction: ${link}`)
         } else {
           setSuccess(`Done! Transaction id: ${txId}`)
         }
       }
-      SecureFlows.commitReveal({
+      SmartFlows.commitReveal({
         wallet,
         layers,
         otp,
