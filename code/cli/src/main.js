@@ -1,3 +1,4 @@
+import { init, updateState } from './init'
 // eslint-disable-next-line no-unused-vars
 import config from './config.js'
 import cmd from './cmd'
@@ -5,28 +6,9 @@ import { ensureDir } from './store'
 import NewWallet from './scan'
 import MakeWallet from './make'
 import ListWallets from './list'
-import { init, updateState } from './init'
-// const cmd = require('./cmd')
-// const store = require('./src/store')
-// const importJSX = require('import-jsx')
-// const NewWallet = importJSX('./src/scan')
-// const rl = require('readline').createInterface({
-//   input: process.stdin,
-//   output: process.stdout
-// })
+import DoSend from './send'
 
 const isCommand = (command) => cmd._[0] === command
-
-// const hang = () => {
-//   rl.question('Type "exit" and press enter to exit: ', response => {
-//     if (response === 'exit') {
-//       console.log(response)
-//       rl.close()
-//       process.exit(0)
-//     }
-//     hang()
-//   })
-// }
 
 const mapping = {
   relayer: {
@@ -53,6 +35,17 @@ async function main () {
     MakeWallet({ lastResortAddress: cmd['recovery-address'], otpInput: cmd.code })
   } else if (isCommand('list')) {
     ListWallets()
+  } else if (isCommand('send')) {
+    const locator = {}
+    if (cmd.wallet) {
+      if (cmd.wallet.startsWith('one1')) {
+        locator.address = cmd.wallet
+      } else {
+        locator.name = cmd.wallet
+      }
+      if (locator.name === 'main') locator.name = ''
+    }
+    DoSend({ destInput: cmd.address, amountInput: cmd.amount, otpInput: cmd.code, ...locator })
   }
   // hang()
   // process.exit(0)
