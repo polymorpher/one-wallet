@@ -39,8 +39,7 @@ const argv = yargs(hideBin(process.argv))
     wallet: {
       alias: 'w',
       type: 'string',
-      default: 'main',
-      describe: 'The wallet you are going to use for transfer funds. By default, the "main" wallet is used, which is the last wallet you created'
+      describe: 'The wallet you are going to use for transfer funds. By default, the main wallet is used, which is the last wallet you created'
     },
     store: {
       alias: 's',
