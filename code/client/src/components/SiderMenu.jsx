@@ -9,6 +9,7 @@ import Paths from '../constants/paths'
 import styled from 'styled-components'
 import { useWindowDimensions } from '../util'
 import api from '../api'
+import * as Sentry from '@sentry/browser'
 
 const { Link } = Typography
 
@@ -36,8 +37,13 @@ const SiderMenu = ({ ...args }) => {
 
   useEffect(() => {
     async function getStats () {
-      const statsData = await api.walletStats.getStats()
-      setStats(statsData)
+      try {
+        const statsData = await api.walletStats.getStats()
+        setStats(statsData)
+      } catch (ex) {
+        Sentry.captureException(ex)
+        console.error(ex)
+      }
     }
     getStats()
   }, [])
