@@ -3,7 +3,7 @@ import { Box, render, Text, useStdout } from 'ink'
 import { HarmonyAddress } from '@harmony-js/crypto'
 import ONE from '../../lib/onewallet'
 import Constants from './constants'
-import store from './store'
+import { loadIncompleteWallet, completeWallet } from './store'
 import { getState } from './state'
 import { api } from '../../lib/api'
 import ONEUtil from '../../lib/util'
@@ -16,7 +16,7 @@ const MakeWallet = ({ lastResortAddress, otpInput }) => {
   const { write } = useStdout()
   useEffect(() => {
     (async () => {
-      const { state, layers, error } = await store.loadIncompleteWallet()
+      const { state, layers, error } = await loadIncompleteWallet()
       if (error) {
         return
       }
@@ -65,7 +65,7 @@ const MakeWallet = ({ lastResortAddress, otpInput }) => {
         hseed,
         network,
       }
-      const filename = await store.completeWallet({ wallet })
+      const filename = await completeWallet({ wallet })
       write(`Wallet saved in ${filename}`)
       setWallet(wallet)
     })()
@@ -98,10 +98,6 @@ const MakeWallet = ({ lastResortAddress, otpInput }) => {
                 )
               })
             }
-
-            {/* <Text> */}
-            {/*  {JSON.stringify(stringify(wallet), null, 2)} */}
-            {/* </Text> */}
           </Box>
         </>}
     </>
