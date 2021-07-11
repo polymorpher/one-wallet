@@ -2976,6 +2976,11 @@ cli-cursor@^3.1.0:
   dependencies:
     restore-cursor "^3.1.0"
 
+cli-spinners@^2.3.0:
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/cli-spinners/-/cli-spinners-2.6.0.tgz#36c7dc98fb6a9a76bd6238ec3f77e2425627e939"
+  integrity sha512-t+4/y50K/+4xcCRosKkA7W4gTr1MySvLV0q+PxmG7FJ5g+66ChKurYjxBCjHggHH3HA5Hh9cy+lcUGWDqVH+4Q==
+
 cli-truncate@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/cli-truncate/-/cli-truncate-2.1.0.tgz#c39e28bf05edcde5be3b98992a22deed5a2b93c7"
@@ -5197,6 +5202,13 @@ ink-progress-bar@^3.0.0:
   dependencies:
     blacklist "^1.1.4"
     prop-types "^15.7.2"
+
+ink-spinner@^4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/ink-spinner/-/ink-spinner-4.0.2.tgz#ee87a363533fa4932998e1bd303e0aa186572b02"
+  integrity sha512-vQGmhWUEh3IG1IxK1Hl2w6RfH6aaRIJWw9lrG8CvFFyrQ23UpJ8GClJs5/sFBxkNvsrrK9sKNEGlGnsqTYiUww==
+  dependencies:
+    cli-spinners "^2.3.0"
 
 ink@^3.0.8:
   version "3.0.8"

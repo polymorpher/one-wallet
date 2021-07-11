@@ -67,6 +67,7 @@
     "ink-color-pipe": "^3.0.0",
     "ink-gradient": "^2.0.0",
     "ink-progress-bar": "^3.0.0",
+    "ink-spinner": "^4.0.2",
     "jsqr": "^1.2.0",
     "lodash": "^4.17.10",
     "protobufjs": "^6.11.2",
