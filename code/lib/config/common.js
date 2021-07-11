@@ -8,9 +8,10 @@ module.exports = {
   defaults: {
     relayer: process.env.RELAYER || (DEBUG ? 'dev' : 'hiddenstate'),
     network: process.env.NETWORK || (DEBUG ? 'eth-ganache' : 'harmony-mainnet'),
-    relayerSecret: process.env.RELAYER_SECRET,
+    relayerSecret: process.env.RELAYER_SECRET || 'onewallet',
     sentryDsn: process.env.SENTRY_DSN
   },
+  debug: DEBUG,
   networks: {
     ...(DEBUG && {
       'eth-ganache': {
