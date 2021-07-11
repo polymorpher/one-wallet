@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Box, Newline, render, Text, useStdout } from 'ink'
-import store from './store'
+import { storeIncompleteWallet } from './store'
 import Constants from './constants'
 import config from './config'
 import BigText from 'ink-big-text'
@@ -98,7 +98,7 @@ const NewWallet = ({ seed, name, data }) => {
             slotSize,
             hseed: ONEUtil.hexView(hseed),
           }
-          await store.storeIncompleteWallet({ state, layers })
+          await storeIncompleteWallet({ state, layers })
           worker.terminate()
           process.exit(0)
           // why()
