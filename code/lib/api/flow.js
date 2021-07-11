@@ -90,7 +90,7 @@ const Flows = {
           onRevealError && await onRevealError(ex)
           return
         }
-        onRevealAttemptFailed && onRevealAttemptFailed(numAttemptsRemaining)
+        onRevealAttemptFailed && onRevealAttemptFailed(numAttemptsRemaining, ex)
         numAttemptsRemaining -= 1
         return tryReveal()
       }
