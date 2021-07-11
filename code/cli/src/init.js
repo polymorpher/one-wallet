@@ -4,13 +4,8 @@ import { setStorage } from '../../lib/api/storage'
 import { initAPI, initBlockchain } from '../../lib/api'
 import { setConfig } from '../../lib/config/provider'
 import { getState, mergeState } from './state'
+import { message } from './message'
 
-const message = () => ({
-  error: (m) => console.error('[ERROR  ]', m),
-  warning: (m) => console.log('[WARNING]', m),
-  info: (m) => console.log('[INFO   ]', m),
-  success: (m) => console.log('[SUCCESS]', m),
-})
 setConfig(config)
 setMessage(message)
 
