@@ -6,7 +6,7 @@
   "main": "main.js",
   "scripts": {
     "babel": "npx babel src --out-dir lib",
-    "dev": "clear;node lib/main.js",
+    "dev": "DEBUG=true node lib/main.js",
     "build": "pkg main.js"
   },
   "devDependencies": {
