@@ -12,10 +12,13 @@ const ListWallets = () => {
   const [balances, setBalances] = useState({})
   const [computedBalances, setComputedBalances] = useState({})
   const [price, setPrice] = useState(0)
+  const [mainAddress, setMainAddress] = useState()
   useEffect(() => {
     (async () => {
+      const { address: mainBech32Address } = await store.readMain()
+      setMainAddress(new HarmonyAddress(mainBech32Address).checksum)
       const pointers = await store.listWallets()
-      const states = await Promise.all(pointers.map(p => store.loadWalletStateByFilename({ filename: p.file }).then(e => e.wallet)))
+      const states = await Promise.all(pointers.map(p => store.loadWalletState({ filename: p.file }).then(e => e.wallet)))
       const filteredStates = states.filter(e => e.network === network)
       setWallets(filteredStates)
       filteredStates.map(s => api.blockchain.getBalance({ address: s.address }).then(b => {
@@ -69,7 +72,7 @@ const ListWallets = () => {
         return (
           <Box flexDirection='column' key={wallet.address}>
             <Box>
-              <Box width={48}><Text>{new HarmonyAddress(wallet.address).bech32}</Text></Box>
+              <Box width={48}><Text>{new HarmonyAddress(wallet.address).bech32}{wallet.address === mainAddress && ' (*)'}</Text></Box>
               <Text> | </Text>
               <Box width={24}><Text>{wallet.name}</Text></Box>
               <Text> | </Text>
