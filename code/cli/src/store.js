@@ -8,15 +8,15 @@ const StoreManager = {
   logger: config.debug ? console.log : () => {}
 }
 
-const updateStorePath = (path) => {
+export const updateStorePath = (path) => {
   StoreManager.path = path
 }
 
-const setLogger = (logger) => {
+export const setLogger = (logger) => {
   StoreManager.logger = logger
 }
 
-const ensureDir = async () => {
+export const ensureDir = async () => {
   try {
     await fs.access(StoreManager.path)
   } catch (ex) {
@@ -24,7 +24,7 @@ const ensureDir = async () => {
   }
 }
 
-const completeWallet = async ({ wallet }) => {
+export const completeWallet = async ({ wallet }) => {
   const file = path.join(StoreManager.path, `${new HarmonyAddress(wallet.address).bech32}-${wallet.name}`)
   const tempFile = path.join(StoreManager.path, 'temp')
   await fs.rename(tempFile + '.tree', file + '.tree')
@@ -33,7 +33,7 @@ const completeWallet = async ({ wallet }) => {
   return file
 }
 
-const storeIncompleteWallet = async ({ state, layers }) => {
+export const storeIncompleteWallet = async ({ state, layers }) => {
   const file = path.join(StoreManager.path, 'temp')
   await fs.rm(file, { force: true })
   await fs.rm(file + '.tree', { force: true })
@@ -49,7 +49,7 @@ const storeIncompleteWallet = async ({ state, layers }) => {
   ])
 }
 
-const loadIncompleteWallet = async () => {
+export const loadIncompleteWallet = async () => {
   const file = path.join(StoreManager.path, 'temp')
   const stateJson = await fs.readFile(file, { encoding: 'utf-8' })
   const state = JSON.parse(stateJson)
@@ -59,19 +59,19 @@ const loadIncompleteWallet = async () => {
 
 const ONE_WALLET_PATTERN = /^(one1[0-9a-z]+)-([a-zA-Z-]+)$/
 
-const listWallets = async () => {
+export const listWallets = async () => {
   const files = await fs.readdir(StoreManager.path)
   const wallets = []
   for (const f of files) {
     const match = f.match(ONE_WALLET_PATTERN)
     if (match) {
-      wallets.push({ address: match[1], name: match[2], file: path.join(StoreManager.path, f) })
+      wallets.push({ address: match[1], name: match[2], file: f })
     }
   }
   return wallets
 }
 
-const readMain = async () => {
+export const readMain = async () => {
   const fname = path.join(StoreManager.path, 'main')
   try {
     const json = await fs.readFile(fname, { encoding: 'utf-8' })
@@ -81,13 +81,13 @@ const readMain = async () => {
   }
 }
 
-const saveToMain = async ({ address, name }) => {
+export const saveToMain = async ({ address, name }) => {
   const fname = path.join(StoreManager.path, 'main')
   const file = path.join(StoreManager.path, `${new HarmonyAddress(address).bech32}`)
   await fs.writeFile(fname, JSON.stringify({ address, name, file }), { encoding: 'utf-8' })
 }
 
-const findWallet = async ({ address, name }) => {
+export const findWallet = async ({ address, name }) => {
   const wallets = await listWallets()
   if (address) {
     return wallets.find(e => e.address === new HarmonyAddress(address).bech32)
@@ -98,10 +98,19 @@ const findWallet = async ({ address, name }) => {
   return readMain()
 }
 
-const loadWalletState = async ({ address, name }) => {
+export const loadWalletState = async ({ address, name }) => {
   try {
     const { file } = findWallet({ address, name })
-    const p = path.join(StoreManager.path, file)
+    return loadWalletStateByFilename({ filename: file })
+  } catch (ex) {
+    StoreManager.logger(ex)
+    return { error: ex }
+  }
+}
+
+export const loadWalletStateByFilename = async ({ filename }) => {
+  try {
+    const p = path.join(StoreManager.path, filename)
     const walletJson = await fs.readFile(p, { encoding: 'utf-8' })
     const wallet = JSON.parse(walletJson)
     return { wallet }
@@ -111,7 +120,7 @@ const loadWalletState = async ({ address, name }) => {
   }
 }
 
-const loadWalletLayers = async ({ address, name, filename }) => {
+export const loadWalletLayers = async ({ address, name, filename }) => {
   try {
     const { file } = filename ? { file: filename } : findWallet({ address, name })
     const p = path.join(StoreManager.path, file)
@@ -131,5 +140,3 @@ const loadWalletLayers = async ({ address, name, filename }) => {
     return { error: ex }
   }
 }
-
-export default { ensureDir, storeIncompleteWallet, completeWallet, updateStorePath, loadWalletState, loadWalletLayers, setLogger, saveToMain, readMain, loadIncompleteWallet }
