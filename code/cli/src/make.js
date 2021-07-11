@@ -56,7 +56,7 @@ const MakeWallet = ({ lastResortAddress, otpInput }) => {
         dailyLimit: ONEUtil.toFraction(Constants.defaultDailyLimit).toString()
       })
       write(`Deployed. Received contract address ${address}\n`)
-
+      const blockchainWallet = await api.blockchain.getWallet({ address })
       const wallet = {
         name,
         address,
@@ -68,11 +68,13 @@ const MakeWallet = ({ lastResortAddress, otpInput }) => {
         dailyLimit: ONEUtil.toFraction(Constants.defaultDailyLimit).toString(),
         hseed,
         network,
+        ...blockchainWallet
       }
       const { file, address: bech32Address } = await completeWallet({ wallet })
       write(`Wallet saved in ${file}\n`)
       setWallet(wallet)
-      saveToMain({ address: bech32Address, name })
+      await saveToMain({ address: bech32Address, name })
+      process.exit(0)
     })()
   }, [])
   if (error) {
