@@ -78,7 +78,7 @@ const DoSend = ({ destInput, amountInput, otpInput, name, address }) => {
           setSuccess(`Done! Transaction id: ${txId}`)
         }
       }
-      SmartFlows.commitReveal({
+      await SmartFlows.commitReveal({
         wallet,
         layers,
         otp,
@@ -99,6 +99,7 @@ const DoSend = ({ destInput, amountInput, otpInput, name, address }) => {
           warning: (warning) => write(warning + '\n')
         }
       })
+      process.exit(0)
     })()
   }, [])
   return (
