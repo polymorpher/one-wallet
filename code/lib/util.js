@@ -1,6 +1,7 @@
 const JSSHA = require('jssha')
 const createKeccakHash = require('keccak')
 const Conversion = require('ethjs-unit')
+const sha256 = require('fast-sha256')
 const utils = {
   hexView: (bytes) => {
     return bytes && Array.from(bytes).map(x => x.toString(16).padStart(2, '0')).join('')
@@ -9,6 +10,8 @@ const utils = {
   hexString: (bytes) => {
     return '0x' + utils.hexView(bytes)
   },
+
+  sha256,
 
   hexToBytes: (hex, length, padRight) => {
     if (!hex) {
@@ -103,5 +106,7 @@ const utils = {
   toOne: (fractions, unit) => {
     return Conversion.fromWei(fractions, unit || 'ether')
   },
+
+
 }
 module.exports = utils
