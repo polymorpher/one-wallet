@@ -15,6 +15,8 @@ export const stringify = wallet => {
     dailyLimit,
     hseed,
     network,
+    majorVersion,
+    minorVersion
   } = wallet
   const oneAddress = new HarmonyAddress(address).bech32
   const oneLastResortAddress = new HarmonyAddress(address).bech32
@@ -32,6 +34,8 @@ export const stringify = wallet => {
     'Daily Spending Limit': ONEUtil.toOne(dailyLimit) + ' ONE',
     'Expiration Time': humanizeDuration(expirationDuration, { units: ['y', 'mo', 'd'], round: true }) + ' from now',
     Salt: hseed,
+    'Major Version': majorVersion,
+    'Minor Version': minorVersion,
   }
 }
 
