@@ -3,7 +3,7 @@ import { Box, render, Text, useStdout } from 'ink'
 import { HarmonyAddress } from '@harmony-js/crypto'
 import ONE from '../../lib/onewallet'
 import Constants from './constants'
-import { loadIncompleteWallet, completeWallet } from './store'
+import { loadIncompleteWallet, completeWallet, saveToMain } from './store'
 import { getState } from './state'
 import { api } from '../../lib/api'
 import ONEUtil from '../../lib/util'
@@ -51,7 +51,7 @@ const MakeWallet = ({ lastResortAddress, otpInput }) => {
         lastResortAddress: normalizedAddress,
         dailyLimit: ONEUtil.toFraction(Constants.defaultDailyLimit).toString()
       })
-      write(`Deployed. Received contract address ${address}`)
+      write(`Deployed. Received contract address ${address}\n`)
 
       const wallet = {
         name,
@@ -65,9 +65,10 @@ const MakeWallet = ({ lastResortAddress, otpInput }) => {
         hseed,
         network,
       }
-      const filename = await completeWallet({ wallet })
-      write(`Wallet saved in ${filename}`)
+      const { file, address: bech32Address } = await completeWallet({ wallet })
+      write(`Wallet saved in ${file}\n`)
       setWallet(wallet)
+      saveToMain({ address: bech32Address, name })
     })()
   }, [])
   if (error) {
