@@ -1,9 +1,10 @@
 // eslint-disable-next-line no-unused-vars
 import config from './config.js'
 import cmd from './cmd'
-import store from './store'
+import { ensureDir } from './store'
 import NewWallet from './scan'
 import MakeWallet from './make'
+import ListWallets from './list'
 import { init, updateState } from './init'
 // const cmd = require('./cmd')
 // const store = require('./src/store')
@@ -32,6 +33,7 @@ const mapping = {
     beta: 'hiddenstate',
   },
   network: {
+    dev: 'eth-ganache',
     mainnet: 'harmony-mainnet',
     testnet: 'harmony-testnet',
   }
@@ -44,11 +46,13 @@ async function main () {
   updateState({
     relayer: translate('relayer', cmd.relayer), network: translate('network', cmd.network), relayerSecret: cmd.password
   })
-  await store.ensureDir()
+  await ensureDir()
   if (isCommand('scan')) {
     NewWallet()
   } else if (isCommand('make')) {
     MakeWallet({ lastResortAddress: cmd['recovery-address'], otpInput: cmd.code })
+  } else if (isCommand('list')) {
+    ListWallets()
   }
   // hang()
   // process.exit(0)
