@@ -77,13 +77,14 @@ export const readMain = async () => {
   try {
     fs.access(fname, fsConstants.F_OK)
   } catch (ex) {
-    return null
+    return { error: `File ${fname} does not exist` }
   }
   try {
     const json = await fs.readFile(fname, { encoding: 'utf-8' })
     return JSON.parse(json)
   } catch (ex) {
     StoreManager.logger(ex)
+    return { error: `Error reading ${fname}` }
   }
 }
 
@@ -96,27 +97,21 @@ export const saveToMain = async ({ address, name }) => {
 export const findWallet = async ({ address, name }) => {
   const wallets = await listWallets()
   if (address) {
-    return wallets.find(e => e.address === new HarmonyAddress(address).bech32)
+    return wallets.find(e => e.address === new HarmonyAddress(address).bech32) || { error: `No wallet with address: ${address}` }
   }
   if (name) {
-    return wallets.find(e => e.name === name)
+    return wallets.find(e => e.name === name) || { error: `No wallet with name: ${name}` }
   }
   return readMain()
 }
 
-export const loadWalletState = async ({ address, name }) => {
+export const loadWalletState = async ({ address, name, filename }) => {
   try {
-    const { file } = findWallet({ address, name })
-    return loadWalletStateByFilename({ filename: file })
-  } catch (ex) {
-    StoreManager.logger(ex)
-    return { error: ex }
-  }
-}
-
-export const loadWalletStateByFilename = async ({ filename }) => {
-  try {
-    const p = path.join(StoreManager.path, filename)
+    const { file, error } = filename ? { file: filename } : await findWallet({ address, name })
+    if (error) {
+      return { error }
+    }
+    const p = path.join(StoreManager.path, file)
     const walletJson = await fs.readFile(p, { encoding: 'utf-8' })
     const wallet = JSON.parse(walletJson)
     return { wallet }
@@ -128,7 +123,10 @@ export const loadWalletStateByFilename = async ({ filename }) => {
 
 export const loadWalletLayers = async ({ address, name, filename }) => {
   try {
-    const { file } = filename ? { file: filename } : findWallet({ address, name })
+    const { file, error } = filename ? { file: filename } : await findWallet({ address, name })
+    if (error) {
+      return { error }
+    }
     const p = path.join(StoreManager.path, file)
     const layers = []
     const layersBin = await fs.readFile(p + '.tree')
