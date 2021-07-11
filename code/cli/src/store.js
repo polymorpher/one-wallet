@@ -30,17 +30,18 @@ const completeWallet = async ({ wallet }) => {
   await fs.rename(tempFile + '.tree', file + '.tree')
   await fs.rm(tempFile)
   await fs.writeFile(file, JSON.stringify(wallet), { encoding: 'utf-8' })
+  return file
 }
 
 const storeIncompleteWallet = async ({ state, layers }) => {
   const file = path.join(StoreManager.path, 'temp')
   await fs.rm(file, { force: true })
   await fs.rm(file + '.tree', { force: true })
-  const merged = new Uint8Array(layers[0].byteLength * 2)
+  const merged = new Uint8Array(layers[0].length * 2)
   let cursor = 0
   for (let i = 0; i < layers.length; i += 1) {
     merged.set(layers[i], cursor)
-    cursor += layers[i].byteLength
+    cursor += layers[i].length
   }
   return Promise.all([
     fs.writeFile(file, JSON.stringify(state), { encoding: 'utf-8' }),
@@ -52,7 +53,7 @@ const loadIncompleteWallet = async () => {
   const file = path.join(StoreManager.path, 'temp')
   const stateJson = await fs.readFile(file, { encoding: 'utf-8' })
   const state = JSON.parse(stateJson)
-  const { layers, error } = await loadWalletLayers({ path: 'temp' })
+  const { layers, error } = await loadWalletLayers({ filename: 'temp' })
   return { state, layers, error }
 }
 
@@ -110,17 +111,17 @@ const loadWalletState = async ({ address, name }) => {
   }
 }
 
-const loadWalletLayers = async ({ address, name, path }) => {
+const loadWalletLayers = async ({ address, name, filename }) => {
   try {
-    const { file } = path ? { file: path } : findWallet({ address, name })
+    const { file } = filename ? { file: filename } : findWallet({ address, name })
     const p = path.join(StoreManager.path, file)
     const layers = []
     const layersBin = await fs.readFile(p + '.tree')
-    const numLayers = Math.ceil(Math.log2(layersBin.byteLength))
+    const numLayers = Math.ceil(Math.log2(layersBin.length / 32))
     let cursor = 0
-    let layerLength = layersBin.byteLength / 2
+    let layerLength = layersBin.length / 2
     for (let i = 0; i < numLayers; i += 1) {
-      layers[i] = layersBin.subarray(cursor, cursor + layerLength)
+      layers[i] = new Uint8Array(layersBin.subarray(cursor, cursor + layerLength))
       cursor = cursor + layerLength
       layerLength /= 2
     }
