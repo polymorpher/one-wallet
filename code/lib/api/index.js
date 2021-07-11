@@ -75,13 +75,13 @@ const initBlockchain = (store) => {
     const state = store.getState()
     const { network } = state.wallet
     if (network !== activeNetwork) {
-      console.log(`Switching blockchainProvider: from ${activeNetwork} to ${network}`)
+      if (config.debug) console.log(`Switching blockchain provider: from ${activeNetwork} to ${network}`)
       activeNetwork = network
       web3 = web3instances[activeNetwork]
       one = contracts[activeNetwork]
     }
   })
-  console.log('blockchain init complete:', { networks })
+  if (config.debug) console.log('blockchain init complete:', { networks })
 }
 
 const api = {
@@ -94,16 +94,12 @@ const api = {
   },
   walletStats: {
     getStats: async () => {
-      try {
-        const { data } = await axios.get('https://explorer-v2-api.hmny.io/v0/1wallet/metrics')
-        const totalAmount = Math.round(ONEUtil.toOne(new BN(data.totalAmount)))
+      const { data } = await axios.get('https://explorer-v2-api.hmny.io/v0/1wallet/metrics')
+      const totalAmount = Math.round(ONEUtil.toOne(new BN(data.totalAmount)))
 
-        return {
-          count: data.count,
-          totalAmount: totalAmount
-        }
-      } catch (err) {
-        console.error(err)
+      return {
+        count: data.count,
+        totalAmount: totalAmount
       }
     }
   },
@@ -118,7 +114,7 @@ const api = {
         majorVersion = versionResult[0]
         minorVersion = versionResult[1]
       } catch (ex) {
-        console.log(`Failed to get wallet version. Wallet might be too old. Error: ${ex.toString()}`)
+        if (config.debug) console.log(`Failed to get wallet version. Wallet might be too old. Error: ${ex.toString()}`)
       }
       const [root, height, interval, t0, lifespan, maxOperationsPerInterval, lastResortAddress, dailyLimit] = Object.keys(result).map(k => result[k])
       if (raw) {
