@@ -76,3 +76,15 @@ export const computeBalance = (balance, price) => {
   const fiatFormatted = formatNumber(fiat)
   return { balance, formatted, fiat, fiatFormatted, valid: true }
 }
+
+// TODO: merge with client function
+export const toBalance = (formatted, price) => {
+  if (!validBalance(formatted, true)) {
+    return { balance: 0, formatted: '0', fiat: 0, fiatFormatted: '0', valid: false }
+  }
+  const f = parseFloat(formatted)
+  const balance = ONEUtil.toFraction(f)
+  const fiat = f * (price || 0)
+  const fiatFormatted = formatNumber(fiat)
+  return { balance, formatted, fiat, fiatFormatted, valid: true }
+}
