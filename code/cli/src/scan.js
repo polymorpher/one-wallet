@@ -128,7 +128,7 @@ const NewWallet = ({ seed, name, data }) => {
 
 export default () => {
   const seed = new Uint8Array(crypto.randomBytes(20).buffer)
-  const name = ONENames.randomWord(3, '-')
+  const name = ONENames.randomWord(3, '-').toLowerCase()
   const uri = getQRCodeUri({ name, seed })
   const code = qrcode.create(uri, { errorCorrectionLevel: 'low' })
   const data = code.modules
