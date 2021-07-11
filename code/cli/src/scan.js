@@ -66,46 +66,44 @@ const NewWallet = ({ seed, name, data }) => {
   const [progressStage, setProgressStage] = useState(-1)
   const [worker, setWorker] = useState()
   // eslint-disable-next-line no-unused-vars
-  const [slotSize, setSlotSize] = useState(1)
-  const [effectiveTime, setEffectiveTime] = useState()
+  const [slotSize] = useState(1)
 
   useEffect(() => {
     const worker = new Worker(path.join(__dirname, 'ONEWalletWorker.js'))
-    worker.on('message', async ({ status, current, total, stage, result } = {}) => {
-      if (status === 'working') {
-        // log(`Completed ${(current / total * 100).toFixed(2)}%`)
-        if (current % PROGRESS_REPORT_INTERVAL === 0) {
-          setProgress(Math.round(current / total * 100))
-        }
-        setProgressStage(stage)
-      }
-      if (status === 'done') {
-        const { hseed, root, layers, maxOperationsPerInterval: slotSize } = result
-        const state = {
-          name,
-          root: ONEUtil.hexView(root),
-          duration,
-          effectiveTime,
-          slotSize,
-          hseed: ONEUtil.hexView(hseed),
-        }
-        await store.storeIncompleteWallet({ state, layers })
-        worker.terminate()
-        process.exit(0)
-        // why()
-        // log('Received created wallet from worker', result)
-      }
-    })
     setWorker(worker)
   }, [])
 
   useEffect(() => {
     if (worker) {
       // log('posting to worker')
-      const t = Math.floor(Date.now() / Constants.interval) * Constants.interval
-      setEffectiveTime(t)
+      const effectiveTime = Math.floor(Date.now() / Constants.interval) * Constants.interval
       worker && worker.postMessage({
-        seed, effectiveTime: t, duration, slotSize, interval: Constants.interval
+        seed, effectiveTime, duration, slotSize, interval: Constants.interval
+      })
+      worker.on('message', async ({ status, current, total, stage, result } = {}) => {
+        if (status === 'working') {
+          // log(`Completed ${(current / total * 100).toFixed(2)}%`)
+          if (current % PROGRESS_REPORT_INTERVAL === 0) {
+            setProgress(Math.round(current / total * 100))
+          }
+          setProgressStage(stage)
+        }
+        if (status === 'done') {
+          const { hseed, root, layers, maxOperationsPerInterval: slotSize } = result
+          const state = {
+            name,
+            root: ONEUtil.hexView(root),
+            duration,
+            effectiveTime,
+            slotSize,
+            hseed: ONEUtil.hexView(hseed),
+          }
+          await store.storeIncompleteWallet({ state, layers })
+          worker.terminate()
+          process.exit(0)
+          // why()
+          // log('Received created wallet from worker', result)
+        }
       })
     }
   }, [worker])
