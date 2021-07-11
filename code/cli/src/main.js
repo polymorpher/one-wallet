@@ -7,6 +7,7 @@ import NewWallet from './scan'
 import MakeWallet from './make'
 import ListWallets from './list'
 import DoSend from './send'
+import SetMain from './setMain'
 
 const isCommand = (command) => cmd._[0] === command
 
@@ -22,7 +23,18 @@ const mapping = {
 }
 
 const translate = (kind, s) => mapping?.[kind]?.[s] || s
-
+const locate = (w) => {
+  const locator = {}
+  if (w) {
+    if (cmd.wallet.startsWith('one1')) {
+      locator.address = w
+    } else {
+      locator.name = w
+    }
+    if (locator.name === 'main') locator.name = ''
+  }
+  return locator
+}
 async function main () {
   init()
   updateState({
@@ -36,19 +48,12 @@ async function main () {
   } else if (isCommand('list')) {
     ListWallets()
   } else if (isCommand('send')) {
-    const locator = {}
-    if (cmd.wallet) {
-      if (cmd.wallet.startsWith('one1')) {
-        locator.address = cmd.wallet
-      } else {
-        locator.name = cmd.wallet
-      }
-      if (locator.name === 'main') locator.name = ''
-    }
+    const locator = locate(cmd.wallet)
     DoSend({ destInput: cmd.address, amountInput: cmd.amount, otpInput: cmd.code, ...locator })
+  } else if (isCommand('main')) {
+    const locator = locate(cmd.wallet)
+    SetMain(locator)
   }
-  // hang()
-  // process.exit(0)
 }
 
 main()
