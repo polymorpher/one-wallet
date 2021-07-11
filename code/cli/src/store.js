@@ -1,4 +1,4 @@
-import { promises as fs } from 'fs'
+import { promises as fs, constants as fsConstants } from 'fs'
 import path from 'path'
 import config from './config'
 import { HarmonyAddress } from '@harmony-js/crypto'
@@ -25,12 +25,13 @@ export const ensureDir = async () => {
 }
 
 export const completeWallet = async ({ wallet }) => {
-  const file = path.join(StoreManager.path, `${new HarmonyAddress(wallet.address).bech32}-${wallet.name}`)
+  const address = new HarmonyAddress(wallet.address).bech32
+  const file = path.join(StoreManager.path, `${address}-${wallet.name}`)
   const tempFile = path.join(StoreManager.path, 'temp')
   await fs.rename(tempFile + '.tree', file + '.tree')
   await fs.rm(tempFile)
   await fs.writeFile(file, JSON.stringify(wallet), { encoding: 'utf-8' })
-  return file
+  return { file, address }
 }
 
 export const storeIncompleteWallet = async ({ state, layers }) => {
@@ -74,6 +75,11 @@ export const listWallets = async () => {
 export const readMain = async () => {
   const fname = path.join(StoreManager.path, 'main')
   try {
+    fs.access(fname, fsConstants.F_OK)
+  } catch (ex) {
+    return null
+  }
+  try {
     const json = await fs.readFile(fname, { encoding: 'utf-8' })
     return JSON.parse(json)
   } catch (ex) {
@@ -83,7 +89,7 @@ export const readMain = async () => {
 
 export const saveToMain = async ({ address, name }) => {
   const fname = path.join(StoreManager.path, 'main')
-  const file = path.join(StoreManager.path, `${new HarmonyAddress(address).bech32}`)
+  const file = path.join(`${new HarmonyAddress(address).bech32}-${name}`)
   await fs.writeFile(fname, JSON.stringify({ address, name, file }), { encoding: 'utf-8' })
 }
 
