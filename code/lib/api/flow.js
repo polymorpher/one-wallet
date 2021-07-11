@@ -2,10 +2,10 @@ const ONEUtil = require('../util')
 const ONE = require('../onewallet')
 const config = require('../config/provider').getConfig()
 const storage = require('./storage').getStorage()
-const message = require('./message').getMessage()
+const messager = require('./message').getMessage()
 const { api } = require('./index')
 
-export const EotpBuilders = {
+const EotpBuilders = {
   fromOtp: ({ otp, wallet }) => {
     const { hseed } = wallet
     const encodedOtp = ONEUtil.encodeNumericalOtp(otp)
@@ -20,20 +20,20 @@ export const EotpBuilders = {
   }
 }
 
-export const Flows = {
+const Flows = {
   commitReveal: async ({
     otp, eotpBuilder = EotpBuilders.fromOtp,
     wallet, layers, commitHashGenerator, commitHashArgs,
     beforeCommit, afterCommit, onCommitError, onCommitFailure,
     revealAPI, revealArgs, onRevealFailure, onRevealSuccess, onRevealError, onRevealAttemptFailed,
     beforeReveal,
-    maxTransferAttempts = 3, checkCommitInterval = 5000
+    maxTransferAttempts = 3, checkCommitInterval = 5000,
+    message = messager
   }) => {
     const { effectiveTime, root, address } = wallet
     if (!layers) {
       layers = await storage.getItem(root)
       if (!layers) {
-        console.log(layers)
         message.error('Cannot find pre-computed proofs for this wallet. Storage might be corrupted. Please restore the wallet from Google Authenticator.')
         return
       }
@@ -79,13 +79,13 @@ export const Flows = {
             numAttemptsRemaining -= 1
             return tryReveal()
           }
-          onRevealFailure && await onRevealFailure()
+          onRevealFailure && await onRevealFailure(error)
           return
         }
         onRevealSuccess && await onRevealSuccess(txId)
         return true
       } catch (ex) {
-        console.trace(ex)
+        // console.trace(ex)
         if (numAttemptsRemaining <= 0) {
           onRevealError && await onRevealError(ex)
           return
@@ -99,7 +99,7 @@ export const Flows = {
   }
 }
 
-export const SecureFlows = {
+const SecureFlows = {
   commitReveal: async ({
     wallet, beforeReveal, ...args
   }) => {
@@ -109,7 +109,7 @@ export const SecureFlows = {
       _beforeReveal && _beforeReveal()
       const commits = await api.blockchain.getCommits({ address })
       commitHash = ONEUtil.hexString(commitHash)
-      console.log({ commitHash, commits })
+      // console.log({ commitHash, commits })
       if (!commits || !commits.find(c => c.hash === commitHash)) {
         throw new Error('Commit not yet confirmed by blockchain')
       }
@@ -120,12 +120,19 @@ export const SecureFlows = {
   }
 }
 
-export const SmartFlows = {
-  commitReveal: async ({ wallet, ...args }) => {
+const SmartFlows = {
+  commitReveal: async ({ wallet, message = messager, ...args }) => {
     if (!wallet.majorVersion || !(wallet.majorVersion >= config.minWalletVersion)) {
       message.warning('You are using an outdated wallet, which is less secure than the current version. Please move your funds to a new wallet.', 15)
       return Flows.commitReveal({ ...args, wallet })
     }
     return SecureFlows.commitReveal({ ...args, wallet })
   }
+}
+
+module.exports = {
+  EotpBuilders,
+  SecureFlows,
+  Flows,
+  SmartFlows,
 }
