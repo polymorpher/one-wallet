@@ -3,7 +3,8 @@ import config from './config.js'
 import cmd from './cmd'
 import store from './store'
 import NewWallet from './scan'
-
+import MakeWallet from './make'
+import { init, updateState } from './init'
 // const cmd = require('./cmd')
 // const store = require('./src/store')
 // const importJSX = require('import-jsx')
@@ -26,12 +27,28 @@ const isCommand = (command) => cmd._[0] === command
 //   })
 // }
 
+const mapping = {
+  relayer: {
+    beta: 'hiddenstate',
+  },
+  network: {
+    mainnet: 'harmony-mainnet',
+    testnet: 'harmony-testnet',
+  }
+}
+
+const translate = (kind, s) => mapping?.[kind]?.[s] || s
+
 async function main () {
+  init()
+  updateState({
+    relayer: translate('relayer', cmd.relayer), network: translate('network', cmd.network), relayerSecret: cmd.password
+  })
   await store.ensureDir()
   if (isCommand('scan')) {
-    NewWallet({ network: cmd.network })
+    NewWallet()
   } else if (isCommand('make')) {
-
+    MakeWallet({ lastResortAddress: cmd['recovery-address'], otpInput: cmd.code })
   }
   // hang()
   // process.exit(0)
