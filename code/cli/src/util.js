@@ -34,3 +34,45 @@ export const stringify = wallet => {
     Salt: hseed,
   }
 }
+
+// TODO: merge with client function
+export const validBalance = (balance, allowFloat) => {
+  if (typeof balance === 'number') { return true }
+  if (typeof balance !== 'string') { return false }
+  for (let i = 0; i < balance.length; i += 1) {
+    const c = balance.charCodeAt(i)
+    if (c < 48 || c > 57) {
+      if (!allowFloat) {
+        return false
+      }
+      if (c !== 46) {
+        return false
+      }
+    }
+  }
+  return true
+}
+
+// TODO: merge with client function
+export const formatNumber = (number, maxPrecision) => {
+  maxPrecision = maxPrecision || 4
+  number = parseFloat(number)
+  if (number < 10 ** (-maxPrecision)) {
+    return '0'
+  }
+  const order = Math.ceil(Math.log10(Math.max(number, 1)))
+  const digits = Math.max(0, maxPrecision - order)
+  return number.toFixed(digits)
+}
+
+// TODO: merge with client function
+export const computeBalance = (balance, price) => {
+  if (!validBalance(balance)) {
+    return { balance: 0, formatted: '0', fiat: 0, fiatFormatted: '0', valid: false }
+  }
+  const ones = ONEUtil.toOne(balance || 0)
+  const formatted = formatNumber(ones)
+  const fiat = (price || 0) * parseFloat(ones)
+  const fiatFormatted = formatNumber(fiat)
+  return { balance, formatted, fiat, fiatFormatted, valid: true }
+}

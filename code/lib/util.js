@@ -107,6 +107,5 @@ const utils = {
     return Conversion.fromWei(fractions, unit || 'ether')
   },
 
-
 }
 module.exports = utils
