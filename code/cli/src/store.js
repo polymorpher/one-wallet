@@ -92,6 +92,7 @@ export const saveToMain = async ({ address, name }) => {
   const fname = path.join(StoreManager.path, 'main')
   const file = path.join(`${new HarmonyAddress(address).bech32}-${name}`)
   await fs.writeFile(fname, JSON.stringify({ address, name, file }), { encoding: 'utf-8' })
+  return { file, address, name }
 }
 
 export const findWallet = async ({ address, name }) => {
@@ -115,6 +116,21 @@ export const loadWalletState = async ({ address, name, filename }) => {
     const walletJson = await fs.readFile(p, { encoding: 'utf-8' })
     const wallet = JSON.parse(walletJson)
     return { wallet }
+  } catch (ex) {
+    StoreManager.logger(ex)
+    return { error: ex }
+  }
+}
+
+export const overrideWalletState = async ({ state, address, name, filename }) => {
+  try {
+    const { file, error } = filename ? { file: filename } : await findWallet({ address, name })
+    if (error) {
+      return { error }
+    }
+    const p = path.join(StoreManager.path, file)
+    await fs.writeFile(p, JSON.stringify(state), { encoding: 'utf-8' })
+    return {}
   } catch (ex) {
     StoreManager.logger(ex)
     return { error: ex }
