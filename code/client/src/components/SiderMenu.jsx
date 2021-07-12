@@ -25,7 +25,7 @@ const SiderLink = styled(Link).attrs((e) => ({
 `
 
 const SiderMenu = ({ ...args }) => {
-  const { width } = useWindowDimensions()
+  const { isMobile } = useWindowDimensions()
   const history = useHistory()
   const match = useRouteMatch('/:action')
   const { action } = match ? match.params : {}
@@ -33,7 +33,6 @@ const SiderMenu = ({ ...args }) => {
     history.push(Paths[key])
   }
   const [stats, setStats] = useState(null)
-  const isMobile = width < 992
 
   useEffect(() => {
     async function getStats () {
@@ -49,7 +48,7 @@ const SiderMenu = ({ ...args }) => {
   }, [])
 
   return (
-    <Layout.Sider collapsed={isMobile}>
+    <Layout.Sider collapsed={isMobile} {...args}>
       {/* <Image src='/assets/harmony.svg' /> */}
       <Row justify='center'>
         <SiderLink href='https://harmony.one/'>

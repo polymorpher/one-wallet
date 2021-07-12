@@ -255,24 +255,21 @@ const Show = () => {
       }
     })
   }
-
+  const { isMobile } = useWindowDimensions()
   // UI Rendering below
   if (!wallet || wallet.network !== network) {
     return <Redirect to={Paths.wallets} />
   }
   const title = (
-    <Space size='large' align='baseline'>
+    <Space size='large' align='baseline' >
       <Title level={2}>{wallet.name}</Title>
       <Text>
         <ExplorerLink copyable={{ text: oneAddress }} href={util.getNetworkExplorerUrl(wallet)}>
-          {oneAddress}
+          {isMobile ? util.ellipsisAddress(oneAddress) : address}
         </ExplorerLink>
       </Text>
     </Space>
   )
-
-  const { width } = useWindowDimensions()
-  const isMobile = width < 992
 
   return (
     <>
