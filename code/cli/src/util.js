@@ -19,7 +19,7 @@ export const stringify = wallet => {
     minorVersion
   } = wallet
   const oneAddress = new HarmonyAddress(address).bech32
-  const oneLastResortAddress = new HarmonyAddress(address).bech32
+  const oneLastResortAddress = new HarmonyAddress(lastResortAddress).bech32
   const expirationDuration = effectiveTime + duration - Date.now()
   return {
     Name: name,
