@@ -148,6 +148,7 @@ function getWindowDimensions () {
 
 export function useWindowDimensions () {
   const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions())
+  const isMobile = !(windowDimensions.width >= 992)
 
   useEffect(() => {
     function handleResize () {
@@ -158,5 +159,5 @@ export function useWindowDimensions () {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  return windowDimensions
+  return { isMobile, ...windowDimensions }
 }

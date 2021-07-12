@@ -8,7 +8,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
 import { SearchOutlined, LockOutlined, CloseOutlined, SettingOutlined } from '@ant-design/icons'
 import config from '../config'
-import util from '../util'
+import util, { useWindowDimensions } from '../util'
 import { Hint } from '../components/Text'
 // import Paths from '../constants/paths'
 const { Text, Link } = Typography
@@ -84,6 +84,7 @@ const SecretSettings = ({ visible, onClose }) => {
 }
 
 const WalletHeader = () => {
+  const { isMobile } = useWindowDimensions()
   const history = useHistory()
   const match = useRouteMatch('/:action/:address?')
   const { action, address: routeAddress } = match ? match.params : {}
@@ -99,8 +100,8 @@ const WalletHeader = () => {
     <PageHeader
       style={{ background: '#ffffff' }}
       onBack={action && (() => history.goBack())}
-      title={titleCase(action || '')}
-      subTitle={<Hint>{subtitle}</Hint>}
+      title={!isMobile && titleCase(action || '')}
+      subTitle={!isMobile && <Hint>{subtitle}</Hint>}
       extra={[
         <Button key='toggle' shape='circle' icon={relayerEditVisible ? <CloseOutlined /> : <SettingOutlined />} onClick={() => setRelayerEditVisible(!relayerEditVisible)} />,
         relayerEditVisible &&
