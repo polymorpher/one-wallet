@@ -8,6 +8,10 @@ contract ONEWallet {
     event ExceedDailyLimit(uint256 amount, uint256 limit, uint256 current, address dest);
     event UnknownTransferError(address dest);
     event LastResortAddressNotSet();
+    event PaymentReceived(uint256 amount, address from);
+    event PaymentSent(uint256 amount, address dest);
+    event AutoRecoveryTriggered(address from);
+    event RecoveryFailure();
 
     bytes32 root; // Note: @ivan brought up a good point in reducing this to 16-bytes so hash of two consecutive nodes can be done in a single word (to save gas and reduce blockchain clutter). Let's not worry about that for now and re-evalaute this later.
     uint8 height; // including the root. e.g. for a tree with 4 leaves, the height is 3.
@@ -33,14 +37,14 @@ contract ONEWallet {
 
     uint32 constant REVEAL_MAX_DELAY = 60;
     uint32 constant SECONDS_PER_DAY = 86400;
+    uint256 constant AUTO_RECOVERY_TRIGGER_AMOUNT = 1 ether;
+    uint32 constant MAX_COMMIT_SIZE = 120;
 
     uint32 public constant majorVersion = 0x2; // a change would require client to migrate
-    uint32 public constant minorVersion = 0x1; // a change would not require the client to migrate
+    uint32 public constant minorVersion = 0x2; // a change would not require the client to migrate
 
     //    bool commitLocked; // not necessary at this time
     Commit[] public commits; // self-clean on commit (auto delete commits that are beyond REVEAL_MAX_DELAY), so it's bounded by the number of commits an attacker can spam within REVEAL_MAX_DELAY time in the worst case, which is not too bad.
-
-    uint256[64] ______gap; // reserved space for future upgrade
 
     constructor(bytes32 root_, uint8 height_, uint8 interval_, uint32 t0_, uint32 lifespan_, uint8 maxOperationsPerInterval_,
         address payable lastResortAddress_, uint256 dailyLimit_)
@@ -55,13 +59,26 @@ contract ONEWallet {
         maxOperationsPerInterval = maxOperationsPerInterval_;
     }
 
-    receive() external payable {}
+    receive() external payable {
+        emit PaymentReceived(msg.value, msg.sender);
+        if (lastResortAddress == address(0)) {
+            return;
+        }
+        if (msg.sender == lastResortAddress) {
+            if (msg.value == AUTO_RECOVERY_TRIGGER_AMOUNT) {
+                require(_drain(), "Auto-triggered recovery failed");
+                emit AutoRecoveryTriggered(msg.sender);
+                return;
+            }
+        }
+    }
 
     function retire() external returns (bool)
     {
         require(uint32(block.timestamp / interval) - t0 > lifespan, "Too early to retire");
         require(lastResortAddress != address(0), "Last resort address is not set");
-        return _drain();
+        require(_drain(), "Recovery failed");
+        return true;
     }
 
     function getInfo() external view returns (bytes32, uint8, uint8, uint32, uint32, uint8, address, uint256)
@@ -108,6 +125,7 @@ contract ONEWallet {
         (uint32 ct, bool completed) = _findCommit(hash);
         require(ct == 0 && !completed, "Commit already exists");
         Commit memory nc = Commit(hash, uint32(block.timestamp), false);
+        require(commits.length < MAX_COMMIT_SIZE, "Too many commits are pending");
         commits.push(nc);
     }
 
@@ -142,6 +160,7 @@ contract ONEWallet {
             return false;
         }
         spentToday += amount;
+        emit PaymentSent(amount, dest);
         return true;
     }
 
@@ -162,7 +181,11 @@ contract ONEWallet {
             emit LastResortAddressNotSet();
             return false;
         }
-        return _drain();
+        if (!_drain()) {
+            emit RecoveryFailure();
+            return false;
+        }
+        return true;
     }
 
     function revealSetLastResortAddress(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp, address payable lastResortAddress_) external
@@ -181,6 +204,7 @@ contract ONEWallet {
     }
 
     function _drain() internal returns (bool) {
+        // intentionally using send, since this may be triggered after revealing the proof, and we must prevent revert
         return lastResortAddress.send(address(this).balance);
     }
 
