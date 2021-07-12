@@ -1,20 +1,18 @@
-const React = require('react')
-const { useState, useEffect } = React
-const { render, Text, Newline, Box, useStdout } = require('ink')
-const b32 = require('hi-base32')
-const { Worker } = require('worker_threads')
-const qrcode = require('qrcode')
-const path = require('path')
-// const ONE = require('../../lib/onewallet')
-const ONENames = require('../../lib/names')
-const ONEUtil = require('../../lib/util')
-const crypto = require('crypto')
-const Gradient = require('ink-gradient')
-const BigText = require('ink-big-text')
-const config = require('../config')
-const Constants = require('../constants')
-const store = require('./store')
-// const why = require('why-is-node-running')
+import React, { useEffect, useState } from 'react'
+import { Box, Newline, render, Text, useStdout } from 'ink'
+import { storeIncompleteWallet } from './store'
+import Constants from './constants'
+import config from './config'
+import BigText from 'ink-big-text'
+import Gradient from 'ink-gradient'
+import crypto from 'crypto'
+import ONEUtil from '../../lib/util'
+import ONENames from '../../lib/names'
+import path from 'path'
+import qrcode from 'qrcode'
+import { Worker } from 'worker_threads'
+import b32 from 'hi-base32'
+
 const PROGRESS_REPORT_INTERVAL = 1
 
 const getQRCodeUri = ({ name, seed }) => {
@@ -23,74 +21,7 @@ const getQRCodeUri = ({ name, seed }) => {
   return `otpauth://totp/${name}?secret=${b32.encode(seed)}&issuer=Harmony`
 }
 
-const NewWallet = ({ network }) => {
-  // eslint-disable-next-line no-unused-vars
-  const { write: log } = useStdout()
-  // eslint-disable-next-line no-unused-vars
-  const [duration, setDuration] = useState(Constants.defaultDuration)
-  const [seed] = useState(new Uint8Array(crypto.randomBytes(20).buffer))
-  const [name] = useState(ONENames.randomWord(3, '-'))
-  const [data, setData] = useState()
-
-  const [progress, setProgress] = useState(0)
-  const [progressStage, setProgressStage] = useState(-1)
-  const [worker, setWorker] = useState()
-  // eslint-disable-next-line no-unused-vars
-  const [slotSize, setSlotSize] = useState(1)
-  const [effectiveTime, setEffectiveTime] = useState()
-
-  useEffect(() => {
-    const uri = getQRCodeUri({ name, seed })
-    const code = qrcode.create(uri, { errorCorrectionLevel: 'low' })
-    setData(code.modules)
-  }, [])
-
-  useEffect(() => {
-    const worker = new Worker(path.join(__dirname, 'ONEWalletWorker.js'))
-    worker.on('message', async ({ status, current, total, stage, result } = {}) => {
-      if (status === 'working') {
-        // log(`Completed ${(current / total * 100).toFixed(2)}%`)
-        if (current % PROGRESS_REPORT_INTERVAL === 0) {
-          setProgress(Math.round(current / total * 100))
-        }
-        setProgressStage(stage)
-      }
-      if (status === 'done') {
-        const { hseed, root, layers, maxOperationsPerInterval: slotSize } = result
-        const state = {
-          name,
-          root: ONEUtil.hexView(root),
-          duration,
-          effectiveTime,
-          slotSize,
-          hseed: ONEUtil.hexView(hseed),
-          network
-        }
-        await store.storeIncompleteWallet({ state, layers })
-        worker.terminate()
-        process.exit(0)
-        // why()
-        // log('Received created wallet from worker', result)
-      }
-    })
-    setWorker(worker)
-  }, [])
-
-  useEffect(() => {
-    if (worker) {
-      // log('posting to worker')
-      const t = Math.floor(Date.now() / Constants.interval) * Constants.interval
-      setEffectiveTime(t)
-      worker && worker.postMessage({
-        seed, effectiveTime: t, duration, slotSize, interval: Constants.interval
-      })
-    }
-  }, [worker])
-
-  if (!data) {
-    return <></>
-  }
-
+const QRCode = ({ data }) => {
   const rows = []
   for (let i = 0; i < data.size; i += 1) {
     const buffer = []
@@ -103,6 +34,13 @@ const NewWallet = ({ network }) => {
     }
     rows.push(<Text key={`r-${i}`}><Text>{buffer}</Text><Newline /></Text>)
   }
+  if (!data) {
+    return <></>
+  }
+  return <Text>{rows}</Text>
+}
+
+const Header = () => {
   return (
     <>
       <Box marginBottom={2}>
@@ -115,7 +53,63 @@ const NewWallet = ({ network }) => {
         <Text>Please scan the QR code using your Google Authenticator.</Text>
         <Text>You need the 6-digit code from Google authenticator to transfer funds. You can restore your wallet using Google authenticator on any device.</Text>
       </Box>
-      <Text>{rows}</Text>
+    </>
+  )
+}
+
+const NewWallet = ({ seed, name, data }) => {
+  // eslint-disable-next-line no-unused-vars
+  const { write: log } = useStdout()
+  // eslint-disable-next-line no-unused-vars
+  const [duration, setDuration] = useState(Constants.defaultDuration)
+  const [progress, setProgress] = useState(0)
+  const [progressStage, setProgressStage] = useState(-1)
+  const [worker, setWorker] = useState()
+  // eslint-disable-next-line no-unused-vars
+  const [slotSize] = useState(1)
+
+  useEffect(() => {
+    const worker = new Worker(path.join(__dirname, 'ONEWalletWorker.js'))
+    setWorker(worker)
+  }, [])
+
+  useEffect(() => {
+    if (worker) {
+      // log('posting to worker')
+      const effectiveTime = Math.floor(Date.now() / Constants.interval) * Constants.interval
+      worker && worker.postMessage({
+        seed, effectiveTime, duration, slotSize, interval: Constants.interval
+      })
+      worker.on('message', async ({ status, current, total, stage, result } = {}) => {
+        if (status === 'working') {
+          // log(`Completed ${(current / total * 100).toFixed(2)}%`)
+          if (current % PROGRESS_REPORT_INTERVAL === 0) {
+            setProgress(Math.round(current / total * 100))
+          }
+          setProgressStage(stage)
+        }
+        if (status === 'done') {
+          const { hseed, root, layers, maxOperationsPerInterval: slotSize } = result
+          const state = {
+            name,
+            root: ONEUtil.hexView(root),
+            duration,
+            effectiveTime,
+            slotSize,
+            hseed: ONEUtil.hexView(hseed),
+          }
+          await storeIncompleteWallet({ state, layers })
+          worker.terminate()
+          process.exit(0)
+          // why()
+          // log('Received created wallet from worker', result)
+        }
+      })
+    }
+  }, [worker])
+
+  return (
+    <>
       <Box marginY={2} flexDirection='column'>
         <Text>After you are done, use</Text>
         <Box borderStyle='single'><Text>1wallet make {'<recovery-address> <code>'}</Text></Box>
@@ -126,10 +120,19 @@ const NewWallet = ({ network }) => {
         <Text>Building wallet...</Text>
         <Text color={progressStage === 0 ? 'yellow' : (progressStage < 0 ? 'grey' : 'green')}>Securing the wallet {progressStage === 0 && `${progress}%`}</Text>
         <Text color={progressStage === 1 ? 'yellow' : (progressStage < 1 ? 'grey' : 'green')}>Preparing signatures {progressStage === 1 && `${progress}%`}</Text>
-        <Text color={progressStage < 2 ? 'grey' : 'green'}>Done!</Text>
+        <Text color={progressStage < 2 ? 'grey' : 'green'}>Finalizing</Text>
       </Box>
     </>
   )
 }
 
-module.exports = () => render(<NewWallet />)
+export default () => {
+  const seed = new Uint8Array(crypto.randomBytes(20).buffer)
+  const name = ONENames.randomWord(3, '-').toLowerCase()
+  const uri = getQRCodeUri({ name, seed })
+  const code = qrcode.create(uri, { errorCorrectionLevel: 'low' })
+  const data = code.modules
+  render(<Header />).unmount()
+  render(<QRCode data={data} />).unmount()
+  render(<NewWallet seed={seed} name={name} />)
+}

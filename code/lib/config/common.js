@@ -1,20 +1,17 @@
-require('dotenv').config()
 const DEBUG = process.env.DEBUG
 
 module.exports = {
   appId: 'ONEWallet',
   appName: 'ONE Wallet',
   version: 'v0.1',
-  defaultStorePath: process.env.DEFAULT_STORE_PATH || 'wallets',
-  debug: DEBUG,
   minWalletVersion: parseInt(process.env.MIN_WALLET_VERSION || 0),
-  priceRefreshInterval: 60 * 1000,
   defaults: {
-    relayer: process.env.REACT_APP_RELAYER || (DEBUG ? 'dev' : 'hiddenstate'),
-    network: process.env.REACT_APP_NETWORK || (DEBUG ? 'eth-ganache' : 'harmony-mainnet'),
-    relayerSecret: process.env.REACT_APP_RELAYER_SECRET,
+    relayer: process.env.RELAYER || (DEBUG ? 'dev' : 'hiddenstate'),
+    network: process.env.NETWORK || (DEBUG ? 'eth-ganache' : 'harmony-mainnet'),
+    relayerSecret: process.env.RELAYER_SECRET || 'onewallet',
     sentryDsn: process.env.SENTRY_DSN
   },
+  debug: DEBUG,
   networks: {
     ...(DEBUG && {
       'eth-ganache': {

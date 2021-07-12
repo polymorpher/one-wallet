@@ -69,7 +69,9 @@ export default {
     } catch (ex) {
       const err = (address.startsWith('one') && AddressError.InvalidBech32Address(ex)) ||
         (address.startsWith('0x') && AddressError.InvalidHexAddress(ex)) || AddressError.Unknown(ex)
-      if (err) throw err
+      if (err) {
+        throw err
+      }
     }
     return address
   },
