@@ -7,6 +7,7 @@ import walletActions from '../state/modules/wallet/actions'
 import util, { useWindowDimensions } from '../util'
 import ONE from '../../../lib/onewallet'
 import api from '../api'
+import * as Sentry from '@sentry/browser'
 import { message, Space, Row, Col, Typography, Button, Steps, Popconfirm, Tooltip } from 'antd'
 import {
   DeleteOutlined,
@@ -20,7 +21,7 @@ import humanizeDuration from 'humanize-duration'
 import AnimatedSection from '../components/AnimatedSection'
 
 import { Hint, InputBox, Warning } from '../components/Text'
-import { isInteger, intersection } from 'lodash'
+import { intersection } from 'lodash'
 import storage from '../storage'
 import BN from 'bn.js'
 import config from '../config'
@@ -151,6 +152,7 @@ const Show = () => {
     return { otp, dest, amount: transferAmount.toString() }
   }
   const onCommitError = (ex) => {
+    Sentry.captureException(ex)
     console.error(ex)
     message.error('Failed to commit. Error: ' + ex.toString())
     setStage(0)
@@ -165,6 +167,7 @@ const Show = () => {
     setOtpInput('')
   }
   const onRevealError = (ex) => {
+    Sentry.captureException(ex)
     message.error(`Failed to finalize transaction. Error: ${ex.toString()}`)
     setStage(0)
     setOtpInput('')

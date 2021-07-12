@@ -1,6 +1,6 @@
-const yargs = require('yargs/yargs')
-const { hideBin } = require('yargs/helpers')
-const config = require('./config')
+import yargs from 'yargs/yargs'
+import { hideBin } from 'yargs/helpers'
+import config from './config'
 
 const argv = yargs(hideBin(process.argv))
   .command('scan', 'Build a new wallet and show its setup QR code in terminal')
@@ -30,11 +30,16 @@ const argv = yargs(hideBin(process.argv))
       default: 'beta',
       describe: 'The relayer you want to use. Can be "beta" (hosted by ONE Wallet) or any valid URL'
     },
+    password: {
+      alias: 'p',
+      type: 'string',
+      default: config.defaults.relayerSecret,
+      describe: 'The password for accessing the Relayer. Default is "onewallet" which is password for the "beta" relayer hosted by ONE Wallet.'
+    },
     wallet: {
       alias: 'w',
       type: 'string',
-      default: 'main',
-      describe: 'The wallet you are going to use for transfer funds. By default, the "main" wallet is used, which is the last wallet you created'
+      describe: 'The wallet you are going to use for transfer funds. By default, the main wallet is used, which is the last wallet you created'
     },
     store: {
       alias: 's',
@@ -48,4 +53,4 @@ const argv = yargs(hideBin(process.argv))
   .strict()
   .argv
 
-module.exports = argv
+export default argv
