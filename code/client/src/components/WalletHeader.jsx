@@ -1,12 +1,12 @@
 // eslint-disable-next-line no-unused-vars
 import React, { useEffect, useState } from 'react'
 // import styled from 'styled-components'
-import { PageHeader, Select, Divider, Modal, Input, Typography, Space, Button } from 'antd'
+import { PageHeader, Select, Divider, Modal, Input, Typography, Space, Button, Row } from 'antd'
 import { useRouteMatch, useHistory } from 'react-router'
 import { titleCase } from 'title-case'
 import { useSelector, useDispatch } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
-import { SearchOutlined, LockOutlined } from '@ant-design/icons'
+import { SearchOutlined, LockOutlined, CloseOutlined, SettingOutlined } from '@ant-design/icons'
 import config from '../config'
 import util from '../util'
 import { Hint } from '../components/Text'
@@ -94,6 +94,7 @@ const WalletHeader = () => {
   const wallet = wallets[address] || {}
   const subtitle = wallet.name ? `${wallet.name} (${shortAddress})` : shortAddress
   const [settingsVisible, setSettingsVisible] = useState(false)
+  const [relayerEditVisible, setRelayerEditVisible] = useState(false)
   return (
     <PageHeader
       style={{ background: '#ffffff' }}
@@ -101,9 +102,11 @@ const WalletHeader = () => {
       title={titleCase(action || '')}
       subTitle={<Hint>{subtitle}</Hint>}
       extra={[
-        <Button key='lock' shape='circle' icon={<LockOutlined />} onClick={() => setSettingsVisible(true)} />,
-        <RelayerSelector key='relayer' />,
-        <Divider key='divider' type='vertical' />,
+        <span key='edit'>{!relayerEditVisible && <Button shape='circle' icon={<SettingOutlined />} onClick={() => setRelayerEditVisible(true)} />}</span>,
+        <span key='close'>{relayerEditVisible && <Button shape='circle' icon={<CloseOutlined />} onClick={() => setRelayerEditVisible(false)} />}</span>,
+        <span key='lock' style={{ margin: relayerEditVisible ? 5 : 0 }}>{relayerEditVisible && <Button shape='circle' icon={<LockOutlined />} onClick={() => setSettingsVisible(true)} />}</span>,
+        <span key='relayer' style={{ margin: relayerEditVisible ? 5 : 0 }}>{relayerEditVisible && <RelayerSelector />}</span>,
+        <span key='divider' style={{ margin: relayerEditVisible ? 5 : 0 }}>{relayerEditVisible && <Divider type='vertical' />}</span>,
         <NetworkSelector key='network' />,
         <SecretSettings key='settings' visible={settingsVisible} onClose={() => setSettingsVisible(false)} />
       ]}
