@@ -1,5 +1,5 @@
 {
-  "name": "one-wallet-cli",
+  "name": "1wallet",
   "version": "0.1",
   "private": true,
   "license": "Apache-2.0",
@@ -7,13 +7,14 @@
   "scripts": {
     "babel": "npx babel src --out-dir lib",
     "dev": "DEBUG=true node lib/main.js",
-    "build": "pkg ."
+    "build": "pkg . --compress Brotli"
   },
-  "bin": "dist/main.js",
+  "bin": "lib/main.js",
   "pkg": {
     "scripts": "lib/**/*.js",
     "targets": [ "node14-macos-x64", "node14-linux-x64", "node14-win-x64" ],
-    "outputPath": "bin"
+    "outputPath": "bin",
+    "output": "1wallet"
   },
   "devDependencies": {
     "@babel/cli": "^7.14.5",

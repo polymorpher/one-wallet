@@ -8,6 +8,7 @@ import { HarmonyAddress } from '@harmony-js/crypto'
 
 const ListWallets = () => {
   const { network } = getState().wallet
+  const [error, setError] = useState()
   const [wallets, setWallets] = useState()
   const [balances, setBalances] = useState({})
   const [computedBalances, setComputedBalances] = useState({})
@@ -15,7 +16,10 @@ const ListWallets = () => {
   const [mainAddress, setMainAddress] = useState()
   useEffect(() => {
     (async () => {
-      const { address: mainBech32Address } = await store.readMain()
+      const { address: mainBech32Address, error } = await store.readMain()
+      if (error) {
+        return setError(error)
+      }
       setMainAddress(new HarmonyAddress(mainBech32Address).checksum)
       const pointers = await store.listWallets()
       const states = await Promise.all(pointers.map(p => store.loadWalletState({ filename: p.file }).then(e => e.wallet)))
@@ -57,6 +61,7 @@ const ListWallets = () => {
   }
   return (
     <Box flexDirection='column'>
+      {error && <Text color='red'>{error}</Text>}
       <Text>{'-'.repeat(129)}</Text>
       <Box>
         <Box width={48}><Text>Address</Text></Box>
