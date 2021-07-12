@@ -62,7 +62,7 @@ const Create = () => {
   const [effectiveTime, setEffectiveTime] = useState()
 
   const [durationVisible, setDurationVisible] = useState(false)
-  const [section, setSection] = useState(3)
+  const [section, setSection] = useState(2)
   const [qrCodeData, setQRCodeData] = useState()
   const [otp, setOtp] = useState('')
 
