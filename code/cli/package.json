@@ -1,6 +1,6 @@
 {
   "name": "1wallet",
-  "version": "0.1",
+  "version": "0.2",
   "private": true,
   "license": "Apache-2.0",
   "main": "main.js",
@@ -12,7 +12,7 @@
   "bin": "lib/main.js",
   "pkg": {
     "scripts": "lib/**/*.js",
-    "targets": [ "node14-macos-x64", "node14-linux-x64", "node14-win-x64" ],
+    "targets": [ "node14-macos-arm64", "node14-macos-x64", "node14-linux-x64", "node14-win-x64" ],
     "outputPath": "bin",
     "output": "1wallet"
   },
