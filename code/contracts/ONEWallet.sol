@@ -40,7 +40,7 @@ contract ONEWallet {
     uint256 constant AUTO_RECOVERY_TRIGGER_AMOUNT = 1 ether;
     uint32 constant MAX_COMMIT_SIZE = 120;
 
-    uint32 public constant majorVersion = 0x3; // a change would require client to migrate
+    uint32 public constant majorVersion = 0x4; // a change would require client to migrate
     uint32 public constant minorVersion = 0x1; // a change would not require the client to migrate
 
     //    bool commitLocked; // not necessary at this time
@@ -192,7 +192,9 @@ contract ONEWallet {
         return true;
     }
 
-    function revealSetLastResortAddress(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp, address payable lastResortAddress_) external
+    function revealSetLastResortAddress(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp, address payable lastResortAddress_)
+    isCorrectProof(neighbors, indexWithNonce, eotp)
+    external
     {
         require(lastResortAddress == address(0), "Last resort address is already set");
         bytes memory packed = bytes.concat(
@@ -221,19 +223,17 @@ contract ONEWallet {
     //        _;
     //    }
 
-    modifier isCorrectProof(bytes32[] calldata neighbors, uint32 index, bytes32 eotp)
+    modifier isCorrectProof(bytes32[] calldata neighbors, uint32 position, bytes32 eotp)
     {
         require(neighbors.length == height - 1, "Not enough neighbors provided");
         bytes32 h = sha256(bytes.concat(eotp));
         for (uint8 i = 0; i < height - 1; i++) {
-            if ((index & 0x01) == 0x01) {
+            if ((position & 0x01) == 0x01) {
                 h = sha256(bytes.concat(neighbors[i], h));
-                //                h = sha256(abi.encoderPacked(neighbors[i], h));
             } else {
                 h = sha256(bytes.concat(h, neighbors[i]));
-                //                h = sha256(abi.encoderPacked(h, neighbors[i]));
             }
-            index >>= 1;
+            position >>= 1;
         }
         require(root == h, "Proof is incorrect");
         _;

@@ -4,7 +4,7 @@ module.exports = {
   appId: 'ONEWallet',
   appName: 'ONE Wallet',
   version: 'v0.2',
-  minWalletVersion: parseInt(process.env.MIN_WALLET_VERSION || 3),
+  minWalletVersion: parseInt(process.env.MIN_WALLET_VERSION || 4),
   insecureWalletVersion: 2,
   defaults: {
     relayer: process.env.RELAYER || (DEBUG ? 'dev' : 'hiddenstate'),
