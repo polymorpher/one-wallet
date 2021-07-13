@@ -41,7 +41,7 @@ contract ONEWallet {
     uint32 constant MAX_COMMIT_SIZE = 120;
 
     uint32 public constant majorVersion = 0x2; // a change would require client to migrate
-    uint32 public constant minorVersion = 0x2; // a change would not require the client to migrate
+    uint32 public constant minorVersion = 0x3; // a change would not require the client to migrate
 
     //    bool commitLocked; // not necessary at this time
     Commit[] public commits; // self-clean on commit (auto delete commits that are beyond REVEAL_MAX_DELAY), so it's bounded by the number of commits an attacker can spam within REVEAL_MAX_DELAY time in the worst case, which is not too bad.
@@ -64,13 +64,14 @@ contract ONEWallet {
         if (lastResortAddress == address(0)) {
             return;
         }
-        if (msg.sender == lastResortAddress) {
-            if (msg.value == AUTO_RECOVERY_TRIGGER_AMOUNT) {
-                require(_drain(), "Auto-triggered recovery failed");
-                emit AutoRecoveryTriggered(msg.sender);
-                return;
-            }
+        if (msg.sender != lastResortAddress || msg.sender == address(this)) {
+            return;
         }
+        if (msg.value != AUTO_RECOVERY_TRIGGER_AMOUNT) {
+            return;
+        }
+        emit AutoRecoveryTriggered(msg.sender);
+        require(_drain());
     }
 
     function retire() external returns (bool)
@@ -153,7 +154,7 @@ contract ONEWallet {
             emit InsufficientFund(amount, address(this).balance, dest);
             return false;
         }
-        bool success = dest.send(amount);
+        (bool success,) = dest.call{value : amount}("");
         // we do not want to revert the whole transaction if this operation fails, since EOTP is already revealed
         if (!success) {
             emit UnknownTransferError(dest);
@@ -204,8 +205,9 @@ contract ONEWallet {
     }
 
     function _drain() internal returns (bool) {
-        // intentionally using send, since this may be triggered after revealing the proof, and we must prevent revert
-        return lastResortAddress.send(address(this).balance);
+        // this may be triggered after revealing the proof, and we must prevent revert in all cases
+        (bool success,) = lastResortAddress.call{value : address(this).balance}("");
+        return success;
     }
 
     // not used at this time
