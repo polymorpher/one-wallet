@@ -261,7 +261,7 @@ const Show = () => {
     return <Redirect to={Paths.wallets} />
   }
   const title = (
-    <Space size='large' align='baseline' >
+    <Space size='large' align='baseline'>
       <Title level={2}>{wallet.name}</Title>
       <Text>
         <ExplorerLink copyable={{ text: oneAddress }} href={util.getNetworkExplorerUrl(wallet)}>
@@ -280,6 +280,7 @@ const Show = () => {
         style={{ minHeight: 320, maxWidth: 720 }}
       >
         {walletOutdated && <Warning>Your wallet is outdated. Some information may be displayed incorrectly. Some features might not function. Your balance is still displayed correctly, and you can still send funds. <br /><br />Please create a new wallet and move your funds as soon as possible.</Warning>}
+        {!wallet.lastResortAddress && <Warning>You haven't set your recovery address. Please do it as soon as possible. Wallets created prior to July 13, 2021 without a recovery address are vulnerable to theft if recovery address is not set.</Warning>}
         <Row style={{ marginTop: 16 }}>
           <Col span={isMobile ? 24 : 12}>
             <Title level={3} style={{ marginRight: 48 }}>Balance</Title>

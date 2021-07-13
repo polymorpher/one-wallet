@@ -43,7 +43,7 @@ const WalletCard = ({ wallet }) => {
           }}
         >{oneAddress}
         </Text>
-        {walletOutdated && <Tag color='warning' style={{ position: 'absolute', bottom: 16, right: 16 }}>needs attention</Tag>}
+        {(walletOutdated || !wallet.lastResortAddress) && <Tag color='warning' style={{ position: 'absolute', bottom: 16, right: 16 }}>needs attention</Tag>}
       </Space>
 
     </Card>
