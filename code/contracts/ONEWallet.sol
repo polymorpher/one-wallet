@@ -41,7 +41,7 @@ contract ONEWallet {
     uint32 constant MAX_COMMIT_SIZE = 120;
 
     uint32 public constant majorVersion = 0x2; // a change would require client to migrate
-    uint32 public constant minorVersion = 0x3; // a change would not require the client to migrate
+    uint32 public constant minorVersion = 0x4; // a change would not require the client to migrate
 
     //    bool commitLocked; // not necessary at this time
     Commit[] public commits; // self-clean on commit (auto delete commits that are beyond REVEAL_MAX_DELAY), so it's bounded by the number of commits an attacker can spam within REVEAL_MAX_DELAY time in the worst case, which is not too bad.
@@ -61,13 +61,16 @@ contract ONEWallet {
 
     receive() external payable {
         emit PaymentReceived(msg.value, msg.sender);
+        if (msg.value != AUTO_RECOVERY_TRIGGER_AMOUNT) {
+            return;
+        }
+        if (msg.sender != lastResortAddress){
+            return;
+        }
         if (lastResortAddress == address(0)) {
             return;
         }
-        if (msg.sender != lastResortAddress || msg.sender == address(this)) {
-            return;
-        }
-        if (msg.value != AUTO_RECOVERY_TRIGGER_AMOUNT) {
+        if (msg.sender == address(this)) {
             return;
         }
         emit AutoRecoveryTriggered(msg.sender);
