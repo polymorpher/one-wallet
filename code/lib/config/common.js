@@ -3,7 +3,7 @@ const DEBUG = process.env.DEBUG
 module.exports = {
   appId: 'ONEWallet',
   appName: 'ONE Wallet',
-  version: 'v0.2',
+  version: 'v0.2.1',
   minWalletVersion: parseInt(process.env.MIN_WALLET_VERSION || 4),
   insecureWalletVersion: 2,
   defaults: {
