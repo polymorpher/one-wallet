@@ -99,7 +99,7 @@ export default {
   },
 
   isEmptyAddress: (address) => {
-    return address === '0x0000000000000000000000000000000000000000' || address === 'one1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqquzw7vz'
+    return !address || address === '0x0000000000000000000000000000000000000000' || address === 'one1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqquzw7vz'
   },
 
   safeExec: (f, args, handler) => {
