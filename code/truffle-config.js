@@ -7,7 +7,7 @@ const BuildProvider = (key, url) => new HDWalletProvider({
   providerOrUrl: url,
   numberOfAddresses: 1,
   shareNonce: true,
-  derivationPath: "m/44'/1'/0'/0/"
+  derivationPath: 'm/44\'/1\'/0\'/0/'
 })
 
 module.exports = {
@@ -46,7 +46,16 @@ module.exports = {
   // Configure your compilers
   compilers: {
     solc: {
-      version: '0.8.4'
+      version: '0.8.4',
+      settings: {
+        optimizer: {
+          enabled: true,
+        },
+      },
     },
   },
+
+  plugins: [
+    'truffle-contract-size'
+  ],
 }

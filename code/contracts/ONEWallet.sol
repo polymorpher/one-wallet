@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.4;
 
-contract ONEWallet {
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+contract ONEWallet is IERC721Receiver, IERC1155Receiver {
     //  This event is for debugging - should not be used in production
     //    event CheckingCommit(bytes data, bytes32 hash);
     event InsufficientFund(uint256 amount, uint256 balance, address dest);
@@ -40,11 +46,39 @@ contract ONEWallet {
     uint256 constant AUTO_RECOVERY_TRIGGER_AMOUNT = 1 ether;
     uint32 constant MAX_COMMIT_SIZE = 120;
 
-    uint32 public constant majorVersion = 0x4; // a change would require client to migrate
-    uint32 public constant minorVersion = 0x1; // a change would not require the client to migrate
+    uint32 constant majorVersion = 0x5; // a change would require client to migrate
+    uint32 constant minorVersion = 0x1; // a change would not require the client to migrate
 
     //    bool commitLocked; // not necessary at this time
-    Commit[] public commits; // self-clean on commit (auto delete commits that are beyond REVEAL_MAX_DELAY), so it's bounded by the number of commits an attacker can spam within REVEAL_MAX_DELAY time in the worst case, which is not too bad.
+    Commit[] commits; // self-clean on commit (auto delete commits that are beyond REVEAL_MAX_DELAY), so it's bounded by the number of commits an attacker can spam within REVEAL_MAX_DELAY time in the worst case, which is not too bad.
+
+    //
+    enum OperationType {
+        TRACK, UNTRACK, TRANSFER_TOKEN
+        //        , TRANSFER, SET_RECOVERY_ADDRESS, RECOVER
+    }
+    enum TokenType{
+        ERC20, ERC721, ERC1155
+    }
+    event ReceivedToken(TokenType tokenType, uint256 amount, address from, address tokenContract, address operator, uint256 tokenId, bytes data);
+    event TokenTracked(TokenType tokenType, address contractAddress, uint256 tokenId);
+    event TokenUntracked(TokenType tokenType, address contractAddress, uint256 tokenId);
+    event TokenNotFound(TokenType tokenType, address contractAddress, uint256 tokenId);
+    event TokenTransferFailed(TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount);
+    event TokenTransferError(TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount, string reason);
+    event TokenTransferSucceeded(TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount);
+
+    // We track tokens in the contract instead of at the client so users can immediately get a record of what tokens they own when they restore their wallet at a new client
+    // The tracking of ERC721 and ERC1155 are automatically established upon a token is transferred to this wallet. The tracking of ERC20 needs to be manually established by the client.
+    // The gas cost of tracking and untracking operations are of constant complexity. The gas cost is paid by the transferer in the case of automatically established tracking, and paid by the user in the case of manual tracking.
+    struct TrackedToken {
+        TokenType tokenType;
+        address contractAddress;
+        uint256 tokenId; // only valid for ERC721 and ERC1155
+    }
+
+    mapping(bytes32 => uint256[]) trackedTokenPositions; // sha256(bytes.concat(byte32(uint(tokenType)), bytes32(contractAddress), bytes32(tokenId)) => positions in trackedTokens. Positions should be of length 1 except in very rare occasion of collision
+    TrackedToken[] trackedTokens;
 
     constructor(bytes32 root_, uint8 height_, uint8 interval_, uint32 t0_, uint32 lifespan_, uint8 maxOperationsPerInterval_,
         address payable lastResortAddress_, uint256 dailyLimit_)
@@ -64,7 +98,7 @@ contract ONEWallet {
         if (msg.value != AUTO_RECOVERY_TRIGGER_AMOUNT) {
             return;
         }
-        if (msg.sender != lastResortAddress){
+        if (msg.sender != lastResortAddress) {
             return;
         }
         if (lastResortAddress == address(0)) {
@@ -75,6 +109,43 @@ contract ONEWallet {
         }
         emit AutoRecoveryTriggered(msg.sender);
         require(_drain());
+    }
+
+    function onERC1155Received(
+        address operator,
+        address from,
+        uint256 id,
+        uint256 value,
+        bytes calldata data
+    ) external override returns (bytes4){
+        emit ReceivedToken(TokenType.ERC1155, value, from, msg.sender, operator, id, data);
+        _trackToken(TokenType.ERC1155, msg.sender, id);
+        return this.onERC1155Received.selector;
+    }
+
+    function onERC1155BatchReceived(address operator, address from, uint256[] calldata ids, uint256[] calldata values, bytes calldata data) external override returns (bytes4){
+        for (uint32 i = 0; i < ids.length; i++) {
+            this.onERC1155Received(operator, from, ids[i], values[i], data);
+        }
+        return this.onERC1155BatchReceived.selector;
+    }
+
+    function supportsInterface(bytes4 interfaceID) external override pure returns (bool) {
+        return interfaceID == this.supportsInterface.selector ||
+        interfaceID == this.onERC1155Received.selector ||
+        interfaceID == this.onERC721Received.selector;
+    }
+
+    // identical to ERC1155, except tracked only on ERC721 related data structures
+    function onERC721Received(
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) external override returns (bytes4){
+        emit ReceivedToken(TokenType.ERC721, 1, from, msg.sender, operator, tokenId, data);
+        _trackToken(TokenType.ERC721, msg.sender, tokenId);
+        return this.onERC721Received.selector;
     }
 
     function retire() external returns (bool)
@@ -100,13 +171,13 @@ contract ONEWallet {
         return (spentToday, lastTransferDay);
     }
 
-    function getNonce() public view returns (uint8)
+    function getNonce() external view returns (uint8)
     {
         uint32 index = uint32(block.timestamp) / interval - t0;
         return nonces[index];
     }
 
-    function getCommits() public view returns (bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory)
+    function getCommits() external view returns (bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory)
     {
         // will be used in the next version
         bytes32[] memory args = new bytes32[](commits.length);
@@ -124,7 +195,6 @@ contract ONEWallet {
 
     function commit(bytes32 hash) external
     {
-        //        require(!commitLocked, "Cleanup in progress. Queue is temporarily locked. Please resubmit.");
         _cleanupCommits();
         (uint32 ct, bool completed) = _findCommit(hash);
         require(ct == 0 && !completed, "Commit already exists");
@@ -134,9 +204,9 @@ contract ONEWallet {
     }
 
     function revealTransfer(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp, address payable dest, uint256 amount) external
-    isCorrectProof(neighbors, indexWithNonce, eotp)
     returns (bool)
     {
+        _isCorrectProof(neighbors, indexWithNonce, eotp);
         //        bytes memory packedNeighbors = _pack(neighbors);
         bytes memory packed = bytes.concat(neighbors[0],
             bytes32(bytes4(indexWithNonce)), eotp, bytes32(bytes20(address(dest))), bytes32(amount));
@@ -169,10 +239,9 @@ contract ONEWallet {
     }
 
     function revealRecovery(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp) external
-    isCorrectProof(neighbors, indexWithNonce, eotp)
     returns (bool)
     {
-        //        bytes memory packedNeighbors = _pack(neighbors);
+        _isCorrectProof(neighbors, indexWithNonce, eotp);
         bytes memory packed = bytes.concat(
             neighbors[0],
             bytes32(bytes4(indexWithNonce)),
@@ -193,9 +262,9 @@ contract ONEWallet {
     }
 
     function revealSetLastResortAddress(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp, address payable lastResortAddress_)
-    isCorrectProof(neighbors, indexWithNonce, eotp)
     external
     {
+        _isCorrectProof(neighbors, indexWithNonce, eotp);
         require(lastResortAddress == address(0), "Last resort address is already set");
         bytes memory packed = bytes.concat(
             neighbors[0],
@@ -209,22 +278,135 @@ contract ONEWallet {
         lastResortAddress = lastResortAddress_;
     }
 
+    function _trackToken(TokenType tokenType, address contractAddress, uint256 tokenId) internal {
+        bytes32 key = sha256(bytes.concat(bytes32(uint256(tokenType)), bytes32(bytes20(contractAddress)), bytes32(tokenId)));
+        if (trackedTokenPositions[key].length > 0) {
+            for (uint32 i = 0; i < trackedTokenPositions[key].length; i++) {
+                uint256 j = trackedTokenPositions[key][i];
+                if (trackedTokens[j].tokenType != tokenType) continue;
+                if (trackedTokens[j].tokenId != tokenId) continue;
+                if (trackedTokens[j].contractAddress != contractAddress) continue;
+                // we found a token that is already tracked and is identical to the requested token
+                return;
+            }
+        }
+        TrackedToken memory tt = TrackedToken(tokenType, contractAddress, tokenId);
+        trackedTokenPositions[key].push(trackedTokens.length);
+        trackedTokens.push(tt);
+        emit TokenTracked(tokenType, contractAddress, tokenId);
+    }
+
+    function _untrackToken(TokenType tokenType, address contractAddress, uint256 tokenId) internal {
+        bytes32 key = sha256(bytes.concat(bytes32(uint256(tokenType)), bytes32(bytes20(contractAddress)), bytes32(tokenId)));
+        if (trackedTokenPositions[key].length == 0) {
+            return;
+        }
+        for (uint32 i = 0; i < trackedTokenPositions[key].length; i++) {
+            uint256 j = trackedTokenPositions[key][i];
+            if (trackedTokens[j].tokenType != tokenType) continue;
+            if (trackedTokens[j].tokenId != tokenId) continue;
+            if (trackedTokens[j].contractAddress != contractAddress) continue;
+            // found our token
+            uint256 swappedPosition = trackedTokens.length - 1;
+            trackedTokens[j] = trackedTokens[swappedPosition];
+            bytes32 swappedKey = sha256(bytes.concat(bytes32(uint256(trackedTokens[j].tokenType)), bytes32(bytes20(trackedTokens[j].contractAddress)), bytes32(trackedTokens[j].tokenId)));
+            trackedTokens.pop();
+            for (uint32 k = 0; k < trackedTokenPositions[swappedKey].length; k++) {
+                if (trackedTokenPositions[swappedKey][k] == swappedPosition) {
+                    trackedTokenPositions[swappedKey][k] = j;
+                }
+            }
+            trackedTokenPositions[key][j] = trackedTokenPositions[key][trackedTokenPositions[key].length - 1];
+            trackedTokenPositions[key].pop();
+            emit TokenUntracked(tokenType, contractAddress, tokenId);
+            return;
+        }
+        emit TokenNotFound(tokenType, contractAddress, tokenId);
+    }
+
+    function _transferToken(TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount, bytes memory data) internal {
+        if (tokenType == TokenType.ERC20) {
+            try IERC20(contractAddress).transfer(dest, amount) returns (bool success){
+                if (success) {
+                    emit TokenTransferSucceeded(tokenType, contractAddress, tokenId, dest, amount);
+                    return;
+                }
+                emit TokenTransferFailed(tokenType, contractAddress, tokenId, dest, amount);
+            } catch Error(string memory reason){
+                emit TokenTransferError(tokenType, contractAddress, tokenId, dest, amount, reason);
+            } catch {
+                emit TokenTransferError(tokenType, contractAddress, tokenId, dest, amount, "");
+            }
+        } else if (tokenType == TokenType.ERC721) {
+            try IERC721(contractAddress).safeTransferFrom(address(this), dest, tokenId, data){
+                emit TokenTransferSucceeded(tokenType, contractAddress, tokenId, dest, amount);
+            } catch Error(string memory reason){
+                emit TokenTransferError(tokenType, contractAddress, tokenId, dest, amount, reason);
+            } catch {
+                emit TokenTransferError(tokenType, contractAddress, tokenId, dest, amount, "");
+            }
+        } else if (tokenType == TokenType.ERC1155) {
+            try IERC1155(contractAddress).safeTransferFrom(address(this), dest, tokenId, amount, data) {
+                emit TokenTransferSucceeded(tokenType, contractAddress, tokenId, dest, amount);
+            } catch Error(string memory reason){
+                emit TokenTransferError(tokenType, contractAddress, tokenId, dest, amount, reason);
+            } catch {
+                emit TokenTransferError(tokenType, contractAddress, tokenId, dest, amount, "");
+            }
+        }
+    }
+
+    function _revealTokenOperationPack(bytes32 neighbor, uint32 indexWithNonce, bytes32 eotp,
+        OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount) pure internal returns (bytes32) {
+        bytes memory packed = bytes.concat(
+            neighbor,
+            bytes32(bytes4(indexWithNonce)),
+            eotp,
+            bytes32(uint256(operationType)),
+            bytes32(uint256(tokenType)),
+            bytes32(bytes20(contractAddress)),
+            bytes32(tokenId),
+            bytes32(bytes20(dest)),
+            bytes32(amount)
+        // data is considered "additional information" or "notes to the transaction" thus is not included
+        );
+        bytes32 commitHash = keccak256(bytes.concat(packed));
+        return commitHash;
+    }
+
+    function revealTokenOperation(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp,
+        OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount, bytes memory data)
+    external {
+        _isCorrectProof(neighbors, indexWithNonce, eotp);
+        bytes32 commitHash = _revealTokenOperationPack(
+            neighbors[0],
+            indexWithNonce,
+            eotp,
+            operationType,
+            tokenType,
+            contractAddress,
+            tokenId,
+            dest,
+            amount
+        );
+        _revealPreCheck(commitHash, indexWithNonce);
+        _completeReveal(commitHash);
+        if (operationType == OperationType.TRACK) {
+            _trackToken(tokenType, contractAddress, tokenId);
+        } else if (operationType == OperationType.UNTRACK) {
+            _untrackToken(tokenType, contractAddress, tokenId);
+        } else if (operationType == OperationType.TRANSFER_TOKEN) {
+            _transferToken(tokenType, contractAddress, tokenId, dest, amount, data);
+        }
+    }
+
     function _drain() internal returns (bool) {
         // this may be triggered after revealing the proof, and we must prevent revert in all cases
         (bool success,) = lastResortAddress.call{value : address(this).balance}("");
         return success;
     }
 
-    // not used at this time
-    //    modifier isValidIndex(uint32 index)
-    //    {
-    //        uint32 counter = uint32(block.timestamp) / interval - t0;
-    //        require(counter == index, "Code has incorrect timestamp");
-    //        _;
-    //    }
-
-    modifier isCorrectProof(bytes32[] calldata neighbors, uint32 position, bytes32 eotp)
-    {
+    function _isCorrectProof(bytes32[] calldata neighbors, uint32 position, bytes32 eotp) view internal {
         require(neighbors.length == height - 1, "Not enough neighbors provided");
         bytes32 h = sha256(bytes.concat(eotp));
         for (uint8 i = 0; i < height - 1; i++) {
@@ -236,7 +418,7 @@ contract ONEWallet {
             position >>= 1;
         }
         require(root == h, "Proof is incorrect");
-        _;
+        return; // just a wrapper around the old isCorrectProof modifier to avoid "Stack too deep" error. Duh.
     }
 
     function _findCommit(bytes32 hash) view internal returns (uint32, bool)
@@ -356,34 +538,4 @@ contract ONEWallet {
         }
         nonces[index] = v + 1;
     }
-
-    // not used at this time
-    // same output as abi.encodePacked(x), but the behavior of abi.encodePacked is sort of uncertain
-    //    function _pack(bytes32[] calldata x) pure internal returns (bytes memory)
-    //    {
-    //        // TODO (@polymorpher): use assembly mstore and mload to do this, similar to _asByte32 below
-    //        bytes memory r = new bytes(x.length * 32);
-    //        for (uint8 i = 0; i < x.length; i++) {
-    //            for (uint8 j = 0; j < 32; j++) {
-    //                r[i * 32 + j] = x[i][j];
-    //            }
-    //        }
-    //        return r;
-    //    }
-
-    // not used at this time
-    //    function _asByte32(bytes memory b) pure internal returns (bytes32){
-    //        if (b.length == 0) {
-    //            return bytes32(0x0);
-    //        }
-    //        require(b.length <= 32, "input bytes are too long for _asByte32");
-    //        byte32 r;
-    //        uint8 len = (32 - b.length) * 8;
-    //        assembly{
-    //            r := mload(add(b, 32))
-    //            r := shr(len, r)
-    //            r := shl(len, r)
-    //        }
-    //        return r;
-    //    }
 }
