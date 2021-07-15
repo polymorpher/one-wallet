@@ -148,6 +148,18 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
         return this.onERC721Received.selector;
     }
 
+    function getTrackedTokens() external view returns (TokenType[] memory, address[] memory, uint256[] memory){
+        TokenType[] memory tokenTypes = new TokenType[](trackedTokens.length);
+        address[] memory contractAddresses = new address[](trackedTokens.length);
+        uint256[] memory tokenIds = new uint256[](trackedTokens.length);
+        for (uint32 i = 0; i < trackedTokens.length; i++) {
+            tokenTypes[i] = trackedTokens[i].tokenType;
+            contractAddresses[i] = trackedTokens[i].contractAddress;
+            tokenIds[i] = trackedTokens[i].tokenId;
+        }
+        return (tokenTypes, contractAddresses, tokenIds);
+    }
+
     function retire() external returns (bool)
     {
         require(uint32(block.timestamp / interval) - t0 > lifespan, "Too early to retire");
@@ -418,7 +430,8 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
             position >>= 1;
         }
         require(root == h, "Proof is incorrect");
-        return; // just a wrapper around the old isCorrectProof modifier to avoid "Stack too deep" error. Duh.
+        return;
+        // just a wrapper around the old isCorrectProof modifier to avoid "Stack too deep" error. Duh.
     }
 
     function _findCommit(bytes32 hash) view internal returns (uint32, bool)
