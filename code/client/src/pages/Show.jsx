@@ -343,6 +343,13 @@ const Show = () => {
               <Button type='primary' size='large' shape='round' onClick={showSetRecoveryAddress}> Set </Button>
             </Col>}
         </TallRow>
+        {wallet.majorVersion && wallet.minorVersion &&
+          <TallRow align='middle'>
+            <Col span={isMobile ? 24 : 12}> <Title level={3}>Wallet Version</Title></Col>
+            <Col>
+              <Text>{wallet.majorVersion}.{wallet.minorVersion}</Text>
+            </Col>
+          </TallRow>}
         <Row style={{ marginTop: 48 }}>
           <Button type='link' style={{ padding: 0 }} size='large' onClick={showRecovery} icon={<WarningOutlined />}>I lost my Google Authenticator</Button>
         </Row>
