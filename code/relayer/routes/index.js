@@ -189,6 +189,23 @@ router.post('/reveal/set-recovery-address', generalLimiter({ max: 30 }), walletA
   }
 })
 
+router.post('/reveal/token', generalLimiter({ max: 30 }), walletAddressLimiter({ max: 30 }), async (req, res) => {
+  let { neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data } = req.body
+  if (!checkParams({ neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data }, res)) {
+    return
+  }
+  // TODO parameter verification
+  try {
+    const wallet = await req.contract.at(address)
+    const tx = await wallet.revealTokenOperation(neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data)
+    return res.json(parseTx(tx))
+  } catch (ex) {
+    console.error(ex)
+    const { code, error, success } = parseError(ex)
+    return res.status(code).json({ error, success })
+  }
+})
+
 router.post('/retire', generalLimiter({ max: 6 }), walletAddressLimiter({ max: 6 }), async (req, res) => {
   let { address } = req.body
   if (!checkParams({ address }, res)) {
