@@ -145,6 +145,20 @@ const api = {
         minorVersion: minorVersion ? minorVersion.toNumber() : 0,
       }
     },
+    getTrackedTokens: async ({ address }) => {
+      const c = await one.at(address)
+      const result = c.getTrackedTokens()
+      const [tokenTypes, contracts, tokenIds] = Object.keys(result).map(k => result[k])
+      const tt = []
+      for (let i = 0; i < tokenTypes.length; i++) {
+        tt.push({
+          tokenType: tokenTypes[i],
+          contract: contracts[i],
+          tokenIds: tokenIds[i]
+        })
+      }
+      return tt
+    },
     getBalance: async ({ address }) => {
       const balance = await web3.eth.getBalance(address)
       return balance
