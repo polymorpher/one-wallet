@@ -2,7 +2,7 @@ const JSSHA = require('jssha')
 const createKeccakHash = require('keccak')
 const Conversion = require('ethjs-unit')
 const sha256 = require('fast-sha256')
-const BN = require('BN.js')
+const BN = require('bn.js')
 const STANDARD_DECIMAL = 18
 
 const utils = {

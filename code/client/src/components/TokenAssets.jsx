@@ -28,6 +28,7 @@ export const KnownERC20 = {
 }
 
 export const HarmonyONE = {
+  key: 'one',
   icon: IconONE,
   symbol: 'ONE',
   name: 'Harmony ONE',
