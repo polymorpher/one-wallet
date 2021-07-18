@@ -38,14 +38,14 @@ export const DefaultTrackedERC20 = Object.keys(KnownERC20).map(symbol => {
   const { contract, icon, name } = KnownERC20[symbol]
   return {
     tokenType: ONEConstants.TokenType.ERC20,
-    tokenId: '0',
+    tokenId: 0,
     contractAddress: contract,
     icon,
-    // name,
-    // symbol,
+    name,
+    symbol,
   }
 })
 
 export const withKeys = (trackedTokens) => {
-  return trackedTokens.map(tt => ({ ...tt, key: ONEUtil.hexView(ONE.computeTokenKey(tt)) }))
+  return trackedTokens.map(tt => ({ ...tt, key: ONEUtil.hexView(ONE.computeTokenKey(tt).hash) }))
 }
