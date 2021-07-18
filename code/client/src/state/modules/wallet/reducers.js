@@ -12,8 +12,7 @@ export const initialState = {
   provider: undefined,
   fetching: false,
   loading: false,
-  error: undefined,
-  trackedTokens: [],
+  error: undefined
 }
 
 const reducer = handleActions(
