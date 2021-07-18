@@ -16,11 +16,13 @@ import {
   QuestionCircleOutlined,
   LoadingOutlined
 } from '@ant-design/icons'
-import styled from 'styled-components'
+// import styled from 'styled-components'
 import humanizeDuration from 'humanize-duration'
 import AnimatedSection from '../components/AnimatedSection'
 
-import { Hint, InputBox, Warning } from '../components/Text'
+import { Hint, InputBox, Warning, Label, ExplorerLink } from '../components/Text'
+import { TallRow } from '../components/Grid'
+import { ERC20Grid } from '../components/ERC20Grid'
 import { intersection } from 'lodash'
 import storage from '../storage'
 import BN from 'bn.js'
@@ -31,20 +33,6 @@ import { handleAddressError } from '../handler'
 import { SmartFlows, Chaining, EotpBuilders } from '../api/flow'
 const { Title, Text, Link } = Typography
 const { Step } = Steps
-
-const TallRow = styled(Row)`
-  margin-top: 32px;
-  margin-bottom: 32px;
-`
-
-const Label = styled.div`
-  width: 64px;
-`
-const ExplorerLink = styled(Link).attrs(e => ({ ...e, style: { color: '#888888' }, target: '_blank', rel: 'noopener noreferrer' }))`
-  &:hover {
-    opacity: 0.8;
-  }
-`
 
 const Show = () => {
   const history = useHistory()
@@ -61,6 +49,7 @@ const Show = () => {
   const [section, setSection] = useState(action)
   const [stage, setStage] = useState(0)
   const network = useSelector(state => state.wallet.network)
+  const [activeTab, setActiveTab] = useState('coins')
 
   const walletOutdated = util.isWalletOutdated(wallet)
 
@@ -271,6 +260,93 @@ const Show = () => {
     </Space>
   )
 
+  const AboutWallet = () => !section && (
+    <>
+      <TallRow align='middle'>
+        <Col span={isMobile ? 24 : 12}> <Title level={3}>Created On</Title></Col>
+        <Col> <Text>{new Date(wallet.effectiveTime).toLocaleString()}</Text> </Col>
+      </TallRow>
+      <TallRow align='middle'>
+        <Col span={isMobile ? 24 : 12}> <Title level={3}>Expires In</Title></Col>
+        <Col> <Text>{humanizeDuration(wallet.duration, { units: ['y', 'mo', 'd'], round: true })}</Text> </Col>
+      </TallRow>
+      <TallRow>
+        <Col span={isMobile ? 24 : 12}> <Title level={3}>Daily Limit</Title></Col>
+        <Col>
+          <Space>
+            <Text>{dailyLimitFormatted}</Text>
+            <Text type='secondary'>ONE</Text>
+            <Text>(≈ ${dailyLimitFiatFormatted}</Text>
+            <Text type='secondary'>USD)</Text>
+          </Space>
+        </Col>
+      </TallRow>
+      <TallRow align='middle'>
+        <Col span={isMobile ? 24 : 12}> <Title level={3}>Recovery Address</Title></Col>
+        {lastResortAddress && !util.isEmptyAddress(lastResortAddress) &&
+          <Col>
+            <Space>
+              <Tooltip title={oneLastResort}>
+                <ExplorerLink copyable={oneLastResort && { text: oneLastResort }} href={util.getNetworkExplorerUrl(wallet)}>
+                  {util.ellipsisAddress(oneLastResort)}
+                </ExplorerLink>
+              </Tooltip>
+            </Space>
+          </Col>}
+        {!(lastResortAddress && !util.isEmptyAddress(lastResortAddress)) &&
+          <Col>
+            <Button type='primary' size='large' shape='round' onClick={showSetRecoveryAddress}> Set </Button>
+          </Col>}
+      </TallRow>
+      {wallet.majorVersion && wallet.minorVersion &&
+        <TallRow align='middle'>
+          <Col span={isMobile ? 24 : 12}> <Title level={3}>Wallet Version</Title></Col>
+          <Col>
+            <Text>{wallet.majorVersion}.{wallet.minorVersion}</Text>
+          </Col>
+        </TallRow>}
+      <Row style={{ marginTop: 48 }}>
+        <Button type='link' style={{ padding: 0 }} size='large' onClick={showRecovery} icon={<WarningOutlined />}>I lost my Google Authenticator</Button>
+      </Row>
+      <Row style={{ marginTop: 24 }}>
+        <Popconfirm title='Are you sure？' onConfirm={onDeleteWallet}>
+          <Button type='link' style={{ color: 'red', padding: 0 }} size='large' icon={<DeleteOutlined />}>Delete this wallet locally</Button>
+        </Popconfirm>
+
+      </Row>
+    </>
+  )
+  const WalletBalance = () => (
+    <>
+      <Row style={{ marginTop: 16 }}>
+        <Col span={isMobile ? 24 : 12}>
+          <Title level={3} style={{ marginRight: 48 }}>Balance</Title>
+        </Col>
+        <Col>
+          <Space>
+            <Title level={3}>{formatted}</Title>
+            <Text type='secondary'>ONE</Text>
+          </Space>
+        </Col>
+      </Row>
+      <Row>
+        <Col span={isMobile ? 24 : 12} />
+        <Col>
+          <Space>
+            <Title level={4}>≈ ${fiatFormatted}</Title>
+            <Text type='secondary'>USD</Text>
+          </Space>
+        </Col>
+      </Row>
+      <Row style={{ marginTop: 16 }}>
+        <Col span={isMobile ? 24 : 12} />
+        <Col>
+          <Button type='primary' size='large' shape='round' onClick={showTransfer}> Send </Button>
+        </Col>
+      </Row>
+    </>
+  )
+
   return (
     <>
       {/* <Space size='large' wrap align='start'> */}
@@ -278,87 +354,17 @@ const Show = () => {
         show={!section}
         title={title}
         style={{ minHeight: 320, maxWidth: 720 }}
+        tabList={[{ key: 'coins', tab: 'Coins' }, { key: 'collectibles', tab: 'Collectibles' }, { key: 'about', tab: 'About' }]}
+        activeTabKey={activeTab}
+        onTabChange={key => setActiveTab(key)}
       >
         {walletOutdated && <Warning>Your wallet is outdated. Some information may be displayed incorrectly. Some features might not function. Your balance is still displayed correctly, and you can still send funds. <br /><br />Please create a new wallet and move your funds as soon as possible.</Warning>}
         {util.isEmptyAddress(wallet.lastResortAddress) && <Warning>You haven't set your recovery address. Please do it as soon as possible. Wallets created prior to July 13, 2021 without a recovery address are vulnerable to theft if recovery address is not set.</Warning>}
-        <Row style={{ marginTop: 16 }}>
-          <Col span={isMobile ? 24 : 12}>
-            <Title level={3} style={{ marginRight: 48 }}>Balance</Title>
-          </Col>
-          <Col>
-            <Space>
-              <Title level={3}>{formatted}</Title>
-              <Text type='secondary'>ONE</Text>
-            </Space>
-          </Col>
-        </Row>
-        <Row>
-          <Col span={isMobile ? 24 : 12} />
-          <Col>
-            <Space>
-              <Title level={4}>≈ ${fiatFormatted}</Title>
-              <Text type='secondary'>USD</Text>
-            </Space>
-          </Col>
-        </Row>
-        <Row style={{ marginTop: 16 }}>
-          <Col span={isMobile ? 24 : 12} />
-          <Col>
-            <Button type='primary' size='large' shape='round' onClick={showTransfer}> Send </Button>
-          </Col>
-        </Row>
-        <TallRow align='middle'>
-          <Col span={isMobile ? 24 : 12}> <Title level={3}>Created On</Title></Col>
-          <Col> <Text>{new Date(wallet.effectiveTime).toLocaleString()}</Text> </Col>
-        </TallRow>
-        <TallRow align='middle'>
-          <Col span={isMobile ? 24 : 12}> <Title level={3}>Expires In</Title></Col>
-          <Col> <Text>{humanizeDuration(wallet.duration, { units: ['y', 'mo', 'd'], round: true })}</Text> </Col>
-        </TallRow>
-        <TallRow>
-          <Col span={isMobile ? 24 : 12}> <Title level={3}>Daily Limit</Title></Col>
-          <Col>
-            <Space>
-              <Text>{dailyLimitFormatted}</Text>
-              <Text type='secondary'>ONE</Text>
-              <Text>(≈ ${dailyLimitFiatFormatted}</Text>
-              <Text type='secondary'>USD)</Text>
-            </Space>
-          </Col>
-        </TallRow>
-        <TallRow align='middle'>
-          <Col span={isMobile ? 24 : 12}> <Title level={3}>Recovery Address</Title></Col>
-          {lastResortAddress && !util.isEmptyAddress(lastResortAddress) &&
-            <Col>
-              <Space>
-                <Tooltip title={oneLastResort}>
-                  <ExplorerLink copyable={oneLastResort && { text: oneLastResort }} href={util.getNetworkExplorerUrl(wallet)}>
-                    {util.ellipsisAddress(oneLastResort)}
-                  </ExplorerLink>
-                </Tooltip>
-              </Space>
-            </Col>}
-          {!(lastResortAddress && !util.isEmptyAddress(lastResortAddress)) &&
-            <Col>
-              <Button type='primary' size='large' shape='round' onClick={showSetRecoveryAddress}> Set </Button>
-            </Col>}
-        </TallRow>
-        {wallet.majorVersion && wallet.minorVersion &&
-          <TallRow align='middle'>
-            <Col span={isMobile ? 24 : 12}> <Title level={3}>Wallet Version</Title></Col>
-            <Col>
-              <Text>{wallet.majorVersion}.{wallet.minorVersion}</Text>
-            </Col>
-          </TallRow>}
-        <Row style={{ marginTop: 48 }}>
-          <Button type='link' style={{ padding: 0 }} size='large' onClick={showRecovery} icon={<WarningOutlined />}>I lost my Google Authenticator</Button>
-        </Row>
-        <Row style={{ marginTop: 24 }}>
-          <Popconfirm title='Are you sure？' onConfirm={onDeleteWallet}>
-            <Button type='link' style={{ color: 'red', padding: 0 }} size='large' icon={<DeleteOutlined />}>Delete this wallet locally</Button>
-          </Popconfirm>
 
-        </Row>
+        {activeTab === 'about' && <AboutWallet />}
+        {activeTab === 'coins' && <WalletBalance />}
+        {activeTab === 'coins' && <ERC20Grid wallet={wallet} />}
+
       </AnimatedSection>
       <AnimatedSection
         style={{ width: 720 }}
