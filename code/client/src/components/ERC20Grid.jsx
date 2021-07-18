@@ -39,9 +39,9 @@ const GridItem = ({ style, children, icon, name, symbol, contractAddress, balanc
   )
 }
 
-export const ERC20Grid = ({ wallet, onSelected }) => {
+export const ERC20Grid = ({ wallet }) => {
   const dispatch = useDispatch()
-  const { address, trackedTokens } = wallet
+  const { address, trackedTokens, selectedToken } = wallet
   const balances = useSelector(state => state.wallet.balances)
   const balance = balances[address] || 0
   const { formatted } = util.computeBalance(balance)
@@ -50,7 +50,7 @@ export const ERC20Grid = ({ wallet, onSelected }) => {
   const [currentTrackedTokens, setCurrentTrackedTokens] = useState([...defaultTrackedTokens, ...(trackedTokens || [])])
   const [disabled, setDisabled] = useState(true)
   const [tokenBalance, setTokenBalance] = useState({})
-  const [selected, setSelected] = useState('one')
+  const selected = selectedToken || HarmonyONE
   const [section, setSection] = useState()
   const [newContractAddress, setNewContractAddress] = useState('')
 
@@ -114,7 +114,7 @@ export const ERC20Grid = ({ wallet, onSelected }) => {
       try {
         const tokenBalance = await api.blockchain.tokenBalance({ address, contractAddress, tokenType: ONEConstants.TokenType.ERC20 })
         const tt = { tokenType: ONEConstants.TokenType.ERC20, tokenId: 0, contractAddress }
-        const key = ONE.computeTokenKey(tt).hash
+        const key = ONEUtil.hexView(ONE.computeTokenKey(tt).hash)
         tt.key = key
         try {
           const { name, symbol } = await api.blockchain.getTokenMetadata(tt)
@@ -134,8 +134,14 @@ export const ERC20Grid = ({ wallet, onSelected }) => {
     f()
   }, [newContractAddress])
 
-  const onSelect = (symbol) => () => {
-    setSelected(symbol)
+  const onSelect = (key) => () => {
+    if (key === 'one') {
+      dispatch(walletActions.setSelectedToken({ token: null, address }))
+      return
+    }
+    const balance = tokenBalance[key]
+    const token = currentTrackedTokens.find(t => t.key === key)
+    dispatch(walletActions.setSelectedToken({ token: { ...token, balance }, address }))
   }
 
   return (
@@ -146,7 +152,7 @@ export const ERC20Grid = ({ wallet, onSelected }) => {
           <GridItem
             style={gridItemStyle}
             icon={HarmonyONE.icon} name={HarmonyONE.name} symbol={HarmonyONE.symbol} balance={formatted}
-            selected={selected === 'one'} onSelected={onSelect('one')}
+            selected={selected.key === 'one'} onSelected={onSelect('one')}
           />
           {currentTrackedTokens.map(tt => {
             const { icon, name, symbol, key } = tt
@@ -157,11 +163,11 @@ export const ERC20Grid = ({ wallet, onSelected }) => {
             return (
               <GridItem
                 disabled={disabled}
-                selected={selected === key}
+                selected={selected.key === key}
                 key={key}
                 style={gridItemStyle}
                 icon={icon} name={name} symbol={symbol} balance={displayBalance}
-                onSelected={onSelect(tt)}
+                onSelected={onSelect(key)}
               />
             )
           })}
