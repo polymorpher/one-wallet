@@ -172,6 +172,17 @@ const bruteforceEOTP = ({ hseed, nonce = 0, leaf }) => {
   return { }
 }
 
+const computeTokenKey = ({ tokenType, contractAddress, tokenId }) => {
+  const buf = new Uint8Array(96)
+  const s1 = new BN(tokenType, 10).toArrayLike(Uint8Array, 'be', 32)
+  const s2 = hexStringToBytes(contractAddress, 32)
+  const s3 = new BN(tokenId, 10).toArrayLike(Uint8Array, 'be', 32)
+  buf.set(s1)
+  buf.set(s2, 32)
+  buf.set(s3, 64)
+  return buf
+}
+
 module.exports = {
   computeMerkleTree,
   computeTransferHash,
@@ -179,5 +190,6 @@ module.exports = {
   computeSetRecoveryAddressHash,
   selectMerkleNeighbors,
   computeEOTP,
-  bruteforceEOTP
+  bruteforceEOTP,
+  computeTokenKey
 }
