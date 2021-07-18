@@ -81,6 +81,7 @@
     "hi-base32": "^0.5.1",
     "history": "4.10.1",
     "humanize-duration": "^3.27.0",
+    "ipfs-core": "^0.8.0",
     "jsqr": "^1.2.0",
     "localforage": "^1.9.0",
     "lodash": "^4.17.10",
