@@ -12,7 +12,8 @@ export const initialState = {
   provider: undefined,
   fetching: false,
   loading: false,
-  error: undefined
+  error: undefined,
+  trackedTokens: [],
 }
 
 const reducer = handleActions(
@@ -73,6 +74,26 @@ const reducer = handleActions(
       ...state,
       wallets: omit(state.wallets, [action.payload]),
       balances: omit(state.balances, [action.payload])
+    }),
+    [walletActions.trackTokens]: (state, action) => ({
+      ...state,
+      wallets: {
+        ...state.wallets,
+        [action.payload.address]: {
+          ...state.wallets[action.payload.address],
+          trackedTokens: [...(state.wallets?.[action.payload.address]?.trackedTokens || []), ...action.payload.tokens]
+        }
+      }
+    }),
+    [walletActions.untrackTokens]: (state, action) => ({
+      ...state,
+      wallets: {
+        ...state.wallets,
+        [action.payload.address]: {
+          ...state.wallets[action.payload.address],
+          trackedTokens: (state.wallets?.[action.payload.address]?.trackedTokens || []).filter(e => action.payload.keys.find(k => k === e.key) === undefined)
+        }
+      }
     }),
 
     [walletActions.setRelayer]: (state, action) => ({
