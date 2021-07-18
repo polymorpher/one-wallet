@@ -1,16 +1,17 @@
-import { Card, Image, Row, Space, Typography, Col, Divider, Button, message, Tooltip } from 'antd'
-import { isNull, isUndefined } from 'lodash'
-import { PlusCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+import { Card, Image, Row, Space, Typography, Col, Divider, Button, message } from 'antd'
+import { unionWith, isNull, isUndefined } from 'lodash'
+import walletActions from '../state/modules/wallet/actions'
+
+import { PlusCircleOutlined } from '@ant-design/icons'
 import React, { useState, useEffect } from 'react'
 import { TallRow } from './Grid'
 import { api } from '../../../lib/api'
 import ONE from '../../../lib/onewallet'
 import ONEUtil from '../../../lib/util'
-import OtpBox from '../components/OtpBox'
 import util from '../util'
-import { Warning, Hint, InputBox, Heading, Label } from './Text'
+import { Warning, Hint, InputBox, Heading } from './Text'
 import { withKeys, DefaultTrackedERC20, HarmonyONE } from './TokenAssets'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import abbr from '../abbr'
 import { handleAddressError } from '../handler'
 import ONEConstants from '../../../lib/constants'
@@ -39,19 +40,19 @@ const GridItem = ({ style, children, icon, name, symbol, contractAddress, balanc
 }
 
 export const ERC20Grid = ({ wallet, onSelected }) => {
-  const { address } = wallet
+  const dispatch = useDispatch()
+  const { address, trackedTokens } = wallet
   const balances = useSelector(state => state.wallet.balances)
   const balance = balances[address] || 0
   const { formatted } = util.computeBalance(balance)
   const walletOutdated = util.isWalletOutdated(wallet)
   const defaultTrackedTokens = withKeys(DefaultTrackedERC20)
-  const [trackedTokens, setTrackedTokens] = useState(defaultTrackedTokens)
+  const [currentTrackedTokens, setCurrentTrackedTokens] = useState([...defaultTrackedTokens, ...(trackedTokens || [])])
   const [disabled, setDisabled] = useState(true)
   const [tokenBalance, setTokenBalance] = useState({})
   const [selected, setSelected] = useState('one')
   const [section, setSection] = useState()
   const [newContractAddress, setNewContractAddress] = useState('')
-  const [otpInput, setOtpInput] = useState('')
 
   const gridItemStyle = { width: '200px', height: '200px', display: 'flex', justifyContent: 'center', flexDirection: 'column', cursor: 'pointer', color: disabled && 'grey', opacity: disabled && 0.5 }
   useEffect(() => {
@@ -61,9 +62,13 @@ export const ERC20Grid = ({ wallet, onSelected }) => {
     setDisabled(false)
     const f = async () => {
       let tts = await api.blockchain.getTrackedTokens({ address })
-      tts = [...tts, ...defaultTrackedTokens]
-      tts.forEach(tt => { tt.key = ONEUtil.hexView(ONE.computeTokenKey(tt)) })
+      tts.forEach(tt => { tt.key = ONEUtil.hexView(ONE.computeTokenKey(tt).hash) })
+      tts = unionWith(tts, defaultTrackedTokens, trackedTokens, (a, b) => a.key === b.key)
+      console.log(tts)
       await Promise.all(tts.map(async tt => {
+        // if (tt.name && tt.symbol) {
+        //   return
+        // }
         try {
           const { name, symbol } = await api.blockchain.getTokenMetadata(tt)
           tt.name = name
@@ -72,23 +77,25 @@ export const ERC20Grid = ({ wallet, onSelected }) => {
           console.error(ex)
         }
       }))
-      setTrackedTokens(tts)
+      setCurrentTrackedTokens(tts)
     }
     f()
   }, [])
 
   useEffect(() => {
-    (trackedTokens || []).forEach(async tt => {
+    (currentTrackedTokens || []).forEach(async tt => {
       const { tokenType, tokenId, contractAddress, key } = tt
       const balance = await api.blockchain.tokenBalance({ address, contractAddress, tokenType, tokenId })
       setTokenBalance(tb => ({ ...tb, [key]: balance.toString() }))
     })
-    // console.log(trackedTokens)
-  }, [trackedTokens])
-
-  const doTrack = () => {
-
-  }
+    const tokens = currentTrackedTokens.filter(e =>
+      defaultTrackedTokens.find(dt => dt.key === e.key) === undefined &&
+      trackedTokens.find(ut => ut.key === e.key) === undefined
+    )
+    console.log({ tokens, trackedTokens, currentTrackedTokens })
+    // dispatch(walletActions.untrackTokens({ address, keys: trackedTokens.map(e => e.key) }))
+    dispatch(walletActions.trackTokens({ address, tokens }))
+  }, [currentTrackedTokens])
 
   useEffect(() => {
     const f = async function () {
@@ -99,10 +106,15 @@ export const ERC20Grid = ({ wallet, onSelected }) => {
       if (!contractAddress) {
         return
       }
+      const existing = currentTrackedTokens.find(t => t.contractAddress === contractAddress)
+      if (existing) {
+        message.error(`You already added ${existing.name} (${existing.symbol}) (${existing.contractAddress})`)
+        return
+      }
       try {
         const tokenBalance = await api.blockchain.tokenBalance({ address, contractAddress, tokenType: ONEConstants.TokenType.ERC20 })
         const tt = { tokenType: ONEConstants.TokenType.ERC20, tokenId: 0, contractAddress }
-        const key = ONE.computeTokenKey(tt)
+        const key = ONE.computeTokenKey(tt).hash
         tt.key = key
         try {
           const { name, symbol } = await api.blockchain.getTokenMetadata(tt)
@@ -112,10 +124,9 @@ export const ERC20Grid = ({ wallet, onSelected }) => {
           console.error(ex)
         }
         setTokenBalance(tb => ({ ...tb, [key]: tokenBalance.toString() }))
-        setTrackedTokens(tts => [...tts, tt])
+        setCurrentTrackedTokens(tts => [...tts, tt])
         message.success(`New token added: ${tt.name} (${tt.symbol}) (${tt.contractAddress}`)
-        // api.relayer.updateTrackToken()
-        // setSection(null)
+        setSection(null)
       } catch (ex) {
         message.error(`Unable to retrieve balance from ${newContractAddress}. It might not be a valid HRC20 contract address`)
       }
@@ -137,7 +148,7 @@ export const ERC20Grid = ({ wallet, onSelected }) => {
             icon={HarmonyONE.icon} name={HarmonyONE.name} symbol={HarmonyONE.symbol} balance={formatted}
             selected={selected === 'one'} onSelected={onSelect('one')}
           />
-          {trackedTokens.map(tt => {
+          {currentTrackedTokens.map(tt => {
             const { icon, name, symbol, key } = tt
             const balance = !isUndefined(tokenBalance[key]) && !isNull(tokenBalance[key]) && tokenBalance[key]
             const { formatted } = balance && util.computeBalance(balance)
@@ -150,7 +161,7 @@ export const ERC20Grid = ({ wallet, onSelected }) => {
                 key={key}
                 style={gridItemStyle}
                 icon={icon} name={name} symbol={symbol} balance={displayBalance}
-                onSelected={onSelect(key)}
+                onSelected={onSelect(tt)}
               />
             )
           })}
@@ -163,21 +174,10 @@ export const ERC20Grid = ({ wallet, onSelected }) => {
             <Heading>Track New Token</Heading>
             <Hint>Token Contract Address</Hint>
             <InputBox margin='auto' width={440} value={newContractAddress} onChange={({ target: { value } }) => setNewContractAddress(value)} placeholder='one1...' />
-            {/* <Space align='baseline' size='large' style={{ marginTop: 16 }}> */}
-            {/*  <Label><Hint>Code</Hint></Label> */}
-            {/*  <OtpBox */}
-            {/*    value={otpInput} */}
-            {/*    onChange={setOtpInput} */}
-            {/*  /> */}
-            {/*  <Tooltip title='from your Google Authenticator'> */}
-            {/*    <QuestionCircleOutlined /> */}
-            {/*  </Tooltip> */}
-            {/* </Space> */}
-            <Hint>You can copy contract addresses from <Link href='https://explorer.harmony.one/hrc20'>Harmony HRC20 Explorer</Link></Hint>
             <TallRow justify='space-between'>
               <Button size='large' shape='round' onClick={() => setSection(null)}>Cancel</Button>
-              {/* <Button type='primary' size='large' shape='round' onClick={() => doTrack()}>Add Token</Button> */}
             </TallRow>
+            <Hint>You can copy contract addresses from <Link href='https://explorer.harmony.one/hrc20'>Harmony HRC20 Explorer</Link></Hint>
           </Space>
         </TallRow>}
     </>
