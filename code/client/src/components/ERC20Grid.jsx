@@ -39,9 +39,12 @@ const GridItem = ({ style, children, icon, name, symbol, contractAddress, balanc
   )
 }
 
-export const ERC20Grid = ({ wallet }) => {
+export const ERC20Grid = ({ address }) => {
   const dispatch = useDispatch()
-  const { address, trackedTokens, selectedToken } = wallet
+  const wallet = useSelector(state => state.wallet.wallets[address])
+  const { selectedToken } = wallet
+  const tokenBalances = wallet.tokenBalances || {}
+  const trackedTokens = wallet.trackedTokens || []
   const balances = useSelector(state => state.wallet.balances)
   const balance = balances[address] || 0
   const { formatted } = util.computeBalance(balance)
@@ -49,7 +52,6 @@ export const ERC20Grid = ({ wallet }) => {
   const defaultTrackedTokens = withKeys(DefaultTrackedERC20)
   const [currentTrackedTokens, setCurrentTrackedTokens] = useState([...defaultTrackedTokens, ...(trackedTokens || [])])
   const [disabled, setDisabled] = useState(true)
-  const [tokenBalance, setTokenBalance] = useState({})
   const selected = selectedToken || HarmonyONE
   const [section, setSection] = useState()
   const [newContractAddress, setNewContractAddress] = useState('')
@@ -83,10 +85,9 @@ export const ERC20Grid = ({ wallet }) => {
   }, [])
 
   useEffect(() => {
-    (currentTrackedTokens || []).forEach(async tt => {
+    (currentTrackedTokens || []).forEach(tt => {
       const { tokenType, tokenId, contractAddress, key } = tt
-      const balance = await api.blockchain.tokenBalance({ address, contractAddress, tokenType, tokenId })
-      setTokenBalance(tb => ({ ...tb, [key]: balance.toString() }))
+      dispatch(walletActions.fetchTokenBalance({ address, tokenType, tokenId, contractAddress, key }))
     })
     const tokens = currentTrackedTokens.filter(e =>
       defaultTrackedTokens.find(dt => dt.key === e.key) === undefined &&
@@ -112,9 +113,9 @@ export const ERC20Grid = ({ wallet }) => {
         return
       }
       try {
-        const tokenBalance = await api.blockchain.tokenBalance({ address, contractAddress, tokenType: ONEConstants.TokenType.ERC20 })
         const tt = { tokenType: ONEConstants.TokenType.ERC20, tokenId: 0, contractAddress }
         const key = ONEUtil.hexView(ONE.computeTokenKey(tt).hash)
+        dispatch(walletActions.fetchTokenBalance({ address, ...tt, key }))
         tt.key = key
         try {
           const { name, symbol } = await api.blockchain.getTokenMetadata(tt)
@@ -123,7 +124,6 @@ export const ERC20Grid = ({ wallet }) => {
         } catch (ex) {
           console.error(ex)
         }
-        setTokenBalance(tb => ({ ...tb, [key]: tokenBalance.toString() }))
         setCurrentTrackedTokens(tts => [...tts, tt])
         message.success(`New token added: ${tt.name} (${tt.symbol}) (${tt.contractAddress}`)
         setSection(null)
@@ -139,14 +139,13 @@ export const ERC20Grid = ({ wallet }) => {
       dispatch(walletActions.setSelectedToken({ token: null, address }))
       return
     }
-    const balance = tokenBalance[key]
     const token = currentTrackedTokens.find(t => t.key === key)
-    dispatch(walletActions.setSelectedToken({ token: { ...token, balance }, address }))
+    dispatch(walletActions.setSelectedToken({ token, address }))
   }
 
   return (
     <>
-      {disabled && <Warning>Your wallet is based on an outdated version. It cannot hold or send tokens. Please create a new wallet and migrate assets.</Warning>}
+      {disabled && <Warning style={{ marginTop: 32 }}>Your wallet is based on an outdated version. It cannot hold or send tokens. Please create a new wallet and migrate assets.</Warning>}
       {!section &&
         <TallRow>
           <GridItem
@@ -156,7 +155,7 @@ export const ERC20Grid = ({ wallet }) => {
           />
           {currentTrackedTokens.map(tt => {
             const { icon, name, symbol, key } = tt
-            const balance = !isUndefined(tokenBalance[key]) && !isNull(tokenBalance[key]) && tokenBalance[key]
+            const balance = !isUndefined(tokenBalances[key]) && !isNull(tokenBalances[key]) && tokenBalances[key]
             const { formatted } = balance && util.computeBalance(balance)
             const displayBalance = balance ? formatted : 'fetching...'
 

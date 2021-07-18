@@ -70,8 +70,9 @@ const Show = () => {
 
   const balances = useSelector(state => state.wallet.balances)
   const price = useSelector(state => state.wallet.price)
+  const tokenBalances = wallet.tokenBalances || []
   const selectedToken = wallet?.selectedToken || HarmonyONE
-  const selectedTokenBalance = selectedToken.key === 'one' ? (balances[address] || 0) : (selectedToken?.balance || 0)
+  const selectedTokenBalance = selectedToken.key === 'one' ? (balances[address] || 0) : (tokenBalances[selectedToken.key] || 0)
 
   const { formatted, fiatFormatted } = util.computeBalance(selectedTokenBalance, price)
   const { dailyLimit, lastResortAddress } = wallet
@@ -404,8 +405,8 @@ const Show = () => {
 
         {activeTab === 'about' && <AboutWallet />}
         {activeTab === 'coins' && <WalletBalance />}
-        {activeTab === 'coins' && <ERC20Grid wallet={wallet} />}
-        {activeTab === 'recover' && <RecoverWallet wallet={wallet} />}
+        {activeTab === 'coins' && <ERC20Grid address={address} />}
+        {activeTab === 'recover' && <RecoverWallet />}
 
       </AnimatedSection>
       <AnimatedSection
