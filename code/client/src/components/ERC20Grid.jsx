@@ -64,9 +64,11 @@ export const ERC20Grid = ({ address }) => {
     setDisabled(false)
     const f = async () => {
       let tts = await api.blockchain.getTrackedTokens({ address })
+      tts = tts.filter(e => e.tokenType === ONEConstants.TokenType.ERC20)
+      // console.log('tts filtered', tts)
       tts.forEach(tt => { tt.key = ONEUtil.hexView(ONE.computeTokenKey(tt).hash) })
       tts = unionWith(tts, defaultTrackedTokens, trackedTokens, (a, b) => a.key === b.key)
-      console.log(tts)
+
       await Promise.all(tts.map(async tt => {
         // if (tt.name && tt.symbol) {
         //   return
@@ -79,8 +81,10 @@ export const ERC20Grid = ({ address }) => {
           console.error(ex)
         }
       }))
+      // console.log('tts merged', tts)
       setCurrentTrackedTokens(tts)
     }
+    // dispatch(walletActions.untrackTokens({ address, keys: trackedTokens.map(e => e.key) }))
     f()
   }, [])
 
@@ -89,13 +93,13 @@ export const ERC20Grid = ({ address }) => {
       const { tokenType, tokenId, contractAddress, key } = tt
       dispatch(walletActions.fetchTokenBalance({ address, tokenType, tokenId, contractAddress, key }))
     })
-    const tokens = currentTrackedTokens.filter(e =>
+    const newTokens = currentTrackedTokens.filter(e =>
       defaultTrackedTokens.find(dt => dt.key === e.key) === undefined &&
       trackedTokens.find(ut => ut.key === e.key) === undefined
     )
-    console.log({ tokens, trackedTokens, currentTrackedTokens })
+    // console.log({ newTokens, trackedTokens, currentTrackedTokens })
     // dispatch(walletActions.untrackTokens({ address, keys: trackedTokens.map(e => e.key) }))
-    dispatch(walletActions.trackTokens({ address, tokens }))
+    dispatch(walletActions.trackTokens({ address, tokens: newTokens }))
   }, [currentTrackedTokens])
 
   useEffect(() => {
