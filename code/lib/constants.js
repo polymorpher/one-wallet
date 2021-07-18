@@ -14,5 +14,7 @@ module.exports = {
     0: 'TRACK',
     1: 'UNTRACK',
     2: 'TRANSFER_TOKEN'
-  }
+  },
+  EmptyAddress: '0x0000000000000000000000000000000000000000',
+  EmptyBech32Address: 'one1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqquzw7vz',
 }
