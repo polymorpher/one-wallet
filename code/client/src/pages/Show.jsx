@@ -423,14 +423,19 @@ const Show = () => {
           <Space align='baseline' size='large'>
             <Label><Hint>Amount</Hint></Label>
             <InputBox margin='auto' width={200} value={inputAmount} onChange={({ target: { value } }) => setInputAmount(value)} />
-            <Hint>ONE</Hint>
+            <Hint>{selectedToken.symbol}</Hint>
             <Button type='secondary' shape='round' onClick={useMaxAmount}>max</Button>
           </Space>
-          <Space align='end' size='large'>
-            <Label><Hint /></Label>
-            <Title level={4} style={{ width: 200, textAlign: 'right', marginBottom: 0 }}>≈ ${transferFiatAmountFormatted}</Title>
-            <Hint>USD</Hint>
-          </Space>
+          {selectedToken.key === 'one' &&
+            <Space align='end' size='large'>
+              <Label><Hint /></Label>
+              <Title
+                level={4}
+                style={{ width: 200, textAlign: 'right', marginBottom: 0 }}
+              >≈ ${transferFiatAmountFormatted}
+              </Title>
+              <Hint>USD</Hint>
+            </Space>}
           <Space align='baseline' size='large' style={{ marginTop: 16 }}>
             <Label><Hint>Code</Hint></Label>
             <OtpBox
