@@ -391,7 +391,7 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
 
     function _overrideTrackWithBytes(bytes calldata data) internal {
         uint32 numTokens = uint32(data.length / 96);
-        require(numTokens* 96 == data.length, "data must have length multiple to 96");
+        require(numTokens * 96 == data.length, "data must have length multiple to 96");
         TrackedToken[] memory newTrackedTokens = new TrackedToken[](numTokens);
         for (uint32 i = 0; i < numTokens; i++) {
             TokenType tokenType = TokenType(uint256(_asByte32(data[i * 96 : i * 96 + 32])));
@@ -400,6 +400,28 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
             newTrackedTokens[i] = TrackedToken(tokenType, contractAddress, tokenId);
         }
         _overrideTrack(newTrackedTokens);
+    }
+
+    function _multiTrack(bytes calldata data) internal {
+        uint32 numTokens = uint32(data.length / 96);
+        require(numTokens * 96 == data.length, "data must have length multiple to 96");
+        for (uint32 i = 0; i < numTokens; i++) {
+            TokenType tokenType = TokenType(uint256(_asByte32(data[i * 96 : i * 96 + 32])));
+            address contractAddress = address(bytes20(_asByte32(data[i * 96 + 32 : i * 96 + 52])));
+            uint256 tokenId = uint256(_asByte32(data[i * 96 + 64 : i * 96 + 96]));
+            _trackToken(tokenType, contractAddress, tokenId);
+        }
+    }
+
+    function _multiUntrack(bytes calldata data) internal {
+        uint32 numTokens = uint32(data.length / 96);
+        require(numTokens * 96 == data.length, "data must have length multiple to 96");
+        for (uint32 i = 0; i < numTokens; i++) {
+            TokenType tokenType = TokenType(uint256(_asByte32(data[i * 96 : i * 96 + 32])));
+            address contractAddress = address(bytes20(_asByte32(data[i * 96 + 32 : i * 96 + 52])));
+            uint256 tokenId = uint256(_asByte32(data[i * 96 + 64 : i * 96 + 96]));
+            _untrackToken(tokenType, contractAddress, tokenId);
+        }
     }
 
     function _revealTokenOperationPack(bytes32 neighbor, uint32 indexWithNonce, bytes32 eotp,
@@ -439,9 +461,17 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
         _revealPreCheck(commitHash, indexWithNonce);
         _completeReveal(commitHash);
         if (operationType == OperationType.TRACK) {
-            _trackToken(tokenType, contractAddress, tokenId);
+            if (data.length > 0) {
+                _multiTrack(data);
+            } else {
+                _trackToken(tokenType, contractAddress, tokenId);
+            }
         } else if (operationType == OperationType.UNTRACK) {
-            _untrackToken(tokenType, contractAddress, tokenId);
+            if (data.length > 0) {
+                _untrackToken(tokenType, contractAddress, tokenId);
+            } else {
+                _multiUntrack(data);
+            }
         } else if (operationType == OperationType.TRANSFER_TOKEN) {
             _transferToken(tokenType, contractAddress, tokenId, dest, amount, data);
         } else if (operationType == OperationType.OVERRIDE_TRACK) {
