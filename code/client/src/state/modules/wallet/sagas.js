@@ -38,7 +38,7 @@ function * handleFetchTokenBalance (action) {
   try {
     const { address, contractAddress, tokenType, tokenId, key } = action.payload
     const balance = yield call(api.blockchain.tokenBalance, { contractAddress, tokenType, tokenId, address })
-    yield put(walletActions.fetchTokenBalanceSuccess({ address, key, balance }))
+    yield put(walletActions.fetchTokenBalanceSuccess({ address, key, balance: balance.toString() }))
   } catch (err) {
     console.error(err)
     yield put(walletActions.fetchTokenBalanceFailed(new Error('Failed to get wallet balance')))
