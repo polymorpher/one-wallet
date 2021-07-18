@@ -258,8 +258,8 @@ const api = {
       return api.relayer.revealTokenOperation({ address, neighbors, index, eotp, tokenType, contractAddress, tokenId, operationType: track ? ONEConstants.OperationType.TRACK : ONEConstants.OperationType.UNTRACK, dest: ONEConstants.EmptyAddress, amount: '0', data: '0x' })
     },
 
-    revealTokenOperation: async ({ address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data }) => {
-      const { data: ret } = await base.post({ address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
+    revealTokenOperation: async ({ address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data = '0x' }) => {
+      const { data: ret } = await base.post('/reveal/token', { address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
       return ret
     },
     revealRecovery: async ({ neighbors, index, eotp, address }) => {
