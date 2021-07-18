@@ -18,6 +18,9 @@ const deleteWallet = createAction('DELETE_WALLET')
 const trackTokens = createAction('TRACK_TOKENS')
 const untrackTokens = createAction('UNTRACK_TOKENS')
 const setSelectedToken = createAction('SET_SELECTED_TOKEN')
+const fetchTokenBalance = createAction('FETCH_TOKEN_BALANCE')
+const fetchTokenBalanceSuccess = createAction('FETCH_TOKEN_BALANCE_SUCCESS')
+const fetchTokenBalanceFailed = createAction('FETCH_TOKEN_BALANCE_FAILED')
 
 const setRelayer = createAction('SET_RELAYER')
 const setRelayerSecret = createAction('SET_RELAYER_SECRET')
@@ -41,7 +44,11 @@ export default {
   setRelayerSecret,
   setNetwork,
   setProvider,
+
   trackTokens,
   untrackTokens,
-  setSelectedToken
+  setSelectedToken,
+  fetchTokenBalance,
+  fetchTokenBalanceSuccess,
+  fetchTokenBalanceFailed
 }

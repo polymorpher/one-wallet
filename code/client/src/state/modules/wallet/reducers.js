@@ -106,6 +106,28 @@ const reducer = handleActions(
       }
     }),
 
+    [walletActions.fetchTokenBalance]: (state, action) => ({
+      ...state,
+    }),
+
+    [walletActions.fetchTokenBalanceSuccess]: (state, action) => ({
+      ...state,
+      wallets: {
+        ...state.wallets,
+        [action.payload.address]: {
+          ...state.wallets[action.payload.address],
+          tokenBalances: {
+            ...state.wallets?.[action.payload.address]?.tokenBalances,
+            [action.payload.key]: action.payload.balance
+          }
+        }
+      }
+    }),
+
+    [walletActions.fetchTokenBalanceFailed]: (state, action) => ({
+      ...state,
+    }),
+
     [walletActions.setRelayer]: (state, action) => ({
       ...state,
       relayer: action.payload,

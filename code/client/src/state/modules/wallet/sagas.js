@@ -34,10 +34,22 @@ function * handleFetchPrice () {
   }
 }
 
+function * handleFetchTokenBalance (action) {
+  try {
+    const { address, contractAddress, tokenType, tokenId, key } = action.payload
+    const balance = yield call(api.blockchain.tokenBalance, { contractAddress, tokenType, tokenId, address })
+    yield put(walletActions.fetchTokenBalanceSuccess({ address, key, balance }))
+  } catch (err) {
+    console.error(err)
+    yield put(walletActions.fetchTokenBalanceFailed(new Error('Failed to get wallet balance')))
+  }
+}
+
 function * walletSages () {
   yield all([
     takeEvery(walletActions.fetchWallet().type, handleFetchWallet),
     takeEvery(walletActions.fetchBalance().type, handleFetchBalance),
+    takeEvery(walletActions.fetchTokenBalance().type, handleFetchTokenBalance),
     takeLatest(walletActions.fetchPrice().type, handleFetchPrice),
   ])
 }
