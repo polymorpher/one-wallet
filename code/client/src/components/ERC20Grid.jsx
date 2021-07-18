@@ -183,7 +183,7 @@ export const ERC20Grid = ({ wallet }) => {
             <TallRow justify='space-between'>
               <Button size='large' shape='round' onClick={() => setSection(null)}>Cancel</Button>
             </TallRow>
-            <Hint>You can copy contract addresses from <Link href='https://explorer.harmony.one/hrc20'>Harmony HRC20 Explorer</Link></Hint>
+            <Hint>You can copy contract addresses from <Link target='_blank' href='https://explorer.harmony.one/hrc20' rel='noreferrer'>Harmony HRC20 Explorer</Link></Hint>
           </Space>
         </TallRow>}
     </>
