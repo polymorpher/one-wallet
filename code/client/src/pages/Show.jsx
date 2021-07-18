@@ -8,7 +8,7 @@ import util, { useWindowDimensions } from '../util'
 import ONE from '../../../lib/onewallet'
 import api from '../api'
 import * as Sentry from '@sentry/browser'
-import { message, Space, Row, Col, Typography, Button, Steps, Popconfirm, Tooltip } from 'antd'
+import { message, Space, Row, Col, Typography, Button, Popconfirm, Tooltip } from 'antd'
 import {
   DeleteOutlined,
   WarningOutlined,
@@ -31,8 +31,8 @@ import OtpBox from '../components/OtpBox'
 import { getAddress } from '@harmony-js/crypto'
 import { handleAddressError } from '../handler'
 import { SmartFlows, Chaining, EotpBuilders } from '../api/flow'
+import { CommitRevealProgress } from '../components/CommitRevealProgress'
 const { Title, Text, Link } = Typography
-const { Step } = Steps
 
 const Show = () => {
   const history = useHistory()
@@ -406,14 +406,7 @@ const Show = () => {
             {stage === 3 && <Button type='secondary' size='large' shape='round' onClick={restart}>Restart</Button>}
           </Space>
         </Row>
-        {stage > 0 && (
-          <Row style={{ marginTop: 32 }}>
-            <Steps current={stage}>
-              <Step title='Prepare' description='Preparing signature' />
-              <Step title='Commit' description='Locking-in operation' />
-              <Step title='Finalize' description='Submitting proofs' />
-            </Steps>
-          </Row>)}
+        <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
       </AnimatedSection>
       <AnimatedSection
         show={section === 'recover'}
@@ -432,14 +425,7 @@ const Show = () => {
             <Row justify='end' style={{ marginTop: 48 }}>
               <Button type='primary' size='large' shape='round' disabled={stage > 0} onClick={doRecovery}>Sounds good!</Button>
             </Row>
-            {stage > 0 && (
-              <Row style={{ marginTop: 32 }}>
-                <Steps current={stage}>
-                  <Step title='Prepare' description='Preparing signature' />
-                  <Step title='Commit' description='Locking-in operation' />
-                  <Step title='Finalize' description='Submitting proofs' />
-                </Steps>
-              </Row>)}
+            <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
           </>}
         {!lastResortAddress &&
           <Space direction='vertical' size='large'>
@@ -478,14 +464,7 @@ const Show = () => {
             <Button type='primary' size='large' shape='round' disabled={stage > 0} onClick={doSetRecoveryAddress}>Set</Button>
           </Space>
         </Row>
-        {stage > 0 && (
-          <Row style={{ marginTop: 32 }}>
-            <Steps current={stage}>
-              <Step title='Prepare' description='Preparing signature' />
-              <Step title='Commit' description='Locking-in operation' />
-              <Step title='Finalize' description='Submitting proofs' />
-            </Steps>
-          </Row>)}
+        <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
       </AnimatedSection>
     </>
   )
