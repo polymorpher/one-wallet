@@ -191,7 +191,7 @@ const computeTokenKey = ({ tokenType, contractAddress, tokenId }) => {
 //   bytes32(bytes20(contractAddress)),
 //   bytes32(tokenId),
 //   bytes32(bytes20(dest)),
-//   bytes32(amount)
+//   bytes32(amount),
 //   data
 const computeTokenOperationHash = ({ neighbor, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data = new Uint8Array() }) => {
   const indexBytes = new BN(index, 10).toArrayLike(Uint8Array, 'be', 4)
@@ -211,7 +211,9 @@ const computeTokenOperationHash = ({ neighbor, index, eotp, operationType, token
   input.set(tokenIdBytes, 192)
   input.set(destBytes, 224)
   input.set(amountBytes, 256)
-  input.set(data, 288)
+  if (data.length > 0) {
+    input.set(data, 288)
+  }
   return { hash: keccak(input), bytes: input }
 }
 
