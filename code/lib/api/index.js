@@ -192,9 +192,9 @@ const api = {
       const tt = []
       for (let i = 0; i < tokenTypes.length; i++) {
         tt.push({
-          tokenType: tokenTypes[i],
+          tokenType: tokenTypes[i].toNumber(),
           contractAddress: contracts[i],
-          tokenId: tokenIds[i]
+          tokenId: tokenIds[i].toNumber()
         })
       }
       return tt
