@@ -194,12 +194,13 @@ const computeTokenKey = ({ tokenType, contractAddress, tokenId }) => {
 //   bytes32(amount),
 //   data
 const computeTokenOperationHash = ({ neighbor, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data = new Uint8Array() }) => {
+  console.log({ neighbor, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
   const indexBytes = new BN(index, 10).toArrayLike(Uint8Array, 'be', 4)
   const operationTypeBytes = new BN(operationType, 10).toArrayLike(Uint8Array, 'be', 32)
   const tokenTypeBytes = new BN(tokenType, 10).toArrayLike(Uint8Array, 'be', 32)
   const contractAddressBytes = hexStringToBytes(contractAddress, 32)
   const tokenIdBytes = new BN(tokenId, 10).toArrayLike(Uint8Array, 'be', 32)
-  const destBytes = hexStringToBytes(contractAddress, 32)
+  const destBytes = hexStringToBytes(dest, 32)
   const amountBytes = new BN(amount, 10).toArrayLike(Uint8Array, 'be', 32)
   const input = new Uint8Array(288 + data.length)
   input.set(neighbor)

@@ -259,6 +259,7 @@ const api = {
     },
 
     revealTokenOperation: async ({ address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data = '0x' }) => {
+      console.log({ address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
       const { data: ret } = await base.post('/reveal/token', { address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
       return ret
     },
