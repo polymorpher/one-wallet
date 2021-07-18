@@ -6,6 +6,7 @@ import WalletConstants from '../constants/wallet'
 import walletActions from '../state/modules/wallet/actions'
 import util, { useWindowDimensions } from '../util'
 import ONE from '../../../lib/onewallet'
+import ONEConstants from '../../../lib/constants'
 import api from '../api'
 import * as Sentry from '@sentry/browser'
 import { message, Space, Row, Col, Typography, Button, Popconfirm, Tooltip } from 'antd'
@@ -183,25 +184,47 @@ const Show = () => {
     const { otp, dest, amount } = prepareValidation() || {}
     if (!otp || !dest) return
 
-    SmartFlows.commitReveal({
-      wallet,
-      otp,
-      commitHashGenerator: ONE.computeTransferHash,
-      commitHashArgs: { dest, amount },
-      beforeCommit: () => setStage(1),
-      afterCommit: () => setStage(2),
-      onCommitError,
-      onCommitFailure,
-      revealAPI: api.relayer.revealTransfer,
-      revealArgs: { dest, amount },
-      onRevealFailure,
-      onRevealError,
-      onRevealAttemptFailed,
-      onRevealSuccess: (txId) => {
-        onRevealSuccess(txId)
-        Chaining.refreshBalance(dispatch, intersection(Object.keys(wallets), [dest, address]))
-      }
-    })
+    if (selectedToken.key === 'one') {
+      SmartFlows.commitReveal({
+        wallet,
+        otp,
+        commitHashGenerator: ONE.computeTransferHash,
+        commitHashArgs: { dest, amount },
+        beforeCommit: () => setStage(1),
+        afterCommit: () => setStage(2),
+        onCommitError,
+        onCommitFailure,
+        revealAPI: api.relayer.revealTransfer,
+        revealArgs: { dest, amount },
+        onRevealFailure,
+        onRevealError,
+        onRevealAttemptFailed,
+        onRevealSuccess: (txId) => {
+          onRevealSuccess(txId)
+          Chaining.refreshBalance(dispatch, intersection(Object.keys(wallets), [dest, address]))
+        }
+      })
+    } else {
+      SmartFlows.commitReveal({
+        wallet,
+        otp,
+        commitHashGenerator: ONE.computeTokenOperationHash,
+        commitHashArgs: { dest, amount, operationType: ONEConstants.OperationType.TRANSFER_TOKEN, tokenType: selectedToken.tokenType, contractAddress: selectedToken.contractAddress, tokenId: selectedToken.tokenId },
+        beforeCommit: () => setStage(1),
+        afterCommit: () => setStage(2),
+        onCommitError,
+        onCommitFailure,
+        revealAPI: api.relayer.revealTokenOperation,
+        revealArgs: { dest, amount, operationType: ONEConstants.OperationType.TRANSFER_TOKEN, tokenType: selectedToken.tokenType, contractAddress: selectedToken.contractAddress, tokenId: selectedToken.tokenId },
+        onRevealFailure,
+        onRevealError,
+        onRevealAttemptFailed,
+        onRevealSuccess: (txId) => {
+          onRevealSuccess(txId)
+          Chaining.refreshTokenBalance({ dispatch, address, token: selectedToken })
+        }
+      })
+    }
   }
 
   const doRecovery = async () => {
@@ -387,7 +410,7 @@ const Show = () => {
       </AnimatedSection>
       <AnimatedSection
         style={{ width: 720 }}
-        show={section === 'transfer'} title={<Title level={2}>Transfer</Title>} extra={[
+        show={section === 'transfer'} title={<Title level={2}>Send: {selectedToken.name} ({selectedToken.symbol})</Title>} extra={[
           <Button key='close' type='text' icon={<CloseOutlined />} onClick={showStats} />
         ]}
       >
