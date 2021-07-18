@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { HarmonyAddress } from '@harmony-js/crypto'
 import { isInteger, values } from 'lodash'
 import ONEUtil from '../../lib/util'
+import ONEConstants from '../../lib/constants'
 import { AddressError } from './constants/errors'
 import config from './config'
 
@@ -99,7 +100,7 @@ export default {
   },
 
   isEmptyAddress: (address) => {
-    return !address || address === '0x0000000000000000000000000000000000000000' || address === 'one1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqquzw7vz'
+    return !address || address === ONEConstants.EmptyAddress || address === ONEConstants.EmptyBech32Address
   },
 
   safeExec: (f, args, handler) => {
