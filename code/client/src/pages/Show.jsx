@@ -32,6 +32,7 @@ import { getAddress } from '@harmony-js/crypto'
 import { handleAddressError } from '../handler'
 import { SmartFlows, Chaining, EotpBuilders } from '../api/flow'
 import { CommitRevealProgress } from '../components/CommitRevealProgress'
+import { HarmonyONE } from '../components/TokenAssets'
 const { Title, Text, Link } = Typography
 
 const Show = () => {
@@ -50,7 +51,6 @@ const Show = () => {
   const [stage, setStage] = useState(0)
   const network = useSelector(state => state.wallet.network)
   const [activeTab, setActiveTab] = useState('coins')
-
   const walletOutdated = util.isWalletOutdated(wallet)
 
   useEffect(() => {
@@ -66,10 +66,13 @@ const Show = () => {
     dispatch(walletActions.fetchWallet({ address }))
     return () => { clearInterval(handler) }
   }, [])
+
   const balances = useSelector(state => state.wallet.balances)
-  const balance = balances[address] || 0
   const price = useSelector(state => state.wallet.price)
-  const { formatted, fiatFormatted } = util.computeBalance(balance, price)
+  const selectedToken = wallet?.selectedToken || HarmonyONE
+  const selectedTokenBalance = selectedToken.key === 'one' ? (balances[address] || 0) : (selectedToken?.balance || 0)
+
+  const { formatted, fiatFormatted } = util.computeBalance(selectedTokenBalance, price)
   const { dailyLimit, lastResortAddress } = wallet
   const oneLastResort = lastResortAddress && getAddress(lastResortAddress).bech32
   const { formatted: dailyLimitFormatted, fiatFormatted: dailyLimitFiatFormatted } = util.computeBalance(dailyLimit, price)
@@ -107,7 +110,7 @@ const Show = () => {
   } = util.toBalance(inputAmount || 0, price)
 
   const useMaxAmount = () => {
-    if (new BN(balance, 10).gt(new BN(dailyLimit, 10))) {
+    if (new BN(selectedTokenBalance, 10).gt(new BN(dailyLimit, 10))) {
       setInputAmount(dailyLimitFormatted)
     } else {
       setInputAmount(formatted)
@@ -253,7 +256,7 @@ const Show = () => {
     <Space size='large' align='baseline'>
       <Title level={2}>{wallet.name}</Title>
       <Text>
-        <ExplorerLink copyable={{ text: oneAddress }} href={util.getNetworkExplorerUrl(wallet)}>
+        <ExplorerLink copyable={{ text: oneAddress }} href={util.getNetworkExplorerUrl(address, network)}>
           {isMobile ? util.ellipsisAddress(oneAddress) : oneAddress}
         </ExplorerLink>
       </Text>
@@ -287,7 +290,7 @@ const Show = () => {
           <Col>
             <Space>
               <Tooltip title={oneLastResort}>
-                <ExplorerLink copyable={oneLastResort && { text: oneLastResort }} href={util.getNetworkExplorerUrl(wallet)}>
+                <ExplorerLink copyable={oneLastResort && { text: oneLastResort }} href={util.getNetworkExplorerUrl(address, network)}>
                   {util.ellipsisAddress(oneLastResort)}
                 </ExplorerLink>
               </Tooltip>
@@ -305,19 +308,33 @@ const Show = () => {
             <Text>{wallet.majorVersion}.{wallet.minorVersion}</Text>
           </Col>
         </TallRow>}
-      <Row style={{ marginTop: 48 }}>
-        <Button type='link' style={{ padding: 0 }} size='large' onClick={showRecovery} icon={<WarningOutlined />}>I lost my Google Authenticator</Button>
-      </Row>
-      <Row style={{ marginTop: 24 }}>
-        <Popconfirm title='Are you sure？' onConfirm={onDeleteWallet}>
-          <Button type='link' style={{ color: 'red', padding: 0 }} size='large' icon={<DeleteOutlined />}>Delete this wallet locally</Button>
-        </Popconfirm>
-
-      </Row>
     </>
   )
+  const RecoverWallet = () => {
+    return (
+      <>
+        <Row style={{ marginTop: 48 }}>
+          <Button type='link' style={{ padding: 0 }} size='large' onClick={showRecovery} icon={<WarningOutlined />}>I lost my Google Authenticator</Button>
+        </Row>
+        <Row style={{ marginTop: 24 }}>
+          <Popconfirm title='Are you sure？' onConfirm={onDeleteWallet}>
+            <Button type='link' style={{ color: 'red', padding: 0 }} size='large' icon={<DeleteOutlined />}>Delete this wallet locally</Button>
+          </Popconfirm>
+        </Row>
+      </>
+    )
+  }
   const WalletBalance = () => (
     <>
+      {selectedToken.key !== 'one' &&
+        <Row style={{ marginTop: 16 }}>
+          <Space size='large' align='baseline'>
+            <Title level={3}>{selectedToken.name}</Title>
+            <ExplorerLink copyable={{ text: selectedToken.contractAddress }} href={util.getNetworkExplorerUrl(selectedToken.contractAddress, network)}>
+              {isMobile ? util.ellipsisAddress(selectedToken.contractAddress) : selectedToken.contractAddress}
+            </ExplorerLink>
+          </Space>
+        </Row>}
       <Row style={{ marginTop: 16 }}>
         <Col span={isMobile ? 24 : 12}>
           <Title level={3} style={{ marginRight: 48 }}>Balance</Title>
@@ -325,19 +342,20 @@ const Show = () => {
         <Col>
           <Space>
             <Title level={3}>{formatted}</Title>
-            <Text type='secondary'>ONE</Text>
+            <Text type='secondary'>{selectedToken.symbol}</Text>
           </Space>
         </Col>
       </Row>
-      <Row>
-        <Col span={isMobile ? 24 : 12} />
-        <Col>
-          <Space>
-            <Title level={4}>≈ ${fiatFormatted}</Title>
-            <Text type='secondary'>USD</Text>
-          </Space>
-        </Col>
-      </Row>
+      {selectedToken.key === 'one' &&
+        <Row>
+          <Col span={isMobile ? 24 : 12} />
+          <Col>
+            <Space>
+              <Title level={4}>≈ ${fiatFormatted}</Title>
+              <Text type='secondary'>USD</Text>
+            </Space>
+          </Col>
+        </Row>}
       <Row style={{ marginTop: 16 }}>
         <Col span={isMobile ? 24 : 12} />
         <Col>
@@ -354,7 +372,7 @@ const Show = () => {
         show={!section}
         title={title}
         style={{ minHeight: 320, maxWidth: 720 }}
-        tabList={[{ key: 'coins', tab: 'Coins' }, { key: 'collectibles', tab: 'Collectibles' }, { key: 'about', tab: 'About' }]}
+        tabList={[{ key: 'coins', tab: 'Coins' }, { key: 'collectibles', tab: 'Collectibles' }, { key: 'about', tab: 'About' }, { key: 'recover', tab: 'Recover' }]}
         activeTabKey={activeTab}
         onTabChange={key => setActiveTab(key)}
       >
@@ -364,6 +382,7 @@ const Show = () => {
         {activeTab === 'about' && <AboutWallet />}
         {activeTab === 'coins' && <WalletBalance />}
         {activeTab === 'coins' && <ERC20Grid wallet={wallet} />}
+        {activeTab === 'recover' && <RecoverWallet wallet={wallet} />}
 
       </AnimatedSection>
       <AnimatedSection
@@ -469,4 +488,5 @@ const Show = () => {
     </>
   )
 }
+
 export default Show
