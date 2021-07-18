@@ -187,7 +187,7 @@ const api = {
     },
     getTrackedTokens: async ({ address }) => {
       const c = await one.at(address)
-      const result = c.getTrackedTokens()
+      const result = await c.getTrackedTokens()
       const [tokenTypes, contracts, tokenIds] = Object.keys(result).map(k => result[k])
       const tt = []
       for (let i = 0; i < tokenTypes.length; i++) {
