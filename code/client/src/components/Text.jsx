@@ -3,7 +3,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { Input, Typography, Card } from 'antd'
 
-const { Text, Title } = Typography
+const { Text, Title, Link } = Typography
 
 export const Heading = styled(Title).attrs(() => ({ level: 2 }))`
   //font-size: 24px;
@@ -31,3 +31,13 @@ export const Warning = ({ children, ...props }) =>
     <Text>{children}
     </Text>
   </Card>
+
+export const Label = styled.div`
+  width: 64px;
+`
+
+export const ExplorerLink = styled(Link).attrs(e => ({ ...e, style: { color: '#888888' }, target: '_blank', rel: 'noopener noreferrer' }))`
+  &:hover {
+    opacity: 0.8;
+  }
+`
