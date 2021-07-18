@@ -17,6 +17,7 @@ const deleteWallet = createAction('DELETE_WALLET')
 
 const trackTokens = createAction('TRACK_TOKENS')
 const untrackTokens = createAction('UNTRACK_TOKENS')
+const setSelectedToken = createAction('SET_SELECTED_TOKEN')
 
 const setRelayer = createAction('SET_RELAYER')
 const setRelayerSecret = createAction('SET_RELAYER_SECRET')
@@ -41,5 +42,6 @@ export default {
   setNetwork,
   setProvider,
   trackTokens,
-  untrackTokens
+  untrackTokens,
+  setSelectedToken
 }

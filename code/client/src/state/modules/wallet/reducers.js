@@ -95,6 +95,16 @@ const reducer = handleActions(
         }
       }
     }),
+    [walletActions.setSelectedToken]: (state, action) => ({
+      ...state,
+      wallets: {
+        ...state.wallets,
+        [action.payload.address]: {
+          ...state.wallets[action.payload.address],
+          selectedToken: action.payload.token
+        }
+      }
+    }),
 
     [walletActions.setRelayer]: (state, action) => ({
       ...state,
