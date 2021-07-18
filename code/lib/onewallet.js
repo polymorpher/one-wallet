@@ -180,7 +180,39 @@ const computeTokenKey = ({ tokenType, contractAddress, tokenId }) => {
   buf.set(s1)
   buf.set(s2, 32)
   buf.set(s3, 64)
-  return buf
+  return { hash: keccak(buf), bytes: buf }
+}
+
+// neighbor,
+//   bytes32(bytes4(indexWithNonce)),
+//   eotp,
+//   bytes32(uint256(operationType)),
+//   bytes32(uint256(tokenType)),
+//   bytes32(bytes20(contractAddress)),
+//   bytes32(tokenId),
+//   bytes32(bytes20(dest)),
+//   bytes32(amount)
+//   data
+const computeTokenOperationHash = ({ neighbor, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data }) => {
+  const indexBytes = new BN(index, 10).toArrayLike(Uint8Array, 'be', 4)
+  const operationTypeBytes = new BN(operationType, 10).toArrayLike(Uint8Array, 'be', 32)
+  const tokenTypeBytes = new BN(tokenType, 10).toArrayLike(Uint8Array, 'be', 32)
+  const contractAddressBytes = hexStringToBytes(contractAddress, 32)
+  const tokenIdBytes = new BN(tokenId, 10).toArrayLike(Uint8Array, 'be', 32)
+  const destBytes = hexStringToBytes(contractAddress, 32)
+  const amountBytes = new BN(amount, 10).toArrayLike(Uint8Array, 'be', 32)
+  const input = new Uint8Array(288 + data.length)
+  input.set(neighbor)
+  input.set(indexBytes, 32)
+  input.set(eotp, 64)
+  input.set(operationTypeBytes, 96)
+  input.set(tokenTypeBytes, 128)
+  input.set(contractAddressBytes, 160)
+  input.set(tokenIdBytes, 192)
+  input.set(destBytes, 224)
+  input.set(amountBytes, 256)
+  input.set(data, 288)
+  return { hash: keccak(input), bytes: input }
 }
 
 module.exports = {
@@ -191,5 +223,6 @@ module.exports = {
   selectMerkleNeighbors,
   computeEOTP,
   bruteforceEOTP,
-  computeTokenKey
+  computeTokenKey,
+  computeTokenOperationHash
 }
