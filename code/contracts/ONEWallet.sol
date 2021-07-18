@@ -47,14 +47,14 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
     uint32 constant MAX_COMMIT_SIZE = 120;
 
     uint32 constant majorVersion = 0x5; // a change would require client to migrate
-    uint32 constant minorVersion = 0x1; // a change would not require the client to migrate
+    uint32 constant minorVersion = 0x3; // a change would not require the client to migrate
 
     //    bool commitLocked; // not necessary at this time
     Commit[] commits; // self-clean on commit (auto delete commits that are beyond REVEAL_MAX_DELAY), so it's bounded by the number of commits an attacker can spam within REVEAL_MAX_DELAY time in the worst case, which is not too bad.
 
     //
     enum OperationType {
-        TRACK, UNTRACK, TRANSFER_TOKEN
+        TRACK, UNTRACK, TRANSFER_TOKEN, OVERRIDE_TRACK
         //        , TRANSFER, SET_RECOVERY_ADDRESS, RECOVER
     }
     enum TokenType{
@@ -340,6 +340,7 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
         if (tokenType == TokenType.ERC20) {
             try IERC20(contractAddress).transfer(dest, amount) returns (bool success){
                 if (success) {
+                    _trackToken(tokenType, contractAddress, tokenId);
                     emit TokenTransferSucceeded(tokenType, contractAddress, tokenId, dest, amount);
                     return;
                 }
@@ -368,8 +369,41 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
         }
     }
 
+    function _overrideTrack(TrackedToken[] memory newTrackedTokens) internal {
+        for (uint32 i = 0; i < trackedTokens.length; i++) {
+            TokenType tokenType = trackedTokens[i].tokenType;
+            address contractAddress = trackedTokens[i].contractAddress;
+            uint256 tokenId = trackedTokens[i].tokenId;
+            bytes32 key = sha256(bytes.concat(bytes32(uint256(tokenType)), bytes32(bytes20(contractAddress)), bytes32(tokenId)));
+            delete trackedTokenPositions[key];
+        }
+        delete trackedTokens;
+        for (uint32 i = 0; i < newTrackedTokens.length; i++) {
+            TokenType tokenType = newTrackedTokens[i].tokenType;
+            address contractAddress = newTrackedTokens[i].contractAddress;
+            uint256 tokenId = newTrackedTokens[i].tokenId;
+            bytes32 key = sha256(bytes.concat(bytes32(uint256(tokenType)), bytes32(bytes20(contractAddress)), bytes32(tokenId)));
+            TrackedToken memory t = TrackedToken(tokenType, contractAddress, tokenId);
+            trackedTokens.push(t);
+            trackedTokenPositions[key].push(i);
+        }
+    }
+
+    function _overrideTrackWithBytes(bytes calldata data) internal {
+        uint32 numTokens = uint32(data.length / 96);
+        require(numTokens* 96 == data.length, "data must have length multiple to 96");
+        TrackedToken[] memory newTrackedTokens = new TrackedToken[](numTokens);
+        for (uint32 i = 0; i < numTokens; i++) {
+            TokenType tokenType = TokenType(uint256(_asByte32(data[i * 96 : i * 96 + 32])));
+            address contractAddress = address(bytes20(_asByte32(data[i * 96 + 32 : i * 96 + 52])));
+            uint256 tokenId = uint256(_asByte32(data[i * 96 + 64 : i * 96 + 96]));
+            newTrackedTokens[i] = TrackedToken(tokenType, contractAddress, tokenId);
+        }
+        _overrideTrack(newTrackedTokens);
+    }
+
     function _revealTokenOperationPack(bytes32 neighbor, uint32 indexWithNonce, bytes32 eotp,
-        OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount) pure internal returns (bytes32) {
+        OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount, bytes calldata data) pure internal returns (bytes32) {
         bytes memory packed = bytes.concat(
             neighbor,
             bytes32(bytes4(indexWithNonce)),
@@ -379,15 +413,15 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
             bytes32(bytes20(contractAddress)),
             bytes32(tokenId),
             bytes32(bytes20(dest)),
-            bytes32(amount)
-        // data is considered "additional information" or "notes to the transaction" thus is not included
+            bytes32(amount),
+            data
         );
         bytes32 commitHash = keccak256(bytes.concat(packed));
         return commitHash;
     }
 
     function revealTokenOperation(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp,
-        OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount, bytes memory data)
+        OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount, bytes calldata data)
     external {
         _isCorrectProof(neighbors, indexWithNonce, eotp);
         bytes32 commitHash = _revealTokenOperationPack(
@@ -399,7 +433,8 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
             contractAddress,
             tokenId,
             dest,
-            amount
+            amount,
+            data
         );
         _revealPreCheck(commitHash, indexWithNonce);
         _completeReveal(commitHash);
@@ -409,6 +444,8 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
             _untrackToken(tokenType, contractAddress, tokenId);
         } else if (operationType == OperationType.TRANSFER_TOKEN) {
             _transferToken(tokenType, contractAddress, tokenId, dest, amount, data);
+        } else if (operationType == OperationType.OVERRIDE_TRACK) {
+            _overrideTrackWithBytes(data);
         }
     }
 
@@ -550,5 +587,20 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
             nonceTracker.push(index);
         }
         nonces[index] = v + 1;
+    }
+
+    function _asByte32(bytes memory b) pure internal returns (bytes32){
+        if (b.length == 0) {
+            return bytes32(0x0);
+        }
+        require(b.length <= 32, "input bytes are too long for _asByte32");
+        bytes32 r;
+        uint8 len = uint8((32 - b.length) * 8);
+        assembly{
+            r := mload(add(b, 32))
+            r := shr(len, r)
+            r := shl(len, r)
+        }
+        return r;
     }
 }
