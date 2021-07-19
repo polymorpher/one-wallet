@@ -166,7 +166,7 @@ export default {
       return true
     }
     if (wallet.majorVersion === 5) {
-      if (wallet.minorVersion >= 3) {
+      if (wallet.minorVersion >= 3 || config.debug) {
         return true
       }
     }
