@@ -159,7 +159,9 @@ export default {
 
   isNonZeroBalance: balance => {
     return balance && balance !== '0'
-  }
+  },
+
+  compareVersion: (left, right) => left.majorVersion === right.majorVersion && left.minorVersion === right.minorVersion
 }
 
 function getWindowDimensions () {
