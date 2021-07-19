@@ -136,6 +136,25 @@ export default {
       return null
     }
     return parsedOtp
+  },
+
+  isNFT: token => {
+    if (!token) {
+      return false
+    }
+    return token.tokenType === ONEConstants.TokenType.ERC721 || token.tokenType === ONEConstants.TokenType.ERC1155
+  },
+
+  replaceIPFSLink: link => {
+    if (!link || !link.startsWith('ipfs://')) {
+      return link
+    }
+    let end = link.indexOf('?')
+    if (end < 0) {
+      end = link.length
+    }
+    const hash = link.slice(7, end)
+    return config.ipfs.gateway.replace('{{hash}}', hash)
   }
 }
 
