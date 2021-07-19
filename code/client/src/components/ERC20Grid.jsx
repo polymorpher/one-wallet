@@ -49,7 +49,7 @@ export const ERC20Grid = ({ address }) => {
   const balances = useSelector(state => state.wallet.balances)
   const balance = balances[address] || 0
   const { formatted } = util.computeBalance(balance)
-  const walletOutdated = util.isWalletOutdated(wallet)
+  const walletOutdated = !util.canWalletSupportToken(wallet)
   const defaultTrackedTokens = withKeys(DefaultTrackedERC20(network))
   const [currentTrackedTokens, setCurrentTrackedTokens] = useState([...defaultTrackedTokens, ...(trackedTokens || [])])
   const [disabled, setDisabled] = useState(true)

@@ -170,7 +170,7 @@ export const NFTGrid = ({ address }) => {
   const selectedToken = util.isNFT(wallet.selectedToken) && wallet.selectedToken
   const tokenBalances = wallet.tokenBalances || {}
   const trackedTokens = (wallet.trackedTokens || []).filter(util.isNFT)
-  const walletOutdated = util.isWalletOutdated(wallet)
+  const walletOutdated = !util.canWalletSupportToken(wallet)
   const [currentTrackedTokens, setCurrentTrackedTokens] = useState(trackedTokens || [])
   const [disabled, setDisabled] = useState(true)
   const gridItemStyle = {

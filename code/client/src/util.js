@@ -161,6 +161,18 @@ export default {
     return balance && balance !== '0'
   },
 
+  canWalletSupportToken: wallet => {
+    if (wallet.majorVersion > 5) {
+      return true
+    }
+    if (wallet.majorVersion === 5) {
+      if (wallet.minorVersion >= 3) {
+        return true
+      }
+    }
+    return false
+  },
+
   compareVersion: (left, right) => left.majorVersion === right.majorVersion && left.minorVersion === right.minorVersion
 }
 
