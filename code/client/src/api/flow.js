@@ -16,5 +16,14 @@ export const Chaining = {
         })
       }, t)
     })
+  },
+
+  refreshTokenBalance: ({ dispatch, address, token }) => {
+    const { tokenType, contractAddress, tokenId, key } = token
+    WalletConstants.fetchDelaysAfterTransfer.forEach(t => {
+      setTimeout(() => {
+        dispatch(walletActions.fetchTokenBalance({ address, contractAddress, tokenType, tokenId, key }))
+      }, t)
+    })
   }
 }

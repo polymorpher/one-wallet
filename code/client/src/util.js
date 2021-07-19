@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { HarmonyAddress } from '@harmony-js/crypto'
 import { isInteger, values } from 'lodash'
 import ONEUtil from '../../lib/util'
+import ONEConstants from '../../lib/constants'
 import { AddressError } from './constants/errors'
 import config from './config'
 
@@ -41,22 +42,22 @@ export default {
     return true
   },
 
-  toBalance: (formatted, price) => {
+  toBalance: (formatted, price, decimals) => {
     if (!exports.default.validBalance(formatted, true)) {
       return { balance: 0, formatted: '0', fiat: 0, fiatFormatted: '0', valid: false }
     }
     const f = parseFloat(formatted)
-    const balance = ONEUtil.toFraction(f)
+    const balance = ONEUtil.toFraction(f, decimals)
     const fiat = f * (price || 0)
     const fiatFormatted = exports.default.formatNumber(fiat)
     return { balance, formatted, fiat, fiatFormatted, valid: true }
   },
 
-  computeBalance: (balance, price) => {
+  computeBalance: (balance, price, decimals) => {
     if (!exports.default.validBalance(balance)) {
       return { balance: 0, formatted: '0', fiat: 0, fiatFormatted: '0', valid: false }
     }
-    const ones = ONEUtil.toOne(balance || 0)
+    const ones = ONEUtil.toOne(balance || 0, decimals)
     const formatted = exports.default.formatNumber(ones)
     const fiat = (price || 0) * parseFloat(ones)
     const fiatFormatted = exports.default.formatNumber(fiat)
@@ -99,7 +100,7 @@ export default {
   },
 
   isEmptyAddress: (address) => {
-    return !address || address === '0x0000000000000000000000000000000000000000' || address === 'one1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqquzw7vz'
+    return !address || address === ONEConstants.EmptyAddress || address === ONEConstants.EmptyBech32Address
   },
 
   safeExec: (f, args, handler) => {
@@ -117,12 +118,12 @@ export default {
     return values(wallets).filter(w => w.network === network)
   },
 
-  getNetworkExplorerUrl: (wallet) => {
-    if (wallet.network === 'harmony-testnet') {
-      return `https://explorer.pops.one/#/address/${wallet.address}`
+  getNetworkExplorerUrl: (address, network) => {
+    if (network === 'harmony-testnet') {
+      return `https://explorer.pops.one/#/address/${address}`
     }
 
-    return `https://explorer.harmony.one/#/address/${wallet.address}`
+    return `https://explorer.harmony.one/#/address/${address}`
   },
 
   isWalletOutdated: (wallet) => {
@@ -135,6 +136,29 @@ export default {
       return null
     }
     return parsedOtp
+  },
+
+  isNFT: token => {
+    if (!token) {
+      return false
+    }
+    return token.tokenType === ONEConstants.TokenType.ERC721 || token.tokenType === ONEConstants.TokenType.ERC1155
+  },
+
+  replaceIPFSLink: link => {
+    if (!link || !link.startsWith('ipfs://')) {
+      return link
+    }
+    let end = link.indexOf('?')
+    if (end < 0) {
+      end = link.length
+    }
+    const hash = link.slice(7, end)
+    return config.ipfs.gateway.replace('{{hash}}', hash)
+  },
+
+  isNonZeroBalance: balance => {
+    return balance && balance !== '0'
   }
 }
 

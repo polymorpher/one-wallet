@@ -11,6 +11,7 @@
     "console": "node --experimental-repl-await"
   },
   "dependencies": {
+    "@openzeppelin/contracts": "^4.2.0",
     "@truffle/hdwallet-provider": "^1.4.0",
     "axios": "^0.21.1",
     "dotenv": "^10.0.0",
@@ -20,6 +21,7 @@
     "jssha": "^3.2.0",
     "keccak": "^3.0.1",
     "lodash": "^4.17.21",
+    "truffle-contract-size": "^2.0.1",
     "web3": "^1.4.0"
   },
   "devDependencies": {

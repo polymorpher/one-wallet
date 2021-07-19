@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, memo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory, useRouteMatch, Redirect, useLocation, matchPath } from 'react-router'
 import Paths from '../constants/paths'
@@ -6,9 +6,10 @@ import WalletConstants from '../constants/wallet'
 import walletActions from '../state/modules/wallet/actions'
 import util, { useWindowDimensions } from '../util'
 import ONE from '../../../lib/onewallet'
+import ONEConstants from '../../../lib/constants'
 import api from '../api'
 import * as Sentry from '@sentry/browser'
-import { message, Space, Row, Col, Typography, Button, Steps, Popconfirm, Tooltip } from 'antd'
+import { message, Space, Row, Col, Typography, Button, Popconfirm, Tooltip } from 'antd'
 import {
   DeleteOutlined,
   WarningOutlined,
@@ -16,11 +17,13 @@ import {
   QuestionCircleOutlined,
   LoadingOutlined
 } from '@ant-design/icons'
-import styled from 'styled-components'
+// import styled from 'styled-components'
 import humanizeDuration from 'humanize-duration'
 import AnimatedSection from '../components/AnimatedSection'
 
-import { Hint, InputBox, Warning } from '../components/Text'
+import { Hint, InputBox, Warning, Label, ExplorerLink } from '../components/Text'
+import { TallRow } from '../components/Grid'
+import { ERC20Grid } from '../components/ERC20Grid'
 import { intersection } from 'lodash'
 import storage from '../storage'
 import BN from 'bn.js'
@@ -29,23 +32,11 @@ import OtpBox from '../components/OtpBox'
 import { getAddress } from '@harmony-js/crypto'
 import { handleAddressError } from '../handler'
 import { SmartFlows, Chaining, EotpBuilders } from '../api/flow'
+import { CommitRevealProgress } from '../components/CommitRevealProgress'
+import { HarmonyONE } from '../components/TokenAssets'
+import { NFTGrid } from '../components/NFTGrid'
 const { Title, Text, Link } = Typography
-const { Step } = Steps
-
-const TallRow = styled(Row)`
-  margin-top: 32px;
-  margin-bottom: 32px;
-`
-
-const Label = styled.div`
-  width: 64px;
-`
-const ExplorerLink = styled(Link).attrs(e => ({ ...e, style: { color: '#888888' }, target: '_blank', rel: 'noopener noreferrer' }))`
-  &:hover {
-    opacity: 0.8;
-  }
-`
-
+const tabList = [{ key: 'coins', tab: 'Coins' }, { key: 'nft', tab: 'Collectibles' }, { key: 'about', tab: 'About' }, { key: 'help', tab: 'Recover' }]
 const Show = () => {
   const history = useHistory()
   const location = useLocation()
@@ -61,7 +52,7 @@ const Show = () => {
   const [section, setSection] = useState(action)
   const [stage, setStage] = useState(0)
   const network = useSelector(state => state.wallet.network)
-
+  const [activeTab, setActiveTab] = useState('coins')
   const walletOutdated = util.isWalletOutdated(wallet)
 
   useEffect(() => {
@@ -77,10 +68,14 @@ const Show = () => {
     dispatch(walletActions.fetchWallet({ address }))
     return () => { clearInterval(handler) }
   }, [])
+
   const balances = useSelector(state => state.wallet.balances)
-  const balance = balances[address] || 0
   const price = useSelector(state => state.wallet.price)
-  const { formatted, fiatFormatted } = util.computeBalance(balance, price)
+  const tokenBalances = wallet.tokenBalances || []
+  const selectedToken = wallet?.selectedToken || HarmonyONE
+  const selectedTokenBalance = selectedToken.key === 'one' ? (balances[address] || 0) : (tokenBalances[selectedToken.key] || 0)
+
+  const { formatted, fiatFormatted } = util.computeBalance(selectedTokenBalance, price)
   const { dailyLimit, lastResortAddress } = wallet
   const oneLastResort = lastResortAddress && getAddress(lastResortAddress).bech32
   const { formatted: dailyLimitFormatted, fiatFormatted: dailyLimitFiatFormatted } = util.computeBalance(dailyLimit, price)
@@ -88,9 +83,18 @@ const Show = () => {
   useEffect(() => {
     const m = matchPath(location.pathname, { path: Paths.show })
     const { action } = m ? m.params : {}
+    if (action !== 'nft' && action !== 'transfer' && selectedToken.key !== 'one' && selectedToken.tokenType !== ONEConstants.TokenType.ERC20) {
+      dispatch(walletActions.setSelectedToken({ token: null, address }))
+    }
+    if (tabList.find(t => t.key === action)) {
+      setSection(undefined)
+      setActiveTab(action)
+      return
+    }
     setSection(action)
   }, [location])
 
+  const showTab = (tab) => { history.push(Paths.showAddress(oneAddress, tab)) }
   const showTransfer = () => { history.push(Paths.showAddress(oneAddress, 'transfer')) }
   const showRecovery = () => { history.push(Paths.showAddress(oneAddress, 'recover')) }
   const showSetRecoveryAddress = () => { history.push(Paths.showAddress(oneAddress, 'setRecoveryAddress')) }
@@ -118,7 +122,11 @@ const Show = () => {
   } = util.toBalance(inputAmount || 0, price)
 
   const useMaxAmount = () => {
-    if (new BN(balance, 10).gt(new BN(dailyLimit, 10))) {
+    if (util.isNFT(selectedToken)) {
+      setInputAmount(selectedTokenBalance.toString())
+      return
+    }
+    if (new BN(selectedTokenBalance, 10).gt(new BN(dailyLimit, 10))) {
       setInputAmount(dailyLimitFormatted)
     } else {
       setInputAmount(formatted)
@@ -141,13 +149,23 @@ const Show = () => {
     if (checkDest && !dest) {
       return
     }
-    if (checkAmount && (!transferAmount || transferAmount.isZero() || transferAmount.isNeg())) {
-      return message.error('Transfer amount is invalid')
+    const rawAmount = new BN(inputAmount)
+    if (checkAmount) {
+      if (selectedToken && util.isNFT(selectedToken)) {
+        if (rawAmount.isZero() || rawAmount.isNeg()) {
+          return message.error('Amount is invalid')
+        }
+      } else if (!transferAmount || transferAmount.isZero() || transferAmount.isNeg()) {
+        return message.error('Transfer amount is invalid')
+      }
     }
     const otp = util.parseOtp(otpInput)
     if (checkOtp && !otp) {
       message.error('Google Authenticator code is not valid')
       return
+    }
+    if (selectedToken && util.isNFT(selectedToken)) {
+      return { otp, dest, amount: rawAmount.toString() }
     }
     return { otp, dest, amount: transferAmount.toString() }
   }
@@ -191,25 +209,47 @@ const Show = () => {
     const { otp, dest, amount } = prepareValidation() || {}
     if (!otp || !dest) return
 
-    SmartFlows.commitReveal({
-      wallet,
-      otp,
-      commitHashGenerator: ONE.computeTransferHash,
-      commitHashArgs: { dest, amount },
-      beforeCommit: () => setStage(1),
-      afterCommit: () => setStage(2),
-      onCommitError,
-      onCommitFailure,
-      revealAPI: api.relayer.revealTransfer,
-      revealArgs: { dest, amount },
-      onRevealFailure,
-      onRevealError,
-      onRevealAttemptFailed,
-      onRevealSuccess: (txId) => {
-        onRevealSuccess(txId)
-        Chaining.refreshBalance(dispatch, intersection(Object.keys(wallets), [dest, address]))
-      }
-    })
+    if (selectedToken.key === 'one') {
+      SmartFlows.commitReveal({
+        wallet,
+        otp,
+        commitHashGenerator: ONE.computeTransferHash,
+        commitHashArgs: { dest, amount },
+        beforeCommit: () => setStage(1),
+        afterCommit: () => setStage(2),
+        onCommitError,
+        onCommitFailure,
+        revealAPI: api.relayer.revealTransfer,
+        revealArgs: { dest, amount },
+        onRevealFailure,
+        onRevealError,
+        onRevealAttemptFailed,
+        onRevealSuccess: (txId) => {
+          onRevealSuccess(txId)
+          Chaining.refreshBalance(dispatch, intersection(Object.keys(wallets), [dest, address]))
+        }
+      })
+    } else {
+      SmartFlows.commitReveal({
+        wallet,
+        otp,
+        commitHashGenerator: ONE.computeTokenOperationHash,
+        commitHashArgs: { dest, amount, operationType: ONEConstants.OperationType.TRANSFER_TOKEN, tokenType: selectedToken.tokenType, contractAddress: selectedToken.contractAddress, tokenId: selectedToken.tokenId },
+        beforeCommit: () => setStage(1),
+        afterCommit: () => setStage(2),
+        onCommitError,
+        onCommitFailure,
+        revealAPI: api.relayer.revealTokenOperation,
+        revealArgs: { dest, amount, operationType: ONEConstants.OperationType.TRANSFER_TOKEN, tokenType: selectedToken.tokenType, contractAddress: selectedToken.contractAddress, tokenId: selectedToken.tokenId },
+        onRevealFailure,
+        onRevealError,
+        onRevealAttemptFailed,
+        onRevealSuccess: (txId) => {
+          onRevealSuccess(txId)
+          Chaining.refreshTokenBalance({ dispatch, address, token: selectedToken })
+        }
+      })
+    }
   }
 
   const doRecovery = async () => {
@@ -264,34 +304,98 @@ const Show = () => {
     <Space size='large' align='baseline'>
       <Title level={2}>{wallet.name}</Title>
       <Text>
-        <ExplorerLink copyable={{ text: oneAddress }} href={util.getNetworkExplorerUrl(wallet)}>
+        <ExplorerLink copyable={{ text: oneAddress }} href={util.getNetworkExplorerUrl(address, network)}>
           {isMobile ? util.ellipsisAddress(oneAddress) : oneAddress}
         </ExplorerLink>
       </Text>
     </Space>
   )
 
-  return (
+  const AboutWallet = () => !section && (
     <>
-      {/* <Space size='large' wrap align='start'> */}
-      <AnimatedSection
-        show={!section}
-        title={title}
-        style={{ minHeight: 320, maxWidth: 720 }}
-      >
-        {walletOutdated && <Warning>Your wallet is outdated. Some information may be displayed incorrectly. Some features might not function. Your balance is still displayed correctly, and you can still send funds. <br /><br />Please create a new wallet and move your funds as soon as possible.</Warning>}
-        {util.isEmptyAddress(wallet.lastResortAddress) && <Warning>You haven't set your recovery address. Please do it as soon as possible. Wallets created prior to July 13, 2021 without a recovery address are vulnerable to theft if recovery address is not set.</Warning>}
-        <Row style={{ marginTop: 16 }}>
-          <Col span={isMobile ? 24 : 12}>
-            <Title level={3} style={{ marginRight: 48 }}>Balance</Title>
-          </Col>
+      <TallRow align='middle'>
+        <Col span={isMobile ? 24 : 12}> <Title level={3}>Created On</Title></Col>
+        <Col> <Text>{new Date(wallet.effectiveTime).toLocaleString()}</Text> </Col>
+      </TallRow>
+      <TallRow align='middle'>
+        <Col span={isMobile ? 24 : 12}> <Title level={3}>Expires In</Title></Col>
+        <Col> <Text>{humanizeDuration(wallet.duration, { units: ['y', 'mo', 'd'], round: true })}</Text> </Col>
+      </TallRow>
+      <TallRow>
+        <Col span={isMobile ? 24 : 12}> <Title level={3}>Daily Limit</Title></Col>
+        <Col>
+          <Space>
+            <Text>{dailyLimitFormatted}</Text>
+            <Text type='secondary'>ONE</Text>
+            <Text>(≈ ${dailyLimitFiatFormatted}</Text>
+            <Text type='secondary'>USD)</Text>
+          </Space>
+        </Col>
+      </TallRow>
+      <TallRow align='middle'>
+        <Col span={isMobile ? 24 : 12}> <Title level={3}>Recovery Address</Title></Col>
+        {lastResortAddress && !util.isEmptyAddress(lastResortAddress) &&
           <Col>
             <Space>
-              <Title level={3}>{formatted}</Title>
-              <Text type='secondary'>ONE</Text>
+              <Tooltip title={oneLastResort}>
+                <ExplorerLink copyable={oneLastResort && { text: oneLastResort }} href={util.getNetworkExplorerUrl(address, network)}>
+                  {util.ellipsisAddress(oneLastResort)}
+                </ExplorerLink>
+              </Tooltip>
             </Space>
+          </Col>}
+        {!(lastResortAddress && !util.isEmptyAddress(lastResortAddress)) &&
+          <Col>
+            <Button type='primary' size='large' shape='round' onClick={showSetRecoveryAddress}> Set </Button>
+          </Col>}
+      </TallRow>
+      {wallet.majorVersion && wallet.minorVersion &&
+        <TallRow align='middle'>
+          <Col span={isMobile ? 24 : 12}> <Title level={3}>Wallet Version</Title></Col>
+          <Col>
+            <Text>{wallet.majorVersion}.{wallet.minorVersion}</Text>
           </Col>
+        </TallRow>}
+    </>
+  )
+  const RecoverWallet = () => {
+    return (
+      <>
+        <Row style={{ marginTop: 48 }}>
+          <Button type='link' style={{ padding: 0 }} size='large' onClick={showRecovery} icon={<WarningOutlined />}>I lost my Google Authenticator</Button>
         </Row>
+        <Row style={{ marginTop: 24 }}>
+          <Popconfirm title='Are you sure？' onConfirm={onDeleteWallet}>
+            <Button type='link' style={{ color: 'red', padding: 0 }} size='large' icon={<DeleteOutlined />}>Delete this wallet locally</Button>
+          </Popconfirm>
+        </Row>
+      </>
+    )
+  }
+  const selectedTokenBech32Address = util.safeOneAddress(selectedToken.contractAddress)
+  const WalletBalance = () => (
+    <>
+      {selectedToken.key !== 'one' &&
+        <Row style={{ marginTop: 16 }}>
+          <Space size='large' align='baseline'>
+            <Title level={3}>{selectedToken.name}</Title>
+            <ExplorerLink style={{ opacity: 0.5 }} copyable={{ text: selectedTokenBech32Address }} href={util.getNetworkExplorerUrl(selectedTokenBech32Address, network)}>
+              {util.ellipsisAddress(selectedTokenBech32Address)}
+            </ExplorerLink>
+          </Space>
+        </Row>}
+      <Row style={{ marginTop: 16 }}>
+        <Col span={isMobile ? 24 : 12}>
+          <Title level={3} style={{ marginRight: 48 }}>Balance</Title>
+        </Col>
+        <Col>
+          <Space>
+            <Title level={3}>{formatted}</Title>
+            <Text type='secondary'>{selectedToken.symbol}</Text>
+          </Space>
+        </Col>
+      </Row>
+      {selectedToken.key === 'one' &&
         <Row>
           <Col span={isMobile ? 24 : 12} />
           <Col>
@@ -300,66 +404,49 @@ const Show = () => {
               <Text type='secondary'>USD</Text>
             </Space>
           </Col>
-        </Row>
-        <Row style={{ marginTop: 16 }}>
-          <Col span={isMobile ? 24 : 12} />
-          <Col>
-            <Button type='primary' size='large' shape='round' onClick={showTransfer}> Send </Button>
-          </Col>
-        </Row>
-        <TallRow align='middle'>
-          <Col span={isMobile ? 24 : 12}> <Title level={3}>Created On</Title></Col>
-          <Col> <Text>{new Date(wallet.effectiveTime).toLocaleString()}</Text> </Col>
-        </TallRow>
-        <TallRow align='middle'>
-          <Col span={isMobile ? 24 : 12}> <Title level={3}>Expires In</Title></Col>
-          <Col> <Text>{humanizeDuration(wallet.duration, { units: ['y', 'mo', 'd'], round: true })}</Text> </Col>
-        </TallRow>
-        <TallRow>
-          <Col span={isMobile ? 24 : 12}> <Title level={3}>Daily Limit</Title></Col>
-          <Col>
-            <Space>
-              <Text>{dailyLimitFormatted}</Text>
-              <Text type='secondary'>ONE</Text>
-              <Text>(≈ ${dailyLimitFiatFormatted}</Text>
-              <Text type='secondary'>USD)</Text>
-            </Space>
-          </Col>
-        </TallRow>
-        <TallRow align='middle'>
-          <Col span={isMobile ? 24 : 12}> <Title level={3}>Recovery Address</Title></Col>
-          {lastResortAddress && !util.isEmptyAddress(lastResortAddress) &&
-            <Col>
-              <Space>
-                <Tooltip title={oneLastResort}>
-                  <ExplorerLink copyable={oneLastResort && { text: oneLastResort }} href={util.getNetworkExplorerUrl(wallet)}>
-                    {util.ellipsisAddress(oneLastResort)}
-                  </ExplorerLink>
-                </Tooltip>
-              </Space>
-            </Col>}
-          {!(lastResortAddress && !util.isEmptyAddress(lastResortAddress)) &&
-            <Col>
-              <Button type='primary' size='large' shape='round' onClick={showSetRecoveryAddress}> Set </Button>
-            </Col>}
-        </TallRow>
-        <Row style={{ marginTop: 48 }}>
-          <Button type='link' style={{ padding: 0 }} size='large' onClick={showRecovery} icon={<WarningOutlined />}>I lost my Google Authenticator</Button>
-        </Row>
-        <Row style={{ marginTop: 24 }}>
-          <Popconfirm title='Are you sure？' onConfirm={onDeleteWallet}>
-            <Button type='link' style={{ color: 'red', padding: 0 }} size='large' icon={<DeleteOutlined />}>Delete this wallet locally</Button>
-          </Popconfirm>
+        </Row>}
+      <Row style={{ marginTop: 16 }}>
+        <Col span={isMobile ? 24 : 12} />
+        <Col>
+          <Button type='primary' size='large' shape='round' onClick={showTransfer} disabled={!util.isNonZeroBalance(selectedTokenBalance)}> Send </Button>
+        </Col>
+      </Row>
+    </>
+  )
 
-        </Row>
+  const { metadata } = selectedToken
+  const isNFT = util.isNFT(selectedToken)
+  const titleSuffix = isNFT ? 'Collectible' : `${selectedToken.name} (${selectedToken.symbol})`
+
+  return (
+    <>
+      {/* <Space size='large' wrap align='start'> */}
+      <AnimatedSection
+        show={!section}
+        title={title}
+        style={{ minHeight: 320, maxWidth: 720 }}
+        tabList={tabList}
+        activeTabKey={activeTab}
+        onTabChange={key => showTab(key)}
+      >
+        {walletOutdated && <Warning>Your wallet is outdated. Some information may be displayed incorrectly. Some features might not function. Your balance is still displayed correctly, and you can still send funds. <br /><br />Please create a new wallet and move your funds as soon as possible.</Warning>}
+        {util.isEmptyAddress(wallet.lastResortAddress) && <Warning>You haven't set your recovery address. Please do it as soon as possible. Wallets created prior to July 13, 2021 without a recovery address are vulnerable to theft if recovery address is not set.</Warning>}
+
+        {activeTab === 'about' && <AboutWallet />}
+        {activeTab === 'coins' && <WalletBalance />}
+        {activeTab === 'coins' && <ERC20Grid address={address} />}
+        {activeTab === 'nft' && <NFTGrid address={address} />}
+        {activeTab === 'help' && <RecoverWallet />}
+
       </AnimatedSection>
       <AnimatedSection
         style={{ width: 720 }}
-        show={section === 'transfer'} title={<Title level={2}>Transfer</Title>} extra={[
+        show={section === 'transfer'} title={<Title level={2}>Send: {titleSuffix}</Title>} extra={[
           <Button key='close' type='text' icon={<CloseOutlined />} onClick={showStats} />
         ]}
       >
         <Space direction='vertical' size='large'>
+          {isNFT && <Title level={4}>{metadata?.displayName}</Title>}
           <Space align='baseline' size='large'>
             <Label><Hint>To</Hint></Label>
             <InputBox margin='auto' width={440} value={transferTo} onChange={({ target: { value } }) => setTransferTo(value)} placeholder='one1...' />
@@ -367,14 +454,19 @@ const Show = () => {
           <Space align='baseline' size='large'>
             <Label><Hint>Amount</Hint></Label>
             <InputBox margin='auto' width={200} value={inputAmount} onChange={({ target: { value } }) => setInputAmount(value)} />
-            <Hint>ONE</Hint>
+            {!isNFT && <Hint>{selectedToken.symbol}</Hint>}
             <Button type='secondary' shape='round' onClick={useMaxAmount}>max</Button>
           </Space>
-          <Space align='end' size='large'>
-            <Label><Hint /></Label>
-            <Title level={4} style={{ width: 200, textAlign: 'right', marginBottom: 0 }}>≈ ${transferFiatAmountFormatted}</Title>
-            <Hint>USD</Hint>
-          </Space>
+          {selectedToken.key === 'one' &&
+            <Space align='end' size='large'>
+              <Label><Hint /></Label>
+              <Title
+                level={4}
+                style={{ width: 200, textAlign: 'right', marginBottom: 0 }}
+              >≈ ${transferFiatAmountFormatted}
+              </Title>
+              <Hint>USD</Hint>
+            </Space>}
           <Space align='baseline' size='large' style={{ marginTop: 16 }}>
             <Label><Hint>Code</Hint></Label>
             <OtpBox
@@ -393,14 +485,7 @@ const Show = () => {
             {stage === 3 && <Button type='secondary' size='large' shape='round' onClick={restart}>Restart</Button>}
           </Space>
         </Row>
-        {stage > 0 && (
-          <Row style={{ marginTop: 32 }}>
-            <Steps current={stage}>
-              <Step title='Prepare' description='Preparing signature' />
-              <Step title='Commit' description='Locking-in operation' />
-              <Step title='Finalize' description='Submitting proofs' />
-            </Steps>
-          </Row>)}
+        <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
       </AnimatedSection>
       <AnimatedSection
         show={section === 'recover'}
@@ -419,14 +504,7 @@ const Show = () => {
             <Row justify='end' style={{ marginTop: 48 }}>
               <Button type='primary' size='large' shape='round' disabled={stage > 0} onClick={doRecovery}>Sounds good!</Button>
             </Row>
-            {stage > 0 && (
-              <Row style={{ marginTop: 32 }}>
-                <Steps current={stage}>
-                  <Step title='Prepare' description='Preparing signature' />
-                  <Step title='Commit' description='Locking-in operation' />
-                  <Step title='Finalize' description='Submitting proofs' />
-                </Steps>
-              </Row>)}
+            <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
           </>}
         {!lastResortAddress &&
           <Space direction='vertical' size='large'>
@@ -465,16 +543,10 @@ const Show = () => {
             <Button type='primary' size='large' shape='round' disabled={stage > 0} onClick={doSetRecoveryAddress}>Set</Button>
           </Space>
         </Row>
-        {stage > 0 && (
-          <Row style={{ marginTop: 32 }}>
-            <Steps current={stage}>
-              <Step title='Prepare' description='Preparing signature' />
-              <Step title='Commit' description='Locking-in operation' />
-              <Step title='Finalize' description='Submitting proofs' />
-            </Steps>
-          </Row>)}
+        <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
       </AnimatedSection>
     </>
   )
 }
+
 export default Show
