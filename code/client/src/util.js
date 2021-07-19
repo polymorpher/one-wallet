@@ -155,6 +155,10 @@ export default {
     }
     const hash = link.slice(7, end)
     return config.ipfs.gateway.replace('{{hash}}', hash)
+  },
+
+  isNonZeroBalance: balance => {
+    return balance && balance !== '0'
   }
 }
 
