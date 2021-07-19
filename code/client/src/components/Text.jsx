@@ -37,7 +37,8 @@ export const Label = styled.div`
 `
 
 export const ExplorerLink = styled(Link).attrs(e => ({ ...e, style: { color: '#888888' }, target: '_blank', rel: 'noopener noreferrer' }))`
+  ${props => props['data-show-on-hover'] && 'opacity: 0.1;'}
   &:hover {
-    opacity: 0.8;
+    opacity: ${props => props['data-show-on-hover'] ? 1.0 : 0.8};
   }
 `
