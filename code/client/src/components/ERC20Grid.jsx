@@ -58,6 +58,7 @@ export const ERC20Grid = ({ address }) => {
 
   const gridItemStyle = { width: '200px', height: '200px', display: 'flex', justifyContent: 'center', flexDirection: 'column', cursor: 'pointer', color: disabled && 'grey', opacity: disabled && 0.5 }
   useEffect(() => {
+    let cancelled = false
     if (walletOutdated) {
       return
     }
@@ -82,10 +83,14 @@ export const ERC20Grid = ({ address }) => {
         }
       }))
       // console.log('tts merged', tts)
+      if (cancelled) {
+        return
+      }
       setCurrentTrackedTokens(tts)
     }
     // dispatch(walletActions.untrackTokens({ address, keys: trackedTokens.map(e => e.key) }))
     f()
+    return () => { cancelled = true }
   }, [])
 
   useEffect(() => {
@@ -149,7 +154,7 @@ export const ERC20Grid = ({ address }) => {
 
   return (
     <>
-      {disabled && <Warning style={{ marginTop: 32 }}>Your wallet is based on an outdated version. It cannot hold or send tokens. Please create a new wallet and migrate assets.</Warning>}
+      {disabled && <Warning style={{ marginTop: 16, marginBottom: 16 }}>Your wallet is based on an outdated version. It cannot hold or send tokens or NFTs. Please create a new wallet and migrate assets.</Warning>}
       {!section &&
         <TallRow>
           <GridItem
