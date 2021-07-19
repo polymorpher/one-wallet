@@ -26,10 +26,9 @@ export const InputBox = styled(Input).attrs((props) => ({ size: props.size || 'l
   }
 `
 
-export const Warning = ({ children, ...props }) =>
-  <Card style={{ borderRadius: 8, backgroundColor: '#f3cbcb', fontSize: 16 }} bodyStyle={{ padding: 16, paddingLeft: 24, paddingRight: 24 }}>
-    <Text>{children}
-    </Text>
+export const Warning = ({ children, style, ...props }) =>
+  <Card style={{ borderRadius: 8, backgroundColor: '#f3cbcb', fontSize: 16, ...style }} bodyStyle={{ padding: 16, paddingLeft: 24, paddingRight: 24 }}>
+    <Text>{children}</Text>
   </Card>
 
 export const Label = styled.div`
