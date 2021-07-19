@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, memo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory, useRouteMatch, Redirect, useLocation, matchPath } from 'react-router'
 import Paths from '../constants/paths'
@@ -34,8 +34,9 @@ import { handleAddressError } from '../handler'
 import { SmartFlows, Chaining, EotpBuilders } from '../api/flow'
 import { CommitRevealProgress } from '../components/CommitRevealProgress'
 import { HarmonyONE } from '../components/TokenAssets'
+import { NFTGrid } from '../components/NFTGrid'
 const { Title, Text, Link } = Typography
-
+const tabList = [{ key: 'coins', tab: 'Coins' }, { key: 'nft', tab: 'Collectibles' }, { key: 'about', tab: 'About' }, { key: 'help', tab: 'Recover' }]
 const Show = () => {
   const history = useHistory()
   const location = useLocation()
@@ -82,9 +83,18 @@ const Show = () => {
   useEffect(() => {
     const m = matchPath(location.pathname, { path: Paths.show })
     const { action } = m ? m.params : {}
+    if (action !== 'nft' && action !== 'transfer' && selectedToken.key !== 'one' && selectedToken.tokenType !== ONEConstants.TokenType.ERC20) {
+      dispatch(walletActions.setSelectedToken({ token: null, address }))
+    }
+    if (tabList.find(t => t.key === action)) {
+      setSection(undefined)
+      setActiveTab(action)
+      return
+    }
     setSection(action)
   }, [location])
 
+  const showTab = (tab) => { history.push(Paths.showAddress(oneAddress, tab)) }
   const showTransfer = () => { history.push(Paths.showAddress(oneAddress, 'transfer')) }
   const showRecovery = () => { history.push(Paths.showAddress(oneAddress, 'recover')) }
   const showSetRecoveryAddress = () => { history.push(Paths.showAddress(oneAddress, 'setRecoveryAddress')) }
@@ -112,6 +122,10 @@ const Show = () => {
   } = util.toBalance(inputAmount || 0, price)
 
   const useMaxAmount = () => {
+    if (util.isNFT(selectedToken)) {
+      setInputAmount(selectedTokenBalance.toString())
+      return
+    }
     if (new BN(selectedTokenBalance, 10).gt(new BN(dailyLimit, 10))) {
       setInputAmount(dailyLimitFormatted)
     } else {
@@ -135,13 +149,23 @@ const Show = () => {
     if (checkDest && !dest) {
       return
     }
-    if (checkAmount && (!transferAmount || transferAmount.isZero() || transferAmount.isNeg())) {
-      return message.error('Transfer amount is invalid')
+    const rawAmount = new BN(inputAmount)
+    if (checkAmount) {
+      if (selectedToken && util.isNFT(selectedToken)) {
+        if (rawAmount.isZero() || rawAmount.isNeg()) {
+          return message.error('Amount is invalid')
+        }
+      } else if (!transferAmount || transferAmount.isZero() || transferAmount.isNeg()) {
+        return message.error('Transfer amount is invalid')
+      }
     }
     const otp = util.parseOtp(otpInput)
     if (checkOtp && !otp) {
       message.error('Google Authenticator code is not valid')
       return
+    }
+    if (selectedToken && util.isNFT(selectedToken)) {
+      return { otp, dest, amount: rawAmount.toString() }
     }
     return { otp, dest, amount: transferAmount.toString() }
   }
@@ -355,8 +379,8 @@ const Show = () => {
         <Row style={{ marginTop: 16 }}>
           <Space size='large' align='baseline'>
             <Title level={3}>{selectedToken.name}</Title>
-            <ExplorerLink data-show-on-hover copyable={{ text: selectedTokenBech32Address }} href={util.getNetworkExplorerUrl(selectedTokenBech32Address, network)}>
-              {isMobile ? util.ellipsisAddress(selectedTokenBech32Address) : selectedTokenBech32Address}
+            <ExplorerLink style={{ opacity: 0.5 }} copyable={{ text: selectedTokenBech32Address }} href={util.getNetworkExplorerUrl(selectedTokenBech32Address, network)}>
+              {util.ellipsisAddress(selectedTokenBech32Address)}
             </ExplorerLink>
           </Space>
         </Row>}
@@ -389,6 +413,9 @@ const Show = () => {
       </Row>
     </>
   )
+  const { metadata } = selectedToken
+  const isNFT = util.isNFT(selectedToken)
+  const titleSuffix = isNFT ? 'Collectible' : `${selectedToken.name} (${selectedToken.symbol})`
 
   return (
     <>
@@ -397,9 +424,9 @@ const Show = () => {
         show={!section}
         title={title}
         style={{ minHeight: 320, maxWidth: 720 }}
-        tabList={[{ key: 'coins', tab: 'Coins' }, { key: 'collectibles', tab: 'Collectibles' }, { key: 'about', tab: 'About' }, { key: 'recover', tab: 'Recover' }]}
+        tabList={tabList}
         activeTabKey={activeTab}
-        onTabChange={key => setActiveTab(key)}
+        onTabChange={key => showTab(key)}
       >
         {walletOutdated && <Warning>Your wallet is outdated. Some information may be displayed incorrectly. Some features might not function. Your balance is still displayed correctly, and you can still send funds. <br /><br />Please create a new wallet and move your funds as soon as possible.</Warning>}
         {util.isEmptyAddress(wallet.lastResortAddress) && <Warning>You haven't set your recovery address. Please do it as soon as possible. Wallets created prior to July 13, 2021 without a recovery address are vulnerable to theft if recovery address is not set.</Warning>}
@@ -407,16 +434,18 @@ const Show = () => {
         {activeTab === 'about' && <AboutWallet />}
         {activeTab === 'coins' && <WalletBalance />}
         {activeTab === 'coins' && <ERC20Grid address={address} />}
-        {activeTab === 'recover' && <RecoverWallet />}
+        {activeTab === 'nft' && <NFTGrid address={address} />}
+        {activeTab === 'help' && <RecoverWallet />}
 
       </AnimatedSection>
       <AnimatedSection
         style={{ width: 720 }}
-        show={section === 'transfer'} title={<Title level={2}>Send: {selectedToken.name} ({selectedToken.symbol})</Title>} extra={[
+        show={section === 'transfer'} title={<Title level={2}>Send: {titleSuffix}</Title>} extra={[
           <Button key='close' type='text' icon={<CloseOutlined />} onClick={showStats} />
         ]}
       >
         <Space direction='vertical' size='large'>
+          {isNFT && <Title level={4}>{metadata?.displayName}</Title>}
           <Space align='baseline' size='large'>
             <Label><Hint>To</Hint></Label>
             <InputBox margin='auto' width={440} value={transferTo} onChange={({ target: { value } }) => setTransferTo(value)} placeholder='one1...' />
@@ -424,7 +453,7 @@ const Show = () => {
           <Space align='baseline' size='large'>
             <Label><Hint>Amount</Hint></Label>
             <InputBox margin='auto' width={200} value={inputAmount} onChange={({ target: { value } }) => setInputAmount(value)} />
-            <Hint>{selectedToken.symbol}</Hint>
+            {!isNFT && <Hint>{selectedToken.symbol}</Hint>}
             <Button type='secondary' shape='round' onClick={useMaxAmount}>max</Button>
           </Space>
           {selectedToken.key === 'one' &&
