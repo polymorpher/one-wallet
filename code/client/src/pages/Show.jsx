@@ -348,14 +348,15 @@ const Show = () => {
       </>
     )
   }
+  const selectedTokenBech32Address = util.safeOneAddress(selectedToken.contractAddress)
   const WalletBalance = () => (
     <>
       {selectedToken.key !== 'one' &&
         <Row style={{ marginTop: 16 }}>
           <Space size='large' align='baseline'>
             <Title level={3}>{selectedToken.name}</Title>
-            <ExplorerLink copyable={{ text: selectedToken.contractAddress }} href={util.getNetworkExplorerUrl(selectedToken.contractAddress, network)}>
-              {isMobile ? util.ellipsisAddress(selectedToken.contractAddress) : selectedToken.contractAddress}
+            <ExplorerLink data-show-on-hover copyable={{ text: selectedTokenBech32Address }} href={util.getNetworkExplorerUrl(selectedTokenBech32Address, network)}>
+              {isMobile ? util.ellipsisAddress(selectedTokenBech32Address) : selectedTokenBech32Address}
             </ExplorerLink>
           </Space>
         </Row>}
