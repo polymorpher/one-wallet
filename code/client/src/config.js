@@ -7,7 +7,7 @@ const config = merge({}, baseConfig, {
   },
   debug: process.env.DEBUG,
   ipfs: {
-    gateway: process.env.IPFS_GATEWAY || 'https://{{hash}}.ipfs.dweb.link'
+    gateway: process.env.IPFS_GATEWAY || 'https://dweb.link/ipfs/{{hash}}'
   }
 })
 
