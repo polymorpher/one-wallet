@@ -408,11 +408,12 @@ const Show = () => {
       <Row style={{ marginTop: 16 }}>
         <Col span={isMobile ? 24 : 12} />
         <Col>
-          <Button type='primary' size='large' shape='round' onClick={showTransfer}> Send </Button>
+          <Button type='primary' size='large' shape='round' onClick={showTransfer} disabled={!util.isNonZeroBalance(selectedTokenBalance)}> Send </Button>
         </Col>
       </Row>
     </>
   )
+
   const { metadata } = selectedToken
   const isNFT = util.isNFT(selectedToken)
   const titleSuffix = isNFT ? 'Collectible' : `${selectedToken.name} (${selectedToken.symbol})`
