@@ -42,6 +42,7 @@ const GridItem = ({ style, children, icon, name, symbol, contractAddress, balanc
 export const ERC20Grid = ({ address }) => {
   const dispatch = useDispatch()
   const wallet = useSelector(state => state.wallet.wallets[address])
+  const network = useSelector(state => state.wallet.network)
   const { selectedToken } = wallet
   const tokenBalances = wallet.tokenBalances || {}
   const trackedTokens = (wallet.trackedTokens || []).filter(e => e.tokenType === ONEConstants.TokenType.ERC20)
@@ -49,7 +50,7 @@ export const ERC20Grid = ({ address }) => {
   const balance = balances[address] || 0
   const { formatted } = util.computeBalance(balance)
   const walletOutdated = util.isWalletOutdated(wallet)
-  const defaultTrackedTokens = withKeys(DefaultTrackedERC20)
+  const defaultTrackedTokens = withKeys(DefaultTrackedERC20(network))
   const [currentTrackedTokens, setCurrentTrackedTokens] = useState([...defaultTrackedTokens, ...(trackedTokens || [])])
   const [disabled, setDisabled] = useState(true)
   const selected = (selectedToken && selectedToken.tokenType === ONEConstants.TokenType.ERC20) || HarmonyONE
@@ -91,7 +92,7 @@ export const ERC20Grid = ({ address }) => {
     // dispatch(walletActions.untrackTokens({ address, keys: trackedTokens.map(e => e.key) }))
     f()
     return () => { cancelled = true }
-  }, [])
+  }, [walletOutdated])
 
   useEffect(() => {
     (currentTrackedTokens || []).forEach(tt => {

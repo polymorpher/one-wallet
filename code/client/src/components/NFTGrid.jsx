@@ -221,7 +221,7 @@ export const NFTGrid = ({ address }) => {
       setCurrentTrackedTokens(tts)
     }
     f()
-  }, [])
+  }, [walletOutdated])
 
   useEffect(() => {
     (currentTrackedTokens || []).forEach(tt => {
