@@ -28,7 +28,7 @@ const SlickButtonFix = ({ currentSlide, slideCount, children, ...props }) => (
   <span {...props}>{children}</span>
 )
 
-const NFTGridItem = ({ style, styleFullView, imageWrapperStyle, imageWrapperStyleFullView, tokenType, name, symbol, uri, contractAddress, balance, selected, onSend }) => {
+const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageWrapperStyleFullView, tokenType, name, symbol, uri, contractAddress, balance, selected, onSend }) => {
   const { isMobile } = useWindowDimensions()
   const [fullView, setFullView] = useState(false)
   const bech32ContractAddress = util.safeOneAddress(contractAddress)
@@ -54,8 +54,8 @@ const NFTGridItem = ({ style, styleFullView, imageWrapperStyle, imageWrapperStyl
   if (symbol) {
     displayName = `${displayName} | ${symbol}`
   }
-  let displayBalance = 'Not Owned'
-  if (balance) {
+  let displayBalance = 'No Longer Owned'
+  if (util.isNonZeroBalance(balance)) {
     if (tokenType === ONEConstants.TokenType.ERC721) {
       displayBalance = <Text style={{ color: 'purple' }}>Uniquely Owned</Text>
     } else {
@@ -66,8 +66,10 @@ const NFTGridItem = ({ style, styleFullView, imageWrapperStyle, imageWrapperStyl
 
   const wrapperStyle = fullView ? imageWrapperStyleFullView : imageWrapperStyle
 
+  const interactable = !disabled && util.isNonZeroBalance(balance)
+
   return (
-    <GridItem style={fullView ? styleFullView : style} hoverable={false} onClick={() => !fullView && setFullView(true)} data-full-view={fullView}>
+    <GridItem style={fullView ? styleFullView : style} hoverable={false} onClick={() => !fullView && interactable && setFullView(true)} data-full-view={fullView}>
       {!fullView &&
         <Row style={{ height: wrapperStyle.height || 'auto' }}>
           <Image
