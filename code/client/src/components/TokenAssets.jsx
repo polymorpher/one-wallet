@@ -35,17 +35,22 @@ export const HarmonyONE = {
   contractAddress: null
 }
 
-export const DefaultTrackedERC20 = Object.keys(KnownERC20).map(symbol => {
-  const { contractAddress, icon, name } = KnownERC20[symbol]
-  return {
-    tokenType: ONEConstants.TokenType.ERC20,
-    tokenId: 0,
-    contractAddress,
-    icon,
-    name,
-    symbol,
+export const DefaultTrackedERC20 = network => {
+  if (network !== 'harmony-mainnet') {
+    return []
   }
-})
+  return Object.keys(KnownERC20).map(symbol => {
+    const { contractAddress, icon, name } = KnownERC20[symbol]
+    return {
+      tokenType: ONEConstants.TokenType.ERC20,
+      tokenId: 0,
+      contractAddress,
+      icon,
+      name,
+      symbol,
+    }
+  })
+}
 
 export const withKeys = (trackedTokens) => {
   return trackedTokens.map(tt => ({ ...tt, key: ONEUtil.hexView(ONE.computeTokenKey(tt).hash) }))
