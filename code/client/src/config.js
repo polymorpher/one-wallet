@@ -5,7 +5,10 @@ const config = merge({}, baseConfig, {
   defaults: {
     sentryDsn: process.env.SENTRY_DSN
   },
-  debug: process.env.DEBUG
+  debug: process.env.DEBUG,
+  ipfs: {
+    gateway: process.env.IPFS_GATEWAY || 'https://{{hash}}.ipfs.dweb.link'
+  }
 })
 
 export default config
