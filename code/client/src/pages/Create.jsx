@@ -70,7 +70,7 @@ const Create = () => {
 
   const getQRCodeUri = () => {
     // otpauth://TYPE/LABEL?PARAMETERS
-    return `otpauth://totp/${name}?secret=${b32.encode(seed)}&issuer=Harmony`
+    return `totp://totp/${name}?secret=${b32.encode(seed)}&issuer=Harmony`
   }
   useEffect(() => {
     (async function () {
