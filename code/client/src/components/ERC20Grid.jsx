@@ -44,7 +44,7 @@ export const ERC20Grid = ({ address }) => {
   const wallet = useSelector(state => state.wallet.wallets[address])
   const { selectedToken } = wallet
   const tokenBalances = wallet.tokenBalances || {}
-  const trackedTokens = wallet.trackedTokens || []
+  const trackedTokens = (wallet.trackedTokens || []).filter(e => e.tokenType === ONEConstants.TokenType.ERC20)
   const balances = useSelector(state => state.wallet.balances)
   const balance = balances[address] || 0
   const { formatted } = util.computeBalance(balance)
@@ -52,7 +52,7 @@ export const ERC20Grid = ({ address }) => {
   const defaultTrackedTokens = withKeys(DefaultTrackedERC20)
   const [currentTrackedTokens, setCurrentTrackedTokens] = useState([...defaultTrackedTokens, ...(trackedTokens || [])])
   const [disabled, setDisabled] = useState(true)
-  const selected = selectedToken || HarmonyONE
+  const selected = (selectedToken && selectedToken.tokenType === ONEConstants.TokenType.ERC20) || HarmonyONE
   const [section, setSection] = useState()
   const [newContractAddress, setNewContractAddress] = useState('')
 
