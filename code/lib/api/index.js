@@ -111,6 +111,12 @@ const initBlockchain = (store) => {
 }
 
 const api = {
+  web: {
+    get: async ({ link }) => {
+      const { data } = await axios.get(link)
+      return data
+    }
+  },
   binance: {
     getPrice: async () => {
       const { data } = await axios.get('https://api.binance.com/api/v3/ticker/24hr?symbol=ONEUSDT')
