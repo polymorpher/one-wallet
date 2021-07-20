@@ -20,7 +20,6 @@ import { handleAPIError, handleAddressError } from '../handler'
 import { Hint, Heading, InputBox } from '../components/Text'
 import OtpBox from '../components/OtpBox'
 import { getAddress } from '@harmony-js/crypto'
-import OtpInput from 'react-otp-input'
 const { Text, Link } = Typography
 
 // const genName = () => uniqueNamesGenerator({
