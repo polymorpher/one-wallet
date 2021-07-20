@@ -20,6 +20,7 @@ import { handleAPIError, handleAddressError } from '../handler'
 import { Hint, Heading, InputBox } from '../components/Text'
 import OtpBox from '../components/OtpBox'
 import { getAddress } from '@harmony-js/crypto'
+import OtpInput from 'react-otp-input'
 const { Text, Link } = Typography
 
 // const genName = () => uniqueNamesGenerator({
@@ -100,6 +101,8 @@ const Create = () => {
     if (code.padStart(6, '0') !== otp.padStart(6, '0')) {
       console.log(`Expected: ${code}. Got: ${otp}`)
       message.error('Code is incorrect. Please try again.')
+      setOtp('')
+      try { document.getElementsByClassName('otpInput')[0].getElementsByTagName('input')[0].focus() } catch (e) {}
     } else {
       setSection(3)
     }
@@ -233,6 +236,7 @@ const Create = () => {
             <Hint>After you are done, type in the 6-digit code from Google authenticator.</Hint>
             <OtpBox
               shouldAutoFocus
+              containerStyle='otpInput'
               value={otp}
               onChange={setOtp}
             />
