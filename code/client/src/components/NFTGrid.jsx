@@ -73,7 +73,7 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
       {!fullView &&
         <Row style={{ height: wrapperStyle.height || 'auto' }}>
           <Image
-            preview={false} src={util.replaceIPFSLink(metadata?.image)} fallback={FallbackImage}
+            preview={false} src={util.replaceIPFSLink(metadata?.image) || FallbackImage} fallback={FallbackImage}
             wrapperStyle={wrapperStyle} style={{ objectFit: 'cover', width: '100%', height: '100%' }}
           />
         </Row>}
