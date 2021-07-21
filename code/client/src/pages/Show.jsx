@@ -1,4 +1,4 @@
-import React, { useEffect, useState, memo, useRef } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory, useRouteMatch, Redirect, useLocation, matchPath } from 'react-router'
 import Paths from '../constants/paths'
@@ -15,7 +15,8 @@ import {
   WarningOutlined,
   CloseOutlined,
   QuestionCircleOutlined,
-  LoadingOutlined
+  LoadingOutlined,
+  CheckCircleOutlined
 } from '@ant-design/icons'
 // import styled from 'styled-components'
 import humanizeDuration from 'humanize-duration'
@@ -217,7 +218,7 @@ const Show = () => {
     } else {
       message.success(<Text>Transfer completed! Copy transaction id: <Text copyable={{ text: txId }}>{util.ellipsisAddress(txId)} </Text></Text>, 10)
     }
-    resetOtp()
+    setTimeout(restart, 3000)
   }
 
   const doSend = async () => {
@@ -497,8 +498,8 @@ const Show = () => {
         <Row justify='end' style={{ marginTop: 24 }}>
           <Space>
             {stage > 0 && stage < 3 && <LoadingOutlined />}
-            {stage < 3 && <Button type='primary' size='large' shape='round' disabled={stage > 0} onClick={doSend}>Send</Button>}
-            {stage === 3 && <Button type='secondary' size='large' shape='round' onClick={restart}>Restart</Button>}
+            {stage === 3 && <CheckCircleOutlined />}
+            <Button type='primary' size='large' shape='round' disabled={stage > 0} onClick={doSend}>Send</Button>
           </Space>
         </Row>
         <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
