@@ -1,4 +1,4 @@
-import React, { useEffect, useState, memo } from 'react'
+import React, { useEffect, useState, memo, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory, useRouteMatch, Redirect, useLocation, matchPath } from 'react-router'
 import Paths from '../constants/paths'
@@ -115,6 +115,7 @@ const Show = () => {
   const [transferTo, setTransferTo] = useState('')
   const [inputAmount, setInputAmount] = useState('')
   const [otpInput, setOtpInput] = useState('')
+  const otpRef = useRef()
 
   const {
     balance: transferAmount,
@@ -132,9 +133,13 @@ const Show = () => {
       setInputAmount(formatted)
     }
   }
+  const resetOtp = () => {
+    setOtpInput('')
+    otpRef?.current?.focusInput(0)
+  }
   const restart = () => {
     setStage(0)
-    setOtpInput(0)
+    resetOtp()
     setInputAmount(0)
   }
 
@@ -149,9 +154,16 @@ const Show = () => {
     if (checkDest && !dest) {
       return
     }
-    const rawAmount = new BN(inputAmount)
+    let rawAmount
     if (checkAmount) {
       if (selectedToken && util.isNFT(selectedToken)) {
+        try {
+          rawAmount = new BN(inputAmount)
+        } catch (ex) {
+          console.error(ex)
+          message.error('Amount cannot be parsed')
+          return
+        }
         if (rawAmount.isZero() || rawAmount.isNeg()) {
           return message.error('Amount is invalid')
         }
@@ -161,7 +173,8 @@ const Show = () => {
     }
     const otp = util.parseOtp(otpInput)
     if (checkOtp && !otp) {
-      message.error('Google Authenticator code is not valid')
+      message.error(`Google Authenticator code [${otp}] is not valid`, 10)
+      resetOtp()
       return
     }
     if (selectedToken && util.isNFT(selectedToken)) {
@@ -174,21 +187,23 @@ const Show = () => {
     console.error(ex)
     message.error('Failed to commit. Error: ' + ex.toString())
     setStage(0)
+    resetOtp()
   }
   const onCommitFailure = (error) => {
     message.error(`Cannot commit transaction. Reason: ${error}`)
     setStage(0)
+    resetOtp()
   }
   const onRevealFailure = (error) => {
     message.error(`Transaction Failed: ${error}`)
     setStage(0)
-    setOtpInput('')
+    resetOtp()
   }
   const onRevealError = (ex) => {
     Sentry.captureException(ex)
     message.error(`Failed to finalize transaction. Error: ${ex.toString()}`)
     setStage(0)
-    setOtpInput('')
+    resetOtp()
   }
   const onRevealAttemptFailed = (numAttemptsRemaining) => {
     message.error(`Failed to finalize transaction. Trying ${numAttemptsRemaining} more time`)
@@ -202,7 +217,7 @@ const Show = () => {
     } else {
       message.success(<Text>Transfer completed! Copy transaction id: <Text copyable={{ text: txId }}>{util.ellipsisAddress(txId)} </Text></Text>, 10)
     }
-    setOtpInput('')
+    resetOtp()
   }
 
   const doSend = async () => {
@@ -470,6 +485,7 @@ const Show = () => {
           <Space align='baseline' size='large' style={{ marginTop: 16 }}>
             <Label><Hint>Code</Hint></Label>
             <OtpBox
+              ref={otpRef}
               value={otpInput}
               onChange={setOtpInput}
             />
