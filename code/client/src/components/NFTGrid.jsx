@@ -47,7 +47,7 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
     }
     f()
   }, [])
-  let displayName = metadata?.name
+  let displayName = metadata?.name || name
   if (metadata?.properties?.collection) {
     displayName = `${metadata?.name} | ${metadata.properties.collection}`
   }
