@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router'
 import Paths from '../constants/paths'
@@ -68,6 +68,8 @@ const Create = () => {
 
   const [deploying, setDeploying] = useState()
 
+  const otpRef = useRef()
+
   const getQRCodeUri = () => {
     // otpauth://TYPE/LABEL?PARAMETERS
     return `otpauth://totp/${name}?secret=${b32.encode(seed)}&issuer=Harmony`
@@ -100,6 +102,8 @@ const Create = () => {
     if (code.padStart(6, '0') !== otp.padStart(6, '0')) {
       console.log(`Expected: ${code}. Got: ${otp}`)
       message.error('Code is incorrect. Please try again.')
+      setOtp('')
+      otpRef?.current?.focusInput(0)
     } else {
       setSection(3)
     }
@@ -233,6 +237,7 @@ const Create = () => {
             <Hint>After you are done, type in the 6-digit code from Google authenticator.</Hint>
             <OtpBox
               shouldAutoFocus
+              ref={otpRef}
               value={otp}
               onChange={setOtp}
             />
