@@ -82,7 +82,6 @@ const Flows = {
         onCommitFailure && await onCommitFailure(error)
         return
       }
-      return commitHash
     } catch (ex) {
       onCommitError && await onCommitError(ex)
     }
