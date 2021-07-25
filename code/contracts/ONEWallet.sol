@@ -42,7 +42,7 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
     uint32 constant MAX_COMMIT_SIZE = 120;
 
     uint32 constant majorVersion = 0x6; // a change would require client to migrate
-    uint32 constant minorVersion = 0x1; // a change would not require the client to migrate
+    uint32 constant minorVersion = 0x2; // a change would not require the client to migrate
 
     enum OperationType {
         TRACK, UNTRACK, TRANSFER_TOKEN, OVERRIDE_TRACK, TRANSFER, SET_RECOVERY_ADDRESS, RECOVER
@@ -493,10 +493,12 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
         for (uint32 i = 0; i < commits.length; i++) {
             bytes32 hash = commits[i];
             Commit storage c = commitLocker[hash];
+        unchecked {
             if (c.timestamp >= bt - REVEAL_MAX_DELAY) {
                 commitIndex = i;
                 break;
             }
+        }
         }
         // If this condition holds true, no commit is older than block.timestamp - REVEAL_MAX_DELAY. Nothing needs to be cleaned up
         if (commitIndex == 0) {
@@ -511,7 +513,9 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
         // This process erases old commits
         uint32 len = uint32(commits.length);
         for (uint32 i = commitIndex; i < len; i++) {
+        unchecked{
             commits[i - commitIndex] = commits[i];
+        }
         }
         for (uint32 i = 0; i < commitIndex; i++) {
             commits.pop();
@@ -565,7 +569,9 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
                 delete nonces[index];
             } else {
                 nonZeroNonces[numValidIndices] = index;
+            unchecked {
                 numValidIndices++;
+            }
             }
         }
         // TODO (@polymorpher): This can be later made more efficient by inline assembly. https://ethereum.stackexchange.com/questions/51891/how-to-pop-from-decrease-the-length-of-a-memory-array-in-solidity
@@ -581,7 +587,9 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
         if (v == 0) {
             nonceTracker.push(index);
         }
+    unchecked{
         nonces[index] = v + 1;
+    }
     }
 
     function _asByte32(bytes memory b) pure internal returns (bytes32){
