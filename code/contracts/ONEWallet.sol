@@ -547,8 +547,6 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
         _incrementNonce(index);
         _cleanupNonces();
         c.completed = true;
-        _incrementNonce(index);
-        _cleanupNonces();
     }
 
     /// This function removes all tracked nonce values correspond to interval blocks that are older than block.timestamp - REVEAL_MAX_DELAY. In doing so, extraneous data in the blockchain is removed, and both nonces and nonceTracker are bounded in size.
