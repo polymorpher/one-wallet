@@ -75,7 +75,7 @@ router.post('/new', rootHashLimiter({ max: 6 }), generalLimiter({ max: 1 }), glo
 router.post('/commit', generalLimiter({ max: 30 }), walletAddressLimiter({ max: 30 }), async (req, res) => {
   let { hash, paramsHash, address } = req.body
   if (config.debug || config.verbose) {
-    console.log(`[/commit] `, { hash, address })
+    console.log(`[/commit] `, { hash, paramsHash, address })
   }
   if (!hash || !address) {
     return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Hash or address is missing', params: { hash, paramsHash, address } })
@@ -127,6 +127,7 @@ router.post('/reveal', generalLimiter({ max: 30 }), walletAddressLimiter({ max: 
   // TODO parameter verification
   try {
     const wallet = await req.contract.at(address)
+    // console.log({ neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
     const tx = await wallet.reveal(neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data)
     return res.json(parseTx(tx))
   } catch (ex) {
