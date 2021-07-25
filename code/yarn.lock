@@ -1530,7 +1530,7 @@
     "@harmony-js/transaction" "0.1.56"
     "@harmony-js/utils" "0.1.56"
 
-"@harmony-js/account@0.1.57":
+"@harmony-js/account@0.1.57", "@harmony-js/account@^0.1.57":
   version "0.1.57"
   resolved "https://registry.yarnpkg.com/@harmony-js/account/-/account-0.1.57.tgz#d6e1e4955658ab25e89f512e12d9d9ecd28c738d"
   integrity sha512-2Q0aX49m9IDDf9AvQHEgnxVBfvQ4wnXJqMo1y3g+9VuoyibNLFy/7GRwywwjrKTtfERXegTGHdZYo/CCO0PrpQ==

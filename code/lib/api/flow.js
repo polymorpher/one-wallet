@@ -4,6 +4,7 @@ const config = require('../config/provider').getConfig()
 const storage = require('./storage').getStorage()
 const messager = require('./message').getMessage()
 const { api } = require('./index')
+const BN = require('bn.js')
 
 const EotpBuilders = {
   fromOtp: ({ otp, wallet }) => {
@@ -20,9 +21,30 @@ const EotpBuilders = {
   }
 }
 
+const Committer = {
+  legacy: ({ address, commitHashGenerator, neighbor, index, eotp, commitHashArgs }) => {
+    const { bytes } = commitHashGenerator({ neighbor, index, eotp, ...commitHashArgs })
+    const input = new Uint8Array(bytes.length + 96)
+    input.set(neighbor)
+    const indexBytes = new BN(index, 10).toArrayLike(Uint8Array, 'be', 4)
+    input.set(indexBytes, 32)
+    input.set(eotp, 64)
+    input.set(bytes, 96)
+    const commitHash = ONEUtil.keccak(input)
+    // console.log(input, bytes, commitHash)
+    return { commitHash }
+  },
+  v6: ({ address, commitHashGenerator, neighbor, index, eotp, commitHashArgs }) => {
+    const { hash: commitHash } = ONE.computeCommitHash({ neighbor, index, eotp })
+    const { hash: paramsHash } = commitHashGenerator({ ...commitHashArgs })
+    return { commitHash, paramsHash }
+  }
+}
+
 const Flows = {
   commitReveal: async ({
     otp, eotpBuilder = EotpBuilders.fromOtp,
+    committer = Committer.legacy,
     wallet, layers, commitHashGenerator, commitHashArgs,
     beforeCommit, afterCommit, onCommitError, onCommitFailure,
     revealAPI, revealArgs, onRevealFailure, onRevealSuccess, onRevealError, onRevealAttemptFailed,
@@ -43,20 +65,25 @@ const Flows = {
       message.error('Local state verification failed.')
       return
     }
+    beforeCommit && await beforeCommit()
     const index = ONEUtil.timeToIndex({ effectiveTime })
     const neighbors = ONE.selectMerkleNeighbors({ layers, index })
     const neighbor = neighbors[0]
-    const { hash: commitHash } = commitHashGenerator({ neighbor, index, eotp, ...commitHashArgs })
-    beforeCommit && await beforeCommit()
+
+    const { commitHash, paramsHash } = committer({ address, commitHashGenerator, neighbor, index, eotp, commitHashArgs })
+    // console.log(commitHash, paramsHash)
     try {
-      const { success, error } = await api.relayer.commit({ address, hash: ONEUtil.hexString(commitHash) })
+      const { success, error } = await api.relayer.commit({
+        address,
+        hash: ONEUtil.hexString(commitHash),
+        paramsHash: paramsHash && ONEUtil.hexString(paramsHash),
+      })
       if (!success) {
         onCommitFailure && await onCommitFailure(error)
         return
       }
     } catch (ex) {
       onCommitError && await onCommitError(ex)
-      return
     }
     afterCommit && await afterCommit(commitHash)
 
@@ -115,18 +142,57 @@ const SecureFlows = {
       }
     }
     return Flows.commitReveal({
-      ...args, wallet, beforeReveal
+      ...args, wallet, beforeReveal, committer: Committer.legacy
+    })
+  }
+}
+
+const SecureFlowsV6 = {
+  /**
+   * require contract version >= v6
+   * @param wallet
+   * @param beforeReveal
+   * @param args
+   * @returns {Promise<undefined|number>}
+   */
+  commitReveal: async ({
+    wallet, beforeReveal, ...args
+  }) => {
+    const { address } = wallet
+    const _beforeReveal = beforeReveal
+    beforeReveal = async (commitHash) => {
+      _beforeReveal && _beforeReveal()
+      commitHash = ONEUtil.hexString(commitHash)
+      const { timestamp, completed } = await api.blockchain.findCommit({ address, commitHash })
+      // console.log({ timestamp, completed })
+      if (!(timestamp > 0)) {
+        throw new Error('Commit not yet confirmed by blockchain')
+      }
+      if (completed) {
+        throw new Error('Commit is already completed')
+      }
+    }
+    return Flows.commitReveal({
+      ...args, wallet, beforeReveal, committer: Committer.v6
     })
   }
 }
 
 const SmartFlows = {
   commitReveal: async ({ wallet, message = messager, ...args }) => {
-    if (!wallet.majorVersion || !(wallet.majorVersion >= config.insecureWalletVersion)) {
+    if (!wallet.majorVersion || !(wallet.majorVersion >= config.minWalletVersion)) {
       message.warning('You are using an outdated wallet, which is less secure than the current version. Please move your funds to a new wallet.', 15)
-      return Flows.commitReveal({ ...args, wallet })
     }
-    return SecureFlows.commitReveal({ ...args, wallet })
+    if (wallet.majorVersion >= 6) {
+      return SecureFlowsV6.commitReveal({ ...args, wallet })
+    }
+    message.warning('You are using a wallet version that is prone to man-in-the-middle attack. Please create a new wallet and migrate assets ASAP.See https://github.com/polymorpher/one-wallet/issues/47')
+    if (wallet.majorVersion >= 3) {
+      return SecureFlows.commitReveal({ ...args, wallet })
+    }
+    return Flows.commitReveal({
+      ...args, wallet, committer: Committer.legacy
+    })
   }
 }
 

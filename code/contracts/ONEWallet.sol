@@ -8,8 +8,6 @@ import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract ONEWallet is IERC721Receiver, IERC1155Receiver {
-    //  This event is for debugging - should not be used in production
-    //    event CheckingCommit(bytes data, bytes32 hash);
     event InsufficientFund(uint256 amount, uint256 balance, address dest);
     event ExceedDailyLimit(uint256 amount, uint256 limit, uint256 current, address dest);
     event UnknownTransferError(address dest);
@@ -19,46 +17,52 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
     event AutoRecoveryTriggered(address from);
     event RecoveryFailure();
 
-    bytes32 root; // Note: @ivan brought up a good point in reducing this to 16-bytes so hash of two consecutive nodes can be done in a single word (to save gas and reduce blockchain clutter). Let's not worry about that for now and re-evalaute this later.
-    uint8 height; // including the root. e.g. for a tree with 4 leaves, the height is 3.
-    uint8 interval; // otp interval in seconds, default is 30
-    uint32 t0; // starting time block (effectiveTime (in ms) / interval)
-    uint32 lifespan;  // in number of block (e.g. 1 block per [interval] seconds)
-    uint8 maxOperationsPerInterval; // number of transactions permitted per OTP interval. Each transaction shall have a unique nonce. The nonce is auto-incremented within each interval
+    /// In future versions, it is planned that we may allow the user to extend the wallet's life through a function call. When that is implemented, the following variables may no longer be immutable, with the exception of root which shall serve as an identifier of the wallet
+    bytes32 immutable root; // Note: @ivan brought up a good point in reducing this to 16-bytes so hash of two consecutive nodes can be done in a single word (to save gas and reduce blockchain clutter). Let's not worry about that for now and re-evalaute this later.
+    uint8 immutable height; // including the root. e.g. for a tree with 4 leaves, the height is 3.
+    uint8 immutable interval; // otp interval in seconds, default is 30
+    uint32 immutable t0; // starting time block (effectiveTime (in ms) / interval)
+    uint32 immutable lifespan;  // in number of block (e.g. 1 block per [interval] seconds)
+    uint8 immutable maxOperationsPerInterval; // number of transactions permitted per OTP interval. Each transaction shall have a unique nonce. The nonce is auto-incremented within each interval
 
-    // global mutable
+    /// global mutable variables
     address payable lastResortAddress; // where money will be sent during a recovery process (or when the wallet is beyond its lifespan)
     uint256 dailyLimit; // uint128 is sufficient, but uint256 is more efficient since EVM works with 32-byte words.
     uint256 spentToday; // note: instead of tracking the money spent for the last 24h, we are simply tracking money spent per 24h block based on UTC time. It is good enough for now, but we may want to change this later.
     uint32 lastTransferDay;
 
+    /// nonce tracking
     mapping(uint32 => uint8) nonces; // keys: otp index (=timestamp in seconds / interval - t0); values: the expected nonce for that otp interval. An reveal with a nonce less than the expected value will be rejected
     uint32[] nonceTracker; // list of nonces keys that have a non-zero value. keys cannot possibly result a successful reveal (indices beyond REVEAL_MAX_DELAY old) are auto-deleted during a clean up procedure that is called every time the nonces are incremented for some key. For each deleted key, the corresponding key in nonces will also be deleted. So the size of nonceTracker and nonces are both bounded.
 
-    struct Commit {
-        bytes32 hash;
-        uint32 timestamp;
-        bool completed;
-    }
-
+    // constants
     uint32 constant REVEAL_MAX_DELAY = 60;
     uint32 constant SECONDS_PER_DAY = 86400;
     uint256 constant AUTO_RECOVERY_TRIGGER_AMOUNT = 1 ether;
     uint32 constant MAX_COMMIT_SIZE = 120;
 
-    uint32 constant majorVersion = 0x5; // a change would require client to migrate
-    uint32 constant minorVersion = 0x3; // a change would not require the client to migrate
+    uint32 constant majorVersion = 0x6; // a change would require client to migrate
+    uint32 constant minorVersion = 0x2; // a change would not require the client to migrate
 
-    //    bool commitLocked; // not necessary at this time
-    Commit[] commits; // self-clean on commit (auto delete commits that are beyond REVEAL_MAX_DELAY), so it's bounded by the number of commits an attacker can spam within REVEAL_MAX_DELAY time in the worst case, which is not too bad.
-
-    //
     enum OperationType {
-        TRACK, UNTRACK, TRANSFER_TOKEN, OVERRIDE_TRACK
-        //        , TRANSFER, SET_RECOVERY_ADDRESS, RECOVER
+        TRACK, UNTRACK, TRANSFER_TOKEN, OVERRIDE_TRACK, TRANSFER, SET_RECOVERY_ADDRESS, RECOVER
     }
+    /// commit management
+    struct Commit {
+        bytes32 hash;
+        bytes32 paramsHash;
+        uint32 timestamp;
+        bool completed;
+    }
+
+    bytes32[] commits; // self-clean on commit (auto delete commits that are beyond REVEAL_MAX_DELAY), so it's bounded by the number of commits an attacker can spam within REVEAL_MAX_DELAY time in the worst case, which is not too bad.
+    mapping(bytes32 => Commit) commitLocker;
+
+
+
+    /// token tracking
     enum TokenType{
-        ERC20, ERC721, ERC1155
+        ERC20, ERC721, ERC1155, NONE
     }
     event ReceivedToken(TokenType tokenType, uint256 amount, address from, address tokenContract, address operator, uint256 tokenId, bytes data);
     event TokenTracked(TokenType tokenType, address contractAddress, uint256 tokenId);
@@ -77,7 +81,7 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
         uint256 tokenId; // only valid for ERC721 and ERC1155
     }
 
-    mapping(bytes32 => uint256[]) trackedTokenPositions; // sha256(bytes.concat(byte32(uint(tokenType)), bytes32(contractAddress), bytes32(tokenId)) => positions in trackedTokens. Positions should be of length 1 except in very rare occasion of collision
+    mapping(bytes32 => uint256[]) trackedTokenPositions; // keccak256(bytes.concat(byte32(uint(tokenType)), bytes32(contractAddress), bytes32(tokenId)) => positions in trackedTokens. Positions should be of length 1 except in very rare occasion of collision
     TrackedToken[] trackedTokens;
 
     constructor(bytes32 root_, uint8 height_, uint8 interval_, uint32 t0_, uint32 lifespan_, uint8 maxOperationsPerInterval_,
@@ -191,41 +195,44 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
 
     function getCommits() external view returns (bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory)
     {
-        // will be used in the next version
-        bytes32[] memory args = new bytes32[](commits.length);
-
+        bytes32[] memory paramHashes = new bytes32[](commits.length);
         bytes32[] memory hashes = new bytes32[](commits.length);
         uint32[] memory timestamps = new uint32[](commits.length);
         bool[] memory completed = new bool[](commits.length);
         for (uint32 i = 0; i < commits.length; i++) {
-            hashes[i] = commits[i].hash;
-            timestamps[i] = commits[i].timestamp;
-            completed[i] = commits[i].completed;
+            Commit storage c = commitLocker[commits[i]];
+            hashes[i] = c.hash;
+            paramHashes[i] = c.paramsHash;
+            timestamps[i] = c.timestamp;
+            completed[i] = c.completed;
         }
-        return (hashes, args, timestamps, completed);
+        return (hashes, paramHashes, timestamps, completed);
     }
 
-    function commit(bytes32 hash) external
-    {
+    function findCommit(bytes32 hash) external view returns (bytes32, bytes32, uint32, bool){
+        Commit storage c = commitLocker[hash];
+        return (c.hash, c.paramsHash, c.timestamp, c.completed);
+    }
+
+    function commit(bytes32 hash, bytes32 paramsHash) external {
         _cleanupCommits();
-        (uint32 ct, bool completed) = _findCommit(hash);
-        require(ct == 0 && !completed, "Commit already exists");
-        Commit memory nc = Commit(hash, uint32(block.timestamp), false);
-        require(commits.length < MAX_COMMIT_SIZE, "Too many commits are pending");
-        commits.push(nc);
+        Commit storage c = commitLocker[hash];
+        require(c.timestamp == 0 && !c.completed, "Commit already exists");
+        Commit memory nc = Commit(hash, paramsHash, uint32(block.timestamp), false);
+        require(commits.length < MAX_COMMIT_SIZE, "Too many commits");
+        commits.push(hash);
+        commitLocker[hash] = nc;
     }
 
-    function revealTransfer(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp, address payable dest, uint256 amount) external
-    returns (bool)
-    {
-        _isCorrectProof(neighbors, indexWithNonce, eotp);
-        //        bytes memory packedNeighbors = _pack(neighbors);
-        bytes memory packed = bytes.concat(neighbors[0],
-            bytes32(bytes4(indexWithNonce)), eotp, bytes32(bytes20(address(dest))), bytes32(amount));
-        bytes32 commitHash = keccak256(bytes.concat(packed));
-        //        emit CheckingCommit(packed, commitHash);
-        _revealPreCheck(commitHash, indexWithNonce);
-        _completeReveal(commitHash);
+    /// This function sends all remaining funds of the wallet to `lastResortAddress`. The caller should verify that `lastResortAddress` is not null.
+    /// TODO: also transfer all tracked ERC20, 721, 1155 tokens to `lastResortAddress`
+    function _drain() internal returns (bool) {
+        // this may be triggered after revealing the proof, and we must prevent revert in all cases
+        (bool success,) = lastResortAddress.call{value : address(this).balance}("");
+        return success;
+    }
+
+    function _transfer(address payable dest, uint256 amount) internal returns (bool) {
         uint32 day = uint32(block.timestamp / SECONDS_PER_DAY);
         if (day > lastTransferDay) {
             spentToday = 0;
@@ -250,18 +257,7 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
         return true;
     }
 
-    function revealRecovery(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp) external
-    returns (bool)
-    {
-        _isCorrectProof(neighbors, indexWithNonce, eotp);
-        bytes memory packed = bytes.concat(
-            neighbors[0],
-            bytes32(bytes4(indexWithNonce)),
-            eotp
-        );
-        bytes32 commitHash = keccak256(bytes.concat(packed));
-        _revealPreCheck(commitHash, indexWithNonce);
-        _completeReveal(commitHash);
+    function _recover() internal returns (bool){
         if (lastResortAddress == address(0)) {
             emit LastResortAddressNotSet();
             return false;
@@ -273,25 +269,13 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
         return true;
     }
 
-    function revealSetLastResortAddress(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp, address payable lastResortAddress_)
-    external
-    {
-        _isCorrectProof(neighbors, indexWithNonce, eotp);
+    function _setRecoveryAddress(address payable lastResortAddress_) internal {
         require(lastResortAddress == address(0), "Last resort address is already set");
-        bytes memory packed = bytes.concat(
-            neighbors[0],
-            bytes32(bytes4(indexWithNonce)),
-            eotp,
-            bytes32(bytes20(address(lastResortAddress_)))
-        );
-        bytes32 commitHash = keccak256(bytes.concat(packed));
-        _revealPreCheck(commitHash, indexWithNonce);
-        _completeReveal(commitHash);
         lastResortAddress = lastResortAddress_;
     }
 
     function _trackToken(TokenType tokenType, address contractAddress, uint256 tokenId) internal {
-        bytes32 key = sha256(bytes.concat(bytes32(uint256(tokenType)), bytes32(bytes20(contractAddress)), bytes32(tokenId)));
+        bytes32 key = keccak256(bytes.concat(bytes32(uint256(tokenType)), bytes32(bytes20(contractAddress)), bytes32(tokenId)));
         if (trackedTokenPositions[key].length > 0) {
             for (uint32 i = 0; i < trackedTokenPositions[key].length; i++) {
                 uint256 j = trackedTokenPositions[key][i];
@@ -309,7 +293,7 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
     }
 
     function _untrackToken(TokenType tokenType, address contractAddress, uint256 tokenId) internal {
-        bytes32 key = sha256(bytes.concat(bytes32(uint256(tokenType)), bytes32(bytes20(contractAddress)), bytes32(tokenId)));
+        bytes32 key = keccak256(bytes.concat(bytes32(uint256(tokenType)), bytes32(bytes20(contractAddress)), bytes32(tokenId)));
         if (trackedTokenPositions[key].length == 0) {
             return;
         }
@@ -321,7 +305,7 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
             // found our token
             uint256 swappedPosition = trackedTokens.length - 1;
             trackedTokens[j] = trackedTokens[swappedPosition];
-            bytes32 swappedKey = sha256(bytes.concat(bytes32(uint256(trackedTokens[j].tokenType)), bytes32(bytes20(trackedTokens[j].contractAddress)), bytes32(trackedTokens[j].tokenId)));
+            bytes32 swappedKey = keccak256(bytes.concat(bytes32(uint256(trackedTokens[j].tokenType)), bytes32(bytes20(trackedTokens[j].contractAddress)), bytes32(trackedTokens[j].tokenId)));
             trackedTokens.pop();
             for (uint32 k = 0; k < trackedTokenPositions[swappedKey].length; k++) {
                 if (trackedTokenPositions[swappedKey][k] == swappedPosition) {
@@ -374,7 +358,7 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
             TokenType tokenType = trackedTokens[i].tokenType;
             address contractAddress = trackedTokens[i].contractAddress;
             uint256 tokenId = trackedTokens[i].tokenId;
-            bytes32 key = sha256(bytes.concat(bytes32(uint256(tokenType)), bytes32(bytes20(contractAddress)), bytes32(tokenId)));
+            bytes32 key = keccak256(bytes.concat(bytes32(uint256(tokenType)), bytes32(bytes20(contractAddress)), bytes32(tokenId)));
             delete trackedTokenPositions[key];
         }
         delete trackedTokens;
@@ -382,7 +366,7 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
             TokenType tokenType = newTrackedTokens[i].tokenType;
             address contractAddress = newTrackedTokens[i].contractAddress;
             uint256 tokenId = newTrackedTokens[i].tokenId;
-            bytes32 key = sha256(bytes.concat(bytes32(uint256(tokenType)), bytes32(bytes20(contractAddress)), bytes32(tokenId)));
+            bytes32 key = keccak256(bytes.concat(bytes32(uint256(tokenType)), bytes32(bytes20(contractAddress)), bytes32(tokenId)));
             TrackedToken memory t = TrackedToken(tokenType, contractAddress, tokenId);
             trackedTokens.push(t);
             trackedTokenPositions[key].push(i);
@@ -424,42 +408,42 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
         }
     }
 
-    function _revealTokenOperationPack(bytes32 neighbor, uint32 indexWithNonce, bytes32 eotp,
-        OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount, bytes calldata data) pure internal returns (bytes32) {
-        bytes memory packed = bytes.concat(
-            neighbor,
-            bytes32(bytes4(indexWithNonce)),
-            eotp,
-            bytes32(uint256(operationType)),
-            bytes32(uint256(tokenType)),
-            bytes32(bytes20(contractAddress)),
-            bytes32(tokenId),
-            bytes32(bytes20(dest)),
-            bytes32(amount),
-            data
-        );
-        bytes32 commitHash = keccak256(bytes.concat(packed));
-        return commitHash;
+    function _getRevealHash(bytes32 neighbor, uint32 indexWithNonce, bytes32 eotp,
+        OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount, bytes calldata data) pure internal returns (bytes32, bytes32) {
+        bytes32 hash = keccak256(bytes.concat(neighbor, bytes32(bytes4(indexWithNonce)), eotp));
+        bytes32 paramsHash = bytes32(0);
+        if (operationType == OperationType.TRANSFER) {
+            paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(dest))), bytes32(amount)));
+        } else if (operationType == OperationType.RECOVER) {
+            paramsHash = bytes32(0);
+        } else if (operationType == OperationType.SET_RECOVERY_ADDRESS) {
+            paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(dest)))));
+        } else {
+            bytes memory packed = bytes.concat(
+                bytes32(uint256(operationType)),
+                bytes32(uint256(tokenType)),
+                bytes32(bytes20(contractAddress)),
+                bytes32(tokenId),
+                bytes32(bytes20(dest)),
+                bytes32(amount),
+                data
+            );
+            paramsHash = keccak256(bytes.concat(packed));
+        }
+
+        return (hash, paramsHash);
     }
 
-    function revealTokenOperation(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp,
-        OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount, bytes calldata data)
+
+    function reveal(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp,
+        OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address payable dest, uint256 amount, bytes calldata data)
     external {
         _isCorrectProof(neighbors, indexWithNonce, eotp);
-        bytes32 commitHash = _revealTokenOperationPack(
-            neighbors[0],
-            indexWithNonce,
-            eotp,
-            operationType,
-            tokenType,
-            contractAddress,
-            tokenId,
-            dest,
-            amount,
-            data
-        );
-        _revealPreCheck(commitHash, indexWithNonce);
+        (bytes32 commitHash, bytes32 paramsHash) = _getRevealHash(neighbors[0], indexWithNonce, eotp,
+            operationType, tokenType, contractAddress, tokenId, dest, amount, data);
+        _verifyReveal(commitHash, indexWithNonce, paramsHash);
         _completeReveal(commitHash);
+        // No revert should occur below this point
         if (operationType == OperationType.TRACK) {
             if (data.length > 0) {
                 _multiTrack(data);
@@ -476,15 +460,16 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
             _transferToken(tokenType, contractAddress, tokenId, dest, amount, data);
         } else if (operationType == OperationType.OVERRIDE_TRACK) {
             _overrideTrackWithBytes(data);
+        } else if (operationType == OperationType.TRANSFER) {
+            _transfer(dest, amount);
+        } else if (operationType == OperationType.RECOVER) {
+            _recover();
+        } else if (operationType == OperationType.SET_RECOVERY_ADDRESS) {
+            _setRecoveryAddress(dest);
         }
     }
 
-    function _drain() internal returns (bool) {
-        // this may be triggered after revealing the proof, and we must prevent revert in all cases
-        (bool success,) = lastResortAddress.call{value : address(this).balance}("");
-        return success;
-    }
-
+    /// This is just a wrapper around a modifier previously called `isCorrectProof`, to avoid "Stack too deep" error. Duh.
     function _isCorrectProof(bytes32[] calldata neighbors, uint32 position, bytes32 eotp) view internal {
         require(neighbors.length == height - 1, "Not enough neighbors provided");
         bytes32 h = sha256(bytes.concat(eotp));
@@ -498,92 +483,77 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
         }
         require(root == h, "Proof is incorrect");
         return;
-        // just a wrapper around the old isCorrectProof modifier to avoid "Stack too deep" error. Duh.
     }
 
-    function _findCommit(bytes32 hash) view internal returns (uint32, bool)
-    {
-        if (hash == "") {
-            return (0, false);
-        }
-        for (uint32 i = 0; i < commits.length; i++) {
-            Commit storage c = commits[i];
-            if (c.hash == hash) {
-                return (c.timestamp, c.completed);
-            }
-        }
-        return (0, false);
-    }
-
-    // simple mechanism to prevent commits grow unbounded, if an attacker decides to spam commits (at their own expense)
-    function _cleanupCommits() internal
-    {
-        //        commitLocked = true;
+    /// Remove old commits from storage, where the commit's timestamp is older than block.timestamp - REVEAL_MAX_DELAY. The purpose is to remove dangling data from blockchain, and prevent commits grow unbounded. This is executed at commit time. The committer pays for the gas of this cleanup. Therefore, any attacker who intend to spam commits would be disincentivized. The attacker would not succeed in preventing any normal operation by the user.
+    function _cleanupCommits() internal {
         uint32 commitIndex = 0;
         uint32 bt = uint32(block.timestamp);
+        // go through past commits chronologically, starting from the oldest, and find the first commit that is not older than block.timestamp - REVEAL_MAX_DELAY.
         for (uint32 i = 0; i < commits.length; i++) {
-            Commit storage c = commits[i];
+            bytes32 hash = commits[i];
+            Commit storage c = commitLocker[hash];
+        unchecked {
             if (c.timestamp >= bt - REVEAL_MAX_DELAY) {
                 commitIndex = i;
                 break;
             }
         }
+        }
+        // If this condition holds true, no commit is older than block.timestamp - REVEAL_MAX_DELAY. Nothing needs to be cleaned up
         if (commitIndex == 0) {
             return;
         }
+        // Delete Commit instances for commits that are are older than block.timestamp - REVEAL_MAX_DELAY
+        for (uint32 i = 0; i < commitIndex; i++) {
+            bytes32 hash = commits[i];
+            delete commitLocker[hash];
+        }
+        // Shift all commits up by <commitIndex> positions, and discard <commitIndex> number of commits at the end of the array
+        // This process erases old commits
         uint32 len = uint32(commits.length);
-
-        //        TODO (@polymorpher): replace below code with the commented out version, after solidity implements proper support for struct-array memory-storage copy operation
         for (uint32 i = commitIndex; i < len; i++) {
+        unchecked{
             commits[i - commitIndex] = commits[i];
+        }
         }
         for (uint32 i = 0; i < commitIndex; i++) {
             commits.pop();
         }
-        //        TODO (@polymorpher): Can't use below code because: std::exception::what: Copying of type struct ONEWallet.Commit memory[] memory to storage not yet supported.
-        //        Commit[] memory remainingCommits = new Commit[](len - commitIndex);
-        //        for (uint8 i = 0; i < remainingCommits.length; i++) {
-        //            remainingCommits[i] = commits[commitIndex + i];
-        //        }
-        //        commits = remainingCommits;
-
-        //        commitLocked = false;
+        // TODO (@polymorpher): upgrade the above code after solidity implements proper support for struct-array memory-storage copy operation.
     }
 
     function _isRevealTimely(uint32 commitTime) view internal returns (bool)
     {
-        return block.timestamp - commitTime < REVEAL_MAX_DELAY;
+        return uint32(block.timestamp) - commitTime < REVEAL_MAX_DELAY;
     }
 
-    function _revealPreCheck(bytes32 hash, uint32 indexWithNonce) view internal
+    function _verifyReveal(bytes32 hash, uint32 indexWithNonce, bytes32 paramsHash) view internal
     {
+        Commit storage c = commitLocker[hash];
+        require(c.timestamp > 0, "Cannot find commit");
         uint32 index = indexWithNonce / maxOperationsPerInterval;
         uint8 nonce = uint8(indexWithNonce % maxOperationsPerInterval);
-        (uint32 ct, bool completed) = _findCommit(hash);
-        require(ct > 0, "Cannot find commit for this transaction");
-        uint32 counter = ct / interval - t0;
-        require(counter == index, "Provided index does not match committed timestamp");
+        uint32 counter = c.timestamp / interval - t0;
+        require(counter == index, "Index - timestamp mismatch");
         uint8 expectedNonce = nonces[counter];
-        require(nonce >= expectedNonce, "Nonce is too low");
-        require(!completed, "Commit is already completed");
+        require(nonce >= expectedNonce, "Nonce too low");
+        require(!c.completed, "Commit already completed");
+        require(c.paramsHash == paramsHash, "Invalid params hash");
         // this should not happen (since old commit should be cleaned up already)
-        require(_isRevealTimely(ct), "Reveal is too late. Please re-commit");
+        require(_isRevealTimely(c.timestamp), "Reveal too late");
     }
 
-    function _completeReveal(bytes32 hash) internal {
-        for (uint8 i = 0; i < commits.length; i++) {
-            Commit storage c = commits[i];
-            if (c.hash == hash) {
-                c.completed = true;
-                uint32 index = uint32(c.timestamp) / interval - t0;
-                _incrementNonce(index);
-                _cleanupNonces();
-                return;
-            }
-        }
-        revert("Invalid commit hash");
+    function _completeReveal(bytes32 commitHash) internal {
+        Commit storage c = commitLocker[commitHash];
+        require(c.timestamp > 0, "Invalid commit hash");
+        uint32 index = uint32(c.timestamp) / interval - t0;
+        _incrementNonce(index);
+        _cleanupNonces();
+        c.completed = true;
     }
 
+    /// This function removes all tracked nonce values correspond to interval blocks that are older than block.timestamp - REVEAL_MAX_DELAY. In doing so, extraneous data in the blockchain is removed, and both nonces and nonceTracker are bounded in size.
     function _cleanupNonces() internal {
         uint32 tMin = uint32(block.timestamp) - REVEAL_MAX_DELAY;
         uint32 indexMinUnadjusted = tMin / interval;
@@ -599,11 +569,12 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
                 delete nonces[index];
             } else {
                 nonZeroNonces[numValidIndices] = index;
+            unchecked {
                 numValidIndices++;
-
+            }
             }
         }
-        // TODO (@polymorpher): this is so stupid. Replace this with inline assembly later. https://ethereum.stackexchange.com/questions/51891/how-to-pop-from-decrease-the-length-of-a-memory-array-in-solidity
+        // TODO (@polymorpher): This can be later made more efficient by inline assembly. https://ethereum.stackexchange.com/questions/51891/how-to-pop-from-decrease-the-length-of-a-memory-array-in-solidity
         uint32[] memory reducedArray = new uint32[](numValidIndices);
         for (uint8 i = 0; i < numValidIndices; i++) {
             reducedArray[i] = nonZeroNonces[i];
@@ -616,14 +587,16 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
         if (v == 0) {
             nonceTracker.push(index);
         }
+    unchecked{
         nonces[index] = v + 1;
+    }
     }
 
     function _asByte32(bytes memory b) pure internal returns (bytes32){
         if (b.length == 0) {
             return bytes32(0x0);
         }
-        require(b.length <= 32, "input bytes are too long for _asByte32");
+        require(b.length <= 32, "input bytes too long");
         bytes32 r;
         uint8 len = uint8((32 - b.length) * 8);
         assembly{
