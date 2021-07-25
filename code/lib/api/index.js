@@ -327,7 +327,7 @@ const api = {
         neighbors,
         index,
         eotp,
-        operationType: ONEConstants.OperationType.RECOVER,
+        operationType: ONEConstants.OperationType.SET_RECOVERY_ADDRESS,
         tokenType: ONEConstants.TokenType.NONE,
         contractAddress: ONEConstants.EmptyAddress,
         tokenId: 0,
