@@ -21,7 +21,12 @@ const apiConfig = {
   secret: ''
 }
 
-const headers = (secret, network) => ({ 'X-ONEWALLET-RELAYER-SECRET': secret, 'X-NETWORK': network })
+const headers = ({ secret, network, majorVersion, minorVersion }) => ({
+  'X-ONEWALLET-RELAYER-SECRET': secret,
+  'X-NETWORK': network,
+  'X-MAJOR-VERSION': majorVersion,
+  'X-MINOR-VERSION': minorVersion,
+})
 
 let base = axios.create({
   baseURL: config.defaults.relayer,
@@ -32,7 +37,7 @@ let base = axios.create({
 const initAPI = (store) => {
   store.subscribe(() => {
     const state = store.getState()
-    const { relayer: relayerId, network, relayerSecret: secret } = state.wallet
+    const { relayer: relayerId, network, relayerSecret: secret, majorVersion, minorVersion } = state.wallet
     let relayer = relayerId
     if (relayer && !relayer.startsWith('http')) {
       relayer = config.relayers[relayer]?.url
@@ -43,7 +48,7 @@ const initAPI = (store) => {
     if (!isEqual(apiConfig, { relayer, network, secret })) {
       base = axios.create({
         baseURL: relayer,
-        headers: headers(secret, network),
+        headers: headers({ secret, network, majorVersion, minorVersion }),
         timeout: 15000,
       })
     }
@@ -136,6 +141,12 @@ const api = {
     }
   },
   blockchain: {
+    /**
+     * Require contract >= v2
+     * @param address
+     * @param raw
+     * @returns {Promise<{duration: number, address, slotSize, effectiveTime: number, root, dailyLimit: string, majorVersion: (number|number), minorVersion: (number|number), lastResortAddress: *}|{maxOperationsPerInterval, lifespan, root: *, dailyLimit: string, interval, t0, majorVersion: (number|number), minorVersion: (number|number), lastResortAddress: *, height}>}
+     */
     getWallet: async ({ address, raw }) => {
       const c = await one.at(address)
       const result = await c.getInfo()
@@ -181,16 +192,37 @@ const api = {
       const balance = await web3.eth.getBalance(address)
       return balance
     },
+    /**
+     * Require contract >= v3
+     * @param address
+     * @returns {Promise<*[]>}
+     */
     getCommits: async ({ address }) => {
       const c = await one.at(address)
       const result = await c.getCommits()
-      const [hashes, args, timestamps, completed] = Object.keys(result).map(k => result[k])
+      const [hashes, paramsHashes, timestamps, completed] = Object.keys(result).map(k => result[k])
       const commits = []
       for (let i = 0; i < hashes.length; i += 1) {
-        commits.push({ hash: hashes[i], args: args[i], timestamp: timestamps[i], completed: completed[i] })
+        commits.push({ hash: hashes[i], paramsHash: paramsHashes[i], timestamp: timestamps[i], completed: completed[i] })
       }
       return commits
     },
+    /**
+     * Require contract >= v6
+     * @param address
+     * @returns {Promise<void>}
+     */
+    findCommit: async ({ address, commitHash }) => {
+      const c = await one.at(address)
+      const result = await c.findCommit(commitHash)
+      const [hash, paramsHash, timestamp, completed] = Object.keys(result).map(k => result[k])
+      return { hash, paramsHash, timestamp: new BN(timestamp).toNumber(), completed }
+    },
+    /**
+     * Require contract >= v5
+     * @param address
+     * @returns {Promise<*[]>}
+     */
     getTrackedTokens: async ({ address }) => {
       const c = await one.at(address)
       const result = await c.getTrackedTokens()
@@ -205,6 +237,7 @@ const api = {
       }
       return tt
     },
+
     // returns Promise<BN>
     tokenBalance: async ({ address, contractAddress, tokenType, tokenId }) => {
       const ct = ONEConstants.TokenType[tokenType]
@@ -245,11 +278,8 @@ const api = {
       const { data } = await base.post('/new', { root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit })
       return data
     },
-    commit: async ({ address, hash }) => {
-      // return new Promise((resolve, reject) => {
-      //   setTimeout(() => resolve({ mock: true }), 2000)
-      // })
-      const { data } = await base.post('/commit', { address, hash })
+    commit: async ({ address, hash, paramsHash }) => {
+      const { data } = await base.post('/commit', { address, hash, paramsHash })
       return data
     },
     revealTransfer: async ({ neighbors, index, eotp, dest, amount, address }) => {
