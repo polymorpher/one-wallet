@@ -62,7 +62,7 @@ contract ONEWallet is IERC721Receiver, IERC1155Receiver {
 
     /// token tracking
     enum TokenType{
-        ERC20, ERC721, ERC1155
+        ERC20, ERC721, ERC1155, NONE
     }
     event ReceivedToken(TokenType tokenType, uint256 amount, address from, address tokenContract, address operator, uint256 tokenId, bytes data);
     event TokenTracked(TokenType tokenType, address contractAddress, uint256 tokenId);
