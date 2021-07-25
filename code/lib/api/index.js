@@ -253,11 +253,18 @@ const api = {
       return data
     },
     revealTransfer: async ({ neighbors, index, eotp, dest, amount, address }) => {
-      // return new Promise((resolve, reject) => {
-      //   setTimeout(() => resolve({ mock: true }), 2000)
-      // })
-      const { data } = await base.post('/reveal/transfer', { neighbors, index, eotp, dest, amount, address })
-      return data
+      return api.relayer.reveal({
+        address,
+        neighbors,
+        index,
+        eotp,
+        dest,
+        amount,
+        operationType: ONEConstants.OperationType.TRANSFER,
+        tokenType: ONEConstants.TokenType.NONE,
+        contractAddress: ONEConstants.EmptyAddress,
+        tokenId: 0
+      })
     },
 
     updateTrackToken: async ({ address, neighbors, index, eotp, tokenType, contractAddress, tokenId, track }) => {
@@ -265,16 +272,39 @@ const api = {
     },
 
     revealTokenOperation: async ({ address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data = '0x' }) => {
-      const { data: ret } = await base.post('/reveal/token', { address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
-      return ret
+      return api.relayer.reveal({ address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
     },
     revealRecovery: async ({ neighbors, index, eotp, address }) => {
-      const { data } = await base.post('/reveal/recovery', { neighbors, index, eotp, address })
-      return data
+      return api.relayer.reveal({
+        address,
+        neighbors,
+        index,
+        eotp,
+        operationType: ONEConstants.OperationType.RECOVER,
+        tokenType: ONEConstants.TokenType.NONE,
+        contractAddress: ONEConstants.EmptyAddress,
+        tokenId: 0,
+        dest: ONEConstants.EmptyAddress,
+        amount: 0,
+      })
     },
     revealSetRecoveryAddress: async ({ neighbors, index, eotp, address, lastResortAddress }) => {
-      const { data } = await base.post('/reveal/set-recovery-address', { neighbors, index, eotp, address, lastResortAddress })
-      return data
+      return api.relayer.reveal({
+        address,
+        neighbors,
+        index,
+        eotp,
+        operationType: ONEConstants.OperationType.RECOVER,
+        tokenType: ONEConstants.TokenType.NONE,
+        contractAddress: ONEConstants.EmptyAddress,
+        tokenId: 0,
+        dest: lastResortAddress,
+        amount: 0,
+      })
+    },
+    reveal: async ({ address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data = '0x' }) => {
+      const { data: ret } = await base.post('/reveal', { address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
+      return ret
     },
     retire: async ({ address }) => {
       const { data } = await base.post('/retire', { address })
