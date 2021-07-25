@@ -1,67 +1,13 @@
-const { values, mapValues } = require('lodash')
 const config = require('../config')
 const express = require('express')
 const router = express.Router()
 const { StatusCodes } = require('http-status-codes')
 const blockchain = require('../blockchain')
+const ONEConstants = require('../../lib/constants')
 const BN = require('bn.js')
-const rateLimit = require('express-rate-limit')
-
-const checkParams = (params, res) => {
-  params = mapValues(params, e => e === undefined ? null : e)
-  if (values(params).includes(undefined) || values(params).includes(null)) {
-    res.status(StatusCodes.BAD_REQUEST).json({ error: 'Some parameters are missing', params })
-    return false
-  }
-  return true
-}
-
-const parseTx = (tx) => {
-  const txId = tx?.tx
-  const success = !!(txId)
-  const stack = tx?.receipt?.stack || ''
-  const nl = stack.indexOf('\n')
-  const error = stack && (nl > 0 ? stack.slice(0, nl) : stack)
-  return { success, txId, tx, error }
-}
-
-const REASON_GIVEN = 'Reason given: '
-const parseError = (ex) => {
-  let error = ex.toString()
-  if (error && error.indexOf(REASON_GIVEN) > 0) {
-    error = error.slice(error.indexOf(REASON_GIVEN) + REASON_GIVEN.length)
-    return { success: false, code: StatusCodes.OK, error }
-  }
-  return { success: false, code: StatusCodes.INTERNAL_SERVER_ERROR, error }
-}
-
-const generalLimiter = (args) => rateLimit({
-  windowMs: 1000 * 60,
-  max: 6,
-  keyGenerator: req => req.fingerprint?.hash || '',
-  ...args,
-
-})
-
-const walletAddressLimiter = (args) => rateLimit({
-  windowMs: 1000 * 60,
-  keyGenerator: req => req.body.address || '',
-  ...args,
-
-})
-
-const rootHashLimiter = args => rateLimit({
-  windowMs: 1000 * 60,
-  keyGenerator: req => req.body.root || '',
-  ...args,
-})
-
-const globalLimiter = args => rateLimit({
-  windowMs: 1000 * 60,
-  keyGenerator: req => '',
-  ...args,
-})
-
+const { generalLimiter, walletAddressLimiter, rootHashLimiter, globalLimiter } = require('./rl')
+const { parseTx, parseError, checkParams } = require('./util')
+const { transfer, recover, setRecoveryAddress, tokenOperation } = require('./v5')
 router.get('/health', generalLimiter(), async (req, res) => {
   console.log(req.fingerprint)
   res.send('OK').end()
@@ -162,6 +108,21 @@ router.post('/reveal', generalLimiter({ max: 30 }), walletAddressLimiter({ max: 
   if (!checkParams({ neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data }, res)) {
     return
   }
+  if (!(req.majorVersion >= 6)) {
+    operationType = parseInt(operationType || -1)
+    if (!(operationType > 0)) {
+      return res.status(StatusCodes.BAD_REQUEST).json(`Bad operationType: ${operationType}`)
+    }
+    if (operationType === ONEConstants.OperationType.TRANSFER) {
+      return transfer({ req, res, address, neighbors, index, eotp, dest, amount })
+    } else if (operationType === ONEConstants.OperationType.RECOVER) {
+      return recover({ req, res, address, neighbors, index, eotp })
+    } else if (operationType === ONEConstants.OperationType.SET_RECOVERY_ADDRESS) {
+      return setRecoveryAddress({ req, res, address, neighbors, index, eotp, lastResortAddress: dest })
+    } else {
+      return tokenOperation({ req, res, address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
+    }
+  }
   // TODO parameter verification
   try {
     const wallet = await req.contract.at(address)
@@ -174,72 +135,40 @@ router.post('/reveal', generalLimiter({ max: 30 }), walletAddressLimiter({ max: 
   }
 })
 
+// TODO: deprecate in the next version
 router.post('/reveal/transfer', generalLimiter({ max: 30 }), walletAddressLimiter({ max: 30 }), async (req, res) => {
   let { neighbors, index, eotp, dest, amount, address } = req.body
   if (!checkParams({ neighbors, index, eotp, dest, amount, address }, res)) {
     return
   }
-  // TODO parameter verification
-  try {
-    const wallet = await req.contract.at(address)
-    const tx = await wallet.revealTransfer(neighbors, index, eotp, dest, new BN(amount, 10))
-    return res.json(parseTx(tx))
-  } catch (ex) {
-    console.error(ex)
-    const { code, error, success } = parseError(ex)
-    return res.status(code).json({ error, success })
-  }
+  transfer({ req, res, address, neighbors, index, eotp, dest, amount })
 })
 
+// TODO: deprecate in the next version
 router.post('/reveal/recovery', generalLimiter({ max: 30 }), walletAddressLimiter({ max: 30 }), async (req, res) => {
   let { neighbors, index, eotp, address } = req.body
   if (!checkParams({ neighbors, index, eotp, address }, res)) {
     return
   }
-  // TODO parameter verification
-  try {
-    const wallet = await req.contract.at(address)
-    const tx = await wallet.revealRecovery(neighbors, index, eotp)
-    return res.json(parseTx(tx))
-  } catch (ex) {
-    console.error(ex)
-    const { code, error, success } = parseError(ex)
-    return res.status(code).json({ error, success })
-  }
+  recover({ req, res, address, neighbors, index, eotp })
 })
 
+// TODO: deprecate in the next version
 router.post('/reveal/set-recovery-address', generalLimiter({ max: 30 }), walletAddressLimiter({ max: 30 }), async (req, res) => {
   let { neighbors, index, eotp, address, lastResortAddress } = req.body
   if (!checkParams({ neighbors, index, eotp, address, lastResortAddress }, res)) {
     return
   }
-  // TODO parameter verification
-  try {
-    const wallet = await req.contract.at(address)
-    const tx = await wallet.revealSetLastResortAddress(neighbors, index, eotp, lastResortAddress)
-    return res.json(parseTx(tx))
-  } catch (ex) {
-    console.error(ex)
-    const { code, error, success } = parseError(ex)
-    return res.status(code).json({ error, success })
-  }
+  setRecoveryAddress({ req, res, address, neighbors, index, eotp, lastResortAddress })
 })
 
+// TODO: deprecate in the next version
 router.post('/reveal/token', generalLimiter({ max: 30 }), walletAddressLimiter({ max: 30 }), async (req, res) => {
   let { neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data } = req.body
   if (!checkParams({ neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data }, res)) {
     return
   }
-  // TODO parameter verification
-  try {
-    const wallet = await req.contract.at(address)
-    const tx = await wallet.revealTokenOperation(neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data)
-    return res.json(parseTx(tx))
-  } catch (ex) {
-    console.error(ex)
-    const { code, error, success } = parseError(ex)
-    return res.status(code).json({ error, success })
-  }
+  tokenOperation({ req, res, address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
 })
 
 router.post('/retire', generalLimiter({ max: 6 }), walletAddressLimiter({ max: 6 }), async (req, res) => {
