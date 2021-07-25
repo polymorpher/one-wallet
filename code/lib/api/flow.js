@@ -4,6 +4,7 @@ const config = require('../config/provider').getConfig()
 const storage = require('./storage').getStorage()
 const messager = require('./message').getMessage()
 const { api } = require('./index')
+const BN = require('bn.js')
 
 const EotpBuilders = {
   fromOtp: ({ otp, wallet }) => {
@@ -22,7 +23,14 @@ const EotpBuilders = {
 
 const Committer = {
   legacy: async ({ address, commitHashGenerator, neighbor, index, eotp, commitHashArgs }) => {
-    const { hash: commitHash } = commitHashGenerator({ neighbor, index, eotp, ...commitHashArgs })
+    const { bytes } = commitHashGenerator({ neighbor, index, eotp, ...commitHashArgs })
+    const input = new Uint8Array(bytes.length + 96)
+    input.set(neighbor)
+    const indexBytes = new BN(index, 10).toArrayLike(Uint8Array, 'be', 4)
+    input.set(indexBytes, 32)
+    input.set(eotp, 64)
+    input.set(bytes, 96)
+    const commitHash = ONEUtil.keccak(input)
     return { commitHash }
   },
   v6: async ({ address, commitHashGenerator, neighbor, index, eotp, commitHashArgs }) => {
