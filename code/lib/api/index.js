@@ -18,7 +18,9 @@ const ONEConstants = require('../constants')
 const apiConfig = {
   relayer: config.defaults.relayer,
   network: config.defaults.network,
-  secret: ''
+  secret: '',
+  majorVersion: 0,
+  minorVersion: 0,
 }
 
 const headers = ({ secret, network, majorVersion, minorVersion }) => ({
@@ -37,7 +39,8 @@ let base = axios.create({
 const initAPI = (store) => {
   store.subscribe(() => {
     const state = store.getState()
-    const { relayer: relayerId, network, relayerSecret: secret, majorVersion, minorVersion } = state.wallet
+    const { relayer: relayerId, network, relayerSecret: secret, wallets, selected } = state.wallet
+    const { majorVersion, minorVersion } = wallets?.[selected] || {}
     let relayer = relayerId
     if (relayer && !relayer.startsWith('http')) {
       relayer = config.relayers[relayer]?.url
@@ -45,7 +48,7 @@ const initAPI = (store) => {
         relayer = config.relayers[config.defaults.relayer].url
       }
     }
-    if (!isEqual(apiConfig, { relayer, network, secret })) {
+    if (!isEqual(apiConfig, { relayer, network, secret, majorVersion, minorVersion })) {
       base = axios.create({
         baseURL: relayer,
         headers: headers({ secret, network, majorVersion, minorVersion }),
