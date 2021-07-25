@@ -111,8 +111,8 @@ const computeTransferHash = ({ dest, amount }) => {
   const destBytes = hexStringToBytes(dest, 32)
   const amountBytes = new BN(amount, 10).toArrayLike(Uint8Array, 'be', 32)
   const input = new Uint8Array(64)
-  input.set(destBytes, 96)
-  input.set(amountBytes, 128)
+  input.set(destBytes)
+  input.set(amountBytes, 32)
   return { hash: keccak(input), bytes: input }
 }
 
