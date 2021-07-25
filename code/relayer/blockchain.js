@@ -59,7 +59,7 @@ const init = () => {
     c.defaults({ from: account.address })
     c5.defaults({ from: account.address })
     contracts[k] = c
-    contractsV5[k] = c
+    contractsV5[k] = c5
   })
   console.log('init complete:', {
     networks,
