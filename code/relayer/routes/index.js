@@ -79,9 +79,17 @@ router.use((req, res, next) => {
   if (!blockchain.getNetworks().includes(network)) {
     return res.status(StatusCodes.NOT_IMPLEMENTED).json({ error: `Unsupported network ${network}` })
   }
+  const majorVersion = req.header('X-MAJOR-VERSION')
+  const minorVersion = req.header('X-MINOR-VERSION')
   req.network = network
+  req.majorVersion = parseInt(majorVersion || 0)
+  req.minorVersion = parseInt(minorVersion || 0)
   // TODO: differentiate <v5 and >=v6 contracts
-  req.contract = blockchain.getContract(network)
+  if (!(majorVersion > 5)) {
+    req.contract = blockchain.getContractV5(network)
+  } else {
+    req.contract = blockchain.getContract(network)
+  }
   req.provider = blockchain.getProvider(network)
   next()
 })
@@ -118,19 +126,29 @@ router.post('/new', rootHashLimiter({ max: 6 }), generalLimiter({ max: 1 }), glo
 })
 
 router.post('/commit', generalLimiter({ max: 30 }), walletAddressLimiter({ max: 30 }), async (req, res) => {
-  let { hash, address } = req.body
+  let { hash, paramsHash, address } = req.body
   if (config.debug || config.verbose) {
     console.log(`[/commit] `, { hash, address })
   }
   if (!hash || !address) {
-    return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Hash or address is missing', params: { hash, address } })
+    return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Hash or address is missing', params: { hash, paramsHash, address } })
   }
   if (hash.length !== 66) {
     return res.status(StatusCodes.BAD_REQUEST).json({ error: 'hash must be a hex string with length 64 starting with 0x (to represent 32 bytes)', hash })
   }
+  if (req.majorVersion >= 6) {
+    if (!paramsHash || paramsHash.length !== 66) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'paramsHash is missing or malformed', params: { hash, paramsHash, address } })
+    }
+  }
   try {
     const wallet = await req.contract.at(address)
-    const tx = await wallet.commit(hash)
+    let tx
+    if (req.majorVersion >= 6) {
+      tx = await wallet.commit(hash, paramsHash)
+    } else {
+      tx = await wallet.commit(hash)
+    }
     return res.json(parseTx(tx))
   } catch (ex) {
     console.error(ex)
