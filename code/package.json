@@ -4,13 +4,14 @@
   "private": true,
   "license": "Apache-2.0",
   "scripts": {
-    "test": "truffle test --network=dev",
+    "test": "VERBOSE=1 truffle test --network=dev --compile-none",
     "migrate": "truffle migrate --network=dev",
     "lint": "eslint ./lib ./migrations ./test",
     "lint-fix": "eslint ./lib ./migrations ./test --fix",
     "console": "node --experimental-repl-await"
   },
   "dependencies": {
+    "@harmony-js/account": "^0.1.57",
     "@openzeppelin/contracts": "^4.2.0",
     "@truffle/hdwallet-provider": "^1.4.0",
     "axios": "^0.21.1",
