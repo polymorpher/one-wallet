@@ -80,6 +80,7 @@ router.use((req, res, next) => {
     return res.status(StatusCodes.NOT_IMPLEMENTED).json({ error: `Unsupported network ${network}` })
   }
   req.network = network
+  // TODO: differentiate <v5 and >=v6 contracts
   req.contract = blockchain.getContract(network)
   req.provider = blockchain.getProvider(network)
   next()
@@ -130,6 +131,23 @@ router.post('/commit', generalLimiter({ max: 30 }), walletAddressLimiter({ max: 
   try {
     const wallet = await req.contract.at(address)
     const tx = await wallet.commit(hash)
+    return res.json(parseTx(tx))
+  } catch (ex) {
+    console.error(ex)
+    const { code, error, success } = parseError(ex)
+    return res.status(code).json({ error, success })
+  }
+})
+
+router.post('/reveal', generalLimiter({ max: 30 }), walletAddressLimiter({ max: 30 }), async (req, res) => {
+  let { neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data } = req.body
+  if (!checkParams({ neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data }, res)) {
+    return
+  }
+  // TODO parameter verification
+  try {
+    const wallet = await req.contract.at(address)
+    const tx = await wallet.reveal(neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data)
     return res.json(parseTx(tx))
   } catch (ex) {
     console.error(ex)
