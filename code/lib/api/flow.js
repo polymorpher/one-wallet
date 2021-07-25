@@ -186,7 +186,7 @@ const SmartFlows = {
     if (wallet.majorVersion >= 6) {
       return SecureFlowsV6.commitReveal({ ...args, wallet })
     }
-    message.warning('You are using a wallet version that is prone to man-in-the-middle attack. Please create a new wallet and migrate assets ASAP.See https://github.com/polymorpher/one-wallet/issues/47')
+    message.warning('You are using a wallet version that is prone to man-in-the-middle attack. Please create a new wallet and migrate assets ASAP. See https://github.com/polymorpher/one-wallet/issues/47')
     if (wallet.majorVersion >= 3) {
       return SecureFlows.commitReveal({ ...args, wallet })
     }
