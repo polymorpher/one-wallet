@@ -22,7 +22,7 @@ const EotpBuilders = {
 }
 
 const Committer = {
-  legacy: async ({ address, commitHashGenerator, neighbor, index, eotp, commitHashArgs }) => {
+  legacy: ({ address, commitHashGenerator, neighbor, index, eotp, commitHashArgs }) => {
     const { bytes } = commitHashGenerator({ neighbor, index, eotp, ...commitHashArgs })
     const input = new Uint8Array(bytes.length + 96)
     input.set(neighbor)
@@ -31,9 +31,10 @@ const Committer = {
     input.set(eotp, 64)
     input.set(bytes, 96)
     const commitHash = ONEUtil.keccak(input)
+    // console.log(input, bytes, commitHash)
     return { commitHash }
   },
-  v6: async ({ address, commitHashGenerator, neighbor, index, eotp, commitHashArgs }) => {
+  v6: ({ address, commitHashGenerator, neighbor, index, eotp, commitHashArgs }) => {
     const { hash: commitHash } = ONE.computeCommitHash({ neighbor, index, eotp })
     const { hash: paramsHash } = commitHashGenerator({ ...commitHashArgs })
     return { commitHash, paramsHash }
@@ -70,11 +71,12 @@ const Flows = {
     const neighbor = neighbors[0]
 
     const { commitHash, paramsHash } = committer({ address, commitHashGenerator, neighbor, index, eotp, commitHashArgs })
+    // console.log(commitHash, paramsHash)
     try {
       const { success, error } = await api.relayer.commit({
         address,
         hash: ONEUtil.hexString(commitHash),
-        paramsHash: ONEUtil.hexString(paramsHash),
+        paramsHash: paramsHash && ONEUtil.hexString(paramsHash),
       })
       if (!success) {
         onCommitFailure && await onCommitFailure(error)
