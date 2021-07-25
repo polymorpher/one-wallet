@@ -25,9 +25,8 @@ const SiderLink = styled(Link).attrs((e) => ({
 `
 
 const SiderMenu = ({ ...args }) => {
-  const { width } = useWindowDimensions()
+  const { isMobile } = useWindowDimensions()
   const history = useHistory()
-  const [collapsed, setCollapsed] = useState()
   const match = useRouteMatch('/:action')
   const { action } = match ? match.params : {}
   const nav = ({ key }) => {
@@ -49,18 +48,18 @@ const SiderMenu = ({ ...args }) => {
   }, [])
 
   return (
-    <Layout.Sider collapsible={width < 900} onCollapse={c => setCollapsed(c)} {...args}>
+    <Layout.Sider collapsed={isMobile} {...args}>
       {/* <Image src='/assets/harmony.svg' /> */}
       <Row justify='center'>
         <SiderLink href='https://harmony.one/'>
-          <Image preview={false} src={collapsed ? HarmonyIcon : HarmonyLogo} style={{ cursor: 'pointer', padding: collapsed ? 16 : 32 }} onClick={() => history.push('/')} />
+          <Image preview={false} src={isMobile ? HarmonyIcon : HarmonyLogo} style={{ cursor: 'pointer', padding: isMobile ? 16 : 32 }} onClick={() => history.push('/')} />
         </SiderLink>
       </Row>
-      {!collapsed && <Row justify='center' style={{ marginBottom: 24 }}><SiderLink href='https://harmony.one/1wallet'>{config.appName} {config.version}</SiderLink></Row>}
+      {!isMobile && <Row justify='center' style={{ marginBottom: 24 }}><SiderLink href='https://harmony.one/1wallet'>{config.appName} {config.version}</SiderLink></Row>}
 
-      {!collapsed && <Divider style={{ borderColor: '#fafafa', opacity: 0.5, color: '#fafafa', fontSize: 14 }}>Global Usage</Divider>}
+      {!isMobile && <Divider style={{ borderColor: '#fafafa', opacity: 0.5, color: '#fafafa', fontSize: 14 }}>Global Usage</Divider>}
 
-      {!collapsed && stats &&
+      {!isMobile && stats &&
         <Row style={{ marginBottom: 16 }} justify='center'>
           <Row style={{ marginBottom: 8 }}>
             <Tag color='dimgray' style={{ margin: 0, width: 64, borderRadius: 0, textAlign: 'center' }}>wallets</Tag>
@@ -72,7 +71,7 @@ const SiderMenu = ({ ...args }) => {
           </Row>
         </Row>}
 
-      {!collapsed && <Divider style={{ borderColor: '#fafafa', opacity: 0.5 }} />}
+      {!isMobile && <Divider style={{ borderColor: '#fafafa', opacity: 0.5 }} />}
 
       <Menu theme='dark' mode='inline' onClick={nav} selectedKeys={[action]}>
         <Menu.Item key='create' icon={<PlusCircleOutlined />}>Create</Menu.Item>

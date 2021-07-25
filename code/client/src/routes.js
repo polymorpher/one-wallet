@@ -12,19 +12,19 @@ import RestorePage from './pages/Restore'
 import ShowPage from './pages/Show'
 import { walletActions } from './state/modules/wallet'
 import config from './config'
-import util from './util'
+import util, { useWindowDimensions } from './util'
 
 const LocalRoutes = () => {
   const wallets = useSelector(state => state.wallet.wallets)
   const network = useSelector(state => state.wallet.network)
   const networkWallets = util.filterNetworkWallets(wallets, network)
-
+  const { isMobile } = useWindowDimensions()
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <SiderMenu />
       <Layout>
         <WalletHeader />
-        <Layout.Content style={{ padding: 32 }}>
+        <Layout.Content style={{ padding: isMobile ? 16 : 32 }}>
           <Switch>
             <Route path={Paths.create} component={CreatePage} />
             <Route path={Paths.wallets} component={ListPage} />

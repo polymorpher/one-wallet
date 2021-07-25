@@ -11,7 +11,7 @@ import WalletConstants from '../constants/wallet'
 import storage from '../storage'
 import { useDispatch, useSelector } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
-import util from '../util'
+import util, { useWindowDimensions } from '../util'
 import { handleAddressError } from '../handler'
 import Paths from '../constants/paths'
 import * as Sentry from '@sentry/browser'
@@ -28,6 +28,7 @@ const Restore = () => {
   const [secret, setSecret] = useState()
   const [name, setName] = useState()
   const [device, setDevice] = useState()
+  const { isMobile } = useWindowDimensions()
   const ref = useRef()
   useEffect(() => {
     const numAttempts = 0
@@ -199,7 +200,7 @@ const Restore = () => {
       <AnimatedSection show={section === 1} style={{ maxWidth: 640 }}>
         <Space direction='vertical' size='large'>
           <Heading>What is the address of the wallet?</Heading>
-          <InputBox margin='auto' width={440} value={addressInput} onChange={({ target: { value } }) => setAddressInput(value)} placeholder='one1...' />
+          <InputBox margin='auto' width={isMobile ? '100%' : 440} value={addressInput} onChange={({ target: { value } }) => setAddressInput(value)} placeholder='one1...' />
           <Hint>Next, we will ask for your permission to use your computer's camera. We need that to scan the QR code exported from your Google Authenticator.</Hint>
         </Space>
       </AnimatedSection>

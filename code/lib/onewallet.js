@@ -96,37 +96,31 @@ const selectMerkleNeighbors = ({
   return r
 }
 
-// neighbor, uint8array, 32
-// index, int, must be with nonce
-// eotp, uint8array, 32 (hash of eotp = neighbors' neighbor)
-// dest, hex string
-// amount, BN or number-string
-const computeTransferHash = ({ neighbor, index, eotp, dest, amount }) => {
-  const destBytes = hexStringToBytes(dest, 32)
-  const amountBytes = new BN(amount, 10).toArrayLike(Uint8Array, 'be', 32)
+const computeCommitHash = ({ neighbor, index, eotp }) => {
   const indexBytes = new BN(index, 10).toArrayLike(Uint8Array, 'be', 4)
-  const input = new Uint8Array(160)
+  const input = new Uint8Array(96)
   input.set(neighbor)
   input.set(indexBytes, 32)
   input.set(eotp, 64)
-  input.set(destBytes, 96)
-  input.set(amountBytes, 128)
   return { hash: keccak(input), bytes: input }
 }
 
-// neighbor, uint8array, 32
-// index, int, must be with nonce
-// eotp, uint8array, 32 (hash of eotp = neighbors' neighbor)
-// address, hex string
+// dest, hex string
 // amount, BN or number-string
-const computeSetRecoveryAddressHash = ({ neighbor, index, eotp, address }) => {
+const computeTransferHash = ({ dest, amount }) => {
+  const destBytes = hexStringToBytes(dest, 32)
+  const amountBytes = new BN(amount, 10).toArrayLike(Uint8Array, 'be', 32)
+  const input = new Uint8Array(64)
+  input.set(destBytes)
+  input.set(amountBytes, 32)
+  return { hash: keccak(input), bytes: input }
+}
+
+// address, hex string
+const computeSetRecoveryAddressHash = ({ address }) => {
   const addressBytes = hexStringToBytes(address, 32)
-  const indexBytes = new BN(index, 10).toArrayLike(Uint8Array, 'be', 4)
-  const input = new Uint8Array(128)
-  input.set(neighbor)
-  input.set(indexBytes, 32)
-  input.set(eotp, 64)
-  input.set(addressBytes, 96)
+  const input = new Uint8Array(32)
+  input.set(addressBytes)
   return { hash: keccak(input), bytes: input }
 }
 
@@ -142,18 +136,18 @@ const computeEOTP = ({ otp, hseed, nonce = 0 }) => {
   return fastSHA256(buffer)
 }
 
-// neighbor, uint8array, 32
-// index, int, must be with nonce
-// eotp, uint8array, 32 (hash of eotp = neighbors' neighbor)
-const computeRecoveryHash = ({ neighbor, index, eotp }) => {
-  const indexBytes = new BN(index, 10).toArrayLike(Uint8Array, 'be', 4)
-  const input = new Uint8Array(96)
-  input.set(neighbor)
-  input.set(indexBytes, 32)
-  input.set(eotp, 64)
-  return { hash: keccak(input), bytes: input }
+const computeRecoveryHash = () => {
+  const input = new Uint8Array(32)
+  return { hash: input, bytes: input }
 }
 
+/**
+ * WARNING: This shall be removed after Client Security is implemented. https://github.com/polymorpher/one-wallet/wiki/Client-Security
+ * @param hseed
+ * @param nonce
+ * @param leaf
+ * @returns {{eotp: Uint8Array, otp: number}|{}}
+ */
 const bruteforceEOTP = ({ hseed, nonce = 0, leaf }) => {
   const nonceBuffer = new Uint16Array([nonce])
   const buffer = new Uint8Array(32)
@@ -172,12 +166,53 @@ const bruteforceEOTP = ({ hseed, nonce = 0, leaf }) => {
   return { }
 }
 
+const computeTokenKey = ({ tokenType, contractAddress, tokenId }) => {
+  const buf = new Uint8Array(96)
+  const s1 = new BN(tokenType, 10).toArrayLike(Uint8Array, 'be', 32)
+  const s2 = hexStringToBytes(contractAddress, 32)
+  const s3 = new BN(tokenId, 10).toArrayLike(Uint8Array, 'be', 32)
+  buf.set(s1)
+  buf.set(s2, 32)
+  buf.set(s3, 64)
+  return { hash: keccak(buf), bytes: buf }
+}
+
+//   bytes32(uint256(operationType)),
+//   bytes32(uint256(tokenType)),
+//   bytes32(bytes20(contractAddress)),
+//   bytes32(tokenId),
+//   bytes32(bytes20(dest)),
+//   bytes32(amount),
+//   data
+const computeTokenOperationHash = ({ operationType, tokenType, contractAddress, tokenId, dest, amount, data = new Uint8Array() }) => {
+  const operationTypeBytes = new BN(operationType, 10).toArrayLike(Uint8Array, 'be', 32)
+  const tokenTypeBytes = new BN(tokenType, 10).toArrayLike(Uint8Array, 'be', 32)
+  const contractAddressBytes = hexStringToBytes(contractAddress, 32)
+  const tokenIdBytes = new BN(tokenId, 10).toArrayLike(Uint8Array, 'be', 32)
+  const destBytes = hexStringToBytes(dest, 32)
+  const amountBytes = new BN(amount, 10).toArrayLike(Uint8Array, 'be', 32)
+  const input = new Uint8Array(192 + data.length)
+  input.set(operationTypeBytes)
+  input.set(tokenTypeBytes, 32)
+  input.set(contractAddressBytes, 64)
+  input.set(tokenIdBytes, 96)
+  input.set(destBytes, 128)
+  input.set(amountBytes, 160)
+  if (data.length > 0) {
+    input.set(data, 192)
+  }
+  return { hash: keccak(input), bytes: input }
+}
+
 module.exports = {
+  computeCommitHash,
   computeMerkleTree,
   computeTransferHash,
   computeRecoveryHash,
   computeSetRecoveryAddressHash,
   selectMerkleNeighbors,
   computeEOTP,
-  bruteforceEOTP
+  bruteforceEOTP,
+  computeTokenKey,
+  computeTokenOperationHash
 }

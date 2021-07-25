@@ -1,6 +1,6 @@
 {
   "name": "one-wallet-relayer",
-  "version": "0.0.1",
+  "version": "0.2",
   "private": true,
   "main": "app.js",
   "scripts": {

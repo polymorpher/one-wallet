@@ -2,6 +2,9 @@ const JSSHA = require('jssha')
 const createKeccakHash = require('keccak')
 const Conversion = require('ethjs-unit')
 const sha256 = require('fast-sha256')
+const BN = require('bn.js')
+const STANDARD_DECIMAL = 18
+
 const utils = {
   hexView: (bytes) => {
     return bytes && Array.from(bytes).map(x => x.toString(16).padStart(2, '0')).join('')
@@ -99,12 +102,26 @@ const utils = {
     return new Uint8Array(b.buffer)
   },
 
-  toFraction: (ones, unit) => {
-    return Conversion.toWei(ones, unit || 'ether')
+  toFraction: (ones, unit, decimals) => {
+    const v = Conversion.toWei(ones, unit || 'ether')
+    const diff = STANDARD_DECIMAL - (decimals || STANDARD_DECIMAL)
+    if (diff === 0) {
+      return v
+    } else if (diff > 0) {
+      return v.div(new BN(10).pow(new BN(diff)))
+    } else {
+      return v.mul(new BN(10).pow(new BN(-diff)))
+    }
   },
 
-  toOne: (fractions, unit) => {
-    return Conversion.fromWei(fractions, unit || 'ether')
+  toOne: (fractions, unit, decimals) => {
+    const v = Conversion.fromWei(fractions, unit || 'ether')
+    const diff = STANDARD_DECIMAL - (decimals || STANDARD_DECIMAL)
+    if (diff > 0) {
+      return v + '0'.repeat(diff)
+    } else {
+      return v.slice(0, v.length + diff)
+    }
   },
 
 }

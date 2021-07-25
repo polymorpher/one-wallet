@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router'
 import Paths from '../constants/paths'
@@ -15,7 +15,7 @@ import qrcode from 'qrcode'
 import storage from '../storage'
 import walletActions from '../state/modules/wallet/actions'
 import WalletConstants from '../constants/wallet'
-import util from '../util'
+import util, { useWindowDimensions } from '../util'
 import { handleAPIError, handleAddressError } from '../handler'
 import { Hint, Heading, InputBox } from '../components/Text'
 import OtpBox from '../components/OtpBox'
@@ -38,6 +38,7 @@ const genName = (existingNames) => {
 }
 
 const Create = () => {
+  const { isMobile } = useWindowDimensions()
   const dispatch = useDispatch()
   const history = useHistory()
   const network = useSelector(state => state.wallet.network)
@@ -67,6 +68,8 @@ const Create = () => {
 
   const [deploying, setDeploying] = useState()
 
+  const otpRef = useRef()
+
   const getQRCodeUri = () => {
     // otpauth://TYPE/LABEL?PARAMETERS
     return `otpauth://totp/${name}?secret=${b32.encode(seed)}&issuer=Harmony`
@@ -74,7 +77,7 @@ const Create = () => {
   useEffect(() => {
     (async function () {
       const uri = getQRCodeUri()
-      const data = await qrcode.toDataURL(uri, { errorCorrectionLevel: 'low', width: 256 })
+      const data = await qrcode.toDataURL(uri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       setQRCodeData(data)
     })()
   }, [name])
@@ -99,6 +102,8 @@ const Create = () => {
     if (code.padStart(6, '0') !== otp.padStart(6, '0')) {
       console.log(`Expected: ${code}. Got: ${otp}`)
       message.error('Code is incorrect. Please try again.')
+      setOtp('')
+      otpRef?.current?.focusInput(0)
     } else {
       setSection(3)
     }
@@ -223,7 +228,7 @@ const Create = () => {
             <Heading>Create Your ONE Wallet</Heading>
             <Hint>You need the 6-digit code from Google authenticator to transfer funds. You can restore your wallet using Google authenticator on any device.</Hint>
             <Row justify='center'>
-              {qrCodeData && <Image src={qrCodeData} preview={false} width={256} />}
+              {qrCodeData && <Image src={qrCodeData} preview={false} width={isMobile ? 192 : 256} />}
             </Row>
           </Space>
         </Row>
@@ -232,6 +237,7 @@ const Create = () => {
             <Hint>After you are done, type in the 6-digit code from Google authenticator.</Hint>
             <OtpBox
               shouldAutoFocus
+              ref={otpRef}
               value={otp}
               onChange={setOtp}
             />
@@ -256,12 +262,17 @@ const Create = () => {
             <Select
               suffixIcon={<SearchOutlined />}
               placeholder='one1......'
-              style={{ width: 500, borderBottom: '1px dashed black' }} bordered={false} showSearch onChange={(v) => setLastResortAddress(v)}
+              style={{ width: isMobile ? '100%' : 500, borderBottom: '1px dashed black' }} bordered={false} showSearch onChange={(v) => setLastResortAddress(v)}
               value={lastResortAddress}
               onSearch={(v) => setLastResortAddress(v)}
             >
               {Object.keys(wallets).filter(k => wallets[k].network === network).map(k => {
-                return <Select.Option key={k} value={util.safeOneAddress(wallets[k].address)}>({wallets[k].name}) {util.safeOneAddress(wallets[k].address)} </Select.Option>
+                const addr = util.safeOneAddress(wallets[k].address)
+                return (
+                  <Select.Option key={k} value={util.safeOneAddress(wallets[k].address)}>
+                    ({wallets[k].name}) {isMobile ? util.ellipsisAddress(addr) : addr}
+                  </Select.Option>
+                )
               })}
               {lastResortAddress && !wallets[util.safeNormalizedAddress(lastResortAddress)] && <Select.Option key={lastResortAddress} value={lastResortAddress}>{lastResortAddress}</Select.Option>}
               <Select.Option key='later' value=''> I want to do this later in my wallet </Select.Option>
@@ -279,7 +290,7 @@ const Create = () => {
             {!root &&
               <>
                 <Hint>One moment... we are still preparing your wallet</Hint>
-                <Space size='large'>
+                <Space size='large' direction={isMobile && 'vertical'}>
                   <Progress
                     type='circle'
                     strokeColor={{
@@ -290,8 +301,8 @@ const Create = () => {
                   />
                   <Space direction='vertical'>
                     <Timeline pending={progressStage < 2 && 'Securing your keyless ONE Wallet'}>
-                      <Timeline.Item color={progressStage < 1 ? 'grey' : 'green'}>Computing proofs for each time interval</Timeline.Item>
-                      <Timeline.Item color={progressStage < 2 ? 'grey' : 'green'}>Preparing hashes for verification</Timeline.Item>
+                      <Timeline.Item color={progressStage < 1 ? 'grey' : 'green'}>Securing the wallet</Timeline.Item>
+                      <Timeline.Item color={progressStage < 2 ? 'grey' : 'green'}>Preparing signatures</Timeline.Item>
                     </Timeline>
                   </Space>
                 </Space>

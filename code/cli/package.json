@@ -1,13 +1,20 @@
 {
-  "name": "one-wallet-cli",
-  "version": "0.0.1",
+  "name": "1wallet",
+  "version": "0.2.1",
   "private": true,
   "license": "Apache-2.0",
   "main": "main.js",
   "scripts": {
     "babel": "npx babel src --out-dir lib",
     "dev": "DEBUG=true node lib/main.js",
-    "build": "pkg main.js"
+    "build": "pkg . --compress Brotli"
+  },
+  "bin": "lib/main.js",
+  "pkg": {
+    "scripts": "lib/**/*.js",
+    "targets": [ "node14-macos-arm64", "node14-macos-x64", "node14-linux-x64", "node14-win-x64" ],
+    "outputPath": "bin",
+    "output": "1wallet"
   },
   "devDependencies": {
     "@babel/cli": "^7.14.5",
@@ -39,6 +46,9 @@
     "eslint-plugin-promise": "^5.1.0",
     "eslint-plugin-react": "^7.23.2",
     "pkg": "^5.3.0",
+    "webpack": "^5.44.0",
+    "webpack-bundle-analyzer": "^4.4.2",
+    "webpack-cli": "^4.7.2",
     "why-is-node-running": "^2.2.0"
   },
   "browserslist": {

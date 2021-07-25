@@ -63,7 +63,7 @@ module.exports = {
     main: ['./src/index.js'],
     ONEWalletWorker: ['./src/worker/ONEWalletWorker.js']
   },
-  devtool: 'source-map',
+  devtool: process.env.DEBUG && 'source-map',
   output: {
     filename: '[name].js',
     path: path.resolve(__dirname, 'dist'),

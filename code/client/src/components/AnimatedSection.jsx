@@ -2,6 +2,7 @@ import React from 'react'
 import { Transition } from 'react-transition-group'
 import styled from 'styled-components'
 import { Card } from 'antd'
+import { useWindowDimensions } from '../util'
 
 const Section = styled(Card)`
   padding: 32px;
@@ -20,13 +21,17 @@ const transitionStyles = {
   exited: { opacity: 0, zIndex: 0 },
 }
 
-const AnimatedSection = ({ show = true, children, style, ...params }) => (
-  <Transition in={show} timeout={300}>
-    {state => (
-      <Section data-show={show} style={{ ...defaultStyle, ...transitionStyles[state], ...style }} {...params}>
-        {children}
-      </Section>
-    )}
-  </Transition>)
+const AnimatedSection = ({ show = true, children, style, ...params }) => {
+  const { isMobile } = useWindowDimensions()
+  return (
+    <Transition in={show} timeout={300}>
+      {state => (
+        <Section data-show={show} style={{ padding: isMobile ? 16 : 32, ...defaultStyle, ...transitionStyles[state], ...style }} {...params}>
+          {children}
+        </Section>
+      )}
+    </Transition>
+  )
+}
 
 export default AnimatedSection

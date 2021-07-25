@@ -1,0 +1,30 @@
+module.exports = {
+  TokenType: {
+    0: 'ERC20',
+    1: 'ERC721',
+    2: 'ERC1155',
+    3: 'NONE',
+    'ERC20': 0,
+    'ERC721': 1,
+    'ERC1155': 2,
+    'NONE': 3,
+  },
+  OperationType: {
+    TRACK: 0,
+    UNTRACK: 1,
+    TRANSFER_TOKEN: 2,
+    OVERRIDE_TRACK: 3,
+    TRANSFER: 4,
+    SET_RECOVERY_ADDRESS: 5,
+    RECOVER: 6,
+    0: 'TRACK',
+    1: 'UNTRACK',
+    2: 'TRANSFER_TOKEN',
+    3: 'OVERRIDE_TRACK',
+    4: 'TRANSFER',
+    5: 'SET_RECOVERY_ADDRESS',
+    6: 'RECOVER'
+  },
+  EmptyAddress: '0x0000000000000000000000000000000000000000',
+  EmptyBech32Address: 'one1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqquzw7vz',
+}

@@ -75,7 +75,7 @@ export const listWallets = async () => {
 export const readMain = async () => {
   const fname = path.join(StoreManager.path, 'main')
   try {
-    fs.access(fname, fsConstants.F_OK)
+    await fs.access(fname, fsConstants.F_OK)
   } catch (ex) {
     return { error: `File ${fname} does not exist` }
   }
