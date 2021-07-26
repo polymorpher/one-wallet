@@ -1,6 +1,6 @@
 ## Wiki Mirror
 
-This folder contains documents mirrored from [the Wiki(https://github.com/polymorpher/one-wallet/wiki). The purpose is to make it easy for collaborators to review the design documents, since GitHub wiki does not support pull requests and branches.
+This folder contains documents mirrored from [the Wiki](https://github.com/polymorpher/one-wallet/wiki). The purpose is to make it easy for collaborators to review the design documents, since GitHub wiki does not support pull requests and branches.
 
 ### How to contribute
 
