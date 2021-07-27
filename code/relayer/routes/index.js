@@ -43,7 +43,7 @@ router.use((req, res, next) => {
 
 // TODO: rate limiting + fingerprinting + delay with backoff
 
-router.post('/new', rootHashLimiter({ max: 6 }), generalLimiter({ max: 1 }), globalLimiter({ max: 250 }), async (req, res) => {
+router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), globalLimiter({ max: 250 }), async (req, res) => {
   let { root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit } = req.body
   // root is hex string, 32 bytes
   height = parseInt(height)
@@ -72,7 +72,7 @@ router.post('/new', rootHashLimiter({ max: 6 }), generalLimiter({ max: 1 }), glo
   }
 })
 
-router.post('/commit', generalLimiter({ max: 30 }), walletAddressLimiter({ max: 30 }), async (req, res) => {
+router.post('/commit', generalLimiter({ max: 60 }), walletAddressLimiter({ max: 60 }), async (req, res) => {
   let { hash, paramsHash, address } = req.body
   if (config.debug || config.verbose) {
     console.log(`[/commit] `, { hash, paramsHash, address })
@@ -104,7 +104,7 @@ router.post('/commit', generalLimiter({ max: 30 }), walletAddressLimiter({ max: 
   }
 })
 
-router.post('/reveal', generalLimiter({ max: 30 }), walletAddressLimiter({ max: 30 }), async (req, res) => {
+router.post('/reveal', generalLimiter({ max: 60 }), walletAddressLimiter({ max: 60 }), async (req, res) => {
   let { neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data } = req.body
   if (!checkParams({ neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data }, res)) {
     return
