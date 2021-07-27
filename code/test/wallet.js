@@ -132,7 +132,7 @@ contract('ONEWallet', (accounts) => {
       neighborsEncoded, index, ONEUtil.hexString(eotp),
       ONEConstants.OperationType.TRANSFER, ONEConstants.TokenType.NONE, ONEConstants.EmptyAddress, 0, purse.address, ONE_CENT / 2, '0x'
     )
-    Logger.debug(`Reveal would succeed=${wouldSucceed}`)
+    Logger.debug(`Reveal would succeed`, wouldSucceed)
     await wallet.reveal(
       neighborsEncoded, index, ONEUtil.hexString(eotp),
       ONEConstants.OperationType.TRANSFER, ONEConstants.TokenType.NONE, ONEConstants.EmptyAddress, 0, purse.address, ONE_CENT / 2, '0x'
