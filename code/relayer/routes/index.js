@@ -32,9 +32,9 @@ router.use((req, res, next) => {
   req.minorVersion = parseInt(minorVersion || 0)
   console.log(`Address: ${req.body.address}; majorVersion: ${req.majorVersion}; minorVersion: ${req.minorVersion}`)
   // TODO: differentiate <v5 and >=v6 contracts
-  if (!(majorVersion >= 6)) {
+  if (!(req.majorVersion >= 6)) {
     req.contract = blockchain.getContractV5(network)
-  } else if (majorVersion === 6) {
+  } else if (req.majorVersion === 6) {
     req.contract = blockchain.getContractV6(network)
   } else {
     req.contract = blockchain.getContract(network)
@@ -65,7 +65,7 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
 
   // TODO parameter verification
   try {
-    const wallet = await req.contract.new(root, height, interval, t0, lifespan, slotSize, lastResortAddress, new BN(dailyLimit, 10))
+    const wallet = await blockchain.getContract(req.network).new(root, height, interval, t0, lifespan, slotSize, lastResortAddress, new BN(dailyLimit, 10))
     return res.json({ success: true, address: wallet.address })
   } catch (ex) {
     console.error(ex)
@@ -98,7 +98,7 @@ router.post('/commit', generalLimiter({ max: 60 }), walletAddressLimiter({ max: 
   try {
     const wallet = await req.contract.at(address)
     let tx
-    if (req.majorVersion >= 6) {
+    if (req.majorVersion >= 7) {
       tx = await wallet.commit(hash, paramsHash, verificationHash)
     } else if (req.majorVersion >= 6) {
       tx = await wallet.commit(hash, paramsHash)
