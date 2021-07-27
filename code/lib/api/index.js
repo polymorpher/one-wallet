@@ -225,7 +225,8 @@ const api = {
      */
     getCommits: async ({ address }) => {
       const c = await one.at(address)
-      const result = await c.getCommits()
+      const result = await c.getAllCommits()
+      console.log('v7', result)
       return parseCommits(result)
     },
     /**
@@ -246,7 +247,7 @@ const api = {
      */
     findCommit: async ({ address, commitHash }) => {
       const c = await one.at(address)
-      const result = await c.findCommit(commitHash)
+      const result = await c.lookupCommit(commitHash)
       return parseCommits(result)
     },
     /**
