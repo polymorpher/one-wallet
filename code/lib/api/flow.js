@@ -183,7 +183,8 @@ const SecureFlowsV6 = {
       if (!(timestamp > 0)) {
         throw new Error('Commit not yet confirmed by blockchain')
       }
-      if (ONEUtil.hexString(paramsHashCommitted) !== paramsHash) {
+      if (!ONEUtil.bytesEqual(paramsHashCommitted, paramsHash)) {
+        console.error(`Got ${ONEUtil.hexString(paramsHashCommitted)}, expected ${ONEUtil.hexString(paramsHash)}`)
         throw new Error('Commit hash is corrupted on blockchain')
       }
       if (completed) {
