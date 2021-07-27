@@ -118,7 +118,11 @@ contract ONEWallet is TokenTracker {
         return nonces[index];
     }
 
-    function getCommits() external view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory)
+    function getCommits() external pure returns (bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
+        revert("Deprecated");
+    }
+
+    function getAllCommits() external view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory)
     {
         uint32 numCommits = 0;
         for (uint32 i = 0; i < commits.length; i++) {
@@ -146,7 +150,11 @@ contract ONEWallet is TokenTracker {
         return (hashes, paramHashes, verificationHashes, timestamps, completed);
     }
 
-    function findCommit(bytes32 hash) external view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
+    function findCommit(bytes32 /*hash*/) external pure returns (bytes32, bytes32, uint32, bool){
+        revert("Deprecated");
+    }
+
+    function lookupCommit(bytes32 hash) external view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
         Commit[] storage cc = commitLocker[hash];
         bytes32[] memory hashes = new bytes32[](cc.length);
         bytes32[] memory paramHashes = new bytes32[](cc.length);
