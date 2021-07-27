@@ -34,6 +34,8 @@ router.use((req, res, next) => {
   // TODO: differentiate <v5 and >=v6 contracts
   if (!(majorVersion >= 6)) {
     req.contract = blockchain.getContractV5(network)
+  } else if (majorVersion === 6) {
+    req.contract = blockchain.getContractV6(network)
   } else {
     req.contract = blockchain.getContract(network)
   }
@@ -73,25 +75,32 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
 })
 
 router.post('/commit', generalLimiter({ max: 60 }), walletAddressLimiter({ max: 60 }), async (req, res) => {
-  let { hash, paramsHash, address } = req.body
+  let { hash, paramsHash, verificationHash, address } = req.body
   if (config.debug || config.verbose) {
-    console.log(`[/commit] `, { hash, paramsHash, address })
+    console.log(`[/commit] `, { hash, paramsHash, verificationHash, address })
   }
   if (!hash || !address) {
-    return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Hash or address is missing', params: { hash, paramsHash, address } })
+    return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Hash or address is missing', params: { hash, paramsHash, verificationHash, address } })
   }
   if (hash.length !== 66) {
     return res.status(StatusCodes.BAD_REQUEST).json({ error: 'hash must be a hex string with length 64 starting with 0x (to represent 32 bytes)', hash })
   }
   if (req.majorVersion >= 6) {
     if (!paramsHash || paramsHash.length !== 66) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'paramsHash is missing or malformed', params: { hash, paramsHash, address } })
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'paramsHash is missing or malformed', params: { hash, paramsHash, verificationHash, address } })
+    }
+  }
+  if (req.majorVersion >= 7) {
+    if (!verificationHash || verificationHash.length !== 66) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'verificationHash is missing or malformed', params: { hash, paramsHash, verificationHash, address } })
     }
   }
   try {
     const wallet = await req.contract.at(address)
     let tx
     if (req.majorVersion >= 6) {
+      tx = await wallet.commit(hash, paramsHash, verificationHash)
+    } else if (req.majorVersion >= 6) {
       tx = await wallet.commit(hash, paramsHash)
     } else {
       tx = await wallet.commit(hash)
