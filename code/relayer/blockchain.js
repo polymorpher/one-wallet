@@ -62,6 +62,7 @@ const init = () => {
     // console.log(k, account.address, account.bech32Address)
     c.defaults({ from: account.address })
     c5.defaults({ from: account.address })
+    c6.defaults({ from: account.address })
     contracts[k] = c
     contractsV5[k] = c5
     contractsV6[k] = c6
