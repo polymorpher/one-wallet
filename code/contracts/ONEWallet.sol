@@ -38,8 +38,8 @@ contract ONEWallet is TokenTracker {
     uint256 constant AUTO_RECOVERY_TRIGGER_AMOUNT = 1 ether;
     uint32 constant MAX_COMMIT_SIZE = 120;
 
-    uint32 constant majorVersion = 0x6; // a change would require client to migrate
-    uint32 constant minorVersion = 0x2; // a change would not require the client to migrate
+    uint32 constant majorVersion = 0x7; // a change would require client to migrate
+    uint32 constant minorVersion = 0x1; // a change would not require the client to migrate
 
     enum OperationType {
         TRACK, UNTRACK, TRANSFER_TOKEN, OVERRIDE_TRACK, TRANSFER, SET_RECOVERY_ADDRESS, RECOVER
@@ -48,12 +48,13 @@ contract ONEWallet is TokenTracker {
     struct Commit {
         bytes32 hash;
         bytes32 paramsHash;
+        bytes32 verificationHash;
         uint32 timestamp;
         bool completed;
     }
 
     bytes32[] commits; // self-clean on commit (auto delete commits that are beyond REVEAL_MAX_DELAY), so it's bounded by the number of commits an attacker can spam within REVEAL_MAX_DELAY time in the worst case, which is not too bad.
-    mapping(bytes32 => Commit) commitLocker;
+    mapping(bytes32 => Commit[]) commitLocker;
 
 
     constructor(bytes32 root_, uint8 height_, uint8 interval_, uint32 t0_, uint32 lifespan_, uint8 maxOperationsPerInterval_,
@@ -117,35 +118,66 @@ contract ONEWallet is TokenTracker {
         return nonces[index];
     }
 
-    function getCommits() external view returns (bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory)
+    function getCommits() external pure returns (bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
+        revert("Deprecated");
+    }
+
+    function getAllCommits() external view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory)
     {
-        bytes32[] memory paramHashes = new bytes32[](commits.length);
-        bytes32[] memory hashes = new bytes32[](commits.length);
-        uint32[] memory timestamps = new uint32[](commits.length);
-        bool[] memory completed = new bool[](commits.length);
+        uint32 numCommits = 0;
         for (uint32 i = 0; i < commits.length; i++) {
-            Commit storage c = commitLocker[commits[i]];
+            Commit[] storage cc = commitLocker[commits[i]];
+            numCommits += uint32(cc.length);
+        }
+        bytes32[] memory hashes = new bytes32[](numCommits);
+        bytes32[] memory paramHashes = new bytes32[](numCommits);
+        bytes32[] memory verificationHashes = new bytes32[](numCommits);
+        uint32[] memory timestamps = new uint32[](numCommits);
+        bool[] memory completed = new bool[](numCommits);
+        uint32 index = 0;
+        for (uint32 i = 0; i < commits.length; i++) {
+            Commit[] storage cc = commitLocker[commits[i]];
+            for (uint32 j = 0; j < cc.length; j++) {
+                Commit storage c = cc[j];
+                hashes[index] = c.hash;
+                paramHashes[index] = c.paramsHash;
+                verificationHashes[index] = c.verificationHash;
+                timestamps[index] = c.timestamp;
+                completed[index] = c.completed;
+                index++;
+            }
+        }
+        return (hashes, paramHashes, verificationHashes, timestamps, completed);
+    }
+
+    function findCommit(bytes32 /*hash*/) external pure returns (bytes32, bytes32, uint32, bool){
+        revert("Deprecated");
+    }
+
+    function lookupCommit(bytes32 hash) external view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
+        Commit[] storage cc = commitLocker[hash];
+        bytes32[] memory hashes = new bytes32[](cc.length);
+        bytes32[] memory paramHashes = new bytes32[](cc.length);
+        bytes32[] memory verificationHashes = new bytes32[](cc.length);
+        uint32[] memory timestamps = new uint32[](cc.length);
+        bool[] memory completed = new bool[](cc.length);
+        for (uint32 i = 0; i < cc.length; i++) {
+            Commit storage c = cc[i];
             hashes[i] = c.hash;
             paramHashes[i] = c.paramsHash;
+            verificationHashes[i] = c.verificationHash;
             timestamps[i] = c.timestamp;
             completed[i] = c.completed;
         }
-        return (hashes, paramHashes, timestamps, completed);
+        return (hashes, paramHashes, verificationHashes, timestamps, completed);
     }
 
-    function findCommit(bytes32 hash) external view returns (bytes32, bytes32, uint32, bool){
-        Commit storage c = commitLocker[hash];
-        return (c.hash, c.paramsHash, c.timestamp, c.completed);
-    }
-
-    function commit(bytes32 hash, bytes32 paramsHash) external {
+    function commit(bytes32 hash, bytes32 paramsHash, bytes32 verificationHash) external {
         _cleanupCommits();
-        Commit storage c = commitLocker[hash];
-        require(c.timestamp == 0 && !c.completed, "Commit already exists");
-        Commit memory nc = Commit(hash, paramsHash, uint32(block.timestamp), false);
+        Commit memory nc = Commit(hash, paramsHash, verificationHash, uint32(block.timestamp), false);
         require(commits.length < MAX_COMMIT_SIZE, "Too many commits");
         commits.push(hash);
-        commitLocker[hash] = nc;
+        commitLocker[hash].push(nc);
     }
 
     /// This function sends all remaining funds of the wallet to `lastResortAddress`. The caller should verify that `lastResortAddress` is not null.
@@ -231,6 +263,7 @@ contract ONEWallet is TokenTracker {
         }
     }
 
+    /// Provides commitHash, paramsHash, and verificationHash given the parameters
     function _getRevealHash(bytes32 neighbor, uint32 indexWithNonce, bytes32 eotp,
         OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount, bytes calldata data) pure internal returns (bytes32, bytes32) {
         bytes32 hash = keccak256(bytes.concat(neighbor, bytes32(bytes4(indexWithNonce)), eotp));
@@ -253,7 +286,6 @@ contract ONEWallet is TokenTracker {
             );
             paramsHash = keccak256(bytes.concat(packed));
         }
-
         return (hash, paramsHash);
     }
 
@@ -264,8 +296,8 @@ contract ONEWallet is TokenTracker {
         _isCorrectProof(neighbors, indexWithNonce, eotp);
         (bytes32 commitHash, bytes32 paramsHash) = _getRevealHash(neighbors[0], indexWithNonce, eotp,
             operationType, tokenType, contractAddress, tokenId, dest, amount, data);
-        _verifyReveal(commitHash, indexWithNonce, paramsHash);
-        _completeReveal(commitHash);
+        uint32 commitIndex = _verifyReveal(commitHash, indexWithNonce, paramsHash, eotp);
+        _completeReveal(commitHash, commitIndex);
         // No revert should occur below this point
         if (operationType == OperationType.TRACK) {
             if (data.length > 0) {
@@ -310,37 +342,47 @@ contract ONEWallet is TokenTracker {
 
     /// Remove old commits from storage, where the commit's timestamp is older than block.timestamp - REVEAL_MAX_DELAY. The purpose is to remove dangling data from blockchain, and prevent commits grow unbounded. This is executed at commit time. The committer pays for the gas of this cleanup. Therefore, any attacker who intend to spam commits would be disincentivized. The attacker would not succeed in preventing any normal operation by the user.
     function _cleanupCommits() internal {
-        uint32 commitIndex = 0;
+        uint32 timelyIndex = 0;
         uint32 bt = uint32(block.timestamp);
         // go through past commits chronologically, starting from the oldest, and find the first commit that is not older than block.timestamp - REVEAL_MAX_DELAY.
-        for (uint32 i = 0; i < commits.length; i++) {
-            bytes32 hash = commits[i];
-            Commit storage c = commitLocker[hash];
+        for (; timelyIndex < commits.length; timelyIndex++) {
+            bytes32 hash = commits[timelyIndex];
+            Commit[] storage cc = commitLocker[hash];
+            // We may skip because the commit is already cleaned up and is considered "untimely".
+            if (cc.length == 0) {
+                continue;
+            }
+            // We take the first entry in `cc` as the timestamp for all commits under commit hash `hash`, because the first entry represents the oldest commit and only commit if an attacker is not attacking this wallet. If an attacker is front-running commits, the first entry may be from the attacker, but its timestamp should be identical to the user's commit (or close enough to the user's commit, if network is a bit congested)
+            Commit storage c = cc[0];
         unchecked {
             if (c.timestamp >= bt - REVEAL_MAX_DELAY) {
-                commitIndex = i;
                 break;
             }
         }
         }
-        // If this condition holds true, no commit is older than block.timestamp - REVEAL_MAX_DELAY. Nothing needs to be cleaned up
-        if (commitIndex == 0) {
+        // Now `timelyIndex` holds the index of the first commit that is timely. All commits at an index less than `timelyIndex` must be deleted;
+        if (timelyIndex == 0) {
+            // no commit is older than block.timestamp - REVEAL_MAX_DELAY. Nothing needs to be cleaned up
             return;
         }
         // Delete Commit instances for commits that are are older than block.timestamp - REVEAL_MAX_DELAY
-        for (uint32 i = 0; i < commitIndex; i++) {
+        for (uint32 i = 0; i < timelyIndex; i++) {
             bytes32 hash = commits[i];
+            Commit[] storage cc = commitLocker[hash];
+            for (uint32 j = 0; j < cc.length; j++) {
+                delete cc[j];
+            }
             delete commitLocker[hash];
         }
-        // Shift all commits up by <commitIndex> positions, and discard <commitIndex> number of commits at the end of the array
+        // Shift all commit hashes up by `timelyIndex` positions, and discard `commitIndex` number of hashes at the end of the array
         // This process erases old commits
         uint32 len = uint32(commits.length);
-        for (uint32 i = commitIndex; i < len; i++) {
+        for (uint32 i = timelyIndex; i < len; i++) {
         unchecked{
-            commits[i - commitIndex] = commits[i];
+            commits[i - timelyIndex] = commits[i];
         }
         }
-        for (uint32 i = 0; i < commitIndex; i++) {
+        for (uint32 i = 0; i < timelyIndex; i++) {
             commits.pop();
         }
         // TODO (@polymorpher): upgrade the above code after solidity implements proper support for struct-array memory-storage copy operation.
@@ -351,25 +393,40 @@ contract ONEWallet is TokenTracker {
         return uint32(block.timestamp) - commitTime < REVEAL_MAX_DELAY;
     }
 
-    function _verifyReveal(bytes32 hash, uint32 indexWithNonce, bytes32 paramsHash) view internal
+    /// This function verifies that the first valid entry with respect to the given `eotp` in `commitLocker[hash]` matches the provided `paramsHash` and `verificationHash`. An entry is valid with respect to `eotp` iff `h3(entry.paramsHash . eotp)` equals `entry.verificationHash`
+    function _verifyReveal(bytes32 hash, uint32 indexWithNonce, bytes32 paramsHash, bytes32 eotp) view internal returns (uint32)
     {
-        Commit storage c = commitLocker[hash];
-        require(c.timestamp > 0, "Cannot find commit");
         uint32 index = indexWithNonce / maxOperationsPerInterval;
         uint8 nonce = uint8(indexWithNonce % maxOperationsPerInterval);
-        uint32 counter = c.timestamp / interval - t0;
-        require(counter == index, "Index - timestamp mismatch");
-        uint8 expectedNonce = nonces[counter];
-        require(nonce >= expectedNonce, "Nonce too low");
-        require(!c.completed, "Commit already completed");
-        require(c.paramsHash == paramsHash, "Invalid params hash");
-        // this should not happen (since old commit should be cleaned up already)
-        require(_isRevealTimely(c.timestamp), "Reveal too late");
+        Commit[] storage cc = commitLocker[hash];
+        require(cc.length > 0, "No commit found");
+        for (uint32 i = 0; i < cc.length; i++) {
+            Commit storage c = cc[i];
+            bytes32 expectedVerificationHash = keccak256(bytes.concat(c.paramsHash, eotp));
+            if (c.verificationHash != expectedVerificationHash) {
+                // Invalid entry. Ignore
+                continue;
+            }
+            require(c.paramsHash == paramsHash, "Parameter hash mismatch");
+            uint32 counter = c.timestamp / interval - t0;
+            require(counter == index, "Index - timestamp mismatch");
+            uint8 expectedNonce = nonces[counter];
+            require(nonce >= expectedNonce, "Nonce too low");
+            require(!c.completed, "Commit already completed");
+            // This normally should not happen, but when the network is congested (regardless of whether due to an attacker's malicious acts or not), the legitimate reveal may become untimely. This may happen before the old commit is cleaned up by another fresh commit. We enforce this restriction so that the attacker would not have a lot of time to reverse-engineer a single EOTP or leaf using an old commit.
+            require(_isRevealTimely(c.timestamp), "Reveal too late");
+            return i;
+        }
+        revert("No valid commit");
     }
 
-    function _completeReveal(bytes32 commitHash) internal {
-        Commit storage c = commitLocker[commitHash];
-        require(c.timestamp > 0, "Invalid commit hash");
+    function _completeReveal(bytes32 commitHash, uint32 commitIndex) internal {
+        Commit[] storage cc = commitLocker[commitHash];
+        require(cc.length > 0, "Invalid commit hash");
+        require(cc.length > commitIndex, "Invalid commitIndex");
+        Commit storage c = cc[commitIndex];
+        require(c.timestamp > 0, "Invalid commit timestamp");
+        // should not happen
         uint32 index = uint32(c.timestamp) / interval - t0;
         _incrementNonce(index);
         _cleanupNonces();

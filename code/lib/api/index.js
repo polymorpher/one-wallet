@@ -117,7 +117,14 @@ const initBlockchain = (store) => {
   })
   if (config.debug) console.log('blockchain init complete:', { networks })
 }
-
+const parseCommits = (result) => {
+  const [hashes, paramsHashes, verificationHashes, timestamps, completed] = Object.keys(result).map(k => result[k])
+  const commits = []
+  for (let i = 0; i < hashes.length; i += 1) {
+    commits.push({ hash: hashes[i], paramsHash: paramsHashes[i], verificationHash: verificationHashes[i], timestamp: timestamps[i], completed: completed[i] })
+  }
+  return commits
+}
 const api = {
   web: {
     get: async ({ link }) => {
@@ -196,11 +203,11 @@ const api = {
       return balance
     },
     /**
-     * Require contract >= v3
+     * Require contract >= v3, <= v6
      * @param address
      * @returns {Promise<*[]>}
      */
-    getCommits: async ({ address }) => {
+    getCommitsV3: async ({ address }) => {
       const c = await one.at(address)
       const result = await c.getCommits()
       const [hashes, paramsHashes, timestamps, completed] = Object.keys(result).map(k => result[k])
@@ -210,16 +217,38 @@ const api = {
       }
       return commits
     },
+
     /**
-     * Require contract >= v6
+     * Require contract >= v7
+     * @param address
+     * @returns {Promise<*[]>}
+     */
+    getCommits: async ({ address }) => {
+      const c = await one.at(address)
+      const result = await c.getAllCommits()
+      console.log('v7', result)
+      return parseCommits(result)
+    },
+    /**
+     * Require contract == v6
+     * @param address
+     * @returns {Promise<void>}
+     */
+    findCommitV6: async ({ address, commitHash }) => {
+      const c = await one.at(address)
+      const result = await c.findCommit(commitHash)
+      const [hash, paramsHash, timestamp, completed] = Object.keys(result).map(k => result[k])
+      return { hash, paramsHash, timestamp: new BN(timestamp).toNumber(), completed }
+    },
+    /**
+     * Require contract >= v7
      * @param address
      * @returns {Promise<void>}
      */
     findCommit: async ({ address, commitHash }) => {
       const c = await one.at(address)
-      const result = await c.findCommit(commitHash)
-      const [hash, paramsHash, timestamp, completed] = Object.keys(result).map(k => result[k])
-      return { hash, paramsHash, timestamp: new BN(timestamp).toNumber(), completed }
+      const result = await c.lookupCommit(commitHash)
+      return parseCommits(result)
     },
     /**
      * Require contract >= v5
@@ -281,8 +310,8 @@ const api = {
       const { data } = await base.post('/new', { root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit })
       return data
     },
-    commit: async ({ address, hash, paramsHash }) => {
-      const { data } = await base.post('/commit', { address, hash, paramsHash })
+    commit: async ({ address, hash, paramsHash, verificationHash }) => {
+      const { data } = await base.post('/commit', { address, hash, paramsHash, verificationHash })
       return data
     },
     revealTransfer: async ({ neighbors, index, eotp, dest, amount, address }) => {

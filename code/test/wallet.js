@@ -109,16 +109,18 @@ contract('ONEWallet', (accounts) => {
     const neighbor = neighbors[0]
     const { hash: commitHash } = ONE.computeCommitHash({ neighbor, index, eotp })
     const { hash: transferHash } = ONE.computeTransferHash({ dest: purse.address, amount: ONE_CENT / 2 })
-    Logger.debug(`Committing transfer hash`, { commitHash: ONEUtil.hexString(commitHash), transferHash: ONEUtil.hexString(transferHash) })
-    await wallet.commit(ONEUtil.hexString(commitHash), ONEUtil.hexString(transferHash))
+    const { hash: verificationHash } = ONE.computeVerificationHash({ paramsHash: transferHash, eotp })
+    Logger.debug(`Committing transfer hash`, { commitHash: ONEUtil.hexString(commitHash), transferHash: ONEUtil.hexString(transferHash), verificationHash: ONEUtil.hexString(verificationHash) })
+    await wallet.commit(ONEUtil.hexString(commitHash), ONEUtil.hexString(transferHash), ONEUtil.hexString(verificationHash))
     Logger.debug(`Committed`)
     const neighborsEncoded = neighbors.map(ONEUtil.hexString)
     Debugger.debugProof({ neighbors, height: layers.length, index, eotp, root })
     const commits = await wallet.getCommits()
     const hash = commits[0][0]
     const paramHash = commits[0][1]
-    const timestamp = commits[0][2]
-    Logger.debug({ commit: { hash, paramHash, timestamp }, currentTimeInSeconds: Math.floor(Date.now() / 1000) })
+    const verificationHashCommitted = commits[0][2]
+    const timestamp = commits[0][3]
+    Logger.debug({ commit: { hash, paramHash, verificationHash: verificationHashCommitted, timestamp }, currentTimeInSeconds: Math.floor(Date.now() / 1000) })
     Logger.debug(`Revealing transfer with`, {
       neighbors: neighborsEncoded,
       indexWithNonce: index,
@@ -130,7 +132,7 @@ contract('ONEWallet', (accounts) => {
       neighborsEncoded, index, ONEUtil.hexString(eotp),
       ONEConstants.OperationType.TRANSFER, ONEConstants.TokenType.NONE, ONEConstants.EmptyAddress, 0, purse.address, ONE_CENT / 2, '0x'
     )
-    Logger.debug(`Reveal would succeed=${wouldSucceed}`)
+    Logger.debug(`Reveal would succeed`, wouldSucceed)
     await wallet.reveal(
       neighborsEncoded, index, ONEUtil.hexString(eotp),
       ONEConstants.OperationType.TRANSFER, ONEConstants.TokenType.NONE, ONEConstants.EmptyAddress, 0, purse.address, ONE_CENT / 2, '0x'
@@ -163,8 +165,9 @@ contract('ONEWallet', (accounts) => {
     const neighbor = neighbors[0]
     const { hash: commitHash } = ONE.computeCommitHash({ neighbor, index, eotp })
     const { hash: transferHash } = ONE.computeTransferHash({ dest: purse.address, amount: HALF_DIME })
+    const { hash: verificationHash } = ONE.computeVerificationHash({ paramsHash: transferHash, eotp })
     const neighborsEncoded = neighbors.map(ONEUtil.hexString)
-    await wallet.commit(ONEUtil.hexString(commitHash), ONEUtil.hexString(transferHash))
+    await wallet.commit(ONEUtil.hexString(commitHash), ONEUtil.hexString(transferHash), ONEUtil.hexString(verificationHash))
     // bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp,
     //   OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address payable dest, uint256 amount, bytes calldata data
     await wallet.reveal(
@@ -198,8 +201,9 @@ contract('ONEWallet', (accounts) => {
     const neighbor = neighbors[0]
     const { hash: commitHash } = ONE.computeCommitHash({ neighbor, index, eotp })
     const { hash: recoveryHash } = ONE.computeRecoveryHash()
+    const { hash: verificationHash } = ONE.computeVerificationHash({ paramsHash: recoveryHash, eotp })
     const neighborsEncoded = neighbors.map(ONEUtil.hexString)
-    await wallet.commit(ONEUtil.hexString(commitHash), ONEUtil.hexString(recoveryHash))
+    await wallet.commit(ONEUtil.hexString(commitHash), ONEUtil.hexString(recoveryHash), ONEUtil.hexString(verificationHash))
     await wallet.reveal(
       neighborsEncoded, index, ONEUtil.hexString(eotp),
       ONEConstants.OperationType.RECOVER, ONEConstants.TokenType.NONE, ONEConstants.EmptyAddress, 0, ONEConstants.EmptyAddress, HALF_DIME, '0x'

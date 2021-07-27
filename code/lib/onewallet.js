@@ -204,6 +204,14 @@ const computeTokenOperationHash = ({ operationType, tokenType, contractAddress, 
   return { hash: keccak(input), bytes: input }
 }
 
+// address, hex string
+const computeVerificationHash = ({ paramsHash, eotp }) => {
+  const input = new Uint8Array(64)
+  input.set(paramsHash)
+  input.set(eotp, 32)
+  return { hash: keccak(input), bytes: input }
+}
+
 module.exports = {
   computeCommitHash,
   computeMerkleTree,
@@ -214,5 +222,6 @@ module.exports = {
   computeEOTP,
   bruteforceEOTP,
   computeTokenKey,
-  computeTokenOperationHash
+  computeTokenOperationHash,
+  computeVerificationHash
 }
