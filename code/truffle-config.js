@@ -57,7 +57,7 @@ module.exports = {
     },
     'harmony-mainnet': {
       provider: () => config.harmony.mainnet.key && BuildProvider(config.harmony.mainnet),
-      network_id: config.harmony.testnet.networkId,
+      network_id: config.harmony.mainnet.networkId,
       gas: config.gasLimit
     }
   },

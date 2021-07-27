@@ -6,13 +6,13 @@ module.exports = {
       key: process.env.HARMONY_TESTNET_KEY || '',
       url: 'https://api.s0.b.hmny.io',
       chainId: 2,
-      networkId: '1666700000'
+      networkId: 2
     },
     mainnet: {
       key: process.env.HARMONY_MAINNET_KEY || '',
       url: 'https://api.s0.t.hmny.io',
       chainId: 1,
-      networkId: '1666600000'
+      networkId: 1
     }
   },
   eth: {

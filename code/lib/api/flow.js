@@ -38,6 +38,12 @@ const Committer = {
     const { hash: commitHash } = ONE.computeCommitHash({ neighbor, index, eotp })
     const { hash: paramsHash } = commitHashGenerator({ ...commitHashArgs })
     return { commitHash, paramsHash }
+  },
+  v7: ({ address, commitHashGenerator, neighbor, index, eotp, commitHashArgs }) => {
+    const { hash: commitHash } = ONE.computeCommitHash({ neighbor, index, eotp })
+    const { hash: paramsHash } = commitHashGenerator({ ...commitHashArgs })
+    const { hash: verificationHash } = ONE.computeVerificationHash({ eotp, paramsHash })
+    return { commitHash, paramsHash, verificationHash }
   }
 }
 
@@ -70,13 +76,14 @@ const Flows = {
     const neighbors = ONE.selectMerkleNeighbors({ layers, index })
     const neighbor = neighbors[0]
 
-    const { commitHash, paramsHash } = committer({ address, commitHashGenerator, neighbor, index, eotp, commitHashArgs })
+    const { commitHash, paramsHash, verificationHash } = committer({ address, commitHashGenerator, neighbor, index, eotp, commitHashArgs })
     // console.log(commitHash, paramsHash)
     try {
       const { success, error } = await api.relayer.commit({
         address,
         hash: ONEUtil.hexString(commitHash),
         paramsHash: paramsHash && ONEUtil.hexString(paramsHash),
+        verificationHash: verificationHash && ONEUtil.hexString(verificationHash)
       })
       if (!success) {
         onCommitFailure && await onCommitFailure(error)
@@ -90,7 +97,7 @@ const Flows = {
     let numAttemptsRemaining = maxTransferAttempts - 1
     const tryReveal = () => setTimeout(async () => {
       try {
-        beforeReveal && await beforeReveal(commitHash)
+        beforeReveal && await beforeReveal(commitHash, paramsHash, verificationHash)
         // TODO: should reveal only when commit is confirmed and viewable on-chain. This should be fixed before releasing it to 1k+ users
         // TODO: Prevent transfer more than maxOperationsPerInterval per interval (30 seconds)
         const { success, txId, error } = await revealAPI({
@@ -127,6 +134,13 @@ const Flows = {
 }
 
 const SecureFlows = {
+  /**
+   * require contract version between [3, 5]
+   * @param wallet
+   * @param beforeReveal
+   * @param args
+   * @returns {Promise<undefined|number>}
+   */
   commitReveal: async ({
     wallet, beforeReveal, ...args
   }) => {
@@ -134,7 +148,7 @@ const SecureFlows = {
     const _beforeReveal = beforeReveal
     beforeReveal = async (commitHash) => {
       _beforeReveal && _beforeReveal()
-      const commits = await api.blockchain.getCommits({ address })
+      const commits = await api.blockchain.getCommitsV3({ address })
       commitHash = ONEUtil.hexString(commitHash)
       // console.log({ commitHash, commits })
       if (!commits || !commits.find(c => c.hash === commitHash)) {
@@ -160,13 +174,18 @@ const SecureFlowsV6 = {
   }) => {
     const { address } = wallet
     const _beforeReveal = beforeReveal
-    beforeReveal = async (commitHash) => {
-      _beforeReveal && _beforeReveal()
+    beforeReveal = async (commitHash, paramsHash) => {
+      _beforeReveal && _beforeReveal(commitHash, paramsHash)
       commitHash = ONEUtil.hexString(commitHash)
-      const { timestamp, completed } = await api.blockchain.findCommit({ address, commitHash })
+      paramsHash = ONEUtil.hexString(paramsHash)
+      const { timestamp, completed, paramsHash: paramsHashCommitted } = await api.blockchain.findCommitV6({ address, commitHash })
       // console.log({ timestamp, completed })
       if (!(timestamp > 0)) {
         throw new Error('Commit not yet confirmed by blockchain')
+      }
+      if (!ONEUtil.bytesEqual(paramsHashCommitted, paramsHash)) {
+        console.error(`Got ${ONEUtil.hexString(paramsHashCommitted)}, expected ${ONEUtil.hexString(paramsHash)}`)
+        throw new Error('Commit hash is corrupted on blockchain')
       }
       if (completed) {
         throw new Error('Commit is already completed')
@@ -178,12 +197,57 @@ const SecureFlowsV6 = {
   }
 }
 
+const SecureFlowsV7 = {
+  /**
+   * require contract version >= v6
+   * @param wallet
+   * @param beforeReveal
+   * @param args
+   * @returns {Promise<undefined|number>}
+   */
+  commitReveal: async ({
+    wallet, beforeReveal, ...args
+  }) => {
+    const { address } = wallet
+    const _beforeReveal = beforeReveal
+    beforeReveal = async (commitHash, paramsHash, verificationHash) => {
+      _beforeReveal && _beforeReveal(commitHash, paramsHash, verificationHash)
+      commitHash = ONEUtil.hexString(commitHash)
+      paramsHash = ONEUtil.hexString(paramsHash)
+      verificationHash = ONEUtil.hexString(verificationHash)
+      const commits = await api.blockchain.findCommit({ address, commitHash })
+      if (!commits) {
+        throw new Error('No commits retrieved')
+      }
+      // console.log({ commitHash, commits })
+      const commit = commits.find(c => c.paramsHash === paramsHash && c.verificationHash === verificationHash)
+      // console.log({ commit })
+      if (!commit) {
+        throw new Error('Commit not yet confirmed by blockchain')
+      }
+      if (!(commit.timestamp > 0)) {
+        throw new Error('Commit has corrupted timestamp')
+      }
+      if (commit.completed) {
+        throw new Error('Commit is already completed')
+      }
+    }
+    return Flows.commitReveal({
+      ...args, wallet, beforeReveal, committer: Committer.v7
+    })
+  }
+}
+
 const SmartFlows = {
   commitReveal: async ({ wallet, message = messager, ...args }) => {
     if (!wallet.majorVersion || !(wallet.majorVersion >= config.minWalletVersion)) {
       message.warning('You are using an outdated wallet, which is less secure than the current version. Please move your funds to a new wallet.', 15)
     }
+    if (wallet.majorVersion >= 7) {
+      return SecureFlowsV7.commitReveal({ ...args, wallet })
+    }
     if (wallet.majorVersion >= 6) {
+      message.warning('You are using an outdated wallet. It is prone to DoS attack.', 15)
       return SecureFlowsV6.commitReveal({ ...args, wallet })
     }
     message.warning('You are using a wallet version that is prone to man-in-the-middle attack. Please create a new wallet and migrate assets ASAP. See https://github.com/polymorpher/one-wallet/issues/47')
