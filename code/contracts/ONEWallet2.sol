@@ -104,7 +104,7 @@ contract ONEWallet2 {
 
                     if(!_executeTransfer(c.addr, c.amount)){
                         lastRevealedOTPIdx = otpIdx; // do not allow to call reveal with this eotp again
-                        return false; // if daily limit is not met or there was an error with send()
+                        return false; // if daily limit is not met or there was an error with send() (implemented by call)
                     }                
                     _cleanUpDailySpendings(); // clean up only after a successful transfer
 
@@ -181,7 +181,8 @@ contract ONEWallet2 {
         if(dailySpendings[block.timestamp / 1 days] + amount > dailyLimit)
             return false; // Daily limit exceeded.        
         
-        if(!dest.send(amount))
+        (bool res, ) = dest.call{value : amount}("");
+        if(!res)
             return false; // Unknown transfer error.
                  
         dailySpendings[block.timestamp / 1 days] += amount;
@@ -189,6 +190,7 @@ contract ONEWallet2 {
     }  
 
     function _drain() internal returns (bool) {
-        return lastResortAddress.send(address(this).balance);
+        (bool res, ) = lastResortAddress.call{value : address(this).balance}("");
+        return res;
     }    
 }
