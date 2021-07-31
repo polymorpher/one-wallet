@@ -26,6 +26,11 @@ contract ONEWallet2 {
     struct Commit {
         bytes32 hash;          // h(eOTP || operType || ...params)  
         uint timestamp;      // OTP must be valid in this time; not in the time of reveal 
+        
+        // below are operation-specific parameters bound to operType
+        OperType operType;
+        address payable addr; 
+        uint amount;
     }    
     mapping(uint32 => Commit[]) public commits; // idx of OTP valid during a commitment => commitment data
 
@@ -46,57 +51,70 @@ contract ONEWallet2 {
         // lastCleanUpOfCommitsIdx = 0; // implicit
     }
 
-    receive() external payable {}
+    receive() external payable {} // TODO: handle various cases within some base class
 
     /**
-     * This is a general commit and should work with all kinds of operations.
+     * This is a general commit and should work with all kinds of operations. 
+     * Operations are distinguished by otype, and they are accompanied by operation-specific parameters (that have operation specific interpretation).
+     * Note: It is important that the operations are submitted along the commit hash due to security property:
+     *   - the design is inspired by 3-stage protocol for replacing root hash in SmartOTPs; however, here we merge stages 1 and 2 into a single (since 3 stages would be impractical).
+     *   - we are making the 1st valid entry in the list of commits for current OTP interval => we commit to the commit hash and its operation parameters at the single step (in contrast to SmartOTPs doing it in 2 steps).
+     *   - a valid OTP + proof in reveal() can lead only to exection of the valid operation (1st one in the list).
+     *   - if here would be submitted only hash of commit, it can be front-runned by the attacker (as also pointed-out by Aaron)
+     *
+     * Note: the current design shows the detials of the operation that will be executed in maximally ~60 seconds, which might be seen as a premature leakage of 
+     *       transaction details. However, for the standard wallet use cases (e.g., presented here) this should not be an issue. 
+     * 
      * Note that there can be multiple commits submitted in the current interval, while only the first matching one will be executed in reveal().
      */
-    function commit(bytes32 hash) external {
+    function commit(bytes32 hash, OperType otype, address payable addr, uint amount) external {
         uint32 submittedOTPIdx = uint32(block.timestamp) / interval - t0;
         require(submittedOTPIdx > lastRevealedOTPIdx, "The OTP of the current interval was already revealed. It is not possible to submit commits in the current OTP interval anymore. Wait for the next interval.");
-        Commit memory nc = Commit(hash, block.timestamp);
+        Commit memory nc = Commit(hash, block.timestamp, otype, addr, amount);
         commits[submittedOTPIdx].push(nc);                
     }
 
     /**
      * This is a general reveal for all types of operation. Arguments contain all possible parameters as the union (only the relevant args for a particular operation are used).
-     * It cannot revert with not yet invalidated OTP, since the attacker can steal it + its  proof and misuse it for the malicious commit() and reveal().
+     * It cannot revert with not yet invalidated OTP, since the attacker can steal it + its  proof and misuse it for the malicious commit() and reveal() within the same OTP interval.
      */
-    function reveal(bytes32[] calldata neighbors, uint32 otpIdx, bytes32 eotp, OperType operType, address payable addr, uint amount) external returns (bool) {                        
+    function reveal(bytes32[] calldata neighbors, uint32 otpIdx, bytes32 eotp) external returns (bool) {                        
 
         // 1) Check time constrains of reveal
         uint32 currentIdx = uint32(block.timestamp) / interval - t0; // check whether idx of OTP is timely
-        require(currentIdx - otpIdx <= MAX_REVEAL_DELAY, "Reveal is out of max allowed delay."); // here is OK to revert, coz if revert fails, submitted eotp + proof are invalidated already and cannot be misused anymore.
+        require(currentIdx - otpIdx <= MAX_REVEAL_DELAY, "Reveal is out of max allowed delay."); // here is OK to revert, coz if revert fails, submitted eotp + proof are invalidated due to late time and cannot be misused anymore.
 
         // 2) scan all the commits made within otpIdx interval and execute the first matching one        
         for (uint i = 0; i < commits[otpIdx].length; i++) {
-            bytes32 hashedArgs = keccak256(abi.encodePacked(eotp, operType, addr, amount));
+            
+            Commit storage c = commits[otpIdx][i];
+            bytes32 hashedArgs = keccak256(abi.encodePacked(eotp, c.operType, c.addr, c.amount));            
+
             if(hashedArgs == commits[otpIdx][i].hash){                
                 
                 // 3) verify the provided OTP in a specific way, according to the operation type
-                if(operType != OperType.RECOVERY){                                        
+                if(c.operType != OperType.RECOVERY){                                        
                     _verifyMerkleProof(neighbors, otpIdx, eotp);
                 } else {
                     require(keccak256(abi.encodePacked(eotp)) == recoveryHash, "Provided secret for recovery is incorrect."); // here is also OK to revert since invalid secret (in eotp) was submitted
                 }
 
                 // 4) execute the operation according to its type; never revert since a valid OTP + proof are already submitted in args.
-                if(operType == OperType.TRANSFER){                    
+                if(c.operType == OperType.TRANSFER){                    
 
-                    if(!_executeTransfer(addr, amount)){
+                    if(!_executeTransfer(c.addr, c.amount)){
                         lastRevealedOTPIdx = otpIdx; // do not allow to call reveal with this eotp again
                         return false; // if daily limit is not met or there was an error with send()
                     }                
                     _cleanUpDailySpendings(); // clean up only after a successful transfer
 
-                } else if(operType == OperType.SET_LAST_RESORT_ADDR){
-                    if(lastResortAddress == address(0x0) && addr != address(0x0)) // alow setting up last resort address only if it was 0x0 before
-                        lastResortAddress = addr;
-                } else if(operType == OperType.RECOVERY){ // we do not care about params in Commits
-                    _drain(); // IH: I do not find any reason for this operation to be executed using OTP.
+                } else if(c.operType == OperType.SET_LAST_RESORT_ADDR){
+                    if(lastResortAddress == address(0x0) && c.addr != address(0x0)) // alow setting up last resort address only if it was 0x0 before
+                        lastResortAddress = c.addr;
+                } else if(c.operType == OperType.RECOVERY){ // we do not care about params in Commits
+                    _drain(); // IH: I do not find any reason for this operation to be executed using OTP (it is enought to verify time expired timeout)
                 } else {
-                    emit UnknownOperationType(operType);                    
+                    emit UnknownOperationType(c.operType);                    
                 }                
                 
                 delete commits[otpIdx];
@@ -116,7 +134,7 @@ contract ONEWallet2 {
      */
     function cleanUpCommits() external {                 
         for (uint32 i = lastCleanUpOfCommitsIdx; i <= lastRevealedOTPIdx; i++){ // IH: in theory, this might lead to out-of-gas exception for settings of TOTP with very long validity but currently I'd not be affraid. Moreover, we are  getting the gas back for successfull deletions.
-            delete commits[i]; // NOTE: I'd say it makes no difference whether it was initialized or not, so we can delete any entry.        
+            delete commits[i]; // NOTE: IH: it makes no difference whether it was initialized or not, so we can delete any position.        
         }
         lastCleanUpOfCommitsIdx = lastRevealedOTPIdx; // shift commit clean-up checkpoint
     }
