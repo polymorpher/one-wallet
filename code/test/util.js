@@ -12,11 +12,16 @@ const Logger = {
   }
 }
 
-const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval, lastResortAddress, dailyLimit }) => {
+const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval, lastResortAddress, dailyLimit, doubleOtp, randomness = 0, hasher = ONEWalletUtil.sha256b }) => {
   const otpSeed = base32.encode('0xdeadbeef1234567890')
+  let otpSeed2
+  if (doubleOtp) {
+    otpSeed2 = base32.encode('0x1234567890deadbeef')
+  }
   effectiveTime = Math.floor(effectiveTime / INTERVAL) * INTERVAL
-  const { seed, hseed, root, leaves, layers, maxOperationsPerInterval: slotSize } = ONEWalletLib.computeMerkleTree({
-    otpSeed, effectiveTime, maxOperationsPerInterval, duration })
+  const { seed, seed2, hseed, root, leaves, layers, maxOperationsPerInterval: slotSize, randomnessResults } = ONEWalletLib.computeMerkleTree({
+    otpSeed, otpSeed2, effectiveTime, maxOperationsPerInterval, duration, randomness, hasher
+  })
   const height = layers.length
   const t0 = effectiveTime / INTERVAL
   const lifespan = duration / INTERVAL
@@ -32,7 +37,9 @@ const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval,
 
   return {
     seed,
+    seed2,
     hseed,
+    randomnessResults,
     wallet, // smart contract
     root, // uint8array
     client: {
