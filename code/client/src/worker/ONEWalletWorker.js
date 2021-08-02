@@ -1,6 +1,6 @@
 const ONE = require('../../../lib/onewallet')
 
-onmessage = function (event) {
+onmessage = async function (event) {
   const { seed, effectiveTime, duration, slotSize, interval } = event.data
   if (!seed) {
     // console.log('worker: received event but it has no valid data', event)
@@ -14,7 +14,7 @@ onmessage = function (event) {
     root,
     layers,
     maxOperationsPerInterval,
-  } = ONE.computeMerkleTree({
+  } = await ONE.computeMerkleTree({
     otpSeed: seed,
     effectiveTime,
     duration,
