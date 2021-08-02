@@ -22,7 +22,7 @@ const utils = {
   sha256b: (input, { progressObserver, batchSize = 32 }) => {
     const n = input.length / batchSize
     const output = new Uint8Array(n * 32)
-    for (let i = 0; i < input.length; i += batchSize) {
+    for (let i = 0; i < n; i += 1) {
       output.set(sha256(input.subarray(i * batchSize, i * batchSize + batchSize)), i * 32)
       if (progressObserver) {
         progressObserver(i, n)
