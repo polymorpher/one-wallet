@@ -4,7 +4,7 @@ const { hexView, genOTP, hexStringToBytes, keccak, bytesEqual } = require('./uti
 const BN = require('bn.js')
 const AES = require('aes-js')
 
-const computeMerkleTree = ({
+const computeMerkleTree = async ({
   otpSeed,
   otpSeed2, // can be null
   effectiveTime = Date.now(),
@@ -58,19 +58,20 @@ const computeMerkleTree = ({
     const otp = otps.subarray(i * 4, i * 4 + 4)
     input.set(otp, offset + hseedLength + 2)
     if (otps2) {
-      input.set(otp, offset + hseedLength + 6)
+      const otp2 = otps2.subarray(i * 4, i * 4 + 4)
+      input.set(otp2, offset + hseedLength + 6)
     }
     if (randomness > 0) {
       const r = aes.encrypt(aesInput)
       const z = (r[0] << 24 | r[1] << 16 | r[2] << 8 | r[3]) >>> (32 - randomness)
       randomnessResults.push(z)
       rview.setUint32(0, z, false)
-      input.set(rbuffer, 28)
+      input.set(rbuffer, offset + 28)
     }
   }
   // TODO: parallelize this
-  const eotps = hasher(input, { progressObserver: buildProgressObserver() })
-  const leaves = sha256b(eotps, { progressObserver: buildProgressObserver() })
+  const eotps = await hasher(input, { progressObserver: buildProgressObserver() })
+  const leaves = await sha256b(eotps, { progressObserver: buildProgressObserver() })
   const layers = []
   layers.push(leaves)
   for (let j = 1; j < height; j += 1) {
@@ -94,6 +95,7 @@ const computeMerkleTree = ({
     seed2, // discard
     randomnessResults, // discard
     hseed,
+    counter, // base time
     leaves, // = layers[0]
     root, // = layers[height - 1]
     layers,
@@ -195,12 +197,12 @@ const bruteforceEOTP = ({ hseed, nonce = 0, leaf }) => {
   return { }
 }
 
-const recoverRandomness = ({ hseed, otp, otp2, nonce = 0, leaf, randomness = 17, hasher = sha256b }) => {
+const recoverRandomness = async ({ hseed, otp, otp2, nonce = 0, leaf, randomness = 17, hasher = sha256b }) => {
   const nonceBuffer = new Uint16Array([nonce])
   const ub = 2 ** randomness
   const buffer = new Uint8Array(ub * 32)
   const rb = new Uint8Array(4)
-  const rv = new DataView(rb)
+  const rv = new DataView(rb.buffer)
   for (let i = 0; i < ub; i++) {
     const offset = i * 32
     buffer.set(hseed, offset)
@@ -212,8 +214,8 @@ const recoverRandomness = ({ hseed, otp, otp2, nonce = 0, leaf, randomness = 17,
     rv.setUint32(0, i, false)
     buffer.set(rb, offset + 28)
   }
-  const eotps = hasher(buffer)
-  const output = sha256b(eotps)
+  const eotps = await hasher(buffer)
+  const output = await sha256b(eotps)
   for (let i = 0; i < ub; i++) {
     const b = output.subarray(i * 32, i * 32 + 32)
     if (bytesEqual(b, leaf)) {
