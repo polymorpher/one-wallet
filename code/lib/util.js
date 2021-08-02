@@ -19,7 +19,7 @@ const utils = {
   sha256,
 
   // batched sha256
-  sha256b: (input, { progressObserver, batchSize = 32 }) => {
+  sha256b: async (input, { progressObserver, batchSize = 32 } = {}) => {
     const n = input.length / batchSize
     const output = new Uint8Array(n * 32)
     for (let i = 0; i < n; i += 1) {
