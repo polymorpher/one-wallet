@@ -38,7 +38,7 @@ const computeMerkleTree = ({
   } else {
     hseed.set(fastSHA256(seed).slice(0, hseedLength))
   }
-  let aes, aesInput, rbuffer, rview
+  let aes; let aesInput; let rbuffer; let rview; let randomnessResults = []
   if (randomness > 0) {
     // eslint-disable-next-line new-cap
     aes = new AES.ModeOfOperation.ctr(seed.slice(0, 16))
@@ -63,6 +63,7 @@ const computeMerkleTree = ({
     if (randomness > 0) {
       const r = aes.encrypt(aesInput)
       const z = (r[0] << 24 | r[1] << 16 | r[2] << 8 | r[3]) >>> (32 - randomness)
+      randomnessResults.push(z)
       rview.setUint32(0, z, false)
       input.set(rbuffer, 28)
     }
@@ -89,7 +90,9 @@ const computeMerkleTree = ({
   }
   // console.log(`root: 0x${hexView(root)} tree height: ${layers.length}; leaves length: ${leaves.length}`)
   return {
-    seed,
+    seed, // discard
+    seed2, // discard
+    randomnessResults, // discard
     hseed,
     leaves, // = layers[0]
     root, // = layers[height - 1]
