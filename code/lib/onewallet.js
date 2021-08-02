@@ -1,50 +1,76 @@
-const fastSHA256 = require('fast-sha256')
-const base32 = require('hi-base32')
+const { sha256: fastSHA256, sha256b, processOtpSeed } = require('./util')
 // eslint-disable-next-line no-unused-vars
 const { hexView, genOTP, hexStringToBytes, keccak, bytesEqual } = require('./util')
 const BN = require('bn.js')
+const AES = require('aes-js')
 
-const computeMerkleTree = ({ otpSeed, effectiveTime = Date.now(), duration = 3600 * 1000 * 24 * 365, progressObserver, otpInterval = 30000, maxOperationsPerInterval = 1 }) => {
+const computeMerkleTree = ({
+  otpSeed,
+  otpSeed2, // can be null
+  effectiveTime = Date.now(),
+  duration = 3600 * 1000 * 24 * 365,
+  progressObserver, otpInterval = 30000,
+  maxOperationsPerInterval = 1,
+  randomness = 0, // number of bits for Controlled Randomness. 17 bits is recommended for the best balance between user experience and security. It maps to 2^17 = 131072 possibilities.
+  hasher = sha256b // must be a batch hasher
+
+}) => {
   maxOperationsPerInterval = 2 ** Math.ceil(Math.log2(maxOperationsPerInterval))
   maxOperationsPerInterval = Math.min(16, maxOperationsPerInterval)
   const height = Math.ceil(Math.log2(duration / otpInterval * maxOperationsPerInterval)) + 1
   const n = Math.pow(2, height - 1)
   const reportInterval = Math.floor(n / 100)
   const counter = Math.floor(effectiveTime / otpInterval)
-  let seed = otpSeed
-  if (seed.constructor.name !== 'Uint8Array') {
-    if (typeof seed !== 'string') {
-      throw new Error('otpSeed must be either string (Base32 encoded) or Uint8Array')
-    }
-    const bn = base32.decode.asBytes(seed)
-    seed = new Uint8Array(bn)
-  }
-  seed = seed.slice(0, 20)
+  const seed = processOtpSeed(otpSeed)
+  const seed2 = otpSeed2 && processOtpSeed(otpSeed2)
   // console.log('Generating Wallet with parameters', { seed, height, otpInterval, effectiveTime })
-  const otps = genOTP({ seed, counter, n, progressObserver })
-  // 4 bytes for OTP, 2 bytes for nonce, 26 bytes for seed hash
-  const hseed = fastSHA256(seed).slice(0, 26)
-  const leaves = new Uint8Array(n * 32)
-  const buffer = new Uint8Array(32)
+  const buildProgressObserver = (max) => (i, n) => i % reportInterval === 0 && progressObserver(i, max || n, 0)
+  const otps = genOTP({ seed, counter, n, progressObserver: buildProgressObserver(seed2 ? n * 2 : n) })
+  const otps2 = seed2 && genOTP({ seed: seed2, counter, n, progressObserver: buildProgressObserver(seed2 ? n * 2 : n) })
+  // legacy mode: no randomness, no seed2: 26 bytes for seed hash, 2 bytes for nonce, 4 bytes for OTP
+  // single otp mode: 22 bytes for seed hash, 2 bytes for nonce, 4 bytes for OTP, 4 bytes for randomness
+  // double otp mode: 18 bytes for seed hash, 2 bytes for nonce, 4 bytes for OTP, 4 bytes for second OTP, 4 bytes for randomness
+  const hseedLength = otpSeed2 ? 18 : (randomness > 0 ? 22 : 26)
+  const hseed = new Uint8Array(hseedLength)
+  if (seed2) {
+    hseed.set(fastSHA256(seed).slice(0, hseedLength / 2))
+    hseed.set(fastSHA256(seed2).slice(0, hseedLength / 2))
+  } else {
+    hseed.set(fastSHA256(seed).slice(0, hseedLength))
+  }
+  let aes, aesInput, rbuffer, rview
+  if (randomness > 0) {
+    // eslint-disable-next-line new-cap
+    aes = new AES.ModeOfOperation.ctr(seed.slice(0, 16))
+    aesInput = new Uint8Array(new Uint32Array([counter]).buffer)
+    rbuffer = new Uint8Array(4)
+    rview = new DataView(rbuffer.buffer)
+  }
+
+  const input = new Uint8Array(n * 32)
   const nonceBuffer = new Uint16Array(1)
-  const layers = []
-  // TODO: parallelize this
   for (let i = 0; i < n * maxOperationsPerInterval; i++) {
+    const offset = i * 32
+    input.set(hseed, offset)
     const nonce = i % maxOperationsPerInterval
     nonceBuffer[0] = nonce
-    buffer.set(hseed)
-    buffer.set(nonceBuffer, hseed.length)
+    input.set(nonceBuffer, offset + hseedLength)
     const otp = otps.subarray(i * 4, i * 4 + 4)
-    buffer.set(otp, hseed.length + 2)
-    const h = fastSHA256(buffer)
-    const hh = fastSHA256(h)
-    leaves.set(hh, i * 32)
-    if (progressObserver) {
-      if (i % reportInterval === 0) {
-        progressObserver(i, n, 1)
-      }
+    input.set(otp, offset + hseedLength + 2)
+    if (otps2) {
+      input.set(otp, offset + hseedLength + 6)
+    }
+    if (randomness > 0) {
+      const r = aes.encrypt(aesInput)
+      const z = (r[0] << 24 | r[1] << 16 | r[2] << 8 | r[3]) >>> (32 - randomness)
+      rview.setUint32(0, z, false)
+      input.set(rbuffer, 28)
     }
   }
+  // TODO: parallelize this
+  const eotps = hasher(input, { progressObserver: buildProgressObserver() })
+  const leaves = sha256b(eotps, { progressObserver: buildProgressObserver() })
+  const layers = []
   layers.push(leaves)
   for (let j = 1; j < height; j += 1) {
     const layer = new Uint8Array(n / (2 ** j) * 32)
@@ -65,8 +91,8 @@ const computeMerkleTree = ({ otpSeed, effectiveTime = Date.now(), duration = 360
   return {
     seed,
     hseed,
-    leaves, // =layers[0]
-    root, // =layers[height - 1]
+    leaves, // = layers[0]
+    root, // = layers[height - 1]
     layers,
     maxOperationsPerInterval,
   }
@@ -166,6 +192,34 @@ const bruteforceEOTP = ({ hseed, nonce = 0, leaf }) => {
   return { }
 }
 
+const recoverRandomness = ({ hseed, otp, otp2, nonce = 0, leaf, randomness = 17, hasher = sha256b }) => {
+  const nonceBuffer = new Uint16Array([nonce])
+  const ub = 2 ** randomness
+  const buffer = new Uint8Array(ub * 32)
+  const rb = new Uint8Array(4)
+  const rv = new DataView(rb)
+  for (let i = 0; i < ub; i++) {
+    const offset = i * 32
+    buffer.set(hseed, offset)
+    buffer.set(nonceBuffer, offset + hseed.length)
+    buffer.set(otp, offset + hseed.length + 2)
+    if (otp2) {
+      buffer.set(otp2, offset + hseed.length + 6)
+    }
+    rv.setUint32(0, i, false)
+    buffer.set(rb, offset + 28)
+  }
+  const eotps = hasher(buffer)
+  const output = sha256b(eotps)
+  for (let i = 0; i < ub; i++) {
+    const b = output.subarray(i * 32, i * 32 + 32)
+    if (bytesEqual(b, leaf)) {
+      return i
+    }
+  }
+  return null
+}
+
 const computeTokenKey = ({ tokenType, contractAddress, tokenId }) => {
   const buf = new Uint8Array(96)
   const s1 = new BN(tokenType, 10).toArrayLike(Uint8Array, 'be', 32)
@@ -223,5 +277,7 @@ module.exports = {
   bruteforceEOTP,
   computeTokenKey,
   computeTokenOperationHash,
-  computeVerificationHash
+  computeVerificationHash,
+
+  recoverRandomness
 }
