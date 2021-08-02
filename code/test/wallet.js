@@ -115,7 +115,7 @@ contract('ONEWallet', (accounts) => {
     Logger.debug(`Committed`)
     const neighborsEncoded = neighbors.map(ONEUtil.hexString)
     Debugger.debugProof({ neighbors, height: layers.length, index, eotp, root })
-    const commits = await wallet.getCommits()
+    const commits = await wallet.getAllCommits()
     const hash = commits[0][0]
     const paramHash = commits[0][1]
     const verificationHashCommitted = commits[0][2]
