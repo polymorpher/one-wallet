@@ -18,5 +18,7 @@ cd SmartOTP; yarn install; cd ..;
 cd legacy; yarn install; cd ..;
 cd webclient; yarn install; cd ..;
 cd ..
-./patch/patch.sh
+
+cp scripts/hdnode.js ./SmartOTP/node_modules/@harmony-js/account/dist/hdnode.js
+./scripts/patch.sh
 
