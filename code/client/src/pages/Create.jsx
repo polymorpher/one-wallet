@@ -81,26 +81,31 @@ const Create = () => {
   const [durationVisible, setDurationVisible] = useState(false)
   const [section, setSection] = useState(sectionViews.setupOtp)
   const [qrCodeData, setQRCodeData] = useState()
+  const [secondOtpQrCodeData, setSecondOtpQrCodeData] = useState()
   const [otp, setOtp] = useState('')
 
   const [deploying, setDeploying] = useState()
 
   const otpRef = useRef()
 
-  const getQRCodeUri = (otpSeed) => {
+  const getQRCodeUri = (otpSeed, otpDisplayName) => {
     // otpauth://TYPE/LABEL?PARAMETERS
-    return `otpauth://totp/${name}?secret=${b32.encode(otpSeed)}&issuer=Harmony`
+    return `otpauth://totp/${otpDisplayName}?secret=${b32.encode(otpSeed)}&issuer=Harmony`
   }
 
   useEffect(() => {
     (async function () {
-      const otpSeed = section === sectionViews.setupSecondOtp ? seed2 : seed
+      const otpUri = getQRCodeUri(seed, name)
 
-      const uri = getQRCodeUri(otpSeed)
+      const secondOtpUri = getQRCodeUri(seed2, `${name} (2nd)`)
 
-      const data = await qrcode.toDataURL(uri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
+      const otpQrCodeData = await qrcode.toDataURL(otpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
 
-      setQRCodeData(data)
+      const secondOtpQrCodeData = await qrcode.toDataURL(secondOtpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
+
+      setQRCodeData(otpQrCodeData)
+
+      setSecondOtpQrCodeData(secondOtpQrCodeData)
     })()
   }, [name])
 
@@ -136,8 +141,6 @@ const Create = () => {
       otpRef?.current?.focusInput(0)
     } else if (doubleOtp && !settingUpSecondOtp) {
       setSection(sectionViews.setupSecondOtp)
-
-      setName(`${name} (2nd)`)
 
       otpRef?.current?.focusInput(0)
     } else {
@@ -298,7 +301,7 @@ const Create = () => {
             <Heading>Setup Second One Time Password</Heading>
             <Hint align='center'>Use two One Time Password for enhanced security</Hint>
             <Row justify='center'>
-              {qrCodeData && <Image src={qrCodeData} preview={false} width={isMobile ? 192 : 256} />}
+              {secondOtpQrCodeData && <Image src={secondOtpQrCodeData} preview={false} width={isMobile ? 192 : 256} />}
             </Row>
           </Space>
         </Row>
