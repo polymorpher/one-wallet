@@ -1,6 +1,6 @@
 # 1wallet (ONE Wallet)
 
-1wallet is here to make crypto make sense again. It is designed for people who want the best and the latest from the world of crypto, but are tired of managing those senseless "mnemonic words", "private keys", or "seed phrases". 
+1wallet is designed for people who want the best and the latest from the world of crypto, but do not want to deal with senseless "mnemonic words", "private keys", or "seed phrases". 
 
 You don't need to be technical to use 1wallet. It is:
 
@@ -31,7 +31,7 @@ Since Google Authenticator operates offline and is well insulated<sup>1</sup> on
 
 Please visit the Wiki page: https://github.com/polymorpher/one-wallet/wiki
 
-## Local Setup
+## Quick Start
 
 We assume you are on macOS or Linux. Windows is not supported as a development environment at this time. 
 
