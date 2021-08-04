@@ -37,12 +37,15 @@ const BuildProvider = (conf, useTruffle) => {
 module.exports = {
   networks: {
     dev: {
-      // host: '127.0.0.1',
-      // port: 7545,
-      network_id: '*', // Match any network id
+      network_id: '*',
       gas: config.gasLimit,
       gasPrice: config.gasPrice,
       provider: () => BuildProvider(config.eth.ganache, true)
+    },
+    ganache: {
+      host: '127.0.0.1',
+      port: 7545,
+      network_id: '*',
     },
     rinkeby: {
       network_id: '4',
