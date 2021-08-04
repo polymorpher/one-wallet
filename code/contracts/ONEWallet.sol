@@ -202,13 +202,15 @@ contract ONEWallet is TokenTracker {
             emit InsufficientFund(amount, address(this).balance, dest);
             return false;
         }
+        spentToday += amount;
         (bool success,) = dest.call{value : amount}("");
         // we do not want to revert the whole transaction if this operation fails, since EOTP is already revealed
         if (!success) {
+            spentToday -= amount;
             emit UnknownTransferError(dest);
             return false;
         }
-        spentToday += amount;
+
         emit PaymentSent(amount, dest);
         return true;
     }
