@@ -59,10 +59,10 @@ For more advanced setup, such as using a locally hosted relayer (`/code/relayer`
 
 ## Directory Structure
 
-- `/code`: Primary code base. Contains all code related to 1wallet.
-- `/wiki`: Mirroring [Wiki](https://github.com/polymorpher/one-wallet/wiki) and [Protocol](https://github.com/polymorpher/one-wallet/blob/master/wiki/protocol.pdf), so people can contribute and make pull requests. 
-- `/smartotp`: Early research code from [SmartOTP](https://github.com/ivan-homoliak-sutd/SmartOTPs), created by Ivan Homoliak, mildly refactored by @polymorpher in ES2020 for debugging and running on Harmony network. Smart contract, testing, and authenticator code only.
-- `/legacy`: legacy code forked from [an early TOTP demo](https://github.com/hashmesan/harmony-totp/tree/dd966f8ca74f084c38ed5a1aca10760e3e90eaf7) by Quoc Le, refactored and rebuilt by @polymorpher for testing and benchmarking, and discontinued in June 2021.
+- [`/code`](https://github.com/polymorpher/one-wallet/tree/master/code): Primary code base. Contains all code related to 1wallet.
+- [`/wiki`](https://github.com/polymorpher/one-wallet/tree/master/wiki): Mirroring [Wiki](https://github.com/polymorpher/one-wallet/wiki) and [Protocol](https://github.com/polymorpher/one-wallet/blob/master/wiki/protocol.pdf), so people can contribute and make pull requests. 
+- [`/smartotp`](https://github.com/polymorpher/one-wallet/tree/master/smartotp): Early research code from [SmartOTP](https://github.com/ivan-homoliak-sutd/SmartOTPs), created by Ivan Homoliak, mildly refactored by @polymorpher in ES2020 for debugging and running on Harmony network. Smart contract, testing, and authenticator code only.
+- [`/legacy`](https://github.com/polymorpher/one-wallet/tree/master/legacy): legacy code forked from [an early TOTP demo](https://github.com/hashmesan/harmony-totp/tree/dd966f8ca74f084c38ed5a1aca10760e3e90eaf7) by Quoc Le, refactored and rebuilt by @polymorpher for testing and benchmarking, and discontinued in June 2021.
 
 ## Discussions
 
