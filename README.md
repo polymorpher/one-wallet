@@ -57,33 +57,14 @@ For more advanced setup, such as using a locally hosted relayer (`/code/relayer`
 - Truffle: https://github.com/polymorpher/one-wallet/tree/master/code
 - Smart Contract: https://github.com/polymorpher/one-wallet/tree/master/code/contracts
 
-## Folders
+## Directory Structure
 
-### /code
+- `/code`: Primary code base. Contains all code related to 1wallet.
+- `/wiki`: Mirroring [Wiki](https://github.com/polymorpher/one-wallet/wiki) and [Protocol](https://github.com/polymorpher/one-wallet/blob/master/wiki/protocol.pdf), so people can contribute and make pull requests. 
+- `/smartotp`: Early research code from [SmartOTP](https://github.com/ivan-homoliak-sutd/SmartOTPs), created by Ivan Homoliak, mildly refactored by @polymorpher in ES2020 for debugging and running on Harmony network. Smart contract, testing, and authenticator code only.
+- `/legacy`: legacy code forked from [an early TOTP demo](https://github.com/hashmesan/harmony-totp/tree/dd966f8ca74f084c38ed5a1aca10760e3e90eaf7) by Quoc Le, refactored and rebuilt by @polymorpher for testing and benchmarking, and discontinued in June 2021.
 
-This folder contains code for ONE Wallet (under active development), per [Wiki](https://github.com/polymorpher/one-wallet/wiki) and [Protocol](https://github.com/polymorpher/one-wallet/blob/master/wiki/protocol.pdf) specification
+## Discussions
 
-### /wiki
-
-This folder contains a synchronized version of the [Wiki](https://github.com/polymorpher/one-wallet/wiki). It is created so that other contributors can create pull requests and contribute to the wiki.
-
-### /SmartOTP
-
-This folder contains smart contract, testing, and authenticator code from [SmartOTP](https://github.com/ivan-homoliak-sutd/SmartOTPs) by Ivan Homoliak, re-written in ES2020 and modified for running on Harmony network.
-
-### /legacy
-
-This folder contains legacy code that was originally forked from [an early demo](https://github.com/hashmesan/harmony-totp) written by Quoc Le, then went through multiple iterations of improvements and bug fixes, before being discontinued and preserved.
-
-## Q & A
-
-For questions and discussions, please move to [issues page](https://github.com/polymorpher/one-wallet/issues).
-
-## Contribute
-
-The Wiki pages are mirrored in `/wiki` folder.
-
-To contribute on the wiki, please submit pull requests to `.md` files in `/wiki` folder.
-
-If something is out-of-sync, please submit an issue.
+Please visit our [issues page](https://github.com/polymorpher/one-wallet/issues).
 
