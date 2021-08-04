@@ -120,6 +120,18 @@ const Show = () => {
   const otpRef = useRef()
   const otp2Ref = useRef()
 
+  useEffect(() => {
+    // Focus on OTP 2 input box when first OTP input box is filled.
+    if (otpInput.length === 6 && wallet.doubleOtp) {
+      // For some reason if the OTP input never been focused or touched by user before, it cannot be focused
+      // to index 0 programmatically, however focus to index 1 is fine. So as a workaround we focus on next input first then focus to
+      // index 0 box. Adding setTimeout 0 to make focus on index 0 run asynchronously, which gives browser just enough
+      // time to react the previous focus before we set the focus on index 0.
+      otp2Ref?.current?.focusNextInput()
+      setTimeout(() => otp2Ref?.current?.focusInput(0), 0)
+    }
+  }, [otpInput])
+
   const {
     balance: transferAmount,
     fiatFormatted: transferFiatAmountFormatted
