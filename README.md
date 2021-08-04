@@ -4,10 +4,10 @@
 
 You don't need to be technical to use 1wallet. It is:
 
-- **Simple**: to create a wallet, just scan a QR code to Google Authenticator scan
-- **Secure**: authorize transactions with Google Authenticator code. No private keys or passwords to take care of.
-- **Durable**: restore wallet by scanning QR code from Google Authenticator, or recover funds using another wallet.
-- **Smart**: imagine a (physical) wallet that has an embedded computer - it can do a lot more than a plain old wallet that only carries your money around.   
+- **Simple**: to create a wallet, just scan a QR code using the Google Authenticator app
+- **Secure**: authorize transactions with 6-digit code from Google Authenticator. No private keys or passwords to take care of.
+- **Durable**: easily restore wallet by scanning QR code exported by Google Authenticator, or recover funds using another wallet.
+- **Smart**: configurable spending limit, composable security, and auto-recover mechanisms. Imagine a (physical) wallet that has an embedded computer - it can do a lot more than a plain old wallet that only carries your money around.   
 
 Try it at https://1wallet.crazy.one
 
