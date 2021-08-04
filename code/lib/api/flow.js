@@ -7,10 +7,11 @@ const { api } = require('./index')
 const BN = require('bn.js')
 
 const EotpBuilders = {
-  fromOtp: ({ otp, wallet }) => {
+  fromOtp: ({ otp, otp2, wallet }) => {
     const { hseed } = wallet
     const encodedOtp = ONEUtil.encodeNumericalOtp(otp)
-    return ONE.computeEOTP({ otp: encodedOtp, hseed: ONEUtil.hexToBytes(hseed) })
+    const encodedOtp2 = otp2 ? ONEUtil.encodeNumericalOtp(otp2) : undefined
+    return ONE.computeEOTP({ otp: encodedOtp, otp2: encodedOtp2, hseed: ONEUtil.hexToBytes(hseed) })
   },
   recovery: ({ wallet, layers }) => {
     const { hseed, effectiveTime } = wallet
@@ -49,7 +50,7 @@ const Committer = {
 
 const Flows = {
   commitReveal: async ({
-    otp, eotpBuilder = EotpBuilders.fromOtp,
+    otp, otp2, eotpBuilder = EotpBuilders.fromOtp,
     committer = Committer.legacy,
     wallet, layers, commitHashGenerator, commitHashArgs,
     beforeCommit, afterCommit, onCommitError, onCommitFailure,
@@ -66,7 +67,7 @@ const Flows = {
         return
       }
     }
-    const eotp = eotpBuilder({ otp, wallet, layers })
+    const eotp = eotpBuilder({ otp, otp2, wallet, layers })
     if (!eotp) {
       message.error('Local state verification failed.')
       return
