@@ -1,3 +1,5 @@
+# WARNING: this folder is no longer maintained. It is kept for historical references only.
+
 ## SmartOTP Code
 
 This folder contains a (partially) cleaned up version of the source code copied from [SmartOTP](https://github.com/ivan-homoliak-sutd/SmartOTPs), transformed and reconfigured specifically for testing on Harmony's blockchain. 
