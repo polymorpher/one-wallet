@@ -137,7 +137,7 @@ const Create = () => {
     } else if (doubleOtp && !settingUpSecondOtp) {
       setSection(sectionViews.setupSecondOtp)
 
-      setName(generateNewOtpName())
+      setName(`${name} (2nd)`)
 
       otpRef?.current?.focusInput(0)
     } else {
@@ -272,11 +272,6 @@ const Create = () => {
             </Row>
           </Space>
         </Row>
-        <Row justify='center'>
-          <Checkbox onChange={() => setDoubleOtp(!doubleOtp)}>
-            <Hint>Use two One Time Passwords for enhanced security</Hint>
-          </Checkbox>
-        </Row>
         <Row>
           <Space direction='vertical' size='large' align='center'>
             <Hint>After you are done, type in the 6-digit code from Google authenticator.</Hint>
@@ -287,6 +282,13 @@ const Create = () => {
               onChange={setOtp}
             />
           </Space>
+        </Row>
+        <Row justify='center'>
+          <Checkbox onChange={() => setDoubleOtp(!doubleOtp)}>
+            <Hint>Setup second One Time Password for enhanced security</Hint>
+            <br />
+            <Hint>You will need to scan the QR code again in next step</Hint>
+          </Checkbox>
         </Row>
       </AnimatedSection>
       <AnimatedSection show={section === sectionViews.setupSecondOtp} style={{ maxWidth: 640 }}>
