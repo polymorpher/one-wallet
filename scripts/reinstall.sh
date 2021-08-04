@@ -13,12 +13,12 @@ cd client; yarn install; cd ..;
 cd ..
 
 cd benchmark; yarn install; cd ..;
-cd SmartOTP; yarn install; cd ..;
+cd smartotp; yarn install; cd ..;
 
 cd legacy; yarn install; cd ..;
 cd webclient; yarn install; cd ..;
 cd ..
 
-cp scripts/hdnode.js ./SmartOTP/node_modules/@harmony-js/account/dist/hdnode.js
+cp scripts/hdnode.js ./smartotp/node_modules/@harmony-js/account/dist/hdnode.js
 ./scripts/patch.sh
 
