@@ -59,7 +59,7 @@ const Flows = {
     maxTransferAttempts = 3, checkCommitInterval = 5000,
     message = messager
   }) => {
-    const { effectiveTime, root, address } = wallet
+    const { effectiveTime, root, address, randomness, hseed, hasher } = wallet
     if (!layers) {
       layers = await storage.getItem(root)
       if (!layers) {
@@ -67,13 +67,19 @@ const Flows = {
         return
       }
     }
-    const eotp = await eotpBuilder({ otp, otp2, wallet, layers })
+    const index = ONEUtil.timeToIndex({ effectiveTime })
+    let nonce // should get from blockchain, but omitted for now because all wallets have maxOperationsPerInterval set to 1.
+    let rand
+    if (randomness > 0) {
+      rand = await ONE.recoverRandomness({ hseed, otp, otp2, nonce, leaf: layers[0][index], hasher: ONEUtil.getHasher(hasher) })
+    }
+    const eotp = await eotpBuilder({ otp, otp2, rand, wallet, layers })
     if (!eotp) {
       message.error('Local state verification failed.')
       return
     }
     beforeCommit && await beforeCommit()
-    const index = ONEUtil.timeToIndex({ effectiveTime })
+
     const neighbors = ONE.selectMerkleNeighbors({ layers, index })
     const neighbor = neighbors[0]
 

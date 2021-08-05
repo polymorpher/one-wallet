@@ -154,6 +154,13 @@ const utils = {
   argon2: async (input, { salt = new Uint8Array(8), progressObserver, batchSize = 32 } = {}) => {
     const { result } = await argon2.hash({ pass: input, batchSize, salt, progressObserver })
     return result
+  },
+
+  getHasher: (hasher) => {
+    if (hasher === 'argon2') {
+      return utils.argon2
+    }
+    return utils.sha256b
   }
 
 }
