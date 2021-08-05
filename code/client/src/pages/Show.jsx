@@ -305,7 +305,7 @@ const Show = () => {
   }
 
   const doRecovery = async () => {
-    let { hash, bytes } = ONE.computeRecoveryHash({ hseed: wallet.hseed })
+    let { hash, bytes } = ONE.computeRecoveryHash({ hseed: ONEUtil.hexToBytes(wallet.hseed) })
     if (!(wallet.majorVersion >= 8)) {
       // contracts <= v7 rely on paramsHash = bytes32(0) for recover, so we must handle this special case here
       hash = new Uint8Array(32)
@@ -314,6 +314,7 @@ const Show = () => {
     SmartFlows.commitReveal({
       wallet,
       eotpBuilder: EotpBuilders.recovery,
+      index: -1,
       commitHashGenerator: () => ({ hash, bytes: new Uint8Array(0) }), // Only legacy committer uses `bytes`. It mingles them with other parameters to produce hash. legacy recover has no parameters, therefore `bytes` should be empty byte array
       beforeCommit: () => setStage(1),
       afterCommit: () => setStage(2),
