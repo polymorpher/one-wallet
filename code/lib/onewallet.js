@@ -169,14 +169,10 @@ const computeEOTP = async ({ otp, otp2, rand = null, hseed, nonce = 0, hasher = 
   if (otp2) {
     buffer.set(otp2, hseed.length + 6)
   }
-  console.log('otp', otp, hexView(otp))
-  console.log('otp2', otp2, hexView(otp2))
-  console.log('buffer', buffer, hexView(buffer))
   if (rand !== null) {
     const rb = new Uint8Array(4)
     const rv = new DataView(rb.buffer)
     rv.setUint32(0, rand, false)
-    console.log('rb', rb)
     buffer.set(rb, 28)
   }
   return hasher(buffer)
