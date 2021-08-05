@@ -6,6 +6,7 @@ import WalletConstants from '../constants/wallet'
 import walletActions from '../state/modules/wallet/actions'
 import util, { useWindowDimensions } from '../util'
 import ONE from '../../../lib/onewallet'
+import ONEUtil from '../../../lib/util'
 import ONEConstants from '../../../lib/constants'
 import api from '../api'
 import * as Sentry from '@sentry/browser'
@@ -304,15 +305,22 @@ const Show = () => {
   }
 
   const doRecovery = async () => {
+    let { hash, bytes } = ONE.computeRecoveryHash({ hseed: wallet.hseed })
+    if (!(wallet.majorVersion >= 8)) {
+      // contracts <= v7 rely on paramsHash = bytes32(0) for recover, so we must handle this special case here
+      hash = new Uint8Array(32)
+    }
+    const data = ONEUtil.hexString(bytes)
     SmartFlows.commitReveal({
       wallet,
       eotpBuilder: EotpBuilders.recovery,
-      commitHashGenerator: ONE.computeRecoveryHash,
+      commitHashGenerator: () => ({ hash, bytes: new Uint8Array(0) }), // Only legacy committer uses `bytes`. It mingles them with other parameters to produce hash. legacy recover has no parameters, therefore `bytes` should be empty byte array
       beforeCommit: () => setStage(1),
       afterCommit: () => setStage(2),
       onCommitError,
       onCommitFailure,
       revealAPI: api.relayer.revealRecovery,
+      revealArgs: { data },
       onRevealFailure,
       onRevealError,
       onRevealAttemptFailed,
