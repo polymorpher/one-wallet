@@ -1,4 +1,4 @@
-const { sha256: fastSHA256, sha256b, processOtpSeed } = require('./util')
+const { sha256: fastSHA256, sha256b, processOtpSeed, DEPRECATED } = require('./util')
 // eslint-disable-next-line no-unused-vars
 const { hexView, genOTP, hexStringToBytes, keccak, bytesEqual } = require('./util')
 const BN = require('bn.js')
@@ -182,19 +182,24 @@ const computeEOTP = async ({ otp, otp2, rand = null, hseed, nonce = 0, hasher = 
   return hasher(buffer)
 }
 
-const computeRecoveryHash = () => {
-  const input = new Uint8Array(32)
-  return { hash: input, bytes: input }
+const computeRecoveryHash = (rseed, input) => {
+  rseed = rseed || new Uint8Array(new BigUint64Array([0n, BigInt(Date.now())]).buffer)
+  input = input || new Uint8Array(32)
+  // eslint-disable-next-line new-cap
+  const aes = new AES.ModeOfOperation.ctr(rseed)
+  const bytes = aes.encrypt(input)
+  return { hash: keccak(bytes), bytes }
 }
 
 /**
- * WARNING: This shall be removed after Client Security is implemented. https://github.com/polymorpher/one-wallet/wiki/Client-Security
+ * DEPRECATED: This is DEPRECATED as Client Security is already implemented. https://github.com/polymorpher/one-wallet/wiki/Client-Security
  * @param hseed
  * @param nonce
  * @param leaf
  * @returns {{eotp: Uint8Array, otp: number}|{}}
  */
 const bruteforceEOTP = ({ hseed, nonce = 0, leaf }) => {
+  DEPRECATED()
   const nonceBuffer = new Uint16Array([nonce])
   const buffer = new Uint8Array(32)
   const otpBuffer = new DataView(new ArrayBuffer(4))
