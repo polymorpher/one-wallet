@@ -34,7 +34,7 @@ const computeMerkleTree = async ({
   const hseed = new Uint8Array(hseedLength)
   if (seed2) {
     hseed.set(fastSHA256(seed).slice(0, hseedLength / 2))
-    hseed.set(fastSHA256(seed2).slice(0, hseedLength / 2))
+    hseed.set(fastSHA256(seed2).slice(0, hseedLength / 2), hseedLength / 2)
   } else {
     hseed.set(fastSHA256(seed).slice(0, hseedLength))
   }
