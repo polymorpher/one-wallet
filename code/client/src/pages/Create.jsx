@@ -272,7 +272,8 @@ const Create = () => {
         </Row>
         <Row>
           <Space direction='vertical' size='large' align='center'>
-            <Hint>After you are done, type in the 6-digit code from Google authenticator.<br />Look for <b>Harmony ({name})</b></Hint>
+            <Hint>After you are done, type in the 6-digit code from Google authenticator</Hint>
+            <Hint>Code for <b>Harmony ({name})</b></Hint>
             <OtpBox
               shouldAutoFocus
               ref={otpRef}
@@ -304,7 +305,8 @@ const Create = () => {
         </Row>
         <Row>
           <Space direction='vertical' size='large' align='center'>
-            <Hint>Type in the <b>second</b> 6-digit code from Google authenticator.<br />Look for <b>Harmony ({name} - 2nd)</b></Hint>
+            <Hint>Type in the <b>second</b> 6-digit code from Google authenticator</Hint>
+            <Hint>Code for <b>Harmony ({name} - 2nd)</b></Hint>
             <OtpBox
               shouldAutoFocus
               ref={otpRef}
