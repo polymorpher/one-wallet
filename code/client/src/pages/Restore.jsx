@@ -64,7 +64,7 @@ const Restore = () => {
         const params = MigrationPayload.decode(Buffer.from(data, 'base64')).otpParameters
         const filteredParams = params.filter(e => e.issuer === 'ONE Wallet' || e.issuer === 'Harmony')
         if (filteredParams.length > 1) {
-          message.error('You selected more than 1 ONE Wallet code to export. Please reselect on Google Authenticator')
+          message.error('You selected more than one authenticator entry to export. Please reselect on Google Authenticator')
           return
         }
         const { secret, name } = filteredParams[0]
@@ -249,7 +249,7 @@ const Restore = () => {
                   percent={progress}
                 />
                 <Space direction='vertical'>
-                  <Timeline pending={progressStage < 2 && 'Rebuilding your ONE Wallet'}>
+                  <Timeline pending={progressStage < 2 && 'Rebuilding your 1wallet'}>
                     <Timeline.Item color={progressStage < 1 ? 'grey' : 'green'}>Recomputing proofs for each time interval</Timeline.Item>
                     <Timeline.Item color={progressStage < 2 ? 'grey' : 'green'}>Preparing hashes for verification</Timeline.Item>
                   </Timeline>

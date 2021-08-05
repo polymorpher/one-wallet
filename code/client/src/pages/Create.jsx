@@ -246,7 +246,7 @@ const Create = () => {
           </Space>
         </Row>
         <Space direction='vertical'>
-          <Hint>Next, we will set up a ONE Wallet that expires in a year. When the wallet expires, you may create a new wallet and transfer the funds. The funds can also be recovered to an address you set later.</Hint>
+          <Hint>Next, we will set up a 1wallet that expires in a year. When the wallet expires, you may create a new wallet and transfer the funds. The funds can also be recovered to an address you set later.</Hint>
           <Link onClick={() => setDurationVisible(true)}>Need more time?</Link>
           {durationVisible &&
             <Space>
@@ -263,7 +263,7 @@ const Create = () => {
         <Row>
           <Space direction='vertical'>
             {/* <Heading>Now, scan the QR code with your Google Authenticator</Heading> */}
-            <Heading>Create Your ONE Wallet</Heading>
+            <Heading>Create Your 1wallet</Heading>
             <Hint>You need the 6-digit code from Google authenticator to transfer funds. You can restore your wallet using Google authenticator on any device.</Hint>
             <Row justify='center'>
               {qrCodeData && <Image src={qrCodeData} preview={false} width={isMobile ? 192 : 256} />}
@@ -295,8 +295,8 @@ const Create = () => {
       <AnimatedSection show={section === sectionViews.setupSecondOtp} style={{ maxWidth: 640 }}>
         <Row>
           <Space direction='vertical'>
-            <Heading>Create Your ONE Wallet</Heading>
-            <Hint align='center'>Scan using your Google Authenticator to setup the <b>second</b> code</Hint>
+            <Heading>Create Your 1wallet (Enhanced Security)</Heading>
+            <Hint align='center'>Scan with your Google Authenticator to setup the <b>second</b> code</Hint>
             <Row justify='center'>
               {secondOtpQrCodeData && <Image src={secondOtpQrCodeData} preview={false} width={isMobile ? 192 : 256} />}
             </Row>
@@ -317,7 +317,7 @@ const Create = () => {
       <AnimatedSection show={section === sectionViews.prepareWallet} style={{ maxWidth: 640 }}>
         <Row>
           <Space direction='vertical'>
-            <Heading>Prepare Your ONE Wallet</Heading>
+            <Heading>Prepare Your 1wallet</Heading>
           </Space>
         </Row>
         {/* <Row style={{ marginBottom: 16 }}> */}
@@ -370,7 +370,7 @@ const Create = () => {
                     percent={progress}
                   />
                   <Space direction='vertical'>
-                    <Timeline pending={progressStage < 2 && 'Securing your keyless ONE Wallet'}>
+                    <Timeline pending={progressStage < 2 && 'Securing your keyless 1wallet'}>
                       <Timeline.Item color={progressStage < 1 ? 'grey' : 'green'}>Securing the wallet</Timeline.Item>
                       <Timeline.Item color={progressStage < 2 ? 'grey' : 'green'}>Preparing signatures</Timeline.Item>
                     </Timeline>
@@ -382,7 +382,7 @@ const Create = () => {
         <Row>
           <Space direction='vertical'>
             <Hint>No private key. No mnemonic. Simple and Secure. </Hint>
-            <Hint>To learn more, visit <Link href='https://github.com/polymorpher/one-wallet/wiki'>ONE Wallet Wiki</Link></Hint>
+            <Hint>To learn more, visit <Link href='https://github.com/polymorpher/one-wallet/wiki'>1wallet Wiki</Link></Hint>
             <Hint>In Beta, your wallet is subject to a daily spending limit of {WalletConstants.defaultDailyLimit} ONE</Hint>
           </Space>
         </Row>
