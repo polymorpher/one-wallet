@@ -14,11 +14,10 @@ const EotpBuilders = {
     return ONE.computeEOTP({ otp: encodedOtp, otp2: encodedOtp2, rand, nonce, hseed: ONEUtil.hexToBytes(hseed) })
   },
   recovery: async ({ wallet, layers }) => {
+    // eslint-disable-next-line no-unused-vars
     const { hseed, effectiveTime } = wallet
-    const index = ONEUtil.timeToIndex({ effectiveTime })
-    const leaf = layers[0].subarray(index * 32, index * 32 + 32).slice()
-    const { eotp } = ONE.bruteforceEOTP({ hseed: ONEUtil.hexToBytes(hseed), leaf })
-    return eotp
+    const leaf = layers[0].subarray(layers[0].length - 32, layers[0].length)
+    return leaf
   }
 }
 
