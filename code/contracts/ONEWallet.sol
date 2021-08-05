@@ -81,9 +81,6 @@ contract ONEWallet is TokenTracker {
         if (msg.sender != lastResortAddress) {
             return;
         }
-        if (lastResortAddress == address(0)) {
-            return;
-        }
         if (msg.sender == address(this)) {
             return;
         }
