@@ -203,6 +203,7 @@ contract('ONEWallet', (accounts) => {
 
   const transferTest = async ({ hasher = ONEUtil.sha256b }) => {
     const effectiveTime = Math.floor(Date.now() / INTERVAL) * INTERVAL - DURATION / 2
+    const randomness = 16
     const purse = web3.eth.accounts.create()
 
     const {
@@ -227,7 +228,7 @@ contract('ONEWallet', (accounts) => {
       maxOperationsPerInterval: SLOT_SIZE,
       lastResortAddress: ONEConstants.EmptyAddress,
       dailyLimit: ONE_ETH,
-      randomness: 16,
+      randomness,
       hasher,
       doubleOtp: true,
     })
@@ -254,7 +255,7 @@ contract('ONEWallet', (accounts) => {
     const index = ONEUtil.timeToIndex({ effectiveTime })
     const leaf = leaves.subarray(index * 32, index * 32 + 32)
     Logger.debug(`otp=${ONEUtil.decodeOtp(otp)} otp2=${ONEUtil.decodeOtp(otp2)} index=${index}. Recovering rand...`)
-    const rand = await ONE.recoverRandomness({ hseed, otp, otp2, randomness: 16, hasher, leaf })
+    const rand = await ONE.recoverRandomness({ hseed, otp, otp2, randomness, hasher, leaf })
     Logger.debug(`rand=${rand} recovered`)
     assert.ok(rand !== null, 'Recover randomness must succeed')
     const neighbors = ONE.selectMerkleNeighbors({ layers, index })
