@@ -99,7 +99,7 @@ contract('ONEWallet', (accounts) => {
 
     const otp = ONEUtil.genOTP({ seed })
     const index = ONEUtil.timeToIndex({ effectiveTime: EFFECTIVE_TIME })
-    const eotp = ONE.computeEOTP({ otp, hseed })
+    const eotp = await ONE.computeEOTP({ otp, hseed })
     Logger.debug(`To compute neighbors`, {
       otp: new DataView(otp.buffer).getUint32(0, false),
       eotp: ONEUtil.hexString(eotp),
@@ -160,7 +160,7 @@ contract('ONEWallet', (accounts) => {
     })
     const otp = ONEUtil.genOTP({ seed })
     const index = ONEUtil.timeToIndex({ effectiveTime: EFFECTIVE_TIME })
-    const eotp = ONE.computeEOTP({ otp, hseed })
+    const eotp = await ONE.computeEOTP({ otp, hseed })
     const neighbors = ONE.selectMerkleNeighbors({ layers, index })
     const neighbor = neighbors[0]
     const { hash: commitHash } = ONE.computeCommitHash({ neighbor, index, eotp })
@@ -196,7 +196,7 @@ contract('ONEWallet', (accounts) => {
     })
     const otp = ONEUtil.genOTP({ seed })
     const index = ONEUtil.timeToIndex({ effectiveTime: EFFECTIVE_TIME })
-    const eotp = ONE.computeEOTP({ otp, hseed })
+    const eotp = await ONE.computeEOTP({ otp, hseed })
     const neighbors = ONE.selectMerkleNeighbors({ layers, index })
     const neighbor = neighbors[0]
     const { hash: commitHash } = ONE.computeCommitHash({ neighbor, index, eotp })
