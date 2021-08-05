@@ -24,9 +24,9 @@ const computeMerkleTree = async ({
   const seed = processOtpSeed(otpSeed)
   const seed2 = otpSeed2 && processOtpSeed(otpSeed2)
   // console.log('Generating Wallet with parameters', { seed, height, otpInterval, effectiveTime })
-  const buildProgressObserver = (max) => (i, n) => i % reportInterval === 0 && progressObserver(i, max || n, 0)
+  const buildProgressObserver = (max, j) => (i, n) => (i + (j || 0)) % reportInterval === 0 && progressObserver(i + (j || 0), max || n, 0)
   const otps = genOTP({ seed, counter, n, progressObserver: buildProgressObserver(seed2 ? n * 2 : n) })
-  const otps2 = seed2 && genOTP({ seed: seed2, counter, n, progressObserver: buildProgressObserver(seed2 ? n * 2 : n) })
+  const otps2 = seed2 && genOTP({ seed: seed2, counter, n, progressObserver: buildProgressObserver(n * 2, n) })
   // legacy mode: no randomness, no seed2: 26 bytes for seed hash, 2 bytes for nonce, 4 bytes for OTP
   // single otp mode: 22 bytes for seed hash, 2 bytes for nonce, 4 bytes for OTP, 4 bytes for randomness
   // double otp mode: 18 bytes for seed hash, 2 bytes for nonce, 4 bytes for OTP, 4 bytes for second OTP, 4 bytes for randomness
