@@ -6,7 +6,7 @@ const BN = require('bn.js')
 const argon2 = require('argon2-browser')
 const base32 = require('hi-base32')
 const STANDARD_DECIMAL = 18
-
+const PERMIT_DEPRECATED_METHOD = process.env.PERMIT_DEPRECATED_METHOD
 const utils = {
   hexView: (bytes) => {
     return bytes && Array.from(bytes).map(x => x.toString(16).padStart(2, '0')).join('')
@@ -161,6 +161,12 @@ const utils = {
       return utils.argon2
     }
     return utils.sha256b
+  },
+
+  DEPRECATED: () => {
+    if (!PERMIT_DEPRECATED_METHOD) {
+      throw new Error('Deprecated')
+    }
   }
 
 }
