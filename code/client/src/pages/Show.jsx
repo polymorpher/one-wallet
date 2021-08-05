@@ -409,7 +409,7 @@ const Show = () => {
             <Button type='primary' size='large' shape='round' onClick={showSetRecoveryAddress}> Set </Button>
           </Col>}
       </TallRow>
-      {wallet.majorVersion && wallet.minorVersion &&
+      {wallet.majorVersion &&
         <TallRow align='middle'>
           <Col span={isMobile ? 24 : 12}> <Title level={3}>Wallet Version</Title></Col>
           <Col>
