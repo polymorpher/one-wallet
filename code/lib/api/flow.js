@@ -7,10 +7,10 @@ const { api } = require('./index')
 const BN = require('bn.js')
 
 const EotpBuilders = {
-  fromOtp: async ({ otp, wallet }) => {
+  fromOtp: async ({ otp, otp2, rand, nonce, wallet }) => {
     const { hseed } = wallet
     const encodedOtp = ONEUtil.encodeNumericalOtp(otp)
-    return ONE.computeEOTP({ otp: encodedOtp, hseed: ONEUtil.hexToBytes(hseed) })
+    return ONE.computeEOTP({ otp: encodedOtp, otp2, rand, nonce, hseed: ONEUtil.hexToBytes(hseed) })
   },
   recovery: async ({ wallet, layers }) => {
     const { hseed, effectiveTime } = wallet
