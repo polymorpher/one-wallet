@@ -168,18 +168,12 @@ const Show = () => {
 
   const prepareValidation = ({ checkAmount = true, checkDest = true, checkOtp = true } = {}) => {
     let rawAmount
-
     const otp = util.parseOtp(otpInput)
-
     const otp2 = util.parseOtp(otp2Input)
-
     const invalidOtp = !otp
-
     const invalidOtp2 = wallet.doubleOtp && !otp2
-
     // Ensure valid address for both 0x and one1 formats
     const dest = util.safeExec(util.normalizedAddress, [transferTo], handleAddressError)
-
     if (checkDest && !dest) {
       return
     }
