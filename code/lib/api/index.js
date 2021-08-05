@@ -336,7 +336,7 @@ const api = {
     revealTokenOperation: async ({ address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data = '0x' }) => {
       return api.relayer.reveal({ address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
     },
-    revealRecovery: async ({ neighbors, index, eotp, address }) => {
+    revealRecovery: async ({ neighbors, index, eotp, address, data }) => {
       return api.relayer.reveal({
         address,
         neighbors,
@@ -348,6 +348,7 @@ const api = {
         tokenId: 0,
         dest: ONEConstants.EmptyAddress,
         amount: 0,
+        data,
       })
     },
     revealSetRecoveryAddress: async ({ neighbors, index, eotp, address, lastResortAddress }) => {
