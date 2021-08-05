@@ -24,9 +24,9 @@ const computeMerkleTree = async ({
   const seed = processOtpSeed(otpSeed)
   const seed2 = otpSeed2 && processOtpSeed(otpSeed2)
   // console.log('Generating Wallet with parameters', { seed, height, otpInterval, effectiveTime })
-  const buildProgressObserver = (max, j) => (i, n) => (i + (j || 0)) % reportInterval === 0 && progressObserver(i + (j || 0), max || n, 0)
-  const otps = genOTP({ seed, counter, n, progressObserver: buildProgressObserver(seed2 ? n * 2 : n) })
-  const otps2 = seed2 && genOTP({ seed: seed2, counter, n, progressObserver: buildProgressObserver(n * 2, n) })
+  const buildProgressObserver = (max, stage, offset) => (i, n) => (i + (offset || 0)) % reportInterval === 0 && progressObserver(i + (offset || 0), max || n, stage || 0)
+  const otps = genOTP({ seed, counter, n, progressObserver: buildProgressObserver(seed2 ? n * 2 : n, 0, 0) })
+  const otps2 = seed2 && genOTP({ seed: seed2, counter, n, progressObserver: buildProgressObserver(n * 2, 0, n) })
   // legacy mode: no randomness, no seed2: 26 bytes for seed hash, 2 bytes for nonce, 4 bytes for OTP
   // single otp mode: 22 bytes for seed hash, 2 bytes for nonce, 4 bytes for OTP, 4 bytes for randomness
   // double otp mode: 18 bytes for seed hash, 2 bytes for nonce, 4 bytes for OTP, 4 bytes for second OTP, 4 bytes for randomness
@@ -70,8 +70,8 @@ const computeMerkleTree = async ({
     }
   }
   // TODO: parallelize this
-  const eotps = await hasher(input, { progressObserver: buildProgressObserver() })
-  const leaves = await sha256b(eotps, { progressObserver: buildProgressObserver() })
+  const eotps = await hasher(input, { progressObserver: buildProgressObserver(n * maxOperationsPerInterval * 2, 1) })
+  const leaves = await sha256b(eotps, { progressObserver: buildProgressObserver(n * maxOperationsPerInterval * 2, 1, n * maxOperationsPerInterval) })
   const layers = []
   layers.push(leaves)
   for (let j = 1; j < height; j += 1) {
@@ -155,16 +155,31 @@ const computeSetRecoveryAddressHash = ({ address }) => {
   return { hash: keccak(input), bytes: input }
 }
 
-// otp, uint8array, 4
+// otp, uint8array[4]
+// otp2, uint8array[4], optional
+// rand, integer, optional
 // hseed, uint8array, 26, sha256 hash of the otp seed
 // nonce, positive integer (within 15-bit)
-const computeEOTP = ({ otp, hseed, nonce = 0 }) => {
+const computeEOTP = async ({ otp, otp2, rand = null, hseed, nonce = 0, hasher = sha256b }) => {
   const buffer = new Uint8Array(32)
   const nb = new Uint16Array([nonce])
-  buffer.set(hseed.slice(0, 26))
-  buffer.set(nb, 26)
-  buffer.set(otp, 28)
-  return fastSHA256(buffer)
+  buffer.set(hseed)
+  buffer.set(nb, hseed.length)
+  buffer.set(otp, hseed.length + 2)
+  if (otp2) {
+    buffer.set(otp2, hseed.length + 6)
+  }
+  console.log('otp', otp, hexView(otp))
+  console.log('otp2', otp2, hexView(otp2))
+  console.log('buffer', buffer, hexView(buffer))
+  if (rand !== null) {
+    const rb = new Uint8Array(4)
+    const rv = new DataView(rb.buffer)
+    rv.setUint32(0, rand, false)
+    console.log('rb', rb)
+    buffer.set(rb, 28)
+  }
+  return hasher(buffer)
 }
 
 const computeRecoveryHash = () => {
