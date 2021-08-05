@@ -6,8 +6,21 @@ import api from '../api'
 import ONEUtil from '../../../lib/util'
 import ONENames from '../../../lib/names'
 // import { uniqueNamesGenerator, colors, animals } from 'unique-names-generator'
-import { Button, Row, Space, Typography, Slider, Image, message, Progress, Timeline, Select, Checkbox } from 'antd'
-import { RedoOutlined, LoadingOutlined, SearchOutlined } from '@ant-design/icons'
+import {
+  Button,
+  Row,
+  Space,
+  Typography,
+  Slider,
+  Image,
+  message,
+  Progress,
+  Timeline,
+  Select,
+  Checkbox,
+  Tooltip
+} from 'antd'
+import { RedoOutlined, LoadingOutlined, SearchOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import humanizeDuration from 'humanize-duration'
 import AnimatedSection from '../components/AnimatedSection'
 import b32 from 'hi-base32'
@@ -284,22 +297,24 @@ const Create = () => {
               value={otp}
               onChange={setOtp}
             />
+            <Checkbox onChange={() => setDoubleOtp(!doubleOtp)}>
+              <Space>
+                <Hint>
+                  Use two codes to enhance security
+                </Hint>
+                <Tooltip title={<div>You will need to scan another QR-code on the next page. Each time you make a transaction, you will need to type in two 6-digit codes, which are shown simultaneously next to each other on your Google authenticator.<br /><br />This is advisable if you intend to make larger transactions with this wallet</div>}>
+                  <QuestionCircleOutlined />
+                </Tooltip>
+              </Space>
+            </Checkbox>
           </Space>
-        </Row>
-        <Row justify='center'>
-          <Checkbox onChange={() => setDoubleOtp(!doubleOtp)}>
-            <Hint>Setup second One Time Password for enhanced security</Hint>
-            <br />
-            <Hint>You will need to scan the QR code again in next step</Hint>
-          </Checkbox>
         </Row>
       </AnimatedSection>
       <AnimatedSection show={section === sectionViews.setupSecondOtp} style={{ maxWidth: 640 }}>
         <Row>
           <Space direction='vertical'>
-            {/* <Heading>Now, scan the QR code with your Google Authenticator</Heading> */}
-            <Heading>Setup Second One Time Password</Heading>
-            <Hint align='center'>Use two One Time Password for enhanced security</Hint>
+            <Heading>Create Your ONE Wallet</Heading>
+            <Hint align='center'>Scan using your Google Authenticator to setup the <b>second</b> code</Hint>
             <Row justify='center'>
               {secondOtpQrCodeData && <Image src={secondOtpQrCodeData} preview={false} width={isMobile ? 192 : 256} />}
             </Row>
@@ -307,7 +322,7 @@ const Create = () => {
         </Row>
         <Row>
           <Space direction='vertical' size='large' align='center'>
-            <Hint>After you are done, type in the 6-digit code from Google authenticator.</Hint>
+            <Hint>Type in the <b>second</b> 6-digit code from Google authenticator.</Hint>
             <OtpBox
               shouldAutoFocus
               ref={otpRef}
