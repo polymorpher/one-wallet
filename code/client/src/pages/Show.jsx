@@ -393,23 +393,6 @@ const Show = () => {
           </Space>
         </Col>
       </TallRow>
-      <TallRow align='middle'>
-        <Col span={isMobile ? 24 : 12}> <Title level={3}>Recovery Address</Title></Col>
-        {lastResortAddress && !util.isEmptyAddress(lastResortAddress) &&
-          <Col>
-            <Space>
-              <Tooltip title={oneLastResort}>
-                <ExplorerLink copyable={oneLastResort && { text: oneLastResort }} href={util.getNetworkExplorerUrl(address, network)}>
-                  {util.ellipsisAddress(oneLastResort)}
-                </ExplorerLink>
-              </Tooltip>
-            </Space>
-          </Col>}
-        {!(lastResortAddress && !util.isEmptyAddress(lastResortAddress)) &&
-          <Col>
-            <Button type='primary' size='large' shape='round' onClick={showSetRecoveryAddress}> Set </Button>
-          </Col>}
-      </TallRow>
       {wallet.majorVersion &&
         <TallRow align='middle'>
           <Col span={isMobile ? 24 : 12}> <Title level={3}>Wallet Version</Title></Col>
@@ -417,18 +400,35 @@ const Show = () => {
             <Text>{wallet.majorVersion}.{wallet.minorVersion}</Text>
           </Col>
         </TallRow>}
+      <Row style={{ marginTop: 24 }}>
+        <Popconfirm title='Are you sure？' onConfirm={onDeleteWallet}>
+          <Button type='primary' shape='round' danger size='large' icon={<DeleteOutlined />}>Delete locally</Button>
+        </Popconfirm>
+      </Row>
     </>
   )
   const RecoverWallet = () => {
     return (
       <>
+        <TallRow align='middle'>
+          <Col span={isMobile ? 24 : 12}> <Title level={3}>Recovery Address</Title></Col>
+          {lastResortAddress && !util.isEmptyAddress(lastResortAddress) &&
+            <Col>
+              <Space>
+                <Tooltip title={oneLastResort}>
+                  <ExplorerLink copyable={oneLastResort && { text: oneLastResort }} href={util.getNetworkExplorerUrl(address, network)}>
+                    {util.ellipsisAddress(oneLastResort)}
+                  </ExplorerLink>
+                </Tooltip>
+              </Space>
+            </Col>}
+          {!(lastResortAddress && !util.isEmptyAddress(lastResortAddress)) &&
+            <Col>
+              <Button type='primary' size='large' shape='round' onClick={showSetRecoveryAddress}> Set </Button>
+            </Col>}
+        </TallRow>
         <Row style={{ marginTop: 48 }}>
-          <Button type='link' style={{ padding: 0 }} size='large' onClick={showRecovery} icon={<WarningOutlined />}>I lost my Google Authenticator</Button>
-        </Row>
-        <Row style={{ marginTop: 24 }}>
-          <Popconfirm title='Are you sure？' onConfirm={onDeleteWallet}>
-            <Button type='link' style={{ color: 'red', padding: 0 }} size='large' icon={<DeleteOutlined />}>Delete this wallet locally</Button>
-          </Popconfirm>
+          <Button type='primary' size='large' shape='round' onClick={showRecovery} icon={<WarningOutlined />}>Recover funds</Button>
         </Row>
       </>
     )
