@@ -54,7 +54,7 @@ const Flows = {
     wallet, layers, commitHashGenerator, commitHashArgs,
     beforeCommit, afterCommit, onCommitError, onCommitFailure,
     revealAPI, revealArgs, onRevealFailure, onRevealSuccess, onRevealError, onRevealAttemptFailed,
-    beforeReveal,
+    beforeReveal, index,
     maxTransferAttempts = 3, checkCommitInterval = 5000,
     message = messager
   }) => {
@@ -66,7 +66,10 @@ const Flows = {
         return
       }
     }
-    const index = ONEUtil.timeToIndex({ effectiveTime })
+    index = index || ONEUtil.timeToIndex({ effectiveTime })
+    if (index < 0) {
+      index = layers[0].length / 32 - 1
+    }
     let nonce // should get from blockchain, but omitted for now because all wallets have maxOperationsPerInterval set to 1.
     let rand
     if (randomness > 0) {

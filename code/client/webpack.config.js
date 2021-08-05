@@ -11,6 +11,7 @@ module.exports = {
     historyApiFallback: true,
   },
   module: {
+    noParse: /\.wasm$/,
     rules: [
       {
         test: /\.(js|jsx)$/,
@@ -56,7 +57,12 @@ module.exports = {
             }
           }
         ]
-      }
+      },
+      {
+        test: /\.wasm$/,
+        loader: 'base64-loader',
+        type: 'javascript/auto',
+      },
     ],
   },
   entry: {
@@ -71,6 +77,10 @@ module.exports = {
     publicPath: '/'
   },
 
+  externals: {
+    path: 'path',
+    fs: 'fs',
+  },
   resolve: {
     modules: [path.resolve(__dirname, 'node_modules'), 'node_modules'],
     extensions: ['.jsx', '.js'],
@@ -78,6 +88,7 @@ module.exports = {
       stream: require.resolve('stream-browserify'),
       // TODO: remove later, after web3 is removed from dependency (for ethereum compatibility)
       http: require.resolve('stream-http'),
+      fs: false,
       os: require.resolve('os-browserify/browser'),
       https: require.resolve('https-browserify'),
       crypto: require.resolve('crypto-browserify')

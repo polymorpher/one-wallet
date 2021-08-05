@@ -6,8 +6,21 @@ import api from '../api'
 import ONEUtil from '../../../lib/util'
 import ONENames from '../../../lib/names'
 // import { uniqueNamesGenerator, colors, animals } from 'unique-names-generator'
-import { Button, Row, Space, Typography, Slider, Image, message, Progress, Timeline, Select } from 'antd'
-import { RedoOutlined, LoadingOutlined, SearchOutlined } from '@ant-design/icons'
+import {
+  Button,
+  Row,
+  Space,
+  Typography,
+  Slider,
+  Image,
+  message,
+  Progress,
+  Timeline,
+  Select,
+  Checkbox,
+  Tooltip
+} from 'antd'
+import { RedoOutlined, LoadingOutlined, SearchOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import humanizeDuration from 'humanize-duration'
 import AnimatedSection from '../components/AnimatedSection'
 import b32 from 'hi-base32'
@@ -37,16 +50,32 @@ const genName = (existingNames) => {
   return name
 }
 
+const generateOtpSeed = () => {
+  const otpSeedBuffer = new Uint8Array(20)
+  return window.crypto.getRandomValues(otpSeedBuffer)
+}
+
+const sectionViews = {
+  setupWalletDetails: 1,
+  setupOtp: 2,
+  setupSecondOtp: 3,
+  prepareWallet: 4,
+  walletSetupDone: 5
+}
+
 const Create = () => {
+  const generateNewOtpName = () => genName(Object.keys(wallets).map(k => wallets[k].name))
+
   const { isMobile } = useWindowDimensions()
   const dispatch = useDispatch()
   const history = useHistory()
   const network = useSelector(state => state.wallet.network)
   const wallets = useSelector(state => state.wallet.wallets)
-  const [name, setName] = useState(genName(Object.keys(wallets).map(k => wallets[k].name)))
-  const otpSeedBuffer = new Uint8Array(20)
+  const [name, setName] = useState(generateNewOtpName())
   // eslint-disable-next-line no-unused-vars
-  const [seed, setSeed] = useState(window.crypto.getRandomValues(otpSeedBuffer))
+  const [seed, setSeed] = useState(generateOtpSeed())
+  // eslint-disable-next-line no-unused-vars
+  const [seed2, setSeed2] = useState(generateOtpSeed())
   const [duration, setDuration] = useState(WalletConstants.defaultDuration)
   const [lastResortAddress, setLastResortAddress] = useState()
   const [dailyLimit] = useState(WalletConstants.defaultDailyLimit)
@@ -60,52 +89,62 @@ const Create = () => {
   const [progressStage, setProgressStage] = useState(0)
   const [address, setAddress] = useState() // '0x12345678901234567890'
   const [effectiveTime, setEffectiveTime] = useState()
+  const [doubleOtp, setDoubleOtp] = useState(false)
 
   const [durationVisible, setDurationVisible] = useState(false)
-  const [section, setSection] = useState(2)
+  const [section, setSection] = useState(sectionViews.setupOtp)
   const [qrCodeData, setQRCodeData] = useState()
+  const [secondOtpQrCodeData, setSecondOtpQrCodeData] = useState()
   const [otp, setOtp] = useState('')
 
   const [deploying, setDeploying] = useState()
 
   const otpRef = useRef()
 
-  const getQRCodeUri = () => {
+  const getQRCodeUri = (otpSeed, otpDisplayName) => {
     // otpauth://TYPE/LABEL?PARAMETERS
-    return `otpauth://totp/${name}?secret=${b32.encode(seed)}&issuer=Harmony`
+    return `otpauth://totp/${otpDisplayName}?secret=${b32.encode(otpSeed)}&issuer=Harmony`
   }
+
   useEffect(() => {
     (async function () {
-      const uri = getQRCodeUri()
-      const data = await qrcode.toDataURL(uri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
-      setQRCodeData(data)
+      const otpUri = getQRCodeUri(seed, name)
+      const secondOtpUri = getQRCodeUri(seed2, `${name} - 2nd`)
+      const otpQrCodeData = await qrcode.toDataURL(otpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
+      const secondOtpQrCodeData = await qrcode.toDataURL(secondOtpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
+      setQRCodeData(otpQrCodeData)
+      setSecondOtpQrCodeData(secondOtpQrCodeData)
     })()
   }, [name])
 
   useEffect(() => {
-    if (section === 2 && worker) {
+    if (section === sectionViews.setupOtp && worker) {
       console.log('posting to worker')
       const t = Math.floor(Date.now() / WalletConstants.interval) * WalletConstants.interval
       setEffectiveTime(t)
       worker && worker.postMessage({
-        seed, effectiveTime: t, duration, slotSize, interval: WalletConstants.interval
+        seed, seed2, effectiveTime: t, duration, slotSize, interval: WalletConstants.interval
       })
     }
   }, [section, worker])
 
   useEffect(() => {
+    const settingUpSecondOtp = section === sectionViews.setupSecondOtp
     if (otp.length !== 6) {
       return
     }
-    const expected = ONEUtil.genOTP({ seed })
+    const currentSeed = settingUpSecondOtp ? seed2 : seed
+    const expected = ONEUtil.genOTP({ seed: currentSeed })
     const code = new DataView(expected.buffer).getUint32(0, false).toString()
+    setOtp('')
     if (code.padStart(6, '0') !== otp.padStart(6, '0')) {
-      console.log(`Expected: ${code}. Got: ${otp}`)
       message.error('Code is incorrect. Please try again.')
-      setOtp('')
+      otpRef?.current?.focusInput(0)
+    } else if (doubleOtp && !settingUpSecondOtp) {
+      setSection(sectionViews.setupSecondOtp)
       otpRef?.current?.focusInput(0)
     } else {
-      setSection(3)
+      setSection(sectionViews.prepareWallet)
     }
   }, [otp])
 
@@ -122,7 +161,6 @@ const Create = () => {
       message.error('Cannot deploy wallet. Error: root is not set.')
       return
     }
-
     let normalizedAddress = ''
     if (lastResortAddress !== '') {
       // Ensure valid address for both 0x and one1 formats
@@ -155,6 +193,7 @@ const Create = () => {
         dailyLimit: ONEUtil.toFraction(dailyLimit).toString(),
         hseed: ONEUtil.hexView(hseed),
         network,
+        doubleOtp,
       }
       await storeLayers()
       dispatch(walletActions.updateWallet(wallet))
@@ -193,7 +232,7 @@ const Create = () => {
 
   return (
     <>
-      <AnimatedSection show={section === 1} style={{ maxWidth: 640 }}>
+      <AnimatedSection show={section === sectionViews.setupWalletDetails} style={{ maxWidth: 640 }}>
         <Heading>What do you want to call your wallet?</Heading>
         <Hint>This is only stored on your computer to distinguish your wallets.</Hint>
         <Row align='middle' style={{ marginBottom: 32, marginTop: 16 }}>
@@ -203,12 +242,11 @@ const Create = () => {
               value={name} onChange={({ target: { value } }) => setName(value)}
               style={{ padding: 0 }}
             />
-            <Button type='primary' shape='round' size='large' onClick={() => setSection(2)}>Next</Button>
+            <Button type='primary' shape='round' size='large' onClick={() => setSection(sectionViews.setupOtp)}>Next</Button>
           </Space>
         </Row>
-
         <Space direction='vertical'>
-          <Hint>Next, we will set up a ONE Wallet that expires in a year. When the wallet expires, you may create a new wallet and transfer the funds. The funds can also be recovered to an address you set later.</Hint>
+          <Hint>Next, we will set up a 1wallet that expires in a year. When the wallet expires, you may create a new wallet and transfer the funds. The funds can also be recovered to an address you set later.</Hint>
           <Link onClick={() => setDurationVisible(true)}>Need more time?</Link>
           {durationVisible &&
             <Space>
@@ -221,11 +259,11 @@ const Create = () => {
             </Space>}
         </Space>
       </AnimatedSection>
-      <AnimatedSection show={section === 2} style={{ maxWidth: 640 }}>
+      <AnimatedSection show={section === sectionViews.setupOtp} style={{ maxWidth: 640 }}>
         <Row>
           <Space direction='vertical'>
             {/* <Heading>Now, scan the QR code with your Google Authenticator</Heading> */}
-            <Heading>Create Your ONE Wallet</Heading>
+            <Heading>Create Your 1wallet</Heading>
             <Hint>You need the 6-digit code from Google authenticator to transfer funds. You can restore your wallet using Google authenticator on any device.</Hint>
             <Row justify='center'>
               {qrCodeData && <Image src={qrCodeData} preview={false} width={isMobile ? 192 : 256} />}
@@ -234,7 +272,41 @@ const Create = () => {
         </Row>
         <Row>
           <Space direction='vertical' size='large' align='center'>
-            <Hint>After you are done, type in the 6-digit code from Google authenticator.</Hint>
+            <Hint>After you are done, type in the 6-digit code from Google authenticator</Hint>
+            <Hint>Code for <b>Harmony ({name})</b></Hint>
+            <OtpBox
+              shouldAutoFocus
+              ref={otpRef}
+              value={otp}
+              onChange={setOtp}
+            />
+            <Checkbox onChange={() => setDoubleOtp(!doubleOtp)}>
+              <Space>
+                <Hint>
+                  Use two codes to enhance security
+                </Hint>
+                <Tooltip title={<div>You will need to scan another QR-code on the next page. Each time you make a transaction, you will need to type in two 6-digit codes, which are shown simultaneously next to each other on your Google authenticator.<br /><br />This is advisable if you intend to make larger transactions with this wallet</div>}>
+                  <QuestionCircleOutlined />
+                </Tooltip>
+              </Space>
+            </Checkbox>
+          </Space>
+        </Row>
+      </AnimatedSection>
+      <AnimatedSection show={section === sectionViews.setupSecondOtp} style={{ maxWidth: 640 }}>
+        <Row>
+          <Space direction='vertical'>
+            <Heading>Create Your 1wallet (second code)</Heading>
+            <Hint align='center'>Scan with your Google Authenticator to setup the <b>second</b> code</Hint>
+            <Row justify='center'>
+              {secondOtpQrCodeData && <Image src={secondOtpQrCodeData} preview={false} width={isMobile ? 192 : 256} />}
+            </Row>
+          </Space>
+        </Row>
+        <Row>
+          <Space direction='vertical' size='large' align='center'>
+            <Hint>Type in the <b>second</b> 6-digit code from Google authenticator</Hint>
+            <Hint>Code for <b>Harmony ({name} - 2nd)</b></Hint>
             <OtpBox
               shouldAutoFocus
               ref={otpRef}
@@ -244,10 +316,10 @@ const Create = () => {
           </Space>
         </Row>
       </AnimatedSection>
-      <AnimatedSection show={section === 3} style={{ maxWidth: 640 }}>
+      <AnimatedSection show={section === sectionViews.prepareWallet} style={{ maxWidth: 640 }}>
         <Row>
           <Space direction='vertical'>
-            <Heading>Prepare Your ONE Wallet</Heading>
+            <Heading>Prepare Your 1wallet</Heading>
           </Space>
         </Row>
         {/* <Row style={{ marginBottom: 16 }}> */}
@@ -300,7 +372,7 @@ const Create = () => {
                     percent={progress}
                   />
                   <Space direction='vertical'>
-                    <Timeline pending={progressStage < 2 && 'Securing your keyless ONE Wallet'}>
+                    <Timeline pending={progressStage < 2 && 'Securing your keyless 1wallet'}>
                       <Timeline.Item color={progressStage < 1 ? 'grey' : 'green'}>Securing the wallet</Timeline.Item>
                       <Timeline.Item color={progressStage < 2 ? 'grey' : 'green'}>Preparing signatures</Timeline.Item>
                     </Timeline>
@@ -312,12 +384,12 @@ const Create = () => {
         <Row>
           <Space direction='vertical'>
             <Hint>No private key. No mnemonic. Simple and Secure. </Hint>
-            <Hint>To learn more, visit <Link href='https://github.com/polymorpher/one-wallet/wiki'>ONE Wallet Wiki</Link></Hint>
+            <Hint>To learn more, visit <Link href='https://github.com/polymorpher/one-wallet/wiki'>1wallet Wiki</Link></Hint>
             <Hint>In Beta, your wallet is subject to a daily spending limit of {WalletConstants.defaultDailyLimit} ONE</Hint>
           </Space>
         </Row>
       </AnimatedSection>
-      <AnimatedSection show={section === 4}>
+      <AnimatedSection show={section === sectionViews.walletSetupDone}>
         <Space direction='vertical'>
           <Heading>You are all set!</Heading>
           <Space direction='vertical' size='small'>

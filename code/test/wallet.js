@@ -200,7 +200,7 @@ contract('ONEWallet', (accounts) => {
     const neighbors = ONE.selectMerkleNeighbors({ layers, index })
     const neighbor = neighbors[0]
     const { hash: commitHash } = ONE.computeCommitHash({ neighbor, index, eotp })
-    const { hash: recoveryHash, bytes: recoveryData } = ONE.computeRecoveryHash(null, hseed)
+    const { hash: recoveryHash, bytes: recoveryData } = ONE.computeRecoveryHash({ hseed })
     const { hash: verificationHash } = ONE.computeVerificationHash({ paramsHash: recoveryHash, eotp })
     const neighborsEncoded = neighbors.map(ONEUtil.hexString)
     await wallet.commit(ONEUtil.hexString(commitHash), ONEUtil.hexString(recoveryHash), ONEUtil.hexString(verificationHash))

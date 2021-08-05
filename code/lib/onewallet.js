@@ -95,6 +95,7 @@ const computeMerkleTree = async ({
     seed2, // discard
     randomnessResults, // discard
     hseed,
+    doubleOtp: !!(seed2),
     counter, // base time
     leaves, // = layers[0]
     root, // = layers[height - 1]
@@ -169,25 +170,21 @@ const computeEOTP = async ({ otp, otp2, rand = null, hseed, nonce = 0, hasher = 
   if (otp2) {
     buffer.set(otp2, hseed.length + 6)
   }
-  console.log('otp', otp, hexView(otp))
-  console.log('otp2', otp2, hexView(otp2))
-  console.log('buffer', buffer, hexView(buffer))
   if (rand !== null) {
     const rb = new Uint8Array(4)
     const rv = new DataView(rb.buffer)
     rv.setUint32(0, rand, false)
-    console.log('rb', rb)
     buffer.set(rb, 28)
   }
   return hasher(buffer)
 }
 
-const computeRecoveryHash = (rseed, input) => {
-  rseed = rseed || new Uint8Array(new BigUint64Array([0n, BigInt(Date.now())]).buffer)
-  input = input || new Uint8Array(32)
+const computeRecoveryHash = ({ randomSeed, hseed }) => {
+  randomSeed = randomSeed || new Uint8Array(new BigUint64Array([0n, BigInt(Date.now())]).buffer)
+  hseed = hseed || new Uint8Array(32)
   // eslint-disable-next-line new-cap
-  const aes = new AES.ModeOfOperation.ctr(rseed)
-  const bytes = aes.encrypt(input)
+  const aes = new AES.ModeOfOperation.ctr(randomSeed)
+  const bytes = aes.encrypt(hseed)
   return { hash: keccak(bytes), bytes }
 }
 

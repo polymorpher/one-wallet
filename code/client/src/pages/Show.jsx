@@ -6,6 +6,7 @@ import WalletConstants from '../constants/wallet'
 import walletActions from '../state/modules/wallet/actions'
 import util, { useWindowDimensions } from '../util'
 import ONE from '../../../lib/onewallet'
+import ONEUtil from '../../../lib/util'
 import ONEConstants from '../../../lib/constants'
 import api from '../api'
 import * as Sentry from '@sentry/browser'
@@ -93,6 +94,9 @@ const Show = () => {
       return
     }
     setSection(action)
+
+    // Reset TOP input boxes on location change to make sure the input boxes are cleared.
+    resetOtp()
   }, [location])
 
   const showTab = (tab) => { history.push(Paths.showAddress(oneAddress, tab)) }
@@ -116,7 +120,21 @@ const Show = () => {
   const [transferTo, setTransferTo] = useState('')
   const [inputAmount, setInputAmount] = useState('')
   const [otpInput, setOtpInput] = useState('')
+  const [otp2Input, setOtp2Input] = useState('')
   const otpRef = useRef()
+  const otp2Ref = useRef()
+
+  useEffect(() => {
+    // Focus on OTP 2 input box when first OTP input box is filled.
+    if (otpInput.length === 6 && wallet.doubleOtp) {
+      // For some reason if the OTP input never been focused or touched by user before, it cannot be focused
+      // to index 0 programmatically, however focus to index 1 is fine. So as a workaround we focus on next input first then focus to
+      // index 0 box. Adding setTimeout 0 to make focus on index 0 run asynchronously, which gives browser just enough
+      // time to react the previous focus before we set the focus on index 0.
+      otp2Ref?.current?.focusNextInput()
+      setTimeout(() => otp2Ref?.current?.focusInput(0), 0)
+    }
+  }, [otpInput])
 
   const {
     balance: transferAmount,
@@ -134,10 +152,13 @@ const Show = () => {
       setInputAmount(formatted)
     }
   }
+
   const resetOtp = () => {
     setOtpInput('')
+    setOtp2Input('')
     otpRef?.current?.focusInput(0)
   }
+
   const restart = () => {
     setStage(0)
     resetOtp()
@@ -150,12 +171,17 @@ const Show = () => {
   //   beforeReveal
 
   const prepareValidation = ({ checkAmount = true, checkDest = true, checkOtp = true } = {}) => {
+    let rawAmount
+    const otp = util.parseOtp(otpInput)
+    const otp2 = util.parseOtp(otp2Input)
+    const invalidOtp = !otp
+    const invalidOtp2 = wallet.doubleOtp && !otp2
     // Ensure valid address for both 0x and one1 formats
     const dest = util.safeExec(util.normalizedAddress, [transferTo], handleAddressError)
     if (checkDest && !dest) {
       return
     }
-    let rawAmount
+
     if (checkAmount) {
       if (selectedToken && util.isNFT(selectedToken)) {
         try {
@@ -172,17 +198,23 @@ const Show = () => {
         return message.error('Transfer amount is invalid')
       }
     }
-    const otp = util.parseOtp(otpInput)
-    if (checkOtp && !otp) {
-      message.error(`Google Authenticator code [${otp}] is not valid`, 10)
+
+    if (checkOtp && (invalidOtp || invalidOtp2)) {
+      message.error('Google Authenticator code is not valid', 10)
       resetOtp()
       return
     }
-    if (selectedToken && util.isNFT(selectedToken)) {
-      return { otp, dest, amount: rawAmount.toString() }
+
+    return {
+      otp,
+      otp2,
+      dest,
+      invalidOtp,
+      invalidOtp2,
+      amount: selectedToken && util.isNFT(selectedToken) ? rawAmount.toString() : transferAmount.toString()
     }
-    return { otp, dest, amount: transferAmount.toString() }
   }
+
   const onCommitError = (ex) => {
     Sentry.captureException(ex)
     console.error(ex)
@@ -190,22 +222,26 @@ const Show = () => {
     setStage(0)
     resetOtp()
   }
+
   const onCommitFailure = (error) => {
     message.error(`Cannot commit transaction. Reason: ${error}`)
     setStage(0)
     resetOtp()
   }
+
   const onRevealFailure = (error) => {
     message.error(`Transaction Failed: ${error}`)
     setStage(0)
     resetOtp()
   }
+
   const onRevealError = (ex) => {
     Sentry.captureException(ex)
     message.error(`Failed to finalize transaction. Error: ${ex.toString()}`)
     setStage(0)
     resetOtp()
   }
+
   const onRevealAttemptFailed = (numAttemptsRemaining) => {
     message.error(`Failed to finalize transaction. Trying ${numAttemptsRemaining} more time`)
   }
@@ -222,13 +258,15 @@ const Show = () => {
   }
 
   const doSend = async () => {
-    const { otp, dest, amount } = prepareValidation() || {}
-    if (!otp || !dest) return
+    const { otp, otp2, invalidOtp2, invalidOtp, dest, amount } = prepareValidation() || {}
+
+    if (invalidOtp || !dest || invalidOtp2) return
 
     if (selectedToken.key === 'one') {
       SmartFlows.commitReveal({
         wallet,
         otp,
+        otp2,
         commitHashGenerator: ONE.computeTransferHash,
         commitHashArgs: { dest, amount },
         beforeCommit: () => setStage(1),
@@ -249,6 +287,7 @@ const Show = () => {
       SmartFlows.commitReveal({
         wallet,
         otp,
+        otp2,
         commitHashGenerator: ONE.computeTokenOperationHash,
         commitHashArgs: { dest, amount, operationType: ONEConstants.OperationType.TRANSFER_TOKEN, tokenType: selectedToken.tokenType, contractAddress: selectedToken.contractAddress, tokenId: selectedToken.tokenId },
         beforeCommit: () => setStage(1),
@@ -269,15 +308,23 @@ const Show = () => {
   }
 
   const doRecovery = async () => {
+    let { hash, bytes } = ONE.computeRecoveryHash({ hseed: ONEUtil.hexToBytes(wallet.hseed) })
+    if (!(wallet.majorVersion >= 8)) {
+      // contracts <= v7 rely on paramsHash = bytes32(0) for recover, so we must handle this special case here
+      hash = new Uint8Array(32)
+    }
+    const data = ONEUtil.hexString(bytes)
     SmartFlows.commitReveal({
       wallet,
       eotpBuilder: EotpBuilders.recovery,
-      commitHashGenerator: ONE.computeRecoveryHash,
+      index: -1,
+      commitHashGenerator: () => ({ hash, bytes: new Uint8Array(0) }), // Only legacy committer uses `bytes`. It mingles them with other parameters to produce hash. legacy recover has no parameters, therefore `bytes` should be empty byte array
       beforeCommit: () => setStage(1),
       afterCommit: () => setStage(2),
       onCommitError,
       onCommitFailure,
       revealAPI: api.relayer.revealRecovery,
+      revealArgs: { data },
       onRevealFailure,
       onRevealError,
       onRevealAttemptFailed,
@@ -286,12 +333,13 @@ const Show = () => {
   }
 
   const doSetRecoveryAddress = async () => {
-    const { otp, dest } = prepareValidation({ checkAmount: false }) || {}
-    if (!otp || !dest) return
+    const { otp, otp2, invalidOtp2, invalidOtp, dest } = prepareValidation({ checkAmount: false }) || {}
+    if (invalidOtp || !dest || invalidOtp2) return
 
     SmartFlows.commitReveal({
       wallet,
       otp,
+      otp2,
       commitHashGenerator: ONE.computeSetRecoveryAddressHash,
       commitHashArgs: { address: dest },
       beforeCommit: () => setStage(1),
@@ -348,42 +396,42 @@ const Show = () => {
           </Space>
         </Col>
       </TallRow>
-      <TallRow align='middle'>
-        <Col span={isMobile ? 24 : 12}> <Title level={3}>Recovery Address</Title></Col>
-        {lastResortAddress && !util.isEmptyAddress(lastResortAddress) &&
-          <Col>
-            <Space>
-              <Tooltip title={oneLastResort}>
-                <ExplorerLink copyable={oneLastResort && { text: oneLastResort }} href={util.getNetworkExplorerUrl(address, network)}>
-                  {util.ellipsisAddress(oneLastResort)}
-                </ExplorerLink>
-              </Tooltip>
-            </Space>
-          </Col>}
-        {!(lastResortAddress && !util.isEmptyAddress(lastResortAddress)) &&
-          <Col>
-            <Button type='primary' size='large' shape='round' onClick={showSetRecoveryAddress}> Set </Button>
-          </Col>}
-      </TallRow>
-      {wallet.majorVersion && wallet.minorVersion &&
+      {wallet.majorVersion &&
         <TallRow align='middle'>
           <Col span={isMobile ? 24 : 12}> <Title level={3}>Wallet Version</Title></Col>
           <Col>
             <Text>{wallet.majorVersion}.{wallet.minorVersion}</Text>
           </Col>
         </TallRow>}
+      <Row style={{ marginTop: 24 }}>
+        <Popconfirm title='Are you sure？' onConfirm={onDeleteWallet}>
+          <Button type='primary' shape='round' danger size='large' icon={<DeleteOutlined />}>Delete locally</Button>
+        </Popconfirm>
+      </Row>
     </>
   )
   const RecoverWallet = () => {
     return (
       <>
+        <TallRow align='middle'>
+          <Col span={isMobile ? 24 : 12}> <Title level={3}>Recovery Address</Title></Col>
+          {lastResortAddress && !util.isEmptyAddress(lastResortAddress) &&
+            <Col>
+              <Space>
+                <Tooltip title={oneLastResort}>
+                  <ExplorerLink copyable={oneLastResort && { text: oneLastResort }} href={util.getNetworkExplorerUrl(address, network)}>
+                    {util.ellipsisAddress(oneLastResort)}
+                  </ExplorerLink>
+                </Tooltip>
+              </Space>
+            </Col>}
+          {!(lastResortAddress && !util.isEmptyAddress(lastResortAddress)) &&
+            <Col>
+              <Button type='primary' size='large' shape='round' onClick={showSetRecoveryAddress}> Set </Button>
+            </Col>}
+        </TallRow>
         <Row style={{ marginTop: 48 }}>
-          <Button type='link' style={{ padding: 0 }} size='large' onClick={showRecovery} icon={<WarningOutlined />}>I lost my Google Authenticator</Button>
-        </Row>
-        <Row style={{ marginTop: 24 }}>
-          <Popconfirm title='Are you sure？' onConfirm={onDeleteWallet}>
-            <Button type='link' style={{ color: 'red', padding: 0 }} size='large' icon={<DeleteOutlined />}>Delete this wallet locally</Button>
-          </Popconfirm>
+          <Button type='primary' size='large' shape='round' onClick={showRecovery} icon={<WarningOutlined />}>Recover funds</Button>
         </Row>
       </>
     )
@@ -484,16 +532,33 @@ const Show = () => {
               <Hint>USD</Hint>
             </Space>}
           <Space align='baseline' size='large' style={{ marginTop: 16 }}>
-            <Label><Hint>Code</Hint></Label>
+            <Label><Hint>Code {wallet.doubleOtp ? '1' : ''}</Hint></Label>
             <OtpBox
               ref={otpRef}
               value={otpInput}
               onChange={setOtpInput}
             />
-            <Tooltip title='from your Google Authenticator'>
+            <Tooltip title={`from your Google Authenticator, i.e. ${wallet.name}`}>
               <QuestionCircleOutlined />
             </Tooltip>
           </Space>
+          {
+            wallet.doubleOtp
+              ? (
+                <Space align='baseline' size='large' style={{ marginTop: 16 }}>
+                  <Label><Hint>Code 2</Hint></Label>
+                  <OtpBox
+                    ref={otp2Ref}
+                    value={otp2Input}
+                    onChange={setOtp2Input}
+                  />
+                  <Tooltip title={`from your Google Authenticator, i.e. ${wallet.name} (2nd)`}>
+                    <QuestionCircleOutlined />
+                  </Tooltip>
+                </Space>
+                )
+              : <></>
+          }
         </Space>
         <Row justify='end' style={{ marginTop: 24 }}>
           <Space>
@@ -544,15 +609,33 @@ const Show = () => {
             <InputBox margin='auto' width={440} value={transferTo} onChange={({ target: { value } }) => setTransferTo(value)} placeholder='one1...' />
           </Space>
           <Space align='baseline' size='large' style={{ marginTop: 16 }}>
-            <Label><Hint>Code</Hint></Label>
+            <Label><Hint>Code {wallet.doubleOtp ? '1' : ''}</Hint></Label>
             <OtpBox
+              ref={otpRef}
               value={otpInput}
               onChange={setOtpInput}
             />
-            <Tooltip title='from your Google Authenticator'>
+            <Tooltip title={`from your Google Authenticator, i.e. ${wallet.name}`}>
               <QuestionCircleOutlined />
             </Tooltip>
           </Space>
+          {
+            wallet.doubleOtp
+              ? (
+                <Space align='baseline' size='large' style={{ marginTop: 16 }}>
+                  <Label><Hint>Code 2</Hint></Label>
+                  <OtpBox
+                    ref={otp2Ref}
+                    value={otp2Input}
+                    onChange={setOtp2Input}
+                  />
+                  <Tooltip title={`from your Google Authenticator, i.e. ${wallet.name} (2nd)`}>
+                    <QuestionCircleOutlined />
+                  </Tooltip>
+                </Space>
+                )
+              : <></>
+          }
         </Space>
         <Row justify='end' style={{ marginTop: 24 }}>
           <Space>
