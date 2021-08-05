@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router'
 import Paths from '../constants/paths'
 import api from '../api'
+import config from '../config'
 import ONEUtil from '../../../lib/util'
 import ONENames from '../../../lib/names'
 // import { uniqueNamesGenerator, colors, animals } from 'unique-names-generator'
@@ -123,7 +124,14 @@ const Create = () => {
       const t = Math.floor(Date.now() / WalletConstants.interval) * WalletConstants.interval
       setEffectiveTime(t)
       worker && worker.postMessage({
-        seed, seed2, effectiveTime: t, duration, slotSize, interval: WalletConstants.interval
+        seed,
+        seed2,
+        effectiveTime: t,
+        duration,
+        slotSize,
+        interval: WalletConstants.interval,
+        randomness: util.getRandomness(),
+        hasher: config.clientSecurity.hasher,
       })
     }
   }, [section, worker])
@@ -194,6 +202,8 @@ const Create = () => {
         hseed: ONEUtil.hexView(hseed),
         network,
         doubleOtp,
+        randomness: util.getRandomness(),
+        hasher: config.clientSecurity.hasher
       }
       await storeLayers()
       dispatch(walletActions.updateWallet(wallet))

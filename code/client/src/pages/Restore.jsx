@@ -15,6 +15,7 @@ import util, { useWindowDimensions } from '../util'
 import { handleAddressError } from '../handler'
 import Paths from '../constants/paths'
 import * as Sentry from '@sentry/browser'
+import config from '../config'
 
 const { Step } = Steps
 
@@ -134,7 +135,9 @@ const Restore = () => {
             dailyLimit,
             hseed: ONEUtil.hexView(hseed),
             doubleOtp,
-            network
+            network,
+            randomness: util.getRandomness(),
+            hasher: config.clientSecurity.hasher,
           }
           dispatch(walletActions.updateWallet(wallet))
           dispatch(walletActions.fetchBalance({ address }))
@@ -145,7 +148,14 @@ const Restore = () => {
       }
       console.log('[Restore] Posting to worker')
       worker && worker.postMessage({
-        seed: secret, seed2: secret2, effectiveTime, duration, slotSize, interval: WalletConstants.interval
+        seed: secret,
+        seed2: secret2,
+        effectiveTime,
+        duration,
+        slotSize,
+        interval: WalletConstants.interval,
+        randomness: util.getRandomness(),
+        hasher: config.clientSecurity.hasher
       })
     } catch (ex) {
       Sentry.captureException(ex)

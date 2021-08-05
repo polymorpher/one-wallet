@@ -73,7 +73,22 @@ const Flows = {
     let nonce // should get from blockchain, but omitted for now because all wallets have maxOperationsPerInterval set to 1.
     let rand
     if (randomness > 0) {
-      rand = await ONE.recoverRandomness({ hseed, otp, otp2, nonce, leaf: layers[0][index], hasher: ONEUtil.getHasher(hasher) })
+      const encodedOtp = ONEUtil.encodeNumericalOtp(otp)
+      const encodedOtp2 = otp2 ? ONEUtil.encodeNumericalOtp(otp2) : undefined
+      rand = await ONE.recoverRandomness({
+        randomness,
+        hseed: ONEUtil.hexToBytes(hseed),
+        otp: encodedOtp,
+        otp2: encodedOtp2,
+        nonce,
+        leaf: layers[0].subarray(index * 32, index * 32 + 32),
+        hasher: ONEUtil.getHasher(hasher)
+      })
+      // console.log({ rand })
+      if (rand === null) {
+        message.error('Failed to decrypt proof. Code might be incorrect')
+        return
+      }
     }
     const eotp = await eotpBuilder({ otp, otp2, rand, wallet, layers })
     if (!eotp) {
