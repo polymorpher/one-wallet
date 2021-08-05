@@ -10,6 +10,7 @@ onmessage = async function (event) {
 
   const {
     hseed,
+    doubleOtp,
     leaves,
     root,
     layers,
@@ -30,6 +31,7 @@ onmessage = async function (event) {
     status: 'done',
     result: {
       hseed,
+      doubleOtp,
       leaves,
       root,
       layers,
