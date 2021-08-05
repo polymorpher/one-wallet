@@ -304,8 +304,8 @@ contract ONEWallet is TokenTracker {
         }
         (bytes32 commitHash, bytes32 paramsHash) = _getRevealHash(neighbors[0], indexWithNonce, eotp,
             operationType, tokenType, contractAddress, tokenId, dest, amount, data);
-        uint32 commitIndex = _verifyReveal(commitHash, indexWithNonce, paramsHash, eotp);
-        _completeReveal(commitHash, commitIndex);
+        uint32 commitIndex = _verifyReveal(commitHash, indexWithNonce, paramsHash, eotp, operationType);
+        _completeReveal(commitHash, commitIndex, operationType);
         // No revert should occur below this point
         if (operationType == OperationType.TRACK) {
             if (data.length > 0) {
@@ -406,7 +406,7 @@ contract ONEWallet is TokenTracker {
     }
 
     /// This function verifies that the first valid entry with respect to the given `eotp` in `commitLocker[hash]` matches the provided `paramsHash` and `verificationHash`. An entry is valid with respect to `eotp` iff `h3(entry.paramsHash . eotp)` equals `entry.verificationHash`
-    function _verifyReveal(bytes32 hash, uint32 indexWithNonce, bytes32 paramsHash, bytes32 eotp) view internal returns (uint32)
+    function _verifyReveal(bytes32 hash, uint32 indexWithNonce, bytes32 paramsHash, bytes32 eotp, OperationType operationType) view internal returns (uint32)
     {
         uint32 index = indexWithNonce / maxOperationsPerInterval;
         uint8 nonce = uint8(indexWithNonce % maxOperationsPerInterval);
@@ -420,10 +420,12 @@ contract ONEWallet is TokenTracker {
                 continue;
             }
             require(c.paramsHash == paramsHash, "Parameter hash mismatch");
-            uint32 counter = c.timestamp / interval - t0;
-            require(counter == index, "Index - timestamp mismatch");
-            uint8 expectedNonce = nonces[counter];
-            require(nonce >= expectedNonce, "Nonce too low");
+            if (operationType != OperationType.RECOVER) {
+                uint32 counter = c.timestamp / interval - t0;
+                require(counter == index, "Index - timestamp mismatch");
+                uint8 expectedNonce = nonces[counter];
+                require(nonce >= expectedNonce, "Nonce too low");
+            }
             require(!c.completed, "Commit already completed");
             // This normally should not happen, but when the network is congested (regardless of whether due to an attacker's malicious acts or not), the legitimate reveal may become untimely. This may happen before the old commit is cleaned up by another fresh commit. We enforce this restriction so that the attacker would not have a lot of time to reverse-engineer a single EOTP or leaf using an old commit.
             require(_isRevealTimely(c.timestamp), "Reveal too late");
@@ -432,16 +434,17 @@ contract ONEWallet is TokenTracker {
         revert("No valid commit");
     }
 
-    function _completeReveal(bytes32 commitHash, uint32 commitIndex) internal {
+    function _completeReveal(bytes32 commitHash, uint32 commitIndex, OperationType operationType) internal {
         Commit[] storage cc = commitLocker[commitHash];
         require(cc.length > 0, "Invalid commit hash");
         require(cc.length > commitIndex, "Invalid commitIndex");
         Commit storage c = cc[commitIndex];
         require(c.timestamp > 0, "Invalid commit timestamp");
-        // should not happen
-        uint32 index = uint32(c.timestamp) / interval - t0;
-        _incrementNonce(index);
-        _cleanupNonces();
+        if (operationType != OperationType.RECOVER) {
+            uint32 index = uint32(c.timestamp) / interval - t0;
+            _incrementNonce(index);
+            _cleanupNonces();
+        }
         c.completed = true;
     }
 
