@@ -109,7 +109,7 @@ const Create = () => {
   useEffect(() => {
     (async function () {
       const otpUri = getQRCodeUri(seed, name)
-      const secondOtpUri = getQRCodeUri(seed2, `${name} (2nd)`)
+      const secondOtpUri = getQRCodeUri(seed2, `${name} - 2nd`)
       const otpQrCodeData = await qrcode.toDataURL(otpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       const secondOtpQrCodeData = await qrcode.toDataURL(secondOtpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       setQRCodeData(otpQrCodeData)
@@ -272,7 +272,7 @@ const Create = () => {
         </Row>
         <Row>
           <Space direction='vertical' size='large' align='center'>
-            <Hint>After you are done, type in the 6-digit code from Google authenticator.</Hint>
+            <Hint>After you are done, type in the 6-digit code from Google authenticator.<br />Look for <b>Harmony ({name})</b></Hint>
             <OtpBox
               shouldAutoFocus
               ref={otpRef}
@@ -295,7 +295,7 @@ const Create = () => {
       <AnimatedSection show={section === sectionViews.setupSecondOtp} style={{ maxWidth: 640 }}>
         <Row>
           <Space direction='vertical'>
-            <Heading>Create Your 1wallet (Enhanced Security)</Heading>
+            <Heading>Create Your 1wallet (second code)</Heading>
             <Hint align='center'>Scan with your Google Authenticator to setup the <b>second</b> code</Hint>
             <Row justify='center'>
               {secondOtpQrCodeData && <Image src={secondOtpQrCodeData} preview={false} width={isMobile ? 192 : 256} />}
@@ -304,7 +304,7 @@ const Create = () => {
         </Row>
         <Row>
           <Space direction='vertical' size='large' align='center'>
-            <Hint>Type in the <b>second</b> 6-digit code from Google authenticator.</Hint>
+            <Hint>Type in the <b>second</b> 6-digit code from Google authenticator.<br />Look for <b>Harmony ({name} - 2nd)</b></Hint>
             <OtpBox
               shouldAutoFocus
               ref={otpRef}
