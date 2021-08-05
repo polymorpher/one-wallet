@@ -39,8 +39,8 @@ contract ONEWallet is TokenTracker {
     uint256 constant AUTO_RECOVERY_TRIGGER_AMOUNT = 1 ether;
     uint32 constant MAX_COMMIT_SIZE = 120;
 
-    uint32 constant majorVersion = 0x7; // a change would require client to migrate
-    uint32 constant minorVersion = 0x3; // a change would not require the client to migrate
+    uint32 constant majorVersion = 0x8; // a change would require client to migrate
+    uint32 constant minorVersion = 0x0; // a change would not require the client to migrate
 
     enum OperationType {
         TRACK, UNTRACK, TRANSFER_TOKEN, OVERRIDE_TRACK, TRANSFER, SET_RECOVERY_ADDRESS, RECOVER,
