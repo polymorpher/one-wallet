@@ -4,6 +4,7 @@ const ONEUtil = require('../lib/util')
 const ONEDebugger = require('../lib/debug')
 const ONE = require('../lib/onewallet')
 const ONEConstants = require('../lib/constants')
+const Flow = require('../lib/api/flow')
 
 const INTERVAL = 30000
 const DURATION = INTERVAL * 8
@@ -22,7 +23,7 @@ contract('ONEWallet', (accounts) => {
   const ONE_ETH = unit.toWei('1', 'ether')
   // eslint-disable-next-line no-unused-vars
   const TWO_ETH = unit.toWei('2', 'ether')
-  it('must create wallet with expected parameters', async () => {
+  it('Wallet_Create: must create wallet with expected parameters', async () => {
     const purse = web3.eth.accounts.create()
     const {
       seed,
@@ -71,7 +72,7 @@ contract('ONEWallet', (accounts) => {
     assert.equal(ONE_CENT, balance, 'Wallet has correct balance')
   })
 
-  it('must commit and reveal a transfer successfully', async () => {
+  it('Wallet_CommitReveal: must commit and reveal a transfer successfully', async () => {
     const purse = web3.eth.accounts.create()
     const { seed, hseed, wallet, root, client: { layers } } = await TestUtil.createWallet({
       effectiveTime: EFFECTIVE_TIME,
@@ -144,7 +145,7 @@ contract('ONEWallet', (accounts) => {
     assert.equal(ONE_CENT / 2, purseBalance, 'Purse has correct balance')
   })
 
-  it('must respect daily limit', async () => {
+  it('Wallet_DailyLimit: must respect daily limit', async () => {
     const purse = web3.eth.accounts.create()
     const { seed, hseed, wallet, client: { layers } } = await TestUtil.createWallet({
       effectiveTime: EFFECTIVE_TIME,
@@ -180,9 +181,9 @@ contract('ONEWallet', (accounts) => {
     assert.equal(0, purseBalance, 'Purse has 0 balance')
   })
 
-  it('must recover funds to last resort address', async () => {
+  it('Wallet_Recover: must recover funds to recovery address without using otp', async () => {
     const purse = web3.eth.accounts.create()
-    const { seed, hseed, wallet, client: { layers } } = await TestUtil.createWallet({
+    const { hseed, wallet, client: { layers } } = await TestUtil.createWallet({
       effectiveTime: EFFECTIVE_TIME,
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
@@ -194,20 +195,21 @@ contract('ONEWallet', (accounts) => {
       to: wallet.address,
       value: ONE_DIME
     })
-    const otp = ONEUtil.genOTP({ seed })
-    const index = ONEUtil.timeToIndex({ effectiveTime: EFFECTIVE_TIME })
-    const eotp = await ONE.computeEOTP({ otp, hseed })
+    const index = 2 ** (layers.length - 1) - 1
+    const eotp = await Flow.EotpBuilders.recovery({ wallet, layers })
     const neighbors = ONE.selectMerkleNeighbors({ layers, index })
     const neighbor = neighbors[0]
     const { hash: commitHash } = ONE.computeCommitHash({ neighbor, index, eotp })
-    const { hash: recoveryHash } = ONE.computeRecoveryHash()
+    const { hash: recoveryHash, bytes: recoveryData } = ONE.computeRecoveryHash(null, hseed)
     const { hash: verificationHash } = ONE.computeVerificationHash({ paramsHash: recoveryHash, eotp })
     const neighborsEncoded = neighbors.map(ONEUtil.hexString)
     await wallet.commit(ONEUtil.hexString(commitHash), ONEUtil.hexString(recoveryHash), ONEUtil.hexString(verificationHash))
-    await wallet.reveal(
+    const tx = await wallet.reveal(
       neighborsEncoded, index, ONEUtil.hexString(eotp),
-      ONEConstants.OperationType.RECOVER, ONEConstants.TokenType.NONE, ONEConstants.EmptyAddress, 0, ONEConstants.EmptyAddress, HALF_DIME, '0x'
+      ONEConstants.OperationType.RECOVER, ONEConstants.TokenType.NONE, ONEConstants.EmptyAddress, 0, ONEConstants.EmptyAddress, HALF_DIME, ONEUtil.hexString(recoveryData)
     )
+    Logger.debug('tx', tx)
+    assert.ok(tx.tx, 'Transaction must succeed')
     const walletBalance = await web3.eth.getBalance(wallet.address)
     const purseBalance = await web3.eth.getBalance(purse.address)
     assert.equal(0, walletBalance, 'Wallet has 0 balance')
