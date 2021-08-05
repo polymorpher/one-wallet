@@ -95,6 +95,7 @@ const computeMerkleTree = async ({
     seed2, // discard
     randomnessResults, // discard
     hseed,
+    doubleOtp: !!(seed2),
     counter, // base time
     leaves, // = layers[0]
     root, // = layers[height - 1]

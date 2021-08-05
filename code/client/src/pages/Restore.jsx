@@ -26,6 +26,7 @@ const Restore = () => {
   const dispatch = useDispatch()
   const [videoDevices, setVideoDevices] = useState([])
   const [secret, setSecret] = useState()
+  const [secret2, setSecret2] = useState()
   const [name, setName] = useState()
   const [device, setDevice] = useState()
   const { isMobile } = useWindowDimensions()
@@ -63,9 +64,18 @@ const Restore = () => {
         const data = new URL(e).searchParams.get('data')
         const params = MigrationPayload.decode(Buffer.from(data, 'base64')).otpParameters
         const filteredParams = params.filter(e => e.issuer === 'ONE Wallet' || e.issuer === 'Harmony')
-        if (filteredParams.length > 1) {
+        if (filteredParams.length > 2) {
           message.error('You selected more than one authenticator entry to export. Please reselect on Google Authenticator')
           return
+        }
+        if (filteredParams.length === 2) {
+          const names = filteredParams.map(e => e.name.split('-')[0].trim()).map(e => e.split('(')[0].trim())
+          if (names[0] !== names[1]) {
+            message.error('You selected two wallets with different names. If you want to select two entries belonging to the same wallet, make sure they have the same name and the second one has "- 2nd" in the end')
+            return
+          }
+          const { secret } = filteredParams[1]
+          setSecret2(secret)
         }
         const { secret, name } = filteredParams[0]
         setSecret(secret)
@@ -107,7 +117,7 @@ const Restore = () => {
           setProgressStage(stage)
         }
         if (status === 'done') {
-          const { hseed, root: computedRoot, layers } = result
+          const { hseed, root: computedRoot, layers, doubleOtp } = result
           if (!ONEUtil.bytesEqual(ONEUtil.hexToBytes(root), computedRoot)) {
             console.error('Roots are not equal', root, ONEUtil.hexString(computedRoot))
             message.error('Verification failed. Your authenticator QR code might correspond to a different contract address.')
@@ -123,6 +133,7 @@ const Restore = () => {
             lastResortAddress,
             dailyLimit,
             hseed: ONEUtil.hexView(hseed),
+            doubleOtp,
             network
           }
           dispatch(walletActions.updateWallet(wallet))
@@ -134,7 +145,7 @@ const Restore = () => {
       }
       console.log('[Restore] Posting to worker')
       worker && worker.postMessage({
-        seed: secret, effectiveTime, duration, slotSize, interval: WalletConstants.interval
+        seed: secret, seed2: secret2, effectiveTime, duration, slotSize, interval: WalletConstants.interval
       })
     } catch (ex) {
       Sentry.captureException(ex)
