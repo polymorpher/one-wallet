@@ -109,15 +109,10 @@ const Create = () => {
   useEffect(() => {
     (async function () {
       const otpUri = getQRCodeUri(seed, name)
-
       const secondOtpUri = getQRCodeUri(seed2, `${name} (2nd)`)
-
       const otpQrCodeData = await qrcode.toDataURL(otpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
-
       const secondOtpQrCodeData = await qrcode.toDataURL(secondOtpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
-
       setQRCodeData(otpQrCodeData)
-
       setSecondOtpQrCodeData(secondOtpQrCodeData)
     })()
   }, [name])
@@ -135,26 +130,18 @@ const Create = () => {
 
   useEffect(() => {
     const settingUpSecondOtp = section === sectionViews.setupSecondOtp
-
     if (otp.length !== 6) {
       return
     }
-
     const currentSeed = settingUpSecondOtp ? seed2 : seed
-
     const expected = ONEUtil.genOTP({ seed: currentSeed })
-
     const code = new DataView(expected.buffer).getUint32(0, false).toString()
-
     setOtp('')
-
     if (code.padStart(6, '0') !== otp.padStart(6, '0')) {
       message.error('Code is incorrect. Please try again.')
-
       otpRef?.current?.focusInput(0)
     } else if (doubleOtp && !settingUpSecondOtp) {
       setSection(sectionViews.setupSecondOtp)
-
       otpRef?.current?.focusInput(0)
     } else {
       setSection(sectionViews.prepareWallet)
@@ -174,9 +161,7 @@ const Create = () => {
       message.error('Cannot deploy wallet. Error: root is not set.')
       return
     }
-
     let normalizedAddress = ''
-
     if (lastResortAddress !== '') {
       // Ensure valid address for both 0x and one1 formats
       normalizedAddress = util.safeExec(util.normalizedAddress, [lastResortAddress], handleAddressError)
@@ -184,9 +169,7 @@ const Create = () => {
         return
       }
     }
-
     setDeploying(true)
-
     try {
       const { address } = await api.relayer.create({
         root: ONEUtil.hexString(root),
@@ -262,7 +245,6 @@ const Create = () => {
             <Button type='primary' shape='round' size='large' onClick={() => setSection(sectionViews.setupOtp)}>Next</Button>
           </Space>
         </Row>
-
         <Space direction='vertical'>
           <Hint>Next, we will set up a ONE Wallet that expires in a year. When the wallet expires, you may create a new wallet and transfer the funds. The funds can also be recovered to an address you set later.</Hint>
           <Link onClick={() => setDurationVisible(true)}>Need more time?</Link>
