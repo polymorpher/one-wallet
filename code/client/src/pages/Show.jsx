@@ -94,6 +94,9 @@ const Show = () => {
       return
     }
     setSection(action)
+
+    // Reset TOP input boxes on location change to make sure the input boxes are cleared.
+    resetOtp()
   }, [location])
 
   const showTab = (tab) => { history.push(Paths.showAddress(oneAddress, tab)) }
@@ -606,15 +609,33 @@ const Show = () => {
             <InputBox margin='auto' width={440} value={transferTo} onChange={({ target: { value } }) => setTransferTo(value)} placeholder='one1...' />
           </Space>
           <Space align='baseline' size='large' style={{ marginTop: 16 }}>
-            <Label><Hint>Code</Hint></Label>
+            <Label><Hint>Code {wallet.doubleOtp ? '1' : ''}</Hint></Label>
             <OtpBox
+              ref={otpRef}
               value={otpInput}
               onChange={setOtpInput}
             />
-            <Tooltip title='from your Google Authenticator'>
+            <Tooltip title={`from your Google Authenticator, i.e. ${wallet.name}`}>
               <QuestionCircleOutlined />
             </Tooltip>
           </Space>
+          {
+            wallet.doubleOtp
+              ? (
+                <Space align='baseline' size='large' style={{ marginTop: 16 }}>
+                  <Label><Hint>Code 2</Hint></Label>
+                  <OtpBox
+                    ref={otp2Ref}
+                    value={otp2Input}
+                    onChange={setOtp2Input}
+                  />
+                  <Tooltip title={`from your Google Authenticator, i.e. ${wallet.name} (2nd)`}>
+                    <QuestionCircleOutlined />
+                  </Tooltip>
+                </Space>
+                )
+              : <></>
+          }
         </Space>
         <Row justify='end' style={{ marginTop: 24 }}>
           <Space>
