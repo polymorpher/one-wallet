@@ -125,6 +125,10 @@ const utils = {
     return new Uint8Array(b.buffer)
   },
 
+  decodeOtp: (otp) => {
+    return new DataView(otp.buffer).getUint32(0, false)
+  },
+
   toFraction: (ones, unit, decimals) => {
     const v = Conversion.toWei(ones, unit || 'ether')
     const diff = STANDARD_DECIMAL - (decimals || STANDARD_DECIMAL)

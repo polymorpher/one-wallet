@@ -7,13 +7,13 @@ const { api } = require('./index')
 const BN = require('bn.js')
 
 const EotpBuilders = {
-  fromOtp: ({ otp, otp2, wallet }) => {
+  fromOtp: async ({ otp, otp2, rand, nonce, wallet }) => {
     const { hseed } = wallet
     const encodedOtp = ONEUtil.encodeNumericalOtp(otp)
     const encodedOtp2 = otp2 ? ONEUtil.encodeNumericalOtp(otp2) : undefined
-    return ONE.computeEOTP({ otp: encodedOtp, otp2: encodedOtp2, hseed: ONEUtil.hexToBytes(hseed) })
+    return ONE.computeEOTP({ otp: encodedOtp, otp2: encodedOtp2, rand, nonce, hseed: ONEUtil.hexToBytes(hseed) })
   },
-  recovery: ({ wallet, layers }) => {
+  recovery: async ({ wallet, layers }) => {
     const { hseed, effectiveTime } = wallet
     const index = ONEUtil.timeToIndex({ effectiveTime })
     const leaf = layers[0].subarray(index * 32, index * 32 + 32).slice()
@@ -67,7 +67,7 @@ const Flows = {
         return
       }
     }
-    const eotp = eotpBuilder({ otp, otp2, wallet, layers })
+    const eotp = await eotpBuilder({ otp, otp2, wallet, layers })
     if (!eotp) {
       message.error('Local state verification failed.')
       return
