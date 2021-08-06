@@ -1,8 +1,33 @@
 const ONE = require('../../../lib/onewallet')
 const ONEUtil = require('../../../lib/util')
 
+async function recoverRandomness ({ randomness, hseed, otp, otp2, nonce, leaf, hasher }) {
+  const encodedOtp = ONEUtil.encodeNumericalOtp(otp)
+  const encodedOtp2 = otp2 !== undefined ? ONEUtil.encodeNumericalOtp(otp2) : undefined
+  try {
+    const rand = await ONE.recoverRandomness({
+      randomness,
+      hseed: ONEUtil.hexToBytes(hseed),
+      otp: encodedOtp,
+      otp2: encodedOtp2,
+      nonce,
+      leaf,
+      hasher: ONEUtil.getHasher(hasher)
+    })
+    postMessage({ status: 'rand', result: { rand } })
+  } catch (ex) {
+    console.error(ex)
+    postMessage({ status: 'error', result: { error: ex.toString() } })
+  }
+}
+
 onmessage = async function (event) {
-  const { seed, seed2, effectiveTime, duration, slotSize, interval, randomness, hasher } = event.data
+  const { seed, seed2, effectiveTime, duration, slotSize, interval, randomness, hasher, action } = event.data
+
+  if (action === 'recoverRandomness') {
+    return recoverRandomness(event.data)
+  }
+
   if (!seed) {
     // console.log('worker: received event but it has no valid data', event)
     return

@@ -224,7 +224,7 @@ const Create = () => {
   }
 
   useEffect(() => {
-    const worker = new Worker('ONEWalletWorker.js')
+    const worker = new Worker('/ONEWalletWorker.js')
     worker.onmessage = (event) => {
       const { status, current, total, stage, result } = event.data
       if (status === 'working') {

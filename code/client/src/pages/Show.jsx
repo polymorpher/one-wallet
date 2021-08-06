@@ -52,10 +52,33 @@ const Show = () => {
 
   const wallet = wallets[address] || {}
   const [section, setSection] = useState(action)
-  const [stage, setStage] = useState(0)
+  const [stage, setStage] = useState(-1)
   const network = useSelector(state => state.wallet.network)
   const [activeTab, setActiveTab] = useState('coins')
   const walletOutdated = util.isWalletOutdated(wallet)
+  const [worker, setWorker] = useState()
+  const workerRef = useRef({ promise: null }).current
+  const resetWorkerPromise = (newWorker) => {
+    workerRef.promise = new Promise((resolve, reject) => {
+      newWorker.onmessage = (event) => {
+        const { status, error, result } = event.data
+        // console.log('Received: ', { status, result, error })
+        if (status === 'rand') {
+          const { rand } = result
+          resolve(rand)
+        } else if (status === 'error') {
+          reject(error)
+        }
+      }
+    })
+  }
+  useEffect(() => {
+    const worker = new Worker('/ONEWalletWorker.js')
+    setWorker(worker)
+  }, [])
+  useEffect(() => {
+    worker && resetWorkerPromise(worker)
+  }, [worker])
 
   useEffect(() => {
     if (!wallet) {
@@ -160,7 +183,7 @@ const Show = () => {
   }
 
   const restart = () => {
-    setStage(0)
+    setStage(-1)
     resetOtp()
     setInputAmount(0)
   }
@@ -219,26 +242,26 @@ const Show = () => {
     Sentry.captureException(ex)
     console.error(ex)
     message.error('Failed to commit. Error: ' + ex.toString())
-    setStage(0)
+    setStage(-1)
     resetOtp()
   }
 
   const onCommitFailure = (error) => {
     message.error(`Cannot commit transaction. Reason: ${error}`)
-    setStage(0)
+    setStage(-1)
     resetOtp()
   }
 
   const onRevealFailure = (error) => {
     message.error(`Transaction Failed: ${error}`)
-    setStage(0)
+    setStage(-1)
     resetOtp()
   }
 
   const onRevealError = (ex) => {
     Sentry.captureException(ex)
     message.error(`Failed to finalize transaction. Error: ${ex.toString()}`)
-    setStage(0)
+    setStage(-1)
     resetOtp()
   }
 
@@ -257,18 +280,35 @@ const Show = () => {
     setTimeout(restart, 3000)
   }
 
-  const doSend = async () => {
+  const prepareProofFailed = () => {
+    setStage(-1)
+    resetOtp()
+    resetWorkerPromise(worker)
+  }
+
+  const doSend = () => {
     const { otp, otp2, invalidOtp2, invalidOtp, dest, amount } = prepareValidation() || {}
 
     if (invalidOtp || !dest || invalidOtp2) return
+
+    const recoverRandomness = async (args) => {
+      worker && worker.postMessage({
+        action: 'recoverRandomness',
+        ...args
+      })
+      return workerRef.promise
+    }
 
     if (selectedToken.key === 'one') {
       SmartFlows.commitReveal({
         wallet,
         otp,
         otp2,
+        recoverRandomness,
+        prepareProofFailed,
         commitHashGenerator: ONE.computeTransferHash,
         commitHashArgs: { dest, amount },
+        prepareProof: () => setStage(0),
         beforeCommit: () => setStage(1),
         afterCommit: () => setStage(2),
         onCommitError,
@@ -288,6 +328,8 @@ const Show = () => {
         wallet,
         otp,
         otp2,
+        recoverRandomness,
+        prepareProofFailed,
         commitHashGenerator: ONE.computeTokenOperationHash,
         commitHashArgs: { dest, amount, operationType: ONEConstants.OperationType.TRANSFER_TOKEN, tokenType: selectedToken.tokenType, contractAddress: selectedToken.contractAddress, tokenId: selectedToken.tokenId },
         beforeCommit: () => setStage(1),
@@ -359,6 +401,7 @@ const Show = () => {
       }
     })
   }
+
   const { isMobile } = useWindowDimensions()
   // UI Rendering below
   if (!wallet || wallet.network !== network) {
@@ -562,9 +605,9 @@ const Show = () => {
         </Space>
         <Row justify='end' style={{ marginTop: 24 }}>
           <Space>
-            {stage > 0 && stage < 3 && <LoadingOutlined />}
+            {stage >= 0 && stage < 3 && <LoadingOutlined />}
             {stage === 3 && <CheckCircleOutlined />}
-            <Button type='primary' size='large' shape='round' disabled={stage > 0} onClick={doSend}>Send</Button>
+            <Button type='primary' size='large' shape='round' disabled={stage >= 0} onClick={doSend}>Send</Button>
           </Space>
         </Row>
         <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
@@ -584,7 +627,7 @@ const Show = () => {
               <Text>Do you want to proceed?</Text>
             </Space>
             <Row justify='end' style={{ marginTop: 48 }}>
-              <Button type='primary' size='large' shape='round' disabled={stage > 0} onClick={doRecovery}>Sounds good!</Button>
+              <Button type='primary' size='large' shape='round' disabled={stage >= 0} onClick={doRecovery}>Sounds good!</Button>
             </Row>
             <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
           </>}
@@ -639,8 +682,8 @@ const Show = () => {
         </Space>
         <Row justify='end' style={{ marginTop: 24 }}>
           <Space>
-            {stage > 0 && stage < 3 && <LoadingOutlined />}
-            <Button type='primary' size='large' shape='round' disabled={stage > 0} onClick={doSetRecoveryAddress}>Set</Button>
+            {stage >= 0 && stage < 3 && <LoadingOutlined />}
+            <Button type='primary' size='large' shape='round' disabled={stage >= 0} onClick={doSetRecoveryAddress}>Set</Button>
           </Space>
         </Row>
         <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />

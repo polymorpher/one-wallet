@@ -5,7 +5,7 @@ const { Step } = Steps
 export const CommitRevealProgress = ({ stage, style }) => {
   return (
     <>
-      {stage > 0 && (
+      {stage >= 0 && (
         <Row style={style}>
           <Steps current={stage}>
             <Step title='Prepare' description='Preparing signature' />
