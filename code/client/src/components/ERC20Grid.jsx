@@ -155,7 +155,7 @@ export const ERC20Grid = ({ address }) => {
 
   return (
     <>
-      {disabled && <Warning style={{ marginTop: 16, marginBottom: 16 }}>Your wallet is based on an outdated version. It cannot hold or send tokens or NFTs. Please create a new wallet and migrate assets.</Warning>}
+      {disabled && <Warning style={{ marginTop: 16, marginBottom: 16 }}>Your wallet is too outdated. Please create a new wallet to use tokens or NFTs.</Warning>}
       {!section &&
         <TallRow>
           <GridItem

@@ -213,6 +213,7 @@ const Create = () => {
       dispatch(walletActions.updateWallet(wallet))
       dispatch(walletActions.fetchBalanceSuccess({ address, balance: 0 }))
       setAddress(address)
+      dispatch(walletActions.fetchWallet({ address }))
       setDeploying(false)
       message.success('Your wallet is deployed!')
       history.push(Paths.showAddress(address))

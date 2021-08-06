@@ -536,8 +536,8 @@ const Show = () => {
         activeTabKey={activeTab}
         onTabChange={key => showTab(key)}
       >
-        {walletOutdated && <Warning>Your wallet is outdated. Some information may be displayed incorrectly. Some features might not function. Your balance is still displayed correctly, and you can still send funds. <br /><br />Please create a new wallet and move your funds as soon as possible.</Warning>}
-        {util.isEmptyAddress(wallet.lastResortAddress) && <Warning>You haven't set your recovery address. Please do it as soon as possible. Wallets created prior to July 13, 2021 without a recovery address are vulnerable to theft if recovery address is not set.</Warning>}
+        {walletOutdated && <Warning>Your wallet is too outdated. Please create a new wallet and move your friends.</Warning>}
+        {util.isEmptyAddress(wallet.lastResortAddress) && <Warning>You haven't set your recovery address. Please do it as soon as possible.</Warning>}
 
         {activeTab === 'about' && <AboutWallet />}
         {activeTab === 'coins' && <WalletBalance />}
