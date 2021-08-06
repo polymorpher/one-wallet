@@ -181,7 +181,8 @@ export default {
       r -= config.clientSecurity.argon2Damping
     }
     return r
-  }
+  },
+
 }
 
 function getWindowDimensions () {

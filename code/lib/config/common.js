@@ -11,12 +11,6 @@ module.exports = {
     relayerSecret: process.env.RELAYER_SECRET || 'onewallet',
     sentryDsn: process.env.SENTRY_DSN
   },
-  clientSecurity: {
-    hasher: process.env.DEFAULT_HASHER || 'sha256',
-    baseRandomness: parseInt(process.env.BASE_RANDOMNESS || 20),
-    randomnessDamping: 2,
-    argon2Damping: 2,
-  },
   debug: DEBUG,
   networks: {
     ...(DEBUG && {

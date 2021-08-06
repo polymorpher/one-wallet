@@ -5,6 +5,7 @@ import Paths from '../constants/paths'
 import api from '../api'
 import config from '../config'
 import ONEUtil from '../../../lib/util'
+import ONEConstants from '../../../lib/constants'
 import ONENames from '../../../lib/names'
 // import { uniqueNamesGenerator, colors, animals } from 'unique-names-generator'
 import {
@@ -102,6 +103,11 @@ const Create = () => {
 
   const otpRef = useRef()
 
+  const securityParameters = ONEUtil.securityParameters({
+    majorVersion: ONEConstants.MajorVersion,
+    minorVersion: ONEConstants.MinorVersion,
+  })
+
   const getQRCodeUri = (otpSeed, otpDisplayName) => {
     // otpauth://TYPE/LABEL?PARAMETERS
     return `otpauth://totp/${otpDisplayName}?secret=${b32.encode(otpSeed)}&issuer=Harmony`
@@ -120,7 +126,7 @@ const Create = () => {
 
   useEffect(() => {
     if (section === sectionViews.setupOtp && worker) {
-      console.log('posting to worker')
+      console.log('Posting to worker. Security parameters:', securityParameters)
       const t = Math.floor(Date.now() / WalletConstants.interval) * WalletConstants.interval
       setEffectiveTime(t)
       worker && worker.postMessage({
@@ -130,8 +136,7 @@ const Create = () => {
         duration,
         slotSize,
         interval: WalletConstants.interval,
-        randomness: util.getRandomness(),
-        hasher: config.clientSecurity.hasher,
+        ...securityParameters,
       })
     }
   }, [section, worker])
@@ -202,8 +207,7 @@ const Create = () => {
         hseed: ONEUtil.hexView(hseed),
         network,
         doubleOtp,
-        randomness: util.getRandomness(),
-        hasher: config.clientSecurity.hasher
+        ...securityParameters,
       }
       await storeLayers()
       dispatch(walletActions.updateWallet(wallet))

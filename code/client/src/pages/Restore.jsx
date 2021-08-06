@@ -30,6 +30,8 @@ const Restore = () => {
   const [secret2, setSecret2] = useState()
   const [name, setName] = useState()
   const [device, setDevice] = useState()
+  const [majorVersion, setMajorVersion] = useState()
+  const [minorVersion, setMinorVersion] = useState()
   const { isMobile } = useWindowDimensions()
   const ref = useRef()
   useEffect(() => {
@@ -110,6 +112,7 @@ const Restore = () => {
       return
     }
     try {
+      const securityParameters = ONEUtil.securityParameters({ majorVersion, minorVersion })
       const worker = new Worker('ONEWalletWorker.js')
       worker.onmessage = (event) => {
         const { status, current, total, stage, result } = event.data
@@ -136,8 +139,7 @@ const Restore = () => {
             hseed: ONEUtil.hexView(hseed),
             doubleOtp,
             network,
-            randomness: util.getRandomness(),
-            hasher: config.clientSecurity.hasher,
+            ...securityParameters
           }
           dispatch(walletActions.updateWallet(wallet))
           dispatch(walletActions.fetchBalance({ address }))
@@ -154,8 +156,7 @@ const Restore = () => {
         duration,
         slotSize,
         interval: WalletConstants.interval,
-        randomness: util.getRandomness(),
-        hasher: config.clientSecurity.hasher
+        ...securityParameters
       })
     } catch (ex) {
       Sentry.captureException(ex)
@@ -184,7 +185,9 @@ const Restore = () => {
           duration,
           slotSize,
           lastResortAddress,
-          dailyLimit
+          dailyLimit,
+          majorVersion,
+          minorVersion
         } = await api.blockchain.getWallet({ address })
         console.log('Retrieved wallet:', {
           root,
@@ -202,6 +205,8 @@ const Restore = () => {
         setLastResortAddress(lastResortAddress)
         setDailyLimit(dailyLimit)
         setSection(2)
+        setMajorVersion(majorVersion)
+        setMinorVersion(minorVersion)
       } catch (ex) {
         Sentry.captureException(ex)
         console.error(ex)
