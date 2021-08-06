@@ -28,7 +28,7 @@ const MakeWallet = ({ lastResortAddress, otpInput }) => {
         return setError('Authenticator code is invalid: ' + otpInput)
       }
       const otp = ONEUtil.encodeNumericalOtp(otpNum)
-      const eotp = ONE.computeEOTP({ hseed: ONEUtil.hexToBytes(hseed), otp })
+      const eotp = await ONE.computeEOTP({ hseed: ONEUtil.hexToBytes(hseed), otp })
       const computedLeaf = ONEUtil.sha256(eotp)
       if (!ONEUtil.bytesEqual(computedLeaf, leaf)) {
         setError(`The OTP code you provided [${otpInput}] is incorrect.`)
@@ -86,7 +86,7 @@ const MakeWallet = ({ lastResortAddress, otpInput }) => {
       {wallet &&
         <>
           <Text>
-          Wallet deployed:
+            Wallet deployed:
           </Text>
           <Info wallet={wallet} />
         </>}

@@ -1,10 +1,15 @@
+import config from '../client/src/config'
+
 const JSSHA = require('jssha')
 const createKeccakHash = require('keccak')
 const Conversion = require('ethjs-unit')
 const sha256 = require('fast-sha256')
 const BN = require('bn.js')
+const argon2 = require('argon2-browser')
+const base32 = require('hi-base32')
+const securityParams = require('./params')
 const STANDARD_DECIMAL = 18
-
+const PERMIT_DEPRECATED_METHOD = process.env.PERMIT_DEPRECATED_METHOD
 const utils = {
   hexView: (bytes) => {
     return bytes && Array.from(bytes).map(x => x.toString(16).padStart(2, '0')).join('')
@@ -15,6 +20,19 @@ const utils = {
   },
 
   sha256,
+
+  // batched sha256
+  sha256b: async (input, { progressObserver, batchSize = 32 } = {}) => {
+    const n = input.length / batchSize
+    const output = new Uint8Array(n * 32)
+    for (let i = 0; i < n; i += 1) {
+      output.set(sha256(input.subarray(i * batchSize, i * batchSize + batchSize)), i * 32)
+      if (progressObserver) {
+        progressObserver(i, n)
+      }
+    }
+    return output
+  },
 
   hexToBytes: (hex, length, padRight) => {
     if (!hex) {
@@ -65,9 +83,19 @@ const utils = {
     return indexWithNonce
   },
 
-  genOTP: ({ seed, interval = 30000, counter = Math.floor(Date.now() / interval), n = 1, progressObserver }) => {
-    const reportInterval = Math.floor(n / 100)
+  processOtpSeed: (seed) => {
+    if (seed.constructor.name !== 'Uint8Array') {
+      if (typeof seed !== 'string') {
+        throw new Error('otpSeed must be either string (Base32 encoded) or Uint8Array')
+      }
+      const bn = base32.decode.asBytes(seed)
+      seed = new Uint8Array(bn)
+    }
+    seed = seed.slice(0, 20)
+    return seed
+  },
 
+  genOTP: ({ seed, interval = 30000, counter = Math.floor(Date.now() / interval), n = 1, progressObserver }) => {
     const codes = new Uint8Array(n * 4)
     const v = new DataView(codes.buffer)
     const b = new DataView(new ArrayBuffer(8))
@@ -88,9 +116,7 @@ const utils = {
       const r = c % 1000000
       v.setUint32(i * 4, r, false)
       if (progressObserver) {
-        if (i % reportInterval === 0) {
-          progressObserver(i, n, 0)
-        }
+        progressObserver(i, n)
       }
     }
     return codes
@@ -100,6 +126,10 @@ const utils = {
     const b = new DataView(new ArrayBuffer(4))
     b.setUint32(0, otp, false)
     return new Uint8Array(b.buffer)
+  },
+
+  decodeOtp: (otp) => {
+    return new DataView(otp.buffer).getUint32(0, false)
   },
 
   toFraction: (ones, unit, decimals) => {
@@ -123,6 +153,43 @@ const utils = {
       return v.slice(0, v.length + diff)
     }
   },
+
+  argon2: async (input, { salt = new Uint8Array(8), progressObserver, batchSize = 32 } = {}) => {
+    const { result } = await argon2.hash({ pass: input, batchSize, salt, progressObserver })
+    return result
+  },
+
+  getHasher: (hasher) => {
+    if (hasher === 'argon2') {
+      return utils.argon2
+    }
+    return utils.sha256b
+  },
+
+  DEPRECATED: () => {
+    if (!PERMIT_DEPRECATED_METHOD) {
+      throw new Error('Deprecated')
+    }
+  },
+
+  getVersion: ({ majorVersion, minorVersion }) => `${majorVersion}.${minorVersion}`,
+
+  securityParameters: ({ majorVersion, minorVersion }) => {
+    const keys = Object.keys(securityParams)
+    const v = utils.getVersion({ majorVersion, minorVersion })
+    for (let k of keys) {
+      const m = v.match(new RegExp(k))
+      if (m) {
+        const { hasher, baseRandomness, randomnessDamping, argon2Damping } = securityParams[k]
+        let r = baseRandomness - randomnessDamping
+        if (hasher === 'argon2') {
+          r -= argon2Damping
+        }
+        return { randomness: r, hasher }
+      }
+    }
+    throw new Error(`No security parameter for version ${v}`)
+  }
 
 }
 module.exports = utils

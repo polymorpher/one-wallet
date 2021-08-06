@@ -1,7 +1,7 @@
 import ONE from '../../lib/onewallet'
 import { parentPort } from 'worker_threads'
 
-parentPort.once('message', ({ seed, effectiveTime, duration, slotSize, interval } = {}) => {
+parentPort.once('message', async ({ seed, effectiveTime, duration, slotSize, interval } = {}) => {
   if (!seed) {
     console.log('Worker: received event but it has no valid data')
     return
@@ -14,7 +14,7 @@ parentPort.once('message', ({ seed, effectiveTime, duration, slotSize, interval 
     root,
     layers,
     maxOperationsPerInterval,
-  } = ONE.computeMerkleTree({
+  } = await ONE.computeMerkleTree({
     otpSeed: seed,
     effectiveTime,
     duration,

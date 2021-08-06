@@ -21,6 +21,7 @@ contract ONEWallet is TokenTracker {
     uint32 immutable t0; // starting time block (effectiveTime (in ms) / interval)
     uint32 immutable lifespan;  // in number of block (e.g. 1 block per [interval] seconds)
     uint8 immutable maxOperationsPerInterval; // number of transactions permitted per OTP interval. Each transaction shall have a unique nonce. The nonce is auto-incremented within each interval
+    uint32 immutable _numLeaves; // 2 ** (height - 1)
 
     /// global mutable variables
     address payable lastResortAddress; // where money will be sent during a recovery process (or when the wallet is beyond its lifespan)
@@ -38,11 +39,12 @@ contract ONEWallet is TokenTracker {
     uint256 constant AUTO_RECOVERY_TRIGGER_AMOUNT = 1 ether;
     uint32 constant MAX_COMMIT_SIZE = 120;
 
-    uint32 constant majorVersion = 0x7; // a change would require client to migrate
-    uint32 constant minorVersion = 0x2; // a change would not require the client to migrate
+    uint32 constant majorVersion = 0x8; // a change would require client to migrate
+    uint32 constant minorVersion = 0x0; // a change would not require the client to migrate
 
     enum OperationType {
-        TRACK, UNTRACK, TRANSFER_TOKEN, OVERRIDE_TRACK, TRANSFER, SET_RECOVERY_ADDRESS, RECOVER
+        TRACK, UNTRACK, TRANSFER_TOKEN, OVERRIDE_TRACK, TRANSFER, SET_RECOVERY_ADDRESS, RECOVER,
+        REPLACE // reserved, not implemented yet. This is for replacing the root and set up new parameters (t0, lifespan)
     }
     /// commit management
     struct Commit {
@@ -68,6 +70,7 @@ contract ONEWallet is TokenTracker {
         lastResortAddress = lastResortAddress_;
         dailyLimit = dailyLimit_;
         maxOperationsPerInterval = maxOperationsPerInterval_;
+        _numLeaves = uint32(2 ** (height_ - 1));
     }
 
     receive() external payable {
@@ -270,7 +273,7 @@ contract ONEWallet is TokenTracker {
         if (operationType == OperationType.TRANSFER) {
             paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(dest))), bytes32(amount)));
         } else if (operationType == OperationType.RECOVER) {
-            paramsHash = bytes32(0);
+            paramsHash = keccak256(data);
         } else if (operationType == OperationType.SET_RECOVERY_ADDRESS) {
             paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(dest)))));
         } else {
@@ -293,10 +296,13 @@ contract ONEWallet is TokenTracker {
         OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address payable dest, uint256 amount, bytes calldata data)
     external {
         _isCorrectProof(neighbors, indexWithNonce, eotp);
+        if (indexWithNonce == _numLeaves - 1) {
+            require(operationType == OperationType.RECOVER, "Last operation reserved for recover");
+        }
         (bytes32 commitHash, bytes32 paramsHash) = _getRevealHash(neighbors[0], indexWithNonce, eotp,
             operationType, tokenType, contractAddress, tokenId, dest, amount, data);
-        uint32 commitIndex = _verifyReveal(commitHash, indexWithNonce, paramsHash, eotp);
-        _completeReveal(commitHash, commitIndex);
+        uint32 commitIndex = _verifyReveal(commitHash, indexWithNonce, paramsHash, eotp, operationType);
+        _completeReveal(commitHash, commitIndex, operationType);
         // No revert should occur below this point
         if (operationType == OperationType.TRACK) {
             if (data.length > 0) {
@@ -327,6 +333,10 @@ contract ONEWallet is TokenTracker {
     function _isCorrectProof(bytes32[] calldata neighbors, uint32 position, bytes32 eotp) view internal {
         require(neighbors.length == height - 1, "Not enough neighbors provided");
         bytes32 h = sha256(bytes.concat(eotp));
+        if (position == _numLeaves - 1) {
+            // special case: recover only
+            h = eotp;
+        }
         for (uint8 i = 0; i < height - 1; i++) {
             if ((position & 0x01) == 0x01) {
                 h = sha256(bytes.concat(neighbors[i], h));
@@ -393,7 +403,7 @@ contract ONEWallet is TokenTracker {
     }
 
     /// This function verifies that the first valid entry with respect to the given `eotp` in `commitLocker[hash]` matches the provided `paramsHash` and `verificationHash`. An entry is valid with respect to `eotp` iff `h3(entry.paramsHash . eotp)` equals `entry.verificationHash`
-    function _verifyReveal(bytes32 hash, uint32 indexWithNonce, bytes32 paramsHash, bytes32 eotp) view internal returns (uint32)
+    function _verifyReveal(bytes32 hash, uint32 indexWithNonce, bytes32 paramsHash, bytes32 eotp, OperationType operationType) view internal returns (uint32)
     {
         uint32 index = indexWithNonce / maxOperationsPerInterval;
         uint8 nonce = uint8(indexWithNonce % maxOperationsPerInterval);
@@ -407,10 +417,12 @@ contract ONEWallet is TokenTracker {
                 continue;
             }
             require(c.paramsHash == paramsHash, "Parameter hash mismatch");
-            uint32 counter = c.timestamp / interval - t0;
-            require(counter == index, "Index - timestamp mismatch");
-            uint8 expectedNonce = nonces[counter];
-            require(nonce >= expectedNonce, "Nonce too low");
+            if (operationType != OperationType.RECOVER) {
+                uint32 counter = c.timestamp / interval - t0;
+                require(counter == index, "Index - timestamp mismatch");
+                uint8 expectedNonce = nonces[counter];
+                require(nonce >= expectedNonce, "Nonce too low");
+            }
             require(!c.completed, "Commit already completed");
             // This normally should not happen, but when the network is congested (regardless of whether due to an attacker's malicious acts or not), the legitimate reveal may become untimely. This may happen before the old commit is cleaned up by another fresh commit. We enforce this restriction so that the attacker would not have a lot of time to reverse-engineer a single EOTP or leaf using an old commit.
             require(_isRevealTimely(c.timestamp), "Reveal too late");
@@ -419,16 +431,17 @@ contract ONEWallet is TokenTracker {
         revert("No valid commit");
     }
 
-    function _completeReveal(bytes32 commitHash, uint32 commitIndex) internal {
+    function _completeReveal(bytes32 commitHash, uint32 commitIndex, OperationType operationType) internal {
         Commit[] storage cc = commitLocker[commitHash];
         require(cc.length > 0, "Invalid commit hash");
         require(cc.length > commitIndex, "Invalid commitIndex");
         Commit storage c = cc[commitIndex];
         require(c.timestamp > 0, "Invalid commit timestamp");
-        // should not happen
-        uint32 index = uint32(c.timestamp) / interval - t0;
-        _incrementNonce(index);
-        _cleanupNonces();
+        if (operationType != OperationType.RECOVER) {
+            uint32 index = uint32(c.timestamp) / interval - t0;
+            _incrementNonce(index);
+            _cleanupNonces();
+        }
         c.completed = true;
     }
 

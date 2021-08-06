@@ -118,6 +118,9 @@ router.post('/reveal', generalLimiter({ max: 60 }), walletAddressLimiter({ max: 
   if (!checkParams({ neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data }, res)) {
     return
   }
+  if (config.debug || config.verbose) {
+    console.log(`[/reveal] `, { neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
+  }
   if (!(req.majorVersion >= 6)) {
     operationType = parseInt(operationType || -1)
     if (!(operationType > 0)) {

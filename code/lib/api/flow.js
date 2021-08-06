@@ -7,17 +7,17 @@ const { api } = require('./index')
 const BN = require('bn.js')
 
 const EotpBuilders = {
-  fromOtp: ({ otp, wallet }) => {
+  fromOtp: async ({ otp, otp2, rand, nonce, wallet }) => {
     const { hseed } = wallet
     const encodedOtp = ONEUtil.encodeNumericalOtp(otp)
-    return ONE.computeEOTP({ otp: encodedOtp, hseed: ONEUtil.hexToBytes(hseed) })
+    const encodedOtp2 = otp2 ? ONEUtil.encodeNumericalOtp(otp2) : undefined
+    return ONE.computeEOTP({ otp: encodedOtp, otp2: encodedOtp2, rand, nonce, hseed: ONEUtil.hexToBytes(hseed) })
   },
-  recovery: ({ wallet, layers }) => {
+  recovery: async ({ wallet, layers }) => {
+    // eslint-disable-next-line no-unused-vars
     const { hseed, effectiveTime } = wallet
-    const index = ONEUtil.timeToIndex({ effectiveTime })
-    const leaf = layers[0].subarray(index * 32, index * 32 + 32).slice()
-    const { eotp } = ONE.bruteforceEOTP({ hseed: ONEUtil.hexToBytes(hseed), leaf })
-    return eotp
+    const leaf = layers[0].subarray(layers[0].length - 32, layers[0].length)
+    return leaf
   }
 }
 
@@ -49,16 +49,17 @@ const Committer = {
 
 const Flows = {
   commitReveal: async ({
-    otp, eotpBuilder = EotpBuilders.fromOtp,
+    otp, otp2, eotpBuilder = EotpBuilders.fromOtp,
     committer = Committer.legacy,
-    wallet, layers, commitHashGenerator, commitHashArgs,
+    recoverRandomness,
+    wallet, layers, commitHashGenerator, commitHashArgs, prepareProof, prepareProofFailed,
     beforeCommit, afterCommit, onCommitError, onCommitFailure,
     revealAPI, revealArgs, onRevealFailure, onRevealSuccess, onRevealError, onRevealAttemptFailed,
-    beforeReveal,
+    beforeReveal, index,
     maxTransferAttempts = 3, checkCommitInterval = 5000,
     message = messager
   }) => {
-    const { effectiveTime, root, address } = wallet
+    const { effectiveTime, root, address, randomness, hseed, hasher } = wallet
     if (!layers) {
       layers = await storage.getItem(root)
       if (!layers) {
@@ -66,13 +67,44 @@ const Flows = {
         return
       }
     }
-    const eotp = eotpBuilder({ otp, wallet, layers })
+    prepareProof && prepareProof()
+    index = index || ONEUtil.timeToIndex({ effectiveTime })
+    if (index < 0) {
+      index = layers[0].length / 32 - 1
+    }
+    let nonce // should get from blockchain, but omitted for now because all wallets have maxOperationsPerInterval set to 1.
+    let rand
+    if (randomness > 0) {
+      const leaf = layers[0].subarray(index * 32, index * 32 + 32)
+      if (recoverRandomness) {
+        rand = await recoverRandomness({ randomness, hseed, otp, otp2, nonce, leaf, hasher })
+      } else {
+        const encodedOtp = ONEUtil.encodeNumericalOtp(otp)
+        const encodedOtp2 = otp2 ? ONEUtil.encodeNumericalOtp(otp2) : undefined
+        rand = await ONE.recoverRandomness({
+          randomness,
+          hseed: ONEUtil.hexToBytes(hseed),
+          otp: encodedOtp,
+          otp2: encodedOtp2,
+          nonce,
+          leaf,
+          hasher: ONEUtil.getHasher(hasher)
+        })
+      }
+      // console.log({ rand })
+      if (rand === null) {
+        message.error('Failed to decrypt proof. Code might be incorrect')
+        prepareProofFailed && prepareProofFailed()
+        return
+      }
+    }
+    const eotp = await eotpBuilder({ otp, otp2, rand, wallet, layers })
     if (!eotp) {
       message.error('Local state verification failed.')
       return
     }
     beforeCommit && await beforeCommit()
-    const index = ONEUtil.timeToIndex({ effectiveTime })
+
     const neighbors = ONE.selectMerkleNeighbors({ layers, index })
     const neighbor = neighbors[0]
 

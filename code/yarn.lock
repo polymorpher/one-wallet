@@ -2462,6 +2462,10 @@ anymatch@~3.1.2:
     normalize-path "^3.0.0"
     picomatch "^2.0.4"
 
+"argon2-browser@git+https://github.com/polymorpher/argon2-browser#1.21.0-hpc":
+  version "1.21.0-hpc"
+  resolved "git+https://github.com/polymorpher/argon2-browser#609a1518d4158c3732fe1e9a7f7b466ef41b76b4"
+
 argparse@^1.0.7:
   version "1.0.10"
   resolved "https://registry.yarnpkg.com/argparse/-/argparse-1.0.10.tgz#bcd6791ea5ae09725e17e5ad988134cd40b3d911"
