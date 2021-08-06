@@ -20,7 +20,16 @@ const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval,
   }
   effectiveTime = Math.floor(effectiveTime / INTERVAL) * INTERVAL
   const { seed, seed2, hseed, root, leaves, layers, maxOperationsPerInterval: slotSize, randomnessResults, counter } = await ONEWalletLib.computeMerkleTree({
-    otpSeed, otpSeed2, effectiveTime, maxOperationsPerInterval, duration, randomness, hasher
+    otpSeed,
+    otpSeed2,
+    effectiveTime,
+    maxOperationsPerInterval,
+    duration,
+    randomness,
+    hasher,
+    progressObserver: (i, n, s) => {
+      Logger.debug(`${((i / n) * 100).toFixed(2)}% (${i}/${n}) (Stage ${s})`)
+    }
   })
   const height = layers.length
   const t0 = effectiveTime / INTERVAL
