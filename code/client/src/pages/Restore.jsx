@@ -15,6 +15,7 @@ import util, { useWindowDimensions } from '../util'
 import { handleAddressError } from '../handler'
 import Paths from '../constants/paths'
 import * as Sentry from '@sentry/browser'
+import config from '../config'
 
 const { Step } = Steps
 
@@ -29,6 +30,8 @@ const Restore = () => {
   const [secret2, setSecret2] = useState()
   const [name, setName] = useState()
   const [device, setDevice] = useState()
+  const [majorVersion, setMajorVersion] = useState()
+  const [minorVersion, setMinorVersion] = useState()
   const { isMobile } = useWindowDimensions()
   const ref = useRef()
   useEffect(() => {
@@ -109,6 +112,7 @@ const Restore = () => {
       return
     }
     try {
+      const securityParameters = ONEUtil.securityParameters({ majorVersion, minorVersion })
       const worker = new Worker('ONEWalletWorker.js')
       worker.onmessage = (event) => {
         const { status, current, total, stage, result } = event.data
@@ -134,7 +138,8 @@ const Restore = () => {
             dailyLimit,
             hseed: ONEUtil.hexView(hseed),
             doubleOtp,
-            network
+            network,
+            ...securityParameters
           }
           dispatch(walletActions.updateWallet(wallet))
           dispatch(walletActions.fetchBalance({ address }))
@@ -145,7 +150,13 @@ const Restore = () => {
       }
       console.log('[Restore] Posting to worker')
       worker && worker.postMessage({
-        seed: secret, seed2: secret2, effectiveTime, duration, slotSize, interval: WalletConstants.interval
+        seed: secret,
+        seed2: secret2,
+        effectiveTime,
+        duration,
+        slotSize,
+        interval: WalletConstants.interval,
+        ...securityParameters
       })
     } catch (ex) {
       Sentry.captureException(ex)
@@ -174,7 +185,9 @@ const Restore = () => {
           duration,
           slotSize,
           lastResortAddress,
-          dailyLimit
+          dailyLimit,
+          majorVersion,
+          minorVersion
         } = await api.blockchain.getWallet({ address })
         console.log('Retrieved wallet:', {
           root,
@@ -192,6 +205,8 @@ const Restore = () => {
         setLastResortAddress(lastResortAddress)
         setDailyLimit(dailyLimit)
         setSection(2)
+        setMajorVersion(majorVersion)
+        setMinorVersion(minorVersion)
       } catch (ex) {
         Sentry.captureException(ex)
         console.error(ex)

@@ -9,7 +9,7 @@ const computeMerkleTree = async ({
   otpSeed2, // can be null
   effectiveTime = Date.now(),
   duration = 3600 * 1000 * 24 * 365,
-  progressObserver, otpInterval = 30000,
+  progressObserver = () => {}, otpInterval = 30000,
   maxOperationsPerInterval = 1,
   randomness = 0, // number of bits for Controlled Randomness. 17 bits is recommended for the best balance between user experience and security. It maps to 2^17 = 131072 possibilities.
   hasher = sha256b // must be a batch hasher
@@ -215,6 +215,7 @@ const bruteforceEOTP = ({ hseed, nonce = 0, leaf }) => {
 }
 
 const recoverRandomness = async ({ hseed, otp, otp2, nonce = 0, leaf, randomness = 17, hasher = sha256b }) => {
+  // console.log({ hseed, otp, otp2, nonce , leaf, randomness, hasher })
   const nonceBuffer = new Uint16Array([nonce])
   const ub = 2 ** randomness
   const buffer = new Uint8Array(ub * 32)

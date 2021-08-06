@@ -1,3 +1,5 @@
+import config from '../client/src/config'
+
 const JSSHA = require('jssha')
 const createKeccakHash = require('keccak')
 const Conversion = require('ethjs-unit')
@@ -5,6 +7,7 @@ const sha256 = require('fast-sha256')
 const BN = require('bn.js')
 const argon2 = require('argon2-browser')
 const base32 = require('hi-base32')
+const securityParams = require('./params')
 const STANDARD_DECIMAL = 18
 const PERMIT_DEPRECATED_METHOD = process.env.PERMIT_DEPRECATED_METHOD
 const utils = {
@@ -167,6 +170,25 @@ const utils = {
     if (!PERMIT_DEPRECATED_METHOD) {
       throw new Error('Deprecated')
     }
+  },
+
+  getVersion: ({ majorVersion, minorVersion }) => `${majorVersion}.${minorVersion}`,
+
+  securityParameters: ({ majorVersion, minorVersion }) => {
+    const keys = Object.keys(securityParams)
+    const v = utils.getVersion({ majorVersion, minorVersion })
+    for (let k of keys) {
+      const m = v.match(new RegExp(k))
+      if (m) {
+        const { hasher, baseRandomness, randomnessDamping, argon2Damping } = securityParams[k]
+        let r = baseRandomness - randomnessDamping
+        if (hasher === 'argon2') {
+          r -= argon2Damping
+        }
+        return { randomness: r, hasher }
+      }
+    }
+    throw new Error(`No security parameter for version ${v}`)
   }
 
 }

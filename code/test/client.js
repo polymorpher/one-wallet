@@ -1,7 +1,8 @@
 const ONEUtil = require('../lib/util')
 const ONE = require('../lib/onewallet')
 const INTERVAL = 30000
-const DURATION = INTERVAL * 8
+// const DURATION = INTERVAL * 8
+const DURATION = INTERVAL * 2 * 60 * 24 * 364
 const { Logger, createWallet } = require('./util')
 const ONEConstants = require('../lib/constants')
 const unit = require('ethjs-unit')
@@ -286,11 +287,11 @@ contract('ONEWallet', (accounts) => {
     assert.equal(ONE_CENT.divn(2).toString(), purseBalance, `Purse must have correct balance: ${ONE_CENT.divn(2)}`)
   }
 
-  it('Client_Transfer: must compute EOTP correctly and complete transfer, using double OTP + argon2', async () => {
+  it('Client_Transfer_SHA256: must compute EOTP correctly and complete transfer, using double OTP + argon2', async () => {
     await transferTest({ hasher: ONEUtil.sha256b })
   })
 
-  it('Client_Transfer: must compute EOTP correctly and complete transfer, using double OTP + sha256b', async () => {
+  it('Client_Transfer_ARGON2: must compute EOTP correctly and complete transfer, using double OTP + sha256b', async () => {
     await transferTest({ hasher: ONEUtil.argon2 })
   })
 })

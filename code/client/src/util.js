@@ -173,7 +173,16 @@ export default {
     return false
   },
 
-  compareVersion: (left, right) => left.majorVersion === right.majorVersion && left.minorVersion === right.minorVersion
+  compareVersion: (left, right) => left.majorVersion === right.majorVersion && left.minorVersion === right.minorVersion,
+
+  getRandomness: () => {
+    let r = config.clientSecurity.baseRandomness - config.clientSecurity.randomnessDamping
+    if (config.clientSecurity.hasher === 'argon2') {
+      r -= config.clientSecurity.argon2Damping
+    }
+    return r
+  },
+
 }
 
 function getWindowDimensions () {
