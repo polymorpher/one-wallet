@@ -18,6 +18,13 @@ const EotpBuilders = {
     const { hseed, effectiveTime } = wallet
     const leaf = layers[0].subarray(layers[0].length - 32, layers[0].length)
     return leaf
+  },
+  legacyRecovery: async ({ wallet, layers }) => {
+    const { hseed, effectiveTime } = wallet
+    const index = ONEUtil.timeToIndex({ effectiveTime })
+    const leaf = layers[0].subarray(index * 32, index * 32 + 32).slice()
+    const { eotp } = ONE.bruteforceEOTP({ hseed: ONEUtil.hexToBytes(hseed), leaf })
+    return eotp
   }
 }
 

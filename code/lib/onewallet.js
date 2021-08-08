@@ -196,7 +196,7 @@ const computeRecoveryHash = ({ randomSeed, hseed }) => {
  * @returns {{eotp: Uint8Array, otp: number}|{}}
  */
 const bruteforceEOTP = ({ hseed, nonce = 0, leaf }) => {
-  DEPRECATED()
+  // DEPRECATED()
   const nonceBuffer = new Uint16Array([nonce])
   const buffer = new Uint8Array(32)
   const otpBuffer = new DataView(new ArrayBuffer(4))
