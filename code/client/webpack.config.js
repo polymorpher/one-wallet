@@ -11,6 +11,7 @@ module.exports = {
     historyApiFallback: true,
   },
   module: {
+    noParse: /\.wasm$/,
     rules: [
       {
         test: /\.(js|jsx)$/,
@@ -56,14 +57,19 @@ module.exports = {
             }
           }
         ]
-      }
+      },
+      {
+        test: /\.wasm$/,
+        loader: 'base64-loader',
+        type: 'javascript/auto',
+      },
     ],
   },
   entry: {
     main: ['./src/index.js'],
     ONEWalletWorker: ['./src/worker/ONEWalletWorker.js']
   },
-  devtool: 'source-map',
+  devtool: process.env.DEBUG && 'source-map',
   output: {
     filename: '[name].js',
     path: path.resolve(__dirname, 'dist'),
@@ -71,6 +77,10 @@ module.exports = {
     publicPath: '/'
   },
 
+  externals: {
+    path: 'path',
+    fs: 'fs',
+  },
   resolve: {
     modules: [path.resolve(__dirname, 'node_modules'), 'node_modules'],
     extensions: ['.jsx', '.js'],
@@ -78,13 +88,22 @@ module.exports = {
       stream: require.resolve('stream-browserify'),
       // TODO: remove later, after web3 is removed from dependency (for ethereum compatibility)
       http: require.resolve('stream-http'),
+      fs: false,
       os: require.resolve('os-browserify/browser'),
       https: require.resolve('https-browserify'),
       crypto: require.resolve('crypto-browserify')
     }
   },
   plugins: [
-    new webpack.EnvironmentPlugin(['PUBLIC_URL', 'REACT_APP_NETWORK', 'REACT_APP_RELAYER', 'REACT_APP_RELAYER_SECRET']),
+    new webpack.EnvironmentPlugin({
+      PUBLIC_URL: '',
+      NETWORK: '',
+      RELAYER: '',
+      RELAYER_SECRET: 'onewallet',
+      DEBUG: false,
+      MIN_WALLET_VERSION: 0,
+      SENTRY_DSN: '', // dev
+    }),
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],
     }),

@@ -1,0 +1,18 @@
+# test net
+PRIVATE_KEY='0x...'
+URL='https://api.s0.b.hmny.io'
+# OWNER_ADDR should be corresponding to PRIVATE_KEY
+OWNER_ADDR="<...>"
+LAST_RESORT_ADDR="<...>"
+
+# main net
+MAIN_PRIVATE_KEY="0x..."
+MAIN_URL="https://api.s0.t.hmny.io"
+
+# local - accounts corresponding to the first 4 private keys must have funds
+LOCAL_PRIVATE_KEYS='<key1>,<key2>,...<key6>'
+LOCAL_URL='http://localhost:9500'
+
+
+GAS_LIMIT=67219000
+GAS_PRICE=10000000

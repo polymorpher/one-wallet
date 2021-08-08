@@ -1,12 +1,28 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router'
 import Paths from '../constants/paths'
 import api from '../api'
+import config from '../config'
 import ONEUtil from '../../../lib/util'
-import { uniqueNamesGenerator, colors, animals } from 'unique-names-generator'
-import { Button, Row, Space, Typography, Slider, Image, message, Progress, Timeline } from 'antd'
-import { RedoOutlined, LoadingOutlined } from '@ant-design/icons'
+import ONEConstants from '../../../lib/constants'
+import ONENames from '../../../lib/names'
+// import { uniqueNamesGenerator, colors, animals } from 'unique-names-generator'
+import {
+  Button,
+  Row,
+  Space,
+  Typography,
+  Slider,
+  Image,
+  message,
+  Progress,
+  Timeline,
+  Select,
+  Checkbox,
+  Tooltip
+} from 'antd'
+import { RedoOutlined, LoadingOutlined, SearchOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import humanizeDuration from 'humanize-duration'
 import AnimatedSection from '../components/AnimatedSection'
 import b32 from 'hi-base32'
@@ -14,81 +30,136 @@ import qrcode from 'qrcode'
 import storage from '../storage'
 import walletActions from '../state/modules/wallet/actions'
 import WalletConstants from '../constants/wallet'
-import util from '../util'
+import util, { useWindowDimensions } from '../util'
+import { handleAPIError, handleAddressError } from '../handler'
 import { Hint, Heading, InputBox } from '../components/Text'
+import OtpBox from '../components/OtpBox'
+import { getAddress } from '@harmony-js/crypto'
 const { Text, Link } = Typography
 
-const genName = () => uniqueNamesGenerator({
-  dictionaries: [colors, animals],
-  style: 'capital',
-  separator: ' ',
-  length: 1
-})
+// const genName = () => uniqueNamesGenerator({
+//   dictionaries: [colors, animals],
+//   style: 'capital',
+//   separator: ' ',
+//   length: 1
+// })
+
+const genName = (existingNames) => {
+  const name = ONENames.randomWord()
+  if (existingNames && existingNames.includes(name)) {
+    return genName()
+  }
+  return name
+}
+
+const generateOtpSeed = () => {
+  const otpSeedBuffer = new Uint8Array(20)
+  return window.crypto.getRandomValues(otpSeedBuffer)
+}
+
+const sectionViews = {
+  setupWalletDetails: 1,
+  setupOtp: 2,
+  setupSecondOtp: 3,
+  prepareWallet: 4,
+  walletSetupDone: 5
+}
 
 const Create = () => {
+  const generateNewOtpName = () => genName(Object.keys(wallets).map(k => wallets[k].name))
+
+  const { isMobile } = useWindowDimensions()
   const dispatch = useDispatch()
   const history = useHistory()
   const network = useSelector(state => state.wallet.network)
-  const [name, setName] = useState(genName())
-  const otpSeedBuffer = new Uint8Array(20)
+  const wallets = useSelector(state => state.wallet.wallets)
+  const [name, setName] = useState(generateNewOtpName())
   // eslint-disable-next-line no-unused-vars
-  const [seed, setSeed] = useState(window.crypto.getRandomValues(otpSeedBuffer))
+  const [seed, setSeed] = useState(generateOtpSeed())
+  // eslint-disable-next-line no-unused-vars
+  const [seed2, setSeed2] = useState(generateOtpSeed())
   const [duration, setDuration] = useState(WalletConstants.defaultDuration)
   const [lastResortAddress, setLastResortAddress] = useState()
-  const [dailyLimit, setDailyLimit] = useState(WalletConstants.defaultDailyLimit)
+  const [dailyLimit] = useState(WalletConstants.defaultDailyLimit)
 
   const [worker, setWorker] = useState()
   const [root, setRoot] = useState()
   const [hseed, setHseed] = useState()
   const [layers, setLayers] = useState()
-  const [slotSize, setSlotSize] = useState()
+  const [slotSize, setSlotSize] = useState(1)
   const [progress, setProgress] = useState(0)
   const [progressStage, setProgressStage] = useState(0)
   const [address, setAddress] = useState() // '0x12345678901234567890'
   const [effectiveTime, setEffectiveTime] = useState()
+  const [doubleOtp, setDoubleOtp] = useState(false)
 
   const [durationVisible, setDurationVisible] = useState(false)
-  const [section, setSection] = useState(1)
+  const [section, setSection] = useState(sectionViews.setupOtp)
   const [qrCodeData, setQRCodeData] = useState()
-  const [showOtpVerification, setShowOtpVerification] = useState()
+  const [secondOtpQrCodeData, setSecondOtpQrCodeData] = useState()
   const [otp, setOtp] = useState('')
 
   const [deploying, setDeploying] = useState()
 
-  const getQRCodeUri = () => {
+  const otpRef = useRef()
+
+  const securityParameters = ONEUtil.securityParameters({
+    majorVersion: ONEConstants.MajorVersion,
+    minorVersion: ONEConstants.MinorVersion,
+  })
+
+  const getQRCodeUri = (otpSeed, otpDisplayName) => {
     // otpauth://TYPE/LABEL?PARAMETERS
-    return `otpauth://totp/${name}?secret=${b32.encode(seed)}&issuer=ONE%20Wallet`
+    return `otpauth://totp/${otpDisplayName}?secret=${b32.encode(otpSeed)}&issuer=Harmony`
   }
+
   useEffect(() => {
     (async function () {
-      const uri = getQRCodeUri()
-      const data = await qrcode.toDataURL(uri, { errorCorrectionLevel: 'low', width: 400 })
-      setQRCodeData(data)
+      const otpUri = getQRCodeUri(seed, name)
+      const secondOtpUri = getQRCodeUri(seed2, `${name} - 2nd`)
+      const otpQrCodeData = await qrcode.toDataURL(otpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
+      const secondOtpQrCodeData = await qrcode.toDataURL(secondOtpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
+      setQRCodeData(otpQrCodeData)
+      setSecondOtpQrCodeData(secondOtpQrCodeData)
     })()
   }, [name])
 
   useEffect(() => {
-    if (section === 2) {
-      console.log('posting to worker')
+    if (section === sectionViews.setupOtp && worker) {
+      console.log('Posting to worker. Security parameters:', securityParameters)
       const t = Math.floor(Date.now() / WalletConstants.interval) * WalletConstants.interval
       setEffectiveTime(t)
       worker && worker.postMessage({
-        seed, effectiveTime: t, duration, slotSize, interval: WalletConstants.interval
+        seed,
+        seed2,
+        effectiveTime: t,
+        duration,
+        slotSize,
+        interval: WalletConstants.interval,
+        ...securityParameters,
       })
     }
-  }, [section])
+  }, [section, worker])
 
-  const verifyOtp = () => {
-    const expected = ONEUtil.genOTP({ seed })
-    const code = new DataView(expected.buffer).getUint32(0, false).toString()
-    if (code.padStart(6, '0') !== otp.padStart(6, '0')) {
-      console.log(`Expected: ${code}. Got: ${otp}`)
-      message.error('Code is incorrect. Please try again.')
-    } else {
-      message.success('Nice! Your code is correct!')
-      setSection(3)
+  useEffect(() => {
+    const settingUpSecondOtp = section === sectionViews.setupSecondOtp
+    if (otp.length !== 6) {
+      return
     }
-  }
+    const currentSeed = settingUpSecondOtp ? seed2 : seed
+    const expected = ONEUtil.genOTP({ seed: currentSeed })
+    const code = new DataView(expected.buffer).getUint32(0, false).toString()
+    setOtp('')
+    if (code.padStart(6, '0') !== otp.padStart(6, '0')) {
+      message.error('Code is incorrect. Please try again.')
+      otpRef?.current?.focusInput(0)
+    } else if (doubleOtp && !settingUpSecondOtp) {
+      setSection(sectionViews.setupSecondOtp)
+      otpRef?.current?.focusInput(0)
+    } else {
+      setSection(sectionViews.prepareWallet)
+    }
+  }, [otp])
 
   const storeLayers = async () => {
     if (!root) {
@@ -103,6 +174,14 @@ const Create = () => {
       message.error('Cannot deploy wallet. Error: root is not set.')
       return
     }
+    let normalizedAddress = ''
+    if (lastResortAddress !== '') {
+      // Ensure valid address for both 0x and one1 formats
+      normalizedAddress = util.safeExec(util.normalizedAddress, [lastResortAddress], handleAddressError)
+      if (!normalizedAddress) {
+        return
+      }
+    }
     setDeploying(true)
     try {
       const { address } = await api.relayer.create({
@@ -112,7 +191,7 @@ const Create = () => {
         t0: effectiveTime / WalletConstants.interval,
         lifespan: duration / WalletConstants.interval,
         slotSize,
-        lastResortAddress,
+        lastResortAddress: normalizedAddress,
         dailyLimit: ONEUtil.toFraction(dailyLimit).toString()
       })
       console.log('Deployed. Received contract address', address)
@@ -121,27 +200,32 @@ const Create = () => {
         address,
         root: ONEUtil.hexView(root),
         duration,
+        slotSize,
         effectiveTime,
-        lastResortAddress,
+        lastResortAddress: normalizedAddress,
         dailyLimit: ONEUtil.toFraction(dailyLimit).toString(),
         hseed: ONEUtil.hexView(hseed),
-        network
+        network,
+        doubleOtp,
+        ...securityParameters,
       }
       await storeLayers()
       dispatch(walletActions.updateWallet(wallet))
       dispatch(walletActions.fetchBalanceSuccess({ address, balance: 0 }))
       setAddress(address)
+      dispatch(walletActions.fetchWallet({ address }))
       setDeploying(false)
       message.success('Your wallet is deployed!')
-      setSection(4)
+      history.push(Paths.showAddress(address))
+      // setSection(4)
     } catch (ex) {
-      util.handleError(ex)
+      handleAPIError(ex)
       setDeploying(false)
     }
   }
 
   useEffect(() => {
-    const worker = new Worker('ONEWalletWorker.js')
+    const worker = new Worker('/ONEWalletWorker.js')
     worker.onmessage = (event) => {
       const { status, current, total, stage, result } = event.data
       if (status === 'working') {
@@ -163,21 +247,22 @@ const Create = () => {
 
   return (
     <>
-      <AnimatedSection show={section === 1}>
+      <AnimatedSection show={section === sectionViews.setupWalletDetails} style={{ maxWidth: 640 }}>
         <Heading>What do you want to call your wallet?</Heading>
-        <Hint>This is stored on your computer only, to help you distinguish multiple wallets.</Hint>
-        <Row align='middle'>
-          <Space>
-            <InputBox value={name} onChange={({ target: { value } }) => setName(value)} />
-            <Button shape='circle' onClick={() => setName(genName())}><RedoOutlined /></Button>
+        <Hint>This is only stored on your computer to distinguish your wallets.</Hint>
+        <Row align='middle' style={{ marginBottom: 32, marginTop: 16 }}>
+          <Space size='large'>
+            <InputBox
+              prefix={<Button type='text' onClick={() => setName(genName())} style={{ }}><RedoOutlined /></Button>}
+              value={name} onChange={({ target: { value } }) => setName(value)}
+              style={{ padding: 0 }}
+            />
+            <Button type='primary' shape='round' size='large' onClick={() => setSection(sectionViews.setupOtp)}>Next</Button>
           </Space>
         </Row>
-        <Row style={{ marginBottom: 32 }}>
-          <Button type='primary' shape='round' size='large' onClick={() => setSection(2)}>Next</Button>
-        </Row>
         <Space direction='vertical'>
-          <Hint>Next, we will set up a ONE Wallet that lasts for a year. You may re-create a new wallet after a year and transfer the funds, or have the funds to be withdrawn to a pre-assigned address.</Hint>
-          <Link onClick={() => setDurationVisible(true)}>Need more or less than a year?</Link>
+          <Hint>Next, we will set up a 1wallet that expires in a year. When the wallet expires, you may create a new wallet and transfer the funds. The funds can also be recovered to an address you set later.</Hint>
+          <Link onClick={() => setDurationVisible(true)}>Need more time?</Link>
           {durationVisible &&
             <Space>
               <Slider
@@ -189,55 +274,110 @@ const Create = () => {
             </Space>}
         </Space>
       </AnimatedSection>
-      <AnimatedSection show={section === 2}>
+      <AnimatedSection show={section === sectionViews.setupOtp} style={{ maxWidth: 640 }}>
         <Row>
           <Space direction='vertical'>
-            <Heading>Now, scan the QR code with your Google Authenticator</Heading>
-            <Hint>You can restore your wallet from your Google Authenticator if you lost the data on your computer. You will also need to use the 6-digit code from Google Authenticator to authorize transfers. </Hint>
-            {qrCodeData && <Image src={qrCodeData} preview={false} width={400} />}
+            {/* <Heading>Now, scan the QR code with your Google Authenticator</Heading> */}
+            <Heading>Create Your 1wallet</Heading>
+            <Hint>You need the 6-digit code from Google authenticator to transfer funds. You can restore your wallet using Google authenticator on any device.</Hint>
+            <Row justify='center'>
+              {qrCodeData && <Image src={qrCodeData} preview={false} width={isMobile ? 192 : 256} />}
+            </Row>
           </Space>
         </Row>
         <Row>
-          <Space direction='vertical' size='large'>
-            <Hint>After you are done, let's verify your one-time password</Hint>
-            {!showOtpVerification && <Button type='primary' shape='round' size='large' onClick={() => setShowOtpVerification(true)}>I am ready</Button>}
-            {showOtpVerification &&
+          <Space direction='vertical' size='large' align='center'>
+            <Hint>After you are done, type in the 6-digit code from Google authenticator</Hint>
+            <Hint>Code for <b>Harmony ({name})</b></Hint>
+            <OtpBox
+              shouldAutoFocus
+              ref={otpRef}
+              value={otp}
+              onChange={setOtp}
+            />
+            <Checkbox onChange={() => setDoubleOtp(!doubleOtp)}>
               <Space>
-                <InputBox value={otp} onChange={({ target: { value } }) => setOtp(value)} />
-                <Button type='primary' shape='round' size='large' onClick={verifyOtp}>Next</Button>
-              </Space>}
+                <Hint>
+                  Use two codes to enhance security
+                </Hint>
+                <Tooltip title={<div>You will need to scan another QR-code on the next page. Each time you make a transaction, you will need to type in two 6-digit codes, which are shown simultaneously next to each other on your Google authenticator.<br /><br />This is advisable if you intend to make larger transactions with this wallet</div>}>
+                  <QuestionCircleOutlined />
+                </Tooltip>
+              </Space>
+            </Checkbox>
           </Space>
         </Row>
       </AnimatedSection>
-      <AnimatedSection show={section === 3}>
+      <AnimatedSection show={section === sectionViews.setupSecondOtp} style={{ maxWidth: 640 }}>
         <Row>
           <Space direction='vertical'>
-            <Heading>Final step: deploy your ONE Wallet to blockchain</Heading>
+            <Heading>Create Your 1wallet (second code)</Heading>
+            <Hint align='center'>Scan with your Google Authenticator to setup the <b>second</b> code</Hint>
+            <Row justify='center'>
+              {secondOtpQrCodeData && <Image src={secondOtpQrCodeData} preview={false} width={isMobile ? 192 : 256} />}
+            </Row>
           </Space>
         </Row>
-        <Row style={{ marginBottom: 16 }}>
-          <Space direction='vertical' size='small'>
-            <Hint>Set up a daily spending limit:</Hint>
-            <InputBox margin={16} width={200} value={dailyLimit} onChange={({ target: { value } }) => setDailyLimit(parseInt(value || 0))} suffix='ONE' />
+        <Row>
+          <Space direction='vertical' size='large' align='center'>
+            <Hint>Type in the <b>second</b> 6-digit code from Google authenticator</Hint>
+            <Hint>Code for <b>Harmony ({name} - 2nd)</b></Hint>
+            <OtpBox
+              shouldAutoFocus
+              ref={otpRef}
+              value={otp}
+              onChange={setOtp}
+            />
           </Space>
         </Row>
+      </AnimatedSection>
+      <AnimatedSection show={section === sectionViews.prepareWallet} style={{ maxWidth: 640 }}>
+        <Row>
+          <Space direction='vertical'>
+            <Heading>Prepare Your 1wallet</Heading>
+          </Space>
+        </Row>
+        {/* <Row style={{ marginBottom: 16 }}> */}
+        {/*  <Space direction='vertical' size='small'> */}
+        {/*    <Hint>Set up a daily spending limit:</Hint> */}
+        {/*    <InputBox margin={16} width={200} value={dailyLimit} onChange={({ target: { value } }) => setDailyLimit(parseInt(value || 0))} suffix='ONE' /> */}
+        {/*  </Space> */}
+        {/* </Row> */}
         <Row style={{ marginBottom: 48 }}>
           <Space direction='vertical' size='small'>
-            <Hint>(Optional) Set up a fund recovery address:</Hint>
-            <InputBox width={500} margin={16} value={lastResortAddress} onChange={({ target: { value } }) => setLastResortAddress(value)} placeholder='0x......' />
-            <Hint>If you lost your authenticator, you can still transfer all your funds to that address</Hint>
+            <Hint>Set up a fund recovery address:</Hint>
+            <Select
+              suffixIcon={<SearchOutlined />}
+              placeholder='one1......'
+              style={{ width: isMobile ? '100%' : 500, borderBottom: '1px dashed black' }} bordered={false} showSearch onChange={(v) => setLastResortAddress(v)}
+              value={lastResortAddress}
+              onSearch={(v) => setLastResortAddress(v)}
+            >
+              {Object.keys(wallets).filter(k => wallets[k].network === network).map(k => {
+                const addr = util.safeOneAddress(wallets[k].address)
+                return (
+                  <Select.Option key={k} value={util.safeOneAddress(wallets[k].address)}>
+                    ({wallets[k].name}) {isMobile ? util.ellipsisAddress(addr) : addr}
+                  </Select.Option>
+                )
+              })}
+              {lastResortAddress && !wallets[util.safeNormalizedAddress(lastResortAddress)] && <Select.Option key={lastResortAddress} value={lastResortAddress}>{lastResortAddress}</Select.Option>}
+              <Select.Option key='later' value=''> I want to do this later in my wallet </Select.Option>
+            </Select>
+            {/* <InputBox width={500} margin={16} value={lastResortAddress} onChange={({ target: { value } }) => setLastResortAddress(value)} placeholder='one1......' /> */}
+            <Hint>If you lost your authenticator, your can recover funds to this address</Hint>
           </Space>
         </Row>
         <Row style={{ marginBottom: 32 }}>
           <Space direction='vertical'>
             <Space>
-              <Button disabled={!root || deploying} type='primary' shape='round' size='large' onClick={() => deploy()}>Let's do it</Button>
+              <Button disabled={!root || deploying} type='primary' shape='round' size='large' onClick={() => deploy()}>Create Now</Button>
               {deploying && <LoadingOutlined />}
             </Space>
             {!root &&
               <>
                 <Hint>One moment... we are still preparing your wallet</Hint>
-                <Space size='large'>
+                <Space size='large' direction={isMobile && 'vertical'}>
                   <Progress
                     type='circle'
                     strokeColor={{
@@ -247,9 +387,9 @@ const Create = () => {
                     percent={progress}
                   />
                   <Space direction='vertical'>
-                    <Timeline pending={progressStage < 2 && 'Securing your keyless ONE Wallet'}>
-                      <Timeline.Item color={progressStage < 1 ? 'grey' : 'green'}>Computing one-time password proofs</Timeline.Item>
-                      <Timeline.Item color={progressStage < 2 ? 'grey' : 'green'}>Hashing proofs as layers for blockchain</Timeline.Item>
+                    <Timeline pending={progressStage < 2 && 'Securing your keyless 1wallet'}>
+                      <Timeline.Item color={progressStage < 1 ? 'grey' : 'green'}>Securing the wallet</Timeline.Item>
+                      <Timeline.Item color={progressStage < 2 ? 'grey' : 'green'}>Preparing signatures</Timeline.Item>
                     </Timeline>
                   </Space>
                 </Space>
@@ -259,16 +399,17 @@ const Create = () => {
         <Row>
           <Space direction='vertical'>
             <Hint>No private key. No mnemonic. Simple and Secure. </Hint>
-            <Hint>To learn more, visit <Link href='https://github.com/polymorpher/one-wallet/wiki'>ONE Wallet Wiki</Link></Hint>
+            <Hint>To learn more, visit <Link href='https://github.com/polymorpher/one-wallet/wiki'>1wallet Wiki</Link></Hint>
+            <Hint>In Beta, your wallet is subject to a daily spending limit of {WalletConstants.defaultDailyLimit} ONE</Hint>
           </Space>
         </Row>
       </AnimatedSection>
-      <AnimatedSection show={section === 4}>
+      <AnimatedSection show={section === sectionViews.walletSetupDone}>
         <Space direction='vertical'>
           <Heading>You are all set!</Heading>
           <Space direction='vertical' size='small'>
             <Hint>Wallet Address</Hint>
-            <Text>{address}</Text>
+            <Text>{address && getAddress(address).bech32}</Text>
           </Space>
           <Button style={{ marginTop: 32 }} disabled={!address} type='primary' shape='round' size='large' onClick={() => history.push(Paths.showAddress(address))}>Go to My Wallet</Button>
         </Space>

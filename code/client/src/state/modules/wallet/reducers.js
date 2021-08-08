@@ -23,7 +23,7 @@ const reducer = handleActions(
     }),
     [walletActions.fetchWalletSuccess]: (state, action) => ({
       ...state,
-      wallets: { ...state.wallets, [action.payload.address]: action.payload },
+      wallets: { ...state.wallets, [action.payload.address]: { ...state.wallets[action.payload.address], ...action.payload } },
       fetching: false,
     }),
     [walletActions.fetchWalletFailed]: (state, action) => ({
@@ -71,7 +71,60 @@ const reducer = handleActions(
 
     [walletActions.deleteWallet]: (state, action) => ({
       ...state,
-      wallets: omit(state.wallets, [action.payload])
+      wallets: omit(state.wallets, [action.payload]),
+      balances: omit(state.balances, [action.payload])
+    }),
+    [walletActions.trackTokens]: (state, action) => ({
+      ...state,
+      wallets: {
+        ...state.wallets,
+        [action.payload.address]: {
+          ...state.wallets[action.payload.address],
+          trackedTokens: [...(state.wallets?.[action.payload.address]?.trackedTokens || []), ...action.payload.tokens]
+        }
+      }
+    }),
+    [walletActions.untrackTokens]: (state, action) => ({
+      ...state,
+      wallets: {
+        ...state.wallets,
+        [action.payload.address]: {
+          ...state.wallets[action.payload.address],
+          trackedTokens: (state.wallets?.[action.payload.address]?.trackedTokens || []).filter(e => action.payload.keys.find(k => k === e.key) === undefined)
+        }
+      }
+    }),
+    [walletActions.setSelectedToken]: (state, action) => ({
+      ...state,
+      wallets: {
+        ...state.wallets,
+        [action.payload.address]: {
+          ...state.wallets[action.payload.address],
+          selectedToken: action.payload.token
+        }
+      }
+    }),
+
+    [walletActions.fetchTokenBalance]: (state, action) => ({
+      ...state,
+    }),
+
+    [walletActions.fetchTokenBalanceSuccess]: (state, action) => ({
+      ...state,
+      wallets: {
+        ...state.wallets,
+        [action.payload.address]: {
+          ...state.wallets[action.payload.address],
+          tokenBalances: {
+            ...state.wallets?.[action.payload.address]?.tokenBalances,
+            [action.payload.key]: action.payload.balance
+          }
+        }
+      }
+    }),
+
+    [walletActions.fetchTokenBalanceFailed]: (state, action) => ({
+      ...state,
     }),
 
     [walletActions.setRelayer]: (state, action) => ({

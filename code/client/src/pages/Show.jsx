@@ -1,49 +1,84 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory, useRouteMatch, Redirect, useLocation, matchPath } from 'react-router'
 import Paths from '../constants/paths'
 import WalletConstants from '../constants/wallet'
 import walletActions from '../state/modules/wallet/actions'
-import util from '../util'
-import ONEUtil from '../../../lib/util'
+import util, { useWindowDimensions } from '../util'
 import ONE from '../../../lib/onewallet'
+import ONEUtil from '../../../lib/util'
+import ONEConstants from '../../../lib/constants'
 import api from '../api'
-import { message, Space, Row, Col, Typography, Button, Steps, Popconfirm, Tooltip } from 'antd'
-import { DeleteOutlined, WarningOutlined, CloseOutlined } from '@ant-design/icons'
-import styled from 'styled-components'
+import * as Sentry from '@sentry/browser'
+import { message, Space, Row, Col, Typography, Button, Popconfirm, Tooltip } from 'antd'
+import {
+  DeleteOutlined,
+  WarningOutlined,
+  CloseOutlined,
+  QuestionCircleOutlined,
+  LoadingOutlined,
+  CheckCircleOutlined
+} from '@ant-design/icons'
+// import styled from 'styled-components'
 import humanizeDuration from 'humanize-duration'
 import AnimatedSection from '../components/AnimatedSection'
 
-import { Hint, InputBox } from '../components/Text'
-import { isInteger } from 'lodash'
+import { Hint, InputBox, Warning, Label, ExplorerLink } from '../components/Text'
+import { TallRow } from '../components/Grid'
+import { ERC20Grid } from '../components/ERC20Grid'
+import { intersection } from 'lodash'
 import storage from '../storage'
 import BN from 'bn.js'
 import config from '../config'
+import OtpBox from '../components/OtpBox'
+import { getAddress } from '@harmony-js/crypto'
+import { handleAddressError } from '../handler'
+import { SmartFlows, Chaining, EotpBuilders } from '../api/flow'
+import { CommitRevealProgress } from '../components/CommitRevealProgress'
+import { HarmonyONE } from '../components/TokenAssets'
+import { NFTGrid } from '../components/NFTGrid'
 const { Title, Text, Link } = Typography
-const { Step } = Steps
-const TallRow = styled(Row)`
-  margin-top: 32px;
-  margin-bottom: 32px;
-`
-
-const Label = styled.div`
-  width: 64px;
-`
-
+const tabList = [{ key: 'coins', tab: 'Coins' }, { key: 'nft', tab: 'Collectibles' }, { key: 'about', tab: 'About' }, { key: 'help', tab: 'Recover' }]
 const Show = () => {
   const history = useHistory()
   const location = useLocation()
   const dispatch = useDispatch()
   const wallets = useSelector(state => state.wallet.wallets)
   const match = useRouteMatch(Paths.show)
-  const { address, action } = match ? match.params : {}
+  const { address: routeAddress, action } = match ? match.params : {}
+  const oneAddress = util.safeOneAddress(routeAddress)
+  const address = util.safeNormalizedAddress(routeAddress)
   const selectedAddress = useSelector(state => state.wallet.selected)
+
   const wallet = wallets[address] || {}
   const [section, setSection] = useState(action)
-  const [stage, setStage] = useState(0)
+  const [stage, setStage] = useState(-1)
   const network = useSelector(state => state.wallet.network)
-
-  // const section =
+  const [activeTab, setActiveTab] = useState('coins')
+  const walletOutdated = util.isWalletOutdated(wallet)
+  const [worker, setWorker] = useState()
+  const workerRef = useRef({ promise: null }).current
+  const resetWorkerPromise = (newWorker) => {
+    workerRef.promise = new Promise((resolve, reject) => {
+      newWorker.onmessage = (event) => {
+        const { status, error, result } = event.data
+        // console.log('Received: ', { status, result, error })
+        if (status === 'rand') {
+          const { rand } = result
+          resolve(rand)
+        } else if (status === 'error') {
+          reject(error)
+        }
+      }
+    })
+  }
+  useEffect(() => {
+    const worker = new Worker('/ONEWalletWorker.js')
+    setWorker(worker)
+  }, [])
+  useEffect(() => {
+    worker && resetWorkerPromise(worker)
+  }, [worker])
 
   useEffect(() => {
     if (!wallet) {
@@ -52,24 +87,46 @@ const Show = () => {
     if (address && (address !== selectedAddress)) {
       dispatch(walletActions.selectWallet(address))
     }
-    dispatch(walletActions.fetchBalance({ address }))
+    const fetch = () => dispatch(walletActions.fetchBalance({ address }))
+    fetch()
+    const handler = setInterval(() => fetch(), WalletConstants.fetchBalanceFrequency)
+    dispatch(walletActions.fetchWallet({ address }))
+    return () => { clearInterval(handler) }
   }, [])
+
   const balances = useSelector(state => state.wallet.balances)
-  const balance = balances[address] || 0
   const price = useSelector(state => state.wallet.price)
-  const { formatted, fiatFormatted } = util.computeBalance(balance, price)
+  const tokenBalances = wallet.tokenBalances || []
+  const selectedToken = wallet?.selectedToken || HarmonyONE
+  const selectedTokenBalance = selectedToken.key === 'one' ? (balances[address] || 0) : (tokenBalances[selectedToken.key] || 0)
+
+  const { formatted, fiatFormatted } = util.computeBalance(selectedTokenBalance, price)
   const { dailyLimit, lastResortAddress } = wallet
+  const oneLastResort = lastResortAddress && getAddress(lastResortAddress).bech32
   const { formatted: dailyLimitFormatted, fiatFormatted: dailyLimitFiatFormatted } = util.computeBalance(dailyLimit, price)
 
   useEffect(() => {
     const m = matchPath(location.pathname, { path: Paths.show })
     const { action } = m ? m.params : {}
+    if (action !== 'nft' && action !== 'transfer' && selectedToken.key !== 'one' && selectedToken.tokenType !== ONEConstants.TokenType.ERC20) {
+      dispatch(walletActions.setSelectedToken({ token: null, address }))
+    }
+    if (tabList.find(t => t.key === action)) {
+      setSection(undefined)
+      setActiveTab(action)
+      return
+    }
     setSection(action)
+
+    // Reset TOP input boxes on location change to make sure the input boxes are cleared.
+    resetOtp()
   }, [location])
 
-  const showTransfer = () => { history.push(Paths.showAddress(address, 'transfer')) }
-  const showRecovery = () => { history.push(Paths.showAddress(address, 'recover')) }
-  const showStats = () => { history.push(Paths.showAddress(address)) }
+  const showTab = (tab) => { history.push(Paths.showAddress(oneAddress, tab)) }
+  const showTransfer = () => { history.push(Paths.showAddress(oneAddress, 'transfer')) }
+  const showRecovery = () => { history.push(Paths.showAddress(oneAddress, 'recover')) }
+  const showSetRecoveryAddress = () => { history.push(Paths.showAddress(oneAddress, 'setRecoveryAddress')) }
+  const showStats = () => { history.push(Paths.showAddress(oneAddress)) }
   const onDeleteWallet = async () => {
     const { root, name } = wallet
     dispatch(walletActions.deleteWallet(address))
@@ -86,6 +143,21 @@ const Show = () => {
   const [transferTo, setTransferTo] = useState('')
   const [inputAmount, setInputAmount] = useState('')
   const [otpInput, setOtpInput] = useState('')
+  const [otp2Input, setOtp2Input] = useState('')
+  const otpRef = useRef()
+  const otp2Ref = useRef()
+
+  useEffect(() => {
+    // Focus on OTP 2 input box when first OTP input box is filled.
+    if (otpInput.length === 6 && wallet.doubleOtp) {
+      // For some reason if the OTP input never been focused or touched by user before, it cannot be focused
+      // to index 0 programmatically, however focus to index 1 is fine. So as a workaround we focus on next input first then focus to
+      // index 0 box. Adding setTimeout 0 to make focus on index 0 run asynchronously, which gives browser just enough
+      // time to react the previous focus before we set the focus on index 0.
+      otp2Ref?.current?.focusNextInput()
+      setTimeout(() => otp2Ref?.current?.focusInput(0), 0)
+    }
+  }, [otpInput])
 
   const {
     balance: transferAmount,
@@ -93,305 +165,457 @@ const Show = () => {
   } = util.toBalance(inputAmount || 0, price)
 
   const useMaxAmount = () => {
-    if (new BN(balance, 10).gt(new BN(dailyLimit, 10))) {
+    if (util.isNFT(selectedToken)) {
+      setInputAmount(selectedTokenBalance.toString())
+      return
+    }
+    if (new BN(selectedTokenBalance, 10).gt(new BN(dailyLimit, 10))) {
       setInputAmount(dailyLimitFormatted)
     } else {
       setInputAmount(formatted)
     }
   }
+
+  const resetOtp = () => {
+    setOtpInput('')
+    setOtp2Input('')
+    otpRef?.current?.focusInput(0)
+  }
+
   const restart = () => {
-    setStage(0)
-    setOtpInput(0)
+    setStage(-1)
+    resetOtp()
     setInputAmount(0)
   }
-  const doSend = async () => {
-    if (!transferTo) {
-      return message.error('Transfer destination address is invalid')
-    }
-    if (!transferAmount) {
-      return message.error('Transfer amount is invalid')
-    }
-    const parsedOtp = parseInt(otpInput)
-    if (!isInteger(parsedOtp) || !(parsedOtp < 1000000)) {
-      message.error('Google Authenticator code is not valid')
-      return
-    }
-    console.log(wallet)
-    const { hseed, root, effectiveTime } = wallet
-    const layers = await storage.getItem(root)
-    if (!layers) {
-      console.log(layers)
-      message.error('Cannot find pre-computed proofs for this wallet. Storage might be corrupted. Please restore the wallet from Google Authenticator.')
+
+  // otp, wallet, layers, commitHashGenerator, commitHashArgs,
+  //   beforeCommit, afterCommit, onCommitError, onCommitFailure,
+  //   revealAPI, revealArgs, onRevealFailure, onRevealSuccess, onRevealError, onRevealAttemptFailed,
+  //   beforeReveal
+
+  const prepareValidation = ({ checkAmount = true, checkDest = true, checkOtp = true } = {}) => {
+    let rawAmount
+    const otp = util.parseOtp(otpInput)
+    const otp2 = util.parseOtp(otp2Input)
+    const invalidOtp = !otp
+    const invalidOtp2 = wallet.doubleOtp && !otp2
+    // Ensure valid address for both 0x and one1 formats
+    const dest = util.safeExec(util.normalizedAddress, [transferTo], handleAddressError)
+    if (checkDest && !dest) {
       return
     }
 
-    const otp = ONEUtil.encodeNumericalOtp(parsedOtp)
-    const eotp = ONE.computeEOTP({ otp, hseed: ONEUtil.hexToBytes(hseed) })
-    const index = ONEUtil.timeToIndex({ effectiveTime })
-    const neighbors = ONE.selectMerkleNeighbors({ layers, index })
-    const neighbor = neighbors[0]
-    const { hash: commitHash } = ONE.computeTransferHash({
-      neighbor,
-      index,
-      eotp,
-      dest: transferTo,
-      amount: transferAmount,
-    })
-    setStage(1)
-    try {
-      const { success, error } = await api.relayer.commit({ address, hash: ONEUtil.hexString(commitHash) })
-      if (!success) {
-        message.error(`Cannot commit recovery transaction. Error: ${error}`)
-        setStage(0)
-        return
+    if (checkAmount) {
+      if (selectedToken && util.isNFT(selectedToken)) {
+        try {
+          rawAmount = new BN(inputAmount)
+        } catch (ex) {
+          console.error(ex)
+          message.error('Amount cannot be parsed')
+          return
+        }
+        if (rawAmount.isZero() || rawAmount.isNeg()) {
+          return message.error('Amount is invalid')
+        }
+      } else if (!transferAmount || transferAmount.isZero() || transferAmount.isNeg()) {
+        return message.error('Transfer amount is invalid')
       }
-    } catch (ex) {
-      console.error(ex)
-      message.error('Failed to commit the transaction. Please try again. Error: ' + ex.toString())
-      setStage(0)
+    }
+
+    if (checkOtp && (invalidOtp || invalidOtp2)) {
+      message.error('Google Authenticator code is not valid', 10)
+      resetOtp()
       return
     }
-    setStage(2)
-    let numAttemptsRemaining = WalletConstants.maxTransferAttempts - 1
-    const tryReveal = () => setTimeout(async () => {
-      try {
-        // TODO: should reveal only when commit is confirmed and viewable on-chain. This should be fixed before releasing it to 1k+ users
-        // TODO: Prevent transfer more than maxOperationsPerInterval per interval (30 seconds)
-        const { success, txId, error } = await api.relayer.revealTransfer({
-          neighbors: neighbors.map(n => ONEUtil.hexString(n)),
-          index,
-          eotp: ONEUtil.hexString(eotp),
-          dest: transferTo,
-          amount: transferAmount.toString(),
-          address
-        })
-        if (!success) {
-          message.error(`Transaction Failed: ${error}`)
-          setStage(0)
-          return
-        }
-        setStage(3)
 
-        if (config.networks[network].explorer) {
-          const link = config.networks[network].explorer.replaceAll('{{txId}}', txId)
-          message.success(<Text>Done! View transaction <Link href={link} target='_blank' rel='noreferrer'>{util.ellipsisAddress(txId)}</Link></Text>, 10)
-        } else {
-          message.success(<Text>Transfer completed! Copy transaction id: <Text copyable={{ text: txId }}>{util.ellipsisAddress(txId)} </Text></Text>, 10)
+    return {
+      otp,
+      otp2,
+      dest,
+      invalidOtp,
+      invalidOtp2,
+      amount: selectedToken && util.isNFT(selectedToken) ? rawAmount.toString() : transferAmount.toString()
+    }
+  }
+
+  const onCommitError = (ex) => {
+    Sentry.captureException(ex)
+    console.error(ex)
+    message.error('Failed to commit. Error: ' + ex.toString())
+    setStage(-1)
+    resetOtp()
+  }
+
+  const onCommitFailure = (error) => {
+    message.error(`Cannot commit transaction. Reason: ${error}`)
+    setStage(-1)
+    resetOtp()
+  }
+
+  const onRevealFailure = (error) => {
+    message.error(`Transaction Failed: ${error}`)
+    setStage(-1)
+    resetOtp()
+  }
+
+  const onRevealError = (ex) => {
+    Sentry.captureException(ex)
+    message.error(`Failed to finalize transaction. Error: ${ex.toString()}`)
+    setStage(-1)
+    resetOtp()
+  }
+
+  const onRevealAttemptFailed = (numAttemptsRemaining) => {
+    message.error(`Failed to finalize transaction. Trying ${numAttemptsRemaining} more time`)
+  }
+
+  const onRevealSuccess = (txId) => {
+    setStage(3)
+    if (config.networks[network].explorer) {
+      const link = config.networks[network].explorer.replaceAll('{{txId}}', txId)
+      message.success(<Text>Done! View transaction <Link href={link} target='_blank' rel='noreferrer'>{util.ellipsisAddress(txId)}</Link></Text>, 10)
+    } else {
+      message.success(<Text>Transfer completed! Copy transaction id: <Text copyable={{ text: txId }}>{util.ellipsisAddress(txId)} </Text></Text>, 10)
+    }
+    setTimeout(restart, 3000)
+  }
+
+  const prepareProofFailed = () => {
+    setStage(-1)
+    resetOtp()
+    resetWorkerPromise(worker)
+  }
+
+  const doSend = () => {
+    const { otp, otp2, invalidOtp2, invalidOtp, dest, amount } = prepareValidation() || {}
+
+    if (invalidOtp || !dest || invalidOtp2) return
+
+    const recoverRandomness = async (args) => {
+      worker && worker.postMessage({
+        action: 'recoverRandomness',
+        ...args
+      })
+      return workerRef.promise
+    }
+
+    if (selectedToken.key === 'one') {
+      SmartFlows.commitReveal({
+        wallet,
+        otp,
+        otp2,
+        recoverRandomness,
+        prepareProofFailed,
+        commitHashGenerator: ONE.computeTransferHash,
+        commitHashArgs: { dest, amount },
+        prepareProof: () => setStage(0),
+        beforeCommit: () => setStage(1),
+        afterCommit: () => setStage(2),
+        onCommitError,
+        onCommitFailure,
+        revealAPI: api.relayer.revealTransfer,
+        revealArgs: { dest, amount },
+        onRevealFailure,
+        onRevealError,
+        onRevealAttemptFailed,
+        onRevealSuccess: (txId) => {
+          onRevealSuccess(txId)
+          Chaining.refreshBalance(dispatch, intersection(Object.keys(wallets), [dest, address]))
         }
-      } catch (ex) {
-        console.trace(ex)
-        if (numAttemptsRemaining <= 0) {
-          message.error('Failed to finalize transfer. Please try again later.')
-          setStage(0)
-          return
+      })
+    } else {
+      SmartFlows.commitReveal({
+        wallet,
+        otp,
+        otp2,
+        recoverRandomness,
+        prepareProofFailed,
+        commitHashGenerator: ONE.computeTokenOperationHash,
+        commitHashArgs: { dest, amount, operationType: ONEConstants.OperationType.TRANSFER_TOKEN, tokenType: selectedToken.tokenType, contractAddress: selectedToken.contractAddress, tokenId: selectedToken.tokenId },
+        beforeCommit: () => setStage(1),
+        afterCommit: () => setStage(2),
+        onCommitError,
+        onCommitFailure,
+        revealAPI: api.relayer.revealTokenOperation,
+        revealArgs: { dest, amount, operationType: ONEConstants.OperationType.TRANSFER_TOKEN, tokenType: selectedToken.tokenType, contractAddress: selectedToken.contractAddress, tokenId: selectedToken.tokenId },
+        onRevealFailure,
+        onRevealError,
+        onRevealAttemptFailed,
+        onRevealSuccess: (txId) => {
+          onRevealSuccess(txId)
+          Chaining.refreshTokenBalance({ dispatch, address, token: selectedToken })
         }
-        message.error(`Failed to finalize transfer. Trying ${numAttemptsRemaining} more time`)
-        numAttemptsRemaining -= 1
-        tryReveal()
-      }
-    }, 5000)
-    tryReveal()
+      })
+    }
   }
 
   const doRecovery = async () => {
-    const { hseed, root, effectiveTime } = wallet
-    const layers = await storage.getItem(root)
-    if (!layers) {
-      message.error('Cannot find pre-computed proofs for this wallet. Storage might be corrupted. Please restore the wallet from Google Authenticator.')
-      return
+    let { hash, bytes } = ONE.computeRecoveryHash({ hseed: ONEUtil.hexToBytes(wallet.hseed) })
+    if (!(wallet.majorVersion >= 8)) {
+      // contracts <= v7 rely on paramsHash = bytes32(0) for recover, so we must handle this special case here
+      hash = new Uint8Array(32)
     }
-    const index = ONEUtil.timeToIndex({ effectiveTime })
-    const leaf = layers[0].subarray(index * 32, index * 32 + 32).slice()
-    const { eotp } = ONE.bruteforceEOTP({ hseed: ONEUtil.hexToBytes(hseed), leaf })
-    if (!eotp) {
-      message.error('Pre-computed proofs are inconsistent. Recovery cannot proceed')
-      return
-    }
-    const neighbors = ONE.selectMerkleNeighbors({ layers, index })
-    const neighbor = neighbors[0]
-    const { hash: commitHash } = ONE.computeRecoveryHash({
-      neighbor,
-      index,
-      eotp,
+    const eotpBuilder = wallet.majorVersion >= 8 ? EotpBuilders.recovery : EotpBuilders.legacyRecovery
+    const data = ONEUtil.hexString(bytes)
+    SmartFlows.commitReveal({
+      wallet,
+      eotpBuilder,
+      index: -1,
+      commitHashGenerator: () => ({ hash, bytes: new Uint8Array(0) }), // Only legacy committer uses `bytes`. It mingles them with other parameters to produce hash. legacy recover has no parameters, therefore `bytes` should be empty byte array
+      beforeCommit: () => setStage(1),
+      afterCommit: () => setStage(2),
+      onCommitError,
+      onCommitFailure,
+      revealAPI: api.relayer.revealRecovery,
+      revealArgs: { data },
+      onRevealFailure,
+      onRevealError,
+      onRevealAttemptFailed,
+      onRevealSuccess
     })
-    setStage(1)
-    try {
-      const { success, error } = await api.relayer.commit({ address, hash: ONEUtil.hexString(commitHash) })
-      if (!success) {
-        message.error(`Cannot commit recovery transaction. Error: ${error}`)
-        setStage(0)
-        return
-      }
-    } catch (ex) {
-      console.error(ex)
-      message.error('Failed to commit the recovery transaction. Error: ' + ex.toString())
-      setStage(0)
-      return
-    }
-    setStage(2)
-    let numAttemptsRemaining = WalletConstants.maxTransferAttempts - 1
-    const tryReveal = () => setTimeout(async () => {
-      try {
-        // TODO: should reveal only when commit is confirmed and viewable on-chain. This should be fixed before releasing it to 1k+ users
-        const { success, txId, error } = await api.relayer.revealRecovery({
-          neighbors: neighbors.map(n => ONEUtil.hexString(n)),
-          index,
-          eotp: ONEUtil.hexString(eotp),
-          address
-        })
-        if (!success) {
-          message.error(`Transaction Failed: ${error}`)
-          setStage(0)
-          return
-        }
-        setStage(3)
-        if (config.networks[network].explorer) {
-          const link = config.networks[network].explorer.replaceAll('{{txId}}', txId)
-          message.success(<Text>Done! View transaction <Link href={link} target='_blank' rel='noreferrer'>{util.ellipsisAddress(txId)}</Link></Text>, 10)
-        } else {
-          message.success(<Text>Recovery is completed! Copy transaction id: <Text copyable={{ text: txId }}>{util.ellipsisAddress(txId)} </Text></Text>, 10)
-        }
-      } catch (ex) {
-        console.trace(ex)
-        if (numAttemptsRemaining <= 0) {
-          message.error('Failed to finalize recovery. Please try again later.')
-          setStage(0)
-          return
-        }
-        message.error(`Failed to finalize recovery. Trying ${numAttemptsRemaining} more time`)
-        numAttemptsRemaining -= 1
-        tryReveal()
-      }
-    }, 5000)
-    tryReveal()
   }
 
+  const doSetRecoveryAddress = async () => {
+    const { otp, otp2, invalidOtp2, invalidOtp, dest } = prepareValidation({ checkAmount: false }) || {}
+    if (invalidOtp || !dest || invalidOtp2) return
+
+    SmartFlows.commitReveal({
+      wallet,
+      otp,
+      otp2,
+      commitHashGenerator: ONE.computeSetRecoveryAddressHash,
+      commitHashArgs: { address: dest },
+      beforeCommit: () => setStage(1),
+      afterCommit: () => setStage(2),
+      onCommitError,
+      onCommitFailure,
+      revealAPI: api.relayer.revealSetRecoveryAddress,
+      revealArgs: { lastResortAddress: dest },
+      onRevealFailure,
+      onRevealError,
+      onRevealAttemptFailed,
+      onRevealSuccess: (txId) => {
+        onRevealSuccess(txId)
+        message.success(`Recovery address is set to ${transferTo}`)
+        dispatch(walletActions.fetchWallet({ address }))
+        showStats()
+      }
+    })
+  }
+
+  const { isMobile } = useWindowDimensions()
   // UI Rendering below
   if (!wallet || wallet.network !== network) {
     return <Redirect to={Paths.wallets} />
   }
   const title = (
-    <Space size='large'>
+    <Space size='large' align='baseline'>
       <Title level={2}>{wallet.name}</Title>
-      <Hint copyable>{address}</Hint>
+      <Text>
+        <ExplorerLink copyable={{ text: oneAddress }} href={util.getNetworkExplorerUrl(address, network)}>
+          {isMobile ? util.ellipsisAddress(oneAddress) : oneAddress}
+        </ExplorerLink>
+      </Text>
     </Space>
   )
-  return (
-    <Space size='large' wrap align='start'>
-      <AnimatedSection
-        show={!section}
-        title={title}
-        style={{ minWidth: 480, minHeight: 320 }}
-      >
-        <Row style={{ marginTop: 16 }}>
-          <Col span={12}>
-            <Title level={3} style={{ marginRight: 48 }}>Balance</Title>
-          </Col>
+
+  const AboutWallet = () => !section && (
+    <>
+      <TallRow align='middle'>
+        <Col span={isMobile ? 24 : 12}> <Title level={3}>Created On</Title></Col>
+        <Col> <Text>{new Date(wallet.effectiveTime).toLocaleString()}</Text> </Col>
+      </TallRow>
+      <TallRow align='middle'>
+        <Col span={isMobile ? 24 : 12}> <Title level={3}>Expires In</Title></Col>
+        <Col> <Text>{humanizeDuration(wallet.duration, { units: ['y', 'mo', 'd'], round: true })}</Text> </Col>
+      </TallRow>
+      <TallRow>
+        <Col span={isMobile ? 24 : 12}> <Title level={3}>Daily Limit</Title></Col>
+        <Col>
+          <Space>
+            <Text>{dailyLimitFormatted}</Text>
+            <Text type='secondary'>ONE</Text>
+            <Text>(≈ ${dailyLimitFiatFormatted}</Text>
+            <Text type='secondary'>USD)</Text>
+          </Space>
+        </Col>
+      </TallRow>
+      {wallet.majorVersion &&
+        <TallRow align='middle'>
+          <Col span={isMobile ? 24 : 12}> <Title level={3}>Wallet Version</Title></Col>
           <Col>
-            <Space>
-              <Title level={3}>{formatted}</Title>
-              <Text type='secondary'>ONE</Text>
-            </Space>
+            <Text>{wallet.majorVersion}.{wallet.minorVersion}</Text>
           </Col>
+        </TallRow>}
+      <Row style={{ marginTop: 24 }}>
+        <Popconfirm title='Are you sure？' onConfirm={onDeleteWallet}>
+          <Button type='primary' shape='round' danger size='large' icon={<DeleteOutlined />}>Delete locally</Button>
+        </Popconfirm>
+      </Row>
+    </>
+  )
+  const RecoverWallet = () => {
+    return (
+      <>
+        <TallRow align='middle'>
+          <Col span={isMobile ? 24 : 12}> <Title level={3}>Recovery Address</Title></Col>
+          {lastResortAddress && !util.isEmptyAddress(lastResortAddress) &&
+            <Col>
+              <Space>
+                <Tooltip title={oneLastResort}>
+                  <ExplorerLink copyable={oneLastResort && { text: oneLastResort }} href={util.getNetworkExplorerUrl(address, network)}>
+                    {util.ellipsisAddress(oneLastResort)}
+                  </ExplorerLink>
+                </Tooltip>
+              </Space>
+            </Col>}
+          {!(lastResortAddress && !util.isEmptyAddress(lastResortAddress)) &&
+            <Col>
+              <Button type='primary' size='large' shape='round' onClick={showSetRecoveryAddress}> Set </Button>
+            </Col>}
+        </TallRow>
+        <Row style={{ marginTop: 48 }}>
+          <Button type='primary' size='large' shape='round' onClick={showRecovery} icon={<WarningOutlined />}>Recover funds</Button>
         </Row>
+      </>
+    )
+  }
+  const selectedTokenBech32Address = util.safeOneAddress(selectedToken.contractAddress)
+  const WalletBalance = () => (
+    <>
+      {selectedToken.key !== 'one' &&
+        <Row style={{ marginTop: 16 }}>
+          <Space size='large' align='baseline'>
+            <Title level={3}>{selectedToken.name}</Title>
+            <ExplorerLink style={{ opacity: 0.5 }} copyable={{ text: selectedTokenBech32Address }} href={util.getNetworkExplorerUrl(selectedTokenBech32Address, network)}>
+              {util.ellipsisAddress(selectedTokenBech32Address)}
+            </ExplorerLink>
+          </Space>
+        </Row>}
+      <Row style={{ marginTop: 16 }}>
+        <Col span={isMobile ? 24 : 12}>
+          <Title level={3} style={{ marginRight: 48 }}>Balance</Title>
+        </Col>
+        <Col>
+          <Space>
+            <Title level={3}>{formatted}</Title>
+            <Text type='secondary'>{selectedToken.symbol}</Text>
+          </Space>
+        </Col>
+      </Row>
+      {selectedToken.key === 'one' &&
         <Row>
-          <Col span={12} />
+          <Col span={isMobile ? 24 : 12} />
           <Col>
             <Space>
               <Title level={4}>≈ ${fiatFormatted}</Title>
               <Text type='secondary'>USD</Text>
             </Space>
           </Col>
-        </Row>
-        <Row style={{ marginTop: 16 }}>
-          <Col span={12} />
-          <Col>
-            <Button type='primary' size='large' shape='round' onClick={showTransfer}> Send </Button>
-          </Col>
-        </Row>
-        <TallRow align='middle'>
-          <Col span={12}> <Title level={3}>Created On</Title></Col>
-          <Col> <Text>{new Date(wallet.effectiveTime).toLocaleString()}</Text> </Col>
-        </TallRow>
-        <TallRow align='middle'>
-          <Col span={12}> <Title level={3}>Expires In</Title></Col>
-          <Col> <Text>{humanizeDuration(wallet.duration, { units: ['y', 'mo', 'd'], round: true })}</Text> </Col>
-        </TallRow>
-        <TallRow>
-          <Col span={12}> <Title level={3}>Daily Limit</Title></Col>
-          <Col>
-            <Space>
-              <Text>{dailyLimitFormatted}</Text>
-              <Text type='secondary'>ONE</Text>
-              <Text>(≈ ${dailyLimitFiatFormatted}</Text>
-              <Text type='secondary'>USD)</Text>
-            </Space>
-          </Col>
-        </TallRow>
-        <TallRow align='middle'>
-          <Col span={12}> <Title level={3}>Recovery Address</Title></Col>
-          <Col>
-            <Space>
-              <Tooltip title={lastResortAddress}>
-                <Text copyable={lastResortAddress && { text: lastResortAddress }}>{util.ellipsisAddress(lastResortAddress) || 'Not set'}</Text>
-              </Tooltip>
-            </Space>
-          </Col>
-        </TallRow>
-        <Row style={{ marginTop: 48 }}>
-          <Button type='link' style={{ padding: 0 }} size='large' onClick={showRecovery} icon={<WarningOutlined />}>I lost my Google Authenticator</Button>
-        </Row>
-        <Row style={{ marginTop: 24 }}>
-          <Popconfirm title='Are you sure？' onConfirm={onDeleteWallet}>
-            <Button type='link' style={{ color: 'red', padding: 0 }} size='large' icon={<DeleteOutlined />}>Delete this wallet locally</Button>
-          </Popconfirm>
+        </Row>}
+      <Row style={{ marginTop: 16 }}>
+        <Col span={isMobile ? 24 : 12} />
+        <Col>
+          <Button type='primary' size='large' shape='round' onClick={showTransfer} disabled={!util.isNonZeroBalance(selectedTokenBalance)}> Send </Button>
+        </Col>
+      </Row>
+    </>
+  )
 
-        </Row>
+  const { metadata } = selectedToken
+  const isNFT = util.isNFT(selectedToken)
+  const titleSuffix = isNFT ? 'Collectible' : `${selectedToken.name} (${selectedToken.symbol})`
+
+  return (
+    <>
+      {/* <Space size='large' wrap align='start'> */}
+      <AnimatedSection
+        show={!section}
+        title={title}
+        style={{ minHeight: 320, maxWidth: 720 }}
+        tabList={tabList}
+        activeTabKey={activeTab}
+        onTabChange={key => showTab(key)}
+      >
+        {walletOutdated && <Warning>Your wallet is too outdated. Please create a new wallet and move your friends.</Warning>}
+        {util.isEmptyAddress(wallet.lastResortAddress) && <Warning>You haven't set your recovery address. Please do it as soon as possible.</Warning>}
+
+        {activeTab === 'about' && <AboutWallet />}
+        {activeTab === 'coins' && <WalletBalance />}
+        {activeTab === 'coins' && <ERC20Grid address={address} />}
+        {activeTab === 'nft' && <NFTGrid address={address} />}
+        {activeTab === 'help' && <RecoverWallet />}
+
       </AnimatedSection>
       <AnimatedSection
-        style={{ minWidth: 700 }}
-        show={section === 'transfer'} title={<Title level={2}>Transfer</Title>} extra={[
+        style={{ width: 720 }}
+        show={section === 'transfer'} title={<Title level={2}>Send: {titleSuffix}</Title>} extra={[
           <Button key='close' type='text' icon={<CloseOutlined />} onClick={showStats} />
         ]}
       >
         <Space direction='vertical' size='large'>
-          <Space align='end' size='large'>
+          {isNFT && <Title level={4}>{metadata?.displayName}</Title>}
+          <Space align='baseline' size='large'>
             <Label><Hint>To</Hint></Label>
-            <InputBox margin='auto' width={440} value={transferTo} onChange={({ target: { value } }) => setTransferTo(value)} placeholder='0x...' />
+            <InputBox margin='auto' width={440} value={transferTo} onChange={({ target: { value } }) => setTransferTo(value)} placeholder='one1...' />
           </Space>
-          <Space align='end' size='large'>
+          <Space align='baseline' size='large'>
             <Label><Hint>Amount</Hint></Label>
             <InputBox margin='auto' width={200} value={inputAmount} onChange={({ target: { value } }) => setInputAmount(value)} />
-            <Hint>ONE</Hint>
-            <Button type='secondary' onClick={useMaxAmount}>max</Button>
+            {!isNFT && <Hint>{selectedToken.symbol}</Hint>}
+            <Button type='secondary' shape='round' onClick={useMaxAmount}>max</Button>
           </Space>
-          <Space align='end' size='large'>
-            <Label><Hint /></Label>
-            <Title level={4} style={{ width: 200, textAlign: 'right', marginBottom: 0 }}>≈ ${transferFiatAmountFormatted}</Title>
-            <Hint>USD</Hint>
+          {selectedToken.key === 'one' &&
+            <Space align='end' size='large'>
+              <Label><Hint /></Label>
+              <Title
+                level={4}
+                style={{ width: 200, textAlign: 'right', marginBottom: 0 }}
+              >≈ ${transferFiatAmountFormatted}
+              </Title>
+              <Hint>USD</Hint>
+            </Space>}
+          <Space align='baseline' size='large' style={{ marginTop: 16 }}>
+            <Label><Hint>Code {wallet.doubleOtp ? '1' : ''}</Hint></Label>
+            <OtpBox
+              ref={otpRef}
+              value={otpInput}
+              onChange={setOtpInput}
+            />
+            <Tooltip title={`from your Google Authenticator, i.e. ${wallet.name}`}>
+              <QuestionCircleOutlined />
+            </Tooltip>
           </Space>
-          <Space align='end' size='large'>
-            <Label><Hint>Code</Hint></Label>
-            <InputBox margin='auto' width={96} value={otpInput} onChange={({ target: { value } }) => setOtpInput(value)} />
-            <Hint>(6-digit code from Google Authenticator)</Hint>
-          </Space>
+          {
+            wallet.doubleOtp
+              ? (
+                <Space align='baseline' size='large' style={{ marginTop: 16 }}>
+                  <Label><Hint>Code 2</Hint></Label>
+                  <OtpBox
+                    ref={otp2Ref}
+                    value={otp2Input}
+                    onChange={setOtp2Input}
+                  />
+                  <Tooltip title={`from your Google Authenticator, i.e. ${wallet.name} (2nd)`}>
+                    <QuestionCircleOutlined />
+                  </Tooltip>
+                </Space>
+                )
+              : <></>
+          }
         </Space>
-        <Row justify='end' style={{ marginTop: 48 }}>
-          {stage < 3 && <Button type='primary' size='large' shape='round' disabled={stage > 0} onClick={doSend}>Send</Button>}
-          {stage === 3 && <Button type='secondary' size='large' shape='round' onClick={restart}>Restart</Button>}
+        <Row justify='end' style={{ marginTop: 24 }}>
+          <Space>
+            {stage >= 0 && stage < 3 && <LoadingOutlined />}
+            {stage === 3 && <CheckCircleOutlined />}
+            <Button type='primary' size='large' shape='round' disabled={stage >= 0} onClick={doSend}>Send</Button>
+          </Space>
         </Row>
-        {stage > 0 && (
-          <Row style={{ marginTop: 32 }}>
-            <Steps current={stage}>
-              <Step title='Prepare' description='Preparing transfer signatures and proofs' />
-              <Step title='Commit' description='Submitting transfer signature to blockchain' />
-              <Step title='Finalize' description='Showing proofs to complete transaction' />
-            </Steps>
-          </Row>)}
+        <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
       </AnimatedSection>
       <AnimatedSection
         show={section === 'recover'}
-        style={{ minWidth: 700 }}
+        style={{ width: 720 }}
         title={<Title level={2}>Recover</Title>} extra={[
           <Button key='close' type='text' icon={<CloseOutlined />} onClick={showStats} />
         ]}
@@ -399,31 +623,74 @@ const Show = () => {
         {lastResortAddress &&
           <>
             <Space direction='vertical' size='large'>
-              <Title level={2}>Your money is safe</Title>
+              <Title level={2}>Your funds are safe</Title>
               <Text>Since you already set a recover address, we can send all your remaining funds to that address.</Text>
               <Text>Do you want to proceed?</Text>
             </Space>
             <Row justify='end' style={{ marginTop: 48 }}>
-              <Button type='primary' size='large' shape='round' disabled={stage > 0} onClick={doRecovery}>Sounds good!</Button>
+              <Button type='primary' size='large' shape='round' disabled={stage >= 0} onClick={doRecovery}>Sounds good!</Button>
             </Row>
-            {stage > 0 && (
-              <Row style={{ marginTop: 32 }}>
-                <Steps current={stage}>
-                  <Step title='Prepare' description='Preparing recovery proofs' />
-                  <Step title='Commit' description='Submitting recovery signature to blockchain' />
-                  <Step title='Finalize' description='Showing proofs to complete transaction' />
-                </Steps>
-              </Row>)}
+            <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
           </>}
         {!lastResortAddress &&
           <Space direction='vertical' size='large'>
-            <Title level={2}>Your money is safe</Title>
+            <Title level={2}>Your funds are safe</Title>
             <Text>You did not set a recovery address. We can still set one, using pre-computed proofs stored in your browser</Text>
             <Text>Please go back and check again once you finished.</Text>
           </Space>}
 
       </AnimatedSection>
-    </Space>
+      <AnimatedSection
+        style={{ width: 720 }}
+        show={section === 'setRecoveryAddress'} title={<Title level={2}>Set Recovery Address</Title>} extra={[
+          <Button key='close' type='text' icon={<CloseOutlined />} onClick={showStats} />
+        ]}
+      >
+        <Space direction='vertical' size='large'>
+          <Hint>Note: You can only do this once!</Hint>
+          <Space align='baseline' size='large'>
+            <Label><Hint>Address</Hint></Label>
+            <InputBox margin='auto' width={440} value={transferTo} onChange={({ target: { value } }) => setTransferTo(value)} placeholder='one1...' />
+          </Space>
+          <Space align='baseline' size='large' style={{ marginTop: 16 }}>
+            <Label><Hint>Code {wallet.doubleOtp ? '1' : ''}</Hint></Label>
+            <OtpBox
+              ref={otpRef}
+              value={otpInput}
+              onChange={setOtpInput}
+            />
+            <Tooltip title={`from your Google Authenticator, i.e. ${wallet.name}`}>
+              <QuestionCircleOutlined />
+            </Tooltip>
+          </Space>
+          {
+            wallet.doubleOtp
+              ? (
+                <Space align='baseline' size='large' style={{ marginTop: 16 }}>
+                  <Label><Hint>Code 2</Hint></Label>
+                  <OtpBox
+                    ref={otp2Ref}
+                    value={otp2Input}
+                    onChange={setOtp2Input}
+                  />
+                  <Tooltip title={`from your Google Authenticator, i.e. ${wallet.name} (2nd)`}>
+                    <QuestionCircleOutlined />
+                  </Tooltip>
+                </Space>
+                )
+              : <></>
+          }
+        </Space>
+        <Row justify='end' style={{ marginTop: 24 }}>
+          <Space>
+            {stage >= 0 && stage < 3 && <LoadingOutlined />}
+            <Button type='primary' size='large' shape='round' disabled={stage >= 0} onClick={doSetRecoveryAddress}>Set</Button>
+          </Space>
+        </Row>
+        <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
+      </AnimatedSection>
+    </>
   )
 }
+
 export default Show

@@ -1,4 +1,5 @@
 import './app.less'
+import './init'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import rootSaga from './state/rootSaga'
@@ -7,7 +8,18 @@ import Routes from './routes'
 import { Provider } from 'react-redux'
 import { ConnectedRouter } from 'connected-react-router'
 import * as serviceWorker from './serviceWorker'
+import * as Sentry from '@sentry/react'
+import { Integrations } from '@sentry/tracing'
 import { initAPI, initBlockchain } from './api'
+import config from './config'
+
+if (!config.debug) {
+  Sentry.init({
+    dsn: config.defaults.sentryDsn,
+    integrations: [new Integrations.BrowserTracing()],
+    tracesSampleRate: 1.0
+  })
+}
 
 document.body.ontouchstart = function () {}
 

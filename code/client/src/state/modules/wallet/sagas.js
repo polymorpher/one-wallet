@@ -1,11 +1,11 @@
-import { put, all, call, takeLatest } from 'redux-saga/effects'
+import { put, all, call, takeLatest, takeEvery } from 'redux-saga/effects'
 import walletActions from './actions'
 import api from '../../../api'
 
 function * handleFetchWallet (action) {
   try {
     const { address } = action.payload
-    const { wallet } = yield call(api.blockchain.getWallet, { address })
+    const wallet = yield call(api.blockchain.getWallet, { address })
     yield put(walletActions.fetchWalletSuccess(wallet))
   } catch (err) {
     console.error(err)
@@ -34,10 +34,22 @@ function * handleFetchPrice () {
   }
 }
 
+function * handleFetchTokenBalance (action) {
+  try {
+    const { address, contractAddress, tokenType, tokenId, key } = action.payload
+    const balance = yield call(api.blockchain.tokenBalance, { contractAddress, tokenType, tokenId, address })
+    yield put(walletActions.fetchTokenBalanceSuccess({ address, key, balance: balance.toString() }))
+  } catch (err) {
+    console.error(err)
+    yield put(walletActions.fetchTokenBalanceFailed(new Error('Failed to get wallet balance')))
+  }
+}
+
 function * walletSages () {
   yield all([
-    takeLatest(walletActions.fetchWallet().type, handleFetchWallet),
-    takeLatest(walletActions.fetchBalance().type, handleFetchBalance),
+    takeEvery(walletActions.fetchWallet().type, handleFetchWallet),
+    takeEvery(walletActions.fetchBalance().type, handleFetchBalance),
+    takeEvery(walletActions.fetchTokenBalance().type, handleFetchTokenBalance),
     takeLatest(walletActions.fetchPrice().type, handleFetchPrice),
   ])
 }

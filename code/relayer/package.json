@@ -1,11 +1,11 @@
 {
   "name": "one-wallet-relayer",
-  "version": "0.0.1",
+  "version": "0.2",
   "private": true,
   "main": "app.js",
   "scripts": {
     "start": "node ./bin/run.js",
-    "debug": "CORS=* RELAYER_DEBUG=true node ./bin/run.js"
+    "debug": "RELAYER_DEBUG=true node ./bin/run.js"
   },
   "dependencies": {
     "@harmony-js/core": "^0.1.57",
@@ -19,6 +19,7 @@
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "express-fingerprint": "^1.2.2",
+    "express-rate-limit": "^5.3.0",
     "express-slow-down": "^1.4.0",
     "http-errors": "^1.8.0",
     "http-status-codes": "^2.1.4",

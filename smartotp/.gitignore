@@ -1,0 +1,8 @@
+/bin
+/build
+/app/dist
+/app/node_modules
+/node_modules
+npm-debug.log
+
+.env

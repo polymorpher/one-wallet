@@ -1,50 +1,78 @@
-const fastSHA256 = require('fast-sha256')
-const base32 = require('hi-base32')
+const { sha256: fastSHA256, sha256b, processOtpSeed, DEPRECATED } = require('./util')
 // eslint-disable-next-line no-unused-vars
 const { hexView, genOTP, hexStringToBytes, keccak, bytesEqual } = require('./util')
 const BN = require('bn.js')
+const AES = require('aes-js')
 
-const computeMerkleTree = ({ otpSeed, effectiveTime = Date.now(), duration = 3600 * 1000 * 24 * 365, progressObserver, otpInterval = 30000, maxOperationsPerInterval = 1 }) => {
+const computeMerkleTree = async ({
+  otpSeed,
+  otpSeed2, // can be null
+  effectiveTime = Date.now(),
+  duration = 3600 * 1000 * 24 * 365,
+  progressObserver = () => {}, otpInterval = 30000,
+  maxOperationsPerInterval = 1,
+  randomness = 0, // number of bits for Controlled Randomness. 17 bits is recommended for the best balance between user experience and security. It maps to 2^17 = 131072 possibilities.
+  hasher = sha256b // must be a batch hasher
+
+}) => {
   maxOperationsPerInterval = 2 ** Math.ceil(Math.log2(maxOperationsPerInterval))
   maxOperationsPerInterval = Math.min(16, maxOperationsPerInterval)
   const height = Math.ceil(Math.log2(duration / otpInterval * maxOperationsPerInterval)) + 1
   const n = Math.pow(2, height - 1)
   const reportInterval = Math.floor(n / 100)
   const counter = Math.floor(effectiveTime / otpInterval)
-  let seed = otpSeed
-  if (seed.constructor.name !== 'Uint8Array') {
-    if (typeof seed !== 'string') {
-      throw new Error('otpSeed must be either string (Base32 encoded) or Uint8Array')
-    }
-    const bn = base32.decode.asBytes(seed)
-    seed = new Uint8Array(bn)
-  }
-  seed = seed.slice(0, 20)
+  const seed = processOtpSeed(otpSeed)
+  const seed2 = otpSeed2 && processOtpSeed(otpSeed2)
   // console.log('Generating Wallet with parameters', { seed, height, otpInterval, effectiveTime })
-  const otps = genOTP({ seed, counter, n, progressObserver })
-  // 4 bytes for OTP, 2 bytes for nonce, 26 bytes for seed hash
-  const hseed = fastSHA256(seed).slice(0, 26)
-  const leaves = new Uint8Array(n * 32)
-  const buffer = new Uint8Array(32)
+  const buildProgressObserver = (max, stage, offset) => (i, n) => (i + (offset || 0)) % reportInterval === 0 && progressObserver(i + (offset || 0), max || n, stage || 0)
+  const otps = genOTP({ seed, counter, n, progressObserver: buildProgressObserver(seed2 ? n * 2 : n, 0, 0) })
+  const otps2 = seed2 && genOTP({ seed: seed2, counter, n, progressObserver: buildProgressObserver(n * 2, 0, n) })
+  // legacy mode: no randomness, no seed2: 26 bytes for seed hash, 2 bytes for nonce, 4 bytes for OTP
+  // single otp mode: 22 bytes for seed hash, 2 bytes for nonce, 4 bytes for OTP, 4 bytes for randomness
+  // double otp mode: 18 bytes for seed hash, 2 bytes for nonce, 4 bytes for OTP, 4 bytes for second OTP, 4 bytes for randomness
+  const hseedLength = otpSeed2 ? 18 : (randomness > 0 ? 22 : 26)
+  const hseed = new Uint8Array(hseedLength)
+  if (seed2) {
+    hseed.set(fastSHA256(seed).slice(0, hseedLength / 2))
+    hseed.set(fastSHA256(seed2).slice(0, hseedLength / 2), hseedLength / 2)
+  } else {
+    hseed.set(fastSHA256(seed).slice(0, hseedLength))
+  }
+  let aes; let aesInput; let rbuffer; let rview; let randomnessResults = []
+  if (randomness > 0) {
+    // eslint-disable-next-line new-cap
+    aes = new AES.ModeOfOperation.ctr(seed.slice(0, 16))
+    aesInput = new Uint8Array(new Uint32Array([counter]).buffer)
+    rbuffer = new Uint8Array(4)
+    rview = new DataView(rbuffer.buffer)
+  }
+
+  const input = new Uint8Array(n * 32)
   const nonceBuffer = new Uint16Array(1)
-  const layers = []
-  // TODO: parallelize this
   for (let i = 0; i < n * maxOperationsPerInterval; i++) {
+    const offset = i * 32
+    input.set(hseed, offset)
     const nonce = i % maxOperationsPerInterval
     nonceBuffer[0] = nonce
-    buffer.set(hseed)
-    buffer.set(nonceBuffer, hseed.length)
+    input.set(nonceBuffer, offset + hseedLength)
     const otp = otps.subarray(i * 4, i * 4 + 4)
-    buffer.set(otp, hseed.length + 2)
-    const h = fastSHA256(buffer)
-    const hh = fastSHA256(h)
-    leaves.set(hh, i * 32)
-    if (progressObserver) {
-      if (i % reportInterval === 0) {
-        progressObserver(i, n, 1)
-      }
+    input.set(otp, offset + hseedLength + 2)
+    if (otps2) {
+      const otp2 = otps2.subarray(i * 4, i * 4 + 4)
+      input.set(otp2, offset + hseedLength + 6)
+    }
+    if (randomness > 0) {
+      const r = aes.encrypt(aesInput)
+      const z = (r[0] << 24 | r[1] << 16 | r[2] << 8 | r[3]) >>> (32 - randomness)
+      randomnessResults.push(z)
+      rview.setUint32(0, z, false)
+      input.set(rbuffer, offset + 28)
     }
   }
+  // TODO: parallelize this
+  const eotps = await hasher(input, { progressObserver: buildProgressObserver(n * maxOperationsPerInterval * 2, 1) })
+  const leaves = await sha256b(eotps, { progressObserver: buildProgressObserver(n * maxOperationsPerInterval * 2, 1, n * maxOperationsPerInterval) })
+  const layers = []
   layers.push(leaves)
   for (let j = 1; j < height; j += 1) {
     const layer = new Uint8Array(n / (2 ** j) * 32)
@@ -63,10 +91,14 @@ const computeMerkleTree = ({ otpSeed, effectiveTime = Date.now(), duration = 360
   }
   // console.log(`root: 0x${hexView(root)} tree height: ${layers.length}; leaves length: ${leaves.length}`)
   return {
-    seed,
+    seed, // discard
+    seed2, // discard
+    randomnessResults, // discard
     hseed,
-    leaves, // =layers[0]
-    root, // =layers[height - 1]
+    doubleOtp: !!(seed2),
+    counter, // base time
+    leaves, // = layers[0]
+    root, // = layers[height - 1]
     layers,
     maxOperationsPerInterval,
   }
@@ -96,40 +128,7 @@ const selectMerkleNeighbors = ({
   return r
 }
 
-// neighbor, uint8array, 32
-// index, int, must be with nonce
-// eotp, uint8array, 32 (hash of eotp = neighbors' neighbor)
-// dest, hex string
-// amount, BN or number-string
-const computeTransferHash = ({ neighbor, index, eotp, dest, amount }) => {
-  const destBytes = hexStringToBytes(dest, 32)
-  const amountBytes = new BN(amount, 10).toArrayLike(Uint8Array, 'be', 32)
-  const indexBytes = new BN(index, 10).toArrayLike(Uint8Array, 'be', 4)
-  const input = new Uint8Array(160)
-  input.set(neighbor)
-  input.set(indexBytes, 32)
-  input.set(eotp, 64)
-  input.set(destBytes, 96)
-  input.set(amountBytes, 128)
-  return { hash: keccak(input), bytes: input }
-}
-
-// otp, uint8array, 4
-// hseed, uint8array, 26, sha256 hash of the otp seed
-// nonce, positive integer (within 15-bit)
-const computeEOTP = ({ otp, hseed, nonce = 0 }) => {
-  const buffer = new Uint8Array(32)
-  const nb = new Uint16Array([nonce])
-  buffer.set(hseed.slice(0, 26))
-  buffer.set(nb, 26)
-  buffer.set(otp, 28)
-  return fastSHA256(buffer)
-}
-
-// neighbor, uint8array, 32
-// index, int, must be with nonce
-// eotp, uint8array, 32 (hash of eotp = neighbors' neighbor)
-const computeRecoveryHash = ({ neighbor, index, eotp }) => {
+const computeCommitHash = ({ neighbor, index, eotp }) => {
   const indexBytes = new BN(index, 10).toArrayLike(Uint8Array, 'be', 4)
   const input = new Uint8Array(96)
   input.set(neighbor)
@@ -138,7 +137,66 @@ const computeRecoveryHash = ({ neighbor, index, eotp }) => {
   return { hash: keccak(input), bytes: input }
 }
 
+// dest, hex string
+// amount, BN or number-string
+const computeTransferHash = ({ dest, amount }) => {
+  const destBytes = hexStringToBytes(dest, 32)
+  const amountBytes = new BN(amount, 10).toArrayLike(Uint8Array, 'be', 32)
+  const input = new Uint8Array(64)
+  input.set(destBytes)
+  input.set(amountBytes, 32)
+  return { hash: keccak(input), bytes: input }
+}
+
+// address, hex string
+const computeSetRecoveryAddressHash = ({ address }) => {
+  const addressBytes = hexStringToBytes(address, 32)
+  const input = new Uint8Array(32)
+  input.set(addressBytes)
+  return { hash: keccak(input), bytes: input }
+}
+
+// otp, uint8array[4]
+// otp2, uint8array[4], optional
+// rand, integer, optional
+// hseed, uint8array, 26, sha256 hash of the otp seed
+// nonce, positive integer (within 15-bit)
+const computeEOTP = async ({ otp, otp2, rand = null, hseed, nonce = 0, hasher = sha256b }) => {
+  const buffer = new Uint8Array(32)
+  const nb = new Uint16Array([nonce])
+  buffer.set(hseed)
+  buffer.set(nb, hseed.length)
+  buffer.set(otp, hseed.length + 2)
+  if (otp2) {
+    buffer.set(otp2, hseed.length + 6)
+  }
+  if (rand !== null) {
+    const rb = new Uint8Array(4)
+    const rv = new DataView(rb.buffer)
+    rv.setUint32(0, rand, false)
+    buffer.set(rb, 28)
+  }
+  return hasher(buffer)
+}
+
+const computeRecoveryHash = ({ randomSeed, hseed }) => {
+  randomSeed = randomSeed || new Uint8Array(new BigUint64Array([0n, BigInt(Date.now())]).buffer)
+  hseed = hseed || new Uint8Array(32)
+  // eslint-disable-next-line new-cap
+  const aes = new AES.ModeOfOperation.ctr(randomSeed)
+  const bytes = aes.encrypt(hseed)
+  return { hash: keccak(bytes), bytes }
+}
+
+/**
+ * DEPRECATED: This is DEPRECATED as Client Security is already implemented. https://github.com/polymorpher/one-wallet/wiki/Client-Security
+ * @param hseed
+ * @param nonce
+ * @param leaf
+ * @returns {{eotp: Uint8Array, otp: number}|{}}
+ */
 const bruteforceEOTP = ({ hseed, nonce = 0, leaf }) => {
+  // DEPRECATED()
   const nonceBuffer = new Uint16Array([nonce])
   const buffer = new Uint8Array(32)
   const otpBuffer = new DataView(new ArrayBuffer(4))
@@ -156,11 +214,93 @@ const bruteforceEOTP = ({ hseed, nonce = 0, leaf }) => {
   return { }
 }
 
+const recoverRandomness = async ({ hseed, otp, otp2, nonce = 0, leaf, randomness = 17, hasher = sha256b }) => {
+  // console.log({ hseed, otp, otp2, nonce , leaf, randomness, hasher })
+  const nonceBuffer = new Uint16Array([nonce])
+  const ub = 2 ** randomness
+  const buffer = new Uint8Array(ub * 32)
+  const rb = new Uint8Array(4)
+  const rv = new DataView(rb.buffer)
+  for (let i = 0; i < ub; i++) {
+    const offset = i * 32
+    buffer.set(hseed, offset)
+    buffer.set(nonceBuffer, offset + hseed.length)
+    buffer.set(otp, offset + hseed.length + 2)
+    if (otp2) {
+      buffer.set(otp2, offset + hseed.length + 6)
+    }
+    rv.setUint32(0, i, false)
+    buffer.set(rb, offset + 28)
+  }
+  const eotps = await hasher(buffer)
+  const output = await sha256b(eotps)
+  for (let i = 0; i < ub; i++) {
+    const b = output.subarray(i * 32, i * 32 + 32)
+    if (bytesEqual(b, leaf)) {
+      return i
+    }
+  }
+  return null
+}
+
+const computeTokenKey = ({ tokenType, contractAddress, tokenId }) => {
+  const buf = new Uint8Array(96)
+  const s1 = new BN(tokenType, 10).toArrayLike(Uint8Array, 'be', 32)
+  const s2 = hexStringToBytes(contractAddress, 32)
+  const s3 = new BN(tokenId, 10).toArrayLike(Uint8Array, 'be', 32)
+  buf.set(s1)
+  buf.set(s2, 32)
+  buf.set(s3, 64)
+  return { hash: keccak(buf), bytes: buf }
+}
+
+//   bytes32(uint256(operationType)),
+//   bytes32(uint256(tokenType)),
+//   bytes32(bytes20(contractAddress)),
+//   bytes32(tokenId),
+//   bytes32(bytes20(dest)),
+//   bytes32(amount),
+//   data
+const computeTokenOperationHash = ({ operationType, tokenType, contractAddress, tokenId, dest, amount, data = new Uint8Array() }) => {
+  const operationTypeBytes = new BN(operationType, 10).toArrayLike(Uint8Array, 'be', 32)
+  const tokenTypeBytes = new BN(tokenType, 10).toArrayLike(Uint8Array, 'be', 32)
+  const contractAddressBytes = hexStringToBytes(contractAddress, 32)
+  const tokenIdBytes = new BN(tokenId, 10).toArrayLike(Uint8Array, 'be', 32)
+  const destBytes = hexStringToBytes(dest, 32)
+  const amountBytes = new BN(amount, 10).toArrayLike(Uint8Array, 'be', 32)
+  const input = new Uint8Array(192 + data.length)
+  input.set(operationTypeBytes)
+  input.set(tokenTypeBytes, 32)
+  input.set(contractAddressBytes, 64)
+  input.set(tokenIdBytes, 96)
+  input.set(destBytes, 128)
+  input.set(amountBytes, 160)
+  if (data.length > 0) {
+    input.set(data, 192)
+  }
+  return { hash: keccak(input), bytes: input }
+}
+
+// address, hex string
+const computeVerificationHash = ({ paramsHash, eotp }) => {
+  const input = new Uint8Array(64)
+  input.set(paramsHash)
+  input.set(eotp, 32)
+  return { hash: keccak(input), bytes: input }
+}
+
 module.exports = {
+  computeCommitHash,
   computeMerkleTree,
   computeTransferHash,
   computeRecoveryHash,
+  computeSetRecoveryAddressHash,
   selectMerkleNeighbors,
   computeEOTP,
-  bruteforceEOTP
+  bruteforceEOTP,
+  computeTokenKey,
+  computeTokenOperationHash,
+  computeVerificationHash,
+
+  recoverRandomness
 }

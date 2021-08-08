@@ -1,23 +1,31 @@
 {
   "name": "one-wallet-core",
-  "version": "0.0.1",
+  "version": "0.2.1",
   "private": true,
   "license": "Apache-2.0",
   "scripts": {
-    "test": "truffle test --network=dev",
+    "test": "VERBOSE=1 truffle test --network=dev --compile-none",
     "migrate": "truffle migrate --network=dev",
     "lint": "eslint ./lib ./migrations ./test",
-    "lint-fix": "eslint ./lib ./migrations ./test --fix"
+    "lint-fix": "eslint ./lib ./migrations ./test --fix",
+    "console": "node --experimental-repl-await"
   },
   "dependencies": {
+    "@harmony-js/account": "^0.1.57",
+    "@openzeppelin/contracts": "^4.2.0",
     "@truffle/hdwallet-provider": "^1.4.0",
+    "aes-js": "^3.1.2",
+    "argon2-browser": "git+https://github.com/polymorpher/argon2-browser#1.21.0-hpc",
+    "axios": "^0.21.1",
     "dotenv": "^10.0.0",
     "ethjs-unit": "^0.1.6",
     "fast-sha256": "^1.3.0",
     "hi-base32": "^0.5.1",
     "jssha": "^3.2.0",
     "keccak": "^3.0.1",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "truffle-contract-size": "^2.0.1",
+    "web3": "^1.4.0"
   },
   "devDependencies": {
     "@babel/core": "^7.14.2",
@@ -38,6 +46,7 @@
     "@babel/preset-env": "^7.14.2",
     "@harmony-js/core": "^0.1.57",
     "@harmony-js/crypto": "^0.1.56",
+    "@truffle/contract": "^4.3.23",
     "assert": "^1.5.0",
     "babel-jest": "24.9.0",
     "babel-loader": "8.0.6",

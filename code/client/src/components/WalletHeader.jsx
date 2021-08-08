@@ -6,9 +6,9 @@ import { useRouteMatch, useHistory } from 'react-router'
 import { titleCase } from 'title-case'
 import { useSelector, useDispatch } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
-import { SearchOutlined, LockOutlined } from '@ant-design/icons'
+import { SearchOutlined, LockOutlined, CloseOutlined, SettingOutlined } from '@ant-design/icons'
 import config from '../config'
-import util from '../util'
+import util, { useWindowDimensions } from '../util'
 import { Hint } from '../components/Text'
 // import Paths from '../constants/paths'
 const { Text, Link } = Typography
@@ -84,24 +84,32 @@ const SecretSettings = ({ visible, onClose }) => {
 }
 
 const WalletHeader = () => {
+  const { isMobile } = useWindowDimensions()
   const history = useHistory()
   const match = useRouteMatch('/:action/:address?')
-  const { action, address } = match ? match.params : {}
-  const shortAddress = util.ellipsisAddress(address)
+  const { action, address: routeAddress } = match ? match.params : {}
+  const oneAddress = routeAddress && util.safeOneAddress(routeAddress) || ''
+  const address = routeAddress && util.safeNormalizedAddress(routeAddress) || ''
+  const shortAddress = util.ellipsisAddress(oneAddress)
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
   const subtitle = wallet.name ? `${wallet.name} (${shortAddress})` : shortAddress
   const [settingsVisible, setSettingsVisible] = useState(false)
+  const [relayerEditVisible, setRelayerEditVisible] = useState(false)
   return (
     <PageHeader
       style={{ background: '#ffffff' }}
       onBack={action && (() => history.goBack())}
-      title={titleCase(action || '')}
-      subTitle={<Hint>{subtitle}</Hint>}
+      title={!isMobile && titleCase(action || '')}
+      subTitle={!isMobile && <Hint>{subtitle}</Hint>}
       extra={[
-        <Button key='lock' shape='circle' icon={<LockOutlined />} onClick={() => setSettingsVisible(true)} />,
-        <RelayerSelector key='relayer' />,
-        <Divider key='divider' type='vertical' />,
+        <Button key='toggle' shape='circle' icon={relayerEditVisible ? <CloseOutlined /> : <SettingOutlined />} onClick={() => setRelayerEditVisible(!relayerEditVisible)} />,
+        relayerEditVisible &&
+          <Space size='small' key='relayer'>
+            <Button shape='circle' icon={<LockOutlined />} onClick={() => setSettingsVisible(true)} />
+            <RelayerSelector />
+            <Divider type='vertical' />
+          </Space>,
         <NetworkSelector key='network' />,
         <SecretSettings key='settings' visible={settingsVisible} onClose={() => setSettingsVisible(false)} />
       ]}
