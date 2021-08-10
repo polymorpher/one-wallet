@@ -3,7 +3,8 @@ const ONEUtil = require('../../../lib/util')
 
 async function recoverRandomness ({ randomness, hseed, otp, otp2, nonce, leaf, hasher }) {
   const encodedOtp = ONEUtil.encodeNumericalOtp(otp)
-  const encodedOtp2 = otp2 !== undefined ? ONEUtil.encodeNumericalOtp(otp2) : undefined
+  const encodedOtp2 = (otp2 !== undefined && otp2 !== null) ? ONEUtil.encodeNumericalOtp(otp2) : undefined
+  console.log('worker', { otp, otp2, encodedOtp, encodedOtp2 })
   try {
     const rand = await ONE.recoverRandomness({
       randomness,

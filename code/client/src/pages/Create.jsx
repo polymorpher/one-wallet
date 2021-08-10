@@ -131,7 +131,7 @@ const Create = () => {
       setEffectiveTime(t)
       worker && worker.postMessage({
         seed,
-        seed2,
+        seed2: doubleOtp && seed2,
         effectiveTime: t,
         duration,
         slotSize,
