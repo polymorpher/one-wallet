@@ -539,7 +539,10 @@ const Show = () => {
       >
         {walletOutdated && <Warning>Your wallet is too outdated. Please create a new wallet and move your friends.</Warning>}
         {util.isEmptyAddress(wallet.lastResortAddress) && <Warning>You haven't set your recovery address. Please do it as soon as possible.</Warning>}
-        {ONEUtil.getVersion(wallet) === '8.0' && <Warning>DO NOT use this version of the wallet. Funds may be unspendable and unrecoverable. Please create a new wallet. Learn more at <Link href='https://github.com/polymorpher/one-wallet/issues/72' target='_blank' rel='noreferrer' /> </Warning>}
+        {ONEUtil.getVersion(wallet) === '8.0' &&
+          <Warning>
+            DO NOT use this version of the wallet. Funds may be unspendable and unrecoverable. Please create a new wallet. Learn more at <Link href='https://github.com/polymorpher/one-wallet/issues/72' target='_blank' rel='noreferrer'>https://github.com/polymorpher/one-wallet/issues/72</Link>
+          </Warning>}
 
         {activeTab === 'about' && <AboutWallet />}
         {activeTab === 'coins' && <WalletBalance />}
