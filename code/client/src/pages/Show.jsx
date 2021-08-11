@@ -163,7 +163,8 @@ const Show = () => {
   const {
     balance: transferAmount,
     fiatFormatted: transferFiatAmountFormatted
-  } = util.toBalance(inputAmount || 0, price)
+  } = util.toBalance(inputAmount || 0, price, selectedTokenDecimals)
+  // console.log(transferAmount.toString(), selectedTokenDecimals)
 
   const useMaxAmount = () => {
     if (util.isNFT(selectedToken)) {

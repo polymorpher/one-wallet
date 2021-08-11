@@ -169,7 +169,7 @@ export const ERC20Grid = ({ address }) => {
             const { icon, name, symbol, key, decimals } = tt
             const balance = !isUndefined(tokenBalances[key]) && !isNull(tokenBalances[key]) && tokenBalances[key]
             const { formatted } = balance && util.computeBalance(balance, 0, decimals)
-            console.log({ icon, name, symbol, key, decimals, formatted, balance })
+            // console.log({ icon, name, symbol, key, decimals, formatted, balance })
             const displayBalance = balance ? formatted : 'fetching...'
 
             return (

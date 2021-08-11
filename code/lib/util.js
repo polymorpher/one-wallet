@@ -135,8 +135,8 @@ const utils = {
   toFraction: (ones, unit, decimals) => {
     const v = Conversion.toWei(ones, unit || 'ether')
     const diff = STANDARD_DECIMAL - (decimals || STANDARD_DECIMAL)
-    const multiplier = new BN(10).pow(new BN(diff))
-    return v.mul(multiplier)
+    const denominator = new BN(10).pow(new BN(diff))
+    return v.div(denominator)
   },
 
   toOne: (fractions, unit, decimals) => {

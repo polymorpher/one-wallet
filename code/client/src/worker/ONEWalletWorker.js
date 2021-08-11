@@ -4,7 +4,7 @@ const ONEUtil = require('../../../lib/util')
 async function recoverRandomness ({ randomness, hseed, otp, otp2, nonce, leaf, hasher }) {
   const encodedOtp = ONEUtil.encodeNumericalOtp(otp)
   const encodedOtp2 = (otp2 !== undefined && otp2 !== null) ? ONEUtil.encodeNumericalOtp(otp2) : undefined
-  console.log('worker', { otp, otp2, encodedOtp, encodedOtp2 })
+  // console.log('worker', { otp, otp2, encodedOtp, encodedOtp2 })
   try {
     const rand = await ONE.recoverRandomness({
       randomness,
@@ -33,7 +33,7 @@ onmessage = async function (event) {
     // console.log('worker: received event but it has no valid data', event)
     return
   }
-  console.log('worker: generating wallet:', event.data)
+  // console.log('worker: generating wallet:', event.data)
 
   const {
     hseed,
