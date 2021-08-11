@@ -135,23 +135,16 @@ const utils = {
   toFraction: (ones, unit, decimals) => {
     const v = Conversion.toWei(ones, unit || 'ether')
     const diff = STANDARD_DECIMAL - (decimals || STANDARD_DECIMAL)
-    if (diff === 0) {
-      return v
-    } else if (diff > 0) {
-      return v.div(new BN(10).pow(new BN(diff)))
-    } else {
-      return v.mul(new BN(10).pow(new BN(-diff)))
-    }
+    const multiplier = new BN(10).pow(new BN(diff))
+    return v.mul(multiplier)
   },
 
   toOne: (fractions, unit, decimals) => {
-    const v = Conversion.fromWei(fractions, unit || 'ether')
     const diff = STANDARD_DECIMAL - (decimals || STANDARD_DECIMAL)
-    if (diff > 0) {
-      return v + '0'.repeat(diff)
-    } else {
-      return v.slice(0, v.length + diff)
-    }
+    const multiplier = new BN(10).pow(new BN(diff))
+    const bfractions = new BN(fractions).mul(multiplier)
+    const v = Conversion.fromWei(bfractions, unit || 'ether')
+    return v
   },
 
   argon2: async (input, { salt = new Uint8Array(8), progressObserver, batchSize = 32 } = {}) => {

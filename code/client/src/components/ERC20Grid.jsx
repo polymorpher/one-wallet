@@ -76,9 +76,10 @@ export const ERC20Grid = ({ address }) => {
         //   return
         // }
         try {
-          const { name, symbol } = await api.blockchain.getTokenMetadata(tt)
+          const { name, symbol, decimals } = await api.blockchain.getTokenMetadata(tt)
           tt.name = name
           tt.symbol = symbol
+          tt.decimals = decimals
         } catch (ex) {
           console.error(ex)
         }
@@ -128,9 +129,10 @@ export const ERC20Grid = ({ address }) => {
         dispatch(walletActions.fetchTokenBalance({ address, ...tt, key }))
         tt.key = key
         try {
-          const { name, symbol } = await api.blockchain.getTokenMetadata(tt)
+          const { name, symbol, decimals } = await api.blockchain.getTokenMetadata(tt)
           tt.name = name
           tt.symbol = symbol
+          tt.decimals = decimals
         } catch (ex) {
           console.error(ex)
         }
@@ -164,9 +166,10 @@ export const ERC20Grid = ({ address }) => {
             selected={selected.key === 'one'} onSelected={onSelect('one')}
           />
           {currentTrackedTokens.map(tt => {
-            const { icon, name, symbol, key } = tt
+            const { icon, name, symbol, key, decimals } = tt
             const balance = !isUndefined(tokenBalances[key]) && !isNull(tokenBalances[key]) && tokenBalances[key]
-            const { formatted } = balance && util.computeBalance(balance)
+            const { formatted } = balance && util.computeBalance(balance, 0, decimals)
+            console.log({ icon, name, symbol, key, decimals, formatted, balance })
             const displayBalance = balance ? formatted : 'fetching...'
 
             return (

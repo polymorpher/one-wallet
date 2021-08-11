@@ -27,6 +27,31 @@ contract TestERC20 is ERC20 {
     }
 }
 
+contract TestERC20Decimals9 is ERC20 {
+    string constant NAME = "Test20_D9";
+    string constant SYMBOL = "T20D9";
+    address admin;
+    constructor(uint256 _amount)
+    ERC20(NAME, SYMBOL) {
+        admin = msg.sender;
+        _mint(msg.sender, _amount);
+    }
+    modifier isAdmin(){
+        require(msg.sender == admin, "Only admin can do this");
+        _;
+    }
+    function mint(address dest, uint256 amount) public isAdmin() {
+        ERC20._mint(dest, amount);
+    }
+
+    function burn(address dest, uint256 amount) public isAdmin() {
+        ERC20._burn(dest, amount);
+    }
+    function decimals() public pure override returns (uint8) {
+        return 9;
+    }
+}
+
 contract TestERC721 is ERC721 {
     string constant NAME = "Test721";
     string constant SYMBOL = "T721";

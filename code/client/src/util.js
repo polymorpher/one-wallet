@@ -47,7 +47,7 @@ export default {
       return { balance: 0, formatted: '0', fiat: 0, fiatFormatted: '0', valid: false }
     }
     const f = parseFloat(formatted)
-    const balance = ONEUtil.toFraction(f, decimals)
+    const balance = ONEUtil.toFraction(f, null, decimals)
     const fiat = f * (price || 0)
     const fiatFormatted = exports.default.formatNumber(fiat)
     return { balance, formatted, fiat, fiatFormatted, valid: true }
@@ -57,7 +57,7 @@ export default {
     if (!exports.default.validBalance(balance)) {
       return { balance: 0, formatted: '0', fiat: 0, fiatFormatted: '0', valid: false }
     }
-    const ones = ONEUtil.toOne(balance || 0, decimals)
+    const ones = ONEUtil.toOne(balance || 0, null, decimals)
     const formatted = exports.default.formatNumber(ones)
     const fiat = (price || 0) * parseFloat(ones)
     const fiatFormatted = exports.default.formatNumber(fiat)

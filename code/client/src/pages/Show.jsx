@@ -99,8 +99,9 @@ const Show = () => {
   const tokenBalances = wallet.tokenBalances || []
   const selectedToken = wallet?.selectedToken || HarmonyONE
   const selectedTokenBalance = selectedToken.key === 'one' ? (balances[address] || 0) : (tokenBalances[selectedToken.key] || 0)
+  const selectedTokenDecimals = selectedToken.decimals
 
-  const { formatted, fiatFormatted } = util.computeBalance(selectedTokenBalance, price)
+  const { formatted, fiatFormatted } = util.computeBalance(selectedTokenBalance, price, selectedTokenDecimals)
   const { dailyLimit, lastResortAddress } = wallet
   const oneLastResort = lastResortAddress && getAddress(lastResortAddress).bech32
   const { formatted: dailyLimitFormatted, fiatFormatted: dailyLimitFiatFormatted } = util.computeBalance(dailyLimit, price)
@@ -539,7 +540,7 @@ const Show = () => {
       >
         {walletOutdated && <Warning>Your wallet is too outdated. Please create a new wallet and move your friends.</Warning>}
         {util.isEmptyAddress(wallet.lastResortAddress) && <Warning>You haven't set your recovery address. Please do it as soon as possible.</Warning>}
-        {ONEUtil.getVersion(wallet) === '8.0' &&
+        {ONEUtil.getVersion(wallet) === '8.0' && !wallet.doubleOtp &&
           <Warning>
             DO NOT use this version of the wallet. Funds may be unspendable and unrecoverable. Please create a new wallet. Learn more at <Link href='https://github.com/polymorpher/one-wallet/issues/72' target='_blank' rel='noreferrer'>https://github.com/polymorpher/one-wallet/issues/72</Link>
           </Warning>}

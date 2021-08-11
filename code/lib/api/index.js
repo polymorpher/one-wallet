@@ -294,15 +294,15 @@ const api = {
         throw new Error(`Unknown token type: ${tokenType}`)
       }
       const c = await tokenMetadata[ct.toLowerCase()].at(contractAddress)
-      let name, symbol, uri
+      let name, symbol, uri, decimals
       if (tokenType === ONEConstants.TokenType.ERC20) {
-        [name, symbol] = await Promise.all([c.name(), c.symbol()])
+        [name, symbol, decimals] = await Promise.all([c.name(), c.symbol(), c.decimals()])
       } else if (tokenType === ONEConstants.TokenType.ERC721) {
         [name, symbol, uri] = await Promise.all([c.name(), c.symbol(), c.tokenURI(tokenId)])
       } else if (tokenType === ONEConstants.TokenType.ERC1155) {
         uri = await c.uri(tokenId)
       }
-      return { name, symbol, uri }
+      return { name, symbol, uri, decimals: decimals.toNumber() }
     }
   },
   relayer: {
