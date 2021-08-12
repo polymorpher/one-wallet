@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router'
 import Paths from '../constants/paths'
 import api from '../api'
-import config from '../config'
 import ONEUtil from '../../../lib/util'
 import ONEConstants from '../../../lib/constants'
 import ONENames from '../../../lib/names'
@@ -45,7 +44,7 @@ const { Text, Link } = Typography
 // })
 
 const genName = (existingNames) => {
-  const name = ONENames.randomWord()
+  const name = `${ONENames.randomWord()} ${ONENames.randomWord()} ${ONENames.randomWord()}`
   if (existingNames && existingNames.includes(name)) {
     return genName()
   }

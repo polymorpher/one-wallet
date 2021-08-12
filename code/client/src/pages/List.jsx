@@ -10,6 +10,12 @@ import BN from 'bn.js'
 import { getAddress } from '@harmony-js/crypto'
 const { Text, Title } = Typography
 
+const walletShortName = (fullName) => {
+  const walletNameParts = fullName.split(' ')
+
+  return walletNameParts.length > 1 ? `${walletNameParts[0]}...` : fullName
+}
+
 const WalletCard = ({ wallet }) => {
   const { isMobile } = useWindowDimensions()
   const history = useHistory()
@@ -30,7 +36,7 @@ const WalletCard = ({ wallet }) => {
   return (
     <Card
       onClick={() => history.push(Paths.showAddress(oneAddress))}
-      title={<Title level={2}>{name}</Title>}
+      title={<Title level={2}>{walletShortName(name)}</Title>}
       hoverable style={{ borderRadius: 20, minWidth: 200, width: (isMobile ? '100%' : 360), height: 196 }}
       extra={<Space style={{ alignItems: 'baseline' }}><Title level={3} style={{ marginBottom: 0 }}>{formatted}</Title><Text type='secondary'>ONE</Text></Space>}
     >

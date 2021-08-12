@@ -415,7 +415,7 @@ const Show = () => {
       <Title level={2}>{wallet.name}</Title>
       <Text>
         <ExplorerLink copyable={{ text: oneAddress }} href={util.getNetworkExplorerUrl(address, network)}>
-          {isMobile ? util.ellipsisAddress(oneAddress) : oneAddress}
+          {util.ellipsisAddress(oneAddress)}
         </ExplorerLink>
       </Text>
     </Space>
