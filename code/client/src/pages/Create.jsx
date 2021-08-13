@@ -360,7 +360,11 @@ const Create = () => {
                   </Select.Option>
                 )
               })}
-              {lastResortAddress && !wallets[util.safeNormalizedAddress(lastResortAddress)] && <Select.Option key={lastResortAddress} value={lastResortAddress}>{lastResortAddress}</Select.Option>}
+              {
+                lastResortAddress &&
+                !wallets[util.safeNormalizedAddress(lastResortAddress)] &&
+                  <Select.Option key={lastResortAddress} value={lastResortAddress}>{lastResortAddress}</Select.Option>
+              }
               <Select.Option key='later' value=''> I want to do this later in my wallet </Select.Option>
             </Select>
             {/* <InputBox width={500} margin={16} value={lastResortAddress} onChange={({ target: { value } }) => setLastResortAddress(value)} placeholder='one1......' /> */}

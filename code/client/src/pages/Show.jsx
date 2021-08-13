@@ -37,6 +37,7 @@ import { SmartFlows, Chaining, EotpBuilders } from '../api/flow'
 import { CommitRevealProgress } from '../components/CommitRevealProgress'
 import { HarmonyONE } from '../components/TokenAssets'
 import { NFTGrid } from '../components/NFTGrid'
+import WalletAddress from '../components/WalletAddress'
 const { Title, Text, Link } = Typography
 const tabList = [{ key: 'coins', tab: 'Coins' }, { key: 'nft', tab: 'Collectibles' }, { key: 'about', tab: 'About' }, { key: 'help', tab: 'Recover' }]
 const Show = () => {
@@ -411,28 +412,14 @@ const Show = () => {
     return <Redirect to={Paths.wallets} />
   }
 
-  /**
-   * Address to be displayed. We consider name with more than 1 word is long wallet name.
-   * All new wallet should have 3 words name, old wallets are still using 1 word and will be displayed full.
-   */
-  const displayAddress = (oneAddress) => {
-    const longWalletName = wallet.name.split(' ').length > 1
-
-    if (longWalletName || isMobile) {
-      return util.ellipsisAddress(oneAddress)
-    }
-
-    return oneAddress
-  }
-
   const title = (
     <Space size='large' align='baseline'>
       <Title level={2}>{wallet.name}</Title>
-      <Text>
-        <ExplorerLink copyable={{ text: oneAddress }} href={util.getNetworkExplorerUrl(address, network)}>
-          {displayAddress(oneAddress)}
-        </ExplorerLink>
-      </Text>
+      <WalletAddress
+        wallet={wallet}
+        network={network}
+        isMobile={isMobile}
+      />
     </Space>
   )
 
