@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useHistory, useRouteMatch } from 'react-router'
 import { Layout, Image, Menu, Row, Typography, Tag, Divider } from 'antd'
-import { PlusCircleOutlined, UnorderedListOutlined, HistoryOutlined } from '@ant-design/icons'
+import { PlusCircleOutlined, UnorderedListOutlined, HistoryOutlined, AuditOutlined, GithubOutlined, InfoCircleOutlined } from '@ant-design/icons'
 import HarmonyLogo from '../assets/harmony.svg'
 import HarmonyIcon from '../assets/harmony-icon.svg'
 import config from '../config'
@@ -23,6 +23,14 @@ const SiderLink = styled(Link).attrs((e) => ({
     opacity: 0.8;
   }
 `
+
+const LineDivider = ({ children }) => {
+  return (
+    <Divider style={{ borderColor: '#fafafa', opacity: 0.5, color: '#fafafa', fontSize: 14 }}>
+      {children}
+    </Divider>
+  )
+}
 
 const SiderMenu = ({ ...args }) => {
   const { isMobile } = useWindowDimensions()
@@ -57,7 +65,7 @@ const SiderMenu = ({ ...args }) => {
       </Row>
       {!isMobile && <Row justify='center' style={{ marginBottom: 24 }}><SiderLink href='https://harmony.one/1wallet'>{config.appName} {config.version}</SiderLink></Row>}
 
-      {!isMobile && <Divider style={{ borderColor: '#fafafa', opacity: 0.5, color: '#fafafa', fontSize: 14 }}>Global Usage</Divider>}
+      {!isMobile && <LineDivider>Global Usage</LineDivider>}
 
       {!isMobile && stats &&
         <Row style={{ marginBottom: 16 }} justify='center'>
@@ -71,12 +79,18 @@ const SiderMenu = ({ ...args }) => {
           </Row>
         </Row>}
 
-      {!isMobile && <Divider style={{ borderColor: '#fafafa', opacity: 0.5 }} />}
+      {!isMobile && <LineDivider />}
 
       <Menu theme='dark' mode='inline' onClick={nav} selectedKeys={[action]}>
         <Menu.Item key='create' icon={<PlusCircleOutlined />}>Create</Menu.Item>
         <Menu.Item key='wallets' icon={<UnorderedListOutlined />}>Wallets</Menu.Item>
         <Menu.Item key='restore' icon={<HistoryOutlined />}>Restore</Menu.Item>
+      </Menu>
+      <LineDivider />
+      <Menu theme='dark' mode='inline'>
+        <Menu.Item key='bug' icon={<GithubOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/issues'>Bug Report</SiderLink></Menu.Item>
+        <Menu.Item key='audit' icon={<AuditOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/tree/master/audits'>Audits</SiderLink></Menu.Item>
+        <Menu.Item key='wiki' icon={<InfoCircleOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/wiki'>Wiki</SiderLink></Menu.Item>
       </Menu>
 
     </Layout.Sider>
