@@ -87,7 +87,7 @@ const SiderMenu = ({ ...args }) => {
         <Menu.Item key='restore' icon={<HistoryOutlined />}>Restore</Menu.Item>
       </Menu>
       <LineDivider />
-      <Menu theme='dark' mode='inline'>
+      <Menu theme='dark' mode='inline' selectable={false}>
         <Menu.Item key='bug' icon={<GithubOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/issues'>Bug Report</SiderLink></Menu.Item>
         <Menu.Item key='audit' icon={<AuditOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/tree/master/audits'>Audits</SiderLink></Menu.Item>
         <Menu.Item key='wiki' icon={<InfoCircleOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/wiki'>Wiki</SiderLink></Menu.Item>
