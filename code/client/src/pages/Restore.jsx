@@ -15,7 +15,6 @@ import util, { useWindowDimensions } from '../util'
 import { handleAddressError } from '../handler'
 import Paths from '../constants/paths'
 import * as Sentry from '@sentry/browser'
-import config from '../config'
 
 const { Step } = Steps
 

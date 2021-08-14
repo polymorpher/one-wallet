@@ -37,6 +37,7 @@ import { SmartFlows, Chaining, EotpBuilders } from '../api/flow'
 import { CommitRevealProgress } from '../components/CommitRevealProgress'
 import { HarmonyONE } from '../components/TokenAssets'
 import { NFTGrid } from '../components/NFTGrid'
+import WalletAddress from '../components/WalletAddress'
 const { Title, Text, Link } = Typography
 const tabList = [{ key: 'coins', tab: 'Coins' }, { key: 'nft', tab: 'Collectibles' }, { key: 'about', tab: 'About' }, { key: 'help', tab: 'Recover' }]
 const Show = () => {
@@ -410,14 +411,15 @@ const Show = () => {
   if (!wallet || wallet.network !== network) {
     return <Redirect to={Paths.wallets} />
   }
+
   const title = (
     <Space size='large' align='baseline'>
       <Title level={2}>{wallet.name}</Title>
-      <Text>
-        <ExplorerLink copyable={{ text: oneAddress }} href={util.getNetworkExplorerUrl(address, network)}>
-          {isMobile ? util.ellipsisAddress(oneAddress) : oneAddress}
-        </ExplorerLink>
-      </Text>
+      <WalletAddress
+        wallet={wallet}
+        network={network}
+        isMobile={isMobile}
+      />
     </Space>
   )
 

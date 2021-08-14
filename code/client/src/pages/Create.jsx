@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router'
 import Paths from '../constants/paths'
 import api from '../api'
-import config from '../config'
 import ONEUtil from '../../../lib/util'
 import ONEConstants from '../../../lib/constants'
 import ONENames from '../../../lib/names'
@@ -45,7 +44,7 @@ const { Text, Link } = Typography
 // })
 
 const genName = (existingNames) => {
-  const name = ONENames.randomWord()
+  const name = `${ONENames.randomWord()} ${ONENames.randomWord()} ${ONENames.randomWord()}`
   if (existingNames && existingNames.includes(name)) {
     return genName()
   }
@@ -361,7 +360,11 @@ const Create = () => {
                   </Select.Option>
                 )
               })}
-              {lastResortAddress && !wallets[util.safeNormalizedAddress(lastResortAddress)] && <Select.Option key={lastResortAddress} value={lastResortAddress}>{lastResortAddress}</Select.Option>}
+              {
+                lastResortAddress &&
+                !wallets[util.safeNormalizedAddress(lastResortAddress)] &&
+                  <Select.Option key={lastResortAddress} value={lastResortAddress}>{lastResortAddress}</Select.Option>
+              }
               <Select.Option key='later' value=''> I want to do this later in my wallet </Select.Option>
             </Select>
             {/* <InputBox width={500} margin={16} value={lastResortAddress} onChange={({ target: { value } }) => setLastResortAddress(value)} placeholder='one1......' /> */}
