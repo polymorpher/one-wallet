@@ -84,7 +84,7 @@ const WalletAddress = ({ isMobile, wallet, network }) => {
       <Tooltip title={addressTooltipText}>
         <Button
           type='text'
-          style={{ color: 'rgba(0, 0, 0, 0.45)' }}
+          style={{ color: 'rgba(0, 0, 0, 0.45)', minWidth: 128 }}
           onClick={() => setShowAddressOptionsLocked(!showAddressOptionsLocked)}
           onMouseEnter={() => setMouseOnAddress(true)}
           onMouseLeave={() => setTimeout(() => setMouseOnAddress(false), MOUSE_HOVER_DETECTION_DELAY)}
