@@ -38,6 +38,8 @@ import { CommitRevealProgress } from '../components/CommitRevealProgress'
 import { HarmonyONE } from '../components/TokenAssets'
 import { NFTGrid } from '../components/NFTGrid'
 import WalletAddress from '../components/WalletAddress'
+import AddressInput from '../components/AddressInput'
+
 const { Title, Text, Link } = Typography
 const tabList = [{ key: 'coins', tab: 'Coins' }, { key: 'nft', tab: 'Collectibles' }, { key: 'about', tab: 'About' }, { key: 'help', tab: 'Recover' }]
 const Show = () => {
@@ -565,7 +567,12 @@ const Show = () => {
           {isNFT && <Title level={4}>{metadata?.displayName}</Title>}
           <Space align='baseline' size='large'>
             <Label><Hint>To</Hint></Label>
-            <InputBox margin='auto' width={440} value={transferTo} onChange={({ target: { value } }) => setTransferTo(value)} placeholder='one1...' />
+            <AddressInput
+              addressValue={transferTo}
+              setAddressCallback={(value) => setTransferTo(value)}
+              currentWallet={wallet}
+              knownAddressKey={WalletConstants.knownAddressKeys.Transfer}
+            />
           </Space>
           <Space align='baseline' size='large'>
             <Label><Hint>Amount</Hint></Label>
@@ -658,7 +665,12 @@ const Show = () => {
           <Hint>Note: You can only do this once!</Hint>
           <Space align='baseline' size='large'>
             <Label><Hint>Address</Hint></Label>
-            <InputBox margin='auto' width={440} value={transferTo} onChange={({ target: { value } }) => setTransferTo(value)} placeholder='one1...' />
+            <AddressInput
+              addressValue={transferTo}
+              setAddressCallback={(value) => setTransferTo(value)}
+              currentWallet={wallet}
+              knownAddressKey={WalletConstants.knownAddressKeys.Recovery}
+            />
           </Space>
           <Space align='baseline' size='large' style={{ marginTop: 16 }}>
             <Label><Hint>Code {wallet.doubleOtp ? '1' : ''}</Hint></Label>

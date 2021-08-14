@@ -2,6 +2,7 @@ import { handleActions } from 'redux-actions'
 import walletActions from './actions'
 import config from '../../../config'
 import { omit } from 'lodash'
+
 export const initialState = {
   wallets: {},
   balances: {}, // address => amount in wei
@@ -12,7 +13,8 @@ export const initialState = {
   provider: undefined,
   fetching: false,
   loading: false,
-  error: undefined
+  error: undefined,
+  knownAddresses: {}
 }
 
 const reducer = handleActions(
@@ -145,6 +147,17 @@ const reducer = handleActions(
     [walletActions.setProvider]: (state, action) => ({
       ...state,
       provider: action.payload,
+    }),
+
+    [walletActions.addKnownAddress]: (state, action) => ({
+      ...state,
+      knownAddresses: {
+        ...state.knownAddresses || {},
+        [action.payload.knownAddressKey]: [
+          ...state.knownAddresses?.[action.payload.knownAddressKey] || [],
+          action.payload.oneAddress
+        ]
+      },
     }),
   },
   {

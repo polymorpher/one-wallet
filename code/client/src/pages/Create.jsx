@@ -21,7 +21,7 @@ import {
   Checkbox,
   Tooltip
 } from 'antd'
-import { RedoOutlined, LoadingOutlined, SearchOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+import { RedoOutlined, LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import humanizeDuration from 'humanize-duration'
 import AnimatedSection from '../components/AnimatedSection'
 import b32 from 'hi-base32'
@@ -34,6 +34,7 @@ import { handleAPIError, handleAddressError } from '../handler'
 import { Hint, Heading, InputBox } from '../components/Text'
 import OtpBox from '../components/OtpBox'
 import { getAddress } from '@harmony-js/crypto'
+import AddressInput from '../components/AddressInput'
 const { Text, Link } = Typography
 
 // const genName = () => uniqueNamesGenerator({
@@ -345,29 +346,14 @@ const Create = () => {
         <Row style={{ marginBottom: 48 }}>
           <Space direction='vertical' size='small'>
             <Hint>Set up a fund recovery address:</Hint>
-            <Select
-              suffixIcon={<SearchOutlined />}
-              placeholder='one1......'
-              style={{ width: isMobile ? '100%' : 500, borderBottom: '1px dashed black' }} bordered={false} showSearch onChange={(v) => setLastResortAddress(v)}
-              value={lastResortAddress}
-              onSearch={(v) => setLastResortAddress(v)}
-            >
-              {Object.keys(wallets).filter(k => wallets[k].network === network).map(k => {
-                const addr = util.safeOneAddress(wallets[k].address)
-                return (
-                  <Select.Option key={k} value={util.safeOneAddress(wallets[k].address)}>
-                    ({wallets[k].name}) {isMobile ? util.ellipsisAddress(addr) : addr}
-                  </Select.Option>
-                )
-              })}
-              {
-                lastResortAddress &&
-                !wallets[util.safeNormalizedAddress(lastResortAddress)] &&
-                  <Select.Option key={lastResortAddress} value={lastResortAddress}>{lastResortAddress}</Select.Option>
+            <AddressInput
+              addressValue={lastResortAddress}
+              setAddressCallback={setLastResortAddress}
+              knownAddressKey={WalletConstants.knownAddressKeys.Recovery}
+              extraSelectOptions={
+                [<Select.Option key='later' value=''> I want to do this later in my wallet </Select.Option>]
               }
-              <Select.Option key='later' value=''> I want to do this later in my wallet </Select.Option>
-            </Select>
-            {/* <InputBox width={500} margin={16} value={lastResortAddress} onChange={({ target: { value } }) => setLastResortAddress(value)} placeholder='one1......' /> */}
+            />
             <Hint>If you lost your authenticator, your can recover funds to this address</Hint>
           </Space>
         </Row>
