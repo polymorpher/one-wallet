@@ -39,8 +39,8 @@ contract ONEWallet is TokenTracker {
     uint256 constant AUTO_RECOVERY_TRIGGER_AMOUNT = 1 ether;
     uint32 constant MAX_COMMIT_SIZE = 120;
 
-    uint32 constant majorVersion = 0x8; // a change would require client to migrate
-    uint32 constant minorVersion = 0x1; // a change would not require the client to migrate
+    uint32 constant majorVersion = 0x9; // a change would require client to migrate
+    uint32 constant minorVersion = 0x0; // a change would not require the client to migrate
 
     enum OperationType {
         TRACK, UNTRACK, TRANSFER_TOKEN, OVERRIDE_TRACK, TRANSFER, SET_RECOVERY_ADDRESS, RECOVER,
@@ -48,7 +48,6 @@ contract ONEWallet is TokenTracker {
     }
     /// commit management
     struct Commit {
-        bytes32 hash;
         bytes32 paramsHash;
         bytes32 verificationHash;
         uint32 timestamp;
@@ -139,7 +138,7 @@ contract ONEWallet is TokenTracker {
             Commit[] storage cc = commitLocker[commits[i]];
             for (uint32 j = 0; j < cc.length; j++) {
                 Commit storage c = cc[j];
-                hashes[index] = c.hash;
+                hashes[index] = commits[i];
                 paramHashes[index] = c.paramsHash;
                 verificationHashes[index] = c.verificationHash;
                 timestamps[index] = c.timestamp;
@@ -163,7 +162,7 @@ contract ONEWallet is TokenTracker {
         bool[] memory completed = new bool[](cc.length);
         for (uint32 i = 0; i < cc.length; i++) {
             Commit storage c = cc[i];
-            hashes[i] = c.hash;
+            hashes[i] = hash;
             paramHashes[i] = c.paramsHash;
             verificationHashes[i] = c.verificationHash;
             timestamps[i] = c.timestamp;
