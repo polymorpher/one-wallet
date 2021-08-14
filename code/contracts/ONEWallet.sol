@@ -39,8 +39,8 @@ contract ONEWallet is TokenTracker {
     uint256 constant AUTO_RECOVERY_TRIGGER_AMOUNT = 1 ether;
     uint32 constant MAX_COMMIT_SIZE = 120;
 
-    uint32 constant majorVersion = 0x9; // a change would require client to migrate
-    uint32 constant minorVersion = 0x0; // a change would not require the client to migrate
+    uint32 constant majorVersion = 0x8; // a change would require client to migrate
+    uint32 constant minorVersion = 0x2; // a change would not require the client to migrate
 
     enum OperationType {
         TRACK, UNTRACK, TRANSFER_TOKEN, OVERRIDE_TRACK, TRANSFER, SET_RECOVERY_ADDRESS, RECOVER,
@@ -432,10 +432,10 @@ contract ONEWallet is TokenTracker {
 
     function _completeReveal(bytes32 commitHash, uint32 commitIndex, OperationType operationType) internal {
         Commit[] storage cc = commitLocker[commitHash];
-        require(cc.length > 0, "Invalid commit hash");
-        require(cc.length > commitIndex, "Invalid commitIndex");
+        assert(cc.length > 0, "Invalid commit hash");
+        assert(cc.length > commitIndex, "Invalid commitIndex");
         Commit storage c = cc[commitIndex];
-        require(c.timestamp > 0, "Invalid commit timestamp");
+        assert(c.timestamp > 0, "Invalid commit timestamp");
         if (operationType != OperationType.RECOVER) {
             uint32 index = uint32(c.timestamp) / interval - t0;
             _incrementNonce(index);
