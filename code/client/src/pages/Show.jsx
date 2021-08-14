@@ -431,7 +431,7 @@ const Show = () => {
       </TallRow>
       <TallRow align='middle'>
         <Col span={isMobile ? 24 : 12}> <Title level={3}>Expires In</Title></Col>
-        <Col> <Text>{humanizeDuration(wallet.duration, { units: ['y', 'mo', 'd'], round: true })}</Text> </Col>
+        <Col> <Text>{humanizeDuration(wallet.duration + wallet.effectiveTime - Date.now(), { units: ['y', 'mo', 'd'], round: true })}</Text> </Col>
       </TallRow>
       <TallRow>
         <Col span={isMobile ? 24 : 12}> <Title level={3}>Daily Limit</Title></Col>
