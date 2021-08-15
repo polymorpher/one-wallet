@@ -349,7 +349,6 @@ const Create = () => {
             <AddressInput
               addressValue={lastResortAddress}
               setAddressCallback={setLastResortAddress}
-              knownAddressKey={WalletConstants.knownAddressKeys.Recovery}
               extraSelectOptions={
                 [<Select.Option key='later' value=''> I want to do this later in my wallet </Select.Option>]
               }

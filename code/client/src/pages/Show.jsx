@@ -418,9 +418,11 @@ const Show = () => {
     <Space size='large' align='baseline'>
       <Title level={2}>{wallet.name}</Title>
       <WalletAddress
-        wallet={wallet}
-        network={network}
-        isMobile={isMobile}
+        address={wallet.address}
+        shorten={util.shouldShortenAddress({
+          walletName: wallet.name,
+          isMobile
+        })}
       />
     </Space>
   )
@@ -469,11 +471,8 @@ const Show = () => {
             <Col>
               <Space>
                 <WalletAddress
-                  wallet={wallet}
-                  network={network}
-                  isMobile={isMobile}
-                  addressOverride={oneLastResort}
-                  shortAddress
+                  address={oneLastResort}
+                  shorten
                 />
               </Space>
             </Col>}
@@ -573,7 +572,6 @@ const Show = () => {
               addressValue={transferTo}
               setAddressCallback={(value) => setTransferTo(value)}
               currentWallet={wallet}
-              knownAddressKey={WalletConstants.knownAddressKeys.Transfer}
             />
           </Space>
           <Space align='baseline' size='large'>
@@ -671,7 +669,6 @@ const Show = () => {
               addressValue={transferTo}
               setAddressCallback={(value) => setTransferTo(value)}
               currentWallet={wallet}
-              knownAddressKey={WalletConstants.knownAddressKeys.Recovery}
             />
           </Space>
           <Space align='baseline' size='large' style={{ marginTop: 16 }}>

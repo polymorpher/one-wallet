@@ -1,21 +1,22 @@
 import { SearchOutlined } from '@ant-design/icons'
-import { Select } from 'antd'
-import React, { useCallback } from 'react'
+import { Select, Space } from 'antd'
+import React, { useCallback, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
 import util, { useWindowDimensions } from '../util'
 
 /**
- * Renders address input that provides type ahead search for any known ONE addresses.
+ * Renders address input that provides type ahead search for any known addresses.
  * Known addresses are addresses that have been entered by user for at least once.
- * If an address is entered in none one1... format, the address will be converted and saved as one1... format.
  */
-const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSelectOptions, knownAddressKey }) => {
+const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSelectOptions }) => {
   const dispatch = useDispatch()
 
   const wallets = useSelector(state => Object.keys(state.wallet.wallets).map((k) => state.wallet.wallets[k]))
 
-  const knownAddresses = useSelector(state => state.wallet.knownAddresses)
+  const knownAddresses = useSelector(state =>
+    state.wallet.knownAddresses || {}
+  )
 
   const network = useSelector(state => state.wallet.network)
 
@@ -32,33 +33,57 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
     !currentWallet || currentWallet?.address !== inputWalletAddress,
   [currentWallet])
 
-  /**
-   * This is interim wallet object that uses known wallet addresses to be used to render the address selection with
-   * existing wallet object. The address key is unique as knownOneAddress. Note that this will not be saved as actual wallet.
-   */
-  const knownWallets = (knownAddresses ? knownAddresses[knownAddressKey] || [] : []).map((knownOneAddress) => ({
-    network,
-    knownOneAddress
-  }))
+  useEffect(() => {
+    const existingKnownAddresses = Object.keys(knownAddresses)
+      .map((address) => ({
+        address,
+        network: knownAddresses[address]?.network
+      }))
 
-  const addressOptions = [...wallets, ...knownWallets]
+    const walletsNotInKnownAddresses = wallets.filter((wallet) =>
+      !existingKnownAddresses.find((knownAddress) =>
+        knownAddress.address === wallet.address && knownAddress.network === wallet.network)
+    )
 
-  const existingKnownAddress = useCallback((oneAddress) => {
-    return addressOptions.find((wallet) =>
-      util.safeOneAddress(wallet.address) === oneAddress || wallet.knownOneAddress === oneAddress)
-  }, [addressOptions])
+    // Init the known address entries for existing wallets.
+    walletsNotInKnownAddresses.forEach((wallet) => {
+      dispatch(walletActions.setKnownAddress({
+        label: wallet.name,
+        address: wallet.address,
+        network: wallet.network,
+        creationTime: wallet.effectiveTime,
+        numUsed: 0
+      }))
+    })
+  }, [knownAddresses, wallets, dispatch])
 
-  const onSelectAddress = useCallback((oneAddress) => {
-    const validOneAddress = util.safeOneAddress(oneAddress)
+  const onSelectAddress = useCallback((address) => {
+    const validAddress = util.normalizedAddress(address)
+    const nowInMillis = new Date().valueOf()
 
-    if (validOneAddress && !existingKnownAddress(validOneAddress)) {
-      dispatch(walletActions.addKnownAddress({ knownAddressKey, oneAddress: validOneAddress }))
+    if (validAddress) {
+      const existingKnownAddress = knownAddresses[validAddress]
+
+      dispatch(walletActions.setKnownAddress({
+        label: existingKnownAddress?.label,
+        creationTime: existingKnownAddress?.creationTime || nowInMillis,
+        numUsed: (existingKnownAddress?.numUsed || 0) + 1,
+        network: network,
+        lastUsedTime: nowInMillis,
+        address: validAddress
+      }))
     }
-  }, [knownAddressKey, addressOptions])
+  }, [knownAddresses])
 
   const showSelectManualInputAddress = util.safeOneAddress(addressValue) &&
     !wallets[util.safeNormalizedAddress(addressValue)] &&
-    !existingKnownAddress(addressValue)
+    !Object.keys(knownAddresses).includes(util.safeNormalizedAddress(addressValue))
+
+  const knownAddressesOptions = Object.keys(knownAddresses).map((address) => ({
+    address,
+    label: knownAddresses[address].label,
+    network: knownAddresses[address].network
+  }))
 
   return (
     <Select
@@ -76,14 +101,16 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
       onSelect={onSelectAddress}
     >
       {
-        addressOptions
-          .filter((wallet) => wallet.network === network && notCurrentWallet(wallet.knownOneAddress || wallet.address))
-          .map((wallet, index) => {
-            const addr = wallet.knownOneAddress || util.safeOneAddress(wallet.address)
+        knownAddressesOptions
+          .filter((knownAddress) => knownAddress.network === network && notCurrentWallet(knownAddress.address))
+          .map((knownAddress, index) => {
+            const addr = util.safeOneAddress(knownAddress.address)
 
             return (
-              <Select.Option key={index} value={wallet.knownOneAddress || util.safeOneAddress(wallet.address)}>
-                {wallet.name ? `(${wallet.name}) ` : ''}{isMobile ? util.ellipsisAddress(addr) : addr}
+              <Select.Option key={index} value={util.safeOneAddress(knownAddress.address)}>
+                <Space size='middle' align='baseline'>
+                  {knownAddress.label ? `(${knownAddress.label}) ` : ''}{isMobile ? util.ellipsisAddress(addr) : addr}
+                </Space>
               </Select.Option>
             )
           })

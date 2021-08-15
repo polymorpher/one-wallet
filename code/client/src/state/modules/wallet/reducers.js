@@ -149,16 +149,31 @@ const reducer = handleActions(
       provider: action.payload,
     }),
 
-    [walletActions.addKnownAddress]: (state, action) => ({
+    [walletActions.setKnownAddress]: (state, action) => ({
       ...state,
       knownAddresses: {
-        ...state.knownAddresses || {},
-        [action.payload.knownAddressKey]: [
-          ...state.knownAddresses?.[action.payload.knownAddressKey] || [],
-          action.payload.oneAddress
-        ]
+        ...state.knownAddresses,
+        [action.payload.address]: {
+          ...state.knownAddresses?.[action.payload.address],
+          label: action.payload.label,
+          address: action.payload.address,
+          network: action.payload.network,
+          domainName: action.payload.domainName,
+          createTime: action.payload.creationTime,
+          lastUsedTime: action.payload.lastUsedTime,
+          numUsed: action.payload.numUsed
+        }
       },
     }),
+
+    [walletActions.deleteKnownAddress]: (state, action) => {
+      const { [action.payload.address]: deleted, ...restKnownAddresses } = state.knownAddresses
+
+      return {
+        ...state,
+        knownAddresses: restKnownAddresses
+      }
+    },
   },
   {
     ...initialState
