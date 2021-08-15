@@ -475,11 +475,6 @@ const Show = () => {
                   addressOverride={oneLastResort}
                   shortAddress
                 />
-                {/* <Tooltip title={oneLastResort}>
-                  <ExplorerLink copyable={oneLastResort && { text: oneLastResort }} href={util.getNetworkExplorerUrl(address, network)}>
-                    {util.ellipsisAddress(oneLastResort)}
-                  </ExplorerLink>
-                </Tooltip> */}
               </Space>
             </Col>}
           {!(lastResortAddress && !util.isEmptyAddress(lastResortAddress)) &&
