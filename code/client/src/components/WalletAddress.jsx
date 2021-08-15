@@ -12,14 +12,15 @@ const isLongWalletName = (walletName) => walletName && walletName.split(' ').len
 /**
  * Shorten wallet address if the wallet has long name or the current view is mobile.
  */
-const shouldShortenAddress = ({ walletName, isMobile }) => isLongWalletName(walletName) || isMobile
+const shouldShortenAddress = ({ walletName, isMobile, shortAddress }) =>
+  isLongWalletName(walletName) || isMobile || shortAddress
 
 /**
  * Address to be displayed. We consider name with more than 1 word is long wallet name.
  * All new wallet should have 3 words name, old wallets are still using 1 word and will be displayed full.
  */
-const displayAddress = ({ address, isMobile, wallet }) => {
-  if (shouldShortenAddress({ walletName: wallet.name, isMobile })) {
+const displayAddress = ({ address, isMobile, wallet, shortAddress }) => {
+  if (shouldShortenAddress({ walletName: wallet.name, isMobile, shortAddress })) {
     return util.ellipsisAddress(address)
   }
 
@@ -51,25 +52,25 @@ const WalletAddressOptions = ({ displayAddress, address, network, onAddressStyle
 }
 
 const MOUSE_HOVER_DETECTION_DELAY = 1000
+
 /**
  * Renders the provided wallet's address in either ONE style or normal.
  * Provides the ability to copy the address and link to wallet explorer.
  */
-const WalletAddress = ({ isMobile, wallet, network }) => {
-  const oneAddress = util.safeOneAddress(wallet.address)
+const WalletAddress = ({ isMobile, wallet, network, addressOverride, shortAddress }) => {
+  const oneAddress = addressOverride ? util.safeOneAddress(addressOverride) : util.safeOneAddress(wallet.address)
 
-  const address = wallet.address
+  const address = addressOverride ? util.safeNormalizedAddress(addressOverride) : wallet.address
 
   const [showAddressOptions, setShowAddressOptions] = useState(false)
   const [showAddressOptionsLocked, setShowAddressOptionsLocked] = useState(false)
   const [mouseOnOptions, setMouseOnOptions] = useState(false)
   const [mouseOnAddress, setMouseOnAddress] = useState(false)
-
   const [showOneAddress, setShowOneAddress] = useState(true)
 
   const currentDisplayAddress = showOneAddress ? oneAddress : address
 
-  const addressTooltipText = shouldShortenAddress({ walletName: wallet.name, isMobile }) ? currentDisplayAddress : ''
+  const addressTooltipText = shouldShortenAddress({ walletName: wallet.name, isMobile, shortAddress }) ? currentDisplayAddress : ''
 
   useEffect(() => {
     if (!mouseOnOptions && !mouseOnAddress && !showAddressOptionsLocked) {
@@ -93,7 +94,8 @@ const WalletAddress = ({ isMobile, wallet, network }) => {
             displayAddress({
               address: currentDisplayAddress,
               isMobile,
-              wallet
+              wallet,
+              shortAddress
             })
           }
         </Button>

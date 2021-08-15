@@ -468,11 +468,18 @@ const Show = () => {
           {lastResortAddress && !util.isEmptyAddress(lastResortAddress) &&
             <Col>
               <Space>
-                <Tooltip title={oneLastResort}>
+                <WalletAddress
+                  wallet={wallet}
+                  network={network}
+                  isMobile={isMobile}
+                  addressOverride={oneLastResort}
+                  shortAddress
+                />
+                {/* <Tooltip title={oneLastResort}>
                   <ExplorerLink copyable={oneLastResort && { text: oneLastResort }} href={util.getNetworkExplorerUrl(address, network)}>
                     {util.ellipsisAddress(oneLastResort)}
                   </ExplorerLink>
-                </Tooltip>
+                </Tooltip> */}
               </Space>
             </Col>}
           {!(lastResortAddress && !util.isEmptyAddress(lastResortAddress)) &&
