@@ -27,6 +27,11 @@ const setRelayerSecret = createAction('SET_RELAYER_SECRET')
 const setNetwork = createAction('SET_NETWORK')
 const setProvider = createAction('SET_PROVIDER')
 
+// Set the wallet address that is known by the user, that is the address has been entered in the system at least once.
+// E.g. transaction destination or recovery address.
+const setKnownAddress = createAction('SET_KNOWN_ADDRESS')
+const deleteKnownAddress = createAction('DELETE_KNOWN_ADDRESS')
+
 export default {
   fetchWallet,
   fetchWalletSuccess,
@@ -44,6 +49,8 @@ export default {
   setRelayerSecret,
   setNetwork,
   setProvider,
+  setKnownAddress,
+  deleteKnownAddress,
 
   trackTokens,
   untrackTokens,

@@ -19,9 +19,10 @@ import {
   Timeline,
   Select,
   Checkbox,
-  Tooltip
+  Tooltip,
+  Col
 } from 'antd'
-import { RedoOutlined, LoadingOutlined, SearchOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+import { RedoOutlined, LoadingOutlined, QuestionCircleOutlined, CheckOutlined } from '@ant-design/icons'
 import humanizeDuration from 'humanize-duration'
 import AnimatedSection from '../components/AnimatedSection'
 import b32 from 'hi-base32'
@@ -34,6 +35,7 @@ import { handleAPIError, handleAddressError } from '../handler'
 import { Hint, Heading, InputBox } from '../components/Text'
 import OtpBox from '../components/OtpBox'
 import { getAddress } from '@harmony-js/crypto'
+import AddressInput from '../components/AddressInput'
 const { Text, Link } = Typography
 
 // const genName = () => uniqueNamesGenerator({
@@ -78,7 +80,7 @@ const Create = () => {
   // eslint-disable-next-line no-unused-vars
   const [seed2, setSeed2] = useState(generateOtpSeed())
   const [duration, setDuration] = useState(WalletConstants.defaultDuration)
-  const [lastResortAddress, setLastResortAddress] = useState()
+  const [lastResortAddress, setLastResortAddress] = useState({ value: '', label: '' })
   const [dailyLimit] = useState(WalletConstants.defaultDailyLimit)
 
   const [worker, setWorker] = useState()
@@ -174,9 +176,9 @@ const Create = () => {
       return
     }
     let normalizedAddress = ''
-    if (lastResortAddress !== '') {
+    if (lastResortAddress.value !== '') {
       // Ensure valid address for both 0x and one1 formats
-      normalizedAddress = util.safeExec(util.normalizedAddress, [lastResortAddress], handleAddressError)
+      normalizedAddress = util.safeExec(util.normalizedAddress, [lastResortAddress.value], handleAddressError)
       if (!normalizedAddress) {
         return
       }
@@ -345,29 +347,23 @@ const Create = () => {
         <Row style={{ marginBottom: 48 }}>
           <Space direction='vertical' size='small'>
             <Hint>Set up a fund recovery address:</Hint>
-            <Select
-              suffixIcon={<SearchOutlined />}
-              placeholder='one1......'
-              style={{ width: isMobile ? '100%' : 500, borderBottom: '1px dashed black' }} bordered={false} showSearch onChange={(v) => setLastResortAddress(v)}
-              value={lastResortAddress}
-              onSearch={(v) => setLastResortAddress(v)}
-            >
-              {Object.keys(wallets).filter(k => wallets[k].network === network).map(k => {
-                const addr = util.safeOneAddress(wallets[k].address)
-                return (
-                  <Select.Option key={k} value={util.safeOneAddress(wallets[k].address)}>
-                    ({wallets[k].name}) {isMobile ? util.ellipsisAddress(addr) : addr}
+            <AddressInput
+              addressValue={lastResortAddress}
+              setAddressCallback={setLastResortAddress}
+              extraSelectOptions={
+                [
+                  <Select.Option key='later' value=''>
+                    <Row gutter={16} align='left'>
+                      <Col span={24}>
+                        <Button type='text' style={{ textAlign: 'left' }} block onClick={() => setLastResortAddress({ value: '', label: 'I want to do this later in my wallet' })}>
+                          I want to do this later in my wallet
+                        </Button>
+                      </Col>
+                    </Row>
                   </Select.Option>
-                )
-              })}
-              {
-                lastResortAddress &&
-                !wallets[util.safeNormalizedAddress(lastResortAddress)] &&
-                  <Select.Option key={lastResortAddress} value={lastResortAddress}>{lastResortAddress}</Select.Option>
+                ]
               }
-              <Select.Option key='later' value=''> I want to do this later in my wallet </Select.Option>
-            </Select>
-            {/* <InputBox width={500} margin={16} value={lastResortAddress} onChange={({ target: { value } }) => setLastResortAddress(value)} placeholder='one1......' /> */}
+            />
             <Hint>If you lost your authenticator, your can recover funds to this address</Hint>
           </Space>
         </Row>

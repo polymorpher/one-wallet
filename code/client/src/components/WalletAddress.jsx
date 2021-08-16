@@ -2,24 +2,14 @@ import React, { useEffect, useState } from 'react'
 import { Button, Space, Tooltip, Typography } from 'antd'
 import util from '../util'
 import { FieldBinaryOutlined, DeploymentUnitOutlined } from '@ant-design/icons'
+import { useSelector } from 'react-redux'
 const { Text, Link } = Typography
 
 /**
- * Determine if the current wallet name is long (more than 1 word).
+ * Address to be displayed. It will be either displayed as full or shortened version.
  */
-const isLongWalletName = (walletName) => walletName && walletName.split(' ').length > 1
-
-/**
- * Shorten wallet address if the wallet has long name or the current view is mobile.
- */
-const shouldShortenAddress = ({ walletName, isMobile }) => isLongWalletName(walletName) || isMobile
-
-/**
- * Address to be displayed. We consider name with more than 1 word is long wallet name.
- * All new wallet should have 3 words name, old wallets are still using 1 word and will be displayed full.
- */
-const displayAddress = ({ address, isMobile, wallet }) => {
-  if (shouldShortenAddress({ walletName: wallet.name, isMobile })) {
+const displayAddress = ({ address, shorten }) => {
+  if (shorten) {
     return util.ellipsisAddress(address)
   }
 
@@ -51,25 +41,22 @@ const WalletAddressOptions = ({ displayAddress, address, network, onAddressStyle
 }
 
 const MOUSE_HOVER_DETECTION_DELAY = 1000
+
 /**
  * Renders the provided wallet's address in either ONE style or normal.
  * Provides the ability to copy the address and link to wallet explorer.
  */
-const WalletAddress = ({ isMobile, wallet, network }) => {
-  const oneAddress = util.safeOneAddress(wallet.address)
-
-  const address = wallet.address
-
+const WalletAddress = ({ address, shorten }) => {
+  const network = useSelector(state => state.wallet.network)
   const [showAddressOptions, setShowAddressOptions] = useState(false)
   const [showAddressOptionsLocked, setShowAddressOptionsLocked] = useState(false)
   const [mouseOnOptions, setMouseOnOptions] = useState(false)
   const [mouseOnAddress, setMouseOnAddress] = useState(false)
-
   const [showOneAddress, setShowOneAddress] = useState(true)
 
-  const currentDisplayAddress = showOneAddress ? oneAddress : address
+  const currentDisplayAddress = showOneAddress ? util.safeOneAddress(address) : util.safeNormalizedAddress(address)
 
-  const addressTooltipText = shouldShortenAddress({ walletName: wallet.name, isMobile }) ? currentDisplayAddress : ''
+  const addressTooltipText = shorten ? currentDisplayAddress : ''
 
   useEffect(() => {
     if (!mouseOnOptions && !mouseOnAddress && !showAddressOptionsLocked) {
@@ -92,8 +79,7 @@ const WalletAddress = ({ isMobile, wallet, network }) => {
           {
             displayAddress({
               address: currentDisplayAddress,
-              isMobile,
-              wallet
+              shorten
             })
           }
         </Button>

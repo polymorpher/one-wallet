@@ -38,6 +38,8 @@ import { CommitRevealProgress } from '../components/CommitRevealProgress'
 import { HarmonyONE } from '../components/TokenAssets'
 import { NFTGrid } from '../components/NFTGrid'
 import WalletAddress from '../components/WalletAddress'
+import AddressInput from '../components/AddressInput'
+
 const { Title, Text, Link } = Typography
 const tabList = [{ key: 'coins', tab: 'Coins' }, { key: 'nft', tab: 'Collectibles' }, { key: 'about', tab: 'About' }, { key: 'help', tab: 'Recover' }]
 const Show = () => {
@@ -142,7 +144,7 @@ const Show = () => {
     }
   }
 
-  const [transferTo, setTransferTo] = useState('')
+  const [transferTo, setTransferTo] = useState({ value: '', label: '' })
   const [inputAmount, setInputAmount] = useState('')
   const [otpInput, setOtpInput] = useState('')
   const [otp2Input, setOtp2Input] = useState('')
@@ -203,7 +205,7 @@ const Show = () => {
     const invalidOtp = !otp
     const invalidOtp2 = wallet.doubleOtp && !otp2
     // Ensure valid address for both 0x and one1 formats
-    const dest = util.safeExec(util.normalizedAddress, [transferTo], handleAddressError)
+    const dest = util.safeExec(util.normalizedAddress, [transferTo.value], handleAddressError)
     if (checkDest && !dest) {
       return
     }
@@ -399,7 +401,7 @@ const Show = () => {
       onRevealAttemptFailed,
       onRevealSuccess: (txId) => {
         onRevealSuccess(txId)
-        message.success(`Recovery address is set to ${transferTo}`)
+        message.success(`Recovery address is set to ${transferTo.value}`)
         dispatch(walletActions.fetchWallet({ address }))
         showStats()
       }
@@ -416,9 +418,11 @@ const Show = () => {
     <Space size='large' align='baseline'>
       <Title level={2}>{wallet.name}</Title>
       <WalletAddress
-        wallet={wallet}
-        network={network}
-        isMobile={isMobile}
+        address={wallet.address}
+        shorten={util.shouldShortenAddress({
+          walletName: wallet.name,
+          isMobile
+        })}
       />
     </Space>
   )
@@ -466,11 +470,10 @@ const Show = () => {
           {lastResortAddress && !util.isEmptyAddress(lastResortAddress) &&
             <Col>
               <Space>
-                <Tooltip title={oneLastResort}>
-                  <ExplorerLink copyable={oneLastResort && { text: oneLastResort }} href={util.getNetworkExplorerUrl(address, network)}>
-                    {util.ellipsisAddress(oneLastResort)}
-                  </ExplorerLink>
-                </Tooltip>
+                <WalletAddress
+                  address={oneLastResort}
+                  shorten
+                />
               </Space>
             </Col>}
           {!(lastResortAddress && !util.isEmptyAddress(lastResortAddress)) &&
@@ -565,7 +568,11 @@ const Show = () => {
           {isNFT && <Title level={4}>{metadata?.displayName}</Title>}
           <Space align='baseline' size='large'>
             <Label><Hint>To</Hint></Label>
-            <InputBox margin='auto' width={440} value={transferTo} onChange={({ target: { value } }) => setTransferTo(value)} placeholder='one1...' />
+            <AddressInput
+              addressValue={transferTo}
+              setAddressCallback={setTransferTo}
+              currentWallet={wallet}
+            />
           </Space>
           <Space align='baseline' size='large'>
             <Label><Hint>Amount</Hint></Label>
@@ -658,7 +665,11 @@ const Show = () => {
           <Hint>Note: You can only do this once!</Hint>
           <Space align='baseline' size='large'>
             <Label><Hint>Address</Hint></Label>
-            <InputBox margin='auto' width={440} value={transferTo} onChange={({ target: { value } }) => setTransferTo(value)} placeholder='one1...' />
+            <AddressInput
+              addressValue={transferTo}
+              setAddressCallback={setTransferTo}
+              currentWallet={wallet}
+            />
           </Space>
           <Space align='baseline' size='large' style={{ marginTop: 16 }}>
             <Label><Hint>Code {wallet.doubleOtp ? '1' : ''}</Hint></Label>

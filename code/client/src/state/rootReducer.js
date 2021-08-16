@@ -1,4 +1,4 @@
-import { persistCombineReducers, persistReducer } from 'redux-persist'
+import { persistReducer } from 'redux-persist'
 import { combineReducers } from 'redux'
 import { connectRouter } from 'connected-react-router'
 import * as reducers from './modules'
