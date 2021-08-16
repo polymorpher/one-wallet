@@ -18,6 +18,9 @@ module.exports = {
     SET_RECOVERY_ADDRESS: 5,
     RECOVER: 6,
     REPLACE: 7,
+    UPGRADE: 8,
+    BULK_TRANSFER_TOKENS: 9,
+    BUY_DOMAIN: 10,
     0: 'TRACK',
     1: 'UNTRACK',
     2: 'TRANSFER_TOKEN',
@@ -25,10 +28,20 @@ module.exports = {
     4: 'TRANSFER',
     5: 'SET_RECOVERY_ADDRESS',
     6: 'RECOVER',
-    7: 'REPLACE'
+    7: 'REPLACE',
+    8: 'UPGRADE',
+    9: 'BULK_TRANSFER_TOKENS',
+    10: 'BUY_DOMAIN'
   },
   EmptyAddress: '0x0000000000000000000000000000000000000000',
   EmptyBech32Address: 'one1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqquzw7vz',
-  MajorVersion: 8,
+  MajorVersion: 9,
   MinorVersion: 0,
+  Domain: {
+    DEFAULT_DOMAIN: 'crazy.one',
+    DEFAULT_SUFFIX: '.' + module.exports.Domain.DEFAULT_DOMAIN,
+    DEFAULT_NODE: '0x8ada342410322a1cc38cc04ac516581740996bacbf88d2a55e0064133ecca850',
+    DEFAULT_RESOLVER: '0x48D421c223E32B68a8973ef05e1314C97BBbc4bE',
+    DEFAULT_REVERSE_RESOLVER: '0x7e1c6695D2563c27E49C4F0adA5F20AA7d978aD8',
+  }
 }
