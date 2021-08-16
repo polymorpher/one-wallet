@@ -11,6 +11,7 @@ const IERC721 = require('../../build/contracts/IERC721.json')
 const IERC721Metadata = require('../../build/contracts/IERC721Metadata.json')
 const IERC1155 = require('../../build/contracts/IERC1155.json')
 const IERC1155MetadataURI = require('../../build/contracts/IERC1155MetadataURI.json')
+
 const BN = require('bn.js')
 const ONEUtil = require('../util')
 const ONEConstants = require('../constants')
@@ -303,6 +304,16 @@ const api = {
         uri = await c.uri(tokenId)
       }
       return { name, symbol, uri, decimals: decimals.toNumber() }
+    },
+
+    domain: {
+      resolve: async ({ name }) => {
+
+      },
+      reverseLookup: async ({ address }) => {
+
+      }
+
     }
   },
   relayer: {

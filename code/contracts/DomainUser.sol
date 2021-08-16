@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.4;
 
-import "@ensdomains/subdomain-registrar-core/contracts/RegistrarInterface.sol";
-import "@ensdomains/subdomain-registrar-core/contracts/interfaces/ReverseRegistrarInterface.sol";
+import "@ensdomains/subdomain-registrar-core/contracts/interfaces/IRegistrar.sol";
+import "@ensdomains/subdomain-registrar-core/contracts/interfaces/IReverseRegistrar.sol";
 
 contract DomainUser {
     event DomainRegistered(address subdomainRegistrar, string subdomain, bytes32 domainLabel);
@@ -26,11 +26,11 @@ contract DomainUser {
             subdomainBytes[i] = bfqdn[i];
         }
         string memory subdomain = string(subdomainBytes);
-        return _buyDomain(RegistrarInterface(reg), ReverseRegistrarInterface(rev), resolver, maxPrice, subdomain, node, fqdn);
+        return _buyDomain(IRegistrar(reg), IReverseRegistrar(rev), resolver, maxPrice, subdomain, node, fqdn);
     }
 
 
-    function _buyDomain(RegistrarInterface reg, ReverseRegistrarInterface rev, address resolver, uint256 maxPrice, string memory subdomain, bytes32 node, string memory fqdn) internal returns (bool) {
+    function _buyDomain(IRegistrar reg, IReverseRegistrar rev, address resolver, uint256 maxPrice, string memory subdomain, bytes32 node, string memory fqdn) internal returns (bool) {
         (bool success, bytes memory ret) = address(reg).call{value : maxPrice}(abi.encodeWithSignature("register(bytes32,string,address,address,address)", node, subdomain, address(this), address(0x0), resolver));
         if (!success) {
             string memory reason = _revertReason(ret);
