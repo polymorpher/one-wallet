@@ -22,7 +22,7 @@ import {
   Tooltip,
   Col
 } from 'antd'
-import { RedoOutlined, LoadingOutlined, QuestionCircleOutlined, CheckOutlined } from '@ant-design/icons'
+import { RedoOutlined, LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import humanizeDuration from 'humanize-duration'
 import AnimatedSection from '../components/AnimatedSection'
 import b32 from 'hi-base32'
