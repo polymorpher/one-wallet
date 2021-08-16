@@ -183,6 +183,14 @@ export default {
     return r
   },
 
+  /**
+   * Shorten wallet address if the wallet has long name or the current view is mobile.
+   * We consider name with more than 1 word is long wallet name.
+   * All new wallet should have 3 words name, old wallets are still using 1 word and will be displayed full.
+   */
+  shouldShortenAddress: ({ walletName, isMobile }) =>
+    walletName && walletName.split(' ').length > 1 || isMobile
+
 }
 
 function getWindowDimensions () {
