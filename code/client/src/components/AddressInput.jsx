@@ -159,12 +159,13 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
         showSelectManualInputAddress
           ? (
             <Select.Option key='address-value' value={addressValue.value}>
-              <Space size='small' align='baseline'>
-                {addressValue.value}
-                <Button type='text' onClick={() => onSelectAddress(addressValue)}>
-                  <CheckOutlined />
-                </Button>
-              </Space>
+              <Row gutter={16} align='left'>
+                <Col span={24}>
+                  <Button type='text' onClick={() => onSelectAddress(addressValue)}>
+                    {addressValue.value}
+                  </Button>
+                </Col>
+              </Row>
             </Select.Option>
             )
           : <></>
