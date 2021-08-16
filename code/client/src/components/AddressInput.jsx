@@ -1,5 +1,5 @@
-import { CheckOutlined, CloseOutlined, SearchOutlined } from '@ant-design/icons'
-import { Select, Space, Button, Tooltip, Row, Col } from 'antd'
+import { CloseOutlined, SearchOutlined } from '@ant-design/icons'
+import { Select, Button, Tooltip, Row, Col } from 'antd'
 import React, { useCallback, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
@@ -161,7 +161,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
             <Select.Option key='address-value' value={addressValue.value}>
               <Row gutter={16} align='left'>
                 <Col span={24}>
-                  <Button type='text' onClick={() => onSelectAddress(addressValue)}>
+                  <Button type='text' style={{ textAlign: 'left' }} block onClick={() => onSelectAddress(addressValue)}>
                     {addressValue.value}
                   </Button>
                 </Col>

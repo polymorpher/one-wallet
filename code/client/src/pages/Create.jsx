@@ -19,7 +19,8 @@ import {
   Timeline,
   Select,
   Checkbox,
-  Tooltip
+  Tooltip,
+  Col
 } from 'antd'
 import { RedoOutlined, LoadingOutlined, QuestionCircleOutlined, CheckOutlined } from '@ant-design/icons'
 import humanizeDuration from 'humanize-duration'
@@ -352,12 +353,13 @@ const Create = () => {
               extraSelectOptions={
                 [
                   <Select.Option key='later' value=''>
-                    <Space size='small' align='baseline'>
-                      I want to do this later in my wallet
-                      <Button type='text' onClick={() => setLastResortAddress({ value: '', label: 'I want to do this later in my wallet' })}>
-                        <CheckOutlined />
-                      </Button>
-                    </Space>
+                    <Row gutter={16} align='left'>
+                      <Col span={24}>
+                        <Button type='text' style={{ textAlign: 'left' }} block onClick={() => setLastResortAddress({ value: '', label: 'I want to do this later in my wallet' })}>
+                          I want to do this later in my wallet
+                        </Button>
+                      </Col>
+                    </Row>
                   </Select.Option>
                 ]
               }
