@@ -12,7 +12,8 @@ const IERC721Metadata = require('../../build/contracts/IERC721Metadata.json')
 const IERC1155 = require('../../build/contracts/IERC1155.json')
 const IERC1155MetadataURI = require('../../build/contracts/IERC1155MetadataURI.json')
 const namehash = require('eth-ens-namehash')
-// const Resolver = require('')
+const Resolver = require('../../build/contracts/Resolver.json')
+const ReverseResolver = require('../../build/contracts/IDefaultReverseResolver.json')
 
 const BN = require('bn.js')
 const ONEUtil = require('../util')
@@ -62,6 +63,7 @@ const initAPI = (store) => {
   })
 }
 
+// TODO: cleanup this mess
 const providers = {}; const contractWithProvider = {}; const networks = []; const web3instances = {}
 let activeNetwork = config.defaults.network
 let web3; let one
@@ -71,6 +73,9 @@ let tokenContractsWithProvider = { erc20: {}, erc721: {}, erc1155: {} }
 let tokenMetadataWithProvider = { erc20: {}, erc721: {}, erc1155: {} }
 let tokens = { erc20: null, erc721: null, erc1155: null }
 let tokenMetadata = { erc20: null, erc721: null, erc1155: null }
+
+let resolverWithProvider, reverseResolverWithProvider
+let resolver, reverseResolver
 
 const initBlockchain = (store) => {
   Object.keys(config.networks).forEach(k => {
@@ -99,6 +104,12 @@ const initBlockchain = (store) => {
       tokenMetadataWithProvider[t][k] = contract(tokenMetadataTemplates[t])
       tokenMetadataWithProvider[t][k].setProvider(providers[k])
     })
+    if (k === 'harmony-mainnet') {
+      resolverWithProvider = contract(Resolver)
+      resolverWithProvider.setProvider(providers[k])
+      reverseResolverWithProvider = contract(ReverseResolver)
+      reverseResolverWithProvider.setProvider(providers[k])
+    }
   })
   const switchNetwork = () => {
     web3 = web3instances[activeNetwork]
@@ -107,6 +118,13 @@ const initBlockchain = (store) => {
       tokens[t] = tokenContractsWithProvider[t][activeNetwork]
       tokenMetadata[t] = tokenMetadataWithProvider[t][activeNetwork]
     })
+    if (activeNetwork === 'harmony-mainnet') {
+      resolver = resolverWithProvider
+      reverseResolver = reverseResolverWithProvider
+    } else {
+      resolver = null
+      reverseResolver = null
+    }
   }
   switchNetwork()
   store.subscribe(() => {
@@ -310,10 +328,30 @@ const api = {
 
     domain: {
       resolve: async ({ name }) => {
-
+        if (!resolver) {
+          throw new Error('Unsupported network')
+        }
+        const c = await resolver.at(ONEConstants.Domain.DEFAULT_RESOLVER)
+        const node = namehash(name)
+        const address = await c.addr(node)
+        return address
       },
       reverseLookup: async ({ address }) => {
-
+        if (!reverseResolver) {
+          throw new Error('Unsupported network')
+        }
+        if (address.startsWith('0x')) {
+          address = address.slice(2)
+        }
+        const label = ONEUtil.keccak(address.toLowerCase())
+        const buffer = new Uint8Array(64)
+        buffer.set(ONEUtil.hexStringToBytes(ONEConstants.Domain.ADDR_REVERSE_NODE))
+        buffer.set(label, 32)
+        const node = ONEUtil.keccak(buffer)
+        const nodeHex = ONEUtil.hexString(node)
+        const c = await reverseResolver.at(ONEConstants.Domain.DEFAULT_REVERSE_RESOLVER)
+        const name = await c.name(nodeHex)
+        return name
       }
 
     }

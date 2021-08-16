@@ -1,5 +1,3 @@
-import config from '../client/src/config'
-
 const JSSHA = require('jssha')
 const createKeccakHash = require('keccak')
 const Conversion = require('ethjs-unit')
