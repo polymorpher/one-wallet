@@ -21,7 +21,7 @@ import {
   Checkbox,
   Tooltip
 } from 'antd'
-import { RedoOutlined, LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+import { RedoOutlined, LoadingOutlined, QuestionCircleOutlined, CheckOutlined } from '@ant-design/icons'
 import humanizeDuration from 'humanize-duration'
 import AnimatedSection from '../components/AnimatedSection'
 import b32 from 'hi-base32'
@@ -79,7 +79,7 @@ const Create = () => {
   // eslint-disable-next-line no-unused-vars
   const [seed2, setSeed2] = useState(generateOtpSeed())
   const [duration, setDuration] = useState(WalletConstants.defaultDuration)
-  const [lastResortAddress, setLastResortAddress] = useState()
+  const [lastResortAddress, setLastResortAddress] = useState({ value: '', label: '' })
   const [dailyLimit] = useState(WalletConstants.defaultDailyLimit)
 
   const [worker, setWorker] = useState()
@@ -175,9 +175,9 @@ const Create = () => {
       return
     }
     let normalizedAddress = ''
-    if (lastResortAddress !== '') {
+    if (lastResortAddress.value !== '') {
       // Ensure valid address for both 0x and one1 formats
-      normalizedAddress = util.safeExec(util.normalizedAddress, [lastResortAddress], handleAddressError)
+      normalizedAddress = util.safeExec(util.normalizedAddress, [lastResortAddress.value], handleAddressError)
       if (!normalizedAddress) {
         return
       }
@@ -350,7 +350,16 @@ const Create = () => {
               addressValue={lastResortAddress}
               setAddressCallback={setLastResortAddress}
               extraSelectOptions={
-                [<Select.Option key='later' value=''> I want to do this later in my wallet </Select.Option>]
+                [
+                  <Select.Option key='later' value=''>
+                    <Space size='small' align='baseline'>
+                      I want to do this later in my wallet
+                      <Button type='text' onClick={() => setLastResortAddress({ value: '', label: 'I want to do this later in my wallet' })}>
+                        <CheckOutlined />
+                      </Button>
+                    </Space>
+                  </Select.Option>
+                ]
               }
             />
             <Hint>If you lost your authenticator, your can recover funds to this address</Hint>

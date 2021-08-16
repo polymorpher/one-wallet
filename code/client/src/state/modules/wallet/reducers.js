@@ -167,7 +167,7 @@ const reducer = handleActions(
     }),
 
     [walletActions.deleteKnownAddress]: (state, action) => {
-      const { [action.payload.address]: deleted, ...restKnownAddresses } = state.knownAddresses
+      const { [action.payload]: deleted, ...restKnownAddresses } = state.knownAddresses
 
       return {
         ...state,

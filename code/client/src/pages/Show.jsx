@@ -144,7 +144,7 @@ const Show = () => {
     }
   }
 
-  const [transferTo, setTransferTo] = useState('')
+  const [transferTo, setTransferTo] = useState({ value: '', label: '' })
   const [inputAmount, setInputAmount] = useState('')
   const [otpInput, setOtpInput] = useState('')
   const [otp2Input, setOtp2Input] = useState('')
@@ -205,7 +205,7 @@ const Show = () => {
     const invalidOtp = !otp
     const invalidOtp2 = wallet.doubleOtp && !otp2
     // Ensure valid address for both 0x and one1 formats
-    const dest = util.safeExec(util.normalizedAddress, [transferTo], handleAddressError)
+    const dest = util.safeExec(util.normalizedAddress, [transferTo.value], handleAddressError)
     if (checkDest && !dest) {
       return
     }
@@ -401,7 +401,7 @@ const Show = () => {
       onRevealAttemptFailed,
       onRevealSuccess: (txId) => {
         onRevealSuccess(txId)
-        message.success(`Recovery address is set to ${transferTo}`)
+        message.success(`Recovery address is set to ${transferTo.value}`)
         dispatch(walletActions.fetchWallet({ address }))
         showStats()
       }
@@ -570,7 +570,7 @@ const Show = () => {
             <Label><Hint>To</Hint></Label>
             <AddressInput
               addressValue={transferTo}
-              setAddressCallback={(value) => setTransferTo(value)}
+              setAddressCallback={setTransferTo}
               currentWallet={wallet}
             />
           </Space>
@@ -667,7 +667,7 @@ const Show = () => {
             <Label><Hint>Address</Hint></Label>
             <AddressInput
               addressValue={transferTo}
-              setAddressCallback={(value) => setTransferTo(value)}
+              setAddressCallback={setTransferTo}
               currentWallet={wallet}
             />
           </Space>

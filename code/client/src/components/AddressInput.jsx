@@ -1,5 +1,6 @@
-import { SearchOutlined } from '@ant-design/icons'
-import { Select, Space } from 'antd'
+import { CheckOutlined, CloseOutlined, SearchOutlined } from '@ant-design/icons'
+import { Select, Space, Button, Tooltip } from 'antd'
+import Text from 'antd/lib/typography/Text'
 import React, { useCallback, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
@@ -22,9 +23,16 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
 
   const { isMobile } = useWindowDimensions()
 
-  const onChangeAddress = useCallback((address) => {
-    setAddressCallback(address)
+  const deleteKnownAddress = useCallback((address) => {
+    setAddressCallback({ value: '' })
+    dispatch(walletActions.deleteKnownAddress(address))
+  }, [dispatch])
+
+  const onSearchAddress = useCallback((address) => {
+    setAddressCallback({ value: address, label: address })
   }, [setAddressCallback])
+
+  const walletsAddresses = wallets.map((wallet) => wallet.address)
 
   /**
    * Determines if the input wallet wallet is for the current wallet. Applicable for existing wallet management.
@@ -58,11 +66,13 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
   }, [knownAddresses, wallets, dispatch])
 
   const onSelectAddress = useCallback((address) => {
-    const validAddress = util.normalizedAddress(address)
+    const validAddress = util.normalizedAddress(address.value)
     const nowInMillis = new Date().valueOf()
 
     if (validAddress) {
       const existingKnownAddress = knownAddresses[validAddress]
+
+      setAddressCallback(address)
 
       dispatch(walletActions.setKnownAddress({
         label: existingKnownAddress?.label,
@@ -73,11 +83,11 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
         address: validAddress
       }))
     }
-  }, [knownAddresses])
+  }, [knownAddresses, setAddressCallback])
 
-  const showSelectManualInputAddress = util.safeOneAddress(addressValue) &&
-    !wallets[util.safeNormalizedAddress(addressValue)] &&
-    !Object.keys(knownAddresses).includes(util.safeNormalizedAddress(addressValue))
+  const showSelectManualInputAddress = util.safeOneAddress(addressValue.value) &&
+    !wallets[util.safeNormalizedAddress(addressValue.value)] &&
+    !Object.keys(knownAddresses).includes(util.safeNormalizedAddress(addressValue.value))
 
   const knownAddressesOptions = Object.keys(knownAddresses).map((address) => ({
     address,
@@ -89,6 +99,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
     <Select
       suffixIcon={<SearchOutlined />}
       placeholder='one1......'
+      labelInValue
       style={{
         width: isMobile ? '100%' : 500,
         borderBottom: '1px dashed black'
@@ -96,20 +107,50 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
       bordered={false}
       showSearch
       value={addressValue}
-      onChange={onChangeAddress}
-      onSearch={onChangeAddress}
-      onSelect={onSelectAddress}
+      onSearch={onSearchAddress}
     >
       {
         knownAddressesOptions
           .filter((knownAddress) => knownAddress.network === network && notCurrentWallet(knownAddress.address))
+          .sort((knownAddress) => knownAddress.label ? -1 : 0)
           .map((knownAddress, index) => {
             const addr = util.safeOneAddress(knownAddress.address)
+            const longAddressLabel = knownAddress.label ? `(${knownAddress.label}) ${addr}` : addr
+            const shortenAddressLabel = knownAddress.label ? `(${knownAddress.label}) ${util.ellipsisAddress(addr)}` : util.ellipsisAddress(addr)
+            const displayLabel = util.shouldShortenAddress({ walletName: knownAddress.label, isMobile })
+              ? shortenAddressLabel
+              : longAddressLabel
 
             return (
               <Select.Option key={index} value={util.safeOneAddress(knownAddress.address)}>
-                <Space size='middle' align='baseline'>
-                  {knownAddress.label ? `(${knownAddress.label}) ` : ''}{isMobile ? util.ellipsisAddress(addr) : addr}
+                <Space size='small' align='baseline'>
+                  <Tooltip title={addr}>
+                    <Text>
+                      {displayLabel}
+                    </Text>
+                  </Tooltip>
+                  {
+                    // Only display actions for addresses that are not selected.
+                    addressValue.value !== addr
+                      ? (
+                        <>
+                          <Button type='text' onClick={() => onSelectAddress({ value: addr, label: longAddressLabel, key: index })}>
+                            <CheckOutlined />
+                          </Button>
+                          {
+                            // User's wallets addresses are not deletable.
+                            !walletsAddresses.includes(knownAddress.address)
+                              ? (
+                                <Button type='text' onClick={() => deleteKnownAddress(knownAddress.address)}>
+                                  <CloseOutlined />
+                                </Button>
+                                )
+                              : <></>
+                          }
+                        </>
+                        )
+                      : <></>
+                  }
                 </Space>
               </Select.Option>
             )
@@ -117,7 +158,16 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
       }
       {
         showSelectManualInputAddress
-          ? <Select.Option key='address-value' value={addressValue}>{addressValue}</Select.Option>
+          ? (
+            <Select.Option key='address-value' value={addressValue.value}>
+              <Space size='small' align='baseline'>
+                {addressValue.value}
+                <Button type='text' onClick={() => onSelectAddress(addressValue)}>
+                  <CheckOutlined />
+                </Button>
+              </Space>
+            </Select.Option>
+            )
           : <></>
       }
       {
