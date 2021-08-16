@@ -1,6 +1,5 @@
 import { CheckOutlined, CloseOutlined, SearchOutlined } from '@ant-design/icons'
-import { Select, Space, Button, Tooltip } from 'antd'
-import Text from 'antd/lib/typography/Text'
+import { Select, Space, Button, Tooltip, Row, Col } from 'antd'
 import React, { useCallback, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
@@ -63,7 +62,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
         numUsed: 0
       }))
     })
-  }, [knownAddresses, wallets, dispatch])
+  }, [])
 
   const onSelectAddress = useCallback((address) => {
     const validAddress = util.normalizedAddress(address.value)
@@ -121,37 +120,37 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
               ? shortenAddressLabel
               : longAddressLabel
 
+            // Only display actions for addresses that are not selected.
+            // User's wallets addresses are not deletable.
+            const displayDeleteButton = addressValue.value !== addr && !walletsAddresses.includes(knownAddress.address)
+
             return (
               <Select.Option key={index} value={util.safeOneAddress(knownAddress.address)}>
-                <Space size='small' align='baseline'>
-                  <Tooltip title={addr}>
-                    <Text>
-                      {displayLabel}
-                    </Text>
-                  </Tooltip>
-                  {
-                    // Only display actions for addresses that are not selected.
-                    addressValue.value !== addr
-                      ? (
-                        <>
-                          <Button type='text' onClick={() => onSelectAddress({ value: addr, label: longAddressLabel, key: index })}>
-                            <CheckOutlined />
+                <Row gutter={16} align='left'>
+                  <Col span={!displayDeleteButton ? 24 : 21}>
+                    <Tooltip title={addr}>
+                      <Button
+                        block
+                        type='text'
+                        style={{ textAlign: 'left' }}
+                        onClick={() => onSelectAddress({ value: addr, label: longAddressLabel, key: index })}
+                      >
+                        {displayLabel}
+                      </Button>
+                    </Tooltip>
+                  </Col>
+                  <Col span={3}>
+                    {
+                      displayDeleteButton
+                        ? (
+                          <Button type='text' style={{ textAlign: 'left' }} onClick={() => deleteKnownAddress(knownAddress.address)}>
+                            <CloseOutlined />
                           </Button>
-                          {
-                            // User's wallets addresses are not deletable.
-                            !walletsAddresses.includes(knownAddress.address)
-                              ? (
-                                <Button type='text' onClick={() => deleteKnownAddress(knownAddress.address)}>
-                                  <CloseOutlined />
-                                </Button>
-                                )
-                              : <></>
-                          }
-                        </>
-                        )
-                      : <></>
-                  }
-                </Space>
+                          )
+                        : <></>
+                    }
+                  </Col>
+                </Row>
               </Select.Option>
             )
           })
