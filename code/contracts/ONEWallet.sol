@@ -2,9 +2,11 @@
 pragma solidity ^0.8.4;
 
 import "./TokenTracker.sol";
+import "./DomainUser.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract ONEWallet is TokenTracker {
+
+contract ONEWallet is TokenTracker, DomainUser {
     event InsufficientFund(uint256 amount, uint256 balance, address dest);
     event ExceedDailyLimit(uint256 amount, uint256 limit, uint256 current, address dest);
     event UnknownTransferError(address dest);
@@ -12,13 +14,14 @@ contract ONEWallet is TokenTracker {
     event PaymentReceived(uint256 amount, address from);
     event PaymentSent(uint256 amount, address dest);
     event AutoRecoveryTriggered(address from);
+    event AutoRecoveryTriggeredPrematurely(address from, uint256 requiredTime);
     event RecoveryFailure();
 
     /// In future versions, it is planned that we may allow the user to extend the wallet's life through a function call. When that is implemented, the following variables may no longer be immutable, with the exception of root which shall serve as an identifier of the wallet
-    bytes32 immutable root; // Note: @ivan brought up a good point in reducing this to 16-bytes so hash of two consecutive nodes can be done in a single word (to save gas and reduce blockchain clutter). Let's not worry about that for now and re-evalaute this later.
+    bytes32 root; // Note: @ivan brought up a good point in reducing this to 16-bytes so hash of two consecutive nodes can be done in a single word (to save gas and reduce blockchain clutter). Let's not worry about that for now and re-evalaute this later.
     uint8 immutable height; // including the root. e.g. for a tree with 4 leaves, the height is 3.
     uint8 immutable interval; // otp interval in seconds, default is 30
-    uint32 immutable t0; // starting time block (effectiveTime (in ms) / interval)
+    uint32 t0; // starting time block (effectiveTime (in ms) / interval)
     uint32 immutable lifespan;  // in number of block (e.g. 1 block per [interval] seconds)
     uint8 immutable maxOperationsPerInterval; // number of transactions permitted per OTP interval. Each transaction shall have a unique nonce. The nonce is auto-incremented within each interval
     uint32 immutable _numLeaves; // 2 ** (height - 1)
@@ -28,6 +31,9 @@ contract ONEWallet is TokenTracker {
     uint256 dailyLimit; // uint128 is sufficient, but uint256 is more efficient since EVM works with 32-byte words.
     uint256 spentToday; // note: instead of tracking the money spent for the last 24h, we are simply tracking money spent per 24h block based on UTC time. It is good enough for now, but we may want to change this later.
     uint32 lastTransferDay;
+    uint256 lastOperationTime; // in seconds; record the time for the last successful reveal
+    address payable forwardAddress;
+    address[] backlinkAddresses;
 
     /// nonce tracking
     mapping(uint32 => uint8) nonces; // keys: otp index (=timestamp in seconds / interval - t0); values: the expected nonce for that otp interval. An reveal with a nonce less than the expected value will be rejected
@@ -38,13 +44,15 @@ contract ONEWallet is TokenTracker {
     uint32 constant SECONDS_PER_DAY = 86400;
     uint256 constant AUTO_RECOVERY_TRIGGER_AMOUNT = 1 ether;
     uint32 constant MAX_COMMIT_SIZE = 120;
+    uint256 constant AUTO_RECOVERY_MANDATORY_WAIT_TIME = 14 days;
 
-    uint32 constant majorVersion = 0x8; // a change would require client to migrate
-    uint32 constant minorVersion = 0x2; // a change would not require the client to migrate
+    uint32 constant majorVersion = 0x9; // a change would require client to migrate
+    uint32 constant minorVersion = 0x0; // a change would not require the client to migrate
+
 
     enum OperationType {
         TRACK, UNTRACK, TRANSFER_TOKEN, OVERRIDE_TRACK, TRANSFER, SET_RECOVERY_ADDRESS, RECOVER,
-        REPLACE // reserved, not implemented yet. This is for replacing the root and set up new parameters (t0, lifespan)
+        REPLACE, UPGRADE, BULK_TRANSFER_TOKENS, BUY_DOMAIN // reserved, not implemented yet. This is for replacing the root and set up new parameters (t0, lifespan)
     }
     /// commit management
     struct Commit {
@@ -83,10 +91,13 @@ contract ONEWallet is TokenTracker {
         if (msg.sender == address(this)) {
             return;
         }
+        if (block.timestamp < lastOperationTime + AUTO_RECOVERY_MANDATORY_WAIT_TIME) {
+            emit AutoRecoveryTriggeredPrematurely(msg.sender, lastOperationTime + AUTO_RECOVERY_MANDATORY_WAIT_TIME);
+            return;
+        }
         emit AutoRecoveryTriggered(msg.sender);
         require(_drain());
     }
-
 
     function retire() external returns (bool)
     {
@@ -173,7 +184,7 @@ contract ONEWallet is TokenTracker {
 
     function commit(bytes32 hash, bytes32 paramsHash, bytes32 verificationHash) external {
         _cleanupCommits();
-        Commit memory nc = Commit(hash, paramsHash, verificationHash, uint32(block.timestamp), false);
+        Commit memory nc = Commit(paramsHash, verificationHash, uint32(block.timestamp), false);
         require(commits.length < MAX_COMMIT_SIZE, "Too many commits");
         commits.push(hash);
         commitLocker[hash].push(nc);
@@ -184,6 +195,9 @@ contract ONEWallet is TokenTracker {
     function _drain() internal returns (bool) {
         // this may be triggered after revealing the proof, and we must prevent revert in all cases
         (bool success,) = lastResortAddress.call{value : address(this).balance}("");
+        if (success) {
+            forwardAddress = lastResortAddress;
+        }
         return success;
     }
 
@@ -325,6 +339,8 @@ contract ONEWallet is TokenTracker {
             _recover();
         } else if (operationType == OperationType.SET_RECOVERY_ADDRESS) {
             _setRecoveryAddress(dest);
+        } else if (operationType == OperationType.BUY_DOMAIN) {
+            _buyDomainEncoded(data, amount, uint8(tokenId), contractAddress, dest);
         }
     }
 
@@ -432,16 +448,17 @@ contract ONEWallet is TokenTracker {
 
     function _completeReveal(bytes32 commitHash, uint32 commitIndex, OperationType operationType) internal {
         Commit[] storage cc = commitLocker[commitHash];
-        assert(cc.length > 0, "Invalid commit hash");
-        assert(cc.length > commitIndex, "Invalid commitIndex");
+        assert(cc.length > 0);
+        assert(cc.length > commitIndex);
         Commit storage c = cc[commitIndex];
-        assert(c.timestamp > 0, "Invalid commit timestamp");
+        assert(c.timestamp > 0);
         if (operationType != OperationType.RECOVER) {
             uint32 index = uint32(c.timestamp) / interval - t0;
             _incrementNonce(index);
             _cleanupNonces();
         }
         c.completed = true;
+        lastOperationTime = block.timestamp;
     }
 
     /// This function removes all tracked nonce values correspond to interval blocks that are older than block.timestamp - REVEAL_MAX_DELAY. In doing so, extraneous data in the blockchain is removed, and both nonces and nonceTracker are bounded in size.
