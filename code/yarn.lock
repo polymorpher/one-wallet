@@ -1126,7 +1126,7 @@
 
 "@ensdomains/subdomain-registrar-core@https://github.com/polymorpher/subdomain-registrar-core":
   version "0.2.3"
-  resolved "https://github.com/polymorpher/subdomain-registrar-core#2a4230c6e5970608489c5e8f63a45c2674e47f4a"
+  resolved "https://github.com/polymorpher/subdomain-registrar-core#c4316b91f778232dc56783ee7a6c189eff24c352"
 
 "@eslint/eslintrc@^0.4.3":
   version "0.4.3"

@@ -2,7 +2,9 @@
 pragma solidity ^0.8.4;
 
 import "@ensdomains/subdomain-registrar-core/contracts/interfaces/IRegistrar.sol";
+import "@ensdomains/subdomain-registrar-core/contracts/Resolver.sol";
 import "@ensdomains/subdomain-registrar-core/contracts/interfaces/IReverseRegistrar.sol";
+import "@ensdomains/subdomain-registrar-core/contracts/interfaces/IDefaultReverseResolver.sol";
 
 contract Registrar is IRegistrar {
     function query(bytes32 /*label*/, string calldata /*subdomain*/) external override pure returns (string memory domain, uint signupFee, uint rent, uint referralFeePPM){
@@ -17,7 +19,7 @@ contract Registrar is IRegistrar {
         return 0;
     }
 
-    function payRent(bytes32 /*label*/, string calldata /*subdomain*/) external override  payable {
+    function payRent(bytes32 /*label*/, string calldata /*subdomain*/) external override payable {
 
     }
 }
