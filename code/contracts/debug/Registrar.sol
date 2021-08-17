@@ -36,6 +36,10 @@ contract Registrar is IRegistrar {
     function register(bytes32 /*label*/, string calldata /*subdomain*/, address /*_subdomainOwner*/, uint /*duration*/, string calldata /*url*/, address /*resolver*/) override external payable {
 
     }
+
+    function rentPrice(string memory name, uint duration) override virtual external view {
+
+    }
 }
 
 contract ReverseRegistrar is IReverseRegistrar {
