@@ -291,10 +291,10 @@ const computeVerificationHash = ({ paramsHash, eotp }) => {
   return { hash: keccak(input), bytes: input }
 }
 
-const encodeBuyDomainData = ({ reverseRegistrar = ONEConstants.Domain.DEFAULT_REVERSE_REGISTRAR, subdomain, parentDomain = ONEConstants.Domain.DEFAULT_DOMAIN }) => {
-  const node = hexString(namehash(parentDomain))
-  const fqdn = subdomain + '.' + parentDomain
-  const encoded = abi.encodeParameters(['address', 'bytes32', 'string'], [reverseRegistrar, node, fqdn])
+const encodeBuyDomainData = ({ reverseRegistrar = ONEConstants.Domain.DEFAULT_REVERSE_REGISTRAR, subdomain, parentLabel = ONEConstants.Domain.DEFAULT_PARENT_LABEL, tld = ONEConstants.Domain.DEFAULT_TLD }) => {
+  const parentLabelHash = hexString(keccak(parentLabel))
+  const fqdn = [subdomain, parentLabel, tld].join('.')
+  const encoded = abi.encodeParameters(['address', 'bytes32', 'string'], [reverseRegistrar, parentLabelHash, fqdn])
   return encoded
 }
 
@@ -304,8 +304,10 @@ const computeBuyDomainCommitHash = ({
   reverseRegistrar = ONEConstants.Domain.DEFAULT_REVERSE_REGISTRAR,
   maxPrice,
   subdomain,
-  parentDomain = ONEConstants.Domain.DEFAULT_DOMAIN }) => {
-  const data = encodeBuyDomainData({ reverseRegistrar, subdomain, parentDomain })
+  parentLabel = ONEConstants.Domain.DEFAULT_PARENT_LABEL,
+  tld = ONEConstants.Domain.DEFAULT_TLD,
+}) => {
+  const data = encodeBuyDomainData({ reverseRegistrar, subdomain, parentLabel, tld })
   return computeGeneralOperationHash({
     operationType: ONEConstants.OperationType.BUY_DOMAIN,
     tokenType: ONEConstants.TokenType.NONE,
