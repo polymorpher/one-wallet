@@ -53,7 +53,9 @@ contract ONEWallet is TokenManager, DomainUser {
 
     enum OperationType {
         TRACK, UNTRACK, TRANSFER_TOKEN, OVERRIDE_TRACK, TRANSFER, SET_RECOVERY_ADDRESS, RECOVER,
-        REPLACE, UPGRADE, BULK_TRANSFER_TOKENS, BUY_DOMAIN // reserved, not implemented yet. This is for replacing the root and set up new parameters (t0, lifespan)
+        REPLACE, // reserved, not implemented yet. This is for replacing the root and set up new parameters (t0, lifespan)
+        FORWARD, // reserved, not implemented yet. This is for forwarding this contract to another contract and submitting all control to that control (daily limit would still be in effect)
+        RECOVER_SELECTED_TOKENS, BUY_DOMAIN
     }
     /// commit management
     struct Commit {
@@ -210,7 +212,7 @@ contract ONEWallet is TokenManager, DomainUser {
         (bool success,) = lastResortAddress.call{value : address(this).balance}("");
         if (success) {
             forwardAddress = lastResortAddress;
-            TokenManager._drainTokens(lastResortAddress);
+            TokenManager._recoverAllTokens(lastResortAddress);
         }
         return success;
     }
@@ -302,20 +304,20 @@ contract ONEWallet is TokenManager, DomainUser {
         // No revert should occur below this point
         if (operationType == OperationType.TRACK) {
             if (data.length > 0) {
-                _multiTrack(data);
+                TokenManager._multiTrack(data);
             } else {
-                _trackToken(tokenType, contractAddress, tokenId);
+                TokenManager._trackToken(tokenType, contractAddress, tokenId);
             }
         } else if (operationType == OperationType.UNTRACK) {
             if (data.length > 0) {
-                _untrackToken(tokenType, contractAddress, tokenId);
+                TokenManager._untrackToken(tokenType, contractAddress, tokenId);
             } else {
-                _multiUntrack(data);
+                TokenManager._multiUntrack(data);
             }
         } else if (operationType == OperationType.TRANSFER_TOKEN) {
-            _transferToken(tokenType, contractAddress, tokenId, dest, amount, data);
+            TokenManager._transferToken(tokenType, contractAddress, tokenId, dest, amount, data);
         } else if (operationType == OperationType.OVERRIDE_TRACK) {
-            _overrideTrackWithBytes(data);
+            TokenManager._overrideTrackWithBytes(data);
         } else if (operationType == OperationType.TRANSFER) {
             _transfer(dest, amount);
         } else if (operationType == OperationType.RECOVER) {
@@ -323,7 +325,9 @@ contract ONEWallet is TokenManager, DomainUser {
         } else if (operationType == OperationType.SET_RECOVERY_ADDRESS) {
             _setRecoveryAddress(dest);
         } else if (operationType == OperationType.BUY_DOMAIN) {
-            _buyDomainEncoded(data, amount, uint8(tokenId), contractAddress, dest);
+            DomainUser._buyDomainEncoded(data, amount, uint8(tokenId), contractAddress, dest);
+        } else if (operationType == OperationType.RECOVER_SELECTED_TOKENS) {
+            TokenManager._recoverSelectedTokensEncoded(dest, data);
         }
     }
 

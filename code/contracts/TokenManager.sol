@@ -23,7 +23,7 @@ abstract contract TokenManager is IERC721Receiver, IERC1155Receiver, Forwardable
     event TokenTransferFailed(TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount);
     event TokenTransferError(TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount, string reason);
     event TokenTransferSucceeded(TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount);
-    event TokensRecovered(TokenType tokenType, address contractAddress, uint256 tokenId, uint256 balance);
+    event TokenRecovered(TokenType tokenType, address contractAddress, uint256 tokenId, uint256 balance);
 
     // We track tokens in the contract instead of at the client so users can immediately get a record of what tokens they own when they restore their wallet at a new client
     // The tracking of ERC721 and ERC1155 are automatically established upon a token is transferred to this wallet. The tracking of ERC20 needs to be manually established by the client.
@@ -262,19 +262,33 @@ abstract contract TokenManager is IERC721Receiver, IERC1155Receiver, Forwardable
         return 0;
     }
 
-    function _drainTokens(address dest) internal {
-        // to prevent malicious contracts from mutating the state of `trackedTokens`, causing infinite loop and eventually out of gas error
-        TrackedToken[] memory trackedTokenClone = trackedTokens;
+    function _recoverToken(address dest, TrackedToken storage t) internal {
+        uint256 tokenId = t.tokenId;
+        TokenType tokenType = t.tokenType;
+        address contractAddress = t.contractAddress;
+        uint256 balance = _getBalance(t);
+        if (balance > 0) {
+            _transferToken(tokenType, contractAddress, tokenId, dest, balance, bytes(""));
+            emit TokenRecovered(tokenType, contractAddress, tokenId, balance);
+        }
+    }
 
-        for (uint32 i = 0; i < trackedTokenClone.length; i++) {
-            uint256 tokenId = trackedTokenClone[i].tokenId;
-            TokenType tokenType = trackedTokenClone[i].tokenType;
-            address contractAddress = trackedTokenClone[i].contractAddress;
-            uint256 balance = _getBalance(trackedTokenClone[i]);
-            if (balance > 0) {
-                _transferToken(tokenType, contractAddress, tokenId, dest, balance, bytes(""));
-                emit TokensRecovered(tokenType, contractAddress, tokenId, balance);
-            }
+    function _recoverSelectedTokens(address dest, uint32[] memory trackedIndices) internal {
+        for (uint32 i = 0; i < trackedIndices.length; i++) {
+            _recoverToken(dest, trackedTokens[trackedIndices[i]]);
+        }
+    }
+
+    function _recoverSelectedTokensEncoded(address dest, bytes calldata data) internal {
+        uint32[] memory indices = abi.decode(data, (uint32[]));
+        _recoverSelectedTokens(dest, indices);
+    }
+
+    function _recoverAllTokens(address dest) internal {
+        // Caution: be careful to prevent malicious contracts may send tokens to this contract during transfer, causing this contract to track more tokens during this drain process. This may result an infinite loop so we need to make sure we only go over a fixed length of items in the loop, to prevent out of gas error. It is unclear from the spec when the ending condition of a for loop is evaluated (whether it is evaluated on every iteration, or at the beginning).
+        uint256 trackedTokenLength = trackedTokens.length;
+        for (uint32 i = 0; i < trackedTokenLength; i++) {
+            _recoverToken(dest, trackedTokens[i]);
         }
     }
 }
