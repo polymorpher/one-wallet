@@ -5,6 +5,8 @@ import "@ensdomains/subdomain-registrar-core/contracts/interfaces/IRegistrar.sol
 import "@ensdomains/subdomain-registrar-core/contracts/interfaces/IReverseRegistrar.sol";
 
 contract DomainUser {
+    uint256 constant MIN_DOMAIN_RENT_DURATION = 31536000;
+
     event DomainRegistered(address subdomainRegistrar, string subdomain, bytes32 domainLabel);
     event ReverseDomainClaimed(address reverseRegistrar, bytes32 nodeHash);
     event InvalidFQDN(string fqdn, uint32 subdomainLabelLength);
@@ -28,10 +30,10 @@ contract DomainUser {
         string memory subdomain = string(subdomainBytes);
         return _buyDomain(IRegistrar(reg), IReverseRegistrar(rev), resolver, maxPrice, subdomain, node, fqdn);
     }
-
-
+    
     function _buyDomain(IRegistrar reg, IReverseRegistrar rev, address resolver, uint256 maxPrice, string memory subdomain, bytes32 node, string memory fqdn) internal returns (bool) {
-        (bool success, bytes memory ret) = address(reg).call{value : maxPrice}(abi.encodeWithSignature("register(bytes32,string,address,address,address)", node, subdomain, address(this), address(0x0), resolver));
+        //        (bool success, bytes memory ret) = address(reg).call{value : maxPrice}(abi.encodeWithSignature("register(bytes32,string,address,address,address)", node, subdomain, address(this), address(0x0), resolver));
+        (bool success, bytes memory ret) = address(reg).call{value : maxPrice}(abi.encodeWithSignature("register(bytes32,string,address,uint,string,address)", node, subdomain, address(this), MIN_DOMAIN_RENT_DURATION, "", resolver));
         if (!success) {
             string memory reason = _revertReason(ret);
             emit DomainRegistrationFailed(reason);
