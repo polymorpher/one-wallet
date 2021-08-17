@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.4;
 
+import "./Forwardable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
@@ -8,13 +9,14 @@ import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
 
-contract TokenTracker is IERC721Receiver, IERC1155Receiver {
+abstract contract TokenManager is IERC721Receiver, IERC1155Receiver, Forwardable {
 
     /// token tracking
     enum TokenType{
         ERC20, ERC721, ERC1155, NONE
     }
     event ReceivedToken(TokenType tokenType, uint256 amount, address from, address tokenContract, address operator, uint256 tokenId, bytes data);
+    event ForwardedToken(TokenType tokenType, uint256 amount, address from, address tokenContract, address operator, uint256 tokenId, bytes data);
     event TokenTracked(TokenType tokenType, address contractAddress, uint256 tokenId);
     event TokenUntracked(TokenType tokenType, address contractAddress, uint256 tokenId);
     event TokenNotFound(TokenType tokenType, address contractAddress, uint256 tokenId);
@@ -35,8 +37,6 @@ contract TokenTracker is IERC721Receiver, IERC1155Receiver {
     mapping(bytes32 => uint256[]) trackedTokenPositions; // keccak256(bytes.concat(byte32(uint(tokenType)), bytes32(contractAddress), bytes32(tokenId)) => positions in trackedTokens. Positions should be of length 1 except in very rare occasion of collision
     TrackedToken[] trackedTokens;
 
-    constructor(){}
-
     function onERC1155Received(
         address operator,
         address from,
@@ -45,6 +45,11 @@ contract TokenTracker is IERC721Receiver, IERC1155Receiver {
         bytes calldata data
     ) external override returns (bytes4){
         emit ReceivedToken(TokenType.ERC1155, value, from, msg.sender, operator, id, data);
+        address payable forwardAddress = _getForwardAddress();
+        if (forwardAddress != address(0)) {
+            _transferToken(TokenType.ERC1155, msg.sender, id, forwardAddress, value, data);
+            return this.onERC1155Received.selector;
+        }
         _trackToken(TokenType.ERC1155, msg.sender, id);
         return this.onERC1155Received.selector;
     }
@@ -70,6 +75,11 @@ contract TokenTracker is IERC721Receiver, IERC1155Receiver {
         bytes calldata data
     ) external override returns (bytes4){
         emit ReceivedToken(TokenType.ERC721, 1, from, msg.sender, operator, tokenId, data);
+        address payable forwardAddress = _getForwardAddress();
+        if (forwardAddress != address(0)) {
+            _transferToken(TokenType.ERC721, msg.sender, tokenId, forwardAddress, 1, data);
+            return this.onERC721Received.selector;
+        }
         _trackToken(TokenType.ERC721, msg.sender, tokenId);
         return this.onERC721Received.selector;
     }
@@ -236,25 +246,33 @@ contract TokenTracker is IERC721Receiver, IERC1155Receiver {
         }
     }
 
-    function _getBalance(TrackedToken t) internal returns (uint256){
-        if (tokenType == TokenType.ERC20) {
-            return IERC20(contractAddress).balanceOf(address(this));
-        } else if (tokenType == TokenType.ERC721) {
-            return IERC721(contractAddress).balanceOf(address(this));
-        } else if (tokenType == TokenType.ERC1155) {
-            return IERC1155(contractAddress).balanceOf(address(this));
+    function _getBalance(TrackedToken memory t) internal view returns (uint256){
+        if (t.tokenType == TokenType.ERC20) {
+            return IERC20(t.contractAddress).balanceOf(address(this));
+        } else if (t.tokenType == TokenType.ERC721) {
+            bool owned = IERC721(t.contractAddress).ownerOf(t.tokenId) == address(this);
+            if (owned) {
+                return 1;
+            } else {
+                return 0;
+            }
+        } else if (t.tokenType == TokenType.ERC1155) {
+            return IERC1155(t.contractAddress).balanceOf(address(this), t.tokenId);
         }
         return 0;
     }
 
     function _drainTokens(address dest) internal {
-        for (uint32 i = 0; i < trackedTokens.length; i++) {
-            uint256 tokenId = trackedTokens[i].tokenId;
-            TokenType tokenType = trackedTokens[i].tokenType;
-            address contractAddress = trackedTokens[i].contractAddress;
-            uint256 balance = _getBalance(trackedTokens[i]);
+        // to prevent malicious contracts from mutating the state of `trackedTokens`, causing infinite loop and eventually out of gas error
+        TrackedToken[] memory trackedTokenClone = trackedTokens;
+
+        for (uint32 i = 0; i < trackedTokenClone.length; i++) {
+            uint256 tokenId = trackedTokenClone[i].tokenId;
+            TokenType tokenType = trackedTokenClone[i].tokenType;
+            address contractAddress = trackedTokenClone[i].contractAddress;
+            uint256 balance = _getBalance(trackedTokenClone[i]);
             if (balance > 0) {
-                _transferToken(tokenType, contractAddress, tokenId, dest, amount, bytes(""));
+                _transferToken(tokenType, contractAddress, tokenId, dest, balance, bytes(""));
                 emit TokensRecovered(tokenType, contractAddress, tokenId, balance);
             }
         }

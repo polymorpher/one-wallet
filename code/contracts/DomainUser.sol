@@ -4,7 +4,7 @@ pragma solidity ^0.8.4;
 import "@ensdomains/subdomain-registrar-core/contracts/interfaces/IRegistrar.sol";
 import "@ensdomains/subdomain-registrar-core/contracts/interfaces/IReverseRegistrar.sol";
 
-contract DomainUser {
+abstract contract DomainUser {
     uint256 constant MIN_DOMAIN_RENT_DURATION = 31536000;
 
     event DomainRegistered(address subdomainRegistrar, string subdomain, bytes32 domainLabel);

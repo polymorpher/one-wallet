@@ -1,18 +1,19 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.4;
 
-import "./TokenTracker.sol";
+import "./TokenManager.sol";
 import "./DomainUser.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 
-contract ONEWallet is TokenTracker, DomainUser {
+contract ONEWallet is TokenManager, DomainUser {
     event InsufficientFund(uint256 amount, uint256 balance, address dest);
     event ExceedDailyLimit(uint256 amount, uint256 limit, uint256 current, address dest);
     event UnknownTransferError(address dest);
     event LastResortAddressNotSet();
     event PaymentReceived(uint256 amount, address from);
     event PaymentSent(uint256 amount, address dest);
+    event PaymentForwarded(uint256 amount, address dest);
     event AutoRecoveryTriggered(address from);
     event AutoRecoveryTriggeredPrematurely(address from, uint256 requiredTime);
     event RecoveryFailure();
@@ -32,8 +33,8 @@ contract ONEWallet is TokenTracker, DomainUser {
     uint256 spentToday; // note: instead of tracking the money spent for the last 24h, we are simply tracking money spent per 24h block based on UTC time. It is good enough for now, but we may want to change this later.
     uint32 lastTransferDay;
     uint256 lastOperationTime; // in seconds; record the time for the last successful reveal
-    address payable forwardAddress;
-    address[] backlinkAddresses;
+    address payable forwardAddress; // a non-empty forward address assumes full control of this contract. A forward address can only be set upon a successful recovery or upgrade operation.
+    address[] backlinkAddresses; // to be set in next version - these are addresses forwarding funds and tokens to this contract AND must have their forwardAddress updated if this contract's forwardAddress is set or updated. One example of such an address is a previous version of the wallet "upgrading" to a new version. See more at https://github.com/polymorpher/one-wallet/issues/78
 
     /// nonce tracking
     mapping(uint32 => uint8) nonces; // keys: otp index (=timestamp in seconds / interval - t0); values: the expected nonce for that otp interval. An reveal with a nonce less than the expected value will be rejected
@@ -80,8 +81,20 @@ contract ONEWallet is TokenTracker, DomainUser {
         _numLeaves = uint32(2 ** (height_ - 1));
     }
 
+    function _getForwardAddress() internal override view returns (address payable){
+        return forwardAddress;
+    }
+
     receive() external payable {
         emit PaymentReceived(msg.value, msg.sender);
+        if (forwardAddress != address(0)) {
+            (bool success,) = forwardAddress.call{value : msg.value}("");
+            if (!success) {
+                revert("Forward payment failure");
+            }
+            emit PaymentForwarded(msg.value, msg.sender);
+            return;
+        }
         if (msg.value != AUTO_RECOVERY_TRIGGER_AMOUNT) {
             return;
         }
@@ -197,7 +210,7 @@ contract ONEWallet is TokenTracker, DomainUser {
         (bool success,) = lastResortAddress.call{value : address(this).balance}("");
         if (success) {
             forwardAddress = lastResortAddress;
-            _drainTokens(lastResortAddress);
+            TokenManager._drainTokens(lastResortAddress);
         }
         return success;
     }
@@ -276,14 +289,16 @@ contract ONEWallet is TokenTracker, DomainUser {
     function reveal(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp,
         OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address payable dest, uint256 amount, bytes calldata data)
     external {
-        _isCorrectProof(neighbors, indexWithNonce, eotp);
-        if (indexWithNonce == _numLeaves - 1) {
-            require(operationType == OperationType.RECOVER, "Last operation reserved for recover");
+        if (msg.sender != forwardAddress) {
+            _isCorrectProof(neighbors, indexWithNonce, eotp);
+            if (indexWithNonce == _numLeaves - 1) {
+                require(operationType == OperationType.RECOVER, "Last operation reserved for recover");
+            }
+            (bytes32 commitHash, bytes32 paramsHash) = _getRevealHash(neighbors[0], indexWithNonce, eotp,
+                operationType, tokenType, contractAddress, tokenId, dest, amount, data);
+            uint32 commitIndex = _verifyReveal(commitHash, indexWithNonce, paramsHash, eotp, operationType);
+            _completeReveal(commitHash, commitIndex, operationType);
         }
-        (bytes32 commitHash, bytes32 paramsHash) = _getRevealHash(neighbors[0], indexWithNonce, eotp,
-            operationType, tokenType, contractAddress, tokenId, dest, amount, data);
-        uint32 commitIndex = _verifyReveal(commitHash, indexWithNonce, paramsHash, eotp, operationType);
-        _completeReveal(commitHash, commitIndex, operationType);
         // No revert should occur below this point
         if (operationType == OperationType.TRACK) {
             if (data.length > 0) {
