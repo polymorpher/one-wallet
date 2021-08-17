@@ -22,7 +22,7 @@ import {
   Tooltip,
   Col
 } from 'antd'
-import { RedoOutlined, LoadingOutlined, QuestionCircleOutlined, CheckOutlined } from '@ant-design/icons'
+import { RedoOutlined, LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import humanizeDuration from 'humanize-duration'
 import AnimatedSection from '../components/AnimatedSection'
 import b32 from 'hi-base32'
@@ -80,7 +80,28 @@ const Create = () => {
   // eslint-disable-next-line no-unused-vars
   const [seed2, setSeed2] = useState(generateOtpSeed())
   const [duration, setDuration] = useState(WalletConstants.defaultDuration)
-  const [lastResortAddress, setLastResortAddress] = useState({ value: '', label: '' })
+
+  const oneWalletTreasuryOneAddress = util.safeOneAddress(WalletConstants.oneWalletTreasury.address)
+
+  // Used for Recovery address setup. Only used when user does not choose a Recovery address.
+  const oneWalletTreasurySelectOption = {
+    value: oneWalletTreasuryOneAddress,
+    label: `(1wallet Treasury) ${oneWalletTreasuryOneAddress}`
+  }
+
+  // A valid wallet of user's wallets in the network can be used as default recovery wallet.
+  const defaultRecoveryWallet = Object.keys(wallets)
+    .map((address) => ({ ...wallets[address], oneAddress: util.safeOneAddress(wallets[address].address) }))
+    .find((wallet) => util.safeOneAddress(wallet.address) && wallet.network === network)
+
+  const defaultRecoveryAddress = defaultRecoveryWallet
+    ? {
+        value: defaultRecoveryWallet.oneAddress,
+        label: `(${defaultRecoveryWallet.name}) ${defaultRecoveryWallet.oneAddress}`
+      }
+    : oneWalletTreasurySelectOption
+
+  const [lastResortAddress, setLastResortAddress] = useState(defaultRecoveryAddress)
   const [dailyLimit] = useState(WalletConstants.defaultDailyLimit)
 
   const [worker, setWorker] = useState()
@@ -352,11 +373,17 @@ const Create = () => {
               setAddressCallback={setLastResortAddress}
               extraSelectOptions={
                 [
-                  <Select.Option key='later' value=''>
+                  <Select.Option key='later' value={util.safeOneAddress(WalletConstants.oneWalletTreasury.address)}>
                     <Row gutter={16} align='left'>
                       <Col span={24}>
-                        <Button type='text' style={{ textAlign: 'left' }} block onClick={() => setLastResortAddress({ value: '', label: 'I want to do this later in my wallet' })}>
-                          I want to do this later in my wallet
+                        <Button
+                          type='text'
+                          style={{ textAlign: 'left' }}
+                          block
+                          onClick={() =>
+                            setLastResortAddress(oneWalletTreasurySelectOption)}
+                        >
+                          (1wallet Treasury) {util.safeOneAddress(WalletConstants.oneWalletTreasury.address)}
                         </Button>
                       </Col>
                     </Row>
