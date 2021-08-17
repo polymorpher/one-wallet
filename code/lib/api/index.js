@@ -331,7 +331,7 @@ const api = {
           throw new Error('Unsupported network')
         }
         const c = await resolver.at(ONEConstants.Domain.DEFAULT_RESOLVER)
-        const node = ONEUtil.namehash(name)
+        const node = ONEUtil.hexString(ONEUtil.namehash(name))
         const address = await c.addr(node)
         return address
       },
@@ -348,6 +348,7 @@ const api = {
         buffer.set(label, 32)
         const node = ONEUtil.keccak(buffer)
         const nodeHex = ONEUtil.hexString(node)
+        console.log(nodeHex)
         const c = await reverseResolver.at(ONEConstants.Domain.DEFAULT_REVERSE_RESOLVER)
         const name = await c.name(nodeHex)
         return name
@@ -461,6 +462,8 @@ const api = {
     }
   },
 }
+
+window.ONEWallet = { api }
 
 module.exports = {
   initAPI,
