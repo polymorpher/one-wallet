@@ -1,6 +1,6 @@
 const { sha256: fastSHA256, sha256b, processOtpSeed, namehash, DEPRECATED } = require('./util')
 // eslint-disable-next-line no-unused-vars
-const { hexView, genOTP, hexStringToBytes, keccak, bytesEqual } = require('./util')
+const { hexView, hexString, genOTP, hexStringToBytes, keccak, bytesEqual } = require('./util')
 const ONEConstants = require('./constants')
 const BN = require('bn.js')
 const AES = require('aes-js')
@@ -292,7 +292,7 @@ const computeVerificationHash = ({ paramsHash, eotp }) => {
 }
 
 const encodeBuyDomainData = ({ reverseRegistrar = ONEConstants.Domain.DEFAULT_REVERSE_REGISTRAR, subdomain, parentDomain = ONEConstants.Domain.DEFAULT_DOMAIN }) => {
-  const node = namehash(parentDomain)
+  const node = hexString(namehash(parentDomain))
   const fqdn = subdomain + '.' + parentDomain
   const encoded = abi.encodeParameters(['address', 'bytes32', 'string'], [reverseRegistrar, node, fqdn])
   return encoded
