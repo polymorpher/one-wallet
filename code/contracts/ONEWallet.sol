@@ -50,7 +50,6 @@ contract ONEWallet is TokenManager, DomainUser {
     uint32 constant majorVersion = 0x9; // a change would require client to migrate
     uint32 constant minorVersion = 0x0; // a change would not require the client to migrate
 
-
     enum OperationType {
         TRACK, UNTRACK, TRANSFER_TOKEN, OVERRIDE_TRACK, TRANSFER, SET_RECOVERY_ADDRESS, RECOVER,
         REPLACE, // reserved, not implemented yet. This is for replacing the root and set up new parameters (t0, lifespan)
@@ -84,6 +83,10 @@ contract ONEWallet is TokenManager, DomainUser {
     }
 
     function _getForwardAddress() internal override view returns (address payable){
+        return forwardAddress;
+    }
+
+    function getForwardAddress() external view returns (address payable){
         return forwardAddress;
     }
 
