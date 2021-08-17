@@ -13,6 +13,7 @@ const IERC1155 = require('../../build/contracts/IERC1155.json')
 const IERC1155MetadataURI = require('../../build/contracts/IERC1155MetadataURI.json')
 const Resolver = require('../../build/contracts/Resolver.json')
 const ReverseResolver = require('../../build/contracts/IDefaultReverseResolver.json')
+const Registrar = require('../../build/contracts/IRegistrar.json')
 
 const BN = require('bn.js')
 const ONEUtil = require('../util')
@@ -73,8 +74,8 @@ let tokenMetadataWithProvider = { erc20: {}, erc721: {}, erc1155: {} }
 let tokens = { erc20: null, erc721: null, erc1155: null }
 let tokenMetadata = { erc20: null, erc721: null, erc1155: null }
 
-let resolverWithProvider, reverseResolverWithProvider
-let resolver, reverseResolver
+let resolverWithProvider, reverseResolverWithProvider, registrarWithProvider
+let resolver, reverseResolver, registrar
 
 const initBlockchain = (store) => {
   Object.keys(config.networks).forEach(k => {
@@ -108,6 +109,8 @@ const initBlockchain = (store) => {
       resolverWithProvider.setProvider(providers[k])
       reverseResolverWithProvider = contract(ReverseResolver)
       reverseResolverWithProvider.setProvider(providers[k])
+      registrarWithProvider = contract(Registrar)
+      registrarWithProvider.setProvider(providers[k])
     }
   })
   const switchNetwork = () => {
@@ -120,9 +123,11 @@ const initBlockchain = (store) => {
     if (activeNetwork === 'harmony-mainnet') {
       resolver = resolverWithProvider
       reverseResolver = reverseResolverWithProvider
+      registrar = registrarWithProvider
     } else {
       resolver = null
       reverseResolver = null
+      registrar = null
     }
   }
   switchNetwork()
@@ -352,6 +357,23 @@ const api = {
         const c = await reverseResolver.at(ONEConstants.Domain.DEFAULT_REVERSE_RESOLVER)
         const name = await c.name(nodeHex)
         return name
+      },
+
+      price: async ({ name }) => {
+        if (!registrar) {
+          throw new Error('Unsupported network')
+        }
+        const price = await registrar.rentPrice(name, ONEConstants.Domain.DEFAULT_RENT_DURATION)
+        return price // This is a BN
+      },
+
+      available: async ({ name }) => {
+        if (!registrar) {
+          throw new Error('Unsupported network')
+        }
+        const label = ONEUtil.hexString(ONEUtil.keccak(ONEConstants.Domain.DEFAULT_PARENT_LABEL))
+        const ret = await registrar.query(label, name)
+        return !!ret[0]
       }
 
     }
