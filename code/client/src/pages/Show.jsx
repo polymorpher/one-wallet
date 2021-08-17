@@ -335,7 +335,7 @@ const Show = () => {
         otp2,
         recoverRandomness,
         prepareProofFailed,
-        commitHashGenerator: ONE.computeTokenOperationHash,
+        commitHashGenerator: ONE.computeGeneralOperationHash,
         commitHashArgs: { dest, amount, operationType: ONEConstants.OperationType.TRANSFER_TOKEN, tokenType: selectedToken.tokenType, contractAddress: selectedToken.contractAddress, tokenId: selectedToken.tokenId },
         beforeCommit: () => setStage(1),
         afterCommit: () => setStage(2),
