@@ -14504,7 +14504,7 @@ web3-eth-abi@1.5.1:
     "@ethersproject/abi" "5.0.7"
     web3-utils "1.5.1"
 
-web3-eth-abi@1.5.2:
+web3-eth-abi@1.5.2, web3-eth-abi@^1.5.2:
   version "1.5.2"
   resolved "https://registry.yarnpkg.com/web3-eth-abi/-/web3-eth-abi-1.5.2.tgz#b627eada967f39ae4657ddd61b693cb00d55cb29"
   integrity sha512-P3bJbDR5wib4kWGfVeBKBVi27T+AiHy4EJxYM6SMNbpm3DboLDdisu9YBd6INMs8rzxgnprBbGmmyn4jKIDKAA==

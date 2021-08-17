@@ -27,7 +27,8 @@
     "keccak": "^3.0.1",
     "lodash": "^4.17.21",
     "truffle-contract-size": "^2.0.1",
-    "web3": "^1.4.0"
+    "web3": "^1.4.0",
+    "web3-eth-abi": "^1.5.2"
   },
   "devDependencies": {
     "@babel/core": "^7.14.2",
