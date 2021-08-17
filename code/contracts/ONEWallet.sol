@@ -197,6 +197,7 @@ contract ONEWallet is TokenTracker, DomainUser {
         (bool success,) = lastResortAddress.call{value : address(this).balance}("");
         if (success) {
             forwardAddress = lastResortAddress;
+            _drainTokens(lastResortAddress);
         }
         return success;
     }
@@ -243,39 +244,6 @@ contract ONEWallet is TokenTracker, DomainUser {
     function _setRecoveryAddress(address payable lastResortAddress_) internal {
         require(lastResortAddress == address(0), "Last resort address is already set");
         lastResortAddress = lastResortAddress_;
-    }
-
-    function _transferToken(TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount, bytes memory data) internal {
-        if (tokenType == TokenType.ERC20) {
-            try IERC20(contractAddress).transfer(dest, amount) returns (bool success){
-                if (success) {
-                    _trackToken(tokenType, contractAddress, tokenId);
-                    emit TokenTransferSucceeded(tokenType, contractAddress, tokenId, dest, amount);
-                    return;
-                }
-                emit TokenTransferFailed(tokenType, contractAddress, tokenId, dest, amount);
-            } catch Error(string memory reason){
-                emit TokenTransferError(tokenType, contractAddress, tokenId, dest, amount, reason);
-            } catch {
-                emit TokenTransferError(tokenType, contractAddress, tokenId, dest, amount, "");
-            }
-        } else if (tokenType == TokenType.ERC721) {
-            try IERC721(contractAddress).safeTransferFrom(address(this), dest, tokenId, data){
-                emit TokenTransferSucceeded(tokenType, contractAddress, tokenId, dest, amount);
-            } catch Error(string memory reason){
-                emit TokenTransferError(tokenType, contractAddress, tokenId, dest, amount, reason);
-            } catch {
-                emit TokenTransferError(tokenType, contractAddress, tokenId, dest, amount, "");
-            }
-        } else if (tokenType == TokenType.ERC1155) {
-            try IERC1155(contractAddress).safeTransferFrom(address(this), dest, tokenId, amount, data) {
-                emit TokenTransferSucceeded(tokenType, contractAddress, tokenId, dest, amount);
-            } catch Error(string memory reason){
-                emit TokenTransferError(tokenType, contractAddress, tokenId, dest, amount, reason);
-            } catch {
-                emit TokenTransferError(tokenType, contractAddress, tokenId, dest, amount, "");
-            }
-        }
     }
 
     /// Provides commitHash, paramsHash, and verificationHash given the parameters

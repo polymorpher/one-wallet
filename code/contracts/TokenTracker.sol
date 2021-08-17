@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.4;
 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
@@ -20,6 +21,7 @@ contract TokenTracker is IERC721Receiver, IERC1155Receiver {
     event TokenTransferFailed(TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount);
     event TokenTransferError(TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount, string reason);
     event TokenTransferSucceeded(TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount);
+    event TokensRecovered(TokenType tokenType, address contractAddress, uint256 tokenId, uint256 balance);
 
     // We track tokens in the contract instead of at the client so users can immediately get a record of what tokens they own when they restore their wallet at a new client
     // The tracking of ERC721 and ERC1155 are automatically established upon a token is transferred to this wallet. The tracking of ERC20 needs to be manually established by the client.
@@ -83,7 +85,7 @@ contract TokenTracker is IERC721Receiver, IERC1155Receiver {
         }
         return (tokenTypes, contractAddresses, tokenIds);
     }
- 
+
 
     function _trackToken(TokenType tokenType, address contractAddress, uint256 tokenId) internal {
         bytes32 key = keccak256(bytes.concat(bytes32(uint256(tokenType)), bytes32(bytes20(contractAddress)), bytes32(tokenId)));
@@ -199,5 +201,62 @@ contract TokenTracker is IERC721Receiver, IERC1155Receiver {
             r := shl(len, r)
         }
         return r;
+    }
+
+    function _transferToken(TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount, bytes memory data) internal {
+        if (tokenType == TokenType.ERC20) {
+            try IERC20(contractAddress).transfer(dest, amount) returns (bool success){
+                if (success) {
+                    _trackToken(tokenType, contractAddress, tokenId);
+                    emit TokenTransferSucceeded(tokenType, contractAddress, tokenId, dest, amount);
+                    return;
+                }
+                emit TokenTransferFailed(tokenType, contractAddress, tokenId, dest, amount);
+            } catch Error(string memory reason){
+                emit TokenTransferError(tokenType, contractAddress, tokenId, dest, amount, reason);
+            } catch {
+                emit TokenTransferError(tokenType, contractAddress, tokenId, dest, amount, "");
+            }
+        } else if (tokenType == TokenType.ERC721) {
+            try IERC721(contractAddress).safeTransferFrom(address(this), dest, tokenId, data){
+                emit TokenTransferSucceeded(tokenType, contractAddress, tokenId, dest, amount);
+            } catch Error(string memory reason){
+                emit TokenTransferError(tokenType, contractAddress, tokenId, dest, amount, reason);
+            } catch {
+                emit TokenTransferError(tokenType, contractAddress, tokenId, dest, amount, "");
+            }
+        } else if (tokenType == TokenType.ERC1155) {
+            try IERC1155(contractAddress).safeTransferFrom(address(this), dest, tokenId, amount, data) {
+                emit TokenTransferSucceeded(tokenType, contractAddress, tokenId, dest, amount);
+            } catch Error(string memory reason){
+                emit TokenTransferError(tokenType, contractAddress, tokenId, dest, amount, reason);
+            } catch {
+                emit TokenTransferError(tokenType, contractAddress, tokenId, dest, amount, "");
+            }
+        }
+    }
+
+    function _getBalance(TrackedToken t) internal returns (uint256){
+        if (tokenType == TokenType.ERC20) {
+            return IERC20(contractAddress).balanceOf(address(this));
+        } else if (tokenType == TokenType.ERC721) {
+            return IERC721(contractAddress).balanceOf(address(this));
+        } else if (tokenType == TokenType.ERC1155) {
+            return IERC1155(contractAddress).balanceOf(address(this));
+        }
+        return 0;
+    }
+
+    function _drainTokens(address dest) internal {
+        for (uint32 i = 0; i < trackedTokens.length; i++) {
+            uint256 tokenId = trackedTokens[i].tokenId;
+            TokenType tokenType = trackedTokens[i].tokenType;
+            address contractAddress = trackedTokens[i].contractAddress;
+            uint256 balance = _getBalance(trackedTokens[i]);
+            if (balance > 0) {
+                _transferToken(tokenType, contractAddress, tokenId, dest, amount, bytes(""));
+                emit TokensRecovered(tokenType, contractAddress, tokenId, balance);
+            }
+        }
     }
 }
