@@ -4,9 +4,10 @@ pragma solidity ^0.8.4;
 import "./TokenManager.sol";
 import "./DomainUser.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./Enums.sol";
+import "./IONEWallet.sol";
 
-
-contract ONEWallet is TokenManager, DomainUser {
+contract ONEWallet is TokenManager, DomainUser, IONEWallet {
     event InsufficientFund(uint256 amount, uint256 balance, address dest);
     event ExceedDailyLimit(uint256 amount, uint256 limit, uint256 current, address dest);
     event UnknownTransferError(address dest);
@@ -17,6 +18,9 @@ contract ONEWallet is TokenManager, DomainUser {
     event AutoRecoveryTriggered(address from);
     event AutoRecoveryTriggeredPrematurely(address from, uint256 requiredTime);
     event RecoveryFailure();
+    event ForwardAddressUpdated(address dest);
+    event BackLinkForwardAddressUpdated(address dest, address backlink);
+    event BackLinkForwardAddressUpdateError(address dest, address backlink, string error);
 
     /// In future versions, it is planned that we may allow the user to extend the wallet's life through a function call. When that is implemented, the following variables may no longer be immutable, with the exception of root which shall serve as an identifier of the wallet
     bytes32 root; // Note: @ivan brought up a good point in reducing this to 16-bytes so hash of two consecutive nodes can be done in a single word (to save gas and reduce blockchain clutter). Let's not worry about that for now and re-evalaute this later.
@@ -34,7 +38,7 @@ contract ONEWallet is TokenManager, DomainUser {
     uint32 lastTransferDay;
     uint256 lastOperationTime; // in seconds; record the time for the last successful reveal
     address payable forwardAddress; // a non-empty forward address assumes full control of this contract. A forward address can only be set upon a successful recovery or upgrade operation.
-    address[] backlinkAddresses; // to be set in next version - these are addresses forwarding funds and tokens to this contract AND must have their forwardAddress updated if this contract's forwardAddress is set or updated. One example of such an address is a previous version of the wallet "upgrading" to a new version. See more at https://github.com/polymorpher/one-wallet/issues/78
+    IONEWallet[] backlinkAddresses; // to be set in next version - these are addresses forwarding funds and tokens to this contract AND must have their forwardAddress updated if this contract's forwardAddress is set or updated. One example of such an address is a previous version of the wallet "upgrading" to a new version. See more at https://github.com/polymorpher/one-wallet/issues/78
 
     /// nonce tracking
     mapping(uint32 => uint8) nonces; // keys: otp index (=timestamp in seconds / interval - t0); values: the expected nonce for that otp interval. An reveal with a nonce less than the expected value will be rejected
@@ -50,12 +54,6 @@ contract ONEWallet is TokenManager, DomainUser {
     uint32 constant majorVersion = 0x9; // a change would require client to migrate
     uint32 constant minorVersion = 0x0; // a change would not require the client to migrate
 
-    enum OperationType {
-        TRACK, UNTRACK, TRANSFER_TOKEN, OVERRIDE_TRACK, TRANSFER, SET_RECOVERY_ADDRESS, RECOVER,
-        REPLACE, // reserved, not implemented yet. This is for replacing the root and set up new parameters (t0, lifespan)
-        FORWARD, // reserved, not implemented yet. This is for forwarding this contract to another contract and submitting all control to that control (daily limit would still be in effect)
-        RECOVER_SELECTED_TOKENS, BUY_DOMAIN
-    }
     /// commit management
     struct Commit {
         bytes32 paramsHash;
@@ -86,7 +84,7 @@ contract ONEWallet is TokenManager, DomainUser {
         return forwardAddress;
     }
 
-    function getForwardAddress() external view returns (address payable){
+    function getForwardAddress() external override view returns (address payable){
         return forwardAddress;
     }
 
@@ -117,7 +115,7 @@ contract ONEWallet is TokenManager, DomainUser {
         require(_drain());
     }
 
-    function retire() external returns (bool)
+    function retire() external override returns (bool)
     {
         require(uint32(block.timestamp / interval) - t0 > lifespan, "Too early to retire");
         require(lastResortAddress != address(0), "Last resort address is not set");
@@ -125,32 +123,32 @@ contract ONEWallet is TokenManager, DomainUser {
         return true;
     }
 
-    function getInfo() external view returns (bytes32, uint8, uint8, uint32, uint32, uint8, address, uint256)
+    function getInfo() external override view returns (bytes32, uint8, uint8, uint32, uint32, uint8, address, uint256)
     {
         return (root, height, interval, t0, lifespan, maxOperationsPerInterval, lastResortAddress, dailyLimit);
     }
 
-    function getVersion() external pure returns (uint32, uint32)
+    function getVersion() external override pure returns (uint32, uint32)
     {
         return (majorVersion, minorVersion);
     }
 
-    function getCurrentSpending() external view returns (uint256, uint256)
+    function getCurrentSpending() external override view returns (uint256, uint256)
     {
         return (spentToday, lastTransferDay);
     }
 
-    function getNonce() external view returns (uint8)
+    function getNonce() external override view returns (uint8)
     {
         uint32 index = uint32(block.timestamp) / interval - t0;
         return nonces[index];
     }
 
-    function getCommits() external pure returns (bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
+    function getCommits() external override pure returns (bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
         revert("Deprecated");
     }
 
-    function getAllCommits() external view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory)
+    function getAllCommits() external override view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory)
     {
         uint32 numCommits = 0;
         for (uint32 i = 0; i < commits.length; i++) {
@@ -178,11 +176,11 @@ contract ONEWallet is TokenManager, DomainUser {
         return (hashes, paramHashes, verificationHashes, timestamps, completed);
     }
 
-    function findCommit(bytes32 /*hash*/) external pure returns (bytes32, bytes32, uint32, bool){
+    function findCommit(bytes32 /*hash*/) external override pure returns (bytes32, bytes32, uint32, bool){
         revert("Deprecated");
     }
 
-    function lookupCommit(bytes32 hash) external view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
+    function lookupCommit(bytes32 hash) external override view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
         Commit[] storage cc = commitLocker[hash];
         bytes32[] memory hashes = new bytes32[](cc.length);
         bytes32[] memory paramHashes = new bytes32[](cc.length);
@@ -200,7 +198,7 @@ contract ONEWallet is TokenManager, DomainUser {
         return (hashes, paramHashes, verificationHashes, timestamps, completed);
     }
 
-    function commit(bytes32 hash, bytes32 paramsHash, bytes32 verificationHash) external {
+    function commit(bytes32 hash, bytes32 paramsHash, bytes32 verificationHash) external override {
         _cleanupCommits();
         Commit memory nc = Commit(paramsHash, verificationHash, uint32(block.timestamp), false);
         require(commits.length < MAX_COMMIT_SIZE, "Too many commits");
@@ -208,8 +206,20 @@ contract ONEWallet is TokenManager, DomainUser {
         commitLocker[hash].push(nc);
     }
 
-    /// This function sends all remaining funds of the wallet to `lastResortAddress`. The caller should verify that `lastResortAddress` is not null.
-    /// TODO: also transfer all tracked ERC20, 721, 1155 tokens to `lastResortAddress`
+    function _forward(address payable dest) internal {
+        forwardAddress = dest;
+        for (uint32 i = 0; i < backlinkAddresses.length; i++) {
+            try backlinkAddresses[i].reveal(new bytes32[](0), 0, bytes32(0), OperationType.FORWARD, TokenType.NONE, address(0), 0, dest, 0, bytes("")){
+                emit BackLinkForwardAddressUpdated(dest, address(backlinkAddresses[i]));
+            } catch Error(string memory reason){
+                emit BackLinkForwardAddressUpdateError(dest, address(backlinkAddresses[i]), reason);
+            } catch {
+                emit BackLinkForwardAddressUpdateError(dest, address(backlinkAddresses[i]), "");
+            }
+        }
+    }
+
+    /// This function sends all remaining funds and tokens in the wallet to `lastResortAddress`. The caller should verify that `lastResortAddress` is not null.
     function _drain() internal returns (bool) {
         // this may be triggered after revealing the proof, and we must prevent revert in all cases
         (bool success,) = lastResortAddress.call{value : address(this).balance}("");
@@ -293,7 +303,7 @@ contract ONEWallet is TokenManager, DomainUser {
 
     function reveal(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp,
         OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address payable dest, uint256 amount, bytes calldata data)
-    external {
+    external override {
         if (msg.sender != forwardAddress) {
             _isCorrectProof(neighbors, indexWithNonce, eotp);
             if (indexWithNonce == _numLeaves - 1) {
@@ -331,6 +341,8 @@ contract ONEWallet is TokenManager, DomainUser {
             DomainUser._buyDomainEncoded(data, amount, uint8(tokenId), contractAddress, dest);
         } else if (operationType == OperationType.RECOVER_SELECTED_TOKENS) {
             TokenManager._recoverSelectedTokensEncoded(dest, data);
+        } else if (operationType == OperationType.FORWARD) {
+            _forward(dest);
         }
     }
 
