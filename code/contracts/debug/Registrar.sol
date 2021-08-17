@@ -22,6 +22,20 @@ contract Registrar is IRegistrar {
     function payRent(bytes32 /*label*/, string calldata /*subdomain*/) external override payable {
 
     }
+
+    function configureDomainFor(string memory name, uint price, uint referralFeePPM, address payable _owner, address _transfer) external override pure {
+
+    }
+
+    /// Harmony specific implementation: https://github.com/harmony-one/subdomain-registrar/blob/one-names-v4/contracts/EthRegistrarSubdomainRegistrar.sol#L139
+    function configureDomainFor(string memory /*name*/, uint /*price*/, address payable /*referralAddress*/, address payable /*_owner*/, address /*_transfer*/) override pure external {
+
+    }
+
+    /// Harmony specific implementation: https://github.com/harmony-one/subdomain-registrar/blob/one-names-v4/contracts/EthRegistrarSubdomainRegistrar.sol#L229
+    function register(bytes32 /*label*/, string calldata /*subdomain*/, address /*_subdomainOwner*/, uint /*duration*/, string calldata /*url*/, address /*resolver*/) override external payable {
+
+    }
 }
 
 contract ReverseRegistrar is IReverseRegistrar {
