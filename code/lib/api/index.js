@@ -11,7 +11,6 @@ const IERC721 = require('../../build/contracts/IERC721.json')
 const IERC721Metadata = require('../../build/contracts/IERC721Metadata.json')
 const IERC1155 = require('../../build/contracts/IERC1155.json')
 const IERC1155MetadataURI = require('../../build/contracts/IERC1155MetadataURI.json')
-const namehash = require('eth-ens-namehash')
 const Resolver = require('../../build/contracts/Resolver.json')
 const ReverseResolver = require('../../build/contracts/IDefaultReverseResolver.json')
 
@@ -332,7 +331,7 @@ const api = {
           throw new Error('Unsupported network')
         }
         const c = await resolver.at(ONEConstants.Domain.DEFAULT_RESOLVER)
-        const node = namehash(name)
+        const node = ONEUtil.namehash(name)
         const address = await c.addr(node)
         return address
       },
@@ -416,6 +415,38 @@ const api = {
         amount: 0,
       })
     },
+
+    /**
+     *
+     * @param neighbors
+     * @param index
+     * @param eotp
+     * @param address
+     * @param registrar - hex address of Registrar
+     * @param reverseRegistrar - hex address of ReverseRegistrar
+     * @param resolver - hex address of Resolver
+     * @param maxPrice - string, maximum price acceptable for the domain purchase, in wei
+     * @param suffix - string, the suffix for the domain to be purchased. For "polymorpher.crazy.one", the suffix is ".crazy.one"
+     * @param subdomain - string, the subdomain to be purchased. For "polymorpher.crazy.one", the subdomain is "polymorpher"
+     * @returns {Promise<void>}
+     */
+    revealBuyDomain: async ({ neighbors, index, eotp, address, registrar, reverseRegistrar, resolver, maxPrice, suffix, subdomain }) => {
+      const data = ONEUtil
+      return api.relayer.reveal({
+        neighbors,
+        index,
+        eotp,
+        address,
+        operationType: ONEConstants.OperationType.BUY_DOMAIN,
+        tokenType: ONEConstants.TokenType.NONE,
+        contractAddress: registrar,
+        dest: resolver,
+        amount: maxPrice,
+        tokenId: subdomain.length,
+        data,
+      })
+    },
+
     reveal: async ({ address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data = '0x' }) => {
       const { data: ret } = await base.post('/reveal', { address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
       return ret

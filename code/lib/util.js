@@ -8,6 +8,8 @@ const base32 = require('hi-base32')
 const securityParams = require('./params')
 const STANDARD_DECIMAL = 18
 const PERMIT_DEPRECATED_METHOD = process.env.PERMIT_DEPRECATED_METHOD
+const namehash = require('eth-ens-namehash')
+
 const utils = {
   hexView: (bytes) => {
     return bytes && Array.from(bytes).map(x => x.toString(16).padStart(2, '0')).join('')
@@ -180,7 +182,9 @@ const utils = {
       }
     }
     throw new Error(`No security parameter for version ${v}`)
-  }
+  },
+
+  namehash
 
 }
 module.exports = utils
