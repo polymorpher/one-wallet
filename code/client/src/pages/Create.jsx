@@ -196,15 +196,17 @@ const Create = () => {
       message.error('Cannot deploy wallet. Error: root is not set.')
       return
     }
-    let normalizedAddress = ''
-    if (lastResortAddress.value !== '') {
-      // Ensure valid address for both 0x and one1 formats
-      normalizedAddress = util.safeExec(util.normalizedAddress, [lastResortAddress.value], handleAddressError)
-      if (!normalizedAddress) {
-        return
-      }
+
+    // Ensure valid address for both 0x and one1 formats
+    const normalizedAddress = util.safeExec(util.normalizedAddress, [lastResortAddress?.value], handleAddressError)
+
+    if (!normalizedAddress) {
+      message.error('Please provide a valid recovery address.')
+      return
     }
+
     setDeploying(true)
+
     try {
       const { address } = await api.relayer.create({
         root: ONEUtil.hexString(root),
