@@ -201,7 +201,6 @@ const Create = () => {
     const normalizedAddress = util.safeExec(util.normalizedAddress, [lastResortAddress?.value], handleAddressError)
 
     if (!normalizedAddress) {
-      message.error('Please provide a valid recovery address.')
       return
     }
 
