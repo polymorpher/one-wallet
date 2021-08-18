@@ -4,7 +4,7 @@ pragma solidity ^0.8.4;
 import "@ensdomains/subdomain-registrar-core/contracts/interfaces/IRegistrar.sol";
 import "@ensdomains/subdomain-registrar-core/contracts/interfaces/IReverseRegistrar.sol";
 
-abstract contract DomainUser {
+library DomainManager {
     uint256 constant MIN_DOMAIN_RENT_DURATION = 31536000;
 
     event DomainRegistered(address subdomainRegistrar, string subdomain, bytes32 domainLabel);
@@ -12,7 +12,7 @@ abstract contract DomainUser {
     event InvalidFQDN(string fqdn, uint32 subdomainLabelLength);
     event DomainRegistrationFailed(string reason);
 
-    function _buyDomainEncoded(bytes calldata data, uint256 maxPrice, uint8 subdomainLabelLength, address reg, address resolver) internal returns (bool) {
+    function buyDomainEncoded(bytes calldata data, uint256 maxPrice, uint8 subdomainLabelLength, address reg, address resolver) public returns (bool) {
         (address rev, bytes32 node, string memory fqdn) = abi.decode(data, (address, bytes32, string));
         bytes memory bfqdn = bytes(fqdn);
         if (bfqdn.length > 64 || bfqdn.length < subdomainLabelLength) {
@@ -24,10 +24,10 @@ abstract contract DomainUser {
             subdomainBytes[i] = bfqdn[i];
         }
         string memory subdomain = string(subdomainBytes);
-        return _buyDomain(IRegistrar(reg), IReverseRegistrar(rev), resolver, maxPrice, subdomain, node, fqdn);
+        return buyDomain(IRegistrar(reg), IReverseRegistrar(rev), resolver, maxPrice, subdomain, node, fqdn);
     }
 
-    function _buyDomain(IRegistrar reg, IReverseRegistrar rev, address resolver, uint256 maxPrice, string memory subdomain, bytes32 node, string memory fqdn) internal returns (bool) {
+    function buyDomain(IRegistrar reg, IReverseRegistrar rev, address resolver, uint256 maxPrice, string memory subdomain, bytes32 node, string memory fqdn) public returns (bool) {
         //        (bool success, bytes memory ret) = address(reg).call{value : maxPrice}(abi.encodeWithSignature("register(bytes32,string,address,address,address)", node, subdomain, address(this), address(0x0), resolver));
         (bool success, bytes memory ret) = address(reg).call{value : maxPrice}(abi.encodeWithSignature("register(bytes32,string,address,uint,string,address)", node, subdomain, address(this), MIN_DOMAIN_RENT_DURATION, "", resolver));
         if (!success) {
