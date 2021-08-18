@@ -2,3 +2,4 @@
 !/certs/README.md
 !/certs/gen.sh
 backup.eslintrc.js
+/cache

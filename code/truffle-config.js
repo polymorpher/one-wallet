@@ -41,7 +41,7 @@ module.exports = {
       network_id: '*',
       gas: config.gasLimit,
       gasPrice: config.gasPrice,
-      provider: () => BuildProvider(config.eth.ganache, true)
+      provider: () => config.eth.ganache && BuildProvider(config.eth.ganache, true)
     },
     ganache: {
       host: '127.0.0.1',

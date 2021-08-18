@@ -32,6 +32,7 @@ const config = {
     },
   },
   gasLimit: parseInt(process.env.GAS_LIMIT || '210000'),
-  gasPrice: parseInt(process.env.GAS_PRICE || '200')
+  gasPrice: parseInt(process.env.GAS_PRICE || '200'),
+  cache: process.env.CACHE || 'cache'
 }
 module.exports = config
