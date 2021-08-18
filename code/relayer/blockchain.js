@@ -1,17 +1,62 @@
 const config = require('./config')
+const ONEConfig = require('../lib/config/common')
 const contract = require('@truffle/contract')
 const { TruffleProvider } = require('@harmony-js/core')
 const { Account } = require('@harmony-js/account')
+const TokenTracker = require('../build/contracts/TokenTracker.json')
+const DomainManager = require('../build/contracts/DomainManager.json')
 const ONEWallet = require('../build/contracts/ONEWallet.json')
 const ONEWalletV5 = require('../build/contracts/ONEWalletV5.json')
 const ONEWalletV6 = require('../build/contracts/ONEWalletV6.json')
 const HDWalletProvider = require('@truffle/hdwallet-provider')
+const fs = require('fs/promises')
+const path = require('path')
 
 const providers = {}
 const contracts = {}
 const contractsV5 = {}
 const contractsV6 = {}
 const networks = []
+const libraryList = [DomainManager, TokenTracker]
+const libraries = {}
+
+const ensureDir = async (p) => {
+  try {
+    await fs.access(p)
+  } catch (ex) {
+    await fs.mkdir(p, { recursive: true })
+  }
+}
+
+const initCachedLibraries = async () => {
+  const p = path.join(config.cache, ONEConfig.version)
+  await ensureDir(p)
+  for (let network of networks) {
+    libraries[network] = {}
+    for (let lib of libraryList) {
+      const f = [lib.contractName, network].join('-')
+      const fp = path.join(p, f)
+      const key = config.networks[network].key
+      const account = new Account(key)
+      const c = contract(lib)
+      c.setProvider(providers[network])
+      c.defaults({ from: account.address })
+      try {
+        await fs.access(fp)
+        const address = await fs.readFile(fp, { encoding: 'utf-8' })
+        if (address) {
+          console.log(`[${network}][${lib.contractName}] Found existing deployed library at address ${address}`)
+          libraries[network][lib.contractName] = await c.at(address)
+          continue
+        }
+      } catch {}
+      console.log(`[${network}] Library ${lib.contractName} address is not cached. Deploying new instance`)
+      const instance = await c.new()
+      libraries[network][lib.contractName] = instance
+      await fs.writeFile(fp, instance.address, { encoding: 'utf-8' })
+    }
+  }
+}
 
 const HarmonyProvider = ({ key, url, chainId, gasLimit, gasPrice }) => {
   const truffleProvider = new TruffleProvider(
@@ -74,6 +119,17 @@ const init = () => {
     contractsV5: Object.keys(contractsV5).map(k => contracts[k].toString()),
     contractsV6: Object.keys(contractsV6).map(k => contracts[k].toString()),
   })
+  initCachedLibraries().then(async () => {
+    console.log('library initialization complete')
+    for (let network in libraries) {
+      for (let libraryName in libraries[network]) {
+        const n = await contracts[network].detectNetwork()
+        await contracts[network].link(libraries[network][libraryName])
+
+        console.log(`Linked ${network} (${JSON.stringify(n)}) ${libraryName} with ${libraries[network][libraryName].address}`)
+      }
+    }
+  })
 }
 
 module.exports = {
@@ -83,4 +139,5 @@ module.exports = {
   getContract: (network) => contracts[network],
   getContractV5: (network) => contractsV5[network],
   getContractV6: (network) => contractsV6[network],
+  getLibraries: (network) => libraries[network],
 }

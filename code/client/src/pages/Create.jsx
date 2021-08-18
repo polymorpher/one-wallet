@@ -398,7 +398,8 @@ const Create = () => {
             />
             <Hint>
               {lastResortAddress.value !== oneWalletTreasurySelectOption.value && <span style={{ color: 'red' }}>You cannot change this later.</span>}
-              If you lost your authenticator, your can recover funds to this address. You can also send 1.0 ONE from the recovery address to trigger auto-recovery.</Hint>
+              If you lost your authenticator, your can recover funds to this address. You can also send 1.0 ONE from the recovery address to trigger auto-recovery
+            </Hint>
           </Space>
         </Row>
         <Row style={{ marginBottom: 32 }}>
