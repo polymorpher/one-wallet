@@ -104,9 +104,8 @@ abstract contract TokenManager is IERC721Receiver, IERC1155Receiver, Forwardable
                 return;
             }
         }
-        TrackedToken memory tt = TrackedToken(tokenType, contractAddress, tokenId);
         trackedTokenPositions[key].push(trackedTokens.length);
-        trackedTokens.push(tt);
+        trackedTokens.push(TrackedToken(tokenType, contractAddress, tokenId));
         emit TokenTracked(tokenType, contractAddress, tokenId);
     }
 
@@ -152,8 +151,7 @@ abstract contract TokenManager is IERC721Receiver, IERC1155Receiver, Forwardable
             address contractAddress = newTrackedTokens[i].contractAddress;
             uint256 tokenId = newTrackedTokens[i].tokenId;
             bytes32 key = keccak256(bytes.concat(bytes32(uint256(tokenType)), bytes32(bytes20(contractAddress)), bytes32(tokenId)));
-            TrackedToken memory t = TrackedToken(tokenType, contractAddress, tokenId);
-            trackedTokens.push(t);
+            trackedTokens.push(TrackedToken(tokenType, contractAddress, tokenId));
             trackedTokenPositions[key].push(i);
         }
     }
@@ -162,8 +160,7 @@ abstract contract TokenManager is IERC721Receiver, IERC1155Receiver, Forwardable
         (uint256[] memory tokenTypes, address[] memory contractAddresses, uint256[] memory tokenIds) = abi.decode(data, (uint256[], address[], uint256[]));
         TrackedToken[] memory newTrackedTokens = new TrackedToken[](tokenTypes.length);
         for (uint32 i = 0; i < tokenTypes.length; i++) {
-            TrackedToken memory tt = TrackedToken(TokenType(tokenTypes[i]), contractAddresses[i], tokenIds[i]);
-            newTrackedTokens[i] = tt;
+            newTrackedTokens[i] = TrackedToken(TokenType(tokenTypes[i]), contractAddresses[i], tokenIds[i]);
         }
         _overrideTrack(newTrackedTokens);
     }
@@ -230,7 +227,7 @@ abstract contract TokenManager is IERC721Receiver, IERC1155Receiver, Forwardable
         }
     }
 
-    function _getBalance(TrackedToken memory t) internal view returns (uint256){
+    function _getBalance(TrackedToken storage t) internal view returns (uint256){
         if (t.tokenType == TokenType.ERC20) {
             return IERC20(t.contractAddress).balanceOf(address(this));
         } else if (t.tokenType == TokenType.ERC721) {
@@ -247,13 +244,10 @@ abstract contract TokenManager is IERC721Receiver, IERC1155Receiver, Forwardable
     }
 
     function _recoverToken(address dest, TrackedToken storage t) internal {
-        uint256 tokenId = t.tokenId;
-        TokenType tokenType = t.tokenType;
-        address contractAddress = t.contractAddress;
         uint256 balance = _getBalance(t);
         if (balance > 0) {
-            _transferToken(tokenType, contractAddress, tokenId, dest, balance, bytes(""));
-            emit TokenRecovered(tokenType, contractAddress, tokenId, balance);
+            _transferToken(t.tokenType, t.contractAddress, t.tokenId, dest, balance, bytes(""));
+            emit TokenRecovered(t.tokenType, t.contractAddress, t.tokenId, balance);
         }
     }
 
@@ -265,9 +259,7 @@ abstract contract TokenManager is IERC721Receiver, IERC1155Receiver, Forwardable
     }
 
     function _recoverAllTokens(address dest) internal {
-        // Caution: be careful to prevent malicious contracts may send tokens to this contract during transfer, causing this contract to track more tokens during this drain process. This may result an infinite loop so we need to make sure we only go over a fixed length of items in the loop, to prevent out of gas error. It is unclear from the spec when the ending condition of a for loop is evaluated (whether it is evaluated on every iteration, or at the beginning).
-        uint256 trackedTokenLength = trackedTokens.length;
-        for (uint32 i = 0; i < trackedTokenLength; i++) {
+        for (uint32 i = 0; i < trackedTokens.length; i++) {
             _recoverToken(dest, trackedTokens[i]);
         }
     }

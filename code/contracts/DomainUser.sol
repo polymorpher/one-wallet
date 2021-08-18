@@ -15,11 +15,7 @@ abstract contract DomainUser {
     function _buyDomainEncoded(bytes calldata data, uint256 maxPrice, uint8 subdomainLabelLength, address reg, address resolver) internal returns (bool) {
         (address rev, bytes32 node, string memory fqdn) = abi.decode(data, (address, bytes32, string));
         bytes memory bfqdn = bytes(fqdn);
-        if (bfqdn.length > 64) {
-            emit InvalidFQDN(fqdn, subdomainLabelLength);
-            return false;
-        }
-        if (bfqdn.length < subdomainLabelLength) {
+        if (bfqdn.length > 64 || bfqdn.length < subdomainLabelLength) {
             emit InvalidFQDN(fqdn, subdomainLabelLength);
             return false;
         }

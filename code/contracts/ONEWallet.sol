@@ -8,14 +8,14 @@ import "./IONEWallet.sol";
 
 contract ONEWallet is TokenManager, DomainUser, IONEWallet {
 
-    /// In future versions, it is planned that we may allow the user to extend the wallet's life through a function call. When that is implemented, the following variables may no longer be immutable, with the exception of root which shall serve as an identifier of the wallet
+    /// Some variables can be immutable, but doing so would increase contract size. We are at threshold at the moment (~24KiB) so until we separate the contracts, we will do everything to minimize contract size
     bytes32 root; // Note: @ivan brought up a good point in reducing this to 16-bytes so hash of two consecutive nodes can be done in a single word (to save gas and reduce blockchain clutter). Let's not worry about that for now and re-evalaute this later.
-    uint8 immutable height; // including the root. e.g. for a tree with 4 leaves, the height is 3.
-    uint8 immutable interval; // otp interval in seconds, default is 30
+    uint8 height; // including the root. e.g. for a tree with 4 leaves, the height is 3.
+    uint8 interval; // otp interval in seconds, default is 30
     uint32 t0; // starting time block (effectiveTime (in ms) / interval)
-    uint32 immutable lifespan;  // in number of block (e.g. 1 block per [interval] seconds)
-    uint8 immutable maxOperationsPerInterval; // number of transactions permitted per OTP interval. Each transaction shall have a unique nonce. The nonce is auto-incremented within each interval
-    uint32 immutable _numLeaves; // 2 ** (height - 1)
+    uint32 lifespan;  // in number of block (e.g. 1 block per [interval] seconds)
+    uint8  maxOperationsPerInterval; // number of transactions permitted per OTP interval. Each transaction shall have a unique nonce. The nonce is auto-incremented within each interval
+    uint32 _numLeaves; // 2 ** (height - 1)
 
     /// global mutable variables
     address payable lastResortAddress; // where money will be sent during a recovery process (or when the wallet is beyond its lifespan)
@@ -76,9 +76,7 @@ contract ONEWallet is TokenManager, DomainUser, IONEWallet {
 
     function _forwardPayment() internal {
         (bool success,) = forwardAddress.call{value : msg.value}("");
-        if (!success) {
-            revert("Forward failed");
-        }
+        require(success, "Forward failed");
         emit PaymentForwarded(msg.value, msg.sender);
     }
 
@@ -129,33 +127,27 @@ contract ONEWallet is TokenManager, DomainUser, IONEWallet {
         return true;
     }
 
-    function getInfo() external override view returns (bytes32, uint8, uint8, uint32, uint32, uint8, address, uint256)
-    {
+    function getInfo() external override view returns (bytes32, uint8, uint8, uint32, uint32, uint8, address, uint256){
         return (root, height, interval, t0, lifespan, maxOperationsPerInterval, lastResortAddress, dailyLimit);
     }
 
-    function getVersion() external override pure returns (uint32, uint32)
-    {
+    function getVersion() external override pure returns (uint32, uint32){
         return (majorVersion, minorVersion);
     }
 
-    function getCurrentSpending() external override view returns (uint256, uint256)
-    {
+    function getCurrentSpending() external override view returns (uint256, uint256){
         return (spentToday, lastTransferDay);
     }
 
-    function getNonce() external override view returns (uint8)
-    {
-        uint32 index = uint32(block.timestamp) / interval - t0;
-        return nonces[index];
+    function getNonce() external override view returns (uint8){
+        return nonces[uint32(block.timestamp) / interval - t0];
     }
 
     function getCommits() external override pure returns (bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
         revert();
     }
 
-    function getAllCommits() external override view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory)
-    {
+    function getAllCommits() external override view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
         uint32 numCommits = 0;
         for (uint32 i = 0; i < commits.length; i++) {
             Commit[] storage cc = commitLocker[commits[i]];
@@ -280,7 +272,7 @@ contract ONEWallet is TokenManager, DomainUser, IONEWallet {
             emit LastResortAddressNotSet();
             return false;
         }
-        if (lastResortAddress == address(this)) { // this should not happen unless lastResortAddress is set at contract creation time, and is deliberately set to contract's own address
+        if (lastResortAddress == address(this)) {// this should not happen unless lastResortAddress is set at contract creation time, and is deliberately set to contract's own address
             // nothing needs to be done;
             return true;
         }
@@ -310,16 +302,15 @@ contract ONEWallet is TokenManager, DomainUser, IONEWallet {
         } else if (operationType == OperationType.SET_RECOVERY_ADDRESS) {
             paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(dest)))));
         } else {
-            bytes memory packed = bytes.concat(
-                bytes32(uint256(operationType)),
-                bytes32(uint256(tokenType)),
-                bytes32(bytes20(contractAddress)),
-                bytes32(tokenId),
-                bytes32(bytes20(dest)),
-                bytes32(amount),
-                data
-            );
-            paramsHash = keccak256(bytes.concat(packed));
+            paramsHash = keccak256(bytes.concat(
+                    bytes32(uint256(operationType)),
+                    bytes32(uint256(tokenType)),
+                    bytes32(bytes20(contractAddress)),
+                    bytes32(tokenId),
+                    bytes32(bytes20(dest)),
+                    bytes32(amount),
+                    data
+                ));
         }
         return (hash, paramsHash);
     }
@@ -438,11 +429,6 @@ contract ONEWallet is TokenManager, DomainUser, IONEWallet {
         // TODO (@polymorpher): upgrade the above code after solidity implements proper support for struct-array memory-storage copy operation.
     }
 
-    function _isRevealTimely(uint32 commitTime) view internal returns (bool)
-    {
-        return uint32(block.timestamp) - commitTime < REVEAL_MAX_DELAY;
-    }
-
     /// This function verifies that the first valid entry with respect to the given `eotp` in `commitLocker[hash]` matches the provided `paramsHash` and `verificationHash`. An entry is valid with respect to `eotp` iff `h3(entry.paramsHash . eotp)` equals `entry.verificationHash`
     function _verifyReveal(bytes32 hash, uint32 indexWithNonce, bytes32 paramsHash, bytes32 eotp, OperationType operationType) view internal returns (uint32)
     {
@@ -466,7 +452,7 @@ contract ONEWallet is TokenManager, DomainUser, IONEWallet {
             }
             require(!c.completed, "Commit already done");
             // This normally should not happen, but when the network is congested (regardless of whether due to an attacker's malicious acts or not), the legitimate reveal may become untimely. This may happen before the old commit is cleaned up by another fresh commit. We enforce this restriction so that the attacker would not have a lot of time to reverse-engineer a single EOTP or leaf using an old commit.
-            require(_isRevealTimely(c.timestamp), "Too late");
+            require(uint32(block.timestamp) - c.timestamp < REVEAL_MAX_DELAY, "Too late");
             return i;
         }
         revert("No commit");
