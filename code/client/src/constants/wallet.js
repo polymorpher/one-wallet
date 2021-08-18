@@ -9,6 +9,7 @@ export default {
   fetchBalanceFrequency: 15000,
   fetchDelaysAfterTransfer: [0, 2000, 5000],
   oneWalletTreasury: {
+    label: '1wallet treasury',
     address: '0x02F2cF45DD4bAcbA091D78502Dba3B2F431a54D3'
   }
 }

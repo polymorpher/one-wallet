@@ -32,7 +32,7 @@ import walletActions from '../state/modules/wallet/actions'
 import WalletConstants from '../constants/wallet'
 import util, { useWindowDimensions } from '../util'
 import { handleAPIError, handleAddressError } from '../handler'
-import { Hint, Heading, InputBox } from '../components/Text'
+import { Hint, Heading, InputBox, Warning } from '../components/Text'
 import OtpBox from '../components/OtpBox'
 import { getAddress } from '@harmony-js/crypto'
 import AddressInput from '../components/AddressInput'
@@ -366,6 +366,10 @@ const Create = () => {
         {/*    <InputBox margin={16} width={200} value={dailyLimit} onChange={({ target: { value } }) => setDailyLimit(parseInt(value || 0))} suffix='ONE' /> */}
         {/*  </Space> */}
         {/* </Row> */}
+        {lastResortAddress.value === oneWalletTreasurySelectOption.value &&
+          <Warning style={{ marginBottom: 24 }}>
+            We suggest you choose your own address, such as an account from Harmony CLI wallet or Chrome Extension wallet. <br /><br /> 1wallet treasury generally cannot recover your funds except in rare cases which many users are affected by software bugs. <br /><br /> 1wallet treasury is managed by 5 reputable owners and requires a majority vote to make any transfer.<br /><br />If you choose 1wallet treasury as the recovery address, you have an opportunity to change it later in your wallet.
+          </Warning>}
         <Row style={{ marginBottom: 48 }}>
           <Space direction='vertical' size='small'>
             <Hint>Set up a fund recovery address:</Hint>
@@ -384,7 +388,7 @@ const Create = () => {
                           onClick={() =>
                             setLastResortAddress(oneWalletTreasurySelectOption)}
                         >
-                          (1wallet Treasury) {util.safeOneAddress(WalletConstants.oneWalletTreasury.address)}
+                          (1wallet treasury) {util.safeOneAddress(WalletConstants.oneWalletTreasury.address)}
                         </Button>
                       </Col>
                     </Row>
@@ -392,7 +396,9 @@ const Create = () => {
                 ]
               }
             />
-            <Hint>If you lost your authenticator, your can recover funds to this address</Hint>
+            <Hint>
+              {lastResortAddress.value !== oneWalletTreasurySelectOption.value && <span style={{ color: 'red' }}>You cannot change this later.</span>}
+              If you lost your authenticator, your can recover funds to this address. You can also send 1.0 ONE from the recovery address to trigger auto-recovery.</Hint>
           </Space>
         </Row>
         <Row style={{ marginBottom: 32 }}>
