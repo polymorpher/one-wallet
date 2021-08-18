@@ -1,8 +1,10 @@
-const { sha256: fastSHA256, sha256b, processOtpSeed, DEPRECATED } = require('./util')
+const { sha256: fastSHA256, sha256b, processOtpSeed, namehash, DEPRECATED } = require('./util')
 // eslint-disable-next-line no-unused-vars
-const { hexView, genOTP, hexStringToBytes, keccak, bytesEqual } = require('./util')
+const { hexView, hexString, genOTP, hexStringToBytes, keccak, bytesEqual } = require('./util')
+const ONEConstants = require('./constants')
 const BN = require('bn.js')
 const AES = require('aes-js')
+const abi = require('web3-eth-abi')
 
 const computeMerkleTree = async ({
   otpSeed,
@@ -261,7 +263,7 @@ const computeTokenKey = ({ tokenType, contractAddress, tokenId }) => {
 //   bytes32(bytes20(dest)),
 //   bytes32(amount),
 //   data
-const computeTokenOperationHash = ({ operationType, tokenType, contractAddress, tokenId, dest, amount, data = new Uint8Array() }) => {
+const computeGeneralOperationHash = ({ operationType, tokenType, contractAddress, tokenId, dest, amount, data = new Uint8Array() }) => {
   const operationTypeBytes = new BN(operationType, 10).toArrayLike(Uint8Array, 'be', 32)
   const tokenTypeBytes = new BN(tokenType, 10).toArrayLike(Uint8Array, 'be', 32)
   const contractAddressBytes = hexStringToBytes(contractAddress, 32)
@@ -289,6 +291,34 @@ const computeVerificationHash = ({ paramsHash, eotp }) => {
   return { hash: keccak(input), bytes: input }
 }
 
+const encodeBuyDomainData = ({ reverseRegistrar = ONEConstants.Domain.DEFAULT_REVERSE_REGISTRAR, subdomain, parentLabel = ONEConstants.Domain.DEFAULT_PARENT_LABEL, tld = ONEConstants.Domain.DEFAULT_TLD }) => {
+  const parentLabelHash = hexString(keccak(parentLabel))
+  const fqdn = [subdomain, parentLabel, tld].join('.')
+  const encoded = abi.encodeParameters(['address', 'bytes32', 'string'], [reverseRegistrar, parentLabelHash, fqdn])
+  return encoded
+}
+
+const computeBuyDomainCommitHash = ({
+  registrar = ONEConstants.Domain.DEFAULT_SUBDOMAIN_REGISTRAR,
+  resolver = ONEConstants.Domain.DEFAULT_RESOLVER,
+  reverseRegistrar = ONEConstants.Domain.DEFAULT_REVERSE_REGISTRAR,
+  maxPrice,
+  subdomain,
+  parentLabel = ONEConstants.Domain.DEFAULT_PARENT_LABEL,
+  tld = ONEConstants.Domain.DEFAULT_TLD,
+}) => {
+  const data = encodeBuyDomainData({ reverseRegistrar, subdomain, parentLabel, tld })
+  return computeGeneralOperationHash({
+    operationType: ONEConstants.OperationType.BUY_DOMAIN,
+    tokenType: ONEConstants.TokenType.NONE,
+    contractAddress: registrar,
+    tokenId: subdomain.length,
+    dest: resolver,
+    amount: maxPrice,
+    data
+  })
+}
+
 module.exports = {
   computeCommitHash,
   computeMerkleTree,
@@ -299,8 +329,9 @@ module.exports = {
   computeEOTP,
   bruteforceEOTP,
   computeTokenKey,
-  computeTokenOperationHash,
+  computeGeneralOperationHash,
   computeVerificationHash,
-
-  recoverRandomness
+  recoverRandomness,
+  encodeBuyDomainData,
+  computeBuyDomainCommitHash
 }

@@ -11,6 +11,10 @@ const IERC721 = require('../../build/contracts/IERC721.json')
 const IERC721Metadata = require('../../build/contracts/IERC721Metadata.json')
 const IERC1155 = require('../../build/contracts/IERC1155.json')
 const IERC1155MetadataURI = require('../../build/contracts/IERC1155MetadataURI.json')
+const Resolver = require('../../build/contracts/Resolver.json')
+const ReverseResolver = require('../../build/contracts/IDefaultReverseResolver.json')
+const Registrar = require('../../build/contracts/IRegistrar.json')
+
 const BN = require('bn.js')
 const ONEUtil = require('../util')
 const ONEConstants = require('../constants')
@@ -59,6 +63,7 @@ const initAPI = (store) => {
   })
 }
 
+// TODO: cleanup this mess
 const providers = {}; const contractWithProvider = {}; const networks = []; const web3instances = {}
 let activeNetwork = config.defaults.network
 let web3; let one
@@ -68,6 +73,9 @@ let tokenContractsWithProvider = { erc20: {}, erc721: {}, erc1155: {} }
 let tokenMetadataWithProvider = { erc20: {}, erc721: {}, erc1155: {} }
 let tokens = { erc20: null, erc721: null, erc1155: null }
 let tokenMetadata = { erc20: null, erc721: null, erc1155: null }
+
+let resolverWithProvider, reverseResolverWithProvider, registrarWithProvider
+let resolver, reverseResolver, registrar
 
 const initBlockchain = (store) => {
   Object.keys(config.networks).forEach(k => {
@@ -96,6 +104,14 @@ const initBlockchain = (store) => {
       tokenMetadataWithProvider[t][k] = contract(tokenMetadataTemplates[t])
       tokenMetadataWithProvider[t][k].setProvider(providers[k])
     })
+    if (k === 'harmony-mainnet') {
+      resolverWithProvider = contract(Resolver)
+      resolverWithProvider.setProvider(providers[k])
+      reverseResolverWithProvider = contract(ReverseResolver)
+      reverseResolverWithProvider.setProvider(providers[k])
+      registrarWithProvider = contract(Registrar)
+      registrarWithProvider.setProvider(providers[k])
+    }
   })
   const switchNetwork = () => {
     web3 = web3instances[activeNetwork]
@@ -104,6 +120,15 @@ const initBlockchain = (store) => {
       tokens[t] = tokenContractsWithProvider[t][activeNetwork]
       tokenMetadata[t] = tokenMetadataWithProvider[t][activeNetwork]
     })
+    if (activeNetwork === 'harmony-mainnet') {
+      resolver = resolverWithProvider
+      reverseResolver = reverseResolverWithProvider
+      registrar = registrarWithProvider
+    } else {
+      resolver = null
+      reverseResolver = null
+      registrar = null
+    }
   }
   switchNetwork()
   store.subscribe(() => {
@@ -303,6 +328,54 @@ const api = {
         uri = await c.uri(tokenId)
       }
       return { name, symbol, uri, decimals: decimals.toNumber() }
+    },
+
+    domain: {
+      resolve: async ({ name }) => {
+        if (!resolver) {
+          throw new Error('Unsupported network')
+        }
+        const c = await resolver.at(ONEConstants.Domain.DEFAULT_RESOLVER)
+        const node = ONEUtil.hexString(ONEUtil.namehash(name))
+        const address = await c.addr(node)
+        return address
+      },
+      reverseLookup: async ({ address }) => {
+        if (!reverseResolver) {
+          throw new Error('Unsupported network')
+        }
+        if (address.startsWith('0x')) {
+          address = address.slice(2)
+        }
+        const label = ONEUtil.keccak(address.toLowerCase())
+        const buffer = new Uint8Array(64)
+        buffer.set(ONEUtil.hexStringToBytes(ONEConstants.Domain.ADDR_REVERSE_NODE))
+        buffer.set(label, 32)
+        const node = ONEUtil.keccak(buffer)
+        const nodeHex = ONEUtil.hexString(node)
+        // console.log(nodeHex)
+        const c = await reverseResolver.at(ONEConstants.Domain.DEFAULT_REVERSE_RESOLVER)
+        const name = await c.name(nodeHex)
+        return name
+      },
+
+      price: async ({ name }) => {
+        if (!registrar) {
+          throw new Error('Unsupported network')
+        }
+        const price = await registrar.rentPrice(name, ONEConstants.Domain.DEFAULT_RENT_DURATION)
+        return price // This is a BN
+      },
+
+      available: async ({ name }) => {
+        if (!registrar) {
+          throw new Error('Unsupported network')
+        }
+        const label = ONEUtil.hexString(ONEUtil.keccak(ONEConstants.Domain.DEFAULT_PARENT_LABEL))
+        const ret = await registrar.query(label, name)
+        return !!ret[0]
+      }
+
     }
   },
   relayer: {
@@ -365,6 +438,38 @@ const api = {
         amount: 0,
       })
     },
+
+    /**
+     *
+     * @param neighbors
+     * @param index
+     * @param eotp
+     * @param address
+     * @param registrar - hex address of Registrar
+     * @param reverseRegistrar - hex address of ReverseRegistrar
+     * @param resolver - hex address of Resolver
+     * @param maxPrice - string, maximum price acceptable for the domain purchase, in wei
+     * @param suffix - string, the suffix for the domain to be purchased. For "polymorpher.crazy.one", the suffix is ".crazy.one"
+     * @param subdomain - string, the subdomain to be purchased. For "polymorpher.crazy.one", the subdomain is "polymorpher"
+     * @returns {Promise<void>}
+     */
+    revealBuyDomain: async ({ neighbors, index, eotp, address, registrar, reverseRegistrar, resolver, maxPrice, suffix, subdomain }) => {
+      const data = ONEUtil
+      return api.relayer.reveal({
+        neighbors,
+        index,
+        eotp,
+        address,
+        operationType: ONEConstants.OperationType.BUY_DOMAIN,
+        tokenType: ONEConstants.TokenType.NONE,
+        contractAddress: registrar,
+        dest: resolver,
+        amount: maxPrice,
+        tokenId: subdomain.length,
+        data,
+      })
+    },
+
     reveal: async ({ address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data = '0x' }) => {
       const { data: ret } = await base.post('/reveal', { address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
       return ret
@@ -379,6 +484,8 @@ const api = {
     }
   },
 }
+
+window.ONEWallet = { api }
 
 module.exports = {
   initAPI,

@@ -1,5 +1,3 @@
-import config from '../client/src/config'
-
 const JSSHA = require('jssha')
 const createKeccakHash = require('keccak')
 const Conversion = require('ethjs-unit')
@@ -10,6 +8,8 @@ const base32 = require('hi-base32')
 const securityParams = require('./params')
 const STANDARD_DECIMAL = 18
 const PERMIT_DEPRECATED_METHOD = process.env.PERMIT_DEPRECATED_METHOD
+const uts46 = require('idna-uts46')
+
 const utils = {
   hexView: (bytes) => {
     return bytes && Array.from(bytes).map(x => x.toString(16).padStart(2, '0')).join('')
@@ -51,6 +51,7 @@ const utils = {
   },
 
   // assume Buffer is poly-filled or loaded from https://github.com/feross/buffer
+  // accepts string as well
   keccak: (bytes) => {
     const k = createKeccakHash('keccak256')
     // assume Buffer is poly-filled or loaded from https://github.com/feross/buffer
@@ -182,7 +183,28 @@ const utils = {
       }
     }
     throw new Error(`No security parameter for version ${v}`)
-  }
+  },
+
+  normalizeDomain: e => {
+    return uts46.toAscii(e, { useStd3ASCII: true })
+  },
+
+  namehash: (name) => {
+    name = utils.normalizeDomain(name)
+    const parts = name.split('.')
+    const empty = new Uint8Array(32)
+    if (!name) {
+      return empty
+    }
+    let hash = empty
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const joined = new Uint8Array(64)
+      joined.set(hash)
+      joined.set(utils.keccak(parts[i]), 32)
+      hash = utils.keccak(joined)
+    }
+    return hash
+  },
 
 }
 module.exports = utils

@@ -35,6 +35,7 @@ const BuildProvider = (conf, useTruffle) => {
 }
 
 module.exports = {
+  // contracts_directory: '@ensdomains/subdomain-registrar-core/contracts/interfaces/IRegistrar.sol',
   networks: {
     dev: {
       network_id: '*',
