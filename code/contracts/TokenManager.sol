@@ -1,25 +1,24 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.4;
 
+import "./Forwardable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import "./Enums.sol";
 
-
-contract TokenTracker is IERC721Receiver, IERC1155Receiver {
-
-    /// token tracking
-    enum TokenType{
-        ERC20, ERC721, ERC1155, NONE
-    }
+abstract contract TokenManager is IERC721Receiver, IERC1155Receiver, Forwardable {
     event ReceivedToken(TokenType tokenType, uint256 amount, address from, address tokenContract, address operator, uint256 tokenId, bytes data);
+    event ForwardedToken(TokenType tokenType, uint256 amount, address from, address tokenContract, address operator, uint256 tokenId, bytes data);
     event TokenTracked(TokenType tokenType, address contractAddress, uint256 tokenId);
     event TokenUntracked(TokenType tokenType, address contractAddress, uint256 tokenId);
     event TokenNotFound(TokenType tokenType, address contractAddress, uint256 tokenId);
     event TokenTransferFailed(TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount);
     event TokenTransferError(TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount, string reason);
     event TokenTransferSucceeded(TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount);
+    event TokenRecovered(TokenType tokenType, address contractAddress, uint256 tokenId, uint256 balance);
 
     // We track tokens in the contract instead of at the client so users can immediately get a record of what tokens they own when they restore their wallet at a new client
     // The tracking of ERC721 and ERC1155 are automatically established upon a token is transferred to this wallet. The tracking of ERC20 needs to be manually established by the client.
@@ -33,8 +32,6 @@ contract TokenTracker is IERC721Receiver, IERC1155Receiver {
     mapping(bytes32 => uint256[]) trackedTokenPositions; // keccak256(bytes.concat(byte32(uint(tokenType)), bytes32(contractAddress), bytes32(tokenId)) => positions in trackedTokens. Positions should be of length 1 except in very rare occasion of collision
     TrackedToken[] trackedTokens;
 
-    constructor(){}
-
     function onERC1155Received(
         address operator,
         address from,
@@ -43,6 +40,11 @@ contract TokenTracker is IERC721Receiver, IERC1155Receiver {
         bytes calldata data
     ) external override returns (bytes4){
         emit ReceivedToken(TokenType.ERC1155, value, from, msg.sender, operator, id, data);
+        address payable forwardAddress = _getForwardAddress();
+        if (forwardAddress != address(0)) {
+            _transferToken(TokenType.ERC1155, msg.sender, id, forwardAddress, value, data);
+            return this.onERC1155Received.selector;
+        }
         _trackToken(TokenType.ERC1155, msg.sender, id);
         return this.onERC1155Received.selector;
     }
@@ -68,6 +70,11 @@ contract TokenTracker is IERC721Receiver, IERC1155Receiver {
         bytes calldata data
     ) external override returns (bytes4){
         emit ReceivedToken(TokenType.ERC721, 1, from, msg.sender, operator, tokenId, data);
+        address payable forwardAddress = _getForwardAddress();
+        if (forwardAddress != address(0)) {
+            _transferToken(TokenType.ERC721, msg.sender, tokenId, forwardAddress, 1, data);
+            return this.onERC721Received.selector;
+        }
         _trackToken(TokenType.ERC721, msg.sender, tokenId);
         return this.onERC721Received.selector;
     }
@@ -83,7 +90,7 @@ contract TokenTracker is IERC721Receiver, IERC1155Receiver {
         }
         return (tokenTypes, contractAddresses, tokenIds);
     }
- 
+
 
     function _trackToken(TokenType tokenType, address contractAddress, uint256 tokenId) internal {
         bytes32 key = keccak256(bytes.concat(bytes32(uint256(tokenType)), bytes32(bytes20(contractAddress)), bytes32(tokenId)));
@@ -97,9 +104,8 @@ contract TokenTracker is IERC721Receiver, IERC1155Receiver {
                 return;
             }
         }
-        TrackedToken memory tt = TrackedToken(tokenType, contractAddress, tokenId);
         trackedTokenPositions[key].push(trackedTokens.length);
-        trackedTokens.push(tt);
+        trackedTokens.push(TrackedToken(tokenType, contractAddress, tokenId));
         emit TokenTracked(tokenType, contractAddress, tokenId);
     }
 
@@ -145,59 +151,116 @@ contract TokenTracker is IERC721Receiver, IERC1155Receiver {
             address contractAddress = newTrackedTokens[i].contractAddress;
             uint256 tokenId = newTrackedTokens[i].tokenId;
             bytes32 key = keccak256(bytes.concat(bytes32(uint256(tokenType)), bytes32(bytes20(contractAddress)), bytes32(tokenId)));
-            TrackedToken memory t = TrackedToken(tokenType, contractAddress, tokenId);
-            trackedTokens.push(t);
+            trackedTokens.push(TrackedToken(tokenType, contractAddress, tokenId));
             trackedTokenPositions[key].push(i);
         }
     }
 
     function _overrideTrackWithBytes(bytes calldata data) internal {
-        uint32 numTokens = uint32(data.length / 96);
-        require(numTokens * 96 == data.length, "data must have length multiple to 96");
-        TrackedToken[] memory newTrackedTokens = new TrackedToken[](numTokens);
-        for (uint32 i = 0; i < numTokens; i++) {
-            TokenType tokenType = TokenType(uint256(_asByte32(data[i * 96 : i * 96 + 32])));
-            address contractAddress = address(bytes20(_asByte32(data[i * 96 + 32 : i * 96 + 52])));
-            uint256 tokenId = uint256(_asByte32(data[i * 96 + 64 : i * 96 + 96]));
-            newTrackedTokens[i] = TrackedToken(tokenType, contractAddress, tokenId);
+        (uint256[] memory tokenTypes, address[] memory contractAddresses, uint256[] memory tokenIds) = abi.decode(data, (uint256[], address[], uint256[]));
+        TrackedToken[] memory newTrackedTokens = new TrackedToken[](tokenTypes.length);
+        for (uint32 i = 0; i < tokenTypes.length; i++) {
+            newTrackedTokens[i] = TrackedToken(TokenType(tokenTypes[i]), contractAddresses[i], tokenIds[i]);
         }
         _overrideTrack(newTrackedTokens);
     }
 
     function _multiTrack(bytes calldata data) internal {
-        uint32 numTokens = uint32(data.length / 96);
-        require(numTokens * 96 == data.length, "data must have length multiple to 96");
-        for (uint32 i = 0; i < numTokens; i++) {
-            TokenType tokenType = TokenType(uint256(_asByte32(data[i * 96 : i * 96 + 32])));
-            address contractAddress = address(bytes20(_asByte32(data[i * 96 + 32 : i * 96 + 52])));
-            uint256 tokenId = uint256(_asByte32(data[i * 96 + 64 : i * 96 + 96]));
-            _trackToken(tokenType, contractAddress, tokenId);
+        (uint256[] memory tokenTypes, address[] memory contractAddresses, uint256[] memory tokenIds) = abi.decode(data, (uint256[], address[], uint256[]));
+        for (uint32 i = 0; i < tokenTypes.length; i++) {
+            _trackToken(TokenType(tokenTypes[i]), contractAddresses[i], tokenIds[i]);
         }
     }
 
     function _multiUntrack(bytes calldata data) internal {
-        uint32 numTokens = uint32(data.length / 96);
-        require(numTokens * 96 == data.length, "data must have length multiple to 96");
-        for (uint32 i = 0; i < numTokens; i++) {
-            TokenType tokenType = TokenType(uint256(_asByte32(data[i * 96 : i * 96 + 32])));
-            address contractAddress = address(bytes20(_asByte32(data[i * 96 + 32 : i * 96 + 52])));
-            uint256 tokenId = uint256(_asByte32(data[i * 96 + 64 : i * 96 + 96]));
-            _untrackToken(tokenType, contractAddress, tokenId);
+        (uint256[] memory tokenTypes, address[] memory contractAddresses, uint256[] memory tokenIds) = abi.decode(data, (uint256[], address[], uint256[]));
+        for (uint32 i = 0; i < tokenTypes.length; i++) {
+            _untrackToken(TokenType(tokenTypes[i]), contractAddresses[i], tokenIds[i]);
+        }
+    }
+    // not needed
+    //    function _asByte32(bytes memory b) pure internal returns (bytes32){
+    //        if (b.length == 0) {
+    //            return bytes32(0x0);
+    //        }
+    //        require(b.length <= 32);
+    //        bytes32 r;
+    //        uint8 len = uint8((32 - b.length) * 8);
+    //        assembly{
+    //            r := mload(add(b, 32))
+    //            r := shr(len, r)
+    //            r := shl(len, r)
+    //        }
+    //        return r;
+    //    }
+
+    function _transferToken(TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount, bytes memory data) internal {
+        if (tokenType == TokenType.ERC20) {
+            try IERC20(contractAddress).transfer(dest, amount) returns (bool success){
+                if (success) {
+                    _trackToken(tokenType, contractAddress, tokenId);
+                    emit TokenTransferSucceeded(tokenType, contractAddress, tokenId, dest, amount);
+                    return;
+                }
+                emit TokenTransferFailed(tokenType, contractAddress, tokenId, dest, amount);
+            } catch Error(string memory reason){
+                emit TokenTransferError(tokenType, contractAddress, tokenId, dest, amount, reason);
+            } catch {
+                emit TokenTransferError(tokenType, contractAddress, tokenId, dest, amount, "");
+            }
+        } else if (tokenType == TokenType.ERC721) {
+            try IERC721(contractAddress).safeTransferFrom(address(this), dest, tokenId, data){
+                emit TokenTransferSucceeded(tokenType, contractAddress, tokenId, dest, amount);
+            } catch Error(string memory reason){
+                emit TokenTransferError(tokenType, contractAddress, tokenId, dest, amount, reason);
+            } catch {
+                emit TokenTransferError(tokenType, contractAddress, tokenId, dest, amount, "");
+            }
+        } else if (tokenType == TokenType.ERC1155) {
+            try IERC1155(contractAddress).safeTransferFrom(address(this), dest, tokenId, amount, data) {
+                emit TokenTransferSucceeded(tokenType, contractAddress, tokenId, dest, amount);
+            } catch Error(string memory reason){
+                emit TokenTransferError(tokenType, contractAddress, tokenId, dest, amount, reason);
+            } catch {
+                emit TokenTransferError(tokenType, contractAddress, tokenId, dest, amount, "");
+            }
         }
     }
 
-    function _asByte32(bytes memory b) pure internal returns (bytes32){
-        if (b.length == 0) {
-            return bytes32(0x0);
+    function _getBalance(TrackedToken storage t) internal view returns (uint256){
+        if (t.tokenType == TokenType.ERC20) {
+            return IERC20(t.contractAddress).balanceOf(address(this));
+        } else if (t.tokenType == TokenType.ERC721) {
+            bool owned = IERC721(t.contractAddress).ownerOf(t.tokenId) == address(this);
+            if (owned) {
+                return 1;
+            } else {
+                return 0;
+            }
+        } else if (t.tokenType == TokenType.ERC1155) {
+            return IERC1155(t.contractAddress).balanceOf(address(this), t.tokenId);
         }
-        require(b.length <= 32, "input bytes too long");
-        bytes32 r;
-        uint8 len = uint8((32 - b.length) * 8);
-        assembly{
-            r := mload(add(b, 32))
-            r := shr(len, r)
-            r := shl(len, r)
+        return 0;
+    }
+
+    function _recoverToken(address dest, TrackedToken storage t) internal {
+        uint256 balance = _getBalance(t);
+        if (balance > 0) {
+            _transferToken(t.tokenType, t.contractAddress, t.tokenId, dest, balance, bytes(""));
+            emit TokenRecovered(t.tokenType, t.contractAddress, t.tokenId, balance);
         }
-        return r;
+    }
+
+    function _recoverSelectedTokensEncoded(address dest, bytes calldata data) internal {
+        uint32[] memory indices = abi.decode(data, (uint32[]));
+        for (uint32 i = 0; i < indices.length; i++) {
+            _recoverToken(dest, trackedTokens[indices[i]]);
+        }
+    }
+
+    function _recoverAllTokens(address dest) internal {
+        for (uint32 i = 0; i < trackedTokens.length; i++) {
+            _recoverToken(dest, trackedTokens[i]);
+        }
     }
 }

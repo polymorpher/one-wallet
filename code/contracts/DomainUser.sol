@@ -4,7 +4,7 @@ pragma solidity ^0.8.4;
 import "@ensdomains/subdomain-registrar-core/contracts/interfaces/IRegistrar.sol";
 import "@ensdomains/subdomain-registrar-core/contracts/interfaces/IReverseRegistrar.sol";
 
-contract DomainUser {
+abstract contract DomainUser {
     uint256 constant MIN_DOMAIN_RENT_DURATION = 31536000;
 
     event DomainRegistered(address subdomainRegistrar, string subdomain, bytes32 domainLabel);
@@ -15,11 +15,7 @@ contract DomainUser {
     function _buyDomainEncoded(bytes calldata data, uint256 maxPrice, uint8 subdomainLabelLength, address reg, address resolver) internal returns (bool) {
         (address rev, bytes32 node, string memory fqdn) = abi.decode(data, (address, bytes32, string));
         bytes memory bfqdn = bytes(fqdn);
-        if (bfqdn.length > 64) {
-            emit InvalidFQDN(fqdn, subdomainLabelLength);
-            return false;
-        }
-        if (bfqdn.length < subdomainLabelLength) {
+        if (bfqdn.length > 64 || bfqdn.length < subdomainLabelLength) {
             emit InvalidFQDN(fqdn, subdomainLabelLength);
             return false;
         }
@@ -48,7 +44,7 @@ contract DomainUser {
     /// https://github.com/Uniswap/uniswap-v3-periphery/blob/v1.0.0/contracts/base/Multicall.sol
     function _revertReason(bytes memory _res) internal pure returns (string memory) {
         // If the _res length is less than 68, then the transaction failed silently (without a revert message)
-        if (_res.length < 68) return 'Silent revert';
+        if (_res.length < 68) return "";
         assembly {
         // Slice the sighash.
             _res := add(_res, 0x04)
