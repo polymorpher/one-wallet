@@ -3,24 +3,10 @@ pragma solidity ^0.8.4;
 
 import "./TokenManager.sol";
 import "./DomainUser.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./Enums.sol";
 import "./IONEWallet.sol";
 
 contract ONEWallet is TokenManager, DomainUser, IONEWallet {
-    event InsufficientFund(uint256 amount, uint256 balance, address dest);
-    event ExceedDailyLimit(uint256 amount, uint256 limit, uint256 current, address dest);
-    event UnknownTransferError(address dest);
-    event LastResortAddressNotSet();
-    event PaymentReceived(uint256 amount, address from);
-    event PaymentSent(uint256 amount, address dest);
-    event PaymentForwarded(uint256 amount, address dest);
-    event AutoRecoveryTriggered(address from);
-    event AutoRecoveryTriggeredPrematurely(address from, uint256 requiredTime);
-    event RecoveryFailure();
-    event ForwardAddressUpdated(address dest);
-    event BackLinkForwardAddressUpdated(address dest, address backlink);
-    event BackLinkForwardAddressUpdateError(address dest, address backlink, string error);
 
     /// In future versions, it is planned that we may allow the user to extend the wallet's life through a function call. When that is implemented, the following variables may no longer be immutable, with the exception of root which shall serve as an identifier of the wallet
     bytes32 root; // Note: @ivan brought up a good point in reducing this to 16-bytes so hash of two consecutive nodes can be done in a single word (to save gas and reduce blockchain clutter). Let's not worry about that for now and re-evalaute this later.
@@ -88,14 +74,34 @@ contract ONEWallet is TokenManager, DomainUser, IONEWallet {
         return forwardAddress;
     }
 
+    function _forwardPayment() internal {
+        (bool success,) = forwardAddress.call{value : msg.value}("");
+        if (!success) {
+            revert("Forward failed");
+        }
+        emit PaymentForwarded(msg.value, msg.sender);
+    }
+
     receive() external payable {
         emit PaymentReceived(msg.value, msg.sender);
-        if (forwardAddress != address(0)) {
-            (bool success,) = forwardAddress.call{value : msg.value}("");
-            if (!success) {
-                revert("Forward payment failure");
+
+        if (forwardAddress != address(0)) {// this wallet already has a forward address set - standard recovery process should not apply
+            if (forwardAddress == lastResortAddress) {// in this case, funds should be forwarded to forwardAddress no matter what
+                _forwardPayment();
+                return;
             }
-            emit PaymentForwarded(msg.value, msg.sender);
+            if (msg.sender == lastResortAddress) {// this case requires special handling
+                if (msg.value == AUTO_RECOVERY_TRIGGER_AMOUNT) {// in this case, send funds to recovery address
+                    _recover();
+                    return;
+                }
+                // any other amount is deemed to authorize withdrawal of all funds to forwardAddress
+                _setRecoveryAddress(forwardAddress);
+                _recover();
+                return;
+            }
+            // if sender is anyone else (including self), simply forward the payment
+            _forwardPayment();
             return;
         }
         if (msg.value != AUTO_RECOVERY_TRIGGER_AMOUNT) {
@@ -117,8 +123,8 @@ contract ONEWallet is TokenManager, DomainUser, IONEWallet {
 
     function retire() external override returns (bool)
     {
-        require(uint32(block.timestamp / interval) - t0 > lifespan, "Too early to retire");
-        require(lastResortAddress != address(0), "Last resort address is not set");
+        require(uint32(block.timestamp / interval) - t0 > lifespan, "Too early");
+        require(lastResortAddress != address(0), "Recovery not set");
         require(_drain(), "Recovery failed");
         return true;
     }
@@ -145,7 +151,7 @@ contract ONEWallet is TokenManager, DomainUser, IONEWallet {
     }
 
     function getCommits() external override pure returns (bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
-        revert("Deprecated");
+        revert();
     }
 
     function getAllCommits() external override view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory)
@@ -177,7 +183,7 @@ contract ONEWallet is TokenManager, DomainUser, IONEWallet {
     }
 
     function findCommit(bytes32 /*hash*/) external override pure returns (bytes32, bytes32, uint32, bool){
-        revert("Deprecated");
+        revert();
     }
 
     function lookupCommit(bytes32 hash) external override view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
@@ -201,20 +207,32 @@ contract ONEWallet is TokenManager, DomainUser, IONEWallet {
     function commit(bytes32 hash, bytes32 paramsHash, bytes32 verificationHash) external override {
         _cleanupCommits();
         Commit memory nc = Commit(paramsHash, verificationHash, uint32(block.timestamp), false);
-        require(commits.length < MAX_COMMIT_SIZE, "Too many commits");
+        require(commits.length < MAX_COMMIT_SIZE, "Too many");
         commits.push(hash);
         commitLocker[hash].push(nc);
     }
 
     function _forward(address payable dest) internal {
+        if (address(forwardAddress) != address(0)) {
+            emit ForwardAddressAlreadySet(dest);
+            return;
+        }
+        if (address(forwardAddress) == address(this)) {
+            emit ForwardAddressInvalid(dest);
+            return;
+        }
         forwardAddress = dest;
+        emit ForwardAddressUpdated(dest);
+        if (lastResortAddress == address(0)) {
+            _setRecoveryAddress(forwardAddress);
+        }
         for (uint32 i = 0; i < backlinkAddresses.length; i++) {
             try backlinkAddresses[i].reveal(new bytes32[](0), 0, bytes32(0), OperationType.FORWARD, TokenType.NONE, address(0), 0, dest, 0, bytes("")){
-                emit BackLinkForwardAddressUpdated(dest, address(backlinkAddresses[i]));
+                emit BackLinkUpdated(dest, address(backlinkAddresses[i]));
             } catch Error(string memory reason){
-                emit BackLinkForwardAddressUpdateError(dest, address(backlinkAddresses[i]), reason);
+                emit BackLinkUpdateError(dest, address(backlinkAddresses[i]), reason);
             } catch {
-                emit BackLinkForwardAddressUpdateError(dest, address(backlinkAddresses[i]), "");
+                emit BackLinkUpdateError(dest, address(backlinkAddresses[i]), "");
             }
         }
     }
@@ -262,6 +280,10 @@ contract ONEWallet is TokenManager, DomainUser, IONEWallet {
             emit LastResortAddressNotSet();
             return false;
         }
+        if (lastResortAddress == address(this)) { // this should not happen unless lastResortAddress is set at contract creation time, and is deliberately set to contract's own address
+            // nothing needs to be done;
+            return true;
+        }
         if (!_drain()) {
             emit RecoveryFailure();
             return false;
@@ -270,8 +292,10 @@ contract ONEWallet is TokenManager, DomainUser, IONEWallet {
     }
 
     function _setRecoveryAddress(address payable lastResortAddress_) internal {
-        require(lastResortAddress == address(0), "Last resort address is already set");
+        require(lastResortAddress == address(0), "Already set");
+        require(lastResortAddress_ != address(this), "Cannot be self");
         lastResortAddress = lastResortAddress_;
+        emit RecoveryAddressUpdated(lastResortAddress);
     }
 
     /// Provides commitHash, paramsHash, and verificationHash given the parameters
@@ -307,7 +331,7 @@ contract ONEWallet is TokenManager, DomainUser, IONEWallet {
         if (msg.sender != forwardAddress) {
             _isCorrectProof(neighbors, indexWithNonce, eotp);
             if (indexWithNonce == _numLeaves - 1) {
-                require(operationType == OperationType.RECOVER, "Last operation reserved for recover");
+                require(operationType == OperationType.RECOVER, "Reserved");
             }
             (bytes32 commitHash, bytes32 paramsHash) = _getRevealHash(neighbors[0], indexWithNonce, eotp,
                 operationType, tokenType, contractAddress, tokenId, dest, amount, data);
@@ -348,7 +372,7 @@ contract ONEWallet is TokenManager, DomainUser, IONEWallet {
 
     /// This is just a wrapper around a modifier previously called `isCorrectProof`, to avoid "Stack too deep" error. Duh.
     function _isCorrectProof(bytes32[] calldata neighbors, uint32 position, bytes32 eotp) view internal {
-        require(neighbors.length == height - 1, "Not enough neighbors provided");
+        require(neighbors.length == height - 1, "Bad neighbors");
         bytes32 h = sha256(bytes.concat(eotp));
         if (position == _numLeaves - 1) {
             // special case: recover only
@@ -433,19 +457,19 @@ contract ONEWallet is TokenManager, DomainUser, IONEWallet {
                 // Invalid entry. Ignore
                 continue;
             }
-            require(c.paramsHash == paramsHash, "Parameter hash mismatch");
+            require(c.paramsHash == paramsHash, "Param mismatch");
             if (operationType != OperationType.RECOVER) {
                 uint32 counter = c.timestamp / interval - t0;
-                require(counter == index, "Index - timestamp mismatch");
+                require(counter == index, "Time mismatch");
                 uint8 expectedNonce = nonces[counter];
                 require(nonce >= expectedNonce, "Nonce too low");
             }
-            require(!c.completed, "Commit already completed");
+            require(!c.completed, "Commit already done");
             // This normally should not happen, but when the network is congested (regardless of whether due to an attacker's malicious acts or not), the legitimate reveal may become untimely. This may happen before the old commit is cleaned up by another fresh commit. We enforce this restriction so that the attacker would not have a lot of time to reverse-engineer a single EOTP or leaf using an old commit.
-            require(_isRevealTimely(c.timestamp), "Reveal too late");
+            require(_isRevealTimely(c.timestamp), "Too late");
             return i;
         }
-        revert("No valid commit");
+        revert("No commit");
     }
 
     function _completeReveal(bytes32 commitHash, uint32 commitIndex, OperationType operationType) internal {

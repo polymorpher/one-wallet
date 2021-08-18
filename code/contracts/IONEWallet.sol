@@ -4,6 +4,22 @@ pragma solidity ^0.8.4;
 import "./Enums.sol";
 
 interface IONEWallet {
+    event InsufficientFund(uint256 amount, uint256 balance, address dest);
+    event ExceedDailyLimit(uint256 amount, uint256 limit, uint256 current, address dest);
+    event UnknownTransferError(address dest);
+    event LastResortAddressNotSet();
+    event RecoveryAddressUpdated(address dest);
+    event PaymentReceived(uint256 amount, address from);
+    event PaymentSent(uint256 amount, address dest);
+    event PaymentForwarded(uint256 amount, address dest);
+    event AutoRecoveryTriggered(address from);
+    event AutoRecoveryTriggeredPrematurely(address from, uint256 requiredTime);
+    event RecoveryFailure();
+    event ForwardAddressUpdated(address dest);
+    event ForwardAddressAlreadySet(address dest);
+    event ForwardAddressInvalid(address dest);
+    event BackLinkUpdated(address dest, address backlink);
+    event BackLinkUpdateError(address dest, address backlink, string error);
 
     function getForwardAddress() external view returns (address payable);
 

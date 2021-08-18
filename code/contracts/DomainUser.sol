@@ -48,7 +48,7 @@ abstract contract DomainUser {
     /// https://github.com/Uniswap/uniswap-v3-periphery/blob/v1.0.0/contracts/base/Multicall.sol
     function _revertReason(bytes memory _res) internal pure returns (string memory) {
         // If the _res length is less than 68, then the transaction failed silently (without a revert message)
-        if (_res.length < 68) return 'Silent revert';
+        if (_res.length < 68) return "";
         assembly {
         // Slice the sighash.
             _res := add(_res, 0x04)

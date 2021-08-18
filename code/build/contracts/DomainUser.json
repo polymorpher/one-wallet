@@ -78,7 +78,7 @@
       "type": "event"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.4+commit.c7e474f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"subdomainRegistrar\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"subdomain\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"domainLabel\",\"type\":\"bytes32\"}],\"name\":\"DomainRegistered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"string\",\"name\":\"reason\",\"type\":\"string\"}],\"name\":\"DomainRegistrationFailed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"string\",\"name\":\"fqdn\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"subdomainLabelLength\",\"type\":\"uint32\"}],\"name\":\"InvalidFQDN\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"reverseRegistrar\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"nodeHash\",\"type\":\"bytes32\"}],\"name\":\"ReverseDomainClaimed\",\"type\":\"event\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/DomainUser.sol\":\"DomainUser\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"@ensdomains/subdomain-registrar-core/contracts/interfaces/IRegistrar.sol\":{\"keccak256\":\"0xe7a1a7d56646e6a1e9ce6a97a1524ded3068a7f43262ccb07a4f9c43316880c3\",\"license\":\"BSD-2-Clause\",\"urls\":[\"bzz-raw://ca7bd4dd288048f8e968705908c85b348386482e27acd87e88cce3aa4352fb70\",\"dweb:/ipfs/QmNZ1L5yPLo6VyzmF8WXMzF5MnSYUYH263wGiBCyR1bkF8\"]},\"@ensdomains/subdomain-registrar-core/contracts/interfaces/IReverseRegistrar.sol\":{\"keccak256\":\"0x446c18bab7412fd511dcdd59ce91d6d97591636d6cba8c2a53ebcf82e64296f3\",\"license\":\"BSD-2-Clause\",\"urls\":[\"bzz-raw://a9f7a879e03ffbdf27febafc578c7995b342f660b8cfe21087e291410c31ca3c\",\"dweb:/ipfs/Qmawx4cQUGLJkBAxn9wSy1mn9dzuY1wTsK5YpiGGMr4U6H\"]},\"project:/contracts/DomainUser.sol\":{\"keccak256\":\"0x3396ac7bf054afca6cfbe416f46789ac1df4c0695a15570f3446eb388dde6eb7\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://d33ed756187de05a5257743fb897b2230ef2dcca8e20f3e91c4b018ea048b257\",\"dweb:/ipfs/QmXqfSEXcjqw2vie9v8iF5k9PrNukgBe2KuPPVsvHpi3G9\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.4+commit.c7e474f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"subdomainRegistrar\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"subdomain\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"domainLabel\",\"type\":\"bytes32\"}],\"name\":\"DomainRegistered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"string\",\"name\":\"reason\",\"type\":\"string\"}],\"name\":\"DomainRegistrationFailed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"string\",\"name\":\"fqdn\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"subdomainLabelLength\",\"type\":\"uint32\"}],\"name\":\"InvalidFQDN\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"reverseRegistrar\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"nodeHash\",\"type\":\"bytes32\"}],\"name\":\"ReverseDomainClaimed\",\"type\":\"event\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/DomainUser.sol\":\"DomainUser\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"@ensdomains/subdomain-registrar-core/contracts/interfaces/IRegistrar.sol\":{\"keccak256\":\"0xe7a1a7d56646e6a1e9ce6a97a1524ded3068a7f43262ccb07a4f9c43316880c3\",\"license\":\"BSD-2-Clause\",\"urls\":[\"bzz-raw://ca7bd4dd288048f8e968705908c85b348386482e27acd87e88cce3aa4352fb70\",\"dweb:/ipfs/QmNZ1L5yPLo6VyzmF8WXMzF5MnSYUYH263wGiBCyR1bkF8\"]},\"@ensdomains/subdomain-registrar-core/contracts/interfaces/IReverseRegistrar.sol\":{\"keccak256\":\"0x446c18bab7412fd511dcdd59ce91d6d97591636d6cba8c2a53ebcf82e64296f3\",\"license\":\"BSD-2-Clause\",\"urls\":[\"bzz-raw://a9f7a879e03ffbdf27febafc578c7995b342f660b8cfe21087e291410c31ca3c\",\"dweb:/ipfs/Qmawx4cQUGLJkBAxn9wSy1mn9dzuY1wTsK5YpiGGMr4U6H\"]},\"project:/contracts/DomainUser.sol\":{\"keccak256\":\"0x60210d058cf76917039ceb2c82a9eeaccedcb03f9c6ae0a46f118b9dd193ffb8\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://25b607331f45e03b12bf8bae28201d1ad5135cf48befbeeca7a0de5a6589a6c1\",\"dweb:/ipfs/QmYiYVKyCHXK2H6aSbY6AnZSJobKXdEz1UqCkariTkZs5q\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -86,7 +86,7 @@
   "deployedGeneratedSources": [],
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "// SPDX-License-Identifier: Apache-2.0\npragma solidity ^0.8.4;\n\nimport \"@ensdomains/subdomain-registrar-core/contracts/interfaces/IRegistrar.sol\";\nimport \"@ensdomains/subdomain-registrar-core/contracts/interfaces/IReverseRegistrar.sol\";\n\nabstract contract DomainUser {\n    uint256 constant MIN_DOMAIN_RENT_DURATION = 31536000;\n\n    event DomainRegistered(address subdomainRegistrar, string subdomain, bytes32 domainLabel);\n    event ReverseDomainClaimed(address reverseRegistrar, bytes32 nodeHash);\n    event InvalidFQDN(string fqdn, uint32 subdomainLabelLength);\n    event DomainRegistrationFailed(string reason);\n\n    function _buyDomainEncoded(bytes calldata data, uint256 maxPrice, uint8 subdomainLabelLength, address reg, address resolver) internal returns (bool) {\n        (address rev, bytes32 node, string memory fqdn) = abi.decode(data, (address, bytes32, string));\n        bytes memory bfqdn = bytes(fqdn);\n        if (bfqdn.length > 64) {\n            emit InvalidFQDN(fqdn, subdomainLabelLength);\n            return false;\n        }\n        if (bfqdn.length < subdomainLabelLength) {\n            emit InvalidFQDN(fqdn, subdomainLabelLength);\n            return false;\n        }\n        bytes memory subdomainBytes = new bytes(subdomainLabelLength);\n        for (uint i = 0; i < subdomainLabelLength; i++) {\n            subdomainBytes[i] = bfqdn[i];\n        }\n        string memory subdomain = string(subdomainBytes);\n        return _buyDomain(IRegistrar(reg), IReverseRegistrar(rev), resolver, maxPrice, subdomain, node, fqdn);\n    }\n\n    function _buyDomain(IRegistrar reg, IReverseRegistrar rev, address resolver, uint256 maxPrice, string memory subdomain, bytes32 node, string memory fqdn) internal returns (bool) {\n        //        (bool success, bytes memory ret) = address(reg).call{value : maxPrice}(abi.encodeWithSignature(\"register(bytes32,string,address,address,address)\", node, subdomain, address(this), address(0x0), resolver));\n        (bool success, bytes memory ret) = address(reg).call{value : maxPrice}(abi.encodeWithSignature(\"register(bytes32,string,address,uint,string,address)\", node, subdomain, address(this), MIN_DOMAIN_RENT_DURATION, \"\", resolver));\n        if (!success) {\n            string memory reason = _revertReason(ret);\n            emit DomainRegistrationFailed(reason);\n            return false;\n        }\n        emit DomainRegistered(address(reg), subdomain, node);\n        bytes32 revNodeHash = rev.setName(fqdn);\n        emit ReverseDomainClaimed(address(rev), revNodeHash);\n        return true;\n    }\n\n    /// https://github.com/Uniswap/uniswap-v3-periphery/blob/v1.0.0/contracts/base/Multicall.sol\n    function _revertReason(bytes memory _res) internal pure returns (string memory) {\n        // If the _res length is less than 68, then the transaction failed silently (without a revert message)\n        if (_res.length < 68) return 'Silent revert';\n        assembly {\n        // Slice the sighash.\n            _res := add(_res, 0x04)\n        }\n        // Remove the selector which is the first 4 bytes\n        return abi.decode(_res, (string));\n        // All that remains is the revert string\n    }\n}\n",
+  "source": "// SPDX-License-Identifier: Apache-2.0\npragma solidity ^0.8.4;\n\nimport \"@ensdomains/subdomain-registrar-core/contracts/interfaces/IRegistrar.sol\";\nimport \"@ensdomains/subdomain-registrar-core/contracts/interfaces/IReverseRegistrar.sol\";\n\nabstract contract DomainUser {\n    uint256 constant MIN_DOMAIN_RENT_DURATION = 31536000;\n\n    event DomainRegistered(address subdomainRegistrar, string subdomain, bytes32 domainLabel);\n    event ReverseDomainClaimed(address reverseRegistrar, bytes32 nodeHash);\n    event InvalidFQDN(string fqdn, uint32 subdomainLabelLength);\n    event DomainRegistrationFailed(string reason);\n\n    function _buyDomainEncoded(bytes calldata data, uint256 maxPrice, uint8 subdomainLabelLength, address reg, address resolver) internal returns (bool) {\n        (address rev, bytes32 node, string memory fqdn) = abi.decode(data, (address, bytes32, string));\n        bytes memory bfqdn = bytes(fqdn);\n        if (bfqdn.length > 64) {\n            emit InvalidFQDN(fqdn, subdomainLabelLength);\n            return false;\n        }\n        if (bfqdn.length < subdomainLabelLength) {\n            emit InvalidFQDN(fqdn, subdomainLabelLength);\n            return false;\n        }\n        bytes memory subdomainBytes = new bytes(subdomainLabelLength);\n        for (uint i = 0; i < subdomainLabelLength; i++) {\n            subdomainBytes[i] = bfqdn[i];\n        }\n        string memory subdomain = string(subdomainBytes);\n        return _buyDomain(IRegistrar(reg), IReverseRegistrar(rev), resolver, maxPrice, subdomain, node, fqdn);\n    }\n\n    function _buyDomain(IRegistrar reg, IReverseRegistrar rev, address resolver, uint256 maxPrice, string memory subdomain, bytes32 node, string memory fqdn) internal returns (bool) {\n        //        (bool success, bytes memory ret) = address(reg).call{value : maxPrice}(abi.encodeWithSignature(\"register(bytes32,string,address,address,address)\", node, subdomain, address(this), address(0x0), resolver));\n        (bool success, bytes memory ret) = address(reg).call{value : maxPrice}(abi.encodeWithSignature(\"register(bytes32,string,address,uint,string,address)\", node, subdomain, address(this), MIN_DOMAIN_RENT_DURATION, \"\", resolver));\n        if (!success) {\n            string memory reason = _revertReason(ret);\n            emit DomainRegistrationFailed(reason);\n            return false;\n        }\n        emit DomainRegistered(address(reg), subdomain, node);\n        bytes32 revNodeHash = rev.setName(fqdn);\n        emit ReverseDomainClaimed(address(rev), revNodeHash);\n        return true;\n    }\n\n    /// https://github.com/Uniswap/uniswap-v3-periphery/blob/v1.0.0/contracts/base/Multicall.sol\n    function _revertReason(bytes memory _res) internal pure returns (string memory) {\n        // If the _res length is less than 68, then the transaction failed silently (without a revert message)\n        if (_res.length < 68) return \"\";\n        assembly {\n        // Slice the sighash.\n            _res := add(_res, 0x04)\n        }\n        // Remove the selector which is the first 4 bytes\n        return abi.decode(_res, (string));\n        // All that remains is the revert string\n    }\n}\n",
   "sourcePath": "/Users/polymorpher/git/one-wallet/code/contracts/DomainUser.sol",
   "ast": {
     "absolutePath": "project:/contracts/DomainUser.sol",
@@ -3214,7 +3214,7 @@
             "body": {
               "id": 835,
               "nodeType": "Block",
-              "src": "2734:417:8",
+              "src": "2734:404:8",
               "statements": [
                 {
                   "condition": {
@@ -3279,10 +3279,10 @@
                   },
                   "id": 825,
                   "nodeType": "IfStatement",
-                  "src": "2855:44:8",
+                  "src": "2855:31:8",
                   "trueBody": {
                     "expression": {
-                      "hexValue": "53696c656e7420726576657274",
+                      "hexValue": "",
                       "id": 823,
                       "isConstant": false,
                       "isLValue": false,
@@ -3290,38 +3290,38 @@
                       "kind": "string",
                       "lValueRequested": false,
                       "nodeType": "Literal",
-                      "src": "2884:15:8",
+                      "src": "2884:2:8",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_stringliteral_53132a03fcfef8728729021cd1c109007d04c4b65080224be651db7115f91997",
-                        "typeString": "literal_string \"Silent revert\""
+                        "typeIdentifier": "t_stringliteral_c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+                        "typeString": "literal_string \"\""
                       },
-                      "value": "Silent revert"
+                      "value": ""
                     },
                     "functionReturnParameters": 818,
                     "id": 824,
                     "nodeType": "Return",
-                    "src": "2877:22:8"
+                    "src": "2877:9:8"
                   }
                 },
                 {
                   "AST": {
                     "nodeType": "YulBlock",
-                    "src": "2918:77:8",
+                    "src": "2905:77:8",
                     "statements": [
                       {
                         "nodeType": "YulAssignment",
-                        "src": "2962:23:8",
+                        "src": "2949:23:8",
                         "value": {
                           "arguments": [
                             {
                               "name": "_res",
                               "nodeType": "YulIdentifier",
-                              "src": "2974:4:8"
+                              "src": "2961:4:8"
                             },
                             {
                               "kind": "number",
                               "nodeType": "YulLiteral",
-                              "src": "2980:4:8",
+                              "src": "2967:4:8",
                               "type": "",
                               "value": "0x04"
                             }
@@ -3329,16 +3329,16 @@
                           "functionName": {
                             "name": "add",
                             "nodeType": "YulIdentifier",
-                            "src": "2970:3:8"
+                            "src": "2957:3:8"
                           },
                           "nodeType": "YulFunctionCall",
-                          "src": "2970:15:8"
+                          "src": "2957:15:8"
                         },
                         "variableNames": [
                           {
                             "name": "_res",
                             "nodeType": "YulIdentifier",
-                            "src": "2962:4:8"
+                            "src": "2949:4:8"
                           }
                         ]
                       }
@@ -3350,20 +3350,20 @@
                       "declaration": 814,
                       "isOffset": false,
                       "isSlot": false,
-                      "src": "2962:4:8",
+                      "src": "2949:4:8",
                       "valueSize": 1
                     },
                     {
                       "declaration": 814,
                       "isOffset": false,
                       "isSlot": false,
-                      "src": "2974:4:8",
+                      "src": "2961:4:8",
                       "valueSize": 1
                     }
                   ],
                   "id": 826,
                   "nodeType": "InlineAssembly",
-                  "src": "2909:86:8"
+                  "src": "2896:86:8"
                 },
                 {
                   "expression": {
@@ -3374,7 +3374,7 @@
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
                         "referencedDeclaration": 814,
-                        "src": "3080:4:8",
+                        "src": "3067:4:8",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes_memory_ptr",
                           "typeString": "bytes memory"
@@ -3389,7 +3389,7 @@
                             "isPure": true,
                             "lValueRequested": false,
                             "nodeType": "ElementaryTypeNameExpression",
-                            "src": "3087:6:8",
+                            "src": "3074:6:8",
                             "typeDescriptions": {
                               "typeIdentifier": "t_type$_t_string_storage_ptr_$",
                               "typeString": "type(string storage pointer)"
@@ -3398,7 +3398,7 @@
                               "id": 830,
                               "name": "string",
                               "nodeType": "ElementaryTypeName",
-                              "src": "3087:6:8",
+                              "src": "3074:6:8",
                               "typeDescriptions": {}
                             }
                           }
@@ -3410,7 +3410,7 @@
                         "isPure": true,
                         "lValueRequested": false,
                         "nodeType": "TupleExpression",
-                        "src": "3086:8:8",
+                        "src": "3073:8:8",
                         "typeDescriptions": {
                           "typeIdentifier": "t_type$_t_string_storage_ptr_$",
                           "typeString": "type(string storage pointer)"
@@ -3434,7 +3434,7 @@
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
                         "referencedDeclaration": 4294967295,
-                        "src": "3069:3:8",
+                        "src": "3056:3:8",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_abi",
                           "typeString": "abi"
@@ -3447,7 +3447,7 @@
                       "lValueRequested": false,
                       "memberName": "decode",
                       "nodeType": "MemberAccess",
-                      "src": "3069:10:8",
+                      "src": "3056:10:8",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_abidecode_pure$__$returns$__$",
                         "typeString": "function () pure"
@@ -3461,7 +3461,7 @@
                     "lValueRequested": false,
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "3069:26:8",
+                    "src": "3056:26:8",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_memory_ptr",
@@ -3471,7 +3471,7 @@
                   "functionReturnParameters": 818,
                   "id": 834,
                   "nodeType": "Return",
-                  "src": "3062:33:8"
+                  "src": "3049:33:8"
                 }
               ]
             },
@@ -3557,18 +3557,18 @@
               "src": "2718:15:8"
             },
             "scope": 837,
-            "src": "2654:497:8",
+            "src": "2654:484:8",
             "stateMutability": "pure",
             "virtual": false,
             "visibility": "internal"
           }
         ],
         "scope": 838,
-        "src": "238:2915:8",
+        "src": "238:2902:8",
         "usedErrors": []
       }
     ],
-    "src": "39:3115:8"
+    "src": "39:3102:8"
   },
   "legacyAST": {
     "absolutePath": "project:/contracts/DomainUser.sol",
@@ -6696,7 +6696,7 @@
             "body": {
               "id": 835,
               "nodeType": "Block",
-              "src": "2734:417:8",
+              "src": "2734:404:8",
               "statements": [
                 {
                   "condition": {
@@ -6761,10 +6761,10 @@
                   },
                   "id": 825,
                   "nodeType": "IfStatement",
-                  "src": "2855:44:8",
+                  "src": "2855:31:8",
                   "trueBody": {
                     "expression": {
-                      "hexValue": "53696c656e7420726576657274",
+                      "hexValue": "",
                       "id": 823,
                       "isConstant": false,
                       "isLValue": false,
@@ -6772,38 +6772,38 @@
                       "kind": "string",
                       "lValueRequested": false,
                       "nodeType": "Literal",
-                      "src": "2884:15:8",
+                      "src": "2884:2:8",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_stringliteral_53132a03fcfef8728729021cd1c109007d04c4b65080224be651db7115f91997",
-                        "typeString": "literal_string \"Silent revert\""
+                        "typeIdentifier": "t_stringliteral_c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+                        "typeString": "literal_string \"\""
                       },
-                      "value": "Silent revert"
+                      "value": ""
                     },
                     "functionReturnParameters": 818,
                     "id": 824,
                     "nodeType": "Return",
-                    "src": "2877:22:8"
+                    "src": "2877:9:8"
                   }
                 },
                 {
                   "AST": {
                     "nodeType": "YulBlock",
-                    "src": "2918:77:8",
+                    "src": "2905:77:8",
                     "statements": [
                       {
                         "nodeType": "YulAssignment",
-                        "src": "2962:23:8",
+                        "src": "2949:23:8",
                         "value": {
                           "arguments": [
                             {
                               "name": "_res",
                               "nodeType": "YulIdentifier",
-                              "src": "2974:4:8"
+                              "src": "2961:4:8"
                             },
                             {
                               "kind": "number",
                               "nodeType": "YulLiteral",
-                              "src": "2980:4:8",
+                              "src": "2967:4:8",
                               "type": "",
                               "value": "0x04"
                             }
@@ -6811,16 +6811,16 @@
                           "functionName": {
                             "name": "add",
                             "nodeType": "YulIdentifier",
-                            "src": "2970:3:8"
+                            "src": "2957:3:8"
                           },
                           "nodeType": "YulFunctionCall",
-                          "src": "2970:15:8"
+                          "src": "2957:15:8"
                         },
                         "variableNames": [
                           {
                             "name": "_res",
                             "nodeType": "YulIdentifier",
-                            "src": "2962:4:8"
+                            "src": "2949:4:8"
                           }
                         ]
                       }
@@ -6832,20 +6832,20 @@
                       "declaration": 814,
                       "isOffset": false,
                       "isSlot": false,
-                      "src": "2962:4:8",
+                      "src": "2949:4:8",
                       "valueSize": 1
                     },
                     {
                       "declaration": 814,
                       "isOffset": false,
                       "isSlot": false,
-                      "src": "2974:4:8",
+                      "src": "2961:4:8",
                       "valueSize": 1
                     }
                   ],
                   "id": 826,
                   "nodeType": "InlineAssembly",
-                  "src": "2909:86:8"
+                  "src": "2896:86:8"
                 },
                 {
                   "expression": {
@@ -6856,7 +6856,7 @@
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
                         "referencedDeclaration": 814,
-                        "src": "3080:4:8",
+                        "src": "3067:4:8",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes_memory_ptr",
                           "typeString": "bytes memory"
@@ -6871,7 +6871,7 @@
                             "isPure": true,
                             "lValueRequested": false,
                             "nodeType": "ElementaryTypeNameExpression",
-                            "src": "3087:6:8",
+                            "src": "3074:6:8",
                             "typeDescriptions": {
                               "typeIdentifier": "t_type$_t_string_storage_ptr_$",
                               "typeString": "type(string storage pointer)"
@@ -6880,7 +6880,7 @@
                               "id": 830,
                               "name": "string",
                               "nodeType": "ElementaryTypeName",
-                              "src": "3087:6:8",
+                              "src": "3074:6:8",
                               "typeDescriptions": {}
                             }
                           }
@@ -6892,7 +6892,7 @@
                         "isPure": true,
                         "lValueRequested": false,
                         "nodeType": "TupleExpression",
-                        "src": "3086:8:8",
+                        "src": "3073:8:8",
                         "typeDescriptions": {
                           "typeIdentifier": "t_type$_t_string_storage_ptr_$",
                           "typeString": "type(string storage pointer)"
@@ -6916,7 +6916,7 @@
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
                         "referencedDeclaration": 4294967295,
-                        "src": "3069:3:8",
+                        "src": "3056:3:8",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_abi",
                           "typeString": "abi"
@@ -6929,7 +6929,7 @@
                       "lValueRequested": false,
                       "memberName": "decode",
                       "nodeType": "MemberAccess",
-                      "src": "3069:10:8",
+                      "src": "3056:10:8",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_abidecode_pure$__$returns$__$",
                         "typeString": "function () pure"
@@ -6943,7 +6943,7 @@
                     "lValueRequested": false,
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "3069:26:8",
+                    "src": "3056:26:8",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_memory_ptr",
@@ -6953,7 +6953,7 @@
                   "functionReturnParameters": 818,
                   "id": 834,
                   "nodeType": "Return",
-                  "src": "3062:33:8"
+                  "src": "3049:33:8"
                 }
               ]
             },
@@ -7039,18 +7039,18 @@
               "src": "2718:15:8"
             },
             "scope": 837,
-            "src": "2654:497:8",
+            "src": "2654:484:8",
             "stateMutability": "pure",
             "virtual": false,
             "visibility": "internal"
           }
         ],
         "scope": 838,
-        "src": "238:2915:8",
+        "src": "238:2902:8",
         "usedErrors": []
       }
     ],
-    "src": "39:3115:8"
+    "src": "39:3102:8"
   },
   "compiler": {
     "name": "solc",
@@ -7058,7 +7058,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.2",
-  "updatedAt": "2021-08-17T18:05:43.940Z",
+  "updatedAt": "2021-08-18T01:46:37.522Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
