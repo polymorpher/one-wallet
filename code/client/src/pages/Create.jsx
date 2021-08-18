@@ -22,7 +22,7 @@ import {
   Tooltip,
   Col
 } from 'antd'
-import { RedoOutlined, LoadingOutlined, QuestionCircleOutlined, CheckOutlined } from '@ant-design/icons'
+import { RedoOutlined, LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import humanizeDuration from 'humanize-duration'
 import AnimatedSection from '../components/AnimatedSection'
 import b32 from 'hi-base32'
@@ -32,7 +32,7 @@ import walletActions from '../state/modules/wallet/actions'
 import WalletConstants from '../constants/wallet'
 import util, { useWindowDimensions } from '../util'
 import { handleAPIError, handleAddressError } from '../handler'
-import { Hint, Heading, InputBox } from '../components/Text'
+import { Hint, Heading, InputBox, Warning } from '../components/Text'
 import OtpBox from '../components/OtpBox'
 import { getAddress } from '@harmony-js/crypto'
 import AddressInput from '../components/AddressInput'
@@ -80,7 +80,28 @@ const Create = () => {
   // eslint-disable-next-line no-unused-vars
   const [seed2, setSeed2] = useState(generateOtpSeed())
   const [duration, setDuration] = useState(WalletConstants.defaultDuration)
-  const [lastResortAddress, setLastResortAddress] = useState({ value: '', label: '' })
+
+  const oneWalletTreasuryOneAddress = util.safeOneAddress(WalletConstants.oneWalletTreasury.address)
+
+  // Used for Recovery address setup. Only used when user does not choose a Recovery address.
+  const oneWalletTreasurySelectOption = {
+    value: oneWalletTreasuryOneAddress,
+    label: `(1wallet Treasury) ${oneWalletTreasuryOneAddress}`
+  }
+
+  // A valid wallet of user's wallets in the network can be used as default recovery wallet.
+  const defaultRecoveryWallet = Object.keys(wallets)
+    .map((address) => ({ ...wallets[address], oneAddress: util.safeOneAddress(wallets[address].address) }))
+    .find((wallet) => util.safeOneAddress(wallet.address) && wallet.network === network)
+
+  const defaultRecoveryAddress = defaultRecoveryWallet
+    ? {
+        value: defaultRecoveryWallet.oneAddress,
+        label: `(${defaultRecoveryWallet.name}) ${defaultRecoveryWallet.oneAddress}`
+      }
+    : oneWalletTreasurySelectOption
+
+  const [lastResortAddress, setLastResortAddress] = useState(defaultRecoveryAddress)
   const [dailyLimit] = useState(WalletConstants.defaultDailyLimit)
 
   const [worker, setWorker] = useState()
@@ -175,15 +196,16 @@ const Create = () => {
       message.error('Cannot deploy wallet. Error: root is not set.')
       return
     }
-    let normalizedAddress = ''
-    if (lastResortAddress.value !== '') {
-      // Ensure valid address for both 0x and one1 formats
-      normalizedAddress = util.safeExec(util.normalizedAddress, [lastResortAddress.value], handleAddressError)
-      if (!normalizedAddress) {
-        return
-      }
+
+    // Ensure valid address for both 0x and one1 formats
+    const normalizedAddress = util.safeExec(util.normalizedAddress, [lastResortAddress?.value], handleAddressError)
+
+    if (!normalizedAddress) {
+      return
     }
+
     setDeploying(true)
+
     try {
       const { address } = await api.relayer.create({
         root: ONEUtil.hexString(root),
@@ -344,6 +366,10 @@ const Create = () => {
         {/*    <InputBox margin={16} width={200} value={dailyLimit} onChange={({ target: { value } }) => setDailyLimit(parseInt(value || 0))} suffix='ONE' /> */}
         {/*  </Space> */}
         {/* </Row> */}
+        {lastResortAddress.value === oneWalletTreasurySelectOption.value &&
+          <Warning style={{ marginBottom: 24 }}>
+            We suggest you choose your own address, such as an account from Harmony CLI wallet or Chrome Extension wallet. <br /><br /> 1wallet treasury generally cannot recover your funds except in rare cases which many users are affected by software bugs. <br /><br /> 1wallet treasury is managed by 5 reputable owners and requires a majority vote to make any transfer.<br /><br />If you choose 1wallet treasury as the recovery address, you have an opportunity to change it later in your wallet.
+          </Warning>}
         <Row style={{ marginBottom: 48 }}>
           <Space direction='vertical' size='small'>
             <Hint>Set up a fund recovery address:</Hint>
@@ -352,11 +378,17 @@ const Create = () => {
               setAddressCallback={setLastResortAddress}
               extraSelectOptions={
                 [
-                  <Select.Option key='later' value=''>
+                  <Select.Option key='later' value={util.safeOneAddress(WalletConstants.oneWalletTreasury.address)}>
                     <Row gutter={16} align='left'>
                       <Col span={24}>
-                        <Button type='text' style={{ textAlign: 'left' }} block onClick={() => setLastResortAddress({ value: '', label: 'I want to do this later in my wallet' })}>
-                          I want to do this later in my wallet
+                        <Button
+                          type='text'
+                          style={{ textAlign: 'left' }}
+                          block
+                          onClick={() =>
+                            setLastResortAddress(oneWalletTreasurySelectOption)}
+                        >
+                          (1wallet treasury) {util.safeOneAddress(WalletConstants.oneWalletTreasury.address)}
                         </Button>
                       </Col>
                     </Row>
@@ -364,7 +396,9 @@ const Create = () => {
                 ]
               }
             />
-            <Hint>If you lost your authenticator, your can recover funds to this address</Hint>
+            <Hint>
+              {lastResortAddress.value !== oneWalletTreasurySelectOption.value && <span style={{ color: 'red' }}>You cannot change this later.</span>}
+              If you lost your authenticator, your can recover funds to this address. You can also send 1.0 ONE from the recovery address to trigger auto-recovery.</Hint>
           </Space>
         </Row>
         <Row style={{ marginBottom: 32 }}>
