@@ -2,12 +2,12 @@
 pragma solidity ^0.8.4;
 
 import "./TokenManager.sol";
-import "./DomainUser.sol";
+import "./DomainManager.sol";
 import "./Enums.sol";
 import "./IONEWallet.sol";
 
-contract ONEWallet is TokenManager, DomainUser, IONEWallet {
-
+contract ONEWallet is TokenManager, IONEWallet {
+    using TokenTracker for TokenTrackerState;
     /// Some variables can be immutable, but doing so would increase contract size. We are at threshold at the moment (~24KiB) so until we separate the contracts, we will do everything to minimize contract size
     bytes32 root; // Note: @ivan brought up a good point in reducing this to 16-bytes so hash of two consecutive nodes can be done in a single word (to save gas and reduce blockchain clutter). Let's not worry about that for now and re-evalaute this later.
     uint8 height; // including the root. e.g. for a tree with 4 leaves, the height is 3.
@@ -332,20 +332,20 @@ contract ONEWallet is TokenManager, DomainUser, IONEWallet {
         // No revert should occur below this point
         if (operationType == OperationType.TRACK) {
             if (data.length > 0) {
-                TokenManager._multiTrack(data);
+                TokenManager.tokenTrackerState.multiTrack(data);
             } else {
-                TokenManager._trackToken(tokenType, contractAddress, tokenId);
+                TokenManager.tokenTrackerState.trackToken(tokenType, contractAddress, tokenId);
             }
         } else if (operationType == OperationType.UNTRACK) {
             if (data.length > 0) {
-                TokenManager._untrackToken(tokenType, contractAddress, tokenId);
+                TokenManager.tokenTrackerState.untrackToken(tokenType, contractAddress, tokenId);
             } else {
-                TokenManager._multiUntrack(data);
+                TokenManager.tokenTrackerState.multiUntrack(data);
             }
         } else if (operationType == OperationType.TRANSFER_TOKEN) {
             TokenManager._transferToken(tokenType, contractAddress, tokenId, dest, amount, data);
         } else if (operationType == OperationType.OVERRIDE_TRACK) {
-            TokenManager._overrideTrackWithBytes(data);
+            TokenManager.tokenTrackerState.overrideTrackWithBytes(data);
         } else if (operationType == OperationType.TRANSFER) {
             _transfer(dest, amount);
         } else if (operationType == OperationType.RECOVER) {
@@ -353,7 +353,7 @@ contract ONEWallet is TokenManager, DomainUser, IONEWallet {
         } else if (operationType == OperationType.SET_RECOVERY_ADDRESS) {
             _setRecoveryAddress(dest);
         } else if (operationType == OperationType.BUY_DOMAIN) {
-            DomainUser._buyDomainEncoded(data, amount, uint8(tokenId), contractAddress, dest);
+            DomainManager.buyDomainEncoded(data, amount, uint8(tokenId), contractAddress, dest);
         } else if (operationType == OperationType.RECOVER_SELECTED_TOKENS) {
             TokenManager._recoverSelectedTokensEncoded(dest, data);
         } else if (operationType == OperationType.FORWARD) {
