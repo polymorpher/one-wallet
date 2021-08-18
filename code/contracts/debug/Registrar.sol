@@ -37,8 +37,8 @@ contract Registrar is IRegistrar {
 
     }
 
-    function rentPrice(string memory name, uint duration) override virtual external view {
-
+    function rentPrice(string memory name, uint duration) override virtual external view returns (uint256) {
+        return 0;
     }
 }
 
