@@ -327,7 +327,8 @@ const api = {
       } else if (tokenType === ONEConstants.TokenType.ERC1155) {
         uri = await c.uri(tokenId)
       }
-      return { name, symbol, uri, decimals: decimals.toNumber() }
+      // console.log({ tokenType, contractAddress, tokenId, name, symbol, uri })
+      return { name, symbol, uri, decimals: decimals && decimals.toNumber() }
     },
 
     domain: {

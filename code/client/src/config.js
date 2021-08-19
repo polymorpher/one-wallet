@@ -7,7 +7,8 @@ const config = merge({}, baseConfig, {
   },
   debug: process.env.DEBUG,
   ipfs: {
-    gateway: process.env.IPFS_GATEWAY || 'https://dweb.link/ipfs/{{hash}}'
+    // gateway: process.env.IPFS_GATEWAY || 'https://dweb.link/ipfs/{{hash}}'
+    gateway: process.env.IPFS_GATEWAY || 'https://gateway.pinata.cloud/ipfs/{{hash}}'
   }
 })
 

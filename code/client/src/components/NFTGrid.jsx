@@ -33,7 +33,9 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
   const [fullView, setFullView] = useState(false)
   const bech32ContractAddress = util.safeOneAddress(contractAddress)
   const abbrBech32ContractAddress = util.ellipsisAddress(bech32ContractAddress)
+
   uri = util.replaceIPFSLink(uri)
+  // console.log({ uri })
   const [metadata, setMetadata] = useState()
   useEffect(() => {
     const f = async function () {
