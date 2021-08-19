@@ -177,7 +177,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
             })
           })
       }
-      {showSelectManualInputAddress && buildSelectOption({ address: addressValue.value })}
+      {showSelectManualInputAddress && buildSelectOption({ address: addressValue.value, label: null })}
       {
         extraSelectOptions ? extraSelectOptions.map(buildSelectOption) : <></>
       }

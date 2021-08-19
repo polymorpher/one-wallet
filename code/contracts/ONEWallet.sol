@@ -123,7 +123,7 @@ contract ONEWallet is TokenManager, IONEWallet {
     function retire() external override returns (bool)
     {
         require(uint32(block.timestamp / interval) - t0 > lifespan, "Too early");
-        require(!_isRecoveryAddressSet(), "Recovery not set");
+        require(_isRecoveryAddressSet(), "Recovery not set");
         require(_drain(), "Recovery failed");
         return true;
     }
@@ -297,7 +297,7 @@ contract ONEWallet is TokenManager, IONEWallet {
     }
 
     function _setRecoveryAddress(address payable recoveryAddress_) internal {
-        require(_isRecoveryAddressSet(), "Already set");
+        require(!_isRecoveryAddressSet(), "Already set");
         require(recoveryAddress_ != address(this), "Cannot be self");
         recoveryAddress = recoveryAddress_;
         emit RecoveryAddressUpdated(recoveryAddress);
