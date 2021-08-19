@@ -173,7 +173,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
               address: knownAddress.address,
               displayDeleteButton: displayDeleteButton,
               displayText,
-              displayLabel: longAddressLabel,
+              label: longAddressLabel,
               fullDisplayAddress: addr
             })
           })
