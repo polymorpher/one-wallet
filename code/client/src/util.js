@@ -103,6 +103,10 @@ export default {
     return !address || address === ONEConstants.EmptyAddress || address === ONEConstants.EmptyBech32Address
   },
 
+  isRecoveryAddressSet: address => {
+    return !exports.default.isEmptyAddress(address) && address !== ONEConstants.TreasuryAddress
+  },
+
   safeExec: (f, args, handler) => {
     if (typeof f !== 'function') {
       return f

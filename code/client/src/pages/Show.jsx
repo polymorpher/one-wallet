@@ -466,22 +466,23 @@ const Show = () => {
     return (
       <>
         <TallRow align='middle'>
-          <Col span={isMobile ? 24 : 12}> <Title level={3}>Recovery Address</Title></Col>
+          <Col span={isMobile ? 24 : 8}> <Title level={3}>Recovery Address</Title></Col>
           {lastResortAddress && !util.isEmptyAddress(lastResortAddress) &&
             <Col>
-              <Space>
-                <WalletAddress
-                  showLabel
-                  address={oneLastResort}
-                  shorten
-                />
-              </Space>
-            </Col>}
-          {!(lastResortAddress && !util.isEmptyAddress(lastResortAddress)) &&
-            <Col>
-              <Button type='primary' size='large' shape='round' onClick={showSetRecoveryAddress}> Set </Button>
+              <WalletAddress
+                showLabel
+                address={oneLastResort}
+                shorten
+              />
             </Col>}
         </TallRow>
+        <Row align='middle'>
+          <Col span={isMobile ? 24 : 8}><span /></Col>
+          {!util.isRecoveryAddressSet(lastResortAddress) &&
+            <Col>
+              <Button type='primary' size='large' shape='round' onClick={showSetRecoveryAddress}> Change </Button>
+            </Col>}
+        </Row>
         <Row style={{ marginTop: 48 }}>
           <Button type='primary' size='large' shape='round' onClick={showRecovery} icon={<WarningOutlined />}>Recover funds</Button>
         </Row>

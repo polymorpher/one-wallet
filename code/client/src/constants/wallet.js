@@ -1,3 +1,4 @@
+const ONEConstants = require('../../../lib/constants')
 export default {
   interval: 30 * 1000,
   defaultDuration: 3600 * 1000 * 24 * 364,
@@ -10,6 +11,6 @@ export default {
   fetchDelaysAfterTransfer: [0, 2000, 5000],
   oneWalletTreasury: {
     label: '1wallet treasury',
-    address: '0x02F2cF45DD4bAcbA091D78502Dba3B2F431a54D3'
+    address: ONEConstants.TreasuryAddress
   }
 }

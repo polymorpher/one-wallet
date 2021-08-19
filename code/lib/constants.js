@@ -35,6 +35,7 @@ module.exports = {
   },
   EmptyAddress: '0x0000000000000000000000000000000000000000',
   EmptyBech32Address: 'one1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqquzw7vz',
+  TreasuryAddress: '0x02F2cF45DD4bAcbA091D78502Dba3B2F431a54D3',
   MajorVersion: 9,
   MinorVersion: 0,
   Domain: {

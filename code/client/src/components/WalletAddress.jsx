@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Button, Space, Tooltip, Typography } from 'antd'
 import util from '../util'
+import WalletConstants from '../constants/wallet'
 import { FieldBinaryOutlined, DeploymentUnitOutlined } from '@ant-design/icons'
 import { useSelector } from 'react-redux'
 const { Text, Link } = Typography
@@ -46,7 +47,7 @@ const MOUSE_HOVER_DETECTION_DELAY = 1000
  * Renders the provided wallet's address in either ONE style or normal.
  * Provides the ability to copy the address and link to wallet explorer.
  */
-const WalletAddress = ({ showLabel, address, shorten }) => {
+const WalletAddress = ({ showLabel, labelOverride, address, shorten }) => {
   const network = useSelector(state => state.wallet.network)
   const knownAddresses = useSelector(state => state.wallet.knownAddresses)
   const [showAddressOptions, setShowAddressOptions] = useState(false)
@@ -58,6 +59,14 @@ const WalletAddress = ({ showLabel, address, shorten }) => {
   const currentDisplayAddress = showOneAddress ? util.safeOneAddress(address) : util.safeNormalizedAddress(address)
 
   const addressTooltipText = shorten ? currentDisplayAddress : ''
+
+  const getLabel = (address) => {
+    const normalized = util.safeNormalizedAddress(address)
+    if (normalized === WalletConstants.oneWalletTreasury.address) {
+      return WalletConstants.oneWalletTreasury.label
+    }
+    return knownAddresses[normalized]?.label
+  }
 
   useEffect(() => {
     if (!mouseOnOptions && !mouseOnAddress && !showAddressOptionsLocked) {
@@ -78,7 +87,7 @@ const WalletAddress = ({ showLabel, address, shorten }) => {
           onMouseLeave={() => setTimeout(() => setMouseOnAddress(false), MOUSE_HOVER_DETECTION_DELAY)}
         >
           {
-            showLabel && knownAddresses[address]?.label && `(${knownAddresses[address].label}) `
+            showLabel && getLabel(address) && `(${getLabel(address)}) `
           }
           {
             displayAddress({
