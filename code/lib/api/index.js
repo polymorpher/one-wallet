@@ -129,6 +129,7 @@ const initBlockchain = (store) => {
       reverseResolver = null
       registrar = null
     }
+    // console.log(`Set`, { resolver, reverseResolver, registrar })
   }
   switchNetwork()
   store.subscribe(() => {
@@ -364,7 +365,8 @@ const api = {
         if (!registrar) {
           throw new Error('Unsupported network')
         }
-        const price = await registrar.rentPrice(name, ONEConstants.Domain.DEFAULT_RENT_DURATION)
+        const c = await registrar.at(ONEConstants.Domain.DEFAULT_SUBDOMAIN_REGISTRAR)
+        const price = await c.rentPrice(name, ONEConstants.Domain.DEFAULT_RENT_DURATION)
         return price // This is a BN
       },
 
@@ -372,8 +374,9 @@ const api = {
         if (!registrar) {
           throw new Error('Unsupported network')
         }
+        const c = await registrar.at(ONEConstants.Domain.DEFAULT_SUBDOMAIN_REGISTRAR)
         const label = ONEUtil.hexString(ONEUtil.keccak(ONEConstants.Domain.DEFAULT_PARENT_LABEL))
-        const ret = await registrar.query(label, name)
+        const ret = await c.query(label, name)
         return !!ret[0]
       }
 
