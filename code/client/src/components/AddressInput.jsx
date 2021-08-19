@@ -64,14 +64,14 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
     })
   }, [])
 
-  const onSelectAddress = useCallback((address) => {
-    const validAddress = util.normalizedAddress(address.value)
+  const onSelectAddress = useCallback((addressObject) => {
+    const validAddress = util.normalizedAddress(addressObject.value)
     const nowInMillis = new Date().valueOf()
 
     if (validAddress) {
       const existingKnownAddress = knownAddresses[validAddress]
 
-      setAddressCallback(address)
+      setAddressCallback(addressObject)
 
       dispatch(walletActions.setKnownAddress({
         label: existingKnownAddress?.label,
@@ -93,6 +93,49 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
     label: knownAddresses[address].label,
     network: knownAddresses[address].network
   }))
+
+  const buildSelectOption = ({
+    address,
+    key = address,
+    displayDeleteButton,
+    fullDisplayAddress = util.safeOneAddress(address),
+    label = fullDisplayAddress,
+    displayText = label ? `(${label}) ${fullDisplayAddress}` : fullDisplayAddress,
+    onClick
+  }) => {
+    return (
+      <Select.Option key={key} value={util.safeOneAddress(address)}>
+        <Row gutter={16} align='left'>
+          <Col span={!displayDeleteButton ? 24 : 21}>
+            <Tooltip title={fullDisplayAddress}>
+              <Button
+                block
+                type='text'
+                style={{ textAlign: 'left' }}
+                onClick={() => {
+                  onSelectAddress({ value: fullDisplayAddress, label, key })
+                  onClick && onClick({ address, value: fullDisplayAddress, label })
+                }}
+              >
+                {displayText}
+              </Button>
+            </Tooltip>
+          </Col>
+          <Col span={3}>
+            {
+            displayDeleteButton
+              ? (
+                <Button type='text' style={{ textAlign: 'left' }} onClick={() => deleteKnownAddress(address)}>
+                  <CloseOutlined />
+                </Button>
+                )
+              : <></>
+          }
+          </Col>
+        </Row>
+      </Select.Option>
+    )
+  }
 
   return (
     <Select
@@ -116,7 +159,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
             const addr = util.safeOneAddress(knownAddress.address)
             const longAddressLabel = knownAddress.label ? `(${knownAddress.label}) ${addr}` : addr
             const shortenAddressLabel = knownAddress.label ? `(${knownAddress.label}) ${util.ellipsisAddress(addr)}` : util.ellipsisAddress(addr)
-            const displayLabel = util.shouldShortenAddress({ walletName: knownAddress.label, isMobile })
+            const displayText = util.shouldShortenAddress({ walletName: knownAddress.label, isMobile })
               ? shortenAddressLabel
               : longAddressLabel
 
@@ -124,54 +167,19 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
             // User's wallets addresses are not deletable.
             const displayDeleteButton = addressValue.value !== addr && !walletsAddresses.includes(knownAddress.address)
 
-            return (
-              <Select.Option key={index} value={util.safeOneAddress(knownAddress.address)}>
-                <Row gutter={16} align='left'>
-                  <Col span={!displayDeleteButton ? 24 : 21}>
-                    <Tooltip title={addr}>
-                      <Button
-                        block
-                        type='text'
-                        style={{ textAlign: 'left' }}
-                        onClick={() => onSelectAddress({ value: addr, label: longAddressLabel, key: index })}
-                      >
-                        {displayLabel}
-                      </Button>
-                    </Tooltip>
-                  </Col>
-                  <Col span={3}>
-                    {
-                      displayDeleteButton
-                        ? (
-                          <Button type='text' style={{ textAlign: 'left' }} onClick={() => deleteKnownAddress(knownAddress.address)}>
-                            <CloseOutlined />
-                          </Button>
-                          )
-                        : <></>
-                    }
-                  </Col>
-                </Row>
-              </Select.Option>
-            )
+            return buildSelectOption({
+              key: index,
+              address: knownAddress.address,
+              displayDeleteButton: displayDeleteButton,
+              displayText,
+              displayLabel: longAddressLabel,
+              fullDisplayAddress: addr
+            })
           })
       }
+      {showSelectManualInputAddress && buildSelectOption({ address: addressValue.value })}
       {
-        showSelectManualInputAddress
-          ? (
-            <Select.Option key='address-value' value={addressValue.value}>
-              <Row gutter={16} align='left'>
-                <Col span={24}>
-                  <Button type='text' style={{ textAlign: 'left' }} block onClick={() => onSelectAddress(addressValue)}>
-                    {addressValue.value}
-                  </Button>
-                </Col>
-              </Row>
-            </Select.Option>
-            )
-          : <></>
-      }
-      {
-        extraSelectOptions ? extraSelectOptions.map((SelectOption) => SelectOption) : <></>
+        extraSelectOptions ? extraSelectOptions.map(buildSelectOption) : <></>
       }
     </Select>
   )

@@ -366,40 +366,26 @@ const Create = () => {
         {/*    <InputBox margin={16} width={200} value={dailyLimit} onChange={({ target: { value } }) => setDailyLimit(parseInt(value || 0))} suffix='ONE' /> */}
         {/*  </Space> */}
         {/* </Row> */}
-        {lastResortAddress.value === oneWalletTreasurySelectOption.value &&
-          <Warning style={{ marginBottom: 24 }}>
-            We suggest you choose your own address, such as an account from Harmony CLI wallet or Chrome Extension wallet. <br /><br /> 1wallet treasury generally cannot recover your funds except in rare cases which many users are affected by software bugs. <br /><br /> 1wallet treasury is managed by 5 reputable owners and requires a majority vote to make any transfer.<br /><br />If you choose 1wallet treasury as the recovery address, you have an opportunity to change it later in your wallet.
-          </Warning>}
         <Row style={{ marginBottom: 48 }}>
           <Space direction='vertical' size='small'>
             <Hint>Set up a fund recovery address:</Hint>
             <AddressInput
               addressValue={lastResortAddress}
               setAddressCallback={setLastResortAddress}
-              extraSelectOptions={
-                [
-                  <Select.Option key='later' value={util.safeOneAddress(WalletConstants.oneWalletTreasury.address)}>
-                    <Row gutter={16} align='left'>
-                      <Col span={24}>
-                        <Button
-                          type='text'
-                          style={{ textAlign: 'left' }}
-                          block
-                          onClick={() =>
-                            setLastResortAddress(oneWalletTreasurySelectOption)}
-                        >
-                          (1wallet treasury) {util.safeOneAddress(WalletConstants.oneWalletTreasury.address)}
-                        </Button>
-                      </Col>
-                    </Row>
-                  </Select.Option>
-                ]
-              }
+              extraSelectOptions={[{
+                address: WalletConstants.oneWalletTreasury.address,
+                label: '1wallet treasury',
+                displayText: `(1wallet treasury) ${util.ellipsisAddress(util.safeOneAddress(WalletConstants.oneWalletTreasury.address))}`
+              }]}
             />
             <Hint>
               {lastResortAddress.value !== oneWalletTreasurySelectOption.value && <span style={{ color: 'red' }}>You cannot change this later.</span>}
               If you lost your authenticator, your can recover funds to this address. You can also send 1.0 ONE from the recovery address to trigger auto-recovery
             </Hint>
+            {lastResortAddress.value === oneWalletTreasurySelectOption.value &&
+              <Warning style={{ marginTop: 24 }}>
+                We suggest you choose your own address, such as an account from Harmony CLI wallet or Chrome Extension wallet. <br /><br /> 1wallet treasury generally cannot recover your funds except in rare cases which many users are affected by software bugs. <br /><br /> 1wallet treasury is managed by 5 reputable owners and requires a majority vote to make any transfer.<br /><br />If you choose 1wallet treasury as the recovery address, you have an opportunity to change it later in your wallet.
+              </Warning>}
           </Space>
         </Row>
         <Row style={{ marginBottom: 32 }}>

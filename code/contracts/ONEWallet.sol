@@ -36,6 +36,7 @@ contract ONEWallet is TokenManager, IONEWallet {
     uint256 constant AUTO_RECOVERY_TRIGGER_AMOUNT = 1 ether;
     uint32 constant MAX_COMMIT_SIZE = 120;
     uint256 constant AUTO_RECOVERY_MANDATORY_WAIT_TIME = 14 days;
+    address constant ONE_WALLET_TREASURY = ;
 
     uint32 constant majorVersion = 0x9; // a change would require client to migrate
     uint32 constant minorVersion = 0x0; // a change would not require the client to migrate
@@ -82,14 +83,14 @@ contract ONEWallet is TokenManager, IONEWallet {
 
     receive() external payable {
         emit PaymentReceived(msg.value, msg.sender);
-
         if (forwardAddress != address(0)) {// this wallet already has a forward address set - standard recovery process should not apply
             if (forwardAddress == lastResortAddress) {// in this case, funds should be forwarded to forwardAddress no matter what
                 _forwardPayment();
                 return;
             }
             if (msg.sender == lastResortAddress) {// this case requires special handling
-                if (msg.value == AUTO_RECOVERY_TRIGGER_AMOUNT) {// in this case, send funds to recovery address
+                if (msg.value == AUTO_RECOVERY_TRIGGER_AMOUNT) {// in this case, send funds to recovery address and reclaim forwardAddress to recovery address
+                    _forward(lastResortAddress);
                     _recover();
                     return;
                 }
@@ -141,6 +142,14 @@ contract ONEWallet is TokenManager, IONEWallet {
 
     function getNonce() external override view returns (uint8){
         return nonces[uint32(block.timestamp) / interval - t0];
+    }
+
+    function getTrackedTokens() external override view returns (TokenType[] memory, address[] memory, uint256[] memory){
+        return TokenManager._getTrackedTokens();
+    }
+
+    function getBalance(TokenType tokenType, address contractAddress, uint256 tokenId) external override view returns (uint256){
+        return TokenManager._getBalance(tokenType, contractAddress, tokenId);
     }
 
     function getCommits() external override pure returns (bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
@@ -218,6 +227,9 @@ contract ONEWallet is TokenManager, IONEWallet {
         if (lastResortAddress == address(0)) {
             _setRecoveryAddress(forwardAddress);
         }
+        uint32 today = uint32(block.timestamp / SECONDS_PER_DAY);
+        uint256 remainingAllowanceToday = today > lastTransferDay ? dailyLimit : dailyLimit -  spentToday;
+        _transfer(forwardAddress, remainingAllowanceToday);
         for (uint32 i = 0; i < backlinkAddresses.length; i++) {
             try backlinkAddresses[i].reveal(new bytes32[](0), 0, bytes32(0), OperationType.FORWARD, TokenType.NONE, address(0), 0, dest, 0, bytes("")){
                 emit BackLinkUpdated(dest, address(backlinkAddresses[i]));
@@ -259,6 +271,7 @@ contract ONEWallet is TokenManager, IONEWallet {
         // we do not want to revert the whole transaction if this operation fails, since EOTP is already revealed
         if (!success) {
             spentToday -= amount;
+            // TODO: decode error string from returned value of .call{...}("")
             emit UnknownTransferError(dest);
             return false;
         }
@@ -510,13 +523,5 @@ contract ONEWallet is TokenManager, IONEWallet {
     unchecked{
         nonces[index] = v + 1;
     }
-    }
-
-    function getTrackedTokens() external override view returns (TokenType[] memory, address[] memory, uint256[] memory){
-        return TokenManager._getTrackedTokens();
-    }
-
-    function getBalance(TokenType tokenType, address contractAddress, uint256 tokenId) external override view returns (uint256){
-        return TokenManager._getBalance(tokenType, contractAddress, tokenId);
     }
 }
