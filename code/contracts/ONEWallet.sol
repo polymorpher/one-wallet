@@ -18,7 +18,7 @@ contract ONEWallet is TokenManager, IONEWallet {
     uint32 _numLeaves; // 2 ** (height - 1)
 
     /// global mutable variables
-    address payable lastResortAddress; // where money will be sent during a recovery process (or when the wallet is beyond its lifespan)
+    address payable recoveryAddress; // where money will be sent during a recovery process (or when the wallet is beyond its lifespan)
     uint256 dailyLimit; // uint128 is sufficient, but uint256 is more efficient since EVM works with 32-byte words.
     uint256 spentToday; // note: instead of tracking the money spent for the last 24h, we are simply tracking money spent per 24h block based on UTC time. It is good enough for now, but we may want to change this later.
     uint32 lastTransferDay;
@@ -36,7 +36,7 @@ contract ONEWallet is TokenManager, IONEWallet {
     uint256 constant AUTO_RECOVERY_TRIGGER_AMOUNT = 1 ether;
     uint32 constant MAX_COMMIT_SIZE = 120;
     uint256 constant AUTO_RECOVERY_MANDATORY_WAIT_TIME = 14 days;
-//    address constant ONE_WALLET_TREASURY = ;
+    address constant ONE_WALLET_TREASURY = 0x02F2cF45DD4bAcbA091D78502Dba3B2F431a54D3;
 
     uint32 constant majorVersion = 0x9; // a change would require client to migrate
     uint32 constant minorVersion = 0x0; // a change would not require the client to migrate
@@ -54,14 +54,14 @@ contract ONEWallet is TokenManager, IONEWallet {
 
 
     constructor(bytes32 root_, uint8 height_, uint8 interval_, uint32 t0_, uint32 lifespan_, uint8 maxOperationsPerInterval_,
-        address payable lastResortAddress_, uint256 dailyLimit_)
+        address payable recoveryAddress_, uint256 dailyLimit_)
     {
         root = root_;
         height = height_;
         interval = interval_;
         t0 = t0_;
         lifespan = lifespan_;
-        lastResortAddress = lastResortAddress_;
+        recoveryAddress = recoveryAddress_;
         dailyLimit = dailyLimit_;
         maxOperationsPerInterval = maxOperationsPerInterval_;
         _numLeaves = uint32(2 ** (height_ - 1));
@@ -84,13 +84,13 @@ contract ONEWallet is TokenManager, IONEWallet {
     receive() external payable {
         emit PaymentReceived(msg.value, msg.sender);
         if (forwardAddress != address(0)) {// this wallet already has a forward address set - standard recovery process should not apply
-            if (forwardAddress == lastResortAddress) {// in this case, funds should be forwarded to forwardAddress no matter what
+            if (forwardAddress == recoveryAddress) {// in this case, funds should be forwarded to forwardAddress no matter what
                 _forwardPayment();
                 return;
             }
-            if (msg.sender == lastResortAddress) {// this case requires special handling
+            if (msg.sender == recoveryAddress) {// this case requires special handling
                 if (msg.value == AUTO_RECOVERY_TRIGGER_AMOUNT) {// in this case, send funds to recovery address and reclaim forwardAddress to recovery address
-                    _forward(lastResortAddress);
+                    _forward(recoveryAddress);
                     _recover();
                     return;
                 }
@@ -106,7 +106,7 @@ contract ONEWallet is TokenManager, IONEWallet {
         if (msg.value != AUTO_RECOVERY_TRIGGER_AMOUNT) {
             return;
         }
-        if (msg.sender != lastResortAddress) {
+        if (msg.sender != recoveryAddress) {
             return;
         }
         if (msg.sender == address(this)) {
@@ -123,13 +123,13 @@ contract ONEWallet is TokenManager, IONEWallet {
     function retire() external override returns (bool)
     {
         require(uint32(block.timestamp / interval) - t0 > lifespan, "Too early");
-        require(lastResortAddress != address(0), "Recovery not set");
+        require(!_isRecoveryAddressSet(), "Recovery not set");
         require(_drain(), "Recovery failed");
         return true;
     }
 
     function getInfo() external override view returns (bytes32, uint8, uint8, uint32, uint32, uint8, address, uint256){
-        return (root, height, interval, t0, lifespan, maxOperationsPerInterval, lastResortAddress, dailyLimit);
+        return (root, height, interval, t0, lifespan, maxOperationsPerInterval, recoveryAddress, dailyLimit);
     }
 
     function getVersion() external override pure returns (uint32, uint32){
@@ -224,7 +224,7 @@ contract ONEWallet is TokenManager, IONEWallet {
         }
         forwardAddress = dest;
         emit ForwardAddressUpdated(dest);
-        if (lastResortAddress == address(0)) {
+        if (!_isRecoveryAddressSet()) {
             _setRecoveryAddress(forwardAddress);
         }
         uint32 today = uint32(block.timestamp / SECONDS_PER_DAY);
@@ -241,13 +241,13 @@ contract ONEWallet is TokenManager, IONEWallet {
         }
     }
 
-    /// This function sends all remaining funds and tokens in the wallet to `lastResortAddress`. The caller should verify that `lastResortAddress` is not null.
+    /// This function sends all remaining funds and tokens in the wallet to `recoveryAddress`. The caller should verify that `recoveryAddress` is not null.
     function _drain() internal returns (bool) {
         // this may be triggered after revealing the proof, and we must prevent revert in all cases
-        (bool success,) = lastResortAddress.call{value : address(this).balance}("");
+        (bool success,) = recoveryAddress.call{value : address(this).balance}("");
         if (success) {
-            forwardAddress = lastResortAddress;
-            TokenManager._recoverAllTokens(lastResortAddress);
+            forwardAddress = recoveryAddress;
+            TokenManager._recoverAllTokens(recoveryAddress);
         }
         return success;
     }
@@ -281,11 +281,11 @@ contract ONEWallet is TokenManager, IONEWallet {
     }
 
     function _recover() internal returns (bool){
-        if (lastResortAddress == address(0)) {
+        if (!_isRecoveryAddressSet()) {
             emit LastResortAddressNotSet();
             return false;
         }
-        if (lastResortAddress == address(this)) {// this should not happen unless lastResortAddress is set at contract creation time, and is deliberately set to contract's own address
+        if (recoveryAddress == address(this)) {// this should not happen unless recoveryAddress is set at contract creation time, and is deliberately set to contract's own address
             // nothing needs to be done;
             return true;
         }
@@ -296,11 +296,11 @@ contract ONEWallet is TokenManager, IONEWallet {
         return true;
     }
 
-    function _setRecoveryAddress(address payable lastResortAddress_) internal {
-        require(lastResortAddress == address(0), "Already set");
-        require(lastResortAddress_ != address(this), "Cannot be self");
-        lastResortAddress = lastResortAddress_;
-        emit RecoveryAddressUpdated(lastResortAddress);
+    function _setRecoveryAddress(address payable recoveryAddress_) internal {
+        require(_isRecoveryAddressSet(), "Already set");
+        require(recoveryAddress_ != address(this), "Cannot be self");
+        recoveryAddress = recoveryAddress_;
+        emit RecoveryAddressUpdated(recoveryAddress);
     }
 
     /// Provides commitHash, paramsHash, and verificationHash given the parameters
@@ -523,5 +523,9 @@ contract ONEWallet is TokenManager, IONEWallet {
     unchecked{
         nonces[index] = v + 1;
     }
+    }
+
+    function _isRecoveryAddressSet() internal view returns (bool) {
+        return address(recoveryAddress) != address(0) && address(recoveryAddress) != ONE_WALLET_TREASURY;
     }
 }
