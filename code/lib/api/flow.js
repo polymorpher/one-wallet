@@ -64,7 +64,7 @@ const Flows = {
     revealAPI, revealArgs, onRevealFailure, onRevealSuccess, onRevealError, onRevealAttemptFailed,
     beforeReveal, index,
     maxTransferAttempts = 3, checkCommitInterval = 5000,
-    message = messager
+    message = messager,
   }) => {
     const { effectiveTime, root, address, randomness, hseed, hasher } = wallet
     if (!layers) {

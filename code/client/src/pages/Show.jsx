@@ -363,6 +363,7 @@ const Show = () => {
     const eotpBuilder = wallet.majorVersion >= 8 ? EotpBuilders.recovery : EotpBuilders.legacyRecovery
     const data = ONEUtil.hexString(bytes)
     SmartFlows.commitReveal({
+      recoverRandomness: () => 0,
       wallet,
       eotpBuilder,
       index: -1,
