@@ -44,4 +44,8 @@ interface IONEWallet {
     function commit(bytes32 hash, bytes32 paramsHash, bytes32 verificationHash) external;
 
     function reveal(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp, OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address payable dest, uint256 amount, bytes calldata data) external;
+
+    function getTrackedTokens() external view returns (TokenType[] memory, address[] memory, uint256[] memory);
+
+    function getBalance(TokenType tokenType, address contractAddress, uint256 tokenId) external view returns (uint256);
 }

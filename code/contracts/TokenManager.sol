@@ -73,7 +73,7 @@ abstract contract TokenManager is IERC721Receiver, IERC1155Receiver, Forwardable
         return this.onERC721Received.selector;
     }
 
-    function getTrackedTokens() external view returns (TokenType[] memory, address[] memory, uint256[] memory){
+    function _getTrackedTokens() internal view returns (TokenType[] memory, address[] memory, uint256[] memory){
         TokenType[] memory tokenTypes = new TokenType[](tokenTrackerState.trackedTokens.length);
         address[] memory contractAddresses = new address[](tokenTrackerState.trackedTokens.length);
         uint256[] memory tokenIds = new uint256[](tokenTrackerState.trackedTokens.length);
@@ -118,7 +118,7 @@ abstract contract TokenManager is IERC721Receiver, IERC1155Receiver, Forwardable
         }
     }
 
-    function getBalance(TokenType tokenType, address contractAddress, uint256 tokenId) public view returns (uint256){
+    function _getBalance(TokenType tokenType, address contractAddress, uint256 tokenId) internal view returns (uint256){
         // all external calls are safe because they are automatically compiled to static call due to view mutability
         if (tokenType == TokenType.ERC20) {
             return IERC20(contractAddress).balanceOf(address(this));
@@ -136,7 +136,7 @@ abstract contract TokenManager is IERC721Receiver, IERC1155Receiver, Forwardable
     }
 
     function _recoverToken(address dest, TrackedToken storage t) internal {
-        uint256 balance = getBalance(t.tokenType, t.contractAddress, t.tokenId);
+        uint256 balance = _getBalance(t.tokenType, t.contractAddress, t.tokenId);
         if (balance > 0) {
             _transferToken(t.tokenType, t.contractAddress, t.tokenId, dest, balance, bytes(""));
             emit TokenRecovered(t.tokenType, t.contractAddress, t.tokenId, balance);

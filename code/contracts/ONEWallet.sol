@@ -511,4 +511,12 @@ contract ONEWallet is TokenManager, IONEWallet {
         nonces[index] = v + 1;
     }
     }
+
+    function getTrackedTokens() external override view returns (TokenType[] memory, address[] memory, uint256[] memory){
+        return TokenManager._getTrackedTokens();
+    }
+
+    function getBalance(TokenType tokenType, address contractAddress, uint256 tokenId) external override view returns (uint256){
+        return TokenManager._getBalance(tokenType, contractAddress, tokenId);
+    }
 }

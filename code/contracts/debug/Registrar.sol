@@ -23,7 +23,7 @@ contract Registrar is IRegistrar {
 
     }
 
-    function configureDomainFor(string memory name, uint price, uint referralFeePPM, address payable _owner, address _transfer) external override pure {
+    function configureDomainFor(string memory /*name*/, uint /*price*/, uint /*referralFeePPM*/, address payable /*_owner*/, address /*_transfer*/) external override pure {
 
     }
 
@@ -37,7 +37,7 @@ contract Registrar is IRegistrar {
 
     }
 
-    function rentPrice(string memory name, uint duration) override virtual external view returns (uint256) {
+    function rentPrice(string memory /*name*/, uint /*duration*/) override virtual external view returns (uint256) {
         return 0;
     }
 }

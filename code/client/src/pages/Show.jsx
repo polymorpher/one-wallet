@@ -471,6 +471,7 @@ const Show = () => {
             <Col>
               <Space>
                 <WalletAddress
+                  showLabel
                   address={oneLastResort}
                   shorten
                 />
