@@ -4,6 +4,7 @@ import React, { useCallback, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
 import util, { useWindowDimensions } from '../util'
+import WalletConstants from '../constants/wallet'
 
 /**
  * Renders address input that provides type ahead search for any known addresses.
@@ -153,7 +154,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
     >
       {
         knownAddressesOptions
-          .filter((knownAddress) => knownAddress.network === network && notCurrentWallet(knownAddress.address))
+          .filter((knownAddress) => knownAddress.network === network && notCurrentWallet(knownAddress.address) && knownAddress.address !== WalletConstants.oneWalletTreasury.address)
           .sort((knownAddress) => knownAddress.label ? -1 : 0)
           .map((knownAddress, index) => {
             const addr = util.safeOneAddress(knownAddress.address)
