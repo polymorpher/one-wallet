@@ -17,6 +17,7 @@ abstract contract TokenManager is IERC721Receiver, IERC1155Receiver, Forwardable
     event TokenTransferError(TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount, string reason);
     event TokenTransferSucceeded(TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount);
     event TokenRecovered(TokenType tokenType, address contractAddress, uint256 tokenId, uint256 balance);
+    event BalanceRetrievalError(TokenType tokenType, address contractAddress, uint256 tokenId, string reason);
 
     // We track tokens in the contract instead of at the client so users can immediately get a record of what tokens they own when they restore their wallet at a new client
     // The tracking of ERC721 and ERC1155 are automatically established upon a token is transferred to this wallet. The tracking of ERC20 needs to be manually established by the client.
@@ -118,25 +119,46 @@ abstract contract TokenManager is IERC721Receiver, IERC1155Receiver, Forwardable
         }
     }
 
-    function _getBalance(TokenType tokenType, address contractAddress, uint256 tokenId) internal view returns (uint256){
+    function _getBalance(TokenType tokenType, address contractAddress, uint256 tokenId) internal view returns (uint256, bool success, string memory){
         // all external calls are safe because they are automatically compiled to static call due to view mutability
         if (tokenType == TokenType.ERC20) {
-            return IERC20(contractAddress).balanceOf(address(this));
+            try IERC20(contractAddress).balanceOf(address(this)) returns (uint256 balance){
+                return (balance, true, "");
+            }catch Error(string memory reason){
+                return (0, false, reason);
+            }catch {
+                return (0, false, "Unknown");
+            }
         } else if (tokenType == TokenType.ERC721) {
-            bool owned = IERC721(contractAddress).ownerOf(tokenId) == address(this);
-            if (owned) {
-                return 1;
-            } else {
-                return 0;
+            try IERC721(contractAddress).ownerOf(tokenId) returns (address owner){
+                bool owned = (owner == address(this));
+                if (owned) {
+                    return (1, true, "");
+                } else {
+                    return (0, true, "");
+                }
+            }catch Error(string memory reason){
+                return (0, false, reason);
+            }catch {
+                return (0, false, "Unknown");
             }
         } else if (tokenType == TokenType.ERC1155) {
-            return IERC1155(contractAddress).balanceOf(address(this), tokenId);
+            try IERC1155(contractAddress).balanceOf(address(this), tokenId) returns (uint256 balance){
+                return (balance, true, "");
+            }catch Error(string memory reason){
+                return (0, false, reason);
+            }catch {
+                return (0, false, "Unknown");
+            }
         }
-        return 0;
+        return (0, false, "Bad type");
     }
 
     function _recoverToken(address dest, TrackedToken storage t) internal {
-        uint256 balance = _getBalance(t.tokenType, t.contractAddress, t.tokenId);
+        (uint256 balance, bool success, string memory reason) = _getBalance(t.tokenType, t.contractAddress, t.tokenId);
+        if (!success) {
+            emit BalanceRetrievalError(t.tokenType, t.contractAddress, t.tokenId, reason);
+        }
         if (balance > 0) {
             _transferToken(t.tokenType, t.contractAddress, t.tokenId, dest, balance, bytes(""));
             emit TokenRecovered(t.tokenType, t.contractAddress, t.tokenId, balance);

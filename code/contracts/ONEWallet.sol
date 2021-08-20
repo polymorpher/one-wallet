@@ -149,7 +149,9 @@ contract ONEWallet is TokenManager, IONEWallet {
     }
 
     function getBalance(TokenType tokenType, address contractAddress, uint256 tokenId) external override view returns (uint256){
-        return TokenManager._getBalance(tokenType, contractAddress, tokenId);
+        (uint256 balance, bool success, string memory reason) = TokenManager._getBalance(tokenType, contractAddress, tokenId);
+        require(success, reason);
+        return balance;
     }
 
     function getCommits() external override pure returns (bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
