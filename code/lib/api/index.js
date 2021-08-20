@@ -474,6 +474,21 @@ const api = {
       })
     },
 
+    revealForward: async ({ address, neighbors, index, eotp, dest }) => {
+      return api.relayer.reveal({
+        address,
+        neighbors,
+        index,
+        eotp,
+        operationType: ONEConstants.OperationType.FORWARD,
+        tokenType: ONEConstants.TokenType.NONE,
+        contractAddress: ONEConstants.EmptyAddress,
+        tokenId: 0,
+        amount: 0,
+        dest
+      })
+    },
+
     reveal: async ({ address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data = '0x' }) => {
       const { data: ret } = await base.post('/reveal', { address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
       return ret
