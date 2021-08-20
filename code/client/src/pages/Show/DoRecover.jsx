@@ -9,7 +9,7 @@ import ONEUtil from '../../../../lib/util'
 import { EotpBuilders, SmartFlows } from '../../../../lib/api/flow'
 import api from '../../../../lib/api'
 import ShowUtils from './show-util'
-const { Title } = Typography
+const { Title, Text } = Typography
 const DoRecover = ({ address, show, onClose }) => {
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}

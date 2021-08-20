@@ -8,7 +8,7 @@ import util, { useWindowDimensions } from '../../util'
 import walletActions from '../../state/modules/wallet/actions'
 import storage from '../../storage'
 import Paths from '../../constants/paths'
-const { Title } = Typography
+const { Title, Text } = Typography
 
 const About = ({ address }) => {
   const dispatch = useDispatch()

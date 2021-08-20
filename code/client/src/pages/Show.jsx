@@ -113,8 +113,8 @@ const Show = () => {
             DO NOT use this version of the wallet. Funds may be unspendable and unrecoverable. Please create a new wallet. Learn more at <Link href='https://github.com/polymorpher/one-wallet/issues/72' target='_blank' rel='noreferrer'>https://github.com/polymorpher/one-wallet/issues/72</Link>
           </Warning>}
 
-        {activeTab === 'about' && <About />}
-        {activeTab === 'coins' && <Balance />}
+        {activeTab === 'about' && <About address={address} />}
+        {activeTab === 'coins' && <Balance address={address} />}
         {activeTab === 'coins' && <ERC20Grid address={address} />}
         {activeTab === 'nft' && <NFTGrid address={address} />}
         {activeTab === 'help' && <Recovery address={address} />}

@@ -2,12 +2,13 @@ import { Button, Col, Row, Space, Typography } from 'antd'
 import { ExplorerLink } from '../../components/Text'
 import util, { useWindowDimensions } from '../../util'
 import React from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { HarmonyONE } from '../../components/TokenAssets'
 import Paths from '../../constants/paths'
-const { Title } = Typography
+const { Title, Text } = Typography
 
 const Balance = ({ address }) => {
+  const oneAddress = util.safeOneAddress(address)
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
   const network = useSelector(state => state.wallet.network)
