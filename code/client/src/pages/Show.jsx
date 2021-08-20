@@ -21,6 +21,7 @@ import Send from './Show/Send'
 import SetRecovery from './Show/SetRecovery'
 import Balance from './Show/Balance'
 import WalletTitle from '../components/WalletTitle'
+import Upgrade from './Show/Upgrade'
 
 const tabList = [{ key: 'coins', tab: 'Coins' }, { key: 'nft', tab: 'Collectibles' }, { key: 'about', tab: 'About' }, { key: 'help', tab: 'Recover' }]
 const Show = () => {
@@ -93,8 +94,9 @@ const Show = () => {
         {activeTab === 'coins' && <ERC20Grid address={address} />}
         {activeTab === 'nft' && <NFTGrid address={address} />}
         {activeTab === 'help' && <Recovery address={address} />}
-
+        <Upgrade address={address} />
       </AnimatedSection>
+
       <Send address={address} show={section === 'transfer'} onClose={showStartScreen} />
       <DoRecover address={address} show={section === 'recover'} onClose={showStartScreen} />
       <SetRecovery show={section === 'setRecoveryAddress'} address={address} onClose={showStartScreen} />
