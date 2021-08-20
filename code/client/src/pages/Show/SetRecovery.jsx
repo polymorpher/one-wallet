@@ -68,7 +68,7 @@ const SetRecovery = ({ address, onClose, show }) => {
       onRevealAttemptFailed,
       onRevealSuccess: (txId) => {
         onRevealSuccess(txId)
-        message.success(`Recovery address is set to ${dest.value}`)
+        message.success(`Recovery address is set to ${dest}`)
         dispatch(walletActions.fetchWallet({ address }))
         onClose()
       }

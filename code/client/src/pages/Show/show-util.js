@@ -92,7 +92,7 @@ export default {
         dest,
         invalidOtp,
         invalidOtp2,
-        amount: selectedToken && util.isNFT(selectedToken) ? rawAmount.toString() : transferAmount.toString()
+        amount: checkAmount && (selectedToken && util.isNFT(selectedToken) ? rawAmount.toString() : transferAmount.toString())
       }
     }
 
