@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-const useRandomWorker = () => {
+export const useRandomWorker = () => {
   const [worker, setWorker] = useState()
   const workerRef = useRef({ promise: null }).current
   const resetWorker = () => {
@@ -39,5 +39,3 @@ const useRandomWorker = () => {
     setWorker
   }
 }
-
-export default { useRandomWorker }

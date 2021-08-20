@@ -5,7 +5,7 @@ import { QuestionCircleOutlined } from '@ant-design/icons'
 import React, { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router'
 
-const useOtpState = () => {
+export const useOtpState = () => {
   const [otpInput, setOtpInput] = useState('')
   const [otp2Input, setOtp2Input] = useState('')
   const otpRef = useRef()
@@ -18,7 +18,7 @@ const useOtpState = () => {
   return { state: { otpRef, otp2Ref, otpInput, otp2Input, setOtpInput, setOtp2Input, resetOtp } }
 }
 
-const OtpStack = ({ walletName, otpState, doubleOtp }) => {
+export const OtpStack = ({ walletName, otpState, doubleOtp }) => {
   const location = useLocation()
   const { otpRef, otp2Ref, otpInput, otp2Input, setOtpInput, setOtp2Input, resetOtp } = otpState || useOtpState()
   useEffect(() => {
@@ -61,9 +61,4 @@ const OtpStack = ({ walletName, otpState, doubleOtp }) => {
         </Space>}
     </>
   )
-}
-
-export default {
-  OtpStack,
-  useOtpState,
 }
