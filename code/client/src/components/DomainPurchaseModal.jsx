@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { Button, Col, Input, Modal, Row, Space, Spin, Typography } from 'antd'
 import api from '../api'
 import util from '../util'
+import ONEUtil from '../../../lib/util'
 import { useDispatch, useSelector } from 'react-redux'
 import { Warning } from './Text'
 import { walletActions } from '../state/modules/wallet'
@@ -34,6 +35,20 @@ const minDomainNameLength = 3
 
 const delayCheckMillis = 1300
 
+const oneDomain = '.crazy.one'
+
+const validDomain = (domainName) => {
+  try {
+    if (domainName.length <= minDomainNameLength) {
+      return undefined
+    }
+
+    return ONEUtil.normalizeDomain(`${domainName}${oneDomain}`)
+  } catch (e) {
+    return undefined
+  }
+}
+
 /**
  * Custom hook that executes a function with delay and cancellation, if the useEffect is destroyed due to the dependencies
  * update, the timeout is cancelled, which cancels the function execution.
@@ -55,16 +70,16 @@ const useWaitExecution = (func, runCondition, wait, dependencies) => {
 /**
  * Renders warning message block for the ability to purchase a domain based on the domain availability and balance availability.
  */
-const WarningMessageBlock = ({ enoughBalance, domainAvailable, checkingAvailability, domainName }) => (
+const WarningMessageBlock = ({ enoughBalance, domainAvailable, checkingAvailability, validatedDomain }) => (
   <Space direction='vertical' style={WarningTextStyle}>
     {
-      !enoughBalance && !checkingAvailability ? <Warning>Not enough balance for your selected token</Warning> : <></>
+      !enoughBalance && !checkingAvailability ? <Warning>Not enough ONE balance</Warning> : <></>
     }
     {
       !domainAvailable && !checkingAvailability ? <Warning>Domain is not available</Warning> : <></>
     }
     {
-      checkingAvailability && domainName.length >= 3 ? <Spin /> : <></>
+      checkingAvailability && validatedDomain ? <Spin /> : <></>
     }
   </Space>
 )
@@ -72,7 +87,7 @@ const WarningMessageBlock = ({ enoughBalance, domainAvailable, checkingAvailabil
 /**
  * Renders a modal that enables users to purchase an available domain for their selected wallet using selected token.
  */
-const DomainPurchaseModal = ({ isModalVisible, dismissModal, selectedTokenBalance, walletAddress }) => {
+const DomainPurchaseModal = ({ isModalVisible, dismissModal, oneBalance, walletAddress }) => {
   const dispatch = useDispatch()
 
   const [domainName, setDomainName] = useState('')
@@ -91,8 +106,11 @@ const DomainPurchaseModal = ({ isModalVisible, dismissModal, selectedTokenBalanc
 
   const price = useSelector(state => state.wallet.price)
 
+  const validatedDomain = validDomain(domainName)
+
   const purchaseDomain = useCallback(async () => {
-    dispatch(walletActions.purchaseDomain({ domainName: `${domainName}.crazy.one`, address: walletAddress }))
+    // The validated domain will be sent as [selectedDomainName].crazy.one.
+    dispatch(walletActions.purchaseDomain({ domainName: validatedDomain, address: walletAddress }))
     dismissModal()
   }, [domainName, walletAddress])
 
@@ -106,9 +124,9 @@ const DomainPurchaseModal = ({ isModalVisible, dismissModal, selectedTokenBalanc
 
       const computedDomainOnePrice = util.computeBalance(domainOnePrice.toString(), price)
 
-      const hasEnoughBalance = BigInt(domainOnePrice.toString()) <= BigInt(selectedTokenBalance)
+      const hasEnoughBalance = BigInt(domainOnePrice.toString()) <= BigInt(oneBalance)
 
-      const domainAvailable = domainAvailability && domainName.length >= minDomainNameLength
+      const domainAvailableAndValid = domainAvailability && validatedDomain
 
       setPurchaseOnePrice({ formatted: computedDomainOnePrice.formatted, value: domainOnePrice.toString() })
 
@@ -116,19 +134,19 @@ const DomainPurchaseModal = ({ isModalVisible, dismissModal, selectedTokenBalanc
 
       setEnoughBalance(hasEnoughBalance)
 
-      setDomainAvailable(domainAvailable)
+      setDomainAvailable(domainAvailableAndValid)
 
-      setAvailable(domainAvailable && hasEnoughBalance)
+      setAvailable(domainAvailableAndValid && hasEnoughBalance)
 
       setCheckingAvailability(false)
     },
-    domainName.length >= minDomainNameLength,
+    validDomain(domainName),
     delayCheckMillis,
-    [domainName]
+    [domainName, validatedDomain]
   )
 
   useEffect(() => {
-    if (domainName.length < 3) {
+    if (!validatedDomain) {
       setEnoughBalance(false)
 
       setDomainAvailable(false)
@@ -141,7 +159,7 @@ const DomainPurchaseModal = ({ isModalVisible, dismissModal, selectedTokenBalanc
 
       setDomainFiatPrice('0')
     }
-  }, [domainName, setEnoughBalance, setDomainAvailable, setAvailable, setPurchaseOnePrice, setDomainFiatPrice])
+  }, [validatedDomain, setEnoughBalance, setDomainAvailable, setAvailable, setPurchaseOnePrice, setDomainFiatPrice])
 
   const onDomainName = (e) => {
     setDomainName(e.target.value)
@@ -158,7 +176,7 @@ const DomainPurchaseModal = ({ isModalVisible, dismissModal, selectedTokenBalanc
           enoughBalance={enoughBalance}
           domainAvailable={domainAvailable}
           checkingAvailability={checkingAvailability}
-          domainName={domainName}
+          validatedDomain={validatedDomain}
         />,
         <Button
           key='submit'
@@ -176,7 +194,7 @@ const DomainPurchaseModal = ({ isModalVisible, dismissModal, selectedTokenBalanc
         </Col>
         <Col span={6}>
           <div style={{}}>
-            <Text>.crazy.one</Text>
+            <Text>{oneDomain}</Text>
           </div>
         </Col>
       </Row>

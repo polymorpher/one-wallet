@@ -4,16 +4,13 @@ import util, { useWindowDimensions } from '../util'
 import React, { useState } from 'react'
 import DomainPurchaseModal from './DomainPurchaseModal'
 import { useSelector } from 'react-redux'
-import { HarmonyONE } from './TokenAssets'
 const { Title, Text } = Typography
 
 const WalletTitle = ({ wallet }) => {
   const { isMobile } = useWindowDimensions()
   const balances = useSelector(state => state.wallet.balances)
   const [showDomainPurchaseModal, setShowDomainPurchaseModal] = useState(false)
-  const selectedToken = wallet?.selectedToken || HarmonyONE
-  const tokenBalances = wallet.tokenBalances || []
-  const selectedTokenBalance = selectedToken.key === 'one' ? (balances[wallet.address] || 0) : (tokenBalances[selectedToken.key] || 0)
+  const oneBalance = balances[wallet.address] || 0
   const domainName = wallet.domain
   const hasDomainName = domainName && domainName !== ''
 
@@ -21,7 +18,7 @@ const WalletTitle = ({ wallet }) => {
     <Space size='large' align='baseline'>
       <Title level={2}>{wallet.name}</Title>
       <DomainPurchaseModal
-        selectedTokenBalance={selectedTokenBalance}
+        oneBalance={oneBalance}
         walletAddress={wallet.address}
         isModalVisible={showDomainPurchaseModal}
         dismissModal={() => setShowDomainPurchaseModal(false)}
