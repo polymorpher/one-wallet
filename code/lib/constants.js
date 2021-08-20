@@ -37,7 +37,7 @@ module.exports = {
   EmptyBech32Address: 'one1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqquzw7vz',
   TreasuryAddress: '0x02F2cF45DD4bAcbA091D78502Dba3B2F431a54D3',
   MajorVersion: 9,
-  MinorVersion: 0,
+  MinorVersion: 1,
   Domain: {
     DEFAULT_RENT_DURATION: 365 * 24 * 3600,
     DEFAULT_TLD: 'one',
