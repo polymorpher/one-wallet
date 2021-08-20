@@ -18,7 +18,6 @@ import { intersection } from 'lodash'
 import ONEConstants from '../../../../lib/constants'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
-import { useHistory } from 'react-router'
 const { Title } = Typography
 
 const Send = ({
@@ -26,7 +25,6 @@ const Send = ({
   show,
   onClose,
 }) => {
-  const history = useHistory()
   const dispatch = useDispatch()
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
@@ -63,6 +61,7 @@ const Send = ({
   const restart = () => {
     setStage(-1)
     resetOtp()
+    resetWorker()
     setInputAmount(0)
   }
 
