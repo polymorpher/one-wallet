@@ -4,27 +4,24 @@ import { useHistory, useRouteMatch, Redirect, useLocation, matchPath } from 'rea
 import Paths from '../constants/paths'
 import WalletConstants from '../constants/wallet'
 import walletActions from '../state/modules/wallet/actions'
-import util, { useWindowDimensions } from '../util'
-import ONEUtil from '../../../lib/util'
+import util from '../util'
 import ONEConstants from '../../../lib/constants'
 
 import About from './Show/About'
 import Recovery from './Show/Recovery'
 import DoRecover from './Show/DoRecover'
-import { Space, Typography } from 'antd'
+import Warnings from './Show/Warnings'
+
 import AnimatedSection from '../components/AnimatedSection'
 
-import { Warning } from '../components/Text'
 import { ERC20Grid } from '../components/ERC20Grid'
-
 import { HarmonyONE } from '../components/TokenAssets'
 import { NFTGrid } from '../components/NFTGrid'
-import WalletAddress from '../components/WalletAddress'
 import Send from './Show/Send'
 import SetRecovery from './Show/SetRecovery'
 import Balance from './Show/Balance'
+import WalletTitle from '../components/WalletTitle'
 
-const { Title, Link } = Typography
 const tabList = [{ key: 'coins', tab: 'Coins' }, { key: 'nft', tab: 'Collectibles' }, { key: 'about', tab: 'About' }, { key: 'help', tab: 'Recover' }]
 const Show = () => {
   const history = useHistory()
@@ -41,7 +38,6 @@ const Show = () => {
   const [section, setSection] = useState(action)
   const network = useSelector(state => state.wallet.network)
   const [activeTab, setActiveTab] = useState('coins')
-  const walletOutdated = util.isWalletOutdated(wallet)
 
   useEffect(() => {
     if (!wallet) {
@@ -76,43 +72,22 @@ const Show = () => {
   const showTab = (tab) => { history.push(Paths.showAddress(oneAddress, tab)) }
   const showStartScreen = () => { history.push(Paths.showAddress(oneAddress)) }
 
-  const { isMobile } = useWindowDimensions()
   // UI Rendering below
   if (!wallet || wallet.network !== network) {
     return <Redirect to={Paths.wallets} />
   }
 
-  const title = (
-    <Space size='large' align='baseline'>
-      <Title level={2}>{wallet.name}</Title>
-      <WalletAddress
-        address={wallet.address}
-        shorten={util.shouldShortenAddress({
-          walletName: wallet.name,
-          isMobile
-        })}
-      />
-    </Space>
-  )
-
   return (
     <>
-      {/* <Space size='large' wrap align='start'> */}
       <AnimatedSection
         show={!section}
-        title={title}
+        title={<WalletTitle wallet={wallet} />}
         style={{ minHeight: 320, maxWidth: 720 }}
         tabList={tabList}
         activeTabKey={activeTab}
         onTabChange={key => showTab(key)}
       >
-        {walletOutdated && <Warning>Your wallet is too outdated. Please create a new wallet and move your friends.</Warning>}
-        {util.isEmptyAddress(wallet.lastResortAddress) && <Warning>You haven't set your recovery address. Please do it as soon as possible.</Warning>}
-        {ONEUtil.getVersion(wallet) === '8.0' && !wallet.doubleOtp &&
-          <Warning>
-            DO NOT use this version of the wallet. Funds may be unspendable and unrecoverable. Please create a new wallet. Learn more at <Link href='https://github.com/polymorpher/one-wallet/issues/72' target='_blank' rel='noreferrer'>https://github.com/polymorpher/one-wallet/issues/72</Link>
-          </Warning>}
-
+        <Warnings address={address} />
         {activeTab === 'about' && <About address={address} />}
         {activeTab === 'coins' && <Balance address={address} />}
         {activeTab === 'coins' && <ERC20Grid address={address} />}
