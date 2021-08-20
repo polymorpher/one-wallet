@@ -193,8 +193,11 @@ export default {
    * All new wallet should have 3 words name, old wallets are still using 1 word and will be displayed full.
    */
   shouldShortenAddress: ({ walletName, isMobile }) =>
-    walletName && walletName.split(' ').length > 1 || isMobile
+    walletName && walletName.split(' ').length > 1 || isMobile,
 
+  releaseNotesUrl: ({ majorVersion, minorVersion }) => {
+    return `https://github.com/polymorpher/one-wallet/wiki/Release-Notes#v${majorVersion}.${minorVersion}`
+  },
 }
 
 function getWindowDimensions () {
