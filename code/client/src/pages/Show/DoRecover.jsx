@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux'
 import ONE from '../../../../lib/onewallet'
 import ONEUtil from '../../../../lib/util'
 import { EotpBuilders, SmartFlows } from '../../../../lib/api/flow'
-import api from '../../../../lib/api'
+import { api } from '../../../../lib/api'
 import ShowUtils from './show-util'
 const { Title, Text } = Typography
 const DoRecover = ({ address, show, onClose }) => {
