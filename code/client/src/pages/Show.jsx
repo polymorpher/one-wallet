@@ -33,7 +33,6 @@ const Show = () => {
   const oneAddress = util.safeOneAddress(routeAddress)
   const address = util.safeNormalizedAddress(routeAddress)
   const selectedAddress = useSelector(state => state.wallet.selected)
-
   const wallet = wallets[address] || {}
   const [section, setSection] = useState(action)
   const network = useSelector(state => state.wallet.network)

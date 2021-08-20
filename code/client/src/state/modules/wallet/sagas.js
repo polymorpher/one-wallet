@@ -45,12 +45,24 @@ function * handleFetchTokenBalance (action) {
   }
 }
 
+function * handlePurchaseDomain (action) {
+  try {
+    const { domainName, address } = action.payload
+    // TODO: @Aaron please complete domain purchase.
+    yield put(walletActions.purchaseDomainSuccess({ domainName, address }))
+  } catch (err) {
+    console.error(err)
+    yield put(walletActions.purchaseDomainFailed(new Error('Failed to purchase domain name')))
+  }
+}
+
 function * walletSages () {
   yield all([
     takeEvery(walletActions.fetchWallet().type, handleFetchWallet),
     takeEvery(walletActions.fetchBalance().type, handleFetchBalance),
     takeEvery(walletActions.fetchTokenBalance().type, handleFetchTokenBalance),
     takeLatest(walletActions.fetchPrice().type, handleFetchPrice),
+    takeLatest(walletActions.purchaseDomain().type, handlePurchaseDomain)
   ])
 }
 

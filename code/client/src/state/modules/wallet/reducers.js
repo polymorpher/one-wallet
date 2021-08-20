@@ -174,6 +174,17 @@ const reducer = handleActions(
         knownAddresses: restKnownAddresses
       }
     },
+
+    [walletActions.purchaseDomainSuccess]: (state, action) => ({
+      ...state,
+      wallets: {
+        ...state.wallets,
+        [action.payload.address]: {
+          ...state.wallets[action.payload.address],
+          domain: action.payload.domainName
+        }
+      }
+    }),
   },
   {
     ...initialState
