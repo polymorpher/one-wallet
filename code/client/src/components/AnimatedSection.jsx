@@ -12,6 +12,7 @@ const Section = styled(Card)`
 const defaultStyle = {
   transition: 'opacity 300ms ease-in-out',
   opacity: 0,
+  position: 'relative',
 }
 
 const transitionStyles = {
