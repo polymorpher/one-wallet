@@ -8,10 +8,12 @@ import util, { useWindowDimensions } from '../../util'
 import walletActions from '../../state/modules/wallet/actions'
 import storage from '../../storage'
 import Paths from '../../constants/paths'
+import { useHistory } from 'react-router'
 const { Title, Text } = Typography
 
 const About = ({ address }) => {
   const dispatch = useDispatch()
+  const history = useHistory()
   const { isMobile } = useWindowDimensions()
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}

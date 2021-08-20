@@ -13,9 +13,11 @@ import ShowUtils from './show-util'
 import { useDispatch, useSelector } from 'react-redux'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
+import { useHistory } from 'react-router'
 const { Title } = Typography
 
 const SetRecovery = ({ address, onClose, show }) => {
+  const history = useHistory()
   const dispatch = useDispatch()
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}

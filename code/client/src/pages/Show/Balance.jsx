@@ -5,9 +5,11 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import { HarmonyONE } from '../../components/TokenAssets'
 import Paths from '../../constants/paths'
+import { useHistory } from 'react-router'
 const { Title, Text } = Typography
 
 const Balance = ({ address }) => {
+  const history = useHistory()
   const oneAddress = util.safeOneAddress(address)
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}

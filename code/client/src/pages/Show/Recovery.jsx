@@ -6,9 +6,11 @@ import { WarningOutlined } from '@ant-design/icons'
 import React from 'react'
 import { useSelector } from 'react-redux'
 import Paths from '../../constants/paths'
+import { useHistory } from 'react-router'
 const { Title } = Typography
 
 const Recovery = ({ address }) => {
+  const history = useHistory()
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
   const { lastResortAddress } = wallet
