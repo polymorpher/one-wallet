@@ -68,3 +68,6 @@ For more advanced setup, such as using a locally hosted relayer (`/code/relayer`
 
 Please visit our [issues page](https://github.com/polymorpher/one-wallet/issues).
 
+## License
+
+See https://github.com/polymorpher/one-wallet/blob/master/LICENSE. The license shall be governed by and construed in accordance with the laws of the State of California, United States of America. I accept services of processes by [email](mailto:legal@hiddenstate.xyz) and Telegram chats [@aaronqli](https://t.me/aaronqli).
