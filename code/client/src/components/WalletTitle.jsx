@@ -34,7 +34,7 @@ const WalletTitle = ({ wallet }) => {
       </Space>
       {!hasDomainName && showBuyDomain && (
         <Button type='primary' shape='round' onClick={onPurchaseDomain}>
-          Get Domain Name
+          Get Domain
         </Button>
       )}
     </Space>
