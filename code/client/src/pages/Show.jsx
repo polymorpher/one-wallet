@@ -81,7 +81,7 @@ const Show = () => {
     <>
       <AnimatedSection
         show={!section}
-        title={<WalletTitle wallet={wallet} />}
+        title={<WalletTitle address={address} />}
         style={{ minHeight: 320, maxWidth: 720 }}
         tabList={tabList}
         activeTabKey={activeTab}
