@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button, Row, Space, Spin, Typography, message } from 'antd'
 import api from '../../api'
 import util, { useWindowDimensions } from '../../util'
@@ -49,18 +49,16 @@ const minDomainNameLength = 3
 
 const delayCheckMillis = 1300
 
-const oneDomain = '.crazy.one'
-
 /**
  * A valid domain is more than [minDomainNameLength] and able to be normalized.
  */
-const validDomain = (domainName) => {
+const validateSubdomain = (subdomain) => {
   try {
-    if (domainName.length < minDomainNameLength) {
+    if (subdomain.length < minDomainNameLength) {
       return undefined
     }
 
-    return ONEUtil.normalizeDomain(`${domainName}${oneDomain}`)
+    return ONEUtil.normalizeDomain(subdomain)
   } catch (e) {
     message.error(`Error parsing domain name: ${e.toString()}`)
     return undefined
@@ -107,6 +105,7 @@ const prepareName = (name) => {
   return name
 }
 
+const { balance: PAYMENT_EXCESS_BUFFER } = util.toBalance(0.1)
 /**
  * Renders Purchase Domain section that enables users to purchase an available domain for their selected wallet using selected token.
  */
@@ -117,7 +116,7 @@ const PurchaseDomain = ({ show, address, onClose }) => {
   const wallet = wallets[address] || {}
   const network = useSelector(state => state.wallet.network)
   const oneBalance = balances[address] || 0
-  const [domainName, setDomainName] = useState(prepareName(wallet.name))
+  const [subdomain, setSubdomain] = useState(prepareName(wallet.name))
   const [purchaseOnePrice, setPurchaseOnePrice] = useState({ value: '', formatted: '' })
   const [domainFiatPrice, setDomainFiatPrice] = useState(0)
   const [available, setAvailable] = useState(false)
@@ -125,7 +124,7 @@ const PurchaseDomain = ({ show, address, onClose }) => {
   const [domainAvailable, setDomainAvailable] = useState(false)
   const [checkingAvailability, setCheckingAvailability] = useState(true)
   const price = useSelector(state => state.wallet.price)
-  const validatedDomain = validDomain(domainName)
+  const validatedDomain = validateSubdomain(subdomain)
 
   const [stage, setStage] = useState(-1)
   const doubleOtp = wallet.doubleOtp
@@ -177,10 +176,11 @@ const PurchaseDomain = ({ show, address, onClose }) => {
   useWaitExecution(
     async () => {
       setCheckingAvailability(true)
-      const domainOnePrice = await api.blockchain.domain.price({ name: domainName })
-      const domainAvailability = await api.blockchain.domain.available({ name: domainName })
+      const domainOnePriceRaw = await api.blockchain.domain.price({ name: subdomain })
+      const domainOnePrice = domainOnePriceRaw.add(PAYMENT_EXCESS_BUFFER)
+      const domainAvailability = await api.blockchain.domain.available({ name: subdomain })
       const computedDomainOnePrice = util.computeBalance(domainOnePrice.toString(), price)
-      const hasEnoughBalance = new BN(domainOnePrice.toString()).lte(new BN(oneBalance))
+      const hasEnoughBalance = domainOnePrice.lte(new BN(oneBalance))
       const domainAvailableAndValid = domainAvailability && validatedDomain
       setPurchaseOnePrice({ formatted: computedDomainOnePrice.formatted, value: domainOnePrice.toString() })
       setDomainFiatPrice(computedDomainOnePrice.fiatFormatted)
@@ -191,7 +191,7 @@ const PurchaseDomain = ({ show, address, onClose }) => {
     },
     validatedDomain,
     delayCheckMillis,
-    [domainName, validatedDomain]
+    [subdomain, validatedDomain]
   )
 
   useEffect(() => {
@@ -219,7 +219,7 @@ const PurchaseDomain = ({ show, address, onClose }) => {
         </Hint>
       </Row>
       <Row style={inputRowStyle} justify='center'>
-        <AutoResizeInputBox extraWidth={16} style={inputStyle} value={domainName} onChange={({ target: { value } }) => setDomainName(value)} />
+        <AutoResizeInputBox extraWidth={16} style={inputStyle} value={subdomain} onChange={({ target: { value } }) => setSubdomain(value)} />
         <Text>{oneDomain}</Text>
       </Row>
       <Row style={priceRowStyle} justify='center'>
