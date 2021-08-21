@@ -30,7 +30,7 @@ library DomainManager {
 
     function buyDomain(IRegistrar reg, IReverseRegistrar rev, address resolver, uint256 maxPrice, string memory subdomain, bytes32 node, string memory fqdn) public returns (bool) {
         //        (bool success, bytes memory ret) = address(reg).call{value : maxPrice}(abi.encodeWithSignature("register(bytes32,string,address,address,address)", node, subdomain, address(this), address(0x0), resolver));
-        (bool success, bytes memory ret) = address(reg).call{value : maxPrice}(abi.encodeWithSignature("register(bytes32,string,address,uint,string,address)", node, subdomain, address(this), MIN_DOMAIN_RENT_DURATION, "", resolver));
+        (bool success, bytes memory ret) = address(reg).call{value : maxPrice}(abi.encodeWithSignature("register(bytes32,string,address,uint256,string,address)", node, subdomain, address(this), MIN_DOMAIN_RENT_DURATION, "", resolver));
         emit AttemptRegistration(node, subdomain, address(this), MIN_DOMAIN_RENT_DURATION, "", resolver);
         if (!success) {
             string memory reason = _revertReason(ret);
