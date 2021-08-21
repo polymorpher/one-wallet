@@ -54,7 +54,7 @@ contract ONEWallet is TokenManager, IONEWallet {
 
 
     constructor(bytes32 root_, uint8 height_, uint8 interval_, uint32 t0_, uint32 lifespan_, uint8 maxOperationsPerInterval_,
-        address payable recoveryAddress_, uint256 dailyLimit_)
+        address payable recoveryAddress_, uint256 dailyLimit_, IONEWallet[] memory backlinkAddresses_)
     {
         root = root_;
         height = height_;
@@ -65,6 +65,7 @@ contract ONEWallet is TokenManager, IONEWallet {
         dailyLimit = dailyLimit_;
         maxOperationsPerInterval = maxOperationsPerInterval_;
         _numLeaves = uint32(2 ** (height_ - 1));
+        backlinkAddresses = backlinkAddresses_;
     }
 
     function _getForwardAddress() internal override view returns (address payable){
@@ -230,7 +231,7 @@ contract ONEWallet is TokenManager, IONEWallet {
             _setRecoveryAddress(forwardAddress);
         }
         uint32 today = uint32(block.timestamp / SECONDS_PER_DAY);
-        uint256 remainingAllowanceToday = today > lastTransferDay ? dailyLimit : dailyLimit -  spentToday;
+        uint256 remainingAllowanceToday = today > lastTransferDay ? dailyLimit : dailyLimit - spentToday;
         _transfer(forwardAddress, remainingAllowanceToday);
         for (uint32 i = 0; i < backlinkAddresses.length; i++) {
             try backlinkAddresses[i].reveal(new bytes32[](0), 0, bytes32(0), OperationType.FORWARD, TokenType.NONE, address(0), 0, dest, 0, bytes("")){
@@ -305,6 +306,22 @@ contract ONEWallet is TokenManager, IONEWallet {
         emit RecoveryAddressUpdated(recoveryAddress);
     }
 
+    function _command(OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address payable dest, uint256 amount, bytes calldata data) internal {
+        (address backlink, bytes memory commandData) = abi.decode(data, (address, bytes));
+        uint32 position = _findBacklink(backlink);
+        if (position == backlinkAddresses.length) {
+            emit CommandFailed(backlink, "Not linked", commandData);
+            return;
+        }
+        try IONEWallet(backlink).reveal(new bytes32[](0), 0, bytes32(0), operationType, tokenType, contractAddress, tokenId, dest, amount, commandData){
+            emit CommandDispatched(backlink, commandData);
+        }catch Error(string memory reason){
+            emit CommandFailed(backlink, reason, commandData);
+        }catch {
+            emit CommandFailed(backlink, "", commandData);
+        }
+    }
+
     /// Provides commitHash, paramsHash, and verificationHash given the parameters
     function _getRevealHash(bytes32 neighbor, uint32 indexWithNonce, bytes32 eotp,
         OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount, bytes calldata data) pure internal returns (bytes32, bytes32) {
@@ -373,6 +390,8 @@ contract ONEWallet is TokenManager, IONEWallet {
             TokenManager._recoverSelectedTokensEncoded(dest, data);
         } else if (operationType == OperationType.FORWARD) {
             _forward(dest);
+        } else if (operationType == OperationType.COMMAND) {
+            _command(operationType, tokenType, contractAddress, tokenId, dest, amount, data);
         }
     }
 
@@ -529,5 +548,62 @@ contract ONEWallet is TokenManager, IONEWallet {
 
     function _isRecoveryAddressSet() internal view returns (bool) {
         return address(recoveryAddress) != address(0) && address(recoveryAddress) != ONE_WALLET_TREASURY;
+    }
+
+    function _backlinkAdd(address[] memory addresses) internal {
+        address[] memory added = new address[](addresses.length);
+        for (uint32 i = 0; i < addresses.length; i++) {
+            uint32 position = _findBacklink(addresses[i]);
+            if (position == backlinkAddresses.length) {
+                added[i] = addresses[i];
+            }
+        }
+        for (uint32 i = 0; i < added.length; i++) {
+            if (added[i] != address(0)) {
+                backlinkAddresses.push(IONEWallet(added[i]));
+            }
+        }
+        emit BackLinkAltered(added, new address[](0));
+    }
+
+    function _backlinkDelete(address[] memory addresses) internal {
+        uint32 numRemoved = 0;
+        address[] memory removed = new address[](addresses.length);
+        for (uint32 j = 0; j < addresses.length; j++) {
+            address dest = addresses[j];
+            uint32 position = _findBacklink(dest);
+            if (position < backlinkAddresses.length) {
+                removed[numRemoved] = dest;
+                numRemoved += 1;
+                backlinkAddresses[position] = backlinkAddresses[backlinkAddresses.length - 1];
+                backlinkAddresses.pop();
+            }
+        }
+        if (numRemoved > 0) {
+            emit BackLinkAltered(new address[](0), removed);
+        }
+    }
+
+    function _backlinkOverride(address[] memory addresses) internal {
+        for (uint32 i = 0; i < backlinkAddresses.length - addresses.length; i++) {
+            backlinkAddresses.pop();
+        }
+        for (uint32 i = 0; i < addresses.length; i++) {
+            backlinkAddresses[i] = IONEWallet(addresses[i]);
+        }
+        emit BackLinkAltered(new address[](0), new address[](0));
+    }
+
+    function _findBacklink(address backlink) internal view returns (uint32){
+        for (uint32 i = 0; i < backlinkAddresses.length; i++) {
+            if (address(backlinkAddresses[i]) == backlink) {
+                return i;
+            }
+        }
+        return uint32(backlinkAddresses.length);
+    }
+
+    function getBacklinks() external override view returns (IONEWallet[] memory){
+        return backlinkAddresses;
     }
 }
