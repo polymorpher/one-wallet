@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Button, Col, Row, Space, Spin, Typography } from 'antd'
+import { Button, Row, Space, Spin, Typography, message } from 'antd'
 import api from '../../api'
 import util, { useWindowDimensions } from '../../util'
 import ONEUtil from '../../../../lib/util'
@@ -11,6 +11,13 @@ import AnimatedSection from '../../components/AnimatedSection'
 import { CheckCircleOutlined, CloseOutlined, LoadingOutlined } from '@ant-design/icons'
 import BN from 'bn.js'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
+import { OtpStack, useOtpState } from '../../components/OtpStack'
+import { useRandomWorker } from './randomWorker'
+import ShowUtils from './show-util'
+import { SmartFlows } from '../../../../lib/api/flow'
+import ONE from '../../../../lib/onewallet'
+import ONEConstants from '../../../../lib/constants'
+import { Chaining } from '../../api/flow'
 
 const { Text, Title, Link } = Typography
 
@@ -55,6 +62,7 @@ const validDomain = (domainName) => {
 
     return ONEUtil.normalizeDomain(`${domainName}${oneDomain}`)
   } catch (e) {
+    message.error(`Error parsing domain name: ${e.toString()}`)
     return undefined
   }
 }
@@ -82,15 +90,9 @@ const useWaitExecution = (func, runCondition, wait, dependencies) => {
  */
 const WarningMessageBlock = ({ enoughBalance, domainAvailable, checkingAvailability, validatedDomain }) => (
   <Space direction='vertical' style={WarningTextStyle}>
-    {
-      !enoughBalance && !checkingAvailability ? <Warning>Not enough ONE balance</Warning> : <></>
-    }
-    {
-      !domainAvailable && !checkingAvailability ? <Warning>Domain is not available</Warning> : <></>
-    }
-    {
-      checkingAvailability && validatedDomain ? <Spin /> : <></>
-    }
+    {!enoughBalance && !checkingAvailability && <Warning>Not enough ONE balance</Warning>}
+    {!domainAvailable && !checkingAvailability && <Warning>Domain is not available</Warning>}
+    {checkingAvailability && validatedDomain && <Spin />}
   </Space>
 )
 
@@ -113,9 +115,10 @@ const PurchaseDomain = ({ show, address, onClose }) => {
   const balances = useSelector(state => state.wallet.balances)
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
+  const network = useSelector(state => state.wallet.network)
   const oneBalance = balances[address] || 0
   const [domainName, setDomainName] = useState(prepareName(wallet.name))
-  const [purchaseOnePrice, setPurchaseOnePrice] = useState(0)
+  const [purchaseOnePrice, setPurchaseOnePrice] = useState({ value: '', formatted: '' })
   const [domainFiatPrice, setDomainFiatPrice] = useState(0)
   const [available, setAvailable] = useState(false)
   const [enoughBalance, setEnoughBalance] = useState(false)
@@ -125,12 +128,50 @@ const PurchaseDomain = ({ show, address, onClose }) => {
   const validatedDomain = validDomain(domainName)
 
   const [stage, setStage] = useState(-1)
+  const doubleOtp = wallet.doubleOtp
+  const { state: otpState } = useOtpState()
+  const { otpInput, otp2Input } = otpState
+  const resetOtp = otpState.resetOtp
+  const { resetWorker, recoverRandomness } = useRandomWorker()
 
-  const purchaseDomain = useCallback(async () => {
+  const prepareProofFailed = () => {
+    setStage(-1)
+    resetOtp()
+    resetWorker()
+  }
+  const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation } = ShowUtils.buildHelpers({ setStage, resetOtp, network })
+
+  const doPurchase = useCallback(async () => {
     // The validated domain will be sent as [selectedDomainName].crazy.one.
-    // TODO: @Arron please remove or move this to appropriate location.
-    dispatch(walletActions.purchaseDomain({ domainName: validatedDomain, address }))
-    onClose()
+
+    const { otp, otp2, invalidOtp2, invalidOtp } = prepareValidation({ state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp }, checkAmount: false, checkDest: false }) || {}
+
+    if (invalidOtp || invalidOtp2) return
+
+    const data = ONE.encodeBuyDomainData({ subdomain: validatedDomain })
+
+    SmartFlows.commitReveal({
+      wallet,
+      otp,
+      otp2,
+      recoverRandomness,
+      prepareProofFailed,
+      commitHashGenerator: ONE.computeBuyDomainCommitHash,
+      commitHashArgs: { maxPrice: purchaseOnePrice.value, subdomain: validatedDomain },
+      beforeCommit: () => setStage(1),
+      afterCommit: () => setStage(2),
+      onCommitError,
+      onCommitFailure,
+      revealAPI: api.relayer.revealBuyDomain,
+      revealArgs: { subdomain: validatedDomain, maxPrice: purchaseOnePrice.value, data },
+      onRevealFailure,
+      onRevealError,
+      onRevealAttemptFailed,
+      onRevealSuccess: (txId) => {
+        onRevealSuccess(txId)
+        onClose()
+      }
+    })
   }, [domainName, address])
 
   useWaitExecution(
@@ -194,25 +235,23 @@ const PurchaseDomain = ({ show, address, onClose }) => {
         </Space>
       </Row>
       <Row>
-        <Hint>Shorter names are more expensive. Learn more at <Link target='_blank' href='https://blog.harmony.one/harmony-community-launches-crazy-one-the-first-subdomain-nft/' rel='noreferrer'>Harmony blog</Link></Hint>
+        <Hint>Cost is per year. Shorter names cost more. Learn more at <Link target='_blank' href='https://blog.harmony.one/harmony-community-launches-crazy-one-the-first-subdomain-nft/' rel='noreferrer'>Harmony blog</Link></Hint>
       </Row>
-      <Row>
-        <Col span={24}>
-          <WarningMessageBlock
-            key='error-message'
-            enoughBalance={enoughBalance}
-            domainAvailable={domainAvailable}
-            checkingAvailability={checkingAvailability}
-            validatedDomain={validatedDomain}
-          />
-        </Col>
+      <Row justify='center'>
+        <WarningMessageBlock
+          key='error-message'
+          enoughBalance={enoughBalance}
+          domainAvailable={domainAvailable}
+          checkingAvailability={checkingAvailability}
+          validatedDomain={validatedDomain}
+        />
       </Row>
-
+      {available && <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} />}
       <Row justify='end' style={{ marginTop: 24 }}>
         <Space>
           {stage >= 0 && stage < 3 && <LoadingOutlined />}
           {stage === 3 && <CheckCircleOutlined />}
-          <Button type='primary' size='large' shape='round' disabled={!available || stage >= 0} onClick={purchaseDomain}>Buy Now</Button>
+          <Button type='primary' size='large' shape='round' disabled={!available || stage >= 0} onClick={doPurchase}>Buy Now</Button>
         </Space>
       </Row>
       <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
