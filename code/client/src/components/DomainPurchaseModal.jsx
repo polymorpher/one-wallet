@@ -39,7 +39,7 @@ const oneDomain = '.crazy.one'
 
 const validDomain = (domainName) => {
   try {
-    if (domainName.length <= minDomainNameLength) {
+    if (domainName.length < minDomainNameLength) {
       return undefined
     }
 
@@ -140,7 +140,7 @@ const DomainPurchaseModal = ({ isModalVisible, dismissModal, oneBalance, walletA
 
       setCheckingAvailability(false)
     },
-    validDomain(domainName),
+    validatedDomain,
     delayCheckMillis,
     [domainName, validatedDomain]
   )
