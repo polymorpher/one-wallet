@@ -32,9 +32,7 @@ const setProvider = createAction('SET_PROVIDER')
 const setKnownAddress = createAction('SET_KNOWN_ADDRESS')
 const deleteKnownAddress = createAction('DELETE_KNOWN_ADDRESS')
 
-const purchaseDomain = createAction('PURCHASE_DOMAIN')
-const purchaseDomainSuccess = createAction('PURCHASE_DOMAIN_SUCCESS')
-const purchaseDomainFailed = createAction('PURCHASE_DOMAIN_FAILED')
+const bindDomain = createAction('BIND_DOMAIN')
 
 export default {
   fetchWallet,
@@ -55,9 +53,7 @@ export default {
   setProvider,
   setKnownAddress,
   deleteKnownAddress,
-  purchaseDomain,
-  purchaseDomainSuccess,
-  purchaseDomainFailed,
+  bindDomain,
 
   trackTokens,
   untrackTokens,

@@ -175,7 +175,7 @@ const reducer = handleActions(
       }
     },
 
-    [walletActions.purchaseDomainSuccess]: (state, action) => ({
+    [walletActions.bindDomain]: (state, action) => ({
       ...state,
       wallets: {
         ...state.wallets,
