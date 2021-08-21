@@ -39,9 +39,6 @@ const Show = () => {
   const network = useSelector(state => state.wallet.network)
   const [activeTab, setActiveTab] = useState('coins')
 
-  const balances = useSelector(state => state.wallet.balances)
-  const oneBalance = balances[wallet.address] || 0
-
   useEffect(() => {
     if (!wallet) {
       return history.push(Paths.wallets)
@@ -103,8 +100,7 @@ const Show = () => {
       <SetRecovery show={section === 'setRecoveryAddress'} address={address} onClose={showStartScreen} />
       <PurchaseDomain
         show={section === 'purchaseDomain'}
-        oneBalance={oneBalance}
-        walletAddress={wallet.address}
+        wallet={wallet}
         onClose={showStartScreen}
       />
     </>

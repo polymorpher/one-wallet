@@ -93,8 +93,14 @@ const WarningMessageBlock = ({ enoughBalance, domainAvailable, checkingAvailabil
 /**
  * Renders Purchase Domain section that enables users to purchase an available domain for their selected wallet using selected token.
  */
-const PurchaseDomain = ({ show, oneBalance, walletAddress, onClose }) => {
+const PurchaseDomain = ({ show, wallet, onClose }) => {
   const dispatch = useDispatch()
+
+  const balances = useSelector(state => state.wallet.balances)
+
+  const walletAddress = wallet.address
+
+  const oneBalance = balances[walletAddress] || 0
 
   const [domainName, setDomainName] = useState('')
 
