@@ -462,8 +462,8 @@ const api = {
       resolver = ONEConstants.Domain.DEFAULT_RESOLVER,
       maxPrice,
       subdomain,
+      data,
     }) => {
-      const data = ONEUtil
       return api.relayer.reveal({
         neighbors,
         index,
