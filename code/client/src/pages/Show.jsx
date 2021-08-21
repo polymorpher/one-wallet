@@ -99,8 +99,8 @@ const Show = () => {
       <DoRecover address={address} show={section === 'recover'} onClose={showStartScreen} />
       <SetRecovery show={section === 'setRecoveryAddress'} address={address} onClose={showStartScreen} />
       <PurchaseDomain
-        show={section === 'purchaseDomain'}
-        wallet={wallet}
+        show={section === 'domain'}
+        address={address}
         onClose={showStartScreen}
       />
     </>
