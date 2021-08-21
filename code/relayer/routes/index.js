@@ -46,26 +46,27 @@ router.use((req, res, next) => {
 // TODO: rate limiting + fingerprinting + delay with backoff
 
 router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), globalLimiter({ max: 250 }), async (req, res) => {
-  let { root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit } = req.body
+  let { root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit, backlinks } = req.body
   // root is hex string, 32 bytes
   height = parseInt(height)
   interval = parseInt(interval)
   t0 = parseInt(t0)
   lifespan = parseInt(lifespan)
   slotSize = parseInt(slotSize)
+  backlinks = JSON.parse(backlinks || '[]')
   lastResortAddress = lastResortAddress || config.nullAddress
   // lastResortAddress is hex string, 20 bytes
   // dailyLimit is a BN in string form
   if (config.debug || config.verbose) {
-    console.log(`[/new] `, { root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit })
+    console.log(`[/new] `, { root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit, backlinks })
   }
-  if (!checkParams({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit }, res)) {
+  if (!checkParams({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit, backlinks }, res)) {
     return
   }
 
   // TODO parameter verification
   try {
-    const wallet = await blockchain.getContract(req.network).new(root, height, interval, t0, lifespan, slotSize, lastResortAddress, new BN(dailyLimit, 10))
+    const wallet = await blockchain.getContract(req.network).new(root, height, interval, t0, lifespan, slotSize, lastResortAddress, new BN(dailyLimit, 10), backlinks)
     return res.json({ success: true, address: wallet.address })
   } catch (ex) {
     console.error(ex)
