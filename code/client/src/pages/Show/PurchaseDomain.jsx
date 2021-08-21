@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState, useRef } from 'react'
 import { Button, Col, Row, Space, Spin, Typography } from 'antd'
 import api from '../../api'
 import util from '../../util'
 import ONEUtil from '../../../../lib/util'
+import ONENames from '../../../../lib/names'
 import { useDispatch, useSelector } from 'react-redux'
-import { InputBox, Warning } from '../../components/Text'
+import { AutoResizeInputBox, InputBox, Warning } from '../../components/Text'
 import { walletActions } from '../../state/modules/wallet'
 import AnimatedSection from '../../components/AnimatedSection'
 import { CloseOutlined } from '@ant-design/icons'
@@ -14,10 +15,9 @@ const { Text, Title } = Typography
 
 const inputStyle = {
   display: 'inline',
-  margin: 0,
+  margin: '0 8px',
   padding: 0,
-  width: '100%',
-  textAlign: 'right'
+  textAlign: 'right',
 }
 
 const priceRowStyle = {
@@ -25,7 +25,8 @@ const priceRowStyle = {
 }
 
 const inputRowStyle = {
-  paddingBottom: '32px'
+  marginTop: '32px',
+  marginBottom: '48px'
 }
 
 const WarningTextStyle = {
@@ -90,34 +91,33 @@ const WarningMessageBlock = ({ enoughBalance, domainAvailable, checkingAvailabil
   </Space>
 )
 
+const prepareName = (name) => {
+  if (!name) {
+    name = `${ONENames.randomWord()} ${ONENames.randomWord()} ${ONENames.randomWord()}`
+  }
+  if (name.indexOf(' ') < 0) {
+    name = `${name} ${ONENames.randomWord()} ${ONENames.randomWord()}`
+  }
+  name = name.replaceAll(' ', '-').toLowerCase()
+  return name
+}
+
 /**
  * Renders Purchase Domain section that enables users to purchase an available domain for their selected wallet using selected token.
  */
 const PurchaseDomain = ({ show, wallet, onClose }) => {
   const dispatch = useDispatch()
-
   const balances = useSelector(state => state.wallet.balances)
-
   const walletAddress = wallet.address
-
   const oneBalance = balances[walletAddress] || 0
-
-  const [domainName, setDomainName] = useState('')
-
+  const [domainName, setDomainName] = useState(prepareName(wallet.name))
   const [purchaseOnePrice, setPurchaseOnePrice] = useState(0)
-
   const [domainFiatPrice, setDomainFiatPrice] = useState(0)
-
   const [available, setAvailable] = useState(false)
-
   const [enoughBalance, setEnoughBalance] = useState(false)
-
   const [domainAvailable, setDomainAvailable] = useState(false)
-
   const [checkingAvailability, setCheckingAvailability] = useState(true)
-
   const price = useSelector(state => state.wallet.price)
-
   const validatedDomain = validDomain(domainName)
 
   const purchaseDomain = useCallback(async () => {
@@ -130,27 +130,16 @@ const PurchaseDomain = ({ show, wallet, onClose }) => {
   useWaitExecution(
     async () => {
       setCheckingAvailability(true)
-
       const domainOnePrice = await api.blockchain.domain.price({ name: domainName })
-
       const domainAvailability = await api.blockchain.domain.available({ name: domainName })
-
       const computedDomainOnePrice = util.computeBalance(domainOnePrice.toString(), price)
-
       const hasEnoughBalance = new BN(domainOnePrice.toString()).lte(new BN(oneBalance))
-
       const domainAvailableAndValid = domainAvailability && validatedDomain
-
       setPurchaseOnePrice({ formatted: computedDomainOnePrice.formatted, value: domainOnePrice.toString() })
-
       setDomainFiatPrice(computedDomainOnePrice.fiatFormatted)
-
       setEnoughBalance(hasEnoughBalance)
-
       setDomainAvailable(domainAvailableAndValid)
-
       setAvailable(domainAvailableAndValid && hasEnoughBalance)
-
       setCheckingAvailability(false)
     },
     validatedDomain,
@@ -161,22 +150,13 @@ const PurchaseDomain = ({ show, wallet, onClose }) => {
   useEffect(() => {
     if (!validatedDomain) {
       setEnoughBalance(false)
-
       setDomainAvailable(false)
-
       setAvailable(false)
-
       setCheckingAvailability(true)
-
       setPurchaseOnePrice({ formatted: '0', value: '0' })
-
       setDomainFiatPrice('0')
     }
   }, [validatedDomain, setEnoughBalance, setDomainAvailable, setAvailable, setPurchaseOnePrice, setDomainFiatPrice])
-
-  const onDomainName = (e) => {
-    setDomainName(e.target.value)
-  }
 
   return (
     <AnimatedSection
@@ -186,12 +166,8 @@ const PurchaseDomain = ({ show, wallet, onClose }) => {
       ]}
     >
       <Row style={inputRowStyle} justify='center'>
-        <Col span={6}>
-          <InputBox style={inputStyle} value={domainName} onChange={onDomainName} />
-        </Col>
-        <Col span={6}>
-          <Text>{oneDomain}</Text>
-        </Col>
+        <AutoResizeInputBox style={inputStyle} value={domainName} onChange={({ target: { value } }) => setDomainName(value)} />
+        <Text>{oneDomain}</Text>
       </Row>
       <Row style={priceRowStyle} justify='center'>
         <Col span={12}>
