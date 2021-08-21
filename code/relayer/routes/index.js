@@ -113,7 +113,7 @@ router.post('/commit', generalLimiter({ max: 60 }), walletAddressLimiter({ max: 
   }
 })
 
-router.post('/reveal', generalLimiter({ max: 60 }), walletAddressLimiter({ max: 60 }), async (req, res) => {
+router.post('/reveal', generalLimiter({ max: 120 }), walletAddressLimiter({ max: 120 }), async (req, res) => {
   let { neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data } = req.body
   if (!checkParams({ neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data }, res)) {
     return

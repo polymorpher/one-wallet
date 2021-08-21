@@ -295,7 +295,7 @@ const encodeBuyDomainData = ({ reverseRegistrar = ONEConstants.Domain.DEFAULT_RE
   const parentLabelHash = hexString(keccak(parentLabel))
   const fqdn = [subdomain, parentLabel, tld].join('.')
   const encoded = abi.encodeParameters(['address', 'bytes32', 'string'], [reverseRegistrar, parentLabelHash, fqdn])
-  return encoded
+  return hexStringToBytes(encoded)
 }
 
 const computeBuyDomainCommitHash = ({

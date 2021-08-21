@@ -453,12 +453,17 @@ const api = {
      * @param reverseRegistrar - hex address of ReverseRegistrar
      * @param resolver - hex address of Resolver
      * @param maxPrice - string, maximum price acceptable for the domain purchase, in wei
-     * @param suffix - string, the suffix for the domain to be purchased. For "polymorpher.crazy.one", the suffix is ".crazy.one"
      * @param subdomain - string, the subdomain to be purchased. For "polymorpher.crazy.one", the subdomain is "polymorpher"
      * @returns {Promise<void>}
      */
-    revealBuyDomain: async ({ neighbors, index, eotp, address, registrar, reverseRegistrar, resolver, maxPrice, suffix, subdomain }) => {
-      const data = ONEUtil
+    revealBuyDomain: async ({ neighbors, index, eotp, address,
+      registrar = ONEConstants.Domain.DEFAULT_SUBDOMAIN_REGISTRAR,
+      reverseRegistrar = ONEConstants.Domain.DEFAULT_REVERSE_REGISTRAR,
+      resolver = ONEConstants.Domain.DEFAULT_RESOLVER,
+      maxPrice,
+      subdomain,
+      data,
+    }) => {
       return api.relayer.reveal({
         neighbors,
         index,

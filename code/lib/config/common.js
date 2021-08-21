@@ -36,7 +36,7 @@ module.exports = {
     ...(DEBUG && {
       dev: {
         name: 'Local Relayer',
-        url: 'http://127.0.0.1:3001'
+        url: process.env.LOCAL_RELAYER_URL || 'http://127.0.0.1:3001'
         // url: 'https://dev.hiddenstate.xyz'
       }
     }),
