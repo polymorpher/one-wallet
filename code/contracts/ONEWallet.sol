@@ -392,6 +392,12 @@ contract ONEWallet is TokenManager, IONEWallet {
             _forward(dest);
         } else if (operationType == OperationType.COMMAND) {
             _command(operationType, tokenType, contractAddress, tokenId, dest, amount, data);
+        } else if (operationType == OperationType.BACKLINK_ADD) {
+            _backlinkAdd(data);
+        } else if (operationType == OperationType.BACKLINK_DELETE) {
+            _backlinkDelete(data);
+        } else if (operationType == OperationType.BACKLINK_OVERRIDE) {
+            _backlinkOverride(data);
         }
     }
 
@@ -550,6 +556,21 @@ contract ONEWallet is TokenManager, IONEWallet {
         return address(recoveryAddress) != address(0) && address(recoveryAddress) != ONE_WALLET_TREASURY;
     }
 
+    function _backlinkAdd(bytes memory data) internal {
+        address[] memory addresses = abi.decode(data, (address[]));
+        _backlinkAdd(addresses);
+    }
+
+    function _backlinkDelete(bytes memory data) internal {
+        address[] memory addresses = abi.decode(data, (address[]));
+        _backlinkDelete(addresses);
+    }
+
+    function _backlinkOverride(bytes memory data) internal {
+        address[] memory addresses = abi.decode(data, (address[]));
+        _backlinkOverride(addresses);
+    }
+
     function _backlinkAdd(address[] memory addresses) internal {
         address[] memory added = new address[](addresses.length);
         for (uint32 i = 0; i < addresses.length; i++) {
@@ -565,6 +586,7 @@ contract ONEWallet is TokenManager, IONEWallet {
         }
         emit BackLinkAltered(added, new address[](0));
     }
+
 
     function _backlinkDelete(address[] memory addresses) internal {
         uint32 numRemoved = 0;
