@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@harmony-js/core": "^0.1.57",
-    "@truffle/contract": "^4.3.20",
+    "@truffle/contract": "4.3.30",
     "@truffle/hdwallet-provider": "^1.4.0",
     "axios": "^0.21.1",
     "bn.js": "^5.2.0",
@@ -26,6 +26,9 @@
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
     "morgan": "^1.10.0"
+  },
+  "resolutions": {
+    "tar": ">=4.4.15"
   },
   "eslintConfig": {
     "env": {

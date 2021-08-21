@@ -73,9 +73,12 @@
     "webpack": "^5.33.2",
     "webpack-bundle-analyzer": "^3.6.1",
     "webpack-cli": "3.3.10",
-    "webpack-dev-server": "^3.11.0",
+    "webpack-dev-server": "^4.0.0",
     "webpack-obfuscator": "^0.27.4",
     "xmlhttprequest": "^1.8.0"
+  },
+  "resolutions": {
+    "tar": ">=4.4.15"
   },
   "browserslist": {
     "production": [
