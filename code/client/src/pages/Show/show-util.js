@@ -58,9 +58,12 @@ export default {
       const invalidOtp = !otp
       const invalidOtp2 = doubleOtp && !otp2
       // Ensure valid address for both 0x and one1 formats
-      const dest = util.safeExec(util.normalizedAddress, [transferTo.value], handleAddressError)
-      if (checkDest && !dest) {
-        return
+      let dest
+      if (checkDest) {
+        dest = util.safeExec(util.normalizedAddress, [transferTo && transferTo.value], handleAddressError)
+        if (!dest) {
+          return
+        }
       }
 
       if (checkAmount) {
