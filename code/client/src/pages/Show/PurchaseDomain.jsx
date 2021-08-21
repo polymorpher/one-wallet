@@ -1,32 +1,35 @@
-import React, { useCallback, useEffect, useState, useRef } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Button, Col, Row, Space, Spin, Typography } from 'antd'
 import api from '../../api'
-import util from '../../util'
+import util, { useWindowDimensions } from '../../util'
 import ONEUtil from '../../../../lib/util'
 import ONENames from '../../../../lib/names'
 import { useDispatch, useSelector } from 'react-redux'
-import { AutoResizeInputBox, InputBox, Warning } from '../../components/Text'
+import { AutoResizeInputBox, Warning, Hint } from '../../components/Text'
 import { walletActions } from '../../state/modules/wallet'
 import AnimatedSection from '../../components/AnimatedSection'
-import { CloseOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, CloseOutlined, LoadingOutlined } from '@ant-design/icons'
 import BN from 'bn.js'
+import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 
-const { Text, Title } = Typography
+const { Text, Title, Link } = Typography
 
 const inputStyle = {
   display: 'inline',
   margin: '0 8px',
   padding: 0,
-  textAlign: 'right',
+  textAlign: 'center',
 }
 
 const priceRowStyle = {
-  textAlign: 'center'
+  textAlign: 'center',
+  marginBottom: 32
 }
 
 const inputRowStyle = {
   marginTop: '32px',
-  marginBottom: '48px'
+  marginBottom: '48px',
+  alignItems: 'baseline',
 }
 
 const WarningTextStyle = {
@@ -105,11 +108,12 @@ const prepareName = (name) => {
 /**
  * Renders Purchase Domain section that enables users to purchase an available domain for their selected wallet using selected token.
  */
-const PurchaseDomain = ({ show, wallet, onClose }) => {
+const PurchaseDomain = ({ show, address, onClose }) => {
   const dispatch = useDispatch()
   const balances = useSelector(state => state.wallet.balances)
-  const walletAddress = wallet.address
-  const oneBalance = balances[walletAddress] || 0
+  const wallets = useSelector(state => state.wallet.wallets)
+  const wallet = wallets[address] || {}
+  const oneBalance = balances[address] || 0
   const [domainName, setDomainName] = useState(prepareName(wallet.name))
   const [purchaseOnePrice, setPurchaseOnePrice] = useState(0)
   const [domainFiatPrice, setDomainFiatPrice] = useState(0)
@@ -120,12 +124,14 @@ const PurchaseDomain = ({ show, wallet, onClose }) => {
   const price = useSelector(state => state.wallet.price)
   const validatedDomain = validDomain(domainName)
 
+  const [stage, setStage] = useState(-1)
+
   const purchaseDomain = useCallback(async () => {
     // The validated domain will be sent as [selectedDomainName].crazy.one.
     // TODO: @Arron please remove or move this to appropriate location.
-    dispatch(walletActions.purchaseDomain({ domainName: validatedDomain, address: walletAddress }))
+    dispatch(walletActions.purchaseDomain({ domainName: validatedDomain, address }))
     onClose()
-  }, [domainName, walletAddress])
+  }, [domainName, address])
 
   useWaitExecution(
     async () => {
@@ -157,34 +163,38 @@ const PurchaseDomain = ({ show, wallet, onClose }) => {
       setDomainFiatPrice('0')
     }
   }, [validatedDomain, setEnoughBalance, setDomainAvailable, setAvailable, setPurchaseOnePrice, setDomainFiatPrice])
-
+  const { isMobile } = useWindowDimensions()
+  const titleLevel = isMobile ? 4 : 3
   return (
     <AnimatedSection
       style={{ width: 720 }}
-      show={show} title={<Title level={2}>Purchase Domain</Title>} extra={[
+      show={show} title={<Title level={2}>Get Domain</Title>} extra={[
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
       ]}
     >
+      <Row>
+        <Hint>
+          Send and receive cryptos with your unique domain name. Starting from only 1 ONE.
+        </Hint>
+      </Row>
       <Row style={inputRowStyle} justify='center'>
-        <AutoResizeInputBox style={inputStyle} value={domainName} onChange={({ target: { value } }) => setDomainName(value)} />
+        <AutoResizeInputBox extraWidth={16} style={inputStyle} value={domainName} onChange={({ target: { value } }) => setDomainName(value)} />
         <Text>{oneDomain}</Text>
       </Row>
       <Row style={priceRowStyle} justify='center'>
-        <Col span={12}>
-          <Title level={4}>Price: {purchaseOnePrice.formatted} ONE</Title>
-        </Col>
-        <Col span={12}>
-          <Title level={4}>
-            &#8776; ${domainFiatPrice} <Text type='secondary'>USD</Text>
-          </Title>
-        </Col>
+        <Space direction='vertical' style={{ minWidth: 275 }}>
+          <Space align='baseline' style={{ justifyContent: 'space-between', width: '100%' }}>
+            <Title level={titleLevel} style={{ marginRight: isMobile ? 16 : 48 }}>Cost</Title>
+            <Title level={titleLevel}><span style={{ opacity: 0 }}>≈ $</span>{purchaseOnePrice.formatted || '...'}</Title><Text type='secondary'>ONE</Text>
+          </Space>
+          <Space align='baseline' style={{ justifyContent: 'space-between', width: '100%' }}>
+            <Title level={titleLevel} style={{ marginRight: isMobile ? 16 : 48, opacity: 0 }}>Cost</Title>
+            <Title style={{ whiteSpace: 'nowrap' }} level={titleLevel}><span>≈ $</span>{domainFiatPrice}</Title><Text type='secondary'>USD</Text>
+          </Space>
+        </Space>
       </Row>
-      <Row justify='center'>
-        <Col span={20}>
-          <Text type='secondary'>
-            Other people can use this domain name to identify your wallet and make transfer. The shorter the name is, the more expensive it would be.
-          </Text>
-        </Col>
+      <Row>
+        <Hint>Shorter names are more expensive. Learn more at <Link target='_blank' href='https://blog.harmony.one/harmony-community-launches-crazy-one-the-first-subdomain-nft/' rel='noreferrer'>Harmony blog</Link></Hint>
       </Row>
       <Row>
         <Col span={24}>
@@ -197,18 +207,15 @@ const PurchaseDomain = ({ show, wallet, onClose }) => {
           />
         </Col>
       </Row>
-      <Row justify='end'>
-        <Col span={6}>
-          <Button
-            key='submit'
-            type='primary'
-            onClick={purchaseDomain}
-            disabled={!available}
-          >
-            Buy Now
-          </Button>
-        </Col>
+
+      <Row justify='end' style={{ marginTop: 24 }}>
+        <Space>
+          {stage >= 0 && stage < 3 && <LoadingOutlined />}
+          {stage === 3 && <CheckCircleOutlined />}
+          <Button type='primary' size='large' shape='round' disabled={!available || stage >= 0} onClick={purchaseDomain}>Buy Now</Button>
+        </Space>
       </Row>
+      <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
     </AnimatedSection>
   )
 }
