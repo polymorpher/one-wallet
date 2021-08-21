@@ -163,7 +163,7 @@ const PurchaseDomain = ({ show, address, onClose }) => {
       onCommitError,
       onCommitFailure,
       revealAPI: api.relayer.revealBuyDomain,
-      revealArgs: { subdomain: validatedDomain, maxPrice: purchaseOnePrice.value, data },
+      revealArgs: { subdomain: validatedDomain, maxPrice: purchaseOnePrice.value, data: ONEUtil.hexString(data) },
       onRevealFailure,
       onRevealError,
       onRevealAttemptFailed,
