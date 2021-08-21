@@ -1,17 +1,29 @@
 import { Button, Space, Typography } from 'antd'
 import WalletAddress from './WalletAddress'
 import util, { useWindowDimensions } from '../util'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Paths from '../constants/paths'
 import { useHistory } from 'react-router'
+import api from '../api'
+import { useSelector } from 'react-redux'
 const { Title, Text } = Typography
 
-const WalletTitle = ({ wallet }) => {
+const WalletTitle = ({ address }) => {
   const history = useHistory()
+  const wallets = useSelector(state => state.wallet.wallets)
+  const wallet = wallets[address] || {}
   const { isMobile } = useWindowDimensions()
   const [showBuyDomain, setShowBuyDomain] = useState()
-  const domainName = wallet.domain
-  const hasDomainName = domainName && domainName !== ''
+  const [domain, setDomain] = useState(wallet.domain)
+  const hasDomainName = domain && domain !== ''
+
+  useEffect(() => {
+    const f = async () => {
+      const lookup = await api.blockchain.domain.reverseLookup({ address })
+      setDomain(lookup)
+    }
+    f()
+  }, [])
 
   const onPurchaseDomain = () => {
     const oneAddress = util.safeOneAddress(wallet.address)
@@ -22,7 +34,7 @@ const WalletTitle = ({ wallet }) => {
     <Space size='large' align='baseline'>
       <Title level={2}>{wallet.name}</Title>
       <Space direction='vertical' size='small' align='start'>
-        {hasDomainName && <Text type='secondary'>{domainName}</Text>}
+        {hasDomainName && <Text type='secondary' style={{ paddingLeft: 16 }}>{domain}</Text>}
         <WalletAddress
           address={wallet.address}
           onToggle={expanded => setShowBuyDomain(!expanded)}
