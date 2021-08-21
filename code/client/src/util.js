@@ -65,6 +65,9 @@ export default {
   },
 
   normalizedAddress: (address) => {
+    if (!address) {
+      return
+    }
     try {
       address = new HarmonyAddress(address).checksum
     } catch (ex) {
