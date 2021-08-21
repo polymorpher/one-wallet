@@ -11,6 +11,7 @@ library DomainManager {
     event ReverseDomainClaimed(address reverseRegistrar, bytes32 nodeHash);
     event InvalidFQDN(string fqdn, uint32 subdomainLabelLength);
     event DomainRegistrationFailed(string reason);
+    event AttemptRegistration(bytes32 node, string subdomain, address owner, uint256 duration, string url, address resolver);
 
     function buyDomainEncoded(bytes calldata data, uint256 maxPrice, uint8 subdomainLabelLength, address reg, address resolver) public returns (bool) {
         (address rev, bytes32 node, string memory fqdn) = abi.decode(data, (address, bytes32, string));
@@ -30,6 +31,7 @@ library DomainManager {
     function buyDomain(IRegistrar reg, IReverseRegistrar rev, address resolver, uint256 maxPrice, string memory subdomain, bytes32 node, string memory fqdn) public returns (bool) {
         //        (bool success, bytes memory ret) = address(reg).call{value : maxPrice}(abi.encodeWithSignature("register(bytes32,string,address,address,address)", node, subdomain, address(this), address(0x0), resolver));
         (bool success, bytes memory ret) = address(reg).call{value : maxPrice}(abi.encodeWithSignature("register(bytes32,string,address,uint,string,address)", node, subdomain, address(this), MIN_DOMAIN_RENT_DURATION, "", resolver));
+        emit AttemptRegistration(node, subdomain, address(this), MIN_DOMAIN_RENT_DURATION, "", resolver);
         if (!success) {
             string memory reason = _revertReason(ret);
             emit DomainRegistrationFailed(reason);

@@ -39,7 +39,7 @@ module.exports = {
   MajorVersion: 9,
   MinorVersion: 0,
   Domain: {
-    DEFAULT_RENT_DURATION: 365 * 24 * 3600,
+    DEFAULT_RENT_DURATION: 31536000, // 365 * 24 * 3600,
     DEFAULT_TLD: 'one',
     DEFAULT_PARENT_LABEL: 'crazy',
     // DEFAULT_PARENT_LABEL_HASH: '0x51b6263929ecb564e08720c5cf4cadf9907935b9d35f951b1b557917272d210f', // keccak256(DEFAULT_PARENT_LABEL)
