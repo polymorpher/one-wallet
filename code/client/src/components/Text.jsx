@@ -27,13 +27,13 @@ export const InputBox = styled(Input).attrs((props) => ({ size: props.size || 'l
   }
 `
 
-export const AutoResizeInputBox = ({ value, style, onChange, ...args }) => {
+export const AutoResizeInputBox = ({ extraWidth = 0, value, style, onChange, ...args }) => {
   const ref = useRef()
   const [width, setWidth] = useState()
   useEffect(() => {
     setWidth(util.getTextWidth(value, null, ref.current?.input))
   }, [value.length])
-  return <InputBox width={width} ref={ref} style={style} value={value} onChange={onChange} {...args} />
+  return <InputBox width={width + extraWidth} ref={ref} style={style} value={value} onChange={onChange} {...args} />
 }
 
 export const Warning = ({ children, style, ...props }) =>
