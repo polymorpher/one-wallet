@@ -181,7 +181,7 @@ const reducer = handleActions(
         ...state.wallets,
         [action.payload.address]: {
           ...state.wallets[action.payload.address],
-          domain: action.payload.domainName
+          domain: action.payload.domain
         }
       }
     }),

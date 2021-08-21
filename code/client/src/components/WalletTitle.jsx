@@ -5,10 +5,12 @@ import React, { useEffect, useState } from 'react'
 import Paths from '../constants/paths'
 import { useHistory } from 'react-router'
 import api from '../api'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { walletActions } from '../state/modules/wallet'
 const { Title, Text } = Typography
 
 const WalletTitle = ({ address }) => {
+  const dispatch = useDispatch()
   const history = useHistory()
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
@@ -21,6 +23,9 @@ const WalletTitle = ({ address }) => {
     const f = async () => {
       const lookup = await api.blockchain.domain.reverseLookup({ address })
       setDomain(lookup)
+      if (lookup && (wallet.domain !== lookup)) {
+        dispatch(walletActions.bindDomain({ address, domain: lookup }))
+      }
     }
     f()
   }, [])
