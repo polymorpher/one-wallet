@@ -1,7 +1,8 @@
 // eslint-disable-next-line no-unused-vars
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { Input, Typography, Card } from 'antd'
+import util from '../util'
 
 const { Text, Title, Link } = Typography
 
@@ -16,7 +17,7 @@ export const Hint = styled(Text).attrs(() => ({ type: 'secondary' }))`
 `
 
 export const InputBox = styled(Input).attrs((props) => ({ size: props.size || 'large' }))`
-  width: ${props => `${props.width || 400}px`};
+  width: ${props => typeof props.width === 'number' ? `${props.width || 400}px` : (props.width || 'auto')};
   margin-top: ${props => props.margin || '32px'};
   margin-bottom: ${props => props.margin || '32px'};
   border: none;
@@ -25,6 +26,15 @@ export const InputBox = styled(Input).attrs((props) => ({ size: props.size || 'l
     border-bottom: 1px dashed black;
   }
 `
+
+export const AutoResizeInputBox = ({ value, style, onChange, ...args }) => {
+  const ref = useRef()
+  const [width, setWidth] = useState()
+  useEffect(() => {
+    setWidth(util.getTextWidth(value, null, ref.current?.input))
+  }, [value.length])
+  return <InputBox width={width} ref={ref} style={style} value={value} onChange={onChange} {...args} />
+}
 
 export const Warning = ({ children, style, ...props }) =>
   <Card style={{ borderRadius: 8, backgroundColor: '#f3cbcb', fontSize: 16, ...style }} bodyStyle={{ padding: 16, paddingLeft: 24, paddingRight: 24 }}>

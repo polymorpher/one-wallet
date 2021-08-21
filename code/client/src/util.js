@@ -193,7 +193,19 @@ export default {
    * All new wallet should have 3 words name, old wallets are still using 1 word and will be displayed full.
    */
   shouldShortenAddress: ({ walletName, isMobile }) =>
-    walletName && walletName.split(' ').length > 1 || isMobile
+    walletName && walletName.split(' ').length > 1 || isMobile,
+
+  getTextWidth: (text, font, ref) => {
+    // console.log(ref)
+    const canvas = document.createElement('canvas')
+    const context = canvas.getContext('2d')
+    const style = font || getComputedStyle(ref || document.body)
+    const { fontSize, fontFamily } = style
+    context.font = `${fontSize} ${fontFamily}`
+    const w = context.measureText(text).width
+    // console.log(w, context.font)
+    return w
+  }
 
 }
 
