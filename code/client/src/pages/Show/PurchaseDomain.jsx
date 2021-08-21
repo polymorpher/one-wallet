@@ -1,19 +1,22 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Button, Col, Input, Modal, Row, Space, Spin, Typography } from 'antd'
-import api from '../api'
-import util from '../util'
-import ONEUtil from '../../../lib/util'
+import { Button, Col, Row, Space, Spin, Typography } from 'antd'
+import api from '../../api'
+import util from '../../util'
+import ONEUtil from '../../../../lib/util'
 import { useDispatch, useSelector } from 'react-redux'
-import { Warning } from './Text'
-import { walletActions } from '../state/modules/wallet'
+import { InputBox, Warning } from '../../components/Text'
+import { walletActions } from '../../state/modules/wallet'
+import AnimatedSection from '../../components/AnimatedSection'
+import { CloseOutlined } from '@ant-design/icons'
+import BN from 'bn.js'
 
 const { Text, Title } = Typography
 
 const inputStyle = {
-  borderWidth: '0 0 2px',
-  borderStyle: 'dashed',
-  borderColor: '#000000',
+  display: 'inline',
+  margin: 0,
   padding: 0,
+  width: '100%',
   textAlign: 'right'
 }
 
@@ -22,12 +25,12 @@ const priceRowStyle = {
 }
 
 const inputRowStyle = {
-  paddingBottom: '30px'
+  paddingBottom: '32px'
 }
 
 const WarningTextStyle = {
   textAlign: 'center',
-  marginBottom: '20px',
+  margin: '24px 0',
   display: 'block'
 }
 
@@ -37,6 +40,9 @@ const delayCheckMillis = 1300
 
 const oneDomain = '.crazy.one'
 
+/**
+ * A valid domain is more than [minDomainNameLength] and able to be normalized.
+ */
 const validDomain = (domainName) => {
   try {
     if (domainName.length < minDomainNameLength) {
@@ -85,9 +91,9 @@ const WarningMessageBlock = ({ enoughBalance, domainAvailable, checkingAvailabil
 )
 
 /**
- * Renders a modal that enables users to purchase an available domain for their selected wallet using selected token.
+ * Renders Purchase Domain section that enables users to purchase an available domain for their selected wallet using selected token.
  */
-const DomainPurchaseModal = ({ isModalVisible, dismissModal, oneBalance, walletAddress }) => {
+const PurchaseDomain = ({ show, oneBalance, walletAddress, onClose }) => {
   const dispatch = useDispatch()
 
   const [domainName, setDomainName] = useState('')
@@ -110,8 +116,9 @@ const DomainPurchaseModal = ({ isModalVisible, dismissModal, oneBalance, walletA
 
   const purchaseDomain = useCallback(async () => {
     // The validated domain will be sent as [selectedDomainName].crazy.one.
+    // TODO: @Arron please remove or move this to appropriate location.
     dispatch(walletActions.purchaseDomain({ domainName: validatedDomain, address: walletAddress }))
-    dismissModal()
+    onClose()
   }, [domainName, walletAddress])
 
   useWaitExecution(
@@ -124,7 +131,7 @@ const DomainPurchaseModal = ({ isModalVisible, dismissModal, oneBalance, walletA
 
       const computedDomainOnePrice = util.computeBalance(domainOnePrice.toString(), price)
 
-      const hasEnoughBalance = BigInt(domainOnePrice.toString()) <= BigInt(oneBalance)
+      const hasEnoughBalance = new BN(domainOnePrice.toString()).lte(new BN(oneBalance))
 
       const domainAvailableAndValid = domainAvailability && validatedDomain
 
@@ -166,36 +173,18 @@ const DomainPurchaseModal = ({ isModalVisible, dismissModal, oneBalance, walletA
   }
 
   return (
-    <Modal
-      title='Buy Domain'
-      visible={isModalVisible}
-      onCancel={dismissModal}
-      footer={[
-        <WarningMessageBlock
-          key='error-message'
-          enoughBalance={enoughBalance}
-          domainAvailable={domainAvailable}
-          checkingAvailability={checkingAvailability}
-          validatedDomain={validatedDomain}
-        />,
-        <Button
-          key='submit'
-          type='primary'
-          onClick={purchaseDomain}
-          disabled={!available}
-        >
-          Buy Now
-        </Button>
+    <AnimatedSection
+      style={{ width: 720 }}
+      show={show} title={<Title level={2}>Purchase Domain</Title>} extra={[
+        <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
       ]}
     >
       <Row style={inputRowStyle} justify='center'>
         <Col span={6}>
-          <Input style={inputStyle} value={domainName} onChange={onDomainName} minLength={minDomainNameLength} />
+          <InputBox style={inputStyle} value={domainName} onChange={onDomainName} />
         </Col>
         <Col span={6}>
-          <div style={{}}>
-            <Text>{oneDomain}</Text>
-          </div>
+          <Text>{oneDomain}</Text>
         </Col>
       </Row>
       <Row style={priceRowStyle} justify='center'>
@@ -215,8 +204,31 @@ const DomainPurchaseModal = ({ isModalVisible, dismissModal, oneBalance, walletA
           </Text>
         </Col>
       </Row>
-    </Modal>
+      <Row>
+        <Col span={24}>
+          <WarningMessageBlock
+            key='error-message'
+            enoughBalance={enoughBalance}
+            domainAvailable={domainAvailable}
+            checkingAvailability={checkingAvailability}
+            validatedDomain={validatedDomain}
+          />
+        </Col>
+      </Row>
+      <Row justify='end'>
+        <Col span={6}>
+          <Button
+            key='submit'
+            type='primary'
+            onClick={purchaseDomain}
+            disabled={!available}
+          >
+            Buy Now
+          </Button>
+        </Col>
+      </Row>
+    </AnimatedSection>
   )
 }
 
-export default DomainPurchaseModal
+export default PurchaseDomain

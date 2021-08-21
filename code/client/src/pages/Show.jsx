@@ -21,6 +21,7 @@ import Send from './Show/Send'
 import SetRecovery from './Show/SetRecovery'
 import Balance from './Show/Balance'
 import WalletTitle from '../components/WalletTitle'
+import PurchaseDomain from './Show/PurchaseDomain'
 
 const tabList = [{ key: 'coins', tab: 'Coins' }, { key: 'nft', tab: 'Collectibles' }, { key: 'about', tab: 'About' }, { key: 'help', tab: 'Recover' }]
 const Show = () => {
@@ -37,6 +38,9 @@ const Show = () => {
   const [section, setSection] = useState(action)
   const network = useSelector(state => state.wallet.network)
   const [activeTab, setActiveTab] = useState('coins')
+
+  const balances = useSelector(state => state.wallet.balances)
+  const oneBalance = balances[wallet.address] || 0
 
   useEffect(() => {
     if (!wallet) {
@@ -97,6 +101,12 @@ const Show = () => {
       <Send address={address} show={section === 'transfer'} onClose={showStartScreen} />
       <DoRecover address={address} show={section === 'recover'} onClose={showStartScreen} />
       <SetRecovery show={section === 'setRecoveryAddress'} address={address} onClose={showStartScreen} />
+      <PurchaseDomain
+        show={section === 'purchaseDomain'}
+        oneBalance={oneBalance}
+        walletAddress={wallet.address}
+        onClose={showStartScreen}
+      />
     </>
   )
 }
