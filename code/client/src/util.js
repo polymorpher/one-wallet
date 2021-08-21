@@ -22,7 +22,7 @@ export default {
     if (!address || address.length < 10) {
       return address
     }
-    return address.slice(0, 6) + '...' + address.slice(address.length - 3, address.length - 1)
+    return address.slice(0, 6) + '...' + address.slice(address.length - 3, address.length)
   },
 
   validBalance: (balance, allowFloat) => {
