@@ -105,6 +105,7 @@ const prepareName = (name) => {
   return name
 }
 
+// eslint-disable-next-line no-unused-vars
 const { balance: PAYMENT_EXCESS_BUFFER } = util.toBalance(0.1)
 /**
  * Renders Purchase Domain section that enables users to purchase an available domain for their selected wallet using selected token.
@@ -168,6 +169,9 @@ const PurchaseDomain = ({ show, address, onClose }) => {
       onRevealAttemptFailed,
       onRevealSuccess: (txId) => {
         onRevealSuccess(txId)
+        setStage(-1)
+        resetOtp()
+        resetWorker()
         onClose()
       }
     })
@@ -176,8 +180,8 @@ const PurchaseDomain = ({ show, address, onClose }) => {
   useWaitExecution(
     async () => {
       setCheckingAvailability(true)
-      const domainOnePriceRaw = await api.blockchain.domain.price({ name: subdomain })
-      const domainOnePrice = domainOnePriceRaw.add(PAYMENT_EXCESS_BUFFER)
+      const domainOnePrice = await api.blockchain.domain.price({ name: subdomain })
+      // const domainOnePrice = domainOnePriceRaw.add(PAYMENT_EXCESS_BUFFER)
       const domainAvailability = await api.blockchain.domain.available({ name: subdomain })
       const computedDomainOnePrice = util.computeBalance(domainOnePrice.toString(), price)
       const hasEnoughBalance = domainOnePrice.lte(new BN(oneBalance))

@@ -82,7 +82,7 @@ contract ONEWallet is TokenManager, IONEWallet {
     }
 
     receive() external payable {
-        emit PaymentReceived(msg.value, msg.sender);
+        //        emit PaymentReceived(msg.value, msg.sender); // not quite useful - sender and amount is available in tx receipt anyway
         if (forwardAddress != address(0)) {// this wallet already has a forward address set - standard recovery process should not apply
             if (forwardAddress == recoveryAddress) {// in this case, funds should be forwarded to forwardAddress no matter what
                 _forwardPayment();
@@ -228,7 +228,7 @@ contract ONEWallet is TokenManager, IONEWallet {
             _setRecoveryAddress(forwardAddress);
         }
         uint32 today = uint32(block.timestamp / SECONDS_PER_DAY);
-        uint256 remainingAllowanceToday = today > lastTransferDay ? dailyLimit : dailyLimit -  spentToday;
+        uint256 remainingAllowanceToday = today > lastTransferDay ? dailyLimit : dailyLimit - spentToday;
         _transfer(forwardAddress, remainingAllowanceToday);
         for (uint32 i = 0; i < backlinkAddresses.length; i++) {
             try backlinkAddresses[i].reveal(new bytes32[](0), 0, bytes32(0), OperationType.FORWARD, TokenType.NONE, address(0), 0, dest, 0, bytes("")){
