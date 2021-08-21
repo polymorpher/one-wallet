@@ -15,7 +15,7 @@ const WalletTitle = ({ wallet }) => {
 
   const onPurchaseDomain = () => {
     const oneAddress = util.safeOneAddress(wallet.address)
-    history.push(Paths.showAddress(oneAddress, 'purchaseDomain'))
+    history.push(Paths.showAddress(oneAddress, 'domain'))
   }
 
   return (

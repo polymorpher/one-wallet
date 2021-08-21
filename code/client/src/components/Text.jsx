@@ -33,7 +33,7 @@ export const AutoResizeInputBox = ({ extraWidth = 0, value, style, onChange, ...
   useEffect(() => {
     setWidth(util.getTextWidth(value, null, ref.current?.input))
   }, [value.length])
-  return <InputBox width={width + extraWidth} ref={ref} style={style} value={value} onChange={onChange} {...args} />
+  return <InputBox width={(width + extraWidth) || 'auto'} ref={ref} style={style} value={value} onChange={onChange} {...args} />
 }
 
 export const Warning = ({ children, style, ...props }) =>
