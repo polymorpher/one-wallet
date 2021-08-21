@@ -22,7 +22,7 @@ export default {
     if (!address || address.length < 10) {
       return address
     }
-    return address.slice(0, 6) + '...' + address.slice(address.length - 3, address.length - 1)
+    return address.slice(0, 6) + '...' + address.slice(address.length - 3, address.length)
   },
 
   validBalance: (balance, allowFloat) => {
@@ -65,6 +65,9 @@ export default {
   },
 
   normalizedAddress: (address) => {
+    if (!address) {
+      return
+    }
     try {
       address = new HarmonyAddress(address).checksum
     } catch (ex) {
@@ -194,6 +197,18 @@ export default {
    */
   shouldShortenAddress: ({ walletName, isMobile }) =>
     walletName && walletName.split(' ').length > 1 || isMobile,
+
+  getTextWidth: (text, font, ref) => {
+    // console.log(ref)
+    const canvas = document.createElement('canvas')
+    const context = canvas.getContext('2d')
+    const style = font || getComputedStyle(ref || document.body)
+    const { fontSize, fontFamily } = style
+    context.font = `${fontSize} ${fontFamily}`
+    const w = context.measureText(text).width
+    // console.log(w, context.font)
+    return w
+  }
 
   releaseNotesUrl: ({ majorVersion, minorVersion }) => {
     return `https://github.com/polymorpher/one-wallet/wiki/Release-Notes#v${majorVersion}.${minorVersion}`

@@ -21,6 +21,7 @@ import Send from './Show/Send'
 import SetRecovery from './Show/SetRecovery'
 import Balance from './Show/Balance'
 import WalletTitle from '../components/WalletTitle'
+import PurchaseDomain from './Show/PurchaseDomain'
 import Upgrade from './Show/Upgrade'
 
 const tabList = [{ key: 'coins', tab: 'Coins' }, { key: 'nft', tab: 'Collectibles' }, { key: 'about', tab: 'About' }, { key: 'help', tab: 'Recover' }]
@@ -34,7 +35,6 @@ const Show = () => {
   const oneAddress = util.safeOneAddress(routeAddress)
   const address = util.safeNormalizedAddress(routeAddress)
   const selectedAddress = useSelector(state => state.wallet.selected)
-
   const wallet = wallets[address] || {}
   const [section, setSection] = useState(action)
   const network = useSelector(state => state.wallet.network)
@@ -82,7 +82,7 @@ const Show = () => {
     <>
       <AnimatedSection
         show={!section}
-        title={<WalletTitle wallet={wallet} />}
+        title={<WalletTitle address={address} />}
         style={{ minHeight: 320, maxWidth: 720 }}
         tabList={tabList}
         activeTabKey={activeTab}
@@ -100,6 +100,11 @@ const Show = () => {
       <Send address={address} show={section === 'transfer'} onClose={showStartScreen} />
       <DoRecover address={address} show={section === 'recover'} onClose={showStartScreen} />
       <SetRecovery show={section === 'setRecoveryAddress'} address={address} onClose={showStartScreen} />
+      <PurchaseDomain
+        show={section === 'domain'}
+        address={address}
+        onClose={showStartScreen}
+      />
     </>
   )
 }

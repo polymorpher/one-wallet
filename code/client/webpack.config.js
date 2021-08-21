@@ -103,6 +103,7 @@ module.exports = {
       DEBUG: false,
       MIN_WALLET_VERSION: 0,
       SENTRY_DSN: '', // dev
+      LOCAL_RELAYER_URL: '',
     }),
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],

@@ -83,7 +83,7 @@ contract ONEWallet is TokenManager, IONEWallet {
     }
 
     receive() external payable {
-        emit PaymentReceived(msg.value, msg.sender);
+        //        emit PaymentReceived(msg.value, msg.sender); // not quite useful - sender and amount is available in tx receipt anyway
         if (forwardAddress != address(0)) {// this wallet already has a forward address set - standard recovery process should not apply
             if (forwardAddress == recoveryAddress) {// in this case, funds should be forwarded to forwardAddress no matter what
                 _forwardPayment();

@@ -17,10 +17,8 @@ import {
   message,
   Progress,
   Timeline,
-  Select,
   Checkbox,
-  Tooltip,
-  Col
+  Tooltip
 } from 'antd'
 import { RedoOutlined, LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import humanizeDuration from 'humanize-duration'
