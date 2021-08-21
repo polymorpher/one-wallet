@@ -88,7 +88,7 @@ const useWaitExecution = (func, runCondition, wait, dependencies) => {
  */
 const WarningMessageBlock = ({ enoughBalance, domainAvailable, checkingAvailability, validatedDomain }) => (
   <Space direction='vertical' style={WarningTextStyle}>
-    {!enoughBalance && !checkingAvailability && <Warning>Not enough ONE balance</Warning>}
+    {!enoughBalance && !checkingAvailability && <Warning>Insufficient funds</Warning>}
     {!domainAvailable && !checkingAvailability && <Warning>Domain is not available</Warning>}
     {checkingAvailability && validatedDomain && <Spin />}
   </Space>
@@ -124,7 +124,7 @@ const PurchaseDomain = ({ show, address, onClose }) => {
   const [domainAvailable, setDomainAvailable] = useState(false)
   const [checkingAvailability, setCheckingAvailability] = useState(true)
   const price = useSelector(state => state.wallet.price)
-  const validatedDomain = validateSubdomain(subdomain)
+  const validatedSubdomain = validateSubdomain(subdomain)
 
   const [stage, setStage] = useState(-1)
   const doubleOtp = wallet.doubleOtp
@@ -147,7 +147,7 @@ const PurchaseDomain = ({ show, address, onClose }) => {
 
     if (invalidOtp || invalidOtp2) return
 
-    const data = ONE.encodeBuyDomainData({ subdomain: validatedDomain })
+    const data = ONE.encodeBuyDomainData({ subdomain: validatedSubdomain })
 
     SmartFlows.commitReveal({
       wallet,
@@ -156,13 +156,13 @@ const PurchaseDomain = ({ show, address, onClose }) => {
       recoverRandomness,
       prepareProofFailed,
       commitHashGenerator: ONE.computeBuyDomainCommitHash,
-      commitHashArgs: { maxPrice: purchaseOnePrice.value, subdomain: validatedDomain },
+      commitHashArgs: { maxPrice: purchaseOnePrice.value, subdomain: validatedSubdomain },
       beforeCommit: () => setStage(1),
       afterCommit: () => setStage(2),
       onCommitError,
       onCommitFailure,
       revealAPI: api.relayer.revealBuyDomain,
-      revealArgs: { subdomain: validatedDomain, maxPrice: purchaseOnePrice.value, data: ONEUtil.hexString(data) },
+      revealArgs: { subdomain: validatedSubdomain, maxPrice: purchaseOnePrice.value, data: ONEUtil.hexString(data) },
       onRevealFailure,
       onRevealError,
       onRevealAttemptFailed,
@@ -181,7 +181,7 @@ const PurchaseDomain = ({ show, address, onClose }) => {
       const domainAvailability = await api.blockchain.domain.available({ name: subdomain })
       const computedDomainOnePrice = util.computeBalance(domainOnePrice.toString(), price)
       const hasEnoughBalance = domainOnePrice.lte(new BN(oneBalance))
-      const domainAvailableAndValid = domainAvailability && validatedDomain
+      const domainAvailableAndValid = domainAvailability && validatedSubdomain
       setPurchaseOnePrice({ formatted: computedDomainOnePrice.formatted, value: domainOnePrice.toString() })
       setDomainFiatPrice(computedDomainOnePrice.fiatFormatted)
       setEnoughBalance(hasEnoughBalance)
@@ -189,13 +189,13 @@ const PurchaseDomain = ({ show, address, onClose }) => {
       setAvailable(domainAvailableAndValid && hasEnoughBalance)
       setCheckingAvailability(false)
     },
-    validatedDomain,
+    validatedSubdomain,
     delayCheckMillis,
-    [subdomain, validatedDomain]
+    [subdomain, validatedSubdomain]
   )
 
   useEffect(() => {
-    if (!validatedDomain) {
+    if (!validatedSubdomain) {
       setEnoughBalance(false)
       setDomainAvailable(false)
       setAvailable(false)
@@ -203,7 +203,7 @@ const PurchaseDomain = ({ show, address, onClose }) => {
       setPurchaseOnePrice({ formatted: '0', value: '0' })
       setDomainFiatPrice('0')
     }
-  }, [validatedDomain, setEnoughBalance, setDomainAvailable, setAvailable, setPurchaseOnePrice, setDomainFiatPrice])
+  }, [validatedSubdomain, setEnoughBalance, setDomainAvailable, setAvailable, setPurchaseOnePrice, setDomainFiatPrice])
   const { isMobile } = useWindowDimensions()
   const titleLevel = isMobile ? 4 : 3
   return (
@@ -220,7 +220,7 @@ const PurchaseDomain = ({ show, address, onClose }) => {
       </Row>
       <Row style={inputRowStyle} justify='center'>
         <AutoResizeInputBox extraWidth={16} style={inputStyle} value={subdomain} onChange={({ target: { value } }) => setSubdomain(value)} />
-        <Text>{oneDomain}</Text>
+        <Text>.{ONEConstants.Domain.DEFAULT_PARENT_LABEL}.{ONEConstants.Domain.DEFAULT_TLD}</Text>
       </Row>
       <Row style={priceRowStyle} justify='center'>
         <Space direction='vertical' style={{ minWidth: 275 }}>
@@ -239,11 +239,10 @@ const PurchaseDomain = ({ show, address, onClose }) => {
       </Row>
       <Row justify='center'>
         <WarningMessageBlock
-          key='error-message'
           enoughBalance={enoughBalance}
           domainAvailable={domainAvailable}
           checkingAvailability={checkingAvailability}
-          validatedDomain={validatedDomain}
+          validatedDomain={validatedSubdomain}
         />
       </Row>
       {available && <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} />}
