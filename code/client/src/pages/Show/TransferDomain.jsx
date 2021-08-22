@@ -44,7 +44,7 @@ const TransferDomain = ({ address, onClose, show }) => {
       checkAmount: false
     }) || {}
     if (invalidOtp || !dest || invalidOtp2) return
-
+    setStage(0)
     SmartFlows.commitReveal({
       wallet,
       otp,
