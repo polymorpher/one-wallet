@@ -15,7 +15,6 @@ const WalletTitle = ({ address }) => {
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
   const { isMobile } = useWindowDimensions()
-  const [showBuyDomain, setShowBuyDomain] = useState()
   const [domain, setDomain] = useState(wallet.domain)
   const hasDomainName = domain && domain !== ''
 
@@ -39,21 +38,23 @@ const WalletTitle = ({ address }) => {
     <Space size='large' align='baseline'>
       <Title level={2}>{wallet.name}</Title>
       <Space direction='vertical' size='small' align='start'>
-        {hasDomainName && <Text type='secondary' style={{ paddingLeft: 16 }}>{domain}</Text>}
+        {
+          hasDomainName
+            ? <Text type='secondary' style={{ paddingLeft: 16 }}>{domain}</Text>
+            : (
+              <Button type='primary' shape='round' onClick={onPurchaseDomain}>
+                Get Domain
+              </Button>
+              )
+        }
         <WalletAddress
           address={wallet.address}
-          onToggle={expanded => setShowBuyDomain(!expanded)}
           shorten={util.shouldShortenAddress({
-            walletName: wallet.name,
+            label: wallet.name,
             isMobile
           })}
         />
       </Space>
-      {!hasDomainName && showBuyDomain && (
-        <Button type='primary' shape='round' onClick={onPurchaseDomain}>
-          Get Domain
-        </Button>
-      )}
     </Space>
   )
 }

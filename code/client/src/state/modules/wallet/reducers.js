@@ -161,7 +161,8 @@ const reducer = handleActions(
           domainName: action.payload.domainName,
           createTime: action.payload.creationTime,
           lastUsedTime: action.payload.lastUsedTime,
-          numUsed: action.payload.numUsed
+          numUsed: action.payload.numUsed,
+          domain: action.payload.domain
         }
       },
     }),

@@ -192,11 +192,11 @@ export default {
 
   /**
    * Shorten wallet address if the wallet has long name or the current view is mobile.
-   * We consider name with more than 1 word is long wallet name.
-   * All new wallet should have 3 words name, old wallets are still using 1 word and will be displayed full.
+   * We consider label with more than 6 characters as long address label.
+   * Domain name can be used as label.
    */
-  shouldShortenAddress: ({ walletName, isMobile }) =>
-    walletName && walletName.split(' ').length > 1 || isMobile,
+  shouldShortenAddress: ({ label, isMobile }) =>
+    label && label.length > 6 || isMobile,
 
   getTextWidth: (text, font, ref) => {
     // console.log(ref)
@@ -237,4 +237,22 @@ export function useWindowDimensions () {
   }, [])
 
   return { isMobile, ...windowDimensions }
+}
+
+/**
+ * Custom hook that executes a function with delay and cancellation, if the useEffect is destroyed due to the dependencies
+ * update, the timeout is cancelled, which cancels the function execution.
+ * The function only runs when the supplied condition is true.
+ */
+export const useWaitExecution = (func, runCondition, wait, dependencies) => {
+  useEffect(() => {
+    let timeout
+    if (runCondition) {
+      timeout = setTimeout(func, wait)
+    }
+
+    return () => {
+      clearTimeout(timeout)
+    }
+  }, dependencies)
 }
