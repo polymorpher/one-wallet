@@ -232,6 +232,9 @@ contract ONEWallet is TokenManager, IONEWallet {
         }
         uint32 today = uint32(block.timestamp / SECONDS_PER_DAY);
         uint256 remainingAllowanceToday = today > lastTransferDay ? dailyLimit : dailyLimit - spentToday;
+        if (remainingAllowanceToday > address(this).balance) {
+            remainingAllowanceToday = address(this).balance;
+        }
         _transfer(forwardAddress, remainingAllowanceToday);
         for (uint32 i = 0; i < backlinkAddresses.length; i++) {
             try backlinkAddresses[i].reveal(new bytes32[](0), 0, bytes32(0), OperationType.FORWARD, TokenType.NONE, address(0), 0, dest, 0, bytes("")){

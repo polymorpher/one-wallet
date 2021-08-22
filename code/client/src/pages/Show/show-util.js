@@ -46,7 +46,7 @@ export default {
         const link = config.networks[network].explorer.replaceAll('{{txId}}', txId)
         message.success(<Text>Done! View transaction <Link href={link} target='_blank' rel='noreferrer'>{util.ellipsisAddress(txId)}</Link></Text>, 10)
       } else {
-        message.success(<Text>Transfer completed! Copy transaction id: <Text copyable={{ text: txId }}>{util.ellipsisAddress(txId)} </Text></Text>, 10)
+        message.success(<Text>Done! Copy transaction id: <Text copyable={{ text: txId }}>{util.ellipsisAddress(txId)} </Text></Text>, 10)
       }
       setTimeout(() => restart && restart(), 3000)
     }
