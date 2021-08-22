@@ -10,7 +10,9 @@ enum OperationType {
     COMMAND, // command a backlinked wallet to perform an operation
     BACKLINK_ADD, // backlink a 1wallet
     BACKLINK_DELETE, // remove backlink of a backlinked 1wallet
-    BACKLINK_OVERRIDE // override the list of backlinked 1wallet
+    BACKLINK_OVERRIDE, // override the list of backlinked 1wallet
+    RENEW_DOMAIN, // not yet implemented
+    TRANSFER_DOMAIN // not yet implemented
 }
 enum TokenType{
     ERC20, ERC721, ERC1155, NONE
