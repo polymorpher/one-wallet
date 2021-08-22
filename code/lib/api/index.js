@@ -503,6 +503,29 @@ const api = {
       })
     },
 
+    revealTransferDomain: async ({ neighbors, index, eotp, address,
+      parentLabel = ONEConstants.Domain.DEFAULT_PARENT_LABEL,
+      tld = ONEConstants.Domain.DEFAULT_TLD,
+      registrar = ONEConstants.Domain.DEFAULT_SUBDOMAIN_REGISTRAR,
+      resolver = ONEConstants.Domain.DEFAULT_RESOLVER,
+      subdomain,
+      dest,
+    }) => {
+      const subnode = ONEUtil.namehash([subdomain, parentLabel, tld].join('.'))
+      return api.relayer.reveal({
+        neighbors,
+        index,
+        eotp,
+        address,
+        operationType: ONEConstants.OperationType.TRANSFER_DOMAIN,
+        tokenType: ONEConstants.TokenType.NONE,
+        contractAddress: registrar,
+        tokenId: ONEUtil.hexString(ONEUtil.hexStringToBytes(resolver, 32)),
+        dest,
+        amount: ONEUtil.hexString(subnode),
+      })
+    },
+
     revealForward: async ({ address, neighbors, index, eotp, dest }) => {
       return api.relayer.reveal({
         address,
