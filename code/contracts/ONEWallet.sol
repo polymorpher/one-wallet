@@ -333,7 +333,16 @@ contract ONEWallet is TokenManager, IONEWallet {
             paramsHash = keccak256(data);
         } else if (operationType == OperationType.SET_RECOVERY_ADDRESS) {
             paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(dest)))));
+        } else if (operationType == OperationType.FORWARD) {
+            paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(dest)))));
+        } else if (operationType == OperationType.BACKLINK_ADD || operationType == OperationType.BACKLINK_DELETE || operationType == OperationType.BACKLINK_OVERRIDE) {
+            paramsHash = keccak256(data);
+        } else if (operationType == OperationType.REPLACE) {
+            paramsHash = keccak256(data);
+        } else if (operationType == OperationType.RECOVER_SELECTED_TOKENS) {
+            paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(dest))), data));
         } else {
+            // TRACK, UNTRACK, TRANSFER_TOKEN, OVERRIDE_TRACK, BUY_DOMAIN, RENEW_DOMAIN, TRANSFER_DOMAIN, COMMAND
             paramsHash = keccak256(bytes.concat(
                     bytes32(uint256(operationType)),
                     bytes32(uint256(tokenType)),
