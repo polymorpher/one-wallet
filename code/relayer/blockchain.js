@@ -19,6 +19,7 @@ const contractsV5 = {}
 const contractsV6 = {}
 const networks = []
 const libraryList = [DomainManager, TokenTracker, WalletGraph]
+const libraryDeps = { WalletGraph: [DomainManager] }
 const libraries = {}
 
 const ensureDir = async (p) => {
@@ -52,6 +53,16 @@ const initCachedLibraries = async () => {
         }
       } catch {}
       console.log(`[${network}] Library ${lib.contractName} address is not cached. Deploying new instance`)
+      if (libraryDeps[lib.contractName]) {
+        for (let dep of libraryDeps[lib.contractName]) {
+          console.log(`[${network}] Library ${lib.contractName} depends on ${dep.contractName}. Linking...`)
+          if (!libraries[network][dep.contractName]) {
+            throw new Error(`[${network}] ${dep.contractName} is not deployed yet`)
+          }
+          await c.detectNetwork()
+          await c.link(libraries[network][dep.contractName])
+        }
+      }
       const instance = await c.new()
       libraries[network][lib.contractName] = instance
       await fs.writeFile(fp, instance.address, { encoding: 'utf-8' })
