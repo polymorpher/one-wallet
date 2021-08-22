@@ -385,7 +385,8 @@ const api = {
 
       price: async ({ name }) => {
         if (!registrar) {
-          throw new Error('Unsupported network')
+          // throw new Error('Unsupported network')
+          return new BN(0)
         }
         const c = await registrar.at(ONEConstants.Domain.DEFAULT_SUBDOMAIN_REGISTRAR)
         const price = await c.rentPrice(name, ONEConstants.Domain.DEFAULT_RENT_DURATION)
@@ -394,7 +395,8 @@ const api = {
 
       available: async ({ name }) => {
         if (!registrar) {
-          throw new Error('Unsupported network')
+          // throw new Error('Unsupported network')
+          return false
         }
         const c = await registrar.at(ONEConstants.Domain.DEFAULT_SUBDOMAIN_REGISTRAR)
         const label = ONEUtil.hexString(ONEUtil.keccak(ONEConstants.Domain.DEFAULT_PARENT_LABEL))
