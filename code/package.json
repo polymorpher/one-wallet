@@ -48,7 +48,7 @@
     "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.14.2",
     "@ensdomains/ens-contracts": "^0.0.7",
-    "@ensdomains/subdomain-registrar-core": "https://github.com/polymorpher/subdomain-registrar-core",
+    "@ensdomains/subdomain-registrar-core": "https://github.com/polymorpher/subdomain-registrar-core#0.3.0",
     "@harmony-js/core": "^0.1.57",
     "@harmony-js/crypto": "^0.1.56",
     "@truffle/contract": "^4.3.23",
