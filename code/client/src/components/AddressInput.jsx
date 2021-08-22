@@ -220,8 +220,8 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
       : longAddressLabel
 
     return (
-      <Select.Option key={displayText} value={filterValue}>
-        <Row gutter={16} align='left'>
+      <Select.Option key={displayText} value={filterValue} style={{ padding: 0 }}>
+        <Row align='left'>
           <Col span={!displayDeleteButton ? 24 : 21}>
             <Tooltip title={oneAddress}>
               <Button
