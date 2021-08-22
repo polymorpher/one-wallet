@@ -7,6 +7,7 @@ import util, { useWaitExecution, useWindowDimensions } from '../util'
 import WalletConstants from '../constants/wallet'
 import api from '../api'
 import { isEmpty } from 'lodash'
+import ONEConstants from '../../../lib/constants'
 
 const { Text } = Typography
 
@@ -59,10 +60,10 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
           })
         }
 
-        if (!isEmpty(searchValue)) {
+        if (!isEmpty(searchValue) && searchValue.includes(`${ONEConstants.Domain.DEFAULT_PARENT_LABEL}.${ONEConstants.Domain.DEFAULT_TLD}`)) {
           const resolvedAddress = await api.blockchain.domain.resolve({ name: searchValue })
 
-          if (resolvedAddress && resolvedAddress !== '0x0000000000000000000000000000000000000000') {
+          if (!util.isEmptyAddress(resolvedAddress)) {
             setAddressCallback({
               value: resolvedAddress,
               domainName: searchValue,
@@ -74,6 +75,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
 
         setSearchingAddress(false)
       } catch (e) {
+        console.error(e)
         setSearchingAddress(false)
       }
     },
@@ -102,7 +104,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
       )
 
       const knownAddressesWithoutDomain = existingKnownAddresses.filter((knownAddress) =>
-        !isEmpty(existingKnownAddresses.domain?.name)
+        !isEmpty(knownAddress.domain?.name)
       )
 
       // Init the known address entries for existing wallets.
