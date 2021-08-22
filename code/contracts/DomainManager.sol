@@ -72,8 +72,8 @@ library DomainManager {
     /// WARNING: this function may revert. Guard against it.
     function transferDomain(IRegistrar reg, address resolver, bytes32 subnode, address payable dest) public {
         address ens = reg.ens();
-        ENS(ens).setOwner(subnode, dest);
         Resolver(resolver).setAddr(subnode, dest);
+        ENS(ens).setOwner(subnode, dest);
         emit DomainTransferred(subnode, dest);
     }
 
