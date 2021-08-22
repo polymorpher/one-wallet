@@ -53,7 +53,7 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
   t0 = parseInt(t0)
   lifespan = parseInt(lifespan)
   slotSize = parseInt(slotSize)
-  backlinks = JSON.parse(backlinks || '[]')
+  backlinks = backlinks || []
   lastResortAddress = lastResortAddress || config.nullAddress
   // lastResortAddress is hex string, 20 bytes
   // dailyLimit is a BN in string form

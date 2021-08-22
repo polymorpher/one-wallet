@@ -389,7 +389,7 @@ const api = {
     }
   },
   relayer: {
-    create: async ({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit, backlinks = JSON.stringify([]) }) => {
+    create: async ({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit, backlinks = [] }) => {
       const { data } = await base.post('/new', { root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit, backlinks })
       return data
     },
