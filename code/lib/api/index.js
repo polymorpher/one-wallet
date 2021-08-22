@@ -332,6 +332,12 @@ const api = {
       return { name, symbol, uri, decimals: decimals && decimals.toNumber() }
     },
 
+    getBacklinks: async ({ address }) => {
+      const c = await one.at(address)
+      const backlinks = await c.getBacklinks()
+      return backlinks
+    },
+
     domain: {
       resolve: async ({ name }) => {
         if (!resolver) {
