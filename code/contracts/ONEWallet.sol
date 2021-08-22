@@ -217,10 +217,10 @@ contract ONEWallet is TokenManager, IONEWallet {
     }
 
     function _forward(address payable dest) internal {
-        if (address(forwardAddress) != address(0)) {
-            emit ForwardAddressAlreadySet(dest);
-            return;
-        }
+//        if (address(forwardAddress) != address(0)) {
+//            emit ForwardAddressAlreadySet(dest);
+//            return;
+//        }
         if (address(forwardAddress) == address(this)) {
             emit ForwardAddressInvalid(dest);
             return;
