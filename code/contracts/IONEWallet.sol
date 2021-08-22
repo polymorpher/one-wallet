@@ -20,7 +20,7 @@ interface IONEWallet {
     event ForwardAddressInvalid(address dest);
     event BackLinkUpdated(address dest, address backlink);
     event BackLinkUpdateError(address dest, address backlink, string error);
-    event BackLinkAltered(address[] added, address[] removed); // in case of override, both args would be empty
+
     event CommandDispatched(address backlink, bytes commandData); // omitting the rest of the parameters, since it would be the same compared to the parameters in the method call
     event CommandFailed(address backlink, string reason, bytes commandData);
 
