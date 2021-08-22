@@ -142,14 +142,9 @@ const PurchaseDomain = ({ show, address, onClose }) => {
   const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation } = ShowUtils.buildHelpers({ setStage, resetOtp, network })
 
   const doPurchase = async () => {
-    // The validated domain will be sent as [selectedDomainName].crazy.one.
-
     const { otp, otp2, invalidOtp2, invalidOtp } = prepareValidation({ state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp }, checkAmount: false, checkDest: false }) || {}
-
     if (invalidOtp || invalidOtp2) return
-
     const data = ONE.encodeBuyDomainData({ subdomain: validatedSubdomain })
-
     SmartFlows.commitReveal({
       wallet,
       otp,
