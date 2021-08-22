@@ -3,11 +3,13 @@ pragma solidity ^0.8.4;
 
 import "./TokenManager.sol";
 import "./DomainManager.sol";
+import "./WalletGraph.sol";
 import "./Enums.sol";
 import "./IONEWallet.sol";
 
 contract ONEWallet is TokenManager, IONEWallet {
     using TokenTracker for TokenTrackerState;
+    using WalletGraph for IONEWallet[];
     /// Some variables can be immutable, but doing so would increase contract size. We are at threshold at the moment (~24KiB) so until we separate the contracts, we will do everything to minimize contract size
     bytes32 root; // Note: @ivan brought up a good point in reducing this to 16-bytes so hash of two consecutive nodes can be done in a single word (to save gas and reduce blockchain clutter). Let's not worry about that for now and re-evalaute this later.
     uint8 height; // including the root. e.g. for a tree with 4 leaves, the height is 3.
@@ -217,10 +219,10 @@ contract ONEWallet is TokenManager, IONEWallet {
     }
 
     function _forward(address payable dest) internal {
-//        if (address(forwardAddress) != address(0)) {
-//            emit ForwardAddressAlreadySet(dest);
-//            return;
-//        }
+        //        if (address(forwardAddress) != address(0)) {
+        //            emit ForwardAddressAlreadySet(dest);
+        //            return;
+        //        }
         if (address(forwardAddress) == address(this)) {
             emit ForwardAddressInvalid(dest);
             return;
@@ -311,7 +313,7 @@ contract ONEWallet is TokenManager, IONEWallet {
 
     function _command(OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address payable dest, uint256 amount, bytes calldata data) internal {
         (address backlink, bytes memory commandData) = abi.decode(data, (address, bytes));
-        uint32 position = _findBacklink(backlink);
+        uint32 position = backlinkAddresses.findBacklink(backlink);
         if (position == backlinkAddresses.length) {
             emit CommandFailed(backlink, "Not linked", commandData);
             return;
@@ -398,6 +400,14 @@ contract ONEWallet is TokenManager, IONEWallet {
             _setRecoveryAddress(dest);
         } else if (operationType == OperationType.BUY_DOMAIN) {
             DomainManager.buyDomainEncoded(data, amount, uint8(tokenId), contractAddress, dest);
+        } else if (operationType == OperationType.TRANSFER_DOMAIN) {
+            DomainManager.transferDomain(IRegistrar(contractAddress), string(data), dest);
+        } else if (operationType == OperationType.RENEW_DOMAIN) {
+            DomainManager.renewDomain(IRegistrar(contractAddress), bytes32(tokenId), string(data), amount);
+        } else if (operationType == OperationType.RECLAIM_REVERSE_DOMAIN) {
+            DomainManager.reclaimReverseDomain(IReverseRegistrar(contractAddress), string(data));
+        } else if (operationType == OperationType.RECLAIM_DOMAIN_FROM_BACKLINK) {
+            _reclaimDomainFromBacklink(amount, IRegistrar(contractAddress), IReverseRegistrar(dest), uint8(tokenId), string(data));
         } else if (operationType == OperationType.RECOVER_SELECTED_TOKENS) {
             TokenManager._recoverSelectedTokensEncoded(dest, data);
         } else if (operationType == OperationType.FORWARD) {
@@ -570,74 +580,48 @@ contract ONEWallet is TokenManager, IONEWallet {
 
     function _backlinkAdd(bytes memory data) internal {
         address[] memory addresses = abi.decode(data, (address[]));
-        _backlinkAdd(addresses);
+        backlinkAddresses.backlinkAdd(addresses);
     }
 
     function _backlinkDelete(bytes memory data) internal {
         address[] memory addresses = abi.decode(data, (address[]));
-        _backlinkDelete(addresses);
+        backlinkAddresses.backlinkDelete(addresses);
     }
 
     function _backlinkOverride(bytes memory data) internal {
         address[] memory addresses = abi.decode(data, (address[]));
-        _backlinkOverride(addresses);
-    }
-
-    function _backlinkAdd(address[] memory addresses) internal {
-        address[] memory added = new address[](addresses.length);
-        for (uint32 i = 0; i < addresses.length; i++) {
-            uint32 position = _findBacklink(addresses[i]);
-            if (position == backlinkAddresses.length) {
-                added[i] = addresses[i];
-            }
-        }
-        for (uint32 i = 0; i < added.length; i++) {
-            if (added[i] != address(0)) {
-                backlinkAddresses.push(IONEWallet(added[i]));
-            }
-        }
-        emit BackLinkAltered(added, new address[](0));
-    }
-
-
-    function _backlinkDelete(address[] memory addresses) internal {
-        uint32 numRemoved = 0;
-        address[] memory removed = new address[](addresses.length);
-        for (uint32 j = 0; j < addresses.length; j++) {
-            address dest = addresses[j];
-            uint32 position = _findBacklink(dest);
-            if (position < backlinkAddresses.length) {
-                removed[numRemoved] = dest;
-                numRemoved += 1;
-                backlinkAddresses[position] = backlinkAddresses[backlinkAddresses.length - 1];
-                backlinkAddresses.pop();
-            }
-        }
-        if (numRemoved > 0) {
-            emit BackLinkAltered(new address[](0), removed);
-        }
-    }
-
-    function _backlinkOverride(address[] memory addresses) internal {
-        for (uint32 i = 0; i < backlinkAddresses.length - addresses.length; i++) {
-            backlinkAddresses.pop();
-        }
-        for (uint32 i = 0; i < addresses.length; i++) {
-            backlinkAddresses[i] = IONEWallet(addresses[i]);
-        }
-        emit BackLinkAltered(new address[](0), new address[](0));
-    }
-
-    function _findBacklink(address backlink) internal view returns (uint32){
-        for (uint32 i = 0; i < backlinkAddresses.length; i++) {
-            if (address(backlinkAddresses[i]) == backlink) {
-                return i;
-            }
-        }
-        return uint32(backlinkAddresses.length);
+        backlinkAddresses.backlinkOverride(addresses);
     }
 
     function getBacklinks() external override view returns (IONEWallet[] memory){
         return backlinkAddresses;
+    }
+
+    function _reclaimDomainFromBacklink(uint256 backlinkIndex, IRegistrar reg, IReverseRegistrar rev, uint8 subdomainLength, string memory fqdn) internal {
+        if (backlinkIndex >= backlinkAddresses.length) {
+            emit WalletGraph.InvalidBackLinkIndex(backlinkIndex);
+            return;
+        }
+        bytes memory bfqdn = bytes(fqdn);
+        if (bfqdn.length > 64 || bfqdn.length < subdomainLength) {
+            emit DomainManager.InvalidFQDN(fqdn, subdomainLength);
+            return;
+        }
+        bytes memory subdomainBytes = new bytes(subdomainLength);
+        for (uint i = 0; i < subdomainLength; i++) {
+            subdomainBytes[i] = bfqdn[i];
+        }
+        address backlink = address(backlinkAddresses[backlinkIndex]);
+        // transfer the domain to this wallet
+        bytes memory commandData = abi.encode(OperationType.TRANSFER_DOMAIN, TokenType.NONE, address(reg), 0, payable(address(this)), 0, subdomainBytes);
+        try backlinkAddresses[backlinkIndex].reveal(new bytes32[](0), 0, bytes32(0), OperationType.TRANSFER_DOMAIN, TokenType.NONE, address(reg), 0, payable(address(this)), 0, subdomainBytes){
+            emit CommandDispatched(backlink, commandData);
+        } catch Error(string memory reason){
+            emit CommandFailed(backlink, reason, commandData);
+        } catch {
+            emit CommandFailed(backlink, "", commandData);
+        }
+        // reclaim reverse domain for the domain
+        DomainManager.reclaimReverseDomain(rev, fqdn);
     }
 }
