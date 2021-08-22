@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useHistory } from 'react-router'
-import { Heading, Hint, InputBox } from '../components/Text'
+import { Heading, Hint } from '../components/Text'
 import AnimatedSection from '../components/AnimatedSection'
 import { Space, Steps, Row, Select, message, Progress, Timeline } from 'antd'
 import QrReader from 'react-qr-reader'
@@ -11,10 +11,11 @@ import WalletConstants from '../constants/wallet'
 import storage from '../storage'
 import { useDispatch, useSelector } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
-import util, { useWindowDimensions } from '../util'
+import util from '../util'
 import { handleAddressError } from '../handler'
 import Paths from '../constants/paths'
 import * as Sentry from '@sentry/browser'
+import AddressInput from '../components/AddressInput'
 
 const { Step } = Steps
 
@@ -31,7 +32,6 @@ const Restore = () => {
   const [device, setDevice] = useState()
   const [majorVersion, setMajorVersion] = useState()
   const [minorVersion, setMinorVersion] = useState()
-  const { isMobile } = useWindowDimensions()
   const ref = useRef()
   useEffect(() => {
     const numAttempts = 0
@@ -93,7 +93,7 @@ const Restore = () => {
     console.error(err)
     message.error(`Failed to parse QR code. Error: ${err}`)
   }
-  const [addressInput, setAddressInput] = useState()
+  const [addressInput, setAddressInput] = useState({ value: '', label: '' })
   const [address, setAddress] = useState()
   const [root, setRoot] = useState()
   const [effectiveTime, setEffectiveTime] = useState()
@@ -167,10 +167,10 @@ const Restore = () => {
   useEffect(() => {
     const f = async () => {
       try {
-        if (!addressInput || addressInput.length < 42) {
+        if (!addressInput.value || addressInput.value.length < 42) {
           return
         }
-        const address = util.safeExec(util.normalizedAddress, [addressInput], handleAddressError)
+        const address = util.safeExec(util.normalizedAddress, [addressInput.value], handleAddressError)
         if (!address) {
           return
         }
@@ -208,8 +208,18 @@ const Restore = () => {
         setMinorVersion(minorVersion)
       } catch (ex) {
         Sentry.captureException(ex)
+
         console.error(ex)
-        message.error(`Cannot retrieve wallet at address ${address}. Error: ${ex.toString()}`)
+
+        const errorMessage = ex.toString()
+
+        if (errorMessage.includes('no code at address')) {
+          message.error('This is a wallet, but is not a 1wallet address')
+        } else if (errorMessage.includes('Returned values aren\'t valid')) {
+          message.error('This is a smart contract, but is not a 1wallet address')
+        } else {
+          message.error(`Cannot retrieve wallet at address ${address}. Error: ${ex.toString()}`)
+        }
       }
     }
     f()
@@ -225,7 +235,10 @@ const Restore = () => {
       <AnimatedSection show={section === 1} style={{ maxWidth: 640 }}>
         <Space direction='vertical' size='large'>
           <Heading>What is the address of the wallet?</Heading>
-          <InputBox margin='auto' width={isMobile ? '100%' : 440} value={addressInput} onChange={({ target: { value } }) => setAddressInput(value)} placeholder='one1...' />
+          <AddressInput
+            addressValue={addressInput}
+            setAddressCallback={setAddressInput}
+          />
           <Hint>Next, we will ask for your permission to use your computer's camera. We need that to scan the QR code exported from your Google Authenticator.</Hint>
         </Space>
       </AnimatedSection>

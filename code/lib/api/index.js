@@ -335,7 +335,7 @@ const api = {
     domain: {
       resolve: async ({ name }) => {
         if (!resolver) {
-          throw new Error('Unsupported network')
+          return ONEConstants.EmptyAddress
         }
         const c = await resolver.at(ONEConstants.Domain.DEFAULT_RESOLVER)
         const node = ONEUtil.hexString(ONEUtil.namehash(name))
@@ -344,7 +344,7 @@ const api = {
       },
       reverseLookup: async ({ address }) => {
         if (!reverseResolver) {
-          throw new Error('Unsupported network')
+          return ''
         }
         if (address.startsWith('0x')) {
           address = address.slice(2)

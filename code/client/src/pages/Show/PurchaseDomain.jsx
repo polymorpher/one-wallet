@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Button, Row, Space, Spin, Typography, message } from 'antd'
 import api from '../../api'
-import util, { useWindowDimensions } from '../../util'
+import util, { useWaitExecution, useWindowDimensions } from '../../util'
 import ONEUtil from '../../../../lib/util'
 import ONENames from '../../../../lib/names'
 import { useDispatch, useSelector } from 'react-redux'
@@ -17,7 +17,6 @@ import ShowUtils from './show-util'
 import { SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import ONEConstants from '../../../../lib/constants'
-import { Chaining } from '../../api/flow'
 
 const { Text, Title, Link } = Typography
 
@@ -63,24 +62,6 @@ const validateSubdomain = (subdomain) => {
     message.error(`Error parsing domain name: ${e.toString()}`)
     return undefined
   }
-}
-
-/**
- * Custom hook that executes a function with delay and cancellation, if the useEffect is destroyed due to the dependencies
- * update, the timeout is cancelled, which cancels the function execution.
- * The function only runs when the supplied condition is true.
- */
-const useWaitExecution = (func, runCondition, wait, dependencies) => {
-  useEffect(() => {
-    let timeout
-    if (runCondition) {
-      timeout = setTimeout(func, wait)
-    }
-
-    return () => {
-      clearTimeout(timeout)
-    }
-  }, dependencies)
 }
 
 /**
