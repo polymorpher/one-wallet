@@ -227,7 +227,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
               <Button
                 block
                 type='text'
-                style={{ textAlign: 'left' }}
+                style={{ textAlign: 'left', height: '50px' }}
                 onClick={() => {
                   onSelectAddress({ value: address, label: displayText, key, domainName })
                 }}
