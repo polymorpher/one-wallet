@@ -38,7 +38,7 @@ const WalletTitle = ({ address }) => {
     <Space size='large' align='baseline'>
       <Title level={2}>{wallet.name}</Title>
       <Space direction='vertical' size='small' align='start'>
-        {
+        {wallet.majorVersion >= 9 && (
           hasDomainName
             ? <Text type='secondary' style={{ paddingLeft: 16 }}>{domain}</Text>
             : (
@@ -46,7 +46,7 @@ const WalletTitle = ({ address }) => {
                 Get Domain
               </Button>
               )
-        }
+        )}
         <WalletAddress
           address={wallet.address}
           shorten={util.shouldShortenAddress({
