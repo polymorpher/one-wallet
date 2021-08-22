@@ -240,7 +240,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
             {
             displayDeleteButton
               ? (
-                <Button type='text' style={{ textAlign: 'left' }} onClick={() => deleteKnownAddress(address)}>
+                <Button type='text' style={{ textAlign: 'left', height: '50px' }} onClick={() => deleteKnownAddress(address)}>
                   <CloseOutlined />
                 </Button>
                 )
