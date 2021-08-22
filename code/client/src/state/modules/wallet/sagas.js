@@ -6,7 +6,9 @@ function * handleFetchWallet (action) {
   try {
     const { address } = action.payload
     const wallet = yield call(api.blockchain.getWallet, { address })
-    yield put(walletActions.fetchWalletSuccess(wallet))
+    const backlinks = yield call(api.blockchain.getBacklinks, { address })
+    const forwardAddress = yield call(api.blockchain.getForwardAddress, { address })
+    yield put(walletActions.fetchWalletSuccess({ ...wallet, backlinks, forwardAddress }))
   } catch (err) {
     console.error(err)
     yield put(walletActions.fetchWalletFailed(new Error('Failed to get wallet information')))

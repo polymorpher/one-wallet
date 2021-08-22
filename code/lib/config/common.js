@@ -5,6 +5,7 @@ module.exports = {
   appName: 'ONE Wallet',
   version: 'v0.9.0',
   minWalletVersion: parseInt(process.env.MIN_WALLET_VERSION || 3),
+  minUpgradableVersion: parseInt(process.env.MIN_UPGRADABLE_WALLET_VERSION || 9),
   defaults: {
     relayer: process.env.RELAYER || (DEBUG ? 'dev' : 'hiddenstate'),
     network: process.env.NETWORK || (DEBUG ? 'eth-ganache' : 'harmony-mainnet'),

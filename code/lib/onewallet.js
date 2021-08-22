@@ -319,6 +319,8 @@ const computeBuyDomainCommitHash = ({
   })
 }
 
+const computeForwardHash = ({ address }) => computeSetRecoveryAddressHash({ address })
+
 module.exports = {
   computeCommitHash,
   computeMerkleTree,
@@ -333,5 +335,6 @@ module.exports = {
   computeVerificationHash,
   recoverRandomness,
   encodeBuyDomainData,
-  computeBuyDomainCommitHash
+  computeBuyDomainCommitHash,
+  computeForwardHash
 }

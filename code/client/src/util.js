@@ -208,8 +208,11 @@ export default {
     const w = context.measureText(text).width
     // console.log(w, context.font)
     return w
-  }
+  },
 
+  releaseNotesUrl: ({ majorVersion, minorVersion }) => {
+    return `https://github.com/polymorpher/one-wallet/wiki/Release-Notes#v${majorVersion}.${minorVersion}`
+  },
 }
 
 function getWindowDimensions () {

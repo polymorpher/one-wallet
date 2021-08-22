@@ -205,6 +205,5 @@ const utils = {
     }
     return hash
   },
-
 }
 module.exports = utils

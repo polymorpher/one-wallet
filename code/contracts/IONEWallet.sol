@@ -20,6 +20,9 @@ interface IONEWallet {
     event ForwardAddressInvalid(address dest);
     event BackLinkUpdated(address dest, address backlink);
     event BackLinkUpdateError(address dest, address backlink, string error);
+    event BackLinkAltered(address[] added, address[] removed); // in case of override, both args would be empty
+    event CommandDispatched(address backlink, bytes commandData); // omitting the rest of the parameters, since it would be the same compared to the parameters in the method call
+    event CommandFailed(address backlink, string reason, bytes commandData);
 
     function getForwardAddress() external view returns (address payable);
 
@@ -48,4 +51,6 @@ interface IONEWallet {
     function getTrackedTokens() external view returns (TokenType[] memory, address[] memory, uint256[] memory);
 
     function getBalance(TokenType tokenType, address contractAddress, uint256 tokenId) external view returns (uint256);
+
+    function getBacklinks() external view returns (IONEWallet[] memory);
 }

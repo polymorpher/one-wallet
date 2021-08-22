@@ -332,6 +332,18 @@ const api = {
       return { name, symbol, uri, decimals: decimals && decimals.toNumber() }
     },
 
+    getBacklinks: async ({ address }) => {
+      const c = await one.at(address)
+      const backlinks = await c.getBacklinks()
+      return backlinks
+    },
+
+    getForwardAddress: async ({ address }) => {
+      const c = await one.at(address)
+      const forwardAddress = await c.getForwardAddress()
+      return forwardAddress
+    },
+
     domain: {
       resolve: async ({ name }) => {
         if (!resolver) {
@@ -383,8 +395,8 @@ const api = {
     }
   },
   relayer: {
-    create: async ({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit }) => {
-      const { data } = await base.post('/new', { root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit })
+    create: async ({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit, backlinks = [] }) => {
+      const { data } = await base.post('/new', { root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit, backlinks })
       return data
     },
     commit: async ({ address, hash, paramsHash, verificationHash }) => {
@@ -476,6 +488,21 @@ const api = {
         amount: maxPrice,
         tokenId: subdomain.length,
         data,
+      })
+    },
+
+    revealForward: async ({ address, neighbors, index, eotp, dest }) => {
+      return api.relayer.reveal({
+        address,
+        neighbors,
+        index,
+        eotp,
+        operationType: ONEConstants.OperationType.FORWARD,
+        tokenType: ONEConstants.TokenType.NONE,
+        contractAddress: ONEConstants.EmptyAddress,
+        tokenId: 0,
+        amount: 0,
+        dest
       })
     },
 

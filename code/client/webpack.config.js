@@ -8,7 +8,17 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 module.exports = {
   devServer: {
     port: 3000,
+    https: true,
+    http2: true,
     historyApiFallback: true,
+    hot: false,
+    client: {
+      overlay: false,
+      progress: true,
+    },
+  },
+  cache: {
+    type: 'filesystem',
   },
   module: {
     noParse: /\.wasm$/,

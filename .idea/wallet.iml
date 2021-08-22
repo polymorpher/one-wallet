@@ -6,6 +6,9 @@
       <excludeFolder url="file://$MODULE_DIR$/.tmp" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
       <excludeFolder url="file://$MODULE_DIR$/code/build" />
+      <excludeFolder url="file://$MODULE_DIR$/legacy" />
+      <excludeFolder url="file://$MODULE_DIR$/smartotp" />
+      <excludeFolder url="file://$MODULE_DIR$/benchmark" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
