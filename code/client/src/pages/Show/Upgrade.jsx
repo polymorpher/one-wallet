@@ -1,15 +1,22 @@
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import React, { useState } from 'react'
 import ONEConstants from '../../../../lib/constants'
 import ONEUtil from '../../../../lib/util'
 import util from '../../util'
 import config from '../../config'
 import BN from 'bn.js'
-import { Button, Card, Typography, Space } from 'antd'
+import { Button, Card, Typography, Space, message, Row, Steps } from 'antd'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
+import ShowUtils from './show-util'
+import { SmartFlows } from '../../../../lib/api/flow'
+import ONE from '../../../../lib/onewallet'
+import { api } from '../../../../lib/api'
+import { walletActions } from '../../state/modules/wallet'
+import { useHistory } from 'react-router'
+import Paths from '../../constants/paths'
 const { Title, Text, Link } = Typography
-
+const { Step } = Steps
 const CardStyle = {
   backgroundColor: 'rgba(0,0,0,0.15)',
   position: 'absolute',
@@ -22,6 +29,9 @@ const CardStyle = {
 }
 
 const Upgrade = ({ address, onClose }) => {
+  const history = useHistory()
+  const dispatch = useDispatch()
+  const network = useSelector(state => state.wallet.network)
   const [confirmUpgradeVisible, setConfirmUpgradeVisible] = useState(false)
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
@@ -46,8 +56,74 @@ const Upgrade = ({ address, onClose }) => {
   const [stage, setStage] = useState(-1)
   const { resetWorker, recoverRandomness } = useRandomWorker()
 
-  const doUpgrade = () => {
+  const prepareProofFailed = () => {
+    setStage(-1)
+    resetOtp()
+    resetWorker()
+  }
+  const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation } = ShowUtils.buildHelpers({ setStage, resetOtp, network })
 
+  const doUpgrade = async () => {
+    setStage(0)
+    const {
+      root,
+      height,
+      interval,
+      t0,
+      lifespan,
+      maxOperationsPerInterval,
+      lastResortAddress,
+      dailyLimit,
+    } = await api.blockchain.getWallet({ address, raw: true })
+    const backlinks = await api.blockchain.getBacklinks({ address })
+
+    const { address: newAddress } = await api.relayer.create({
+      root,
+      height,
+      interval,
+      t0,
+      lifespan,
+      slotSize: maxOperationsPerInterval,
+      lastResortAddress,
+      dailyLimit,
+      backlinks: [...backlinks, address]
+    })
+    const { otp, otp2, invalidOtp2, invalidOtp } = prepareValidation({ state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp }, checkAmount: false, checkDest: false }) || {}
+    if (invalidOtp || invalidOtp2) return
+    SmartFlows.commitReveal({
+      wallet,
+      otp,
+      otp2,
+      recoverRandomness,
+      prepareProofFailed,
+      commitHashGenerator: ONE.computeForwardHash,
+      commitHashArgs: { address: newAddress },
+      beforeCommit: () => setStage(1),
+      afterCommit: () => setStage(2),
+      onCommitError,
+      onCommitFailure,
+      revealAPI: api.relayer.revealForward,
+      revealArgs: { dest: newAddress },
+      onRevealFailure,
+      onRevealError,
+      onRevealAttemptFailed,
+      onRevealSuccess: async (txId) => {
+        onRevealSuccess(txId)
+        setStage(-1)
+        resetOtp()
+        resetWorker()
+        const newWallet = {
+          ...wallet,
+          address: newAddress,
+          backlinks
+        }
+        dispatch(walletActions.updateWallet(newWallet))
+        dispatch(walletActions.deleteWallet(address))
+        dispatch(walletActions.fetchWallet({ address: newAddress }))
+        setTimeout(() => history.push(Paths.showAddress(util.safeOneAddress(newAddress))), 1000)
+        message.success('Upgrade completed!')
+      }
+    })
   }
   const skip = () => {
     setConfirmUpgradeVisible(false)
@@ -73,7 +149,7 @@ const Upgrade = ({ address, onClose }) => {
         {confirmUpgradeVisible &&
           <>
             <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} />
-            <Button type='primary' shape='round' size='large' onClick={doUpgrade}>Confirm Upgrade</Button>
+            <Button disabled={stage >= 0} type='primary' shape='round' size='large' onClick={doUpgrade}>Confirm Upgrade</Button>
             <Text type='secondary'>
               How it works:
               <ul>
@@ -96,8 +172,16 @@ const Upgrade = ({ address, onClose }) => {
                   <li> If you change your mind, you can still send 1.0 ONE from your recovery address to stop the upgrade and reclaim all funds</li>
                 </ul>
               </Text>}
-            <Button type='text' danger onClick={skip}>Do it later</Button>
+            {stage < 0 && <Button type='text' danger onClick={skip}>Do it later</Button>}
           </>}
+        {stage >= 0 && (
+          <Row>
+            <Steps current={stage}>
+              <Step title='Clone' description='Cloning to new version' />
+              <Step title='Prepare' description='Preparing for transfer' />
+              <Step title='Link' description='Linking two versions' />
+            </Steps>
+          </Row>)}
       </Space>
     </Card>
 
