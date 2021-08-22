@@ -27,6 +27,9 @@ module.exports = {
     BACKLINK_OVERRIDE: 14,
     RENEW_DOMAIN: 15,
     TRANSFER_DOMAIN: 16,
+    RECLAIM_REVERSE_DOMAIN: 17,
+    RECLAIM_DOMAIN_FROM_BACKLINK: 18,
+
     0: 'TRACK',
     1: 'UNTRACK',
     2: 'TRANSFER_TOKEN',
@@ -44,6 +47,8 @@ module.exports = {
     14: 'BACKLINK_OVERRIDE',
     15: 'RENEW_DOMAIN',
     16: 'TRANSFER_DOMAIN',
+    17: 'RECLAIM_REVERSE_DOMAIN',
+    18: 'RECLAIM_DOMAIN_FROM_BACKLINK',
   },
   EmptyAddress: '0x0000000000000000000000000000000000000000',
   EmptyBech32Address: 'one1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqquzw7vz',
