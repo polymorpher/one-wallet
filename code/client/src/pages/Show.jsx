@@ -23,6 +23,7 @@ import Balance from './Show/Balance'
 import WalletTitle from '../components/WalletTitle'
 import PurchaseDomain from './Show/PurchaseDomain'
 import Upgrade from './Show/Upgrade'
+import TransferDomain from './Show/TransferDomain'
 
 const tabList = [{ key: 'coins', tab: 'Coins' }, { key: 'nft', tab: 'Collectibles' }, { key: 'about', tab: 'About' }, { key: 'help', tab: 'Recover' }]
 const Show = () => {
@@ -102,6 +103,11 @@ const Show = () => {
       <SetRecovery show={section === 'setRecoveryAddress'} address={address} onClose={showStartScreen} />
       <PurchaseDomain
         show={section === 'domain'}
+        address={address}
+        onClose={showStartScreen}
+      />
+      <TransferDomain
+        show={section === 'domainTransfer'}
         address={address}
         onClose={showStartScreen}
       />
