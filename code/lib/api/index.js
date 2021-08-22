@@ -334,14 +334,24 @@ const api = {
 
     getBacklinks: async ({ address }) => {
       const c = await one.at(address)
-      const backlinks = await c.getBacklinks()
-      return backlinks
+      try {
+        const backlinks = await c.getBacklinks()
+        return backlinks
+      } catch (ex) {
+        console.debug(ex)
+        return []
+      }
     },
 
     getForwardAddress: async ({ address }) => {
       const c = await one.at(address)
-      const forwardAddress = await c.getForwardAddress()
-      return forwardAddress
+      try {
+        const forwardAddress = await c.getForwardAddress()
+        return forwardAddress
+      } catch (ex) {
+        console.debug(ex)
+        return ONEConstants.EmptyAddress
+      }
     },
 
     domain: {
