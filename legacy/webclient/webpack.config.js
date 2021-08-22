@@ -5,6 +5,12 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 // const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 module.exports = {
+  devServer: {
+    port: 3000,
+    https: true,
+    http2: true,
+    historyApiFallback: true,
+  },
   module: {
     rules: [
       {
