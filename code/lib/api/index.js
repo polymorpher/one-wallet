@@ -533,7 +533,10 @@ const api = {
   },
 }
 
-window.ONEWallet = { api }
+if (window) {
+  window.ONEWallet = window.ONEWallet || {}
+  window.ONEWallet.api = api
+}
 
 module.exports = {
   initAPI,
