@@ -10,7 +10,7 @@ import { isEmpty } from 'lodash'
 
 const { Text } = Typography
 
-const delayDomainOperationMillis = 1500
+const delayDomainOperationMillis = 1000
 
 /**
  * Renders address input that provides type ahead search for any known addresses.
@@ -264,7 +264,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
       notFoundContent={searchingAddress ? <Spin size='small' /> : <Text type='secondary'>No address found</Text>}
       bordered={false}
       showSearch
-      value={addressValue}
+      value={addressValue.selected ? addressValue : { value: '', label: '' }}
       onBlur={onBlurSelect}
       onSearch={onSearchAddress}
     >
