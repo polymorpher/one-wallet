@@ -21,8 +21,7 @@ interface IONEWallet {
     event BackLinkUpdated(address dest, address backlink);
     event BackLinkUpdateError(address dest, address backlink, string error);
 
-    event CommandDispatched(address backlink, bytes commandData); // omitting the rest of the parameters, since it would be the same compared to the parameters in the method call
-    event CommandFailed(address backlink, string reason, bytes commandData);
+
 
     function getForwardAddress() external view returns (address payable);
 
