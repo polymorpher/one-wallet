@@ -3,12 +3,14 @@ import { Select, Button, Tooltip, Row, Col, Spin, Typography } from 'antd'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
-import util, { useWindowDimensions } from '../util'
+import util, { useWaitExecution, useWindowDimensions } from '../util'
 import WalletConstants from '../constants/wallet'
 import api from '../api'
 import { isEmpty } from 'lodash'
 
 const { Text } = Typography
+
+const delayDomainOperationMillis = 1500
 
 /**
  * Renders address input that provides type ahead search for any known addresses.
@@ -18,6 +20,8 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
   const dispatch = useDispatch()
 
   const [searchingAddress, setSearchingAddress] = useState(false)
+
+  const [searchValue, setSearchValue] = useState('')
 
   const wallets = useSelector(state => Object.keys(state.wallet.wallets).map((k) => state.wallet.wallets[k]))
 
@@ -30,33 +34,53 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
   const { isMobile } = useWindowDimensions()
 
   const deleteKnownAddress = useCallback((address) => {
-    setAddressCallback({ value: '' })
+    setAddressCallback({ value: '', label: '' })
     dispatch(walletActions.deleteKnownAddress(address))
   }, [dispatch])
 
-  const onSearchAddress = useCallback(async (value) => {
-    try {
-      setSearchingAddress(true)
+  const onSearchAddress = (value) => {
+    setSearchingAddress(true)
+    setSearchValue(value)
+  }
 
-      const validAddress = util.safeNormalizedAddress(value)
+  useWaitExecution(
+    async () => {
+      try {
+        const validAddress = util.safeNormalizedAddress(searchValue)
 
-      if (validAddress) {
-        const domainName = await api.blockchain.domain.reverseLookup({ address: validAddress })
+        if (validAddress) {
+          const domainName = await api.blockchain.domain.reverseLookup({ address: validAddress })
 
-        setAddressCallback({ value: validAddress, domainName, filterValue: value })
-      } else if (!isEmpty(value)) {
-        const resolvedAddress = await api.blockchain.domain.resolve({ name: value })
-
-        if (resolvedAddress && resolvedAddress !== '0x0000000000000000000000000000000000000000') {
-          setAddressCallback({ value: resolvedAddress, domainName: value, filterValue: value })
+          setAddressCallback({
+            value: validAddress,
+            domainName,
+            filterValue: searchValue,
+            selected: false
+          })
         }
-      }
 
-      setSearchingAddress(false)
-    } catch (e) {
-      setSearchingAddress(false)
-    }
-  }, [setAddressCallback, isMobile])
+        if (!isEmpty(searchValue)) {
+          const resolvedAddress = await api.blockchain.domain.resolve({ name: searchValue })
+
+          if (resolvedAddress && resolvedAddress !== '0x0000000000000000000000000000000000000000') {
+            setAddressCallback({
+              value: resolvedAddress,
+              domainName: searchValue,
+              filterValue: searchValue,
+              selected: false
+            })
+          }
+        }
+
+        setSearchingAddress(false)
+      } catch (e) {
+        setSearchingAddress(false)
+      }
+    },
+    true,
+    delayDomainOperationMillis,
+    [searchValue, setSearchingAddress, setAddressCallback]
+  )
 
   const walletsAddresses = wallets.map((wallet) => wallet.address)
 
@@ -120,11 +144,15 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
       const existingKnownAddress = knownAddresses[validAddress]
 
       setAddressCallback(addressObject.label
-        ? addressObject
+        ? {
+            ...addressObject,
+            selected: true
+          }
         : {
             value: addressObject.value,
             label: util.safeOneAddress(addressObject.value),
-            domainName: addressObject.domainName
+            domainName: addressObject.domainName,
+            selected: true
           })
 
       dispatch(walletActions.setKnownAddress({
@@ -156,6 +184,16 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
   }))
 
   /**
+   * Since we are applying setAddressCallback on searching, the addressValue is set as we typing in valid address or domain name.
+   * When user click away (blur) from the Select box without clicking an option, the addressValue will be set incorrectly as
+   * we are performing extra logic in the onSelectAddress.
+   * Make sure clear the addressValue when user click away from Select box without clicking a Select Option in search/filter result.
+   */
+  const onBlurSelect = () => {
+    !addressValue.selected && setAddressCallback({ value: '', label: '' })
+  }
+
+  /**
    * Builds the Select Option component with given props.
    * ONE address is only used for display, normalized address is used for any internal operations and keys.
    * @param {*} address normalized address for the selection.
@@ -182,7 +220,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
       : longAddressLabel
 
     return (
-      <Select.Option key={key} value={filterValue}>
+      <Select.Option key={displayText} value={filterValue}>
         <Row gutter={16} align='left'>
           <Col span={!displayDeleteButton ? 24 : 21}>
             <Tooltip title={oneAddress}>
@@ -227,6 +265,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
       bordered={false}
       showSearch
       value={addressValue}
+      onBlur={onBlurSelect}
       onSearch={onSearchAddress}
     >
       {

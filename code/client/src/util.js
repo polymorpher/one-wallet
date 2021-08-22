@@ -235,3 +235,21 @@ export function useWindowDimensions () {
 
   return { isMobile, ...windowDimensions }
 }
+
+/**
+ * Custom hook that executes a function with delay and cancellation, if the useEffect is destroyed due to the dependencies
+ * update, the timeout is cancelled, which cancels the function execution.
+ * The function only runs when the supplied condition is true.
+ */
+export const useWaitExecution = (func, runCondition, wait, dependencies) => {
+  useEffect(() => {
+    let timeout
+    if (runCondition) {
+      timeout = setTimeout(func, wait)
+    }
+
+    return () => {
+      clearTimeout(timeout)
+    }
+  }, dependencies)
+}
