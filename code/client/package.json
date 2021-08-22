@@ -5,7 +5,7 @@
   "license": "Apache-2.0",
   "main": "client.js",
   "scripts": {
-    "dev": "webpack-dev-server --https --mode development --config webpack.config.js",
+    "dev": "webpack serve --mode=development",
     "build": "webpack --config webpack.config.js"
   },
   "devDependencies": {
@@ -51,7 +51,7 @@
     "tslib": "^2.3.0",
     "webpack": "^5.33.2",
     "webpack-bundle-analyzer": "^3.6.1",
-    "webpack-cli": "3.3.10",
+    "webpack-cli": "4.8.0",
     "webpack-dev-server": "^4.0.0",
     "webpack-obfuscator": "^0.27.4"
   },
