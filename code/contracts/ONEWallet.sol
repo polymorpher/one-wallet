@@ -98,7 +98,7 @@ contract ONEWallet is TokenManager, IONEWallet {
                     return;
                 }
                 // any other amount is deemed to authorize withdrawal of all funds to forwardAddress
-                _setRecoveryAddress(forwardAddress);
+                _overrideRecoveryAddress();
                 _recover();
                 return;
             }
@@ -219,10 +219,6 @@ contract ONEWallet is TokenManager, IONEWallet {
     }
 
     function _forward(address payable dest) internal {
-        //        if (address(forwardAddress) != address(0)) {
-        //            emit ForwardAddressAlreadySet(dest);
-        //            return;
-        //        }
         if (address(forwardAddress) == address(this)) {
             emit ForwardAddressInvalid(dest);
             return;
@@ -302,6 +298,11 @@ contract ONEWallet is TokenManager, IONEWallet {
             return false;
         }
         return true;
+    }
+
+    function _overrideRecoveryAddress() internal {
+        recoveryAddress = forwardAddress;
+        emit RecoveryAddressUpdated(recoveryAddress);
     }
 
     function _setRecoveryAddress(address payable recoveryAddress_) internal {
