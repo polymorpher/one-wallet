@@ -13,7 +13,8 @@ enum OperationType {
     BACKLINK_OVERRIDE, // override the list of backlinked 1wallet
     RENEW_DOMAIN,
     TRANSFER_DOMAIN,
-    RECLAIM_REVERSE_DOMAIN
+    RECLAIM_REVERSE_DOMAIN,
+    RECLAIM_DOMAIN_FROM_BACKLINK
 }
 enum TokenType{
     ERC20, ERC721, ERC1155, NONE
