@@ -361,9 +361,50 @@
       ],
       "stateMutability": "view",
       "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "internalType": "address payable",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transfer",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "label",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "string",
+          "name": "subdomain",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "duration",
+          "type": "uint256"
+        }
+      ],
+      "name": "renew",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.4+commit.c7e474f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"label\",\"type\":\"bytes32\"}],\"name\":\"DomainConfigured\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"label\",\"type\":\"bytes32\"}],\"name\":\"DomainUnlisted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"label\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"subdomain\",\"type\":\"string\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"referrer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"name\":\"NewRegistration\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"label\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"oldOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnerChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"label\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"subdomain\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"expirationDate\",\"type\":\"uint256\"}],\"name\":\"RentPaid\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"address payable\",\"name\":\"referralAddress\",\"type\":\"address\"},{\"internalType\":\"address payable\",\"name\":\"_owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_transfer\",\"type\":\"address\"}],\"name\":\"configureDomainFor\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"referralFeePPM\",\"type\":\"uint256\"},{\"internalType\":\"address payable\",\"name\":\"_owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_transfer\",\"type\":\"address\"}],\"name\":\"configureDomainFor\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"label\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"subdomain\",\"type\":\"string\"}],\"name\":\"payRent\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"label\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"subdomain\",\"type\":\"string\"}],\"name\":\"query\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"domain\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"signupFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"rent\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"referralFeePPM\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"label\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"subdomain\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address payable\",\"name\":\"referrer\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"resolver\",\"type\":\"address\"}],\"name\":\"register\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"label\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"subdomain\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"_subdomainOwner\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"url\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"resolver\",\"type\":\"address\"}],\"name\":\"register\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"label\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"subdomain\",\"type\":\"string\"}],\"name\":\"rentDue\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"}],\"name\":\"rentPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"configureDomainFor(string,uint256,address,address,address)\":{\"notice\":\"Harmony specific implementation: https://github.com/harmony-one/subdomain-registrar/blob/one-names-v4/contracts/EthRegistrarSubdomainRegistrar.sol#L139\"},\"register(bytes32,string,address,uint256,string,address)\":{\"notice\":\"Harmony specific implementation: https://github.com/harmony-one/subdomain-registrar/blob/one-names-v4/contracts/EthRegistrarSubdomainRegistrar.sol#L229\"},\"rentPrice(string,uint256)\":{\"notice\":\"Harmony specific: https://github.com/harmony-one/subdomain-registrar/blob/one-names-v4/contracts/EthRegistrarSubdomainRegistrar.sol#L59\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"@ensdomains/subdomain-registrar-core/contracts/interfaces/IRegistrar.sol\":\"IRegistrar\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"@ensdomains/subdomain-registrar-core/contracts/interfaces/IRegistrar.sol\":{\"keccak256\":\"0xe7a1a7d56646e6a1e9ce6a97a1524ded3068a7f43262ccb07a4f9c43316880c3\",\"license\":\"BSD-2-Clause\",\"urls\":[\"bzz-raw://ca7bd4dd288048f8e968705908c85b348386482e27acd87e88cce3aa4352fb70\",\"dweb:/ipfs/QmNZ1L5yPLo6VyzmF8WXMzF5MnSYUYH263wGiBCyR1bkF8\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.4+commit.c7e474f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"label\",\"type\":\"bytes32\"}],\"name\":\"DomainConfigured\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"label\",\"type\":\"bytes32\"}],\"name\":\"DomainUnlisted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"label\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"subdomain\",\"type\":\"string\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"referrer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"name\":\"NewRegistration\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"label\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"oldOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnerChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"label\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"subdomain\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"expirationDate\",\"type\":\"uint256\"}],\"name\":\"RentPaid\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"address payable\",\"name\":\"referralAddress\",\"type\":\"address\"},{\"internalType\":\"address payable\",\"name\":\"_owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_transfer\",\"type\":\"address\"}],\"name\":\"configureDomainFor\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"referralFeePPM\",\"type\":\"uint256\"},{\"internalType\":\"address payable\",\"name\":\"_owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_transfer\",\"type\":\"address\"}],\"name\":\"configureDomainFor\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"label\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"subdomain\",\"type\":\"string\"}],\"name\":\"payRent\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"label\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"subdomain\",\"type\":\"string\"}],\"name\":\"query\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"domain\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"signupFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"rent\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"referralFeePPM\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"label\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"subdomain\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address payable\",\"name\":\"referrer\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"resolver\",\"type\":\"address\"}],\"name\":\"register\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"label\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"subdomain\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"_subdomainOwner\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"url\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"resolver\",\"type\":\"address\"}],\"name\":\"register\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"label\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"subdomain\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"}],\"name\":\"renew\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"label\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"subdomain\",\"type\":\"string\"}],\"name\":\"rentDue\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"}],\"name\":\"rentPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"address payable\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transfer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"configureDomainFor(string,uint256,address,address,address)\":{\"notice\":\"Harmony specific implementation: https://github.com/harmony-one/subdomain-registrar/blob/one-names-v4/contracts/EthRegistrarSubdomainRegistrar.sol#L139\"},\"register(bytes32,string,address,uint256,string,address)\":{\"notice\":\"Harmony specific implementation: https://github.com/harmony-one/subdomain-registrar/blob/one-names-v4/contracts/EthRegistrarSubdomainRegistrar.sol#L229\"},\"renew(bytes32,string,uint256)\":{\"notice\":\"Harmony specific: https://github.com/harmony-one/subdomain-registrar/blob/one-names-v4/contracts/EthRegistrarSubdomainRegistrar.sol#L64\"},\"rentPrice(string,uint256)\":{\"notice\":\"Harmony specific: https://github.com/harmony-one/subdomain-registrar/blob/one-names-v4/contracts/EthRegistrarSubdomainRegistrar.sol#L59\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"@ensdomains/subdomain-registrar-core/contracts/interfaces/IRegistrar.sol\":\"IRegistrar\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"@ensdomains/subdomain-registrar-core/contracts/interfaces/IRegistrar.sol\":{\"keccak256\":\"0x2eb759fc32ab9b755451f335b1e4a13d5cb5a449aec2505baedfabce0b0dc2c7\",\"license\":\"BSD-2-Clause\",\"urls\":[\"bzz-raw://d5045b18c315347861a54eee5bffc8735813e998c301d2ad0858920944fb7f81\",\"dweb:/ipfs/QmWGtG4dy8f8ZRqDrKU1aeh3Nt3BA3t8Y7UMQw7CTk31Zv\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -371,16 +412,16 @@
   "deployedGeneratedSources": [],
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "// SPDX-License-Identifier: BSD-2-Clause\npragma solidity >=0.8.4;\n\ninterface IRegistrar {\n    event OwnerChanged(bytes32 indexed label, address indexed oldOwner, address indexed newOwner);\n    event DomainConfigured(bytes32 indexed label);\n    event DomainUnlisted(bytes32 indexed label);\n    event NewRegistration(bytes32 indexed label, string subdomain, address indexed owner, address indexed referrer, uint price);\n    event RentPaid(bytes32 indexed label, string subdomain, uint amount, uint expirationDate);\n\n    // InterfaceID of these four methods is 0xc1b15f5a\n    function query(bytes32 label, string calldata subdomain) external view returns (string memory domain, uint signupFee, uint rent, uint referralFeePPM);\n\n    function register(bytes32 label, string calldata subdomain, address owner, address payable referrer, address resolver) external payable;\n\n    function rentDue(bytes32 label, string calldata subdomain) external view returns (uint timestamp);\n\n    function payRent(bytes32 label, string calldata subdomain) external payable;\n\n    function configureDomainFor(string memory name, uint price, uint referralFeePPM, address payable _owner, address _transfer) external;\n\n    /// Harmony specific implementation: https://github.com/harmony-one/subdomain-registrar/blob/one-names-v4/contracts/EthRegistrarSubdomainRegistrar.sol#L139\n    function configureDomainFor(string memory name, uint price, address payable referralAddress, address payable _owner, address _transfer) external;\n\n    /// Harmony specific implementation: https://github.com/harmony-one/subdomain-registrar/blob/one-names-v4/contracts/EthRegistrarSubdomainRegistrar.sol#L229\n    function register(bytes32 label, string calldata subdomain, address _subdomainOwner, uint duration, string calldata url, address resolver) external payable;\n\n    /// Harmony specific: https://github.com/harmony-one/subdomain-registrar/blob/one-names-v4/contracts/EthRegistrarSubdomainRegistrar.sol#L59\n    function rentPrice(string memory name, uint duration) external view returns (uint256);\n}\n",
+  "source": "// SPDX-License-Identifier: BSD-2-Clause\npragma solidity >=0.8.4;\n\ninterface IRegistrar {\n    event OwnerChanged(bytes32 indexed label, address indexed oldOwner, address indexed newOwner);\n    event DomainConfigured(bytes32 indexed label);\n    event DomainUnlisted(bytes32 indexed label);\n    event NewRegistration(bytes32 indexed label, string subdomain, address indexed owner, address indexed referrer, uint price);\n    event RentPaid(bytes32 indexed label, string subdomain, uint amount, uint expirationDate);\n\n    // InterfaceID of these four methods is 0xc1b15f5a\n    function query(bytes32 label, string calldata subdomain) external view returns (string memory domain, uint signupFee, uint rent, uint referralFeePPM);\n\n    function register(bytes32 label, string calldata subdomain, address owner, address payable referrer, address resolver) external payable;\n\n    function rentDue(bytes32 label, string calldata subdomain) external view returns (uint timestamp);\n\n    function payRent(bytes32 label, string calldata subdomain) external payable;\n\n    function configureDomainFor(string memory name, uint price, uint referralFeePPM, address payable _owner, address _transfer) external;\n\n    /// Harmony specific implementation: https://github.com/harmony-one/subdomain-registrar/blob/one-names-v4/contracts/EthRegistrarSubdomainRegistrar.sol#L139\n    function configureDomainFor(string memory name, uint price, address payable referralAddress, address payable _owner, address _transfer) external;\n\n    /// Harmony specific implementation: https://github.com/harmony-one/subdomain-registrar/blob/one-names-v4/contracts/EthRegistrarSubdomainRegistrar.sol#L229\n    function register(bytes32 label, string calldata subdomain, address _subdomainOwner, uint duration, string calldata url, address resolver) external payable;\n\n    /// Harmony specific: https://github.com/harmony-one/subdomain-registrar/blob/one-names-v4/contracts/EthRegistrarSubdomainRegistrar.sol#L59\n    function rentPrice(string memory name, uint duration) external view returns (uint256);\n\n    function transfer(string memory name, address payable newOwner) external;\n\n    /// Harmony specific: https://github.com/harmony-one/subdomain-registrar/blob/one-names-v4/contracts/EthRegistrarSubdomainRegistrar.sol#L64\n    function renew(bytes32 label, string calldata subdomain, uint duration) external payable;\n}\n",
   "sourcePath": "@ensdomains/subdomain-registrar-core/contracts/interfaces/IRegistrar.sol",
   "ast": {
     "absolutePath": "@ensdomains/subdomain-registrar-core/contracts/interfaces/IRegistrar.sol",
     "exportedSymbols": {
       "IRegistrar": [
-        137
+        154
       ]
     },
-    "id": 138,
+    "id": 155,
     "license": "BSD-2-Clause",
     "nodeType": "SourceUnit",
     "nodes": [
@@ -401,9 +442,9 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": false,
-        "id": 137,
+        "id": 154,
         "linearizedBaseContracts": [
-          137
+          154
         ],
         "name": "IRegistrar",
         "nameLocation": "77:10:0",
@@ -1065,7 +1106,7 @@
               ],
               "src": "652:70:0"
             },
-            "scope": 137,
+            "scope": 154,
             "src": "573:150:0",
             "stateMutability": "view",
             "virtual": false,
@@ -1231,7 +1272,7 @@
               "parameters": [],
               "src": "864:0:0"
             },
-            "scope": 137,
+            "scope": 154,
             "src": "729:136:0",
             "stateMutability": "payable",
             "virtual": false,
@@ -1341,7 +1382,7 @@
               ],
               "src": "952:16:0"
             },
-            "scope": 137,
+            "scope": 154,
             "src": "871:98:0",
             "stateMutability": "view",
             "virtual": false,
@@ -1423,7 +1464,7 @@
               "parameters": [],
               "src": "1050:0:0"
             },
-            "scope": 137,
+            "scope": 154,
             "src": "975:76:0",
             "stateMutability": "payable",
             "virtual": false,
@@ -1588,7 +1629,7 @@
               "parameters": [],
               "src": "1189:0:0"
             },
-            "scope": 137,
+            "scope": 154,
             "src": "1057:133:0",
             "stateMutability": "nonpayable",
             "virtual": false,
@@ -1760,7 +1801,7 @@
               "parameters": [],
               "src": "1500:0:0"
             },
-            "scope": 137,
+            "scope": 154,
             "src": "1356:145:0",
             "stateMutability": "nonpayable",
             "virtual": false,
@@ -1958,7 +1999,7 @@
               "parameters": [],
               "src": "1822:0:0"
             },
-            "scope": 137,
+            "scope": 154,
             "src": "1667:156:0",
             "stateMutability": "payable",
             "virtual": false,
@@ -2074,28 +2115,226 @@
               ],
               "src": "2049:9:0"
             },
-            "scope": 137,
+            "scope": 154,
             "src": "1973:86:0",
             "stateMutability": "view",
             "virtual": false,
             "visibility": "external"
+          },
+          {
+            "functionSelector": "fbf58b3e",
+            "id": 143,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "transfer",
+            "nameLocation": "2074:8:0",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 141,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 138,
+                  "mutability": "mutable",
+                  "name": "name",
+                  "nameLocation": "2097:4:0",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 143,
+                  "src": "2083:18:0",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 137,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2083:6:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 140,
+                  "mutability": "mutable",
+                  "name": "newOwner",
+                  "nameLocation": "2119:8:0",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 143,
+                  "src": "2103:24:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address_payable",
+                    "typeString": "address payable"
+                  },
+                  "typeName": {
+                    "id": 139,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2103:15:0",
+                    "stateMutability": "payable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address_payable",
+                      "typeString": "address payable"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2082:46:0"
+            },
+            "returnParameters": {
+              "id": 142,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2137:0:0"
+            },
+            "scope": 154,
+            "src": "2065:73:0",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 144,
+              "nodeType": "StructuredDocumentation",
+              "src": "2144:139:0",
+              "text": "Harmony specific: https://github.com/harmony-one/subdomain-registrar/blob/one-names-v4/contracts/EthRegistrarSubdomainRegistrar.sol#L64"
+            },
+            "functionSelector": "c837b0d1",
+            "id": 153,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "renew",
+            "nameLocation": "2297:5:0",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 151,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 146,
+                  "mutability": "mutable",
+                  "name": "label",
+                  "nameLocation": "2311:5:0",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 153,
+                  "src": "2303:13:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 145,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2303:7:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 148,
+                  "mutability": "mutable",
+                  "name": "subdomain",
+                  "nameLocation": "2334:9:0",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 153,
+                  "src": "2318:25:0",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_calldata_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 147,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2318:6:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 150,
+                  "mutability": "mutable",
+                  "name": "duration",
+                  "nameLocation": "2350:8:0",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 153,
+                  "src": "2345:13:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 149,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2345:4:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2302:57:0"
+            },
+            "returnParameters": {
+              "id": 152,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2376:0:0"
+            },
+            "scope": 154,
+            "src": "2288:89:0",
+            "stateMutability": "payable",
+            "virtual": false,
+            "visibility": "external"
           }
         ],
-        "scope": 138,
-        "src": "67:1994:0",
+        "scope": 155,
+        "src": "67:2312:0",
         "usedErrors": []
       }
     ],
-    "src": "41:2021:0"
+    "src": "41:2339:0"
   },
   "legacyAST": {
     "absolutePath": "@ensdomains/subdomain-registrar-core/contracts/interfaces/IRegistrar.sol",
     "exportedSymbols": {
       "IRegistrar": [
-        137
+        154
       ]
     },
-    "id": 138,
+    "id": 155,
     "license": "BSD-2-Clause",
     "nodeType": "SourceUnit",
     "nodes": [
@@ -2116,9 +2355,9 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": false,
-        "id": 137,
+        "id": 154,
         "linearizedBaseContracts": [
-          137
+          154
         ],
         "name": "IRegistrar",
         "nameLocation": "77:10:0",
@@ -2780,7 +3019,7 @@
               ],
               "src": "652:70:0"
             },
-            "scope": 137,
+            "scope": 154,
             "src": "573:150:0",
             "stateMutability": "view",
             "virtual": false,
@@ -2946,7 +3185,7 @@
               "parameters": [],
               "src": "864:0:0"
             },
-            "scope": 137,
+            "scope": 154,
             "src": "729:136:0",
             "stateMutability": "payable",
             "virtual": false,
@@ -3056,7 +3295,7 @@
               ],
               "src": "952:16:0"
             },
-            "scope": 137,
+            "scope": 154,
             "src": "871:98:0",
             "stateMutability": "view",
             "virtual": false,
@@ -3138,7 +3377,7 @@
               "parameters": [],
               "src": "1050:0:0"
             },
-            "scope": 137,
+            "scope": 154,
             "src": "975:76:0",
             "stateMutability": "payable",
             "virtual": false,
@@ -3303,7 +3542,7 @@
               "parameters": [],
               "src": "1189:0:0"
             },
-            "scope": 137,
+            "scope": 154,
             "src": "1057:133:0",
             "stateMutability": "nonpayable",
             "virtual": false,
@@ -3475,7 +3714,7 @@
               "parameters": [],
               "src": "1500:0:0"
             },
-            "scope": 137,
+            "scope": 154,
             "src": "1356:145:0",
             "stateMutability": "nonpayable",
             "virtual": false,
@@ -3673,7 +3912,7 @@
               "parameters": [],
               "src": "1822:0:0"
             },
-            "scope": 137,
+            "scope": 154,
             "src": "1667:156:0",
             "stateMutability": "payable",
             "virtual": false,
@@ -3789,19 +4028,217 @@
               ],
               "src": "2049:9:0"
             },
-            "scope": 137,
+            "scope": 154,
             "src": "1973:86:0",
             "stateMutability": "view",
             "virtual": false,
             "visibility": "external"
+          },
+          {
+            "functionSelector": "fbf58b3e",
+            "id": 143,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "transfer",
+            "nameLocation": "2074:8:0",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 141,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 138,
+                  "mutability": "mutable",
+                  "name": "name",
+                  "nameLocation": "2097:4:0",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 143,
+                  "src": "2083:18:0",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 137,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2083:6:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 140,
+                  "mutability": "mutable",
+                  "name": "newOwner",
+                  "nameLocation": "2119:8:0",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 143,
+                  "src": "2103:24:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address_payable",
+                    "typeString": "address payable"
+                  },
+                  "typeName": {
+                    "id": 139,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2103:15:0",
+                    "stateMutability": "payable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address_payable",
+                      "typeString": "address payable"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2082:46:0"
+            },
+            "returnParameters": {
+              "id": 142,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2137:0:0"
+            },
+            "scope": 154,
+            "src": "2065:73:0",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 144,
+              "nodeType": "StructuredDocumentation",
+              "src": "2144:139:0",
+              "text": "Harmony specific: https://github.com/harmony-one/subdomain-registrar/blob/one-names-v4/contracts/EthRegistrarSubdomainRegistrar.sol#L64"
+            },
+            "functionSelector": "c837b0d1",
+            "id": 153,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "renew",
+            "nameLocation": "2297:5:0",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 151,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 146,
+                  "mutability": "mutable",
+                  "name": "label",
+                  "nameLocation": "2311:5:0",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 153,
+                  "src": "2303:13:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 145,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2303:7:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 148,
+                  "mutability": "mutable",
+                  "name": "subdomain",
+                  "nameLocation": "2334:9:0",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 153,
+                  "src": "2318:25:0",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_calldata_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 147,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2318:6:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 150,
+                  "mutability": "mutable",
+                  "name": "duration",
+                  "nameLocation": "2350:8:0",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 153,
+                  "src": "2345:13:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 149,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2345:4:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2302:57:0"
+            },
+            "returnParameters": {
+              "id": 152,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2376:0:0"
+            },
+            "scope": 154,
+            "src": "2288:89:0",
+            "stateMutability": "payable",
+            "virtual": false,
+            "visibility": "external"
           }
         ],
-        "scope": 138,
-        "src": "67:1994:0",
+        "scope": 155,
+        "src": "67:2312:0",
         "usedErrors": []
       }
     ],
-    "src": "41:2021:0"
+    "src": "41:2339:0"
   },
   "compiler": {
     "name": "solc",
@@ -3809,7 +4246,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.2",
-  "updatedAt": "2021-08-17T07:51:26.365Z",
+  "updatedAt": "2021-08-22T11:33:16.324Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
@@ -3823,6 +4260,9 @@
       },
       "register(bytes32,string,address,uint256,string,address)": {
         "notice": "Harmony specific implementation: https://github.com/harmony-one/subdomain-registrar/blob/one-names-v4/contracts/EthRegistrarSubdomainRegistrar.sol#L229"
+      },
+      "renew(bytes32,string,uint256)": {
+        "notice": "Harmony specific: https://github.com/harmony-one/subdomain-registrar/blob/one-names-v4/contracts/EthRegistrarSubdomainRegistrar.sol#L64"
       },
       "rentPrice(string,uint256)": {
         "notice": "Harmony specific: https://github.com/harmony-one/subdomain-registrar/blob/one-names-v4/contracts/EthRegistrarSubdomainRegistrar.sol#L59"
