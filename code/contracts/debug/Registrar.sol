@@ -49,6 +49,10 @@ contract Registrar is IRegistrar {
     function renew(bytes32 label, string calldata subdomain, uint duration) override external payable{
 
     }
+
+    function ens() override external view returns (address){
+        return address(0);
+    }
 }
 
 contract ReverseRegistrar is IReverseRegistrar {

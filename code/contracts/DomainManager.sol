@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.4;
 
+import "@ensdomains/subdomain-registrar-core/contracts/Resolver.sol";
+import "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
 import "@ensdomains/subdomain-registrar-core/contracts/interfaces/IRegistrar.sol";
 import "@ensdomains/subdomain-registrar-core/contracts/interfaces/IReverseRegistrar.sol";
 
@@ -16,7 +18,7 @@ library DomainManager {
     event DomainTransferFailed(string reason);
     event AttemptRenewal(bytes32 node, string subdomain, uint256 duration);
     event DomainRenewalFailed(string reason);
-    event DomainTransferred(string subdomain, address dest);
+    event DomainTransferred(bytes32 subnode, address dest);
     event DomainRenewed(bytes32 node, string subdomain, uint256 duration);
 
 
@@ -55,9 +57,9 @@ library DomainManager {
         return true;
     }
 
-    function reclaimReverseDomain(IReverseRegistrar rev, string memory fqdn) public returns (bool){
-        try rev.setName(fqdn) returns (bytes32 revNodeHash){
-            emit ReverseDomainClaimed(address(rev), revNodeHash);
+    function reclaimReverseDomain(address rev, string memory fqdn) public returns (bool){
+        try IReverseRegistrar(rev).setName(fqdn) returns (bytes32 revNodeHash){
+            emit ReverseDomainClaimed(rev, revNodeHash);
             return true;
         } catch Error(string memory reason){
             emit ReverseDomainClaimError(reason);
@@ -67,16 +69,12 @@ library DomainManager {
         return false;
     }
 
-    function transferDomain(IRegistrar reg, string memory subdomain, address payable dest) public returns (bool) {
-        try reg.transfer(subdomain, dest){
-            emit DomainTransferred(subdomain, dest);
-            return true;
-        } catch Error(string memory reason){
-            emit DomainTransferFailed(reason);
-        } catch {
-            emit DomainTransferFailed("");
-        }
-        return false;
+    /// WARNING: this function may revert. Guard against it.
+    function transferDomain(IRegistrar reg, address resolver, bytes32 subnode, address payable dest) public {
+        address ens = reg.ens();
+        ENS(ens).setOwner(subnode, dest);
+        Resolver(resolver).setAddr(subnode, dest);
+        emit DomainTransferred(subnode, dest);
     }
 
     function renewDomain(IRegistrar reg, bytes32 node, string memory subdomain, uint256 maxPrice) public returns (bool){
