@@ -316,15 +316,15 @@ contract ONEWallet is TokenManager, IONEWallet {
         (address backlink, bytes memory commandData) = abi.decode(data, (address, bytes));
         uint32 position = backlinkAddresses.findBacklink(backlink);
         if (position == backlinkAddresses.length) {
-            emit CommandFailed(backlink, "Not linked", commandData);
+            emit WalletGraph.CommandFailed(backlink, "Not linked", commandData);
             return;
         }
         try IONEWallet(backlink).reveal(new bytes32[](0), 0, bytes32(0), operationType, tokenType, contractAddress, tokenId, dest, amount, commandData){
-            emit CommandDispatched(backlink, commandData);
+            emit WalletGraph.CommandDispatched(backlink, commandData);
         }catch Error(string memory reason){
-            emit CommandFailed(backlink, reason, commandData);
+            emit WalletGraph.CommandFailed(backlink, reason, commandData);
         }catch {
-            emit CommandFailed(backlink, "", commandData);
+            emit WalletGraph.CommandFailed(backlink, "", commandData);
         }
     }
 
@@ -402,13 +402,13 @@ contract ONEWallet is TokenManager, IONEWallet {
         } else if (operationType == OperationType.BUY_DOMAIN) {
             DomainManager.buyDomainEncoded(data, amount, uint8(tokenId), contractAddress, dest);
         } else if (operationType == OperationType.TRANSFER_DOMAIN) {
-            DomainManager.transferDomain(IRegistrar(contractAddress), string(data), dest);
+            _transferDomain(IRegistrar(contractAddress), address(bytes20(bytes32(tokenId))), bytes32(amount), dest);
         } else if (operationType == OperationType.RENEW_DOMAIN) {
             DomainManager.renewDomain(IRegistrar(contractAddress), bytes32(tokenId), string(data), amount);
         } else if (operationType == OperationType.RECLAIM_REVERSE_DOMAIN) {
-            DomainManager.reclaimReverseDomain(IReverseRegistrar(contractAddress), string(data));
+            DomainManager.reclaimReverseDomain(contractAddress, string(data));
         } else if (operationType == OperationType.RECLAIM_DOMAIN_FROM_BACKLINK) {
-            _reclaimDomainFromBacklink(amount, IRegistrar(contractAddress), IReverseRegistrar(dest), uint8(tokenId), string(data));
+            WalletGraph.reclaimDomainFromBacklink(backlinkAddresses, amount, contractAddress, dest, uint8(tokenId), string(data));
         } else if (operationType == OperationType.RECOVER_SELECTED_TOKENS) {
             TokenManager._recoverSelectedTokensEncoded(dest, data);
         } else if (operationType == OperationType.FORWARD) {
@@ -598,31 +598,13 @@ contract ONEWallet is TokenManager, IONEWallet {
         return backlinkAddresses;
     }
 
-    function _reclaimDomainFromBacklink(uint256 backlinkIndex, IRegistrar reg, IReverseRegistrar rev, uint8 subdomainLength, string memory fqdn) internal {
-        if (backlinkIndex >= backlinkAddresses.length) {
-            emit WalletGraph.InvalidBackLinkIndex(backlinkIndex);
-            return;
-        }
-        bytes memory bfqdn = bytes(fqdn);
-        if (bfqdn.length > 64 || bfqdn.length < subdomainLength) {
-            emit DomainManager.InvalidFQDN(fqdn, subdomainLength);
-            return;
-        }
-        bytes memory subdomainBytes = new bytes(subdomainLength);
-        for (uint i = 0; i < subdomainLength; i++) {
-            subdomainBytes[i] = bfqdn[i];
-        }
-        address backlink = address(backlinkAddresses[backlinkIndex]);
-        // transfer the domain to this wallet
-        bytes memory commandData = abi.encode(OperationType.TRANSFER_DOMAIN, TokenType.NONE, address(reg), 0, payable(address(this)), 0, subdomainBytes);
-        try backlinkAddresses[backlinkIndex].reveal(new bytes32[](0), 0, bytes32(0), OperationType.TRANSFER_DOMAIN, TokenType.NONE, address(reg), 0, payable(address(this)), 0, subdomainBytes){
-            emit CommandDispatched(backlink, commandData);
+    function _transferDomain(IRegistrar reg, address resolver, bytes32 subnode, address payable dest) internal {
+        try DomainManager.transferDomain(reg, resolver, subnode, dest){
+
         } catch Error(string memory reason){
-            emit CommandFailed(backlink, reason, commandData);
+            emit DomainManager.DomainTransferFailed(reason);
         } catch {
-            emit CommandFailed(backlink, "", commandData);
+            emit DomainManager.DomainTransferFailed("");
         }
-        // reclaim reverse domain for the domain
-        DomainManager.reclaimReverseDomain(rev, fqdn);
     }
 }
