@@ -372,8 +372,7 @@ const Create = () => {
               setAddressCallback={setLastResortAddress}
               extraSelectOptions={[{
                 address: WalletConstants.oneWalletTreasury.address,
-                label: '1wallet treasury',
-                displayText: `(1wallet treasury) ${util.ellipsisAddress(util.safeOneAddress(WalletConstants.oneWalletTreasury.address))}`
+                label: '1wallet treasury'
               }]}
             />
             <Hint>

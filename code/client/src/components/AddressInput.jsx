@@ -1,10 +1,13 @@
 import { CloseOutlined, SearchOutlined } from '@ant-design/icons'
-import { Select, Button, Tooltip, Row, Col } from 'antd'
-import React, { useCallback, useEffect } from 'react'
+import { Select, Button, Tooltip, Row, Col, Spin, Typography } from 'antd'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
 import util, { useWindowDimensions } from '../util'
 import WalletConstants from '../constants/wallet'
+import api from '../api'
+
+const { Text } = Typography
 
 /**
  * Renders address input that provides type ahead search for any known addresses.
@@ -12,6 +15,8 @@ import WalletConstants from '../constants/wallet'
  */
 const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSelectOptions }) => {
   const dispatch = useDispatch()
+
+  const [searchingAddress, setSearchingAddress] = useState(false)
 
   const wallets = useSelector(state => Object.keys(state.wallet.wallets).map((k) => state.wallet.wallets[k]))
 
@@ -28,9 +33,29 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
     dispatch(walletActions.deleteKnownAddress(address))
   }, [dispatch])
 
-  const onSearchAddress = useCallback((address) => {
-    setAddressCallback({ value: address, label: address })
-  }, [setAddressCallback])
+  const onSearchAddress = useCallback(async (value) => {
+    try {
+      setSearchingAddress(true)
+
+      const validAddress = util.safeNormalizedAddress(value)
+
+      if (validAddress) {
+        const domainName = await api.blockchain.domain.reverseLookup({ address: validAddress })
+
+        setAddressCallback({ value: validAddress, domainName, filterValue: value })
+      } else if (value !== '') {
+        const resolvedAddress = await api.blockchain.domain.resolve({ name: value })
+
+        if (resolvedAddress && resolvedAddress !== '0x0000000000000000000000000000000000000000') {
+          setAddressCallback({ value: resolvedAddress, domainName: value, filterValue: value })
+        }
+      }
+
+      setSearchingAddress(false)
+    } catch (e) {
+      setSearchingAddress(false)
+    }
+  }, [setAddressCallback, isMobile])
 
   const walletsAddresses = wallets.map((wallet) => wallet.address)
 
@@ -42,27 +67,44 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
   [currentWallet])
 
   useEffect(() => {
-    const existingKnownAddresses = Object.keys(knownAddresses)
-      .map((address) => ({
-        address,
-        network: knownAddresses[address]?.network
-      }))
+    const initKnownAddresses = async () => {
+      const existingKnownAddresses = Object.keys(knownAddresses)
+        .map((address) => knownAddresses[address])
 
-    const walletsNotInKnownAddresses = wallets.filter((wallet) =>
-      !existingKnownAddresses.find((knownAddress) =>
-        knownAddress.address === wallet.address && knownAddress.network === wallet.network)
-    )
+      const walletsNotInKnownAddresses = wallets.filter((wallet) =>
+        !existingKnownAddresses.find((knownAddress) =>
+          knownAddress.address === wallet.address && knownAddress.network === wallet.network)
+      )
 
-    // Init the known address entries for existing wallets.
-    walletsNotInKnownAddresses.forEach((wallet) => {
-      dispatch(walletActions.setKnownAddress({
-        label: wallet.name,
-        address: wallet.address,
-        network: wallet.network,
-        creationTime: wallet.effectiveTime,
-        numUsed: 0
+      // Init the known address entries for existing wallets.
+      walletsNotInKnownAddresses.forEach((wallet) => {
+        dispatch(walletActions.setKnownAddress({
+          label: wallet.name,
+          address: wallet.address,
+          network: wallet.network,
+          creationTime: wallet.effectiveTime,
+          numUsed: 0
+        }))
+      })
+
+      await Promise.all(existingKnownAddresses.map(async (knownAddress) => {
+        const domainName = await api.blockchain.domain.reverseLookup({ address: knownAddress.address })
+        const nowInMillis = new Date().valueOf()
+
+        if (domainName && domainName !== '') {
+          dispatch(walletActions.setKnownAddress({
+            ...knownAddress,
+            domain: {
+              ...knownAddress.domain,
+              name: domainName,
+              lookupTime: nowInMillis
+            }
+          }))
+        }
       }))
-    })
+    }
+
+    initKnownAddresses()
   }, [])
 
   const onSelectAddress = useCallback((addressObject) => {
@@ -72,15 +114,27 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
     if (validAddress) {
       const existingKnownAddress = knownAddresses[validAddress]
 
-      setAddressCallback(addressObject)
+      setAddressCallback(addressObject.label
+        ? addressObject
+        : {
+            value: addressObject.value,
+            label: util.safeOneAddress(addressObject.value),
+            domainName: addressObject.domainName
+          })
 
       dispatch(walletActions.setKnownAddress({
+        ...existingKnownAddress,
         label: existingKnownAddress?.label,
         creationTime: existingKnownAddress?.creationTime || nowInMillis,
         numUsed: (existingKnownAddress?.numUsed || 0) + 1,
         network: network,
         lastUsedTime: nowInMillis,
-        address: validAddress
+        address: validAddress,
+        domain: {
+          ...existingKnownAddress?.domain,
+          name: addressObject.domainName,
+          lookupTime: nowInMillis
+        }
       }))
     }
   }, [knownAddresses, setAddressCallback])
@@ -92,30 +146,47 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
   const knownAddressesOptions = Object.keys(knownAddresses).map((address) => ({
     address,
     label: knownAddresses[address].label,
-    network: knownAddresses[address].network
+    network: knownAddresses[address].network,
+    domain: knownAddresses[address].domain
   }))
 
+  /**
+   * Builds the Select Option component with given props.
+   * ONE address is only used for display, normalized address is used for any internal operations and keys.
+   * @param {*} address normalized address for the selection.
+   * @param {*} key key for the iterated rendering.
+   * @param {*} displayDeleteButton indicates if this option should display delete button or not.
+   * @param {*} label of the rendered address option.
+   * @param {*} domainName of the displayed address.
+   * @param {*} filterValue value used to perform filter, this value should match the user input value.
+   * @returns Select Option component for the address.
+   */
   const buildSelectOption = ({
     address,
     key = address,
     displayDeleteButton,
-    fullDisplayAddress = util.safeOneAddress(address),
-    label = fullDisplayAddress,
-    displayText = label ? `(${label}) ${fullDisplayAddress}` : fullDisplayAddress,
-    onClick
+    label,
+    domainName,
+    filterValue
   }) => {
+    const oneAddress = util.safeOneAddress(address)
+    const longAddressLabel = label ? `(${label}) ${oneAddress}` : oneAddress
+    const shortenAddressLabel = label ? `(${label}) ${util.ellipsisAddress(oneAddress)}` : util.ellipsisAddress(oneAddress)
+    const displayText = util.shouldShortenAddress({ label: label, isMobile })
+      ? shortenAddressLabel
+      : longAddressLabel
+
     return (
-      <Select.Option key={key} value={util.safeOneAddress(address)}>
+      <Select.Option key={key} value={filterValue}>
         <Row gutter={16} align='left'>
           <Col span={!displayDeleteButton ? 24 : 21}>
-            <Tooltip title={fullDisplayAddress}>
+            <Tooltip title={oneAddress}>
               <Button
                 block
                 type='text'
                 style={{ textAlign: 'left' }}
                 onClick={() => {
-                  onSelectAddress({ value: fullDisplayAddress, label, key })
-                  onClick && onClick({ address, value: fullDisplayAddress, label })
+                  onSelectAddress({ value: address, label: displayText, key, domainName })
                 }}
               >
                 {displayText}
@@ -147,6 +218,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
         width: isMobile ? '100%' : 500,
         borderBottom: '1px dashed black'
       }}
+      notFoundContent={searchingAddress ? <Spin size='small' /> : <Text type='secondary'>No address found</Text>}
       bordered={false}
       showSearch
       value={addressValue}
@@ -157,28 +229,31 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
           .filter((knownAddress) => knownAddress.network === network && notCurrentWallet(knownAddress.address) && knownAddress.address !== WalletConstants.oneWalletTreasury.address)
           .sort((knownAddress) => knownAddress.label ? -1 : 0)
           .map((knownAddress, index) => {
-            const addr = util.safeOneAddress(knownAddress.address)
-            const longAddressLabel = knownAddress.label ? `(${knownAddress.label}) ${addr}` : addr
-            const shortenAddressLabel = knownAddress.label ? `(${knownAddress.label}) ${util.ellipsisAddress(addr)}` : util.ellipsisAddress(addr)
-            const displayText = util.shouldShortenAddress({ walletName: knownAddress.label, isMobile })
-              ? shortenAddressLabel
-              : longAddressLabel
+            const oneAddress = util.safeOneAddress(knownAddress.address)
+            const addressLabel = knownAddress.label || knownAddress.domain?.name
 
             // Only display actions for addresses that are not selected.
             // User's wallets addresses are not deletable.
-            const displayDeleteButton = addressValue.value !== addr && !walletsAddresses.includes(knownAddress.address)
+            const displayDeleteButton = addressValue.value !== knownAddress.address && !walletsAddresses.includes(knownAddress.address)
 
             return buildSelectOption({
               key: index,
               address: knownAddress.address,
-              displayDeleteButton: displayDeleteButton,
-              displayText,
-              label: longAddressLabel,
-              fullDisplayAddress: addr
+              displayDeleteButton,
+              label: addressLabel,
+              domainName: knownAddress.domain?.name,
+              filterValue: `${knownAddress.address} ${oneAddress} ${knownAddress.domain?.name}`
             })
           })
       }
-      {showSelectManualInputAddress && buildSelectOption({ address: addressValue.value, label: null })}
+      {
+        showSelectManualInputAddress && buildSelectOption({
+          address: addressValue.value,
+          label: addressValue.domainName,
+          domainName: addressValue.domainName,
+          filterValue: addressValue.filterValue
+        })
+      }
       {
         extraSelectOptions ? extraSelectOptions.map(buildSelectOption) : <></>
       }

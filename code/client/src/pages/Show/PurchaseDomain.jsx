@@ -17,7 +17,6 @@ import ShowUtils from './show-util'
 import { SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import ONEConstants from '../../../../lib/constants'
-import { Chaining } from '../../api/flow'
 
 const { Text, Title, Link } = Typography
 
