@@ -208,8 +208,18 @@ const Restore = () => {
         setMinorVersion(minorVersion)
       } catch (ex) {
         Sentry.captureException(ex)
+
         console.error(ex)
-        message.error(`Cannot retrieve wallet at address ${address}. Error: ${ex.toString()}`)
+
+        const errorMessage = ex.toString()
+
+        if (errorMessage.includes('no code at address')) {
+          message.error('This is a wallet, but is not a 1wallet address')
+        } else if (errorMessage.includes('Returned values aren\'t valid')) {
+          message.error('This is a smart contract, but is not a 1wallet address')
+        } else {
+          message.error(`Cannot retrieve wallet at address ${address}. Error: ${ex.toString()}`)
+        }
       }
     }
     f()
