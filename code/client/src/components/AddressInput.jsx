@@ -6,7 +6,7 @@ import walletActions from '../state/modules/wallet/actions'
 import util, { useWaitExecution, useWindowDimensions } from '../util'
 import WalletConstants from '../constants/wallet'
 import api from '../api'
-import { isEmpty } from 'lodash'
+import { isEmpty, trim } from 'lodash'
 import ONEConstants from '../../../lib/constants'
 
 const { Text } = Typography
@@ -47,7 +47,9 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
   useWaitExecution(
     async () => {
       try {
-        const validAddress = util.safeNormalizedAddress(searchValue)
+        const value = trim(searchValue)
+
+        const validAddress = util.safeNormalizedAddress(value)
 
         if (validAddress) {
           const domainName = await api.blockchain.domain.reverseLookup({ address: validAddress })
@@ -60,13 +62,13 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
           })
         }
 
-        if (!isEmpty(searchValue) && searchValue.includes(`${ONEConstants.Domain.DEFAULT_PARENT_LABEL}.${ONEConstants.Domain.DEFAULT_TLD}`)) {
-          const resolvedAddress = await api.blockchain.domain.resolve({ name: searchValue })
+        if (!isEmpty(value) && value.includes(`${ONEConstants.Domain.DEFAULT_PARENT_LABEL}.${ONEConstants.Domain.DEFAULT_TLD}`)) {
+          const resolvedAddress = await api.blockchain.domain.resolve({ name: value })
 
           if (!util.isEmptyAddress(resolvedAddress)) {
             setAddressCallback({
               value: resolvedAddress,
-              domainName: searchValue,
+              domainName: value,
               filterValue: searchValue,
               selected: false
             })
@@ -189,10 +191,15 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
    * Since we are applying setAddressCallback on searching, the addressValue is set as we typing in valid address or domain name.
    * When user click away (blur) from the Select box without clicking an option, the addressValue will be set incorrectly as
    * we are performing extra logic in the onSelectAddress.
-   * Make sure clear the addressValue when user click away from Select box without clicking a Select Option in search/filter result.
+   * Perform manual onSelectAddress when user click away from Select box or press keyboard without clicking a Select Option in search/filter result.
    */
-  const onBlurSelect = () => {
-    !addressValue.selected && setAddressCallback({ value: '', label: '' })
+  const onEnterSelect = (e) => {
+    if (e.type === 'keydown' && e.keyCode === 13 || e.type === 'blur') {
+      !addressValue.selected && onSelectAddress({
+        ...addressValue,
+        label: addressValue.domainName
+      })
+    }
   }
 
   /**
@@ -266,8 +273,9 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
       notFoundContent={searchingAddress ? <Spin size='small' /> : <Text type='secondary'>No address found</Text>}
       bordered={false}
       showSearch
-      value={addressValue.selected ? addressValue : { value: '', label: '' }}
-      onBlur={onBlurSelect}
+      value={addressValue}
+      onBlur={onEnterSelect}
+      onInputKeyDown={onEnterSelect}
       onSearch={onSearchAddress}
     >
       {
