@@ -6,6 +6,7 @@ import walletActions from '../state/modules/wallet/actions'
 import util, { useWindowDimensions } from '../util'
 import WalletConstants from '../constants/wallet'
 import api from '../api'
+import { isEmpty } from 'lodash'
 
 const { Text } = Typography
 
@@ -43,7 +44,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
         const domainName = await api.blockchain.domain.reverseLookup({ address: validAddress })
 
         setAddressCallback({ value: validAddress, domainName, filterValue: value })
-      } else if (value !== '') {
+      } else if (!isEmpty(value)) {
         const resolvedAddress = await api.blockchain.domain.resolve({ name: value })
 
         if (resolvedAddress && resolvedAddress !== '0x0000000000000000000000000000000000000000') {
@@ -76,6 +77,10 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
           knownAddress.address === wallet.address && knownAddress.network === wallet.network)
       )
 
+      const knownAddressesWithoutDomain = existingKnownAddresses.filter((knownAddress) =>
+        !isEmpty(existingKnownAddresses.domain?.name)
+      )
+
       // Init the known address entries for existing wallets.
       walletsNotInKnownAddresses.forEach((wallet) => {
         dispatch(walletActions.setKnownAddress({
@@ -87,11 +92,11 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
         }))
       })
 
-      await Promise.all(existingKnownAddresses.map(async (knownAddress) => {
+      await Promise.all(knownAddressesWithoutDomain.map(async (knownAddress) => {
         const domainName = await api.blockchain.domain.reverseLookup({ address: knownAddress.address })
         const nowInMillis = new Date().valueOf()
 
-        if (domainName && domainName !== '') {
+        if (!isEmpty(domainName)) {
           dispatch(walletActions.setKnownAddress({
             ...knownAddress,
             domain: {
@@ -226,7 +231,10 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
     >
       {
         knownAddressesOptions
-          .filter((knownAddress) => knownAddress.network === network && notCurrentWallet(knownAddress.address) && knownAddress.address !== WalletConstants.oneWalletTreasury.address)
+          .filter((knownAddress) =>
+            knownAddress.network === network &&
+            notCurrentWallet(knownAddress.address) &&
+            knownAddress.address !== WalletConstants.oneWalletTreasury.address)
           .sort((knownAddress) => knownAddress.label ? -1 : 0)
           .map((knownAddress, index) => {
             const oneAddress = util.safeOneAddress(knownAddress.address)
