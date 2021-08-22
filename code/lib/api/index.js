@@ -338,6 +338,12 @@ const api = {
       return backlinks
     },
 
+    getForwardAddress: async ({ address }) => {
+      const c = await one.at(address)
+      const forwardAddress = await c.getForwardAddress()
+      return forwardAddress
+    },
+
     domain: {
       resolve: async ({ name }) => {
         if (!resolver) {
