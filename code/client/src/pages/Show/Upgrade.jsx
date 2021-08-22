@@ -56,12 +56,7 @@ const Upgrade = ({ address, onClose }) => {
   const [stage, setStage] = useState(-1)
   const { resetWorker, recoverRandomness } = useRandomWorker()
 
-  const prepareProofFailed = () => {
-    setStage(-1)
-    resetOtp()
-    resetWorker()
-  }
-  const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation } = ShowUtils.buildHelpers({ setStage, resetOtp, network })
+  const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
 
   const doUpgrade = async () => {
     setStage(0)

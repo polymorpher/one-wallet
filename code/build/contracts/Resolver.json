@@ -704,7 +704,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.2",
-  "updatedAt": "2021-08-16T13:23:29.725Z",
+  "updatedAt": "2021-08-22T16:42:20.359Z",
   "devdoc": {
     "details": "A basic interface for ENS resolvers.",
     "kind": "dev",

@@ -40,6 +40,19 @@ contract Registrar is IRegistrar {
     function rentPrice(string memory /*name*/, uint /*duration*/) override virtual external view returns (uint256) {
         return 0;
     }
+
+    function transfer(string memory name, address payable newOwner) override external{
+
+    }
+
+    /// Harmony specific: https://github.com/harmony-one/subdomain-registrar/blob/one-names-v4/contracts/EthRegistrarSubdomainRegistrar.sol#L64
+    function renew(bytes32 label, string calldata subdomain, uint duration) override external payable{
+
+    }
+
+    function ens() override external view returns (address){
+        return address(0);
+    }
 }
 
 contract ReverseRegistrar is IReverseRegistrar {

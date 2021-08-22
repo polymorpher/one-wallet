@@ -11,8 +11,10 @@ enum OperationType {
     BACKLINK_ADD, // backlink a 1wallet
     BACKLINK_DELETE, // remove backlink of a backlinked 1wallet
     BACKLINK_OVERRIDE, // override the list of backlinked 1wallet
-    RENEW_DOMAIN, // not yet implemented
-    TRANSFER_DOMAIN // not yet implemented
+    RENEW_DOMAIN,
+    TRANSFER_DOMAIN,
+    RECLAIM_REVERSE_DOMAIN,
+    RECLAIM_DOMAIN_FROM_BACKLINK
 }
 enum TokenType{
     ERC20, ERC721, ERC1155, NONE

@@ -1,6 +1,5 @@
-const { sha256: fastSHA256, sha256b, processOtpSeed, namehash, DEPRECATED } = require('./util')
 // eslint-disable-next-line no-unused-vars
-const { hexView, hexString, genOTP, hexStringToBytes, keccak, bytesEqual } = require('./util')
+const { hexView, hexString, genOTP, hexStringToBytes, keccak, bytesEqual, sha256: fastSHA256, sha256b, processOtpSeed, namehash, DEPRECATED, stringToBytes } = require('./util')
 const ONEConstants = require('./constants')
 const BN = require('bn.js')
 const AES = require('aes-js')
@@ -319,6 +318,25 @@ const computeBuyDomainCommitHash = ({
   })
 }
 
+const computeTransferDomainHash = ({
+  subdomain,
+  dest,
+  parentLabel = ONEConstants.Domain.DEFAULT_PARENT_LABEL,
+  tld = ONEConstants.Domain.DEFAULT_TLD,
+  registrar = ONEConstants.Domain.DEFAULT_SUBDOMAIN_REGISTRAR,
+  resolver = ONEConstants.Domain.DEFAULT_RESOLVER,
+}) => {
+  const subnode = namehash([subdomain, parentLabel, tld].join('.'))
+  return computeGeneralOperationHash({
+    operationType: ONEConstants.OperationType.TRANSFER_DOMAIN,
+    tokenType: ONEConstants.TokenType.NONE,
+    contractAddress: registrar,
+    tokenId: hexStringToBytes(resolver, 32),
+    dest,
+    amount: subnode,
+  })
+}
+
 const computeForwardHash = ({ address }) => computeSetRecoveryAddressHash({ address })
 
 module.exports = {
@@ -336,5 +354,6 @@ module.exports = {
   recoverRandomness,
   encodeBuyDomainData,
   computeBuyDomainCommitHash,
-  computeForwardHash
+  computeForwardHash,
+  computeTransferDomainHash
 }

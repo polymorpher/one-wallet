@@ -334,14 +334,24 @@ const api = {
 
     getBacklinks: async ({ address }) => {
       const c = await one.at(address)
-      const backlinks = await c.getBacklinks()
-      return backlinks
+      try {
+        const backlinks = await c.getBacklinks()
+        return backlinks
+      } catch (ex) {
+        console.debug(ex)
+        return []
+      }
     },
 
     getForwardAddress: async ({ address }) => {
       const c = await one.at(address)
-      const forwardAddress = await c.getForwardAddress()
-      return forwardAddress
+      try {
+        const forwardAddress = await c.getForwardAddress()
+        return forwardAddress
+      } catch (ex) {
+        console.debug(ex)
+        return ONEConstants.EmptyAddress
+      }
     },
 
     domain: {
@@ -375,7 +385,8 @@ const api = {
 
       price: async ({ name }) => {
         if (!registrar) {
-          throw new Error('Unsupported network')
+          // throw new Error('Unsupported network')
+          return new BN(0)
         }
         const c = await registrar.at(ONEConstants.Domain.DEFAULT_SUBDOMAIN_REGISTRAR)
         const price = await c.rentPrice(name, ONEConstants.Domain.DEFAULT_RENT_DURATION)
@@ -384,7 +395,8 @@ const api = {
 
       available: async ({ name }) => {
         if (!registrar) {
-          throw new Error('Unsupported network')
+          // throw new Error('Unsupported network')
+          return false
         }
         const c = await registrar.at(ONEConstants.Domain.DEFAULT_SUBDOMAIN_REGISTRAR)
         const label = ONEUtil.hexString(ONEUtil.keccak(ONEConstants.Domain.DEFAULT_PARENT_LABEL))
@@ -491,6 +503,29 @@ const api = {
       })
     },
 
+    revealTransferDomain: async ({ neighbors, index, eotp, address,
+      parentLabel = ONEConstants.Domain.DEFAULT_PARENT_LABEL,
+      tld = ONEConstants.Domain.DEFAULT_TLD,
+      registrar = ONEConstants.Domain.DEFAULT_SUBDOMAIN_REGISTRAR,
+      resolver = ONEConstants.Domain.DEFAULT_RESOLVER,
+      subdomain,
+      dest,
+    }) => {
+      const subnode = ONEUtil.namehash([subdomain, parentLabel, tld].join('.'))
+      return api.relayer.reveal({
+        neighbors,
+        index,
+        eotp,
+        address,
+        operationType: ONEConstants.OperationType.TRANSFER_DOMAIN,
+        tokenType: ONEConstants.TokenType.NONE,
+        contractAddress: registrar,
+        tokenId: ONEUtil.hexString(ONEUtil.hexStringToBytes(resolver, 32)),
+        dest,
+        amount: ONEUtil.hexString(subnode),
+      })
+    },
+
     revealForward: async ({ address, neighbors, index, eotp, dest }) => {
       return api.relayer.reveal({
         address,
@@ -521,7 +556,10 @@ const api = {
   },
 }
 
-window.ONEWallet = { api }
+if (window) {
+  window.ONEWallet = window.ONEWallet || {}
+  window.ONEWallet.api = api
+}
 
 module.exports = {
   initAPI,

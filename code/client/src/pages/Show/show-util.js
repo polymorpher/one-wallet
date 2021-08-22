@@ -8,25 +8,28 @@ import BN from 'bn.js'
 const { Text, Link } = Typography
 
 export default {
-  buildHelpers: ({ setStage, network, resetOtp, restart }) => {
+  buildHelpers: ({ setStage, network, resetOtp, restart, resetWorker }) => {
     const onCommitError = (ex) => {
       Sentry.captureException(ex)
       console.error(ex)
       message.error('Failed to commit. Error: ' + ex.toString())
       setStage(-1)
       resetOtp && resetOtp()
+      resetWorker && resetWorker()
     }
 
     const onCommitFailure = (error) => {
       message.error(`Cannot commit transaction. Reason: ${error}`)
       setStage(-1)
       resetOtp && resetOtp()
+      resetWorker && resetWorker()
     }
 
     const onRevealFailure = (error) => {
       message.error(`Transaction Failed: ${error}`)
       setStage(-1)
       resetOtp && resetOtp()
+      resetWorker && resetWorker()
     }
 
     const onRevealError = (ex) => {
@@ -34,6 +37,7 @@ export default {
       message.error(`Failed to finalize transaction. Error: ${ex.toString()}`)
       setStage(-1)
       resetOtp && resetOtp()
+      resetWorker && resetWorker()
     }
 
     const onRevealAttemptFailed = (numAttemptsRemaining) => {
@@ -99,6 +103,12 @@ export default {
       }
     }
 
-    return { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation }
+    const prepareProofFailed = () => {
+      setStage(-1)
+      resetOtp()
+      resetWorker && resetWorker()
+    }
+
+    return { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed }
   }
 }

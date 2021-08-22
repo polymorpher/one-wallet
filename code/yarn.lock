@@ -1129,9 +1129,9 @@
   dependencies:
     hash-test-vectors "^1.3.2"
 
-"@ensdomains/subdomain-registrar-core@https://github.com/polymorpher/subdomain-registrar-core":
-  version "0.2.3"
-  resolved "https://github.com/polymorpher/subdomain-registrar-core#fd868bed1971eb98f859b7eed62105b1bba0d5f6"
+"@ensdomains/subdomain-registrar-core@https://github.com/polymorpher/subdomain-registrar-core#0.3.1":
+  version "0.3.1"
+  resolved "https://github.com/polymorpher/subdomain-registrar-core#d4c17357a485d317adab416f0970d307aa7146ab"
 
 "@eslint/eslintrc@^0.4.3":
   version "0.4.3"

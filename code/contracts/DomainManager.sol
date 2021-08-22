@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.4;
 
+import "@ensdomains/subdomain-registrar-core/contracts/Resolver.sol";
+import "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
 import "@ensdomains/subdomain-registrar-core/contracts/interfaces/IRegistrar.sol";
 import "@ensdomains/subdomain-registrar-core/contracts/interfaces/IReverseRegistrar.sol";
 
@@ -9,9 +11,16 @@ library DomainManager {
 
     event DomainRegistered(address subdomainRegistrar, string subdomain, bytes32 domainLabel);
     event ReverseDomainClaimed(address reverseRegistrar, bytes32 nodeHash);
+    event ReverseDomainClaimError(string reason);
     event InvalidFQDN(string fqdn, uint32 subdomainLabelLength);
     event DomainRegistrationFailed(string reason);
     event AttemptRegistration(bytes32 node, string subdomain, address owner, uint256 duration, string url, address resolver);
+    event DomainTransferFailed(string reason);
+    event AttemptRenewal(bytes32 node, string subdomain, uint256 duration);
+    event DomainRenewalFailed(string reason);
+    event DomainTransferred(bytes32 subnode, address dest);
+    event DomainRenewed(bytes32 node, string subdomain, uint256 duration);
+
 
     function buyDomainEncoded(bytes calldata data, uint256 maxPrice, uint8 subdomainLabelLength, address reg, address resolver) public returns (bool) {
         (address rev, bytes32 node, string memory fqdn) = abi.decode(data, (address, bytes32, string));
@@ -38,8 +47,45 @@ library DomainManager {
             return false;
         }
         emit DomainRegistered(address(reg), subdomain, node);
-        bytes32 revNodeHash = rev.setName(fqdn);
-        emit ReverseDomainClaimed(address(rev), revNodeHash);
+        try rev.setName(fqdn) returns (bytes32 revNodeHash){
+            emit ReverseDomainClaimed(address(rev), revNodeHash);
+        } catch Error(string memory reason){
+            emit ReverseDomainClaimError(reason);
+        } catch {
+            emit ReverseDomainClaimError("");
+        }
+        return true;
+    }
+
+    function reclaimReverseDomain(address rev, string memory fqdn) public returns (bool){
+        try IReverseRegistrar(rev).setName(fqdn) returns (bytes32 revNodeHash){
+            emit ReverseDomainClaimed(rev, revNodeHash);
+            return true;
+        } catch Error(string memory reason){
+            emit ReverseDomainClaimError(reason);
+        } catch {
+            emit ReverseDomainClaimError("");
+        }
+        return false;
+    }
+
+    /// WARNING: this function may revert. Guard against it.
+    function transferDomain(IRegistrar reg, address resolver, bytes32 subnode, address payable dest) public {
+        address ens = reg.ens();
+        Resolver(resolver).setAddr(subnode, dest);
+        ENS(ens).setOwner(subnode, dest);
+        emit DomainTransferred(subnode, dest);
+    }
+
+    function renewDomain(IRegistrar reg, bytes32 node, string memory subdomain, uint256 maxPrice) public returns (bool){
+        (bool success, bytes memory ret) = address(reg).call{value : maxPrice}(abi.encodeWithSignature("renew(bytes32,string,uint256)", node, subdomain, MIN_DOMAIN_RENT_DURATION));
+        emit AttemptRenewal(node, subdomain, MIN_DOMAIN_RENT_DURATION);
+        if (!success) {
+            string memory reason = _revertReason(ret);
+            emit DomainRenewalFailed(reason);
+            return false;
+        }
+        emit DomainRenewed(node, subdomain, MIN_DOMAIN_RENT_DURATION);
         return true;
     }
 

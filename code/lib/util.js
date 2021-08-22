@@ -50,6 +50,10 @@ const utils = {
     return ar
   },
 
+  stringToBytes: str => {
+    return new TextEncoder().encode(str)
+  },
+
   // assume Buffer is poly-filled or loaded from https://github.com/feross/buffer
   // accepts string as well
   keccak: (bytes) => {
