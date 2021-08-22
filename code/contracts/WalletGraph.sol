@@ -1,10 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.4;
+
 import "./IONEWallet.sol";
+import "./DomainManager.sol";
 
 library WalletGraph {
     event BackLinkAltered(address[] added, address[] removed); // in case of override, both args would be empty
     event InvalidBackLinkIndex(uint256 index);
+    event CommandDispatched(address backlink, bytes commandData); // omitting the rest of the parameters, since it would be the same compared to the parameters in the method call
+    event CommandFailed(address backlink, string reason, bytes commandData);
+
     function findBacklink(IONEWallet[] storage backlinkAddresses, address backlink) public view returns (uint32){
         for (uint32 i = 0; i < backlinkAddresses.length; i++) {
             if (address(backlinkAddresses[i]) == backlink) {
@@ -56,5 +61,33 @@ library WalletGraph {
             backlinkAddresses[i] = IONEWallet(addresses[i]);
         }
         emit BackLinkAltered(new address[](0), new address[](0));
+    }
+
+    function reclaimDomainFromBacklink(IONEWallet[] storage backlinkAddresses, uint256 backlinkIndex, address reg, address rev, uint8 subdomainLength, string memory fqdn) public {
+        if (backlinkIndex >= backlinkAddresses.length) {
+            emit InvalidBackLinkIndex(backlinkIndex);
+            return;
+        }
+        bytes memory bfqdn = bytes(fqdn);
+        if (bfqdn.length > 64 || bfqdn.length < subdomainLength) {
+            emit DomainManager.InvalidFQDN(fqdn, subdomainLength);
+            return;
+        }
+        bytes memory subdomainBytes = new bytes(subdomainLength);
+        for (uint i = 0; i < subdomainLength; i++) {
+            subdomainBytes[i] = bfqdn[i];
+        }
+        address backlink = address(backlinkAddresses[backlinkIndex]);
+        // transfer the domain to this wallet
+        bytes memory commandData = abi.encode(OperationType.TRANSFER_DOMAIN, TokenType.NONE, address(reg), 0, payable(address(this)), 0, subdomainBytes);
+        try backlinkAddresses[backlinkIndex].reveal(new bytes32[](0), 0, bytes32(0), OperationType.TRANSFER_DOMAIN, TokenType.NONE, address(reg), 0, payable(address(this)), 0, subdomainBytes){
+            emit CommandDispatched(backlink, commandData);
+        } catch Error(string memory reason){
+            emit CommandFailed(backlink, reason, commandData);
+        } catch {
+            emit CommandFailed(backlink, "", commandData);
+        }
+        // reclaim reverse domain for the domain
+        DomainManager.reclaimReverseDomain(rev, fqdn);
     }
 }
