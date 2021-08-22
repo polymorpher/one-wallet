@@ -11,7 +11,7 @@ module.exports = {
     https: true,
     http2: true,
     historyApiFallback: true,
-    hot: false,
+    hot: true,
     client: {
       overlay: false,
       progress: true,
