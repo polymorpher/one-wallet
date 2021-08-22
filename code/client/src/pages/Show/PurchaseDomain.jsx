@@ -115,12 +115,7 @@ const PurchaseDomain = ({ show, address, onClose }) => {
   const resetOtp = otpState.resetOtp
   const { resetWorker, recoverRandomness } = useRandomWorker()
 
-  const prepareProofFailed = () => {
-    setStage(-1)
-    resetOtp()
-    resetWorker()
-  }
-  const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation } = ShowUtils.buildHelpers({ setStage, resetOtp, network })
+  const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
 
   const doPurchase = async () => {
     const { otp, otp2, invalidOtp2, invalidOtp } = prepareValidation({ state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp }, checkAmount: false, checkDest: false }) || {}
