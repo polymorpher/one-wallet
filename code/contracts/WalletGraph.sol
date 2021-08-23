@@ -63,31 +63,22 @@ library WalletGraph {
         emit BackLinkAltered(new address[](0), new address[](0));
     }
 
-    function reclaimDomainFromBacklink(IONEWallet[] storage backlinkAddresses, uint256 backlinkIndex, address reg, address rev, uint8 subdomainLength, string memory fqdn) public {
+    function reclaimDomainFromBacklink(IONEWallet[] storage backlinkAddresses, uint32 backlinkIndex, IRegistrar reg, IReverseRegistrar rev, uint8 subdomainLength, bytes memory data) public {
         if (backlinkIndex >= backlinkAddresses.length) {
             emit InvalidBackLinkIndex(backlinkIndex);
             return;
         }
-        bytes memory bfqdn = bytes(fqdn);
-        if (bfqdn.length > 64 || bfqdn.length < subdomainLength) {
-            emit DomainManager.InvalidFQDN(fqdn, subdomainLength);
-            return;
-        }
-        bytes memory subdomainBytes = new bytes(subdomainLength);
-        for (uint i = 0; i < subdomainLength; i++) {
-            subdomainBytes[i] = bfqdn[i];
-        }
-        address backlink = address(backlinkAddresses[backlinkIndex]);
+        (address resolver, bytes32 subnode, string memory fqdn) = abi.decode(data, (address, bytes32, string));
         // transfer the domain to this wallet
-        bytes memory commandData = abi.encode(OperationType.TRANSFER_DOMAIN, TokenType.NONE, address(reg), 0, payable(address(this)), 0, subdomainBytes);
-        try backlinkAddresses[backlinkIndex].reveal(new bytes32[](0), 0, bytes32(0), OperationType.TRANSFER_DOMAIN, TokenType.NONE, address(reg), 0, payable(address(this)), 0, subdomainBytes){
-            emit CommandDispatched(backlink, commandData);
+        bytes memory commandData = abi.encode(OperationType.TRANSFER_DOMAIN, TokenType.NONE, address(reg), uint256(bytes32(bytes20(resolver))), payable(address(this)), uint256(subnode), "");
+        try backlinkAddresses[backlinkIndex].reveal(new bytes32[](0), 0, bytes32(0), OperationType.TRANSFER_DOMAIN, TokenType.NONE, address(reg), uint256(bytes32(bytes20(resolver))), payable(address(this)), uint256(subnode), ""){
+            emit CommandDispatched(address(backlinkAddresses[backlinkIndex]), commandData);
         } catch Error(string memory reason){
-            emit CommandFailed(backlink, reason, commandData);
+            emit CommandFailed(address(backlinkAddresses[backlinkIndex]), reason, commandData);
         } catch {
-            emit CommandFailed(backlink, "", commandData);
+            emit CommandFailed(address(backlinkAddresses[backlinkIndex]), "", commandData);
         }
         // reclaim reverse domain for the domain
-        DomainManager.reclaimReverseDomain(rev, fqdn);
+        DomainManager.reclaimReverseDomain(address(rev), fqdn);
     }
 }

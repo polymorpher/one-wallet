@@ -408,7 +408,7 @@ contract ONEWallet is TokenManager, IONEWallet {
         } else if (operationType == OperationType.RECLAIM_REVERSE_DOMAIN) {
             DomainManager.reclaimReverseDomain(contractAddress, string(data));
         } else if (operationType == OperationType.RECLAIM_DOMAIN_FROM_BACKLINK) {
-            WalletGraph.reclaimDomainFromBacklink(backlinkAddresses, amount, contractAddress, dest, uint8(tokenId), string(data));
+            backlinkAddresses.reclaimDomainFromBacklink(uint32(amount), IRegistrar(contractAddress), IReverseRegistrar(dest), uint8(tokenId), data);
         } else if (operationType == OperationType.RECOVER_SELECTED_TOKENS) {
             TokenManager._recoverSelectedTokensEncoded(dest, data);
         } else if (operationType == OperationType.FORWARD) {
