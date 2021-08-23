@@ -140,14 +140,17 @@ const PurchaseDomain = ({ show, address, onClose }) => {
       onRevealAttemptFailed,
       onRevealSuccess: async (txId) => {
         onRevealSuccess(txId)
-        setStage(-1)
-        resetOtp()
-        resetWorker()
-        const lookup = await api.blockchain.domain.reverseLookup({ address })
-        if (lookup) {
-          dispatch(walletActions.bindDomain({ address, domain: lookup }))
-        }
-        onClose()
+        setTimeout(async () => {
+          setStage(-1)
+          resetOtp()
+          resetWorker()
+          const lookup = await api.blockchain.domain.reverseLookup({ address })
+          if (lookup) {
+            dispatch(walletActions.bindDomain({ address, domain: lookup }))
+          }
+          onClose()
+        }, 2500)
+
       }
     })
   }

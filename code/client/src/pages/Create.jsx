@@ -234,10 +234,12 @@ const Create = () => {
       dispatch(walletActions.updateWallet(wallet))
       dispatch(walletActions.fetchBalanceSuccess({ address, balance: 0 }))
       setAddress(address)
-      dispatch(walletActions.fetchWallet({ address }))
       setDeploying(false)
       message.success('Your wallet is deployed!')
-      history.push(Paths.showAddress(address))
+      setTimeout(() => {
+        dispatch(walletActions.fetchWallet({ address }))
+        history.push(Paths.showAddress(address))
+      }, 2500)
       // setSection(4)
     } catch (ex) {
       handleAPIError(ex)
@@ -376,10 +378,10 @@ const Create = () => {
               }]}
             />
             <Hint>
-              {lastResortAddress.value !== oneWalletTreasurySelectOption.value && <span style={{ color: 'red' }}>You cannot change this later.</span>}
+              {lastResortAddress.value !== WalletConstants.oneWalletTreasury.address && <span style={{ color: 'red' }}>You cannot change this later.</span>}
               If you lost your authenticator, your can recover funds to this address. You can also send 1.0 ONE from the recovery address to trigger auto-recovery
             </Hint>
-            {lastResortAddress.value === oneWalletTreasurySelectOption.value &&
+            {lastResortAddress.value === WalletConstants.oneWalletTreasury.address &&
               <Warning style={{ marginTop: 24 }}>
                 We suggest you choose your own address, such as an account from Harmony CLI wallet or Chrome Extension wallet. <br /><br /> 1wallet treasury generally cannot recover your funds except in rare cases which many users are affected by software bugs. <br /><br /> 1wallet treasury is managed by 5 reputable owners and requires a majority vote to make any transfer.<br /><br />If you choose 1wallet treasury as the recovery address, you have an opportunity to change it later in your wallet.
               </Warning>}
