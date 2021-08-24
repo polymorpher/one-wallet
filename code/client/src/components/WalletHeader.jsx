@@ -85,6 +85,7 @@ const SecretSettings = ({ visible, onClose }) => {
 
 const WalletHeader = () => {
   const { isMobile } = useWindowDimensions()
+  const dev = useSelector(state => state.wallet.dev)
   const history = useHistory()
   const match = useRouteMatch('/:action/:address?')
   const { action, address: routeAddress } = match ? match.params : {}
@@ -103,8 +104,8 @@ const WalletHeader = () => {
       title={!isMobile && titleCase(action || '')}
       subTitle={!isMobile && <Hint>{subtitle}</Hint>}
       extra={[
-        <Button key='toggle' shape='circle' icon={relayerEditVisible ? <CloseOutlined /> : <SettingOutlined />} onClick={() => setRelayerEditVisible(!relayerEditVisible)} />,
-        relayerEditVisible &&
+        dev && <Button key='toggle' shape='circle' icon={relayerEditVisible ? <CloseOutlined /> : <SettingOutlined />} onClick={() => setRelayerEditVisible(!relayerEditVisible)} />,
+        dev && relayerEditVisible &&
           <Space size='small' key='relayer'>
             <Button shape='circle' icon={<LockOutlined />} onClick={() => setSettingsVisible(true)} />
             <RelayerSelector />
