@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useHistory, useRouteMatch } from 'react-router'
-import { Layout, Image, Menu, Row, Typography, Tag, Divider } from 'antd'
+import { Layout, Image, Menu, Row, Typography, Tag, Divider, Spin } from 'antd'
 import { PlusCircleOutlined, UnorderedListOutlined, HistoryOutlined, AuditOutlined, GithubOutlined, InfoCircleOutlined } from '@ant-design/icons'
 import HarmonyLogo from '../assets/harmony.svg'
 import HarmonyIcon from '../assets/harmony-icon.svg'
@@ -67,17 +67,23 @@ const SiderMenu = ({ ...args }) => {
 
       {!isMobile && <LineDivider>Global Usage</LineDivider>}
 
-      {!isMobile && stats &&
-        <Row style={{ marginBottom: 16 }} justify='center'>
-          <Row style={{ marginBottom: 8 }}>
-            <Tag color='dimgray' style={{ margin: 0, width: 64, borderRadius: 0, textAlign: 'center' }}>wallets</Tag>
-            <Tag color='lightseagreen' style={{ width: 80, borderRadius: 0, textAlign: 'center' }}>{stats.count.toLocaleString()}</Tag>
-          </Row>
-          <Row>
-            <Tag color='dimgray' style={{ margin: 0, width: 64, borderRadius: 0, textAlign: 'center' }}>balance</Tag>
-            <Tag color='steelblue' style={{ width: 80, borderRadius: 0, textAlign: 'center' }}>{stats.totalAmount.toLocaleString()} ONE</Tag>
-          </Row>
-        </Row>}
+      {!isMobile && (stats
+        ? (
+          <Row style={{ marginBottom: 16 }} justify='center'>
+            <Row style={{ marginBottom: 8 }}>
+              <Tag color='dimgray' style={{ margin: 0, width: 64, borderRadius: 0, textAlign: 'center' }}>wallets</Tag>
+              <Tag color='lightseagreen' style={{ width: 80, borderRadius: 0, textAlign: 'center' }}>{stats.count.toLocaleString()}</Tag>
+            </Row>
+            <Row>
+              <Tag color='dimgray' style={{ margin: 0, width: 64, borderRadius: 0, textAlign: 'center' }}>balance</Tag>
+              <Tag color='steelblue' style={{ width: 80, borderRadius: 0, textAlign: 'center' }}>{stats.totalAmount.toLocaleString()} ONE</Tag>
+            </Row>
+          </Row>)
+        : (
+          <Row justify='center'>
+            <Spin />
+          </Row>)
+      )}
 
       {!isMobile && <LineDivider />}
 
