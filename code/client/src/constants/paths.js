@@ -1,6 +1,7 @@
 export const base = process.env.PUBLIC_URL || ''
 export default {
   root: base + '/',
+  dev: base + '/dev',
   create: base + '/create',
   wallets: base + '/wallets',
   show: base + '/show/:address/:action?',

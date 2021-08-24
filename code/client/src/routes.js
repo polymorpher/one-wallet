@@ -15,6 +15,8 @@ import config from './config'
 import util, { useWindowDimensions } from './util'
 
 const LocalRoutes = () => {
+  const dispatch = useDispatch()
+  const dev = useSelector(state => state.wallet.dev)
   const wallets = useSelector(state => state.wallet.wallets)
   const network = useSelector(state => state.wallet.network)
   const networkWallets = util.filterNetworkWallets(wallets, network)
@@ -26,6 +28,12 @@ const LocalRoutes = () => {
         <WalletHeader />
         <Layout.Content style={{ padding: isMobile ? 16 : 32 }}>
           <Switch>
+            <Route
+              path={Paths.dev} render={() => {
+                dispatch(walletActions.setDev(!dev))
+                return <Redirect to={Paths.root} />
+              }}
+            />
             <Route path={Paths.create} component={CreatePage} />
             <Route path={Paths.wallets} component={ListPage} />
             <Route path={Paths.restore} component={RestorePage} />

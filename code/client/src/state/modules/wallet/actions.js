@@ -34,6 +34,8 @@ const deleteKnownAddress = createAction('DELETE_KNOWN_ADDRESS')
 
 const bindDomain = createAction('BIND_DOMAIN')
 
+const setDev = createAction('SET_DEV')
+
 export default {
   fetchWallet,
   fetchWalletSuccess,
@@ -60,5 +62,6 @@ export default {
   setSelectedToken,
   fetchTokenBalance,
   fetchTokenBalanceSuccess,
-  fetchTokenBalanceFailed
+  fetchTokenBalanceFailed,
+  setDev
 }

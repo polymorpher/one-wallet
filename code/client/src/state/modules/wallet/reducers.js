@@ -14,7 +14,8 @@ export const initialState = {
   fetching: false,
   loading: false,
   error: undefined,
-  knownAddresses: {}
+  knownAddresses: {},
+  dev: false
 }
 
 const reducer = handleActions(
@@ -185,6 +186,11 @@ const reducer = handleActions(
           domain: action.payload.domain
         }
       }
+    }),
+
+    [walletActions.setDev]: (state, action) => ({
+      ...state,
+      dev: action.payload
     }),
   },
   {
