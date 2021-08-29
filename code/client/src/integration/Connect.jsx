@@ -6,10 +6,8 @@ import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { SearchOutlined } from '@ant-design/icons'
 import util from '../util'
-import { useHistory } from 'react-router'
 const { Title, Text, Paragraph } = Typography
 const ConnectWallet = ({ caller, callback }) => {
-  const history = useHistory()
   const network = useSelector(state => state.wallet.network)
   const wallets = useSelector(state => state.wallet.wallets)
   const walletList = Object.keys(wallets).map(e => wallets[e]).filter(e => e.network === network)
@@ -100,10 +98,9 @@ const ConnectWallet = ({ caller, callback }) => {
           })}
         </Select>
       </AverageRow>
-      <Row justify='space-between' />
       <AverageRow justify='space-between'>
-        <Button size='large' type='text' onClick={cancel}>Cancel</Button>
-        <Button type='primary' size='large' shape='round' onClick={connect}>Connect</Button>
+        <Button size='large' type='text' onClick={cancel} danger>Cancel</Button>
+        <Button type='primary' size='large' shape='round' onClick={connect} disabled={!selectedAddress.value}>Connect</Button>
       </AverageRow>
 
     </AnimatedSection>
