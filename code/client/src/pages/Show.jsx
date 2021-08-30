@@ -31,7 +31,7 @@ const tabList = [
   { key: 'nft', tab: 'Collectibles' },
   { key: 'about', tab: 'About' },
   { key: 'help', tab: 'Recover' },
-  { key: 'swap', tab: 'Swap Coins' }
+  { key: 'swap', tab: 'Swap' }
 ]
 
 const Show = () => {
