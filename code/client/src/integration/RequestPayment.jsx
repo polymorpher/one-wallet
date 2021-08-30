@@ -3,7 +3,6 @@ import BN from 'bn.js'
 import AnimatedSection from '../components/AnimatedSection'
 import { AverageRow } from '../components/Grid'
 import { Hint } from '../components/Text'
-import Paths from '../constants/paths'
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { SearchOutlined } from '@ant-design/icons'
@@ -15,7 +14,6 @@ import { handleAddressError } from '../handler'
 import { HarmonyONE } from '../components/TokenAssets'
 const { Title, Text, Paragraph } = Typography
 const RequestPaymennt = ({ caller, callback, amount, dest, from }) => {
-  const history = useHistory()
   dest = util.safeNormalizedAddress(dest)
   const network = useSelector(state => state.wallet.network)
   const balances = useSelector(state => state.wallet.balances)
@@ -27,12 +25,12 @@ const RequestPaymennt = ({ caller, callback, amount, dest, from }) => {
   const [selectedAddress, setSelectedAddress] = useState(from ? (selectedWallet || {}) : defaultUserAddress)
   const { formatted: amountFormatted, fiatFormatted: amountFiatFormatted } = util.computeBalance(amount, price)
   const [showSend, setShowSend] = useState(false)
-
   const checkCallback = () => {
     if (!callback) {
       message.error('The app did not specify a callback URL. Please contact the app developer.')
       return false
     }
+    return true
   }
   const next = () => {
     if (!selectedAddress.value) {
@@ -40,7 +38,7 @@ const RequestPaymennt = ({ caller, callback, amount, dest, from }) => {
     }
     const normalizedAddress = util.safeExec(util.normalizedAddress, [selectedAddress.value], handleAddressError)
     if (!normalizedAddress) {
-      return
+      return message.error(`normalizedAddress=${normalizedAddress}`)
     }
     const balance = balances[selectedAddress.value]
     if (!(new BN(amount).lte(new BN(balance)))) {
@@ -77,8 +75,11 @@ const RequestPaymennt = ({ caller, callback, amount, dest, from }) => {
         </AverageRow>
         {from && !selectedWallet &&
           <AverageRow>
-            <Paragraph>The app wants you to pay from address <WalletAddress showLabel address={from} /></Paragraph>
-            <Paragraph>However, you do not have that address. Please go back to the app, and choose an 1wallet address that you own. If you do own that 1wallet address but it is not appearing in your wallets, you need restore the wallet first using "Restore" feature with your Google Authenticator.</Paragraph>
+            <Space direction='vertical'>
+              <Paragraph>The app wants you to pay from address:</Paragraph>
+              <Paragraph> <WalletAddress showLabel address={from} /></Paragraph>
+              <Paragraph>However, you do not have that 1wallet address. Please go back to the app, and choose an 1wallet address that you own. If you do own that 1wallet address but it is not appearing in your wallets, you need restore the wallet first using "Restore" feature with your Google Authenticator.</Paragraph>
+            </Space>
           </AverageRow>}
         {from && selectedWallet &&
           <AverageRow>
@@ -146,7 +147,7 @@ const RequestPaymennt = ({ caller, callback, amount, dest, from }) => {
       {showSend &&
         <Send
           address={selectedAddress.value} show={showSend} onClose={onSendClose} onSuccess={onSuccess}
-          prefillAmount={amount} prefillDest={dest} overrideToken={HarmonyONE}
+          prefillAmount={amountFormatted} prefillDest={dest} overrideToken={HarmonyONE}
         />}
     </>
   )
