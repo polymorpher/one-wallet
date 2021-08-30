@@ -7,6 +7,7 @@ import { AddressError } from './constants/errors'
 import config from './config'
 
 export default {
+  // TODO: rewrite using BN to achieve 100% precision
   formatNumber: (number, maxPrecision) => {
     maxPrecision = maxPrecision || 4
     number = parseFloat(number)
@@ -15,7 +16,8 @@ export default {
     }
     const order = Math.ceil(Math.log10(Math.max(number, 1)))
     const digits = Math.max(0, maxPrecision - order)
-    return number.toFixed(digits)
+    const floored = Number(`${Math.floor(`${number}e+${digits}`)}e-${digits}`)
+    return floored.toString()
   },
 
   ellipsisAddress: (address) => {
