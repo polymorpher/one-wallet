@@ -35,7 +35,6 @@ const ConnectWallet = ({ caller, callback }) => {
     <AnimatedSection
       show
       style={{ minHeight: 320, maxWidth: 720 }}
-      title='Request: Connect a Wallet'
     >
       <AverageRow>
         <Space direction='vertical'>
