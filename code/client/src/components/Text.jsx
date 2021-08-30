@@ -51,3 +51,11 @@ export const ExplorerLink = styled(Link).attrs(e => ({ ...e, style: { color: '#8
     opacity: ${props => props['data-show-on-hover'] ? 1.0 : 0.8};
   }
 `
+
+export const Ul = styled.ul`
+  list-style: none!important;
+  margin-left: 0;
+  padding-left: 1em;
+  text-indent: -1em;
+`
+export const Li = styled.li``

@@ -23,7 +23,11 @@ const { Title } = Typography
 const Send = ({
   address,
   show,
-  onClose,
+  onClose, // optional
+  onSuccess, // optional
+  overrideToken, // optional
+  prefillAmount, // string, number of tokens, in whole amount (not wei)
+  prefillDest, // string, hex format
 }) => {
   const dispatch = useDispatch()
   const wallets = useSelector(state => state.wallet.wallets)
@@ -42,14 +46,14 @@ const Send = ({
   const balances = useSelector(state => state.wallet.balances)
   const price = useSelector(state => state.wallet.price)
   const tokenBalances = wallet.tokenBalances || []
-  const selectedToken = wallet?.selectedToken || HarmonyONE
+  const selectedToken = overrideToken || wallet?.selectedToken || HarmonyONE
   const selectedTokenBalance = selectedToken.key === 'one' ? (balances[address] || 0) : (tokenBalances[selectedToken.key] || 0)
   const selectedTokenDecimals = selectedToken.decimals
 
   const { formatted } = util.computeBalance(selectedTokenBalance, price, selectedTokenDecimals)
 
-  const [transferTo, setTransferTo] = useState({ value: '', label: '' })
-  const [inputAmount, setInputAmount] = useState('')
+  const [transferTo, setTransferTo] = useState({ value: prefillDest || '', label: prefillDest ? util.oneAddress(prefillDest) : '' })
+  const [inputAmount, setInputAmount] = useState(prefillAmount || '')
 
   const isNFT = util.isNFT(selectedToken)
   const { metadata } = selectedToken
@@ -113,6 +117,7 @@ const Send = ({
         onRevealAttemptFailed,
         onRevealSuccess: (txId) => {
           onRevealSuccess(txId)
+          onSuccess && onSuccess(txId)
           Chaining.refreshBalance(dispatch, intersection(Object.keys(wallets), [dest, address]))
         }
       })
@@ -136,6 +141,7 @@ const Send = ({
         onRevealAttemptFailed,
         onRevealSuccess: (txId) => {
           onRevealSuccess(txId)
+          onSuccess && onSuccess(txId)
           Chaining.refreshTokenBalance({ dispatch, address, token: selectedToken })
         }
       })
@@ -161,7 +167,7 @@ const Send = ({
         </Space>
         <Space align='baseline' size='large'>
           <Label><Hint>Amount</Hint></Label>
-          <InputBox margin='auto' width={200} value={inputAmount} onChange={({ target: { value } }) => setInputAmount(value)} />
+          <InputBox margin='auto' width={200} value={inputAmount} onChange={({ target: { value } }) => setInputAmount(value)} disabled={!!prefillAmount} />
           {!isNFT && <Hint>{selectedToken.symbol}</Hint>}
           <Button type='secondary' shape='round' onClick={useMaxAmount}>max</Button>
         </Space>

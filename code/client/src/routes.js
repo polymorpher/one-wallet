@@ -10,6 +10,7 @@ import CreatePage from './pages/Create'
 import ListPage from './pages/List'
 import RestorePage from './pages/Restore'
 import ShowPage from './pages/Show'
+import WalletAuth from './integration/WalletAuth'
 import { walletActions } from './state/modules/wallet'
 import config from './config'
 import util, { useWindowDimensions } from './util'
@@ -34,6 +35,7 @@ const LocalRoutes = () => {
                 return <Redirect to={Paths.root} />
               }}
             />
+            <Route path={Paths.auth} component={WalletAuth} />
             <Route path={Paths.create} component={CreatePage} />
             <Route path={Paths.wallets} component={ListPage} />
             <Route path={Paths.restore} component={RestorePage} />
