@@ -167,7 +167,7 @@ const Send = ({
         </Space>
         <Space align='baseline' size='large'>
           <Label><Hint>Amount</Hint></Label>
-          <InputBox margin='auto' width={200} value={inputAmount} onChange={({ target: { value } }) => setInputAmount(value)} />
+          <InputBox margin='auto' width={200} value={inputAmount} onChange={({ target: { value } }) => setInputAmount(value)} disabled={!!prefillAmount} />
           {!isNFT && <Hint>{selectedToken.symbol}</Hint>}
           <Button type='secondary' shape='round' onClick={useMaxAmount}>max</Button>
         </Space>
