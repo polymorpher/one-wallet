@@ -16,6 +16,7 @@ export default {
     }
     const order = Math.ceil(Math.log10(Math.max(number, 1)))
     const digits = Math.max(0, maxPrecision - order)
+    // https://www.jacklmoore.com/notes/rounding-in-javascript/
     const floored = Number(`${Math.floor(`${number}e+${digits}`)}e-${digits}`)
     return floored.toString()
   },
