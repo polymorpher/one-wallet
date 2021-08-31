@@ -20,9 +20,11 @@ const RequestPaymennt = ({ caller, callback, amount, dest, from }) => {
   const wallets = useSelector(state => state.wallet.wallets)
   const walletList = Object.keys(wallets).map(e => wallets[e]).filter(e => e.network === network)
   const selectedWallet = from && wallets[from]
-  const defaultUserAddress = (walletList.length === 0 ? {} : { value: walletList[0].address, label: `(${walletList[0].name}) ${util.ellipsisAddress(util.safeOneAddress(walletList[0].address))}` })
-  const [selectedAddress, setSelectedAddress] = useState(from ? (selectedWallet || {}) : defaultUserAddress)
+  const buildAddressObject = wallet => wallet && wallet.address && ({ value: wallet.address, label: `(${wallet.name}) ${util.ellipsisAddress(util.safeOneAddress(wallet.address))}` })
+  const defaultUserAddress = (walletList.length === 0 ? {} : buildAddressObject(walletList[0]))
+  const [selectedAddress, setSelectedAddress] = useState(selectedWallet ? buildAddressObject(selectedWallet) : defaultUserAddress)
   const { formatted: amountFormatted, fiatFormatted: amountFiatFormatted } = util.computeBalance(amount, price)
+
   const [showSend, setShowSend] = useState(false)
   const checkCallback = () => {
     if (!callback) {
@@ -82,7 +84,10 @@ const RequestPaymennt = ({ caller, callback, amount, dest, from }) => {
           </AverageRow>}
         {from && selectedWallet &&
           <AverageRow>
-            <Paragraph>Paying from: <WalletAddress showLabel address={from} /></Paragraph>
+            <Space direction='vertical'>
+              <Paragraph>Paying from</Paragraph>
+              <Paragraph><WalletAddress showLabel address={from} /></Paragraph>
+            </Space>
           </AverageRow>}
         {!from &&
           <>
