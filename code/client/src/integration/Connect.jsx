@@ -42,7 +42,7 @@ const ConnectWallet = ({ caller, callback }) => {
           <Text>
             <Paragraph>The app will be able to:</Paragraph>
             <Ul>
-              <Li><span role='img' aria-label='-'>✅</span> View the address of the connected wallet </Li>
+              <Li><span role='img' aria-label='-'>✅</span> View the address of the connected wallet</Li>
             </Ul>
             <Paragraph>The app cannot:</Paragraph>
             <Ul>
