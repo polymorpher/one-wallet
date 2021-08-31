@@ -2,7 +2,7 @@ import { Redirect, useLocation, useRouteMatch } from 'react-router'
 import Paths from '../constants/paths'
 import util from '../util'
 import config from '../config'
-import React from 'react'
+import React, { useEffect } from 'react'
 import querystring from 'query-string'
 import ConnectWallet from './Connect'
 import RequestPayment from './RequestPayment'
@@ -28,14 +28,16 @@ const WalletAuth = () => {
     return <Redirect to={Paths.wallets} />
   }
 
-  if (network) {
-    if (!config.networks[network]) {
-      message.error(`App requested invalid network: ${network}`)
-    } else {
-      message.success(`Switched to: ${network} (per request from ${caller})`, 10)
-      dispatch(walletActions.setNetwork(network))
+  useEffect(() => {
+    if (network) {
+      if (!config.networks[network]) {
+        message.error(`App requested invalid network: ${network}`)
+      } else {
+        message.success(`Switched to: ${network} (per request from ${caller})`, 10)
+        dispatch(walletActions.setNetwork(network))
+      }
     }
-  }
+  }, [network])
 
   return (
     <>
