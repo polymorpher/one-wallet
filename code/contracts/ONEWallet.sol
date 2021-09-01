@@ -315,22 +315,6 @@ contract ONEWallet is TokenManager, IONEWallet {
         emit RecoveryAddressUpdated(recoveryAddress);
     }
 
-    function _command(OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address payable dest, uint256 amount, bytes calldata data) internal {
-        (address backlink, bytes memory commandData) = abi.decode(data, (address, bytes));
-        uint32 position = backlinkAddresses.findBacklink(backlink);
-        if (position == backlinkAddresses.length) {
-            emit WalletGraph.CommandFailed(backlink, "Not linked", commandData);
-            return;
-        }
-        try IONEWallet(backlink).reveal(new bytes32[](0), 0, bytes32(0), operationType, tokenType, contractAddress, tokenId, dest, amount, commandData){
-            emit WalletGraph.CommandDispatched(backlink, commandData);
-        }catch Error(string memory reason){
-            emit WalletGraph.CommandFailed(backlink, reason, commandData);
-        }catch {
-            emit WalletGraph.CommandFailed(backlink, "", commandData);
-        }
-    }
-
     /// Provides commitHash, paramsHash, and verificationHash given the parameters
     function _getRevealHash(bytes32 neighbor, uint32 indexWithNonce, bytes32 eotp,
         OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount, bytes calldata data) pure internal returns (bytes32, bytes32) {
@@ -417,13 +401,19 @@ contract ONEWallet is TokenManager, IONEWallet {
         } else if (operationType == OperationType.FORWARD) {
             _forward(dest);
         } else if (operationType == OperationType.COMMAND) {
-            _command(operationType, tokenType, contractAddress, tokenId, dest, amount, data);
+            backlinkAddresses.command(operationType, tokenType, contractAddress, tokenId, dest, amount, data);
         } else if (operationType == OperationType.BACKLINK_ADD) {
             _backlinkAdd(data);
         } else if (operationType == OperationType.BACKLINK_DELETE) {
             _backlinkDelete(data);
         } else if (operationType == OperationType.BACKLINK_OVERRIDE) {
             _backlinkOverride(data);
+        } else if (operationType == OperationType.SIGN) {
+            signatures.authorizeHandler(contractAddress, tokenId, dest, amount);
+        } else if (operationType == OperationType.REVOKE) {
+            signatures.revokeHandler(contractAddress, tokenId, dest, amount);
+        } else if (operationType == OperationType.CALL) {
+            _callContract(contractAddress, amount, data);
         }
     }
 
@@ -611,7 +601,7 @@ contract ONEWallet is TokenManager, IONEWallet {
         }
     }
 
-    function _callContract(address contractAddress, uint256 amount, bytes memory encodedWithSignature) internal{
+    function _callContract(address contractAddress, uint256 amount, bytes memory encodedWithSignature) internal {
         (bool success, bytes memory ret) = contractAddress.call{value : amount}(encodedWithSignature);
         if (success) {
             emit ExternalCallCompleted(contractAddress, amount, encodedWithSignature, ret);
