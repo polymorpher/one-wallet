@@ -55,5 +55,9 @@ interface IONEWallet {
     function getBacklinks() external view returns (IONEWallet[] memory);
 
     /// https://eips.ethereum.org/EIPS/eip-1271
-    function isValidSignature(bytes32 _hash, bytes memory _signature) external view returns (bytes4);
+    function isValidSignature(bytes32 hash, bytes memory signature) external view returns (bytes4);
+
+    function listSignatures(uint32 start, uint32 end) external view returns (bytes32[] memory, bytes32[] memory, uint32[] memory, uint32[] memory);
+
+    function lookupSignature(bytes32 hash) external view returns (bytes32, uint32, uint32);
 }
