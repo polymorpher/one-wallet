@@ -24,7 +24,7 @@ library SignatureManager {
 
     uint32 constant MAX_UINT32 = type(uint32).max;
 
-    function authorize(SignatureTracker storage st, bytes32 hash, bytes32 signature, uint32 expireAt) external returns (bool){
+    function authorize(SignatureTracker storage st, bytes32 hash, bytes32 signature, uint32 expireAt) public returns (bool){
         Signature storage s = st.signatureLocker[hash];
         if (s.timestamp != 0) {
             if (s.signature != signature) {
@@ -41,7 +41,7 @@ library SignatureManager {
         return true;
     }
 
-    function revoke(SignatureTracker storage st, bytes32 hash, bytes32 signature) external returns (bool){
+    function revoke(SignatureTracker storage st, bytes32 hash, bytes32 signature) public returns (bool){
         Signature storage s = st.signatureLocker[hash];
         if (s.timestamp == 0) {
             emit SignatureNotExist(hash);
@@ -67,12 +67,67 @@ library SignatureManager {
         return true;
     }
 
+    function revokeBefore(SignatureTracker storage st, uint32 beforeTime) public {
+        uint32 numRemains = 0;
+        bytes32[] memory hashes = new bytes32[](st.hashes.length);
+        for (uint32 i = 0; i < st.hashes.length; i++) {
+            bytes32 h = st.hashes[i];
+            Signature storage s = st.signatureLocker[h];
+            if (s.expireAt > beforeTime) {
+                hashes[numRemains] = h;
+                numRemains += 1;
+            } else {
+                emit SignatureRevoked(h, s.signature);
+                delete st.signatureLocker[h];
+                delete st.positions[h];
+            }
+        }
+        bytes32[] memory newHashes = new bytes32[](numRemains);
+        for (uint32 i = 0; i < numRemains; i++) {
+            newHashes[i] = hashes[i];
+        }
+        delete st.hashes;
+        st.hashes = newHashes;
+    }
+
+    function revokeExpired(SignatureTracker storage st) public {
+        revokeBefore(st, uint32(block.timestamp));
+    }
+
+    function revokeAll(SignatureTracker storage st) public {
+        revokeBefore(st, MAX_UINT32);
+    }
+
+    /// to handle ONEWallet general parameters
+    function revokeHandler(SignatureTracker storage st, address contractAddress, uint256 tokenId, address payable dest, uint256 amount) external {
+        if (contractAddress != address(0)) {
+            revokeAll(st);
+        } else {
+            uint32 beforeTime = uint32(bytes4(bytes20(address(dest))));
+            if (beforeTime > 0) {
+                revokeBefore(st, beforeTime);
+            } else {
+                revoke(st, bytes32(tokenId), bytes32(amount));
+            }
+        }
+    }
+    /// to handle ONEWallet general parameters
+    function authorizeHandler(SignatureTracker storage st, address contractAddress, uint256 tokenId, address payable dest, uint256 amount) external {
+        authorize(st, bytes32(tokenId), bytes32(amount), uint32(bytes4(bytes20(address(dest)))));
+        if (contractAddress != address(0)) {
+            revokeExpired(st);
+        }
+    }
+
     function validate(SignatureTracker storage st, bytes32 hash, bytes32 signature) external view returns (bool){
         Signature storage s = st.signatureLocker[hash];
         if (s.signature != signature) {
             return false;
         }
         if (s.timestamp == 0) {
+            return false;
+        }
+        if (s.expireAt < block.timestamp) {
             return false;
         }
         return true;
