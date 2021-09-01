@@ -63,7 +63,7 @@ library WalletGraph {
         emit BackLinkAltered(new address[](0), new address[](0));
     }
 
-    function reclaimDomainFromBacklink(IONEWallet[] storage backlinkAddresses, uint32 backlinkIndex, IRegistrar reg, IReverseRegistrar rev, uint8 subdomainLength, bytes memory data) public {
+    function reclaimDomainFromBacklink(IONEWallet[] storage backlinkAddresses, uint32 backlinkIndex, IRegistrar reg, IReverseRegistrar rev, bytes memory data) public {
         if (backlinkIndex >= backlinkAddresses.length) {
             emit InvalidBackLinkIndex(backlinkIndex);
             return;
