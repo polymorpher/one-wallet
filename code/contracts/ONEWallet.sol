@@ -3,6 +3,7 @@ pragma solidity ^0.8.4;
 
 import "./TokenManager.sol";
 import "./DomainManager.sol";
+import "./SignatureManager.sol";
 import "./WalletGraph.sol";
 import "./Enums.sol";
 import "./IONEWallet.sol";
@@ -10,6 +11,7 @@ import "./IONEWallet.sol";
 contract ONEWallet is TokenManager, IONEWallet {
     using TokenTracker for TokenTrackerState;
     using WalletGraph for IONEWallet[];
+    using SignatureManager for SignatureManager.SignatureTracker;
     /// Some variables can be immutable, but doing so would increase contract size. We are at threshold at the moment (~24KiB) so until we separate the contracts, we will do everything to minimize contract size
     bytes32 root; // Note: @ivan brought up a good point in reducing this to 16-bytes so hash of two consecutive nodes can be done in a single word (to save gas and reduce blockchain clutter). Let's not worry about that for now and re-evalaute this later.
     uint8 height; // including the root. e.g. for a tree with 4 leaves, the height is 3.
@@ -40,8 +42,8 @@ contract ONEWallet is TokenManager, IONEWallet {
     uint256 constant AUTO_RECOVERY_MANDATORY_WAIT_TIME = 14 days;
     address constant ONE_WALLET_TREASURY = 0x02F2cF45DD4bAcbA091D78502Dba3B2F431a54D3;
 
-    uint32 constant majorVersion = 0x9; // a change would require client to migrate
-    uint32 constant minorVersion = 0x1; // a change would not require the client to migrate
+    uint32 constant majorVersion = 0x10; // a change would require client to migrate
+    uint32 constant minorVersion = 0x0; // a change would not require the client to migrate
 
     /// commit management
     struct Commit {
@@ -54,6 +56,7 @@ contract ONEWallet is TokenManager, IONEWallet {
     bytes32[] commits; // self-clean on commit (auto delete commits that are beyond REVEAL_MAX_DELAY), so it's bounded by the number of commits an attacker can spam within REVEAL_MAX_DELAY time in the worst case, which is not too bad.
     mapping(bytes32 => Commit[]) commitLocker;
 
+    SignatureManager.SignatureTracker signatures;
 
     constructor(bytes32 root_, uint8 height_, uint8 interval_, uint32 t0_, uint32 lifespan_, uint8 maxOperationsPerInterval_,
         address payable recoveryAddress_, uint256 dailyLimit_, IONEWallet[] memory backlinkAddresses_)
@@ -408,7 +411,7 @@ contract ONEWallet is TokenManager, IONEWallet {
         } else if (operationType == OperationType.RECLAIM_REVERSE_DOMAIN) {
             DomainManager.reclaimReverseDomain(contractAddress, string(data));
         } else if (operationType == OperationType.RECLAIM_DOMAIN_FROM_BACKLINK) {
-            backlinkAddresses.reclaimDomainFromBacklink(uint32(amount), IRegistrar(contractAddress), IReverseRegistrar(dest), uint8(tokenId), data);
+            backlinkAddresses.reclaimDomainFromBacklink(uint32(amount), IRegistrar(contractAddress), IReverseRegistrar(dest), data);
         } else if (operationType == OperationType.RECOVER_SELECTED_TOKENS) {
             TokenManager._recoverSelectedTokensEncoded(dest, data);
         } else if (operationType == OperationType.FORWARD) {
@@ -606,5 +609,34 @@ contract ONEWallet is TokenManager, IONEWallet {
         } catch {
             emit DomainManager.DomainTransferFailed("");
         }
+    }
+
+    function _callContract(address contractAddress, uint256 amount, bytes memory encodedWithSignature) internal{
+        (bool success, bytes memory ret) = contractAddress.call{value : amount}(encodedWithSignature);
+        if (success) {
+            emit ExternalCallCompleted(contractAddress, amount, encodedWithSignature, ret);
+        } else {
+            emit ExternalCallFailed(contractAddress, amount, encodedWithSignature, ret);
+        }
+    }
+
+    function supportsInterface(bytes4 interfaceId) public override pure returns (bool) {
+        return interfaceId == this.isValidSignature.selector || TokenManager.supportsInterface(interfaceId);
+    }
+
+    function isValidSignature(bytes32 hash, bytes calldata signatureBytes) override public view returns (bytes4){
+        if (signatureBytes.length > 32) {
+            for (uint32 i = 32; i < signatureBytes.length; i++) {
+                if (signatureBytes[i] != 0x00) {
+                    return 0xffffffff;
+                }
+            }
+        }
+        (bytes32 signature) = abi.decode(signatureBytes[0 : 32], (bytes32));
+        if (!signatures.validate(hash, signature)) {
+            return 0xffffffff;
+        }
+        // magic value for valid signature, eip-1271
+        return 0x1626ba7e;
     }
 }
