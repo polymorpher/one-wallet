@@ -51,7 +51,7 @@ abstract contract TokenManager is IERC721Receiver, IERC1155Receiver, Forwardable
         return this.onERC1155BatchReceived.selector;
     }
 
-    function supportsInterface(bytes4 interfaceID) external override pure returns (bool) {
+    function supportsInterface(bytes4 interfaceID) public override virtual pure returns (bool) {
         return interfaceID == this.supportsInterface.selector ||
         interfaceID == this.onERC1155Received.selector ||
         interfaceID == this.onERC721Received.selector;
