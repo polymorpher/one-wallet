@@ -99,7 +99,7 @@ library SignatureManager {
     }
 
     /// to handle ONEWallet general parameters
-    function revokeHandler(SignatureTracker storage st, address contractAddress, uint256 tokenId, address payable dest, uint256 amount) external {
+    function revokeHandler(SignatureTracker storage st, address contractAddress, uint256 tokenId, address payable dest, uint256 amount) public {
         if (contractAddress != address(0)) {
             revokeAll(st);
         } else {
@@ -112,14 +112,14 @@ library SignatureManager {
         }
     }
     /// to handle ONEWallet general parameters
-    function authorizeHandler(SignatureTracker storage st, address contractAddress, uint256 tokenId, address payable dest, uint256 amount) external {
+    function authorizeHandler(SignatureTracker storage st, address contractAddress, uint256 tokenId, address payable dest, uint256 amount) public {
         authorize(st, bytes32(tokenId), bytes32(amount), uint32(bytes4(bytes20(address(dest)))));
         if (contractAddress != address(0)) {
             revokeExpired(st);
         }
     }
 
-    function validate(SignatureTracker storage st, bytes32 hash, bytes32 signature) external view returns (bool){
+    function validate(SignatureTracker storage st, bytes32 hash, bytes32 signature) public view returns (bool){
         Signature storage s = st.signatureLocker[hash];
         if (s.signature != signature) {
             return false;
@@ -133,12 +133,12 @@ library SignatureManager {
         return true;
     }
 
-    function lookup(SignatureTracker storage st, bytes32 hash) external view returns (bytes32, uint32, uint32){
+    function lookup(SignatureTracker storage st, bytes32 hash) public view returns (bytes32, uint32, uint32){
         Signature storage s = st.signatureLocker[hash];
         return (s.signature, s.timestamp, s.expireAt);
     }
 
-    function list(SignatureTracker storage st, uint32 start, uint32 end) external view returns (bytes32[] memory, bytes32[] memory, uint32[] memory, uint32[] memory){
+    function list(SignatureTracker storage st, uint32 start, uint32 end) public view returns (bytes32[] memory, bytes32[] memory, uint32[] memory, uint32[] memory){
         bytes32[] memory signatures = new bytes32[](st.hashes.length);
         uint32[] memory timestamps = new uint32[](st.hashes.length);
         uint32[] memory expiries = new uint32[](st.hashes.length);
