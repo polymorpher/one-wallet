@@ -81,4 +81,20 @@ library WalletGraph {
         // reclaim reverse domain for the domain
         DomainManager.reclaimReverseDomain(address(rev), fqdn);
     }
+
+    function command(IONEWallet[] storage backlinkAddresses, OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address payable dest, uint256 amount, bytes calldata data) public {
+        (address backlink, bytes memory commandData) = abi.decode(data, (address, bytes));
+        uint32 position = findBacklink(backlinkAddresses, backlink);
+        if (position == backlinkAddresses.length) {
+            emit CommandFailed(backlink, "Not linked", commandData);
+            return;
+        }
+        try IONEWallet(backlink).reveal(new bytes32[](0), 0, bytes32(0), operationType, tokenType, contractAddress, tokenId, dest, amount, commandData){
+            emit CommandDispatched(backlink, commandData);
+        }catch Error(string memory reason){
+            emit CommandFailed(backlink, reason, commandData);
+        }catch {
+            emit CommandFailed(backlink, "", commandData);
+        }
+    }
 }
