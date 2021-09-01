@@ -20,7 +20,8 @@ interface IONEWallet {
     event ForwardAddressInvalid(address dest);
     event BackLinkUpdated(address dest, address backlink);
     event BackLinkUpdateError(address dest, address backlink, string error);
-
+    event ExternalCallCompleted(address contractAddress, uint256 amount, bytes data, bytes ret);
+    event ExternalCallFailed(address contractAddress, uint256 amount, bytes data, bytes ret);
 
 
     function getForwardAddress() external view returns (address payable);
@@ -52,4 +53,7 @@ interface IONEWallet {
     function getBalance(TokenType tokenType, address contractAddress, uint256 tokenId) external view returns (uint256);
 
     function getBacklinks() external view returns (IONEWallet[] memory);
+
+    /// https://eips.ethereum.org/EIPS/eip-1271
+    function isValidSignature(bytes32 _hash, bytes memory _signature) external view returns (bytes4);
 }
