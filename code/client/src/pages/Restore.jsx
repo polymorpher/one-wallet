@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useHistory } from 'react-router'
 import { Heading, Hint } from '../components/Text'
 import AnimatedSection from '../components/AnimatedSection'
 import { Space, Steps, Row, Select, message, Progress, Timeline } from 'antd'
-import QrReader from 'react-qr-reader'
+import { QrReader } from '@blackbox-vision/react-qr-reader'
 import { MigrationPayload } from '../proto/oauthMigration'
 import api from '../api'
 import ONEUtil from '../../../lib/util'
@@ -32,7 +32,7 @@ const Restore = () => {
   const [device, setDevice] = useState()
   const [majorVersion, setMajorVersion] = useState()
   const [minorVersion, setMinorVersion] = useState()
-  const ref = useRef()
+
   useEffect(() => {
     const numAttempts = 0
     const f = async () => {
@@ -55,15 +55,11 @@ const Restore = () => {
     const d = videoDevices.find(e => e.deviceId === v)
     setDevice(d)
   }
-  useEffect(() => {
-    if (device && section === 2) {
-      ref.current.initiate()
-    }
-  }, [device])
-  const onScan = (e) => {
-    if (e && !secret) {
+
+  const onScan = (result, error) => {
+    if (result && !secret) {
       try {
-        const data = new URL(e).searchParams.get('data')
+        const data = new URL(result.text).searchParams.get('data')
         const params = MigrationPayload.decode(Buffer.from(data, 'base64')).otpParameters
         const filteredParams = params.filter(e => e.issuer === 'ONE Wallet' || e.issuer === 'Harmony')
         if (filteredParams.length > 2) {
@@ -89,10 +85,7 @@ const Restore = () => {
       }
     }
   }
-  const onError = (err) => {
-    console.error(err)
-    message.error(`Failed to parse QR code. Error: ${err}`)
-  }
+
   const [addressInput, setAddressInput] = useState({ value: '', label: '' })
   const [address, setAddress] = useState()
   const [root, setRoot] = useState()
@@ -261,16 +254,10 @@ const Restore = () => {
               </Row>
               {videoDevices && device &&
                 <QrReader
-                  ref={ref}
-                  deviceIdChooser={(_, devices) => {
-                    if (device) {
-                      return devices.filter(d => d.deviceId === device.deviceId)[0].deviceId
-                    }
-                    return devices[0].deviceId
+                  constraints={{
+                    deviceId: device.deviceId
                   }}
-                  delay={300}
-                  onError={onError}
-                  onScan={onScan}
+                  onResult={onScan}
                   style={{ width: '100%' }}
                 />}
             </>}
