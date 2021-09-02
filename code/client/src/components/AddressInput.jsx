@@ -261,6 +261,12 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
     )
   }
 
+  const selectInputValueProp = addressValue.value !== ''
+    ? {
+        value: addressValue
+      }
+    : {}
+
   return (
     <Select
       suffixIcon={<SearchOutlined />}
@@ -273,10 +279,12 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
       notFoundContent={searchingAddress ? <Spin size='small' /> : <Text type='secondary'>No address found</Text>}
       bordered={false}
       showSearch
-      value={addressValue}
       onBlur={onEnterSelect}
       onInputKeyDown={onEnterSelect}
       onSearch={onSearchAddress}
+      {
+        ...selectInputValueProp
+      }
     >
       {
         knownAddressesOptions
