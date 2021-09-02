@@ -9,6 +9,7 @@ const securityParams = require('./params')
 const STANDARD_DECIMAL = 18
 const PERMIT_DEPRECATED_METHOD = process.env.PERMIT_DEPRECATED_METHOD
 const uts46 = require('idna-uts46')
+const abi = require('web3-eth-abi')
 
 const utils = {
   hexView: (bytes) => {
@@ -209,5 +210,19 @@ const utils = {
     }
     return hash
   },
+
+  abi,
+
+  encodeCalldata: (method, values = []) => {
+    const selector = abi.encodeFunctionSignature(method)
+    const m = method.match(/.+\((.*)\)/)
+    if (!m || !m[1]) {
+      return null
+    }
+    const params = m[1] ? m[1].split(',') : []
+    console.log(params)
+    const encodedParameters = abi.encodeParameters(params, values)
+    return selector + encodedParameters.slice(2)
+  }
 }
 module.exports = utils
