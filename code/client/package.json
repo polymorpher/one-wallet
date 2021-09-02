@@ -69,7 +69,6 @@
   },
   "dependencies": {
     "@ant-design/icons": "^4.6.2",
-    "@blackbox-vision/react-qr-reader": "^5.0.0",
     "@harmony-js/core": "^0.1.57",
     "@harmony-js/crypto": "^0.1.56",
     "@reduxjs/toolkit": "^1.6.0",
@@ -93,6 +92,7 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-otp-input": "^2.4.0",
+    "react-qr-reader": "git+https://github.com/polymorpher/react-qr-reader#v3.0",
     "react-redux": "^7.2.2",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
