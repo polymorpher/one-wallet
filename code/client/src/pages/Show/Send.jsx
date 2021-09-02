@@ -156,14 +156,14 @@ const Send = ({
             addressValue={transferTo}
             setAddressCallback={setTransferTo}
             currentWallet={wallet}
-            disableManualInput={!!prefillDest}
+            disabled={!!prefillDest}
           />
         </Space>
         <Space align='baseline' size='large'>
           <Label><Hint>Amount</Hint></Label>
           <InputBox margin='auto' width={200} value={inputAmount} onChange={({ target: { value } }) => setInputAmount(value)} disabled={!!prefillAmount} />
           {!isNFT && <Hint>{selectedToken.symbol}</Hint>}
-          <Button type='secondary' shape='round' onClick={useMaxAmount}>max</Button>
+          <Button type='secondary' shape='round' onClick={useMaxAmount} disabled={!!prefillAmount}>max</Button>
         </Space>
         {selectedToken.key === 'one' &&
           <Space align='end' size='large'>

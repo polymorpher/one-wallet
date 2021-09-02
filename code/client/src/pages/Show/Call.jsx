@@ -136,14 +136,14 @@ const Call = ({
             addressValue={transferTo}
             setAddressCallback={setTransferTo}
             currentWallet={wallet}
-            disableManualInput={!!prefillDest}
+            disabled={!!prefillDest}
           />
         </Space>
         <Space align='baseline' size='large'>
           <Label><Hint>Amount</Hint></Label>
           <InputBox margin='auto' width={200} value={inputAmount} onChange={({ target: { value } }) => setInputAmount(value)} disabled={!!prefillAmount} />
           <Hint>ONE</Hint>
-          <Button type='secondary' shape='round' onClick={useMaxAmount}>max</Button>
+          <Button type='secondary' shape='round' onClick={useMaxAmount} disabled={!!prefillAmount}>max</Button>
         </Space>
 
         <Space align='end' size='large'>
