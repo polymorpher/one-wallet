@@ -8,7 +8,13 @@ import BN from 'bn.js'
 const { Text, Link } = Typography
 
 export default {
-  buildHelpers: ({ setStage, network, resetOtp, restart, resetWorker }) => {
+  buildHelpers: ({ setStage, network, resetOtp, resetWorker }) => {
+    const restart = () => {
+      setStage(-1)
+      resetOtp()
+      resetWorker()
+    }
+
     const onCommitError = (ex) => {
       Sentry.captureException(ex)
       console.error(ex)
@@ -52,7 +58,7 @@ export default {
       } else {
         message.success(<Text>Done! Copy transaction id: <Text copyable={{ text: txId }}>{util.ellipsisAddress(txId)} </Text></Text>, 10)
       }
-      setTimeout(() => restart && restart(), 3000)
+      setTimeout(() => restart(), 3000)
     }
 
     const prepareValidation = ({ state: { otpInput, otp2Input, doubleOtp, selectedToken, transferTo, inputAmount, transferAmount }, checkAmount = true, checkDest = true, checkOtp = true } = {}) => {
@@ -109,6 +115,6 @@ export default {
       resetWorker && resetWorker()
     }
 
-    return { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed }
+    return { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed, restart }
   }
 }
