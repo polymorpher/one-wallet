@@ -188,6 +188,17 @@ const reducer = handleActions(
       }
     }),
 
+    [walletActions.userAcknowledgedToSaveAddress]: (state, action) => ({
+      ...state,
+      wallets: {
+        ...state.wallets,
+        [action.payload.address]: {
+          ...state.wallets[action.payload.address],
+          acknowledgedToSaveAddress: true
+        }
+      }
+    }),
+
     [walletActions.setDev]: (state, action) => ({
       ...state,
       dev: action.payload
