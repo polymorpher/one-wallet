@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Button, Row, Space, Typography, message } from 'antd'
+import { Button, Row, Space, Typography, message, Input } from 'antd'
 import { CheckCircleOutlined, CloseOutlined, LoadingOutlined } from '@ant-design/icons'
 import { Hint, InputBox, Label } from '../../components/Text'
 import AddressInput from '../../components/AddressInput'
@@ -18,6 +18,7 @@ import ONEConstants from '../../../../lib/constants'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
 const { Title } = Typography
+const { TextArea } = Input
 
 const Call = ({
   address,
@@ -155,12 +156,20 @@ const Call = ({
           <Hint>USD</Hint>
         </Space>
         <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} />
+        <Space align='baseline' size='large'>
+          <Label><Hint>Method</Hint></Label>
+          <InputBox margin='auto' width={500} value={method} onChange={({ target: { value } }) => setMethod(value)} disabled={!!prefillMethod} />
+        </Space>
+        <Space align='baseline' size='large'>
+          <Label><Hint>Args</Hint></Label>
+          <TextArea style={{ border: '1px dashed black', margin: 'auto', width: 500 }} autoSize value={dataInput} onChange={({ target: { value } }) => setDataInput(value)} disabled={!!prefillData} />
+        </Space>
       </Space>
       <Row justify='end' style={{ marginTop: 24 }}>
         <Space>
           {stage >= 0 && stage < 3 && <LoadingOutlined />}
           {stage === 3 && <CheckCircleOutlined />}
-          <Button type='primary' size='large' shape='round' disabled={stage >= 0} onClick={doSend}>Send</Button>
+          <Button type='primary' size='large' shape='round' disabled={stage >= 0} onClick={doSend}>Confirm</Button>
         </Space>
       </Row>
       <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
