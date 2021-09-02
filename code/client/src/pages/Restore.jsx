@@ -252,14 +252,21 @@ const Restore = () => {
                   })}
                 </Select>
               </Row>
-              {videoDevices && device &&
-                <QrReader
-                  constraints={{
-                    deviceId: device.deviceId
-                  }}
-                  onResult={onScan}
-                  style={{ width: '100%' }}
-                />}
+
+              {videoDevices && device && videoDevices.map(v => {
+                return (
+                  v.deviceId === device.deviceId
+                    ? <QrReader
+                        key={v.deviceId}
+                        constraints={{
+                          deviceId: device.deviceId
+                        }}
+                        onResult={onScan}
+                        style={{ width: '100%' }}
+                      />
+                    : <></>
+                )
+              })}
             </>}
           {secret &&
             <>
