@@ -9,6 +9,7 @@ import RequestPayment from './RequestPayment'
 import { useDispatch } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
 import { message } from 'antd'
+import RequestCall from './RequestCall'
 
 const WalletAuth = () => {
   const dispatch = useDispatch()
@@ -22,7 +23,7 @@ const WalletAuth = () => {
   const callback = qs.callback && Buffer.from(qs.callback, 'base64').toString()
   const caller = qs.caller
   const network = qs.network
-  const { amount, dest, from } = qs
+  const { amount, dest, from, calldata } = qs
 
   if (!action || !callback || !caller) {
     return <Redirect to={Paths.wallets} />
@@ -43,6 +44,7 @@ const WalletAuth = () => {
     <>
       {action === 'connect' && <ConnectWallet caller={caller} callback={callback} />}
       {action === 'pay' && <RequestPayment caller={caller} callback={callback} amount={amount} dest={dest} from={from} />}
+      {action === 'call' && <RequestCall caller={caller} callback={callback} amount={amount} calldata={calldata} from={from} dest={dest} />}
     </>
   )
 }
