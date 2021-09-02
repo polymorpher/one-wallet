@@ -12,7 +12,7 @@ import Send from '../pages/Show/Send'
 import { handleAddressError } from '../handler'
 import { HarmonyONE } from '../components/TokenAssets'
 const { Title, Text, Paragraph } = Typography
-const RequestPaymennt = ({ caller, callback, amount, dest, from }) => {
+const RequestPayment = ({ caller, callback, amount, dest, from }) => {
   dest = util.safeNormalizedAddress(dest)
   const network = useSelector(state => state.wallet.network)
   const balances = useSelector(state => state.wallet.balances)
@@ -157,4 +157,4 @@ const RequestPaymennt = ({ caller, callback, amount, dest, from }) => {
   )
 }
 
-export default RequestPaymennt
+export default RequestPayment
