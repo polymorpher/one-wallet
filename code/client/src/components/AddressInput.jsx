@@ -261,6 +261,8 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
     )
   }
 
+  // Make sure there is no value set for Select input if no selection since we are using labelInValue, which a default value/label
+  // will cover the inner search input that will make the right-click to paste not available.
   const selectInputValueProp = addressValue.value !== ''
     ? {
         value: addressValue
