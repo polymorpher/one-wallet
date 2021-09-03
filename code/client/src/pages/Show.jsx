@@ -10,6 +10,7 @@ import ONEConstants from '../../../lib/constants'
 import About from './Show/About'
 import Recovery from './Show/Recovery'
 import DoRecover from './Show/DoRecover'
+import Call from './Show/Call'
 import Warnings from './Show/Warnings'
 
 import AnimatedSection from '../components/AnimatedSection'
@@ -30,6 +31,7 @@ const Show = () => {
   const history = useHistory()
   const location = useLocation()
   const dispatch = useDispatch()
+  const dev = useSelector(state => state.wallet.dev)
   const wallets = useSelector(state => state.wallet.wallets)
   const match = useRouteMatch(Paths.show)
   const { address: routeAddress, action } = match ? match.params : {}
@@ -111,6 +113,7 @@ const Show = () => {
         address={address}
         onClose={showStartScreen}
       />
+      {dev && <Call address={address} show={section === 'call'} onClose={showStartScreen} />}
     </>
   )
 }
