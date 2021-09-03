@@ -26,13 +26,7 @@ const RequestPayment = ({ caller, callback, amount, dest, from }) => {
   const { formatted: amountFormatted, fiatFormatted: amountFiatFormatted } = util.computeBalance(amount, price)
 
   const [showSend, setShowSend] = useState(false)
-  const checkCallback = () => {
-    if (!callback) {
-      message.error('The app did not specify a callback URL. Please contact the app developer.')
-      return false
-    }
-    return true
-  }
+
   const next = () => {
     if (!selectedAddress.value) {
       return message.error('No address is selected')
@@ -46,18 +40,15 @@ const RequestPayment = ({ caller, callback, amount, dest, from }) => {
       const { formatted: balanceFormatted } = util.computeBalance(balance)
       return message.error(`Insufficient balance (${balanceFormatted} ONE) in the selected wallet`)
     }
-    if (!checkCallback()) return
     setShowSend(true)
   }
   const cancel = () => {
-    if (!checkCallback()) return
     window.location.href = callback + '?success=0'
   }
   const onSendClose = () => {
     setShowSend(false)
   }
   const onSuccess = (txId) => {
-    if (!checkCallback()) return
     window.location.href = callback + `?success=1&txId=${txId}`
   }
 
