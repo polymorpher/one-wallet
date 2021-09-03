@@ -52,7 +52,7 @@ const Call = ({
   const [inputAmount, setInputAmount] = useState(prefillAmount || '')
 
   const [method, setMethod] = useState(prefillMethod || '')
-  const [dataInput, setDataInput] = useState(JSON.stringify(prefillData || {}, null, 2))
+  const [dataInput, setDataInput] = useState(JSON.stringify(prefillData || [], null, 2))
 
   const { dailyLimit } = wallet
   const { formatted: dailyLimitFormatted } = util.computeBalance(dailyLimit, price)
