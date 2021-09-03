@@ -224,6 +224,20 @@ const utils = {
     console.log(params)
     const encodedParameters = abi.encodeParameters(params, values)
     return selector + encodedParameters.slice(2)
+  },
+
+  bytesConcat: (...args) => {
+    let len = 0
+    args.forEach(e => {
+      len += e.length
+    })
+    const buf = new Uint8Array(len)
+    let n = 0
+    args.forEach(e => {
+      buf.set(e, n)
+      n += e.length
+    })
+    return buf
   }
 }
 module.exports = utils
