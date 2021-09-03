@@ -34,6 +34,9 @@ const deleteKnownAddress = createAction('DELETE_KNOWN_ADDRESS')
 
 const bindDomain = createAction('BIND_DOMAIN')
 
+// User has acknowledged that they has been notified to save the wallet address for a created wallet.
+const userAcknowledgedToSaveAddress = createAction('USER_ACKNOWLEDGED_TO_SAVE_ADDRESS')
+
 const setDev = createAction('SET_DEV')
 
 export default {
@@ -56,6 +59,7 @@ export default {
   setKnownAddress,
   deleteKnownAddress,
   bindDomain,
+  userAcknowledgedToSaveAddress,
 
   trackTokens,
   untrackTokens,
