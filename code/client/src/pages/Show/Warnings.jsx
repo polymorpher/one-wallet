@@ -3,7 +3,7 @@ import util from '../../util'
 import ONEUtil from '../../../../lib/util'
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Button, Space, Typography } from 'antd'
+import { Button, Space, Typography, Row } from 'antd'
 import { walletActions } from '../../state/modules/wallet'
 const { Link, Text } = Typography
 
@@ -23,22 +23,20 @@ const Warnings = ({ address }) => {
         // If user not acknowledged, the message will always show to user until they acknowledged.
         // This also servers as reminder for each new wallet that user creates, so they don't accidentally forget
         // to save the wallet address for future references.
-        wallet.acknowledgedToSaveAddress
-          ? <></>
-          : (
-            <>
-              <Warning style={{ backgroundColor: '#fffbe6' }}>
-                <Space direction='vertical'>
-                  <Text>
-                    Please note down your wallet address for future reference (e.g. restore)
-                  </Text>
-                  <Text copyable>{util.safeOneAddress(address)}</Text>
-                  <Button style={{ float: 'right' }} shape='round' type='primary' onClick={confirmNoteDownAddress}>OK</Button>
-                </Space>
-              </Warning>
-              <br />
-            </>
-            )
+        !wallet.acknowledgedToSaveAddress &&
+          <Warning info>
+            <Space direction='vertical'>
+              <Text>
+                Please save your wallet address or get a domain name. You may need it later to restore your wallet, in case you lost the wallet.
+              </Text>
+              <Row justify='space-between'>
+                <Text copyable>{util.safeOneAddress(address)}</Text>
+                <Button shape='round' type='primary' onClick={confirmNoteDownAddress}>Dismiss</Button>
+              </Row>
+
+            </Space>
+            <br />
+          </Warning>
       }
       {walletOutdated && <Warning>Your wallet is too outdated. Please create a new wallet and move your friends.</Warning>}
       {util.isEmptyAddress(wallet.lastResortAddress) && <Warning>You haven't set your recovery address. Please do it as soon as possible.</Warning>}
