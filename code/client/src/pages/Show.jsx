@@ -25,6 +25,7 @@ import WalletTitle from '../components/WalletTitle'
 import PurchaseDomain from './Show/PurchaseDomain'
 import Upgrade from './Show/Upgrade'
 import TransferDomain from './Show/TransferDomain'
+import Sign from './Show/Sign'
 
 const tabList = [{ key: 'coins', tab: 'Coins' }, { key: 'nft', tab: 'Collectibles' }, { key: 'about', tab: 'About' }, { key: 'help', tab: 'Recover' }]
 const Show = () => {
@@ -114,6 +115,7 @@ const Show = () => {
         onClose={showStartScreen}
       />
       {dev && <Call address={address} show={section === 'call'} onClose={showStartScreen} />}
+      {dev && <Sign address={address} show={section === 'sign'} onClose={showStartScreen} />}
     </>
   )
 }
