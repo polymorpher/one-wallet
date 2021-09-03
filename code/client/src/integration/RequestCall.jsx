@@ -42,13 +42,6 @@ const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amo
     }
   }, [])
 
-  const checkCallback = () => {
-    if (!callback) {
-      message.error('The app did not specify a callback URL. Please contact the app developer.')
-      return false
-    }
-    return true
-  }
   const next = () => {
     if (!selectedAddress.value) {
       return message.error('No address is selected')
@@ -62,18 +55,15 @@ const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amo
       const { formatted: balanceFormatted } = util.computeBalance(balance)
       return message.error(`Insufficient balance (${balanceFormatted} ONE) in the selected wallet`)
     }
-    if (!checkCallback()) return
     setShowCall(true)
   }
   const cancel = () => {
-    if (!checkCallback()) return
     window.location.href = callback + '?success=0'
   }
   const onCallClose = () => {
     setShowCall(false)
   }
   const onSuccess = (txId) => {
-    if (!checkCallback()) return
     window.location.href = callback + `?success=1&txId=${txId}`
   }
 
