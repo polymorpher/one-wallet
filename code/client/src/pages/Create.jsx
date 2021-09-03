@@ -114,7 +114,7 @@ const Create = () => {
   const [doubleOtp, setDoubleOtp] = useState(false)
 
   const [durationVisible, setDurationVisible] = useState(false)
-  const [section, setSection] = useState(sectionViews.setupOtp)
+  const [section, setSection] = useState(sectionViews.prepareWallet)
   const [qrCodeData, setQRCodeData] = useState()
   const [secondOtpQrCodeData, setSecondOtpQrCodeData] = useState()
   const [otp, setOtp] = useState('')
@@ -378,8 +378,8 @@ const Create = () => {
               }]}
             />
             <Hint>
-              {lastResortAddress.value !== WalletConstants.oneWalletTreasury.address && <span style={{ color: 'red' }}>You cannot change this later.</span>}
-              If you lost your authenticator, your can recover funds to this address. You can also send 1.0 ONE from the recovery address to trigger auto-recovery
+              {lastResortAddress.value !== WalletConstants.oneWalletTreasury.address && <span style={{ color: 'red' }}>You cannot change this later. </span>}
+              If you lost your authenticator, your can recover funds to this address. You can also send 1.0 ONE from the recovery address to trigger auto-recovery. You can use any wallet address as a recovery address. It does not need to be a 1wallet.
             </Hint>
             {lastResortAddress.value === WalletConstants.oneWalletTreasury.address &&
               <Warning style={{ marginTop: 24 }}>
