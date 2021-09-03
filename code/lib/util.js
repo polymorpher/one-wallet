@@ -238,6 +238,10 @@ const utils = {
       n += e.length
     })
     return buf
+  },
+
+  ethMessage: (message) => {
+    return '\x19Ethereum Signed Message:\n' + message.length.toString() + message
   }
 }
 module.exports = utils
