@@ -213,6 +213,7 @@ const utils = {
 
   abi,
 
+  // WARNING: returns string-encoded bytes (0x....), unlike other functions provided in this package
   encodeCalldata: (method, values = []) => {
     const selector = abi.encodeFunctionSignature(method)
     const m = method.match(/.+\((.*)\)/)
