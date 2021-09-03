@@ -60,7 +60,7 @@ const Sign = ({
 
     let message = messageInput
     if (!useRawMessage) {
-      message = '\x19Ethereum Signed Message:\n' + message.length + message
+      message = ONEUtil.ethMessage(message)
     }
     const hash = ONEUtil.keccak(message)
     const tokenId = new BN(hash)
@@ -111,12 +111,15 @@ const Sign = ({
       <Space direction='vertical' size='large'>
         <Space align='baseline' size='large'>
           <Label wide><Hint>Message</Hint></Label>
-          <TextArea style={{ border: '1px dashed black', margin: 'auto', width: 424 }} autoSize value={messageInput} onChange={({ target: { value } }) => setMessageInput(value)} disabled={!!prefillMessageInput} />
+          <TextArea
+            style={{ border: '1px dashed black', margin: 'auto', width: 424 }} autoSize value={messageInput} onChange={({ target: { value } }) => setMessageInput(value)}
+            disabled={typeof prefillMessageInput !== 'undefined'}
+          />
         </Space>
         <Space align='baseline' size='large'>
-          <Label wide><Hint>As Raw</Hint></Label>
-          <Checkbox checked={useRawMessage} onChange={({ target: { checked } }) => setUseRawMessage(checked)} disabled={!!prefillUseRawMessage} />
-          <Tooltip title={'If checked, messages would not be prepended with the standard Ethereum message header: "\\x19Ethereum Signed Message:\\n" followed by the message\'s length'}>
+          <Label wide><Hint>Header</Hint></Label>
+          <Checkbox checked={!useRawMessage} onChange={({ target: { checked } }) => setUseRawMessage(!checked)} disabled={typeof prefillUseRawMessage !== 'undefined'} />
+          <Tooltip title={'If checked, messages would be prepended with the standard Ethereum message header: "\\x19Ethereum Signed Message:\\n" followed by the message\'s length'}>
             <QuestionCircleOutlined />
           </Tooltip>
         </Space>
