@@ -47,7 +47,7 @@ const Sign = ({
   const [duration, setDuration] = useState(prefillDuration)
   const [noExpiry, setNoExpiry] = useState(isNaN(prefillDuration) ? true : (prefillDuration === 0))
 
-  const { prepareValidation, ...handlers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker, onSuccess })
+  const { prepareValidation, onRevealSuccess, ...handlers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker, onSuccess })
 
   const doSign = () => {
     const { otp, otp2, invalidOtp2, invalidOtp } = prepareValidation({
@@ -68,9 +68,10 @@ const Sign = ({
     const encodedExpiryAt = new Uint8Array(20)
     encodedExpiryAt.set(expiryAtBytes)
     const args = { operationType: ONEConstants.OperationType.SIGN, tokenType: ONEConstants.TokenType.NONE, contractAddress: ONEConstants.EmptyAddress, tokenId, dest: ONEUtil.hexString(encodedExpiryAt) }
+    let signature
     const commitHashArgs = ({ eotp }) => {
       const buf = ONEUtil.bytesConcat(eotp, hash)
-      const signature = ONEUtil.keccak(buf)
+      signature = ONEUtil.keccak(buf)
       return { amount: signature, ...args }
     }
     const revealArgs = ({ eotp }) => {
@@ -90,6 +91,10 @@ const Sign = ({
       afterCommit: () => setStage(2),
       revealAPI: api.relayer.reveal,
       revealArgs,
+      onRevealSuccess: (txId) => {
+        onRevealSuccess(txId)
+        onSuccess && onSuccess(txId, { hash, signature })
+      },
       ...handlers
     })
   }
