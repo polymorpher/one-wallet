@@ -17,7 +17,7 @@ const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amo
   const price = useSelector(state => state.wallet.price)
 
   const [selectedAddress, setSelectedAddress] = useState({})
-  const { formatted: amountFormatted, fiatFormatted: amountFiatFormatted } = util.computeBalance(amount, price)
+  const { formatted: amountFormatted, fiatFormatted: amountFiatFormatted } = util.computeBalance(amount || 0, price)
   const isNonZeroAmount = !(new BN(amount).isZero())
   // Format: {method, parameters, comment}
   // - method: the function's signature, for example, `commit(bytes32,bytes32,bytes32)` is the signature for `function commit(bytes32 hash, bytes32 paramsHash, bytes32 verificationHash) external`;
