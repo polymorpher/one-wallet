@@ -8,7 +8,7 @@ import BN from 'bn.js'
 const { Text, Link } = Typography
 
 export default {
-  buildHelpers: ({ setStage, network, resetOtp, resetWorker }) => {
+  buildHelpers: ({ setStage, network, resetOtp, resetWorker, onSuccess }) => {
     const restart = () => {
       setStage(-1)
       resetOtp()
@@ -59,6 +59,7 @@ export default {
         message.success(<Text>Done! Copy transaction id: <Text copyable={{ text: txId }}>{util.ellipsisAddress(txId)} </Text></Text>, 10)
       }
       setTimeout(() => restart(), 3000)
+      onSuccess && onSuccess(txId)
     }
 
     const prepareValidation = ({ state: { otpInput, otp2Input, doubleOtp, selectedToken, transferTo, inputAmount, transferAmount }, checkAmount = true, checkDest = true, checkOtp = true } = {}) => {

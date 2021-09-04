@@ -70,9 +70,9 @@ const Call = ({
     }
   }
 
-  const { prepareValidation, onRevealSuccess, ...errorHandlers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
+  const { prepareValidation, ...handlers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker, onSuccess })
 
-  const doSend = () => {
+  const doCall = () => {
     const { otp, otp2, invalidOtp2, invalidOtp, dest, amount } = prepareValidation({
       state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp, transferTo, inputAmount, transferAmount }
     }) || {}
@@ -113,12 +113,7 @@ const Call = ({
       afterCommit: () => setStage(2),
       revealAPI: api.relayer.reveal,
       revealArgs: { ...args, data: encodedData },
-      onRevealSuccess: (txId) => {
-        onRevealSuccess(txId)
-        onSuccess && onSuccess(txId)
-        Chaining.refreshBalance({ dispatch, addresses: [address] })
-      },
-      ...errorHandlers
+      ...handlers
     })
   }
 
@@ -169,7 +164,7 @@ const Call = ({
         <Space>
           {stage >= 0 && stage < 3 && <LoadingOutlined />}
           {stage === 3 && <CheckCircleOutlined />}
-          <Button type='primary' size='large' shape='round' disabled={stage >= 0} onClick={doSend}>Confirm</Button>
+          <Button type='primary' size='large' shape='round' disabled={stage >= 0} onClick={doCall}>Confirm</Button>
         </Space>
       </Row>
       <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />

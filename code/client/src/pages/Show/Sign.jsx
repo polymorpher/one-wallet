@@ -49,9 +49,9 @@ const Sign = ({
   const [duration, setDuration] = useState(prefillDuration)
   const [noExpiry, setNoExpiry] = useState(isNaN(prefillDuration) ? true : (prefillDuration === 0))
 
-  const { prepareValidation, onRevealSuccess, ...errorHandlers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
+  const { prepareValidation, ...handlers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker, onSuccess })
 
-  const doSend = () => {
+  const doSign = () => {
     const { otp, otp2, invalidOtp2, invalidOtp } = prepareValidation({
       state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp }, checkAmount: false, checkDest: false
     }) || {}
@@ -92,12 +92,7 @@ const Sign = ({
       afterCommit: () => setStage(2),
       revealAPI: api.relayer.reveal,
       revealArgs,
-      onRevealSuccess: (txId) => {
-        onRevealSuccess(txId)
-        onSuccess && onSuccess(txId)
-        Chaining.refreshBalance({ dispatch, addresses: [address] })
-      },
-      ...errorHandlers
+      ...handlers
     })
   }
 
@@ -147,7 +142,7 @@ const Sign = ({
         <Space>
           {stage >= 0 && stage < 3 && <LoadingOutlined />}
           {stage === 3 && <CheckCircleOutlined />}
-          <Button type='primary' size='large' shape='round' disabled={stage >= 0} onClick={doSend}>Confirm</Button>
+          <Button type='primary' size='large' shape='round' disabled={stage >= 0} onClick={doSign}>Confirm</Button>
         </Space>
       </Row>
       <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
