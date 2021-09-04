@@ -4,6 +4,7 @@ import OtpBox from './OtpBox'
 import { QuestionCircleOutlined } from '@ant-design/icons'
 import React, { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router'
+import { useWindowDimensions } from '../util'
 
 export const useOtpState = () => {
   const [otpInput, setOtpInput] = useState('')
@@ -21,6 +22,8 @@ export const useOtpState = () => {
 export const OtpStack = ({ wideLabel, walletName, otpState, doubleOtp }) => {
   const location = useLocation()
   const { otpRef, otp2Ref, otpInput, otp2Input, setOtpInput, setOtp2Input, resetOtp } = otpState || useOtpState()
+  const { isMobile } = useWindowDimensions()
+
   useEffect(() => {
     // Focus on OTP 2 input box when first OTP input box is filled.
     if (otpInput.length === 6 && doubleOtp) {
@@ -36,7 +39,7 @@ export const OtpStack = ({ wideLabel, walletName, otpState, doubleOtp }) => {
 
   return (
     <>
-      <Space align='baseline' size='large' style={{ marginTop: 16 }}>
+      <Space align='baseline' size='large' style={{ marginTop: 16 }} direction={isMobile ? 'vertical' : 'horizontal'}>
         <Label wide={wideLabel}><Hint>Code {doubleOtp ? '1' : ''}</Hint></Label>
         <OtpBox
           ref={otpRef}
@@ -48,7 +51,7 @@ export const OtpStack = ({ wideLabel, walletName, otpState, doubleOtp }) => {
         </Tooltip>
       </Space>
       {doubleOtp &&
-        <Space align='baseline' size='large' style={{ marginTop: 16 }}>
+        <Space align='baseline' size='large' style={{ marginTop: 16 }} direction={isMobile ? 'vertical' : 'horizontal'}>
           <Label wide={wideLabel}><Hint>Code 2</Hint></Label>
           <OtpBox
             ref={otp2Ref}

@@ -33,6 +33,8 @@ const WalletCard = ({ wallet }) => {
     dispatch(walletActions.fetchWallet({ address }))
   }, [location.pathname])
 
+  console.log(isMobile)
+
   return (
     <Card
       onClick={() => history.push(Paths.showAddress(oneAddress))}
@@ -41,15 +43,24 @@ const WalletCard = ({ wallet }) => {
       extra={<Space style={{ alignItems: 'baseline' }}><Title level={3} style={{ marginBottom: 0 }}>{formatted}</Title><Text type='secondary'>ONE</Text></Space>}
     >
       <Space direction='vertical' size='large'>
-        <Space><Title level={4}>≈ ${fiatFormatted}</Title><Text type='secondary'>USD</Text></Space>
+        <Space>
+          <Title level={4}>≈ ${fiatFormatted}</Title>
+          <Text type='secondary'>USD</Text>
+        </Space>
         <Text
           ellipsis={{ tooltip: oneAddress }} style={{ width: 196 }} onClick={() => {
             navigator.clipboard.writeText(oneAddress)
             message.info('Copied address to clipboard')
           }}
-        >{oneAddress}
+        >
+          {oneAddress}
         </Text>
-        {(walletOutdated || util.isEmptyAddress(wallet.lastResortAddress)) && <Tag color='warning' style={{ position: 'absolute', bottom: 16, right: 16 }}>needs attention</Tag>}
+        {
+          (walletOutdated || util.isEmptyAddress(wallet.lastResortAddress)) &&
+            <Tag color='warning' style={{ position: 'absolute', bottom: isMobile ? 32 : 16, right: 16 }}>
+              needs attention
+            </Tag>
+        }
       </Space>
 
     </Card>

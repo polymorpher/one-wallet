@@ -48,7 +48,7 @@ const DoRecover = ({ address, show, onClose }) => {
   return (
     <AnimatedSection
       show={show}
-      style={{ width: 720 }}
+      style={{ maxWidth: 720 }}
       title={<Title level={2}>Recover</Title>} extra={[
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
       ]}

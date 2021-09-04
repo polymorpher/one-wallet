@@ -13,6 +13,7 @@ import ShowUtils from './show-util'
 import { useDispatch, useSelector } from 'react-redux'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
+import { useWindowDimensions } from '../../util'
 const { Title } = Typography
 
 const SetRecovery = ({ address, onClose, show }) => {
@@ -24,6 +25,7 @@ const SetRecovery = ({ address, onClose, show }) => {
   const [transferTo, setTransferTo] = useState({ value: '', label: '' })
   const { resetWorker, recoverRandomness } = useRandomWorker()
   const { state: otpState } = useOtpState()
+  const { isMobile } = useWindowDimensions()
   const { otpInput, otp2Input } = otpState
   const resetOtp = otpState.resetOtp
 
@@ -64,14 +66,21 @@ const SetRecovery = ({ address, onClose, show }) => {
 
   return (
     <AnimatedSection
-      style={{ width: 720 }}
-      show={show} title={<Title level={2}>Set Recovery Address</Title>} extra={[
+      style={{ maxWidth: 720 }}
+      show={show}
+      title={<Title level={isMobile ? 5 : 2}>Set Recovery Address</Title>}
+      extra={[
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
       ]}
     >
       <Space direction='vertical' size='large'>
         <Hint>Note: You can only do this once!</Hint>
-        <Space align='baseline' size='large'>
+        <Space
+          align={isMobile ? undefined : 'baseline'}
+          size='large'
+          direction={isMobile ? 'vertical' : 'horizontal'}
+          style={{ width: '100%' }}
+        >
           <Label><Hint>Address</Hint></Label>
           <AddressInput
             addressValue={transferTo}

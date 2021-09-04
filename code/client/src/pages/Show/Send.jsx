@@ -5,7 +5,7 @@ import { Hint, InputBox, Label } from '../../components/Text'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
-import util from '../../util'
+import util, { useWindowDimensions } from '../../util'
 import BN from 'bn.js'
 import ShowUtils from './show-util'
 import { useDispatch, useSelector } from 'react-redux'
@@ -33,6 +33,7 @@ const Send = ({
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
   const network = useSelector(state => state.wallet.network)
+  const { isMobile } = useWindowDimensions()
 
   const doubleOtp = wallet.doubleOtp
   const { state: otpState } = useOtpState()
@@ -143,15 +144,26 @@ const Send = ({
 
   return (
     <AnimatedSection
-      style={{ width: 720 }}
-      show={show} title={<Title level={2}>Send: {titleSuffix}</Title>} extra={[
+      style={{ maxWidth: 720 }}
+      show={show}
+      title={
+        <Title level={isMobile ? 5 : 2}>
+          {
+            isMobile ? '' : 'Send:'
+          }
+          {titleSuffix}
+        </Title>
+      }
+      extra={[
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
       ]}
     >
-      <Space direction='vertical' size='large'>
+      <Space direction='vertical' size='large' style={{ width: '100%' }}>
         {isNFT && <Title level={4}>{metadata?.displayName}</Title>}
-        <Space align='baseline' size='large'>
-          <Label><Hint>To</Hint></Label>
+        <Space size='large' direction={isMobile ? 'vertical' : 'horizontal'} style={{ width: '100%' }}>
+          <Label>
+            <Hint>To</Hint>
+          </Label>
           <AddressInput
             addressValue={transferTo}
             setAddressCallback={setTransferTo}
@@ -159,23 +171,37 @@ const Send = ({
             disabled={!!prefillDest}
           />
         </Space>
-        <Space align='baseline' size='large'>
+        <Space align='baseline' size='large' direction={isMobile ? 'vertical' : 'horizontal'} style={{ width: '100%' }}>
           <Label><Hint>Amount</Hint></Label>
-          <InputBox margin='auto' width={200} value={inputAmount} onChange={({ target: { value } }) => setInputAmount(value)} disabled={!!prefillAmount} />
-          {!isNFT && <Hint>{selectedToken.symbol}</Hint>}
+          <InputBox
+            margin='auto'
+            width={200}
+            value={inputAmount}
+            onChange={({ target: { value } }) => setInputAmount(value)}
+            disabled={!!prefillAmount}
+          />
+          {
+            !isNFT && <Hint>{selectedToken.symbol}</Hint>
+          }
           <Button type='secondary' shape='round' onClick={useMaxAmount} disabled={!!prefillAmount}>max</Button>
         </Space>
-        {selectedToken.key === 'one' &&
-          <Space align='end' size='large'>
-            <Label><Hint /></Label>
-            <Title
-              level={4}
-              style={{ width: 200, textAlign: 'right', marginBottom: 0 }}
-            >≈ ${transferFiatAmountFormatted}
-            </Title>
-            <Hint>USD</Hint>
-          </Space>}
-        <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} />
+        {
+          selectedToken.key === 'one' &&
+            <Space size='large' align='end'>
+              <Title
+                level={4}
+                style={{ textAlign: 'right', marginBottom: 0 }}
+              >
+                ≈ ${transferFiatAmountFormatted}
+              </Title>
+              <Hint>USD</Hint>
+            </Space>
+        }
+        <OtpStack
+          walletName={wallet.name}
+          doubleOtp={doubleOtp}
+          otpState={otpState}
+        />
       </Space>
       <Row justify='end' style={{ marginTop: 24 }}>
         <Space>

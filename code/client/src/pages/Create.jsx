@@ -365,7 +365,7 @@ const Create = () => {
         {/*  </Space> */}
         {/* </Row> */}
         <Row style={{ marginBottom: 48 }}>
-          <Space direction='vertical' size='small'>
+          <Space direction='vertical' size='small' style={{ width: '100%' }}>
             <Hint>Set up a fund recovery address:</Hint>
             <AddressInput
               addressValue={lastResortAddress}

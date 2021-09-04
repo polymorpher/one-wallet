@@ -26,7 +26,16 @@ const AnimatedSection = ({ show = true, children, style, ...params }) => {
   return (
     <Transition in={show} timeout={300}>
       {state => (
-        <Section data-show={show} style={{ padding: isMobile ? 16 : 32, ...defaultStyle, ...transitionStyles[state], ...style }} {...params}>
+        <Section
+          data-show={show}
+          style={{
+            padding: isMobile ? 16 : 32,
+            ...defaultStyle,
+            ...transitionStyles[state],
+            ...style
+          }}
+          {...params}
+        >
           {children}
         </Section>
       )}
