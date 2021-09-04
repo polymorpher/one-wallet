@@ -44,7 +44,7 @@ contract ONEWallet is TokenManager, IONEWallet {
     address constant ONE_WALLET_TREASURY = 0x02F2cF45DD4bAcbA091D78502Dba3B2F431a54D3;
 
     uint32 constant majorVersion = 0xa; // a change would require client to migrate
-    uint32 constant minorVersion = 0x0; // a change would not require the client to migrate
+    uint32 constant minorVersion = 0x1; // a change would not require the client to migrate
 
     /// commit management
     CommitManager.CommitState commitState;
