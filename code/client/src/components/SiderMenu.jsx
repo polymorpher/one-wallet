@@ -56,50 +56,67 @@ const SiderMenu = ({ ...args }) => {
   }, [])
 
   return (
-    <Layout.Sider collapsed={isMobile} {...args}>
-      {/* <Image src='/assets/harmony.svg' /> */}
-      <Row justify='center'>
-        <SiderLink href='https://harmony.one/'>
-          <Image preview={false} src={isMobile ? HarmonyIcon : HarmonyLogo} style={{ cursor: 'pointer', padding: isMobile ? 16 : 32 }} onClick={() => history.push('/')} />
-        </SiderLink>
-      </Row>
-      {!isMobile && <Row justify='center' style={{ marginBottom: 24 }}><SiderLink href='https://harmony.one/1wallet'>{config.appName} {config.version}</SiderLink></Row>}
+    <>
+      {
+        isMobile
+          ? (
+            <Menu
+              theme='dark'
+              mode='horizontal'
+              onClick={nav}
+              selectedKeys={[action]}
+            >
+              <Menu.Item key='create' style={{ padding: '0 30px' }} icon={<PlusCircleOutlined />}>Create</Menu.Item>
+              <Menu.Item key='wallets' style={{ padding: '0 30px' }} icon={<UnorderedListOutlined />}>Wallets</Menu.Item>
+              <Menu.Item key='restore' style={{ padding: '0 30px' }} icon={<HistoryOutlined />}>Restore</Menu.Item>
+            </Menu>
+            )
+          : (
+            <Layout.Sider collapsed={isMobile} {...args}>
+              {/* <Image src='/assets/harmony.svg' /> */}
+              <Row justify='center'>
+                <SiderLink href='https://harmony.one/'>
+                  <Image preview={false} src={isMobile ? HarmonyIcon : HarmonyLogo} style={{ cursor: 'pointer', padding: isMobile ? 16 : 32 }} onClick={() => history.push('/')} />
+                </SiderLink>
+              </Row>
+              <Row justify='center' style={{ marginBottom: 24 }}><SiderLink href='https://harmony.one/1wallet'>{config.appName} {config.version}</SiderLink></Row>
 
-      {!isMobile && <LineDivider>Global Usage</LineDivider>}
+              <LineDivider>Global Usage</LineDivider>
 
-      {!isMobile && (stats
-        ? (
-          <Row style={{ marginBottom: 16 }} justify='center'>
-            <Row style={{ marginBottom: 8 }}>
-              <Tag color='dimgray' style={{ margin: 0, width: 64, borderRadius: 0, textAlign: 'center' }}>wallets</Tag>
-              <Tag color='lightseagreen' style={{ width: 80, borderRadius: 0, textAlign: 'center' }}>{stats.count.toLocaleString()}</Tag>
-            </Row>
-            <Row>
-              <Tag color='dimgray' style={{ margin: 0, width: 64, borderRadius: 0, textAlign: 'center' }}>balance</Tag>
-              <Tag color='steelblue' style={{ width: 80, borderRadius: 0, textAlign: 'center' }}>{stats.totalAmount.toLocaleString()} ONE</Tag>
-            </Row>
-          </Row>)
-        : (
-          <Row justify='center'>
-            <Spin />
-          </Row>)
-      )}
+              {stats
+                ? (
+                  <Row style={{ marginBottom: 16 }} justify='center'>
+                    <Row style={{ marginBottom: 8 }}>
+                      <Tag color='dimgray' style={{ margin: 0, width: 64, borderRadius: 0, textAlign: 'center' }}>wallets</Tag>
+                      <Tag color='lightseagreen' style={{ width: 80, borderRadius: 0, textAlign: 'center' }}>{stats.count.toLocaleString()}</Tag>
+                    </Row>
+                    <Row>
+                      <Tag color='dimgray' style={{ margin: 0, width: 64, borderRadius: 0, textAlign: 'center' }}>balance</Tag>
+                      <Tag color='steelblue' style={{ width: 80, borderRadius: 0, textAlign: 'center' }}>{stats.totalAmount.toLocaleString()} ONE</Tag>
+                    </Row>
+                  </Row>)
+                : (
+                  <Row justify='center'>
+                    <Spin />
+                  </Row>)}
 
-      {!isMobile && <LineDivider />}
+              <LineDivider />
 
-      <Menu theme='dark' mode='inline' onClick={nav} selectedKeys={[action]}>
-        <Menu.Item key='create' icon={<PlusCircleOutlined />}>Create</Menu.Item>
-        <Menu.Item key='wallets' icon={<UnorderedListOutlined />}>Wallets</Menu.Item>
-        <Menu.Item key='restore' icon={<HistoryOutlined />}>Restore</Menu.Item>
-      </Menu>
-      <LineDivider />
-      <Menu theme='dark' mode='inline' selectable={false}>
-        <Menu.Item key='bug' icon={<GithubOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/issues'>Bug Report</SiderLink></Menu.Item>
-        <Menu.Item key='audit' icon={<AuditOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/tree/master/audits'>Audits</SiderLink></Menu.Item>
-        <Menu.Item key='wiki' icon={<InfoCircleOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/wiki'>Wiki</SiderLink></Menu.Item>
-      </Menu>
-
-    </Layout.Sider>
+              <Menu theme='dark' mode='inline' onClick={nav} selectedKeys={[action]}>
+                <Menu.Item key='create' icon={<PlusCircleOutlined />}>Create</Menu.Item>
+                <Menu.Item key='wallets' icon={<UnorderedListOutlined />}>Wallets</Menu.Item>
+                <Menu.Item key='restore' icon={<HistoryOutlined />}>Restore</Menu.Item>
+              </Menu>
+              <LineDivider />
+              <Menu theme='dark' mode='inline' selectable={false}>
+                <Menu.Item key='bug' icon={<GithubOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/issues'>Bug Report</SiderLink></Menu.Item>
+                <Menu.Item key='audit' icon={<AuditOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/tree/master/audits'>Audits</SiderLink></Menu.Item>
+                <Menu.Item key='wiki' icon={<InfoCircleOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/wiki'>Wiki</SiderLink></Menu.Item>
+              </Menu>
+            </Layout.Sider>
+            )
+      }
+    </>
   )
 }
 

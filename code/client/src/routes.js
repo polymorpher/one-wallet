@@ -23,7 +23,7 @@ const LocalRoutes = () => {
   const networkWallets = util.filterNetworkWallets(wallets, network)
   const { isMobile } = useWindowDimensions()
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ minHeight: '100vh', paddingBottom: isMobile ? '50px' : undefined }}>
       <SiderMenu />
       <Layout>
         <WalletHeader />
