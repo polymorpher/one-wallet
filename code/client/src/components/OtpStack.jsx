@@ -18,7 +18,7 @@ export const useOtpState = () => {
   return { state: { otpRef, otp2Ref, otpInput, otp2Input, setOtpInput, setOtp2Input, resetOtp } }
 }
 
-export const OtpStack = ({ walletName, otpState, doubleOtp }) => {
+export const OtpStack = ({ wideLabel, walletName, otpState, doubleOtp }) => {
   const location = useLocation()
   const { otpRef, otp2Ref, otpInput, otp2Input, setOtpInput, setOtp2Input, resetOtp } = otpState || useOtpState()
   useEffect(() => {
@@ -37,7 +37,7 @@ export const OtpStack = ({ walletName, otpState, doubleOtp }) => {
   return (
     <>
       <Space align='baseline' size='large' style={{ marginTop: 16 }}>
-        <Label><Hint>Code {doubleOtp ? '1' : ''}</Hint></Label>
+        <Label wide={wideLabel}><Hint>Code {doubleOtp ? '1' : ''}</Hint></Label>
         <OtpBox
           ref={otpRef}
           value={otpInput}
@@ -49,7 +49,7 @@ export const OtpStack = ({ walletName, otpState, doubleOtp }) => {
       </Space>
       {doubleOtp &&
         <Space align='baseline' size='large' style={{ marginTop: 16 }}>
-          <Label><Hint>Code 2</Hint></Label>
+          <Label wide={wideLabel}><Hint>Code 2</Hint></Label>
           <OtpBox
             ref={otp2Ref}
             value={otp2Input}

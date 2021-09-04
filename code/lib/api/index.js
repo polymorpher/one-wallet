@@ -542,6 +542,9 @@ const api = {
     },
 
     reveal: async ({ address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data = '0x' }) => {
+      if (data.constructor === Uint8Array) {
+        data = ONEUtil.hexString(data)
+      }
       const { data: ret } = await base.post('/reveal', { address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
       return ret
     },

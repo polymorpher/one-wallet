@@ -29,13 +29,7 @@ const TransferDomain = ({ address, onClose, show }) => {
   const { otpInput, otp2Input } = otpState
   const resetOtp = otpState.resetOtp
 
-  const restart = () => {
-    setStage(-1)
-    resetOtp()
-    resetWorker()
-  }
-
-  const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed } = ShowUtils.buildHelpers({ setStage, resetOtp, network, restart, resetWorker })
+  const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
 
   const doTransferDomain = async () => {
     const subdomain = domain.slice(0, domain.length - ONEConstants.Domain.DEFAULT_TLD.length - ONEConstants.Domain.DEFAULT_PARENT_LABEL.length - 2)

@@ -4,6 +4,8 @@ const contract = require('@truffle/contract')
 const { TruffleProvider } = require('@harmony-js/core')
 const { Account } = require('@harmony-js/account')
 const WalletGraph = require('../build/contracts/WalletGraph.json')
+const CommitManager = require('../build/contracts/CommitManager.json')
+const SignatureManager = require('../build/contracts/SignatureManager.json')
 const TokenTracker = require('../build/contracts/TokenTracker.json')
 const DomainManager = require('../build/contracts/DomainManager.json')
 const ONEWallet = require('../build/contracts/ONEWallet.json')
@@ -18,7 +20,7 @@ const contracts = {}
 const contractsV5 = {}
 const contractsV6 = {}
 const networks = []
-const libraryList = [DomainManager, TokenTracker, WalletGraph]
+const libraryList = [DomainManager, TokenTracker, WalletGraph, CommitManager, SignatureManager]
 const libraryDeps = { WalletGraph: [DomainManager] }
 const libraries = {}
 

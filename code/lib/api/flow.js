@@ -115,7 +115,8 @@ const Flows = {
     const neighbors = ONE.selectMerkleNeighbors({ layers, index })
     const neighbor = neighbors[0]
 
-    const { commitHash, paramsHash, verificationHash } = committer({ address, commitHashGenerator, neighbor, index, eotp, commitHashArgs })
+    const { commitHash, paramsHash, verificationHash } = committer({
+      address, commitHashGenerator, neighbor, index, eotp, commitHashArgs: typeof commitHashArgs === 'function' ? commitHashArgs({ neighbor, index, eotp }) : commitHashArgs })
     // console.log(commitHash, paramsHash)
     try {
       const { success, error } = await api.relayer.commit({
@@ -144,7 +145,7 @@ const Flows = {
           index,
           eotp: ONEUtil.hexString(eotp),
           address,
-          ...revealArgs
+          ...(typeof revealArgs === 'function' ? revealArgs({ neighbor, index, eotp }) : revealArgs)
         })
         if (!success) {
           if (error.includes('Cannot find commit')) {

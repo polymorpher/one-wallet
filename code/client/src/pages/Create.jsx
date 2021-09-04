@@ -79,12 +79,10 @@ const Create = () => {
   const [seed2, setSeed2] = useState(generateOtpSeed())
   const [duration, setDuration] = useState(WalletConstants.defaultDuration)
 
-  const oneWalletTreasuryOneAddress = util.safeOneAddress(WalletConstants.oneWalletTreasury.address)
-
   // Used for Recovery address setup. Only used when user does not choose a Recovery address.
   const oneWalletTreasurySelectOption = {
-    value: oneWalletTreasuryOneAddress,
-    label: `(1wallet Treasury) ${oneWalletTreasuryOneAddress}`
+    value: WalletConstants.oneWalletTreasury.address,
+    label: `(1wallet Treasury) ${util.safeOneAddress(WalletConstants.oneWalletTreasury.address)}`
   }
 
   // A valid wallet of user's wallets in the network can be used as default recovery wallet.
@@ -378,8 +376,8 @@ const Create = () => {
               }]}
             />
             <Hint>
-              {lastResortAddress.value !== WalletConstants.oneWalletTreasury.address && <span style={{ color: 'red' }}>You cannot change this later.</span>}
-              If you lost your authenticator, your can recover funds to this address. You can also send 1.0 ONE from the recovery address to trigger auto-recovery
+              {lastResortAddress.value !== WalletConstants.oneWalletTreasury.address && <span style={{ color: 'red' }}>You cannot change this later. </span>}
+              If you lost your authenticator, your can recover funds to this address. You can also send 1.0 ONE from the recovery address to trigger auto-recovery. You can use any wallet address as a recovery address. It does not need to be a 1wallet.
             </Hint>
             {lastResortAddress.value === WalletConstants.oneWalletTreasury.address &&
               <Warning style={{ marginTop: 24 }}>

@@ -27,13 +27,7 @@ const SetRecovery = ({ address, onClose, show }) => {
   const { otpInput, otp2Input } = otpState
   const resetOtp = otpState.resetOtp
 
-  const restart = () => {
-    setStage(-1)
-    resetOtp()
-    resetWorker()
-  }
-
-  const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed } = ShowUtils.buildHelpers({ setStage, resetOtp, network, restart, resetWorker })
+  const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
 
   const doSetRecoveryAddress = async () => {
     const { otp, otp2, invalidOtp2, invalidOtp, dest } = prepareValidation({

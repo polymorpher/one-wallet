@@ -17,7 +17,7 @@ const delayDomainOperationMillis = 1000
  * Renders address input that provides type ahead search for any known addresses.
  * Known addresses are addresses that have been entered by user for at least once.
  */
-const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSelectOptions }) => {
+const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSelectOptions, disableManualInput, disabled }) => {
   const dispatch = useDispatch()
 
   const [searchingAddress, setSearchingAddress] = useState(false)
@@ -176,7 +176,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
     }
   }, [knownAddresses, setAddressCallback])
 
-  const showSelectManualInputAddress = util.safeOneAddress(addressValue.value) &&
+  const showSelectManualInputAddress = !disableManualInput && util.safeOneAddress(addressValue.value) &&
     !wallets[util.safeNormalizedAddress(addressValue.value)] &&
     !Object.keys(knownAddresses).includes(util.safeNormalizedAddress(addressValue.value))
 
@@ -261,6 +261,14 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
     )
   }
 
+  // Make sure there is no value set for Select input if no selection since we are using labelInValue, which a default value/label
+  // will cover the inner search input that will make the right-click to paste not available.
+  const selectInputValueProp = addressValue.value !== ''
+    ? {
+        value: addressValue
+      }
+    : {}
+
   return (
     <Select
       suffixIcon={<SearchOutlined />}
@@ -273,10 +281,13 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
       notFoundContent={searchingAddress ? <Spin size='small' /> : <Text type='secondary'>No address found</Text>}
       bordered={false}
       showSearch
-      value={addressValue}
       onBlur={onEnterSelect}
       onInputKeyDown={onEnterSelect}
       onSearch={onSearchAddress}
+      disabled={disabled}
+      {
+        ...selectInputValueProp
+      }
     >
       {
         knownAddressesOptions

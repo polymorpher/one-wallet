@@ -1,15 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.4;
 
+import "./CommitManager.sol";
 import "./TokenManager.sol";
 import "./DomainManager.sol";
+import "./SignatureManager.sol";
 import "./WalletGraph.sol";
 import "./Enums.sol";
 import "./IONEWallet.sol";
 
 contract ONEWallet is TokenManager, IONEWallet {
-    using TokenTracker for TokenTrackerState;
+    using TokenTracker for TokenTracker.TokenTrackerState;
     using WalletGraph for IONEWallet[];
+    using SignatureManager for SignatureManager.SignatureTracker;
     /// Some variables can be immutable, but doing so would increase contract size. We are at threshold at the moment (~24KiB) so until we separate the contracts, we will do everything to minimize contract size
     bytes32 root; // Note: @ivan brought up a good point in reducing this to 16-bytes so hash of two consecutive nodes can be done in a single word (to save gas and reduce blockchain clutter). Let's not worry about that for now and re-evalaute this later.
     uint8 height; // including the root. e.g. for a tree with 4 leaves, the height is 3.
@@ -33,27 +36,19 @@ contract ONEWallet is TokenManager, IONEWallet {
     uint32[] nonceTracker; // list of nonces keys that have a non-zero value. keys cannot possibly result a successful reveal (indices beyond REVEAL_MAX_DELAY old) are auto-deleted during a clean up procedure that is called every time the nonces are incremented for some key. For each deleted key, the corresponding key in nonces will also be deleted. So the size of nonceTracker and nonces are both bounded.
 
     // constants
-    uint32 constant REVEAL_MAX_DELAY = 60;
+
     uint32 constant SECONDS_PER_DAY = 86400;
     uint256 constant AUTO_RECOVERY_TRIGGER_AMOUNT = 1 ether;
     uint32 constant MAX_COMMIT_SIZE = 120;
     uint256 constant AUTO_RECOVERY_MANDATORY_WAIT_TIME = 14 days;
     address constant ONE_WALLET_TREASURY = 0x02F2cF45DD4bAcbA091D78502Dba3B2F431a54D3;
 
-    uint32 constant majorVersion = 0x9; // a change would require client to migrate
+    uint32 constant majorVersion = 0xa; // a change would require client to migrate
     uint32 constant minorVersion = 0x1; // a change would not require the client to migrate
 
     /// commit management
-    struct Commit {
-        bytes32 paramsHash;
-        bytes32 verificationHash;
-        uint32 timestamp;
-        bool completed;
-    }
-
-    bytes32[] commits; // self-clean on commit (auto delete commits that are beyond REVEAL_MAX_DELAY), so it's bounded by the number of commits an attacker can spam within REVEAL_MAX_DELAY time in the worst case, which is not too bad.
-    mapping(bytes32 => Commit[]) commitLocker;
-
+    CommitManager.CommitState commitState;
+    SignatureManager.SignatureTracker signatures;
 
     constructor(bytes32 root_, uint8 height_, uint8 interval_, uint32 t0_, uint32 lifespan_, uint8 maxOperationsPerInterval_,
         address payable recoveryAddress_, uint256 dailyLimit_, IONEWallet[] memory backlinkAddresses_)
@@ -162,30 +157,7 @@ contract ONEWallet is TokenManager, IONEWallet {
     }
 
     function getAllCommits() external override view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
-        uint32 numCommits = 0;
-        for (uint32 i = 0; i < commits.length; i++) {
-            Commit[] storage cc = commitLocker[commits[i]];
-            numCommits += uint32(cc.length);
-        }
-        bytes32[] memory hashes = new bytes32[](numCommits);
-        bytes32[] memory paramHashes = new bytes32[](numCommits);
-        bytes32[] memory verificationHashes = new bytes32[](numCommits);
-        uint32[] memory timestamps = new uint32[](numCommits);
-        bool[] memory completed = new bool[](numCommits);
-        uint32 index = 0;
-        for (uint32 i = 0; i < commits.length; i++) {
-            Commit[] storage cc = commitLocker[commits[i]];
-            for (uint32 j = 0; j < cc.length; j++) {
-                Commit storage c = cc[j];
-                hashes[index] = commits[i];
-                paramHashes[index] = c.paramsHash;
-                verificationHashes[index] = c.verificationHash;
-                timestamps[index] = c.timestamp;
-                completed[index] = c.completed;
-                index++;
-            }
-        }
-        return (hashes, paramHashes, verificationHashes, timestamps, completed);
+        return CommitManager.getAllCommits(commitState);
     }
 
     function findCommit(bytes32 /*hash*/) external override pure returns (bytes32, bytes32, uint32, bool){
@@ -193,29 +165,15 @@ contract ONEWallet is TokenManager, IONEWallet {
     }
 
     function lookupCommit(bytes32 hash) external override view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
-        Commit[] storage cc = commitLocker[hash];
-        bytes32[] memory hashes = new bytes32[](cc.length);
-        bytes32[] memory paramHashes = new bytes32[](cc.length);
-        bytes32[] memory verificationHashes = new bytes32[](cc.length);
-        uint32[] memory timestamps = new uint32[](cc.length);
-        bool[] memory completed = new bool[](cc.length);
-        for (uint32 i = 0; i < cc.length; i++) {
-            Commit storage c = cc[i];
-            hashes[i] = hash;
-            paramHashes[i] = c.paramsHash;
-            verificationHashes[i] = c.verificationHash;
-            timestamps[i] = c.timestamp;
-            completed[i] = c.completed;
-        }
-        return (hashes, paramHashes, verificationHashes, timestamps, completed);
+        return CommitManager.lookupCommit(commitState, hash);
     }
 
     function commit(bytes32 hash, bytes32 paramsHash, bytes32 verificationHash) external override {
-        _cleanupCommits();
-        Commit memory nc = Commit(paramsHash, verificationHash, uint32(block.timestamp), false);
-        require(commits.length < MAX_COMMIT_SIZE, "Too many");
-        commits.push(hash);
-        commitLocker[hash].push(nc);
+        CommitManager.cleanupCommits(commitState);
+        CommitManager.Commit memory nc = CommitManager.Commit(paramsHash, verificationHash, uint32(block.timestamp), false);
+        require(commitState.commits.length < MAX_COMMIT_SIZE, "Too many");
+        commitState.commits.push(hash);
+        commitState.commitLocker[hash].push(nc);
     }
 
     function _forward(address payable dest) internal {
@@ -312,22 +270,6 @@ contract ONEWallet is TokenManager, IONEWallet {
         emit RecoveryAddressUpdated(recoveryAddress);
     }
 
-    function _command(OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address payable dest, uint256 amount, bytes calldata data) internal {
-        (address backlink, bytes memory commandData) = abi.decode(data, (address, bytes));
-        uint32 position = backlinkAddresses.findBacklink(backlink);
-        if (position == backlinkAddresses.length) {
-            emit WalletGraph.CommandFailed(backlink, "Not linked", commandData);
-            return;
-        }
-        try IONEWallet(backlink).reveal(new bytes32[](0), 0, bytes32(0), operationType, tokenType, contractAddress, tokenId, dest, amount, commandData){
-            emit WalletGraph.CommandDispatched(backlink, commandData);
-        }catch Error(string memory reason){
-            emit WalletGraph.CommandFailed(backlink, reason, commandData);
-        }catch {
-            emit WalletGraph.CommandFailed(backlink, "", commandData);
-        }
-    }
-
     /// Provides commitHash, paramsHash, and verificationHash given the parameters
     function _getRevealHash(bytes32 neighbor, uint32 indexWithNonce, bytes32 eotp,
         OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount, bytes calldata data) pure internal returns (bytes32, bytes32) {
@@ -408,19 +350,25 @@ contract ONEWallet is TokenManager, IONEWallet {
         } else if (operationType == OperationType.RECLAIM_REVERSE_DOMAIN) {
             DomainManager.reclaimReverseDomain(contractAddress, string(data));
         } else if (operationType == OperationType.RECLAIM_DOMAIN_FROM_BACKLINK) {
-            backlinkAddresses.reclaimDomainFromBacklink(uint32(amount), IRegistrar(contractAddress), IReverseRegistrar(dest), uint8(tokenId), data);
+            backlinkAddresses.reclaimDomainFromBacklink(uint32(amount), IRegistrar(contractAddress), IReverseRegistrar(dest), data);
         } else if (operationType == OperationType.RECOVER_SELECTED_TOKENS) {
             TokenManager._recoverSelectedTokensEncoded(dest, data);
         } else if (operationType == OperationType.FORWARD) {
             _forward(dest);
         } else if (operationType == OperationType.COMMAND) {
-            _command(operationType, tokenType, contractAddress, tokenId, dest, amount, data);
+            backlinkAddresses.command(operationType, tokenType, contractAddress, tokenId, dest, amount, data);
         } else if (operationType == OperationType.BACKLINK_ADD) {
             _backlinkAdd(data);
         } else if (operationType == OperationType.BACKLINK_DELETE) {
             _backlinkDelete(data);
         } else if (operationType == OperationType.BACKLINK_OVERRIDE) {
             _backlinkOverride(data);
+        } else if (operationType == OperationType.SIGN) {
+            signatures.authorizeHandler(contractAddress, tokenId, dest, amount);
+        } else if (operationType == OperationType.REVOKE) {
+            signatures.revokeHandler(contractAddress, tokenId, dest, amount);
+        } else if (operationType == OperationType.CALL) {
+            _callContract(contractAddress, amount, data);
         }
     }
 
@@ -444,63 +392,17 @@ contract ONEWallet is TokenManager, IONEWallet {
         return;
     }
 
-    /// Remove old commits from storage, where the commit's timestamp is older than block.timestamp - REVEAL_MAX_DELAY. The purpose is to remove dangling data from blockchain, and prevent commits grow unbounded. This is executed at commit time. The committer pays for the gas of this cleanup. Therefore, any attacker who intend to spam commits would be disincentivized. The attacker would not succeed in preventing any normal operation by the user.
-    function _cleanupCommits() internal {
-        uint32 timelyIndex = 0;
-        uint32 bt = uint32(block.timestamp);
-        // go through past commits chronologically, starting from the oldest, and find the first commit that is not older than block.timestamp - REVEAL_MAX_DELAY.
-        for (; timelyIndex < commits.length; timelyIndex++) {
-            bytes32 hash = commits[timelyIndex];
-            Commit[] storage cc = commitLocker[hash];
-            // We may skip because the commit is already cleaned up and is considered "untimely".
-            if (cc.length == 0) {
-                continue;
-            }
-            // We take the first entry in `cc` as the timestamp for all commits under commit hash `hash`, because the first entry represents the oldest commit and only commit if an attacker is not attacking this wallet. If an attacker is front-running commits, the first entry may be from the attacker, but its timestamp should be identical to the user's commit (or close enough to the user's commit, if network is a bit congested)
-            Commit storage c = cc[0];
-        unchecked {
-            if (c.timestamp >= bt - REVEAL_MAX_DELAY) {
-                break;
-            }
-        }
-        }
-        // Now `timelyIndex` holds the index of the first commit that is timely. All commits at an index less than `timelyIndex` must be deleted;
-        if (timelyIndex == 0) {
-            // no commit is older than block.timestamp - REVEAL_MAX_DELAY. Nothing needs to be cleaned up
-            return;
-        }
-        // Delete Commit instances for commits that are are older than block.timestamp - REVEAL_MAX_DELAY
-        for (uint32 i = 0; i < timelyIndex; i++) {
-            bytes32 hash = commits[i];
-            Commit[] storage cc = commitLocker[hash];
-            for (uint32 j = 0; j < cc.length; j++) {
-                delete cc[j];
-            }
-            delete commitLocker[hash];
-        }
-        // Shift all commit hashes up by `timelyIndex` positions, and discard `commitIndex` number of hashes at the end of the array
-        // This process erases old commits
-        uint32 len = uint32(commits.length);
-        for (uint32 i = timelyIndex; i < len; i++) {
-        unchecked{
-            commits[i - timelyIndex] = commits[i];
-        }
-        }
-        for (uint32 i = 0; i < timelyIndex; i++) {
-            commits.pop();
-        }
-        // TODO (@polymorpher): upgrade the above code after solidity implements proper support for struct-array memory-storage copy operation.
-    }
 
-    /// This function verifies that the first valid entry with respect to the given `eotp` in `commitLocker[hash]` matches the provided `paramsHash` and `verificationHash`. An entry is valid with respect to `eotp` iff `h3(entry.paramsHash . eotp)` equals `entry.verificationHash`
+
+    /// This function verifies that the first valid entry with respect to the given `eotp` in `commitState.commitLocker[hash]` matches the provided `paramsHash` and `verificationHash`. An entry is valid with respect to `eotp` iff `h3(entry.paramsHash . eotp)` equals `entry.verificationHash`
     function _verifyReveal(bytes32 hash, uint32 indexWithNonce, bytes32 paramsHash, bytes32 eotp, OperationType operationType) view internal returns (uint32)
     {
         uint32 index = indexWithNonce / maxOperationsPerInterval;
         uint8 nonce = uint8(indexWithNonce % maxOperationsPerInterval);
-        Commit[] storage cc = commitLocker[hash];
+        CommitManager.Commit[] storage cc = commitState.commitLocker[hash];
         require(cc.length > 0, "No commit found");
         for (uint32 i = 0; i < cc.length; i++) {
-            Commit storage c = cc[i];
+            CommitManager.Commit storage c = cc[i];
             bytes32 expectedVerificationHash = keccak256(bytes.concat(c.paramsHash, eotp));
             if (c.verificationHash != expectedVerificationHash) {
                 // Invalid entry. Ignore
@@ -515,17 +417,17 @@ contract ONEWallet is TokenManager, IONEWallet {
             }
             require(!c.completed, "Commit already done");
             // This normally should not happen, but when the network is congested (regardless of whether due to an attacker's malicious acts or not), the legitimate reveal may become untimely. This may happen before the old commit is cleaned up by another fresh commit. We enforce this restriction so that the attacker would not have a lot of time to reverse-engineer a single EOTP or leaf using an old commit.
-            require(uint32(block.timestamp) - c.timestamp < REVEAL_MAX_DELAY, "Too late");
+            require(uint32(block.timestamp) - c.timestamp < CommitManager.REVEAL_MAX_DELAY, "Too late");
             return i;
         }
         revert("No commit");
     }
 
     function _completeReveal(bytes32 commitHash, uint32 commitIndex, OperationType operationType) internal {
-        Commit[] storage cc = commitLocker[commitHash];
+        CommitManager.Commit[] storage cc = commitState.commitLocker[commitHash];
         assert(cc.length > 0);
         assert(cc.length > commitIndex);
-        Commit storage c = cc[commitIndex];
+        CommitManager.Commit storage c = cc[commitIndex];
         assert(c.timestamp > 0);
         if (operationType != OperationType.RECOVER) {
             uint32 index = uint32(c.timestamp) / interval - t0;
@@ -538,7 +440,7 @@ contract ONEWallet is TokenManager, IONEWallet {
 
     /// This function removes all tracked nonce values correspond to interval blocks that are older than block.timestamp - REVEAL_MAX_DELAY. In doing so, extraneous data in the blockchain is removed, and both nonces and nonceTracker are bounded in size.
     function _cleanupNonces() internal {
-        uint32 tMin = uint32(block.timestamp) - REVEAL_MAX_DELAY;
+        uint32 tMin = uint32(block.timestamp) - CommitManager.REVEAL_MAX_DELAY;
         uint32 indexMinUnadjusted = tMin / interval;
         uint32 indexMin = 0;
         if (indexMinUnadjusted > t0) {
@@ -606,5 +508,45 @@ contract ONEWallet is TokenManager, IONEWallet {
         } catch {
             emit DomainManager.DomainTransferFailed("");
         }
+    }
+
+    function _callContract(address contractAddress, uint256 amount, bytes memory encodedWithSignature) internal {
+        (bool success, bytes memory ret) = contractAddress.call{value : amount}(encodedWithSignature);
+        if (success) {
+            emit ExternalCallCompleted(contractAddress, amount, encodedWithSignature, ret);
+        } else {
+            emit ExternalCallFailed(contractAddress, amount, encodedWithSignature, ret);
+        }
+    }
+
+    function supportsInterface(bytes4 interfaceId) public override pure returns (bool) {
+        return interfaceId == this.isValidSignature.selector || TokenManager.supportsInterface(interfaceId);
+    }
+
+    function isValidSignature(bytes32 hash, bytes calldata signatureBytes) override public view returns (bytes4){
+        if (signatureBytes.length < 32) {
+            return 0xffffffff;
+        }
+        if (signatureBytes.length > 32) {
+            for (uint32 i = 32; i < signatureBytes.length; i++) {
+                if (signatureBytes[i] != 0x00) {
+                    return 0xffffffff;
+                }
+            }
+        }
+        (bytes32 signature) = abi.decode(signatureBytes[0 : 32], (bytes32));
+        if (!signatures.validate(hash, signature)) {
+            return 0xffffffff;
+        }
+        // magic value for valid signature, eip-1271
+        return 0x1626ba7e;
+    }
+
+    function listSignatures(uint32 start, uint32 end) external override view returns (bytes32[] memory, bytes32[] memory, uint32[] memory, uint32[] memory){
+        return signatures.list(start, end);
+    }
+
+    function lookupSignature(bytes32 hash) external override view returns (bytes32, uint32, uint32){
+        return signatures.lookup(hash);
     }
 }

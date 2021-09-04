@@ -75,7 +75,7 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
   }
 })
 
-router.post('/commit', generalLimiter({ max: 60 }), walletAddressLimiter({ max: 60 }), async (req, res) => {
+router.post('/commit', generalLimiter({ max: 240 }), walletAddressLimiter({ max: 240 }), async (req, res) => {
   let { hash, paramsHash, verificationHash, address } = req.body
   if (config.debug || config.verbose) {
     console.log(`[/commit] `, { hash, paramsHash, verificationHash, address })
@@ -114,7 +114,7 @@ router.post('/commit', generalLimiter({ max: 60 }), walletAddressLimiter({ max: 
   }
 })
 
-router.post('/reveal', generalLimiter({ max: 120 }), walletAddressLimiter({ max: 120 }), async (req, res) => {
+router.post('/reveal', generalLimiter({ max: 240 }), walletAddressLimiter({ max: 240 }), async (req, res) => {
   let { neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data } = req.body
   if (!checkParams({ neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data }, res)) {
     return
@@ -151,7 +151,7 @@ router.post('/reveal', generalLimiter({ max: 120 }), walletAddressLimiter({ max:
 })
 
 // TODO: deprecate in the next version
-router.post('/reveal/transfer', generalLimiter({ max: 30 }), walletAddressLimiter({ max: 30 }), async (req, res) => {
+router.post('/reveal/transfer', generalLimiter({ max: 120 }), walletAddressLimiter({ max: 120 }), async (req, res) => {
   let { neighbors, index, eotp, dest, amount, address } = req.body
   if (!checkParams({ neighbors, index, eotp, dest, amount, address }, res)) {
     return
@@ -160,7 +160,7 @@ router.post('/reveal/transfer', generalLimiter({ max: 30 }), walletAddressLimite
 })
 
 // TODO: deprecate in the next version
-router.post('/reveal/recovery', generalLimiter({ max: 30 }), walletAddressLimiter({ max: 30 }), async (req, res) => {
+router.post('/reveal/recovery', generalLimiter({ max: 120 }), walletAddressLimiter({ max: 120 }), async (req, res) => {
   let { neighbors, index, eotp, address } = req.body
   if (!checkParams({ neighbors, index, eotp, address }, res)) {
     return
@@ -169,7 +169,7 @@ router.post('/reveal/recovery', generalLimiter({ max: 30 }), walletAddressLimite
 })
 
 // TODO: deprecate in the next version
-router.post('/reveal/set-recovery-address', generalLimiter({ max: 30 }), walletAddressLimiter({ max: 30 }), async (req, res) => {
+router.post('/reveal/set-recovery-address', generalLimiter({ max: 120 }), walletAddressLimiter({ max: 120 }), async (req, res) => {
   let { neighbors, index, eotp, address, lastResortAddress } = req.body
   if (!checkParams({ neighbors, index, eotp, address, lastResortAddress }, res)) {
     return
@@ -178,7 +178,7 @@ router.post('/reveal/set-recovery-address', generalLimiter({ max: 30 }), walletA
 })
 
 // TODO: deprecate in the next version
-router.post('/reveal/token', generalLimiter({ max: 30 }), walletAddressLimiter({ max: 30 }), async (req, res) => {
+router.post('/reveal/token', generalLimiter({ max: 120 }), walletAddressLimiter({ max: 120 }), async (req, res) => {
   let { neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data } = req.body
   if (!checkParams({ neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data }, res)) {
     return

@@ -14,7 +14,10 @@ enum OperationType {
     RENEW_DOMAIN,
     TRANSFER_DOMAIN,
     RECLAIM_REVERSE_DOMAIN,
-    RECLAIM_DOMAIN_FROM_BACKLINK
+    RECLAIM_DOMAIN_FROM_BACKLINK,
+    SIGN, // produce signature verifiable by eip-1271
+    REVOKE, // revoke a signature
+    CALL // call arbitrary external contract function and optionally send funds to that function
 }
 enum TokenType{
     ERC20, ERC721, ERC1155, NONE

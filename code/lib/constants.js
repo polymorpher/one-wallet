@@ -29,6 +29,9 @@ module.exports = {
     TRANSFER_DOMAIN: 16,
     RECLAIM_REVERSE_DOMAIN: 17,
     RECLAIM_DOMAIN_FROM_BACKLINK: 18,
+    SIGN: 19,
+    REVOKE: 20,
+    CALL: 21,
 
     0: 'TRACK',
     1: 'UNTRACK',
@@ -49,11 +52,14 @@ module.exports = {
     16: 'TRANSFER_DOMAIN',
     17: 'RECLAIM_REVERSE_DOMAIN',
     18: 'RECLAIM_DOMAIN_FROM_BACKLINK',
+    19: 'SIGN',
+    20: 'REVOKE',
+    21: 'CALL'
   },
   EmptyAddress: '0x0000000000000000000000000000000000000000',
   EmptyBech32Address: 'one1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqquzw7vz',
   TreasuryAddress: '0x02F2cF45DD4bAcbA091D78502Dba3B2F431a54D3',
-  MajorVersion: 9,
+  MajorVersion: 10,
   MinorVersion: 1,
   Domain: {
     DEFAULT_RENT_DURATION: 31536000, // 365 * 24 * 3600,
