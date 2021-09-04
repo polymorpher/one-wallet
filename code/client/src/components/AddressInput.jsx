@@ -17,7 +17,7 @@ const delayDomainOperationMillis = 1000
  * Renders address input that provides type ahead search for any known addresses.
  * Known addresses are addresses that have been entered by user for at least once.
  */
-const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSelectOptions, disableManualInput }) => {
+const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSelectOptions, disableManualInput, disabled }) => {
   const dispatch = useDispatch()
 
   const [searchingAddress, setSearchingAddress] = useState(false)
@@ -284,6 +284,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
       onBlur={onEnterSelect}
       onInputKeyDown={onEnterSelect}
       onSearch={onSearchAddress}
+      disabled={disabled}
       {
         ...selectInputValueProp
       }

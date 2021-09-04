@@ -62,13 +62,6 @@ const Send = ({
   const { dailyLimit } = wallet
   const { formatted: dailyLimitFormatted } = util.computeBalance(dailyLimit, price)
 
-  const restart = () => {
-    setStage(-1)
-    resetOtp()
-    resetWorker()
-    setInputAmount(0)
-  }
-
   const {
     balance: transferAmount,
     fiatFormatted: transferFiatAmountFormatted
@@ -87,7 +80,7 @@ const Send = ({
     }
   }
 
-  const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed } = ShowUtils.buildHelpers({ setStage, resetOtp, network, restart, resetWorker })
+  const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
 
   const doSend = () => {
     const { otp, otp2, invalidOtp2, invalidOtp, dest, amount } = prepareValidation({
@@ -163,13 +156,14 @@ const Send = ({
             addressValue={transferTo}
             setAddressCallback={setTransferTo}
             currentWallet={wallet}
+            disabled={!!prefillDest}
           />
         </Space>
         <Space align='baseline' size='large'>
           <Label><Hint>Amount</Hint></Label>
           <InputBox margin='auto' width={200} value={inputAmount} onChange={({ target: { value } }) => setInputAmount(value)} disabled={!!prefillAmount} />
           {!isNFT && <Hint>{selectedToken.symbol}</Hint>}
-          <Button type='secondary' shape='round' onClick={useMaxAmount}>max</Button>
+          <Button type='secondary' shape='round' onClick={useMaxAmount} disabled={!!prefillAmount}>max</Button>
         </Space>
         {selectedToken.key === 'one' &&
           <Space align='end' size='large'>

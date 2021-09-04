@@ -41,9 +41,18 @@ export const Warning = ({ children, info, style, ...props }) =>
     <Text>{children}</Text>
   </Card>
 
-export const Label = styled.div`
+export const NormalLabel = styled.div`
   width: 64px;
 `
+export const WideLabel = styled.div`
+  width: 96px;
+`
+export const Label = ({ wide, children }) => {
+  if (wide) {
+    return <WideLabel>{children}</WideLabel>
+  }
+  return <NormalLabel>{children}</NormalLabel>
+}
 
 export const ExplorerLink = styled(Link).attrs(e => ({ ...e, style: { color: '#888888' }, target: '_blank', rel: 'noopener noreferrer' }))`
   ${props => props['data-show-on-hover'] && 'opacity: 0.1;'}

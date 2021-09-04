@@ -1,20 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.4;
-
 import "./Enums.sol";
 
-struct TrackedToken {
-    TokenType tokenType;
-    address contractAddress;
-    uint256 tokenId; // only valid for ERC721 and ERC1155
-}
-
-struct TokenTrackerState {
-    TrackedToken[] trackedTokens;
-    mapping(bytes32 => uint256[]) trackedTokenPositions;
-}
-
 library TokenTracker {
+    struct TrackedToken {
+        TokenType tokenType;
+        address contractAddress;
+        uint256 tokenId; // only valid for ERC721 and ERC1155
+    }
+
+    struct TokenTrackerState {
+        TrackedToken[] trackedTokens;
+        mapping(bytes32 => uint256[]) trackedTokenPositions;
+    }
     event TokenTracked(TokenType tokenType, address contractAddress, uint256 tokenId);
     event TokenUntracked(TokenType tokenType, address contractAddress, uint256 tokenId);
     event TokenNotFound(TokenType tokenType, address contractAddress, uint256 tokenId);

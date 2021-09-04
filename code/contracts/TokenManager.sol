@@ -23,9 +23,9 @@ abstract contract TokenManager is IERC721Receiver, IERC1155Receiver, Forwardable
     // The tracking of ERC721 and ERC1155 are automatically established upon a token is transferred to this wallet. The tracking of ERC20 needs to be manually established by the client.
     // The gas cost of tracking and untracking operations are of constant complexity. The gas cost is paid by the transferer in the case of automatically established tracking, and paid by the user in the case of manual tracking.
 
-    TokenTrackerState tokenTrackerState;
+    TokenTracker.TokenTrackerState tokenTrackerState;
 
-    using TokenTracker for TokenTrackerState;
+    using TokenTracker for TokenTracker.TokenTrackerState;
 
     function onERC1155Received(
         address operator,
@@ -51,7 +51,7 @@ abstract contract TokenManager is IERC721Receiver, IERC1155Receiver, Forwardable
         return this.onERC1155BatchReceived.selector;
     }
 
-    function supportsInterface(bytes4 interfaceID) external override pure returns (bool) {
+    function supportsInterface(bytes4 interfaceID) public override virtual pure returns (bool) {
         return interfaceID == this.supportsInterface.selector ||
         interfaceID == this.onERC1155Received.selector ||
         interfaceID == this.onERC721Received.selector;
@@ -154,7 +154,7 @@ abstract contract TokenManager is IERC721Receiver, IERC1155Receiver, Forwardable
         return (0, false, "Bad type");
     }
 
-    function _recoverToken(address dest, TrackedToken storage t) internal {
+    function _recoverToken(address dest, TokenTracker.TrackedToken storage t) internal {
         (uint256 balance, bool success, string memory reason) = _getBalance(t.tokenType, t.contractAddress, t.tokenId);
         if (!success) {
             emit BalanceRetrievalError(t.tokenType, t.contractAddress, t.tokenId, reason);

@@ -79,12 +79,10 @@ const Create = () => {
   const [seed2, setSeed2] = useState(generateOtpSeed())
   const [duration, setDuration] = useState(WalletConstants.defaultDuration)
 
-  const oneWalletTreasuryOneAddress = util.safeOneAddress(WalletConstants.oneWalletTreasury.address)
-
   // Used for Recovery address setup. Only used when user does not choose a Recovery address.
   const oneWalletTreasurySelectOption = {
-    value: oneWalletTreasuryOneAddress,
-    label: `(1wallet Treasury) ${oneWalletTreasuryOneAddress}`
+    value: WalletConstants.oneWalletTreasury.address,
+    label: `(1wallet Treasury) ${util.safeOneAddress(WalletConstants.oneWalletTreasury.address)}`
   }
 
   // A valid wallet of user's wallets in the network can be used as default recovery wallet.

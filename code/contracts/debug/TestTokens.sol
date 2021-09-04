@@ -47,6 +47,7 @@ contract TestERC20Decimals9 is ERC20 {
     function burn(address dest, uint256 amount) public isAdmin() {
         ERC20._burn(dest, amount);
     }
+
     function decimals() public pure override returns (uint8) {
         return 9;
     }
@@ -104,6 +105,16 @@ contract TestERC1155 is ERC1155 {
         _;
     }
     function mint(uint256 tokenId, uint256 amount, address dest, string memory metadataUri) public isAdmin() {
+        ERC1155._mint(dest, tokenId, amount, "");
+        metadataUris[tokenId] = metadataUri;
+    }
+
+    function payToMint(uint256 tokenId, uint256 amount, address dest, string memory metadataUri) payable external {
+        require(msg.value >= (amount * 1 ether), "Insufficient payment");
+        uint256 excess = msg.value - (amount * 1 ether);
+        if (excess > 0) {
+            msg.sender.call{value : excess}("");
+        }
         ERC1155._mint(dest, tokenId, amount, "");
         metadataUris[tokenId] = metadataUri;
     }
