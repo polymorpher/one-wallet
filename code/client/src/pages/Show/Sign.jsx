@@ -24,11 +24,10 @@ const Sign = ({
   show,
   onClose, // optional
   onSuccess, // optional
-  prefillMessageInput,
-  prefillUseRawMessage,
-  prefillDuration,
+  prefillMessageInput, // optional string, the message itself
+  prefillUseRawMessage, // optional boolean, whether or not eth signing header should be attached. True means not to attach header
+  prefillDuration, // optional string that can be parsed into an integer, the number of milliseconds of the validity of the signature
 }) => {
-  const dispatch = useDispatch()
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
   const network = useSelector(state => state.wallet.network)
