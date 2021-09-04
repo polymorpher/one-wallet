@@ -62,6 +62,7 @@ library SignatureManager {
         st.positions[swapHash] = position + 1;
         st.hashes[position] = swapHash;
         st.hashes.pop();
+        delete st.positions[hash];
         delete st.signatureLocker[hash];
         emit SignatureRevoked(hash, signature);
         return true;
@@ -85,6 +86,9 @@ library SignatureManager {
         bytes32[] memory newHashes = new bytes32[](numRemains);
         for (uint32 i = 0; i < numRemains; i++) {
             newHashes[i] = hashes[i];
+        }
+        for (uint32 i = 0; i < st.hashes.length; i++) {
+            delete st.hashes[i];
         }
         delete st.hashes;
         st.hashes = newHashes;

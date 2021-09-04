@@ -18,15 +18,15 @@ library CommitManager {
     }
 
 
-    function getNumCommits(mapping(bytes32 => Commit[]) storage commitLocker, bytes32[] storage commits) view internal returns (uint32){
+    function getNumCommits(CommitState storage cs) view public returns (uint32){
         uint32 numCommits = 0;
-        for (uint32 i = 0; i < commits.length; i++) {
-            numCommits += uint32(commitLocker[commits[i]].length);
+        for (uint32 i = 0; i < cs.commits.length; i++) {
+            numCommits += uint32(cs.commitLocker[cs.commits[i]].length);
         }
         return numCommits;
     }
 
-    function getCommitHashes(CommitState storage cs, uint32 numCommits) internal view returns (bytes32[] memory){
+    function _getCommitHashes(CommitState storage cs, uint32 numCommits) internal view returns (bytes32[] memory){
         bytes32[] memory hashes = new bytes32[](numCommits);
         uint32 index = 0;
         for (uint32 i = 0; i < cs.commits.length; i++) {
@@ -39,7 +39,7 @@ library CommitManager {
         return hashes;
     }
 
-    function getCommitParamHashes(CommitState storage cs, uint32 numCommits) internal view returns (bytes32[] memory){
+    function _getCommitParamHashes(CommitState storage cs, uint32 numCommits) internal view returns (bytes32[] memory){
         bytes32[] memory paramHashes = new bytes32[](numCommits);
         uint32 index = 0;
         for (uint32 i = 0; i < cs.commits.length; i++) {
@@ -53,7 +53,7 @@ library CommitManager {
         return paramHashes;
     }
 
-    function getVerificationHashes(CommitState storage cs, uint32 numCommits) internal view returns (bytes32[] memory){
+    function _getVerificationHashes(CommitState storage cs, uint32 numCommits) internal view returns (bytes32[] memory){
         bytes32[] memory verificationHashes = new bytes32[](numCommits);
         uint32 index = 0;
         for (uint32 i = 0; i < cs.commits.length; i++) {
@@ -67,7 +67,7 @@ library CommitManager {
         return verificationHashes;
     }
 
-    function getTimestamps(CommitState storage cs, uint32 numCommits) internal view returns (uint32[] memory){
+    function _getTimestamps(CommitState storage cs, uint32 numCommits) internal view returns (uint32[] memory){
         uint32[] memory timestamps = new uint32[](numCommits);
         uint32 index = 0;
         for (uint32 i = 0; i < cs.commits.length; i++) {
@@ -81,7 +81,7 @@ library CommitManager {
         return timestamps;
     }
 
-    function getCompletionStatus(CommitState storage cs, uint32 numCommits) internal view returns (bool[] memory){
+    function _getCompletionStatus(CommitState storage cs, uint32 numCommits) internal view returns (bool[] memory){
         bool[] memory completed = new bool[](numCommits);
         uint32 index = 0;
         for (uint32 i = 0; i < cs.commits.length; i++) {
@@ -96,12 +96,12 @@ library CommitManager {
     }
 
     function getAllCommits(CommitState storage cs) public view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
-        uint32 numCommits = getNumCommits(cs.commitLocker, cs.commits);
-        bytes32[] memory hashes = getCommitHashes(cs, numCommits);
-        bytes32[] memory paramHashes = getCommitParamHashes(cs, numCommits);
-        bytes32[] memory verificationHashes = getVerificationHashes(cs, numCommits);
-        uint32[] memory timestamps = getTimestamps(cs, numCommits);
-        bool[] memory completed = getCompletionStatus(cs, numCommits);
+        uint32 numCommits = getNumCommits(cs);
+        bytes32[] memory hashes = _getCommitHashes(cs, numCommits);
+        bytes32[] memory paramHashes = _getCommitParamHashes(cs, numCommits);
+        bytes32[] memory verificationHashes = _getVerificationHashes(cs, numCommits);
+        uint32[] memory timestamps = _getTimestamps(cs, numCommits);
+        bool[] memory completed = _getCompletionStatus(cs, numCommits);
         return (hashes, paramHashes, verificationHashes, timestamps, completed);
     }
 
