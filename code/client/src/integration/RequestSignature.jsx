@@ -46,8 +46,10 @@ const RequestSignature = ({ caller, callback, messageB64Encoded, raw, duration, 
   const onCallClose = () => {
     setShowSign(false)
   }
-  const onSuccess = (txId) => {
-    window.location.href = callback + `?success=1&txId=${txId}`
+  const onSuccess = (txId, { hash, signature }) => {
+    const hashStr = ONEUtil.hexString(hash)
+    const signatureStr = ONEUtil.hexString(signature)
+    window.location.href = callback + `?success=1&txId=${txId}&hash=${hashStr}&signature=${signatureStr}`
   }
   raw = !(typeof raw === 'undefined' || raw === 'false' || raw === '0')
 
