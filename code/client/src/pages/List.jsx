@@ -33,8 +33,6 @@ const WalletCard = ({ wallet }) => {
     dispatch(walletActions.fetchWallet({ address }))
   }, [location.pathname])
 
-  console.log(isMobile)
-
   return (
     <Card
       onClick={() => history.push(Paths.showAddress(oneAddress))}
