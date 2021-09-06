@@ -686,49 +686,57 @@
       "symbol": "1USDC",
       "name": "USD Coin",
       "decimal": "6",
-      "supply": "8393126136535"
+      "supply": "8393126136535",
+      "priority": 1
     },
     "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a": {
       "symbol": "WONE",
       "name": "Wrapped ONE",
       "decimal": "18",
-      "supply": "242924575848980304128221415"
+      "supply": "242924575848980304128221415",
+      "priority": 100
     },
     "0xE176EBE47d621b984a73036B9DA5d834411ef734": {
       "symbol": "BUSD",
       "name": "Binance USD",
       "decimal": "18",
-      "supply": "4495145744165000000000000"
+      "supply": "4495145744165000000000000",
+      "priority": 99
     },
     "0x6983D1E6DEf3690C4d616b13597A09e6193EA013": {
       "symbol": "1ETH",
       "name": "ETH",
       "decimal": "18",
-      "supply": "8619820988000000000000"
+      "supply": "8619820988000000000000",
+      "priority": 98
     },
     "0x3095c7557bCb296ccc6e363DE01b760bA031F2d9": {
       "symbol": "1WBTC",
       "name": "Wrapped BTC",
       "decimal": "8",
-      "supply": "40751390700"
+      "supply": "40751390700",
+      "priority": 97
     },
     "0x3C2B8Be99c50593081EAA2A724F0B8285F5aba8f": {
       "symbol": "1USDT",
       "name": "Tether USD",
       "decimal": "6",
-      "supply": "6882300422665"
+      "supply": "6882300422665",
+      "priority": 96
     },
     "0x0aB43550A6915F9f67d0c454C2E90385E6497EaA": {
       "symbol": "bscBUSD",
       "name": "BUSD Token",
       "decimal": "18",
-      "supply": "2778717851087000000000000"
+      "supply": "2778717851087000000000000",
+      "priority": 95
     },
     "0xEa589E93Ff18b1a1F1e9BaC7EF3E86Ab62addc79": {
       "symbol": "VIPER",
       "name": "Viper",
       "decimal": "18",
-      "supply": "338044758378556898536099684"
+      "supply": "338044758378556898536099684",
+      "priority": 94
     },
     "0xA40A69049Fa071C82560AF96Fa22e948eFA7848C": {
       "symbol": "Lufy",
@@ -740,7 +748,8 @@
       "symbol": "1SUSHI",
       "name": "SushiToken",
       "decimal": "18",
-      "supply": "176702022571000000000000"
+      "supply": "176702022571000000000000",
+      "priority": 93
     },
     "0x0dD740Db89B9fDA3Baadf7396DdAD702b6E8D6f5": {
       "symbol": "hMOCHI",
@@ -758,7 +767,8 @@
       "symbol": "ONEMOON",
       "name": "OneMoon",
       "decimal": "9",
-      "supply": "1000000000000000000000000"
+      "supply": "1000000000000000000000000",
+      "priority": 92
     },
     "0x0AB8894cDA70a6EFd32Ce7563834444E2811B182": {
       "symbol": "MAKI",
@@ -836,7 +846,8 @@
       "symbol": "LINK",
       "name": "ChainLink Token",
       "decimal": "18",
-      "supply": "1000000000000000000000000000"
+      "supply": "1000000000000000000000000000",
+      "priority": 91
     },
     "0xC4114A0796ff34147e8129d5f75d2452a4059a28": {
       "symbol": "FURRY",
@@ -854,7 +865,8 @@
       "symbol": "SAFEMOON",
       "name": "SafeMoon",
       "decimal": "9",
-      "supply": "1000000000000000000000000"
+      "supply": "1000000000000000000000000",
+      "priority": 89
     },
     "0x16A33af6eBE6F08d597c91E16D3A80f14f528872": {
       "symbol": "FURRY",
@@ -866,7 +878,8 @@
       "symbol": "1MATIC",
       "name": "Matic Token",
       "decimal": "18",
-      "supply": "187369321176000000000000"
+      "supply": "187369321176000000000000",
+      "priority": 90
     },
     "0x27F6fb2D058F9437B970a44566a9624BB7EfdD6a": {
       "symbol": "abc",
@@ -1010,7 +1023,8 @@
       "symbol": "VINCI",
       "name": "DaVinci Token",
       "decimal": "18",
-      "supply": "13410642000000000000000000"
+      "supply": "13410642000000000000000000",
+      "priority": 87
     },
     "0xe112b5f917e882033084f64615fb9a3B37e617Bb": {
       "symbol": "bscJPYC",
@@ -1028,7 +1042,8 @@
       "symbol": "bscUSDC",
       "name": "USD Coin",
       "decimal": "18",
-      "supply": "37098920741000000000000"
+      "supply": "37098920741000000000000",
+      "priority": 86
     },
     "0x7531905C4C80b602CFf46Badc1671FbAD496f043": {
       "symbol": "MCONE",
