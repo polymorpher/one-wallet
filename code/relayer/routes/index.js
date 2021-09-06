@@ -4,6 +4,7 @@ const router = express.Router()
 const { StatusCodes } = require('http-status-codes')
 const blockchain = require('../blockchain')
 const ONEConstants = require('../../lib/constants')
+const SushiData = require('../../data/sushiswap.json')
 const BN = require('bn.js')
 const { generalLimiter, walletAddressLimiter, rootHashLimiter, globalLimiter } = require('./rl')
 const { parseTx, parseError, checkParams } = require('./util')
@@ -201,6 +202,10 @@ router.post('/retire', generalLimiter({ max: 6 }), walletAddressLimiter({ max: 6
     const { code, error, success } = parseError(ex)
     return res.status(code).json({ error, success })
   }
+})
+
+router.get('/sushi', generalLimiter({ max: 120 }), walletAddressLimiter({ max: 120 }), async (req, res) => {
+  res.json(SushiData)
 })
 
 module.exports = router
