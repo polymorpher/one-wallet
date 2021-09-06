@@ -413,7 +413,8 @@ const api = {
   sushi: {
     getCachedTokenPairs: async () => {
       const { data } = await base.get('/sushi')
-      return data
+      const { pairs, tokens } = data || {}
+      return { pairs, tokens }
     },
     getAmountOut: async ({ amountIn, tokenAddress }) => {
       const c = new web3.eth.Contract(SushiRouter, ONEConstants.Sushi.ROUTER)
