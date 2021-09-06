@@ -35,7 +35,7 @@ const WalletTitle = ({ address }) => {
   }
 
   return (
-    <Space size='large' align='baseline' direction={isMobile ? 'vertical' : 'horizontal'}>
+    <Space size={isMobile ? 'small' : 'large'} align='baseline' direction={isMobile ? 'vertical' : 'horizontal'}>
       <Title level={isMobile ? 4 : 2}>{wallet.name}</Title>
       <Space direction='vertical' size='small' align='start'>
         {wallet.majorVersion >= 9 && (

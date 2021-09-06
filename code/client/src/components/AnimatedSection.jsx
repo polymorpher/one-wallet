@@ -1,7 +1,7 @@
 import React from 'react'
 import { Transition } from 'react-transition-group'
 import styled from 'styled-components'
-import { Card } from 'antd'
+import { Button, Card, Space } from 'antd'
 import { useWindowDimensions } from '../util'
 
 const Section = styled(Card)`
@@ -21,6 +21,34 @@ const transitionStyles = {
   exited: { opacity: 0, zIndex: 0 },
 }
 
+const mobileTabBar = (props) => {
+  const panes = props.panes
+  const activeKey = props.activeKey
+
+  return (
+    <Space size='small' wrap style={{ marginBottom: '20px' }}>
+      {
+        panes.map((pane) => (
+          <Button
+            key={pane.key}
+            type='text'
+            onClick={(e) => props.onTabClick(pane.key, e)}
+            size='large'
+            style={{
+              color: activeKey === pane.key ? '#1890ff' : '#000000',
+              borderBottom: activeKey === pane.key ? '1px solid #1890ff' : 'none',
+              background: 'none',
+              boxShadow: 'none'
+            }}
+          >
+            {pane.props.tab}
+          </Button>
+        ))
+      }
+    </Space>
+  )
+}
+
 const AnimatedSection = ({ show = true, children, style, ...params }) => {
   const { isMobile } = useWindowDimensions()
   return (
@@ -28,8 +56,14 @@ const AnimatedSection = ({ show = true, children, style, ...params }) => {
       {state => (
         <Section
           data-show={show}
+          bodyStyle={{
+            padding: isMobile ? 8 : 24
+          }}
+          tabProps={{
+            renderTabBar: isMobile ? mobileTabBar : undefined
+          }}
           style={{
-            padding: isMobile ? 16 : 32,
+            padding: isMobile ? 8 : 32,
             ...defaultStyle,
             ...transitionStyles[state],
             ...style

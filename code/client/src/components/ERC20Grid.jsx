@@ -8,7 +8,7 @@ import { TallRow } from './Grid'
 import { api } from '../../../lib/api'
 import ONE from '../../../lib/onewallet'
 import ONEUtil from '../../../lib/util'
-import util from '../util'
+import util, { useWindowDimensions } from '../util'
 import { Warning, Hint, InputBox, Heading } from './Text'
 import { withKeys, DefaultTrackedERC20, HarmonyONE } from './TokenAssets'
 import { useDispatch, useSelector } from 'react-redux'
@@ -18,6 +18,7 @@ import ONEConstants from '../../../lib/constants'
 const { Text, Link } = Typography
 
 const GridItem = ({ style, children, icon, name, symbol, contractAddress, balance, addNew, selected, onSelected }) => {
+  const { isMobile } = useWindowDimensions()
   const bech32ContractAddress = util.safeOneAddress(contractAddress)
   const abbrBech32ContractAddress = util.ellipsisAddress(bech32ContractAddress)
   return (
@@ -28,8 +29,8 @@ const GridItem = ({ style, children, icon, name, symbol, contractAddress, balanc
         <Space direction='vertical'>
           <Row justify='center' style={{ alignItems: 'center' }} gutter={8}>
             {icon && <Col><Image preview={false} src={icon} wrapperStyle={{ height: 32, width: 32 }} /></Col>}
-            {symbol && <Col><Text style={{ fontSize: 24 }}>{symbol}</Text></Col>}
-            {!symbol && <Col><Text style={{ fontSize: 24 }}>{abbrBech32ContractAddress}</Text></Col>}
+            {symbol && <Col><Text style={{ fontSize: isMobile ? 12 : 24 }}>{symbol}</Text></Col>}
+            {!symbol && <Col><Text style={{ fontSize: isMobile ? 12 : 24 }}>{abbrBech32ContractAddress}</Text></Col>}
           </Row>
           <Row justify='center' style={{ alignItems: 'center' }}>
             <Space><Hint style={{ textAlign: 'center' }}>Balance</Hint><Text>{abbr(balance, 1)}</Text></Space>
@@ -56,8 +57,19 @@ export const ERC20Grid = ({ address }) => {
   const selected = (selectedToken && selectedToken.tokenType === ONEConstants.TokenType.ERC20) || HarmonyONE
   const [section, setSection] = useState()
   const [newContractAddress, setNewContractAddress] = useState('')
+  const { isMobile } = useWindowDimensions()
 
-  const gridItemStyle = { width: '200px', height: '200px', display: 'flex', justifyContent: 'center', flexDirection: 'column', cursor: 'pointer', color: disabled && 'grey', opacity: disabled && 0.5 }
+  const gridItemStyle = {
+    width: isMobile ? '50%' : '200px',
+    height: isMobile ? '135px' : '200px',
+    display: 'flex',
+    justifyContent: 'center',
+    flexDirection: 'column',
+    cursor: 'pointer',
+    color: disabled && 'grey',
+    opacity: disabled && 0.5
+  }
+
   useEffect(() => {
     let cancelled = false
     if (walletOutdated) {
@@ -178,7 +190,10 @@ export const ERC20Grid = ({ address }) => {
                 selected={selected.key === key}
                 key={key}
                 style={gridItemStyle}
-                icon={icon} name={name} symbol={symbol} balance={displayBalance}
+                icon={icon}
+                name={name}
+                symbol={symbol}
+                balance={displayBalance}
                 onSelected={onSelect(key)}
               />
             )

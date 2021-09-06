@@ -11,7 +11,19 @@ const OtpBox = ({ onChange, value, inputStyle, ...params }, ref) => {
       ref={ref}
       onChange={onChange}
       numInputs={6}
-      inputStyle={{ width: isMobile ? 24 : 32, borderRadius: 8, borderWidth: 1, height: isMobile ? 24 : 32, fontSize: isMobile ? 12 : 16, marginRight: isMobile ? 8 : 16, ...inputStyle }}
+      containerStyle={{
+        flexWrap: 'wrap',
+        gap: '5px'
+      }}
+      inputStyle={{
+        width: isMobile ? 40 : 32,
+        height: isMobile ? 40 : 32,
+        borderRadius: 8,
+        borderWidth: 1,
+        fontSize: isMobile ? 12 : 16,
+        marginRight: isMobile ? 12 : 16,
+        ...inputStyle
+      }}
       separator={<span> </span>}
       {...params}
     />

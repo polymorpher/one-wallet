@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Button, Row, Space, Typography } from 'antd'
+import { Button, Col, Row, Space, Typography } from 'antd'
 import { CheckCircleOutlined, CloseOutlined, LoadingOutlined } from '@ant-design/icons'
 import { Hint, InputBox, Label } from '../../components/Text'
 import AddressInput from '../../components/AddressInput'
@@ -158,51 +158,72 @@ const Send = ({
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
       ]}
     >
-      <Space direction='vertical' size='large' style={{ width: '100%' }}>
-        {isNFT && <Title level={4}>{metadata?.displayName}</Title>}
-        <Space size='large' direction={isMobile ? 'vertical' : 'horizontal'} style={{ width: '100%' }}>
-          <Label>
+      <Row align='middle' style={{ marginBottom: '10px' }}>
+        <Col>
+          {isNFT && <Title level={4}>{metadata?.displayName}</Title>}
+        </Col>
+      </Row>
+      <Row align='middle' style={{ marginBottom: '10px' }}>
+        <Col xs={4}>
+          <Label wide={!isMobile} style={{ fontSize: isMobile ? '12px' : undefined }}>
             <Hint>To</Hint>
           </Label>
+        </Col>
+        <Col xs={20}>
           <AddressInput
             addressValue={transferTo}
             setAddressCallback={setTransferTo}
             currentWallet={wallet}
             disabled={!!prefillDest}
           />
-        </Space>
-        <Space align='baseline' size='large' direction={isMobile ? 'vertical' : 'horizontal'} style={{ width: '100%' }}>
-          <Label><Hint>Amount</Hint></Label>
+        </Col>
+      </Row>
+      <Row align='middle' style={{ marginBottom: '10px' }}>
+        <Col xs={4}>
+          <Label wide={!isMobile} style={{ fontSize: isMobile ? '12px' : undefined }}>
+            <Hint>Amount</Hint>
+          </Label>
+        </Col>
+        <Col sm={!isNFT ? 16 : 18} xs={10}>
           <InputBox
             margin='auto'
-            width={200}
+            width='100%'
             value={inputAmount}
             onChange={({ target: { value } }) => setInputAmount(value)}
             disabled={!!prefillAmount}
           />
-          {
-            !isNFT && <Hint>{selectedToken.symbol}</Hint>
-          }
-          <Button type='secondary' shape='round' onClick={useMaxAmount} disabled={!!prefillAmount}>max</Button>
-        </Space>
+        </Col>
         {
-          selectedToken.key === 'one' &&
-            <Space size='large' align='end'>
+          !isNFT && <Col sm={2} xs={4}><Hint>{selectedToken.symbol}</Hint></Col>
+        }
+        <Col xs={2}>
+          <Button type='secondary' shape='round' onClick={useMaxAmount} disabled={!!prefillAmount}>max</Button>
+        </Col>
+      </Row>
+      {
+        selectedToken.key === 'one' &&
+          <Row align='middle' justify='end' style={{ marginBottom: '10px' }}>
+            <Col>
               <Title
                 level={4}
-                style={{ textAlign: 'right', marginBottom: 0 }}
+                style={{ marginBottom: 0, display: 'inline-block' }}
               >
                 ≈ ${transferFiatAmountFormatted}
               </Title>
+              &nbsp;
               <Hint>USD</Hint>
-            </Space>
+            </Col>
+          </Row>
         }
-        <OtpStack
-          walletName={wallet.name}
-          doubleOtp={doubleOtp}
-          otpState={otpState}
-        />
-      </Space>
+      <Row align='middle'>
+        <Col span={24}>
+          <OtpStack
+            walletName={wallet.name}
+            doubleOtp={doubleOtp}
+            otpState={otpState}
+          />
+        </Col>
+      </Row>
       <Row justify='end' style={{ marginTop: 24 }}>
         <Space>
           {stage >= 0 && stage < 3 && <LoadingOutlined />}

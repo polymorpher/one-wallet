@@ -37,9 +37,9 @@ const Balance = ({ address }) => {
         </Row>}
       <Row style={{ marginTop: 16 }}>
         <Col span={isMobile ? 24 : 12}>
-          <Title level={3} style={{ marginRight: 48 }}>Balance</Title>
+          <Title level={3} style={{ marginRight: isMobile ? undefined : 48 }}>Balance</Title>
         </Col>
-        <Col>
+        <Col span={isMobile ? 24 : 12} style={{ textAlign: isMobile ? 'right' : undefined }}>
           <Space>
             <Title level={3}>{formatted}</Title>
             <Text type='secondary'>{selectedToken.symbol}</Text>
@@ -47,18 +47,18 @@ const Balance = ({ address }) => {
         </Col>
       </Row>
       {selectedToken.key === 'one' &&
-        <Row>
+        <Row style={{ textAlign: isMobile ? 'right' : undefined }}>
           <Col span={isMobile ? 24 : 12} />
-          <Col>
+          <Col span={isMobile ? 24 : 12}>
             <Space>
               <Title level={4}>≈ ${fiatFormatted}</Title>
               <Text type='secondary'>USD</Text>
             </Space>
           </Col>
         </Row>}
-      <Row style={{ marginTop: 16 }}>
+      <Row style={{ marginTop: 16, textAlign: isMobile ? 'right' : undefined }}>
         <Col span={isMobile ? 24 : 12} />
-        <Col>
+        <Col span={isMobile ? 24 : undefined}>
           <Button type='primary' size='large' shape='round' onClick={showTransfer} disabled={!util.isNonZeroBalance(selectedTokenBalance)}> Send </Button>
         </Col>
       </Row>

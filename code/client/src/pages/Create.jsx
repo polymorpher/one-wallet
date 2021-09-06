@@ -299,7 +299,7 @@ const Create = () => {
         <Row>
           <Space direction='vertical'>
             {/* <Heading>Now, scan the QR code with your Google Authenticator</Heading> */}
-            <Heading>Create Your 1wallet</Heading>
+            <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
             <Hint>You need the 6-digit code from Google authenticator to transfer funds. You can restore your wallet using Google authenticator on any device.</Hint>
             <Row justify='center'>
               {qrCodeData && <Image src={qrCodeData} preview={false} width={isMobile ? 192 : 256} />}
@@ -309,16 +309,18 @@ const Create = () => {
         <Row>
           <Space direction='vertical' size='large' align='center'>
             <Hint>After you are done, type in the 6-digit code from Google authenticator</Hint>
-            <Hint>Code for <b>Harmony ({name})</b></Hint>
+            <Hint style={{ fontSize: isMobile ? 12 : undefined }}>
+              Code for <b>Harmony ({name})</b>
+            </Hint>
             <OtpBox
-              shouldAutoFocus
+              shouldAutoFocus={!isMobile}
               ref={otpRef}
               value={otp}
               onChange={setOtp}
             />
             <Checkbox onChange={() => setDoubleOtp(!doubleOtp)}>
               <Space>
-                <Hint>
+                <Hint style={{ fontSize: isMobile ? 12 : undefined }}>
                   Use two codes to enhance security
                 </Hint>
                 <Tooltip title={<div>You will need to scan another QR-code on the next page. Each time you make a transaction, you will need to type in two 6-digit codes, which are shown simultaneously next to each other on your Google authenticator.<br /><br />This is advisable if you intend to make larger transactions with this wallet</div>}>
@@ -342,9 +344,9 @@ const Create = () => {
         <Row>
           <Space direction='vertical' size='large' align='center'>
             <Hint>Type in the <b>second</b> 6-digit code from Google authenticator</Hint>
-            <Hint>Code for <b>Harmony ({name} - 2nd)</b></Hint>
+            <Hint style={{ fontSize: isMobile ? 12 : undefined }}>Code for <b>Harmony ({name} - 2nd)</b></Hint>
             <OtpBox
-              shouldAutoFocus
+              shouldAutoFocus={!isMobile}
               ref={otpRef}
               value={otp}
               onChange={setOtp}

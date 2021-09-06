@@ -24,6 +24,10 @@ const SiderLink = styled(Link).attrs((e) => ({
   }
 `
 
+const mobileMenuItemStyle = {
+  padding: '0 10px'
+}
+
 const LineDivider = ({ children }) => {
   return (
     <Divider style={{ borderColor: '#fafafa', opacity: 0.5, color: '#fafafa', fontSize: 14 }}>
@@ -66,9 +70,12 @@ const SiderMenu = ({ ...args }) => {
               onClick={nav}
               selectedKeys={[action]}
             >
-              <Menu.Item key='create' style={{ padding: '0 30px' }} icon={<PlusCircleOutlined />}>Create</Menu.Item>
-              <Menu.Item key='wallets' style={{ padding: '0 30px' }} icon={<UnorderedListOutlined />}>Wallets</Menu.Item>
-              <Menu.Item key='restore' style={{ padding: '0 30px' }} icon={<HistoryOutlined />}>Restore</Menu.Item>
+              <Menu.Item key='create' style={mobileMenuItemStyle} icon={<PlusCircleOutlined />}>Create</Menu.Item>
+              <Menu.Item key='wallets' style={mobileMenuItemStyle} icon={<UnorderedListOutlined />}>Wallets</Menu.Item>
+              <Menu.Item key='restore' style={mobileMenuItemStyle} icon={<HistoryOutlined />}>Restore</Menu.Item>
+              <Menu.Item key='bug' style={mobileMenuItemStyle} icon={<GithubOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/issues'>Bug Report</SiderLink></Menu.Item>
+              <Menu.Item key='audit' style={mobileMenuItemStyle} icon={<AuditOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/tree/master/audits'>Audits</SiderLink></Menu.Item>
+              <Menu.Item key='wiki' style={mobileMenuItemStyle} icon={<InfoCircleOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/wiki'>Wiki</SiderLink></Menu.Item>
             </Menu>
             )
           : (

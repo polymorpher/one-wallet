@@ -17,7 +17,7 @@ const delayDomainOperationMillis = 1000
  * Renders address input that provides type ahead search for any known addresses.
  * Known addresses are addresses that have been entered by user for at least once.
  */
-const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSelectOptions, disableManualInput, disabled }) => {
+const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSelectOptions, disableManualInput, disabled, style }) => {
   const dispatch = useDispatch()
 
   const [searchingAddress, setSearchingAddress] = useState(false)
@@ -277,7 +277,8 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
       labelInValue
       style={{
         width: isMobile ? '100%' : 500,
-        borderBottom: '1px dashed black'
+        borderBottom: '1px dashed black',
+        ...style
       }}
       notFoundContent={searchingAddress ? <Spin size='small' /> : <Text type='secondary'>No address found</Text>}
       bordered={false}
