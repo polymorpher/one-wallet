@@ -1,5 +1,5 @@
 import { TallRow } from '../../components/Grid'
-import { Col, Typography, Select, Image, Button, message, Row, Tooltip, Input } from 'antd'
+import { Col, Typography, Select, Image, Button, message, Row, Tooltip, Input, Space } from 'antd'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { mockCryptos } from './mock-cryptos'
@@ -19,13 +19,13 @@ const cryptoIconUrl = (symbol) => `https://qokka-public.s3-us-west-1.amazonaws.c
 const mockExchangeRate = () => Math.floor(Math.random() * 100)
 
 const textStyle = {
-  paddingRight: '10px',
+  paddingRight: '8px',
   display: 'block'
 }
 
 const optionButtonStyle = {
   textAlign: 'left',
-  height: '50px'
+  height: '48px',
 }
 
 const selectOptionStyle = {
@@ -33,12 +33,18 @@ const selectOptionStyle = {
 }
 
 const maxButtonStyle = {
-  marginLeft: '20px',
+  marginLeft: '24px',
   bottom: '1px'
 }
 
+const tokenSelectorStyle = {
+  minWidth: '160px', border: 'none', borderBottom: '1px solid lightgrey',
+}
+
 const amountInputStyle = {
-  margin: 0
+  margin: 0,
+  flex: 1,
+  borderBottom: '1px solid lightgrey'
 }
 
 /**
@@ -214,7 +220,7 @@ const Swap = ({ address }) => {
   const [selectedTokenSwapTo, setSelectedTokenSwapTo] = useState({ value: '', label: '' })
   const [swapAmountFormatted, setSwapAmountFormatted] = useState()
   const [targetSwapAmountFormatted, setTargetSwapAmountFormatted] = useState()
-  const [selectedTokenBalance, setSelectedTokenBalance] = useState('0')
+  const [tokenBalanceFormatted, setTokenBalanceFormatted] = useState('0')
   const [exchangeRate, setExchangeRate] = useState()
   const [editingSetting, setEditingSetting] = useState(false)
   const [slippageTolerance, setSlippageTolerance] = useState('0.50')
@@ -261,10 +267,10 @@ const Swap = ({ address }) => {
     const tokenBalance = getSelectedTokenComputedBalance(selectedTokenSwapFrom, tokenBalances, balance)
 
     if (!tokenBalance) {
-      setSelectedTokenBalance('0')
+      setTokenBalanceFormatted('0')
     }
 
-    setSelectedTokenBalance(tokenBalance.formatted)
+    setTokenBalanceFormatted(tokenBalance.formatted)
   }, [selectedTokenSwapFrom, tokenBalances, balance])
 
   const swapOptions = (tokens, setSelectedToken) => tokens.map((token, index) => (
@@ -364,94 +370,107 @@ const Swap = ({ address }) => {
 
   return (
     <>
-      <Row align='bottom'>
-        <Col span={2}>
-          <Tooltip title='Setting'>
-            <Button type='text' size='large' icon={editingSetting ? <CloseOutlined /> : <SettingOutlined />} onClick={() => setEditingSetting(!editingSetting)} />
-          </Tooltip>
-        </Col>
-        {
-          editingSetting
-            ? (
-              <>
-                <Col span={8}>
-                  <Text style={textStyle}>
-                    Slippage tolerance &nbsp;
-                    <Tooltip title='Your transaction will revert if price changes unfavorable by more than this percentage'>
-                      <QuestionCircleOutlined />
-                    </Tooltip>
-                  </Text>
-                  {/* TODO: there is no validation for the value yet */}
-                  <Input addonAfter={<PercentageOutlined />} placeholder='0.0' value={slippageTolerance} onChange={({ target: { value } }) => setSlippageTolerance(value)} />
-                </Col>
-                <Col span={8} offset={2}>
-                  <Text style={textStyle}>
-                    Transaction deadline &nbsp;
-                    <Tooltip title='Your transaction will revert if it is pending for more than this long'>
-                      <QuestionCircleOutlined />
-                    </Tooltip>
-                  </Text>
-                  {/* TODO: there is no validation for the value yet */}
-                  <Input addonAfter='minutes' placeholder='0' value={transactionDeadline} onChange={({ target: { value } }) => setTransactionDeadline(value)} />
-                </Col>
-              </>
-              )
-            : <></>
-        }
-      </Row>
-      <TallRow align='middle'>
-        <Col span={12}>
-          <Text style={textStyle} type='secondary'>Swap From</Text>
-          <Select
-            showSearch
-            labelInValue
-            style={{ width: 280 }}
-            value={selectedTokenSwapFrom}
-            onSearch={handleSearchCurrentTrackedTokens}
-          >
-            {swapOptions(currentTrackedTokens, onSelectTokenSwapFrom)}
-          </Select>
-        </Col>
-        <Col span={12}>
-          <Text style={textStyle} type='secondary'>Amount (Balance: {selectedTokenBalance})</Text>
-          <InputBox style={amountInputStyle} placeholder='0.00' value={swapAmountFormatted} onChange={({ target: { value } }) => onSwapAmountChange(value)} />
-          <Button style={maxButtonStyle} shape='round' onClick={setMaxSwapAmount}>Max</Button>
-        </Col>
+      <TallRow>
+        <Row align='middle' style={{ width: '100%' }} gutter={32}>
+          <Col span={8}>
+            <Text style={textStyle} type='secondary'>From</Text>
+          </Col>
+          <Col span={16}>
+            <Text style={textStyle} type='secondary'>Amount (Balance: {tokenBalanceFormatted})</Text>
+          </Col>
+        </Row>
+        <Row align='middle' style={{ width: '100%' }} gutter={32}>
+          <Col span={8}>
+            <Select
+              showSearch
+              bordered={false}
+              labelInValue
+              style={tokenSelectorStyle}
+              value={selectedTokenSwapFrom}
+              onSearch={handleSearchCurrentTrackedTokens}
+            >
+              {swapOptions(currentTrackedTokens, onSelectTokenSwapFrom)}
+            </Select>
+          </Col>
+          <Col span={16}>
+            <Row>
+              <InputBox size='default' style={amountInputStyle} placeholder='0.00' value={swapAmountFormatted} onChange={({ target: { value } }) => onSwapAmountChange(value)} />
+              <Button style={maxButtonStyle} shape='round' onClick={setMaxSwapAmount}>Max</Button>
+            </Row>
+          </Col>
+        </Row>
       </TallRow>
-      <TallRow align='middle'>
-        <Col span={12}>
-          <Text style={textStyle} type='secondary'>Swap To</Text>
-          <Select
-            showSearch
-            labelInValue
-            style={{ width: 280 }}
-            value={selectedTokenSwapTo}
-            onSearch={handleSearchSupportedTokens}
-          >
-            {swapOptions(supportedTokens, onSelectTokenSwapTo)}
-          </Select>
-        </Col>
-        <Col span={12}>
-          <Text style={textStyle} type='secondary'>Target Amount</Text>
-          <InputBox style={amountInputStyle} placeholder='0.00' value={targetSwapAmountFormatted} onChange={({ target: { value } }) => onTargetSwapAmountChange(value)} />
-        </Col>
+      <TallRow>
+        <Row align='middle' style={{ width: '100%' }}>
+          <Col span={8}>
+            <Text style={textStyle} type='secondary'>To</Text>
+          </Col>
+          <Col span={16}>
+            <Text style={textStyle} type='secondary'>Expected Amount</Text>
+          </Col>
+        </Row>
+        <Row align='middle' style={{ width: '100%' }}>
+          <Col span={8}>
+            <Select
+              showSearch
+              bordered={false}
+              labelInValue
+              style={tokenSelectorStyle}
+              value={selectedTokenSwapTo}
+              onSearch={handleSearchSupportedTokens}
+            >
+              {swapOptions(supportedTokens, onSelectTokenSwapTo)}
+            </Select>
+          </Col>
+          <Col span={16}>
+            <InputBox size='default' style={{ ...amountInputStyle, width: '100%' }} placeholder='0.00' value={targetSwapAmountFormatted} onChange={({ target: { value } }) => onTargetSwapAmountChange(value)} />
+          </Col>
+        </Row>
       </TallRow>
       <TallRow align='middle'>
         <Col span={24}>
           <ExchangeRateButton exchangeRate={exchangeRate} selectedTokenSwapFrom={selectedTokenSwapFrom} selectedTokenSwapTo={selectedTokenSwapTo} />
         </Col>
       </TallRow>
-      <TallRow align='middle'>
-        <Col span={6}>
-          <Button
-            shape='round'
-            disabled={!swapAllowed}
-            type='primary'
-            onClick={confirmSwap}
-          >
-            Confirm
-          </Button>
-        </Col>
+
+      <TallRow justify='space-between' align='baseline'>
+        <Space size='large' align='top'>
+          <Button type='link' size='large' style={{ padding: 0 }} icon={editingSetting && <CloseOutlined />} onClick={() => setEditingSetting(!editingSetting)}>{!editingSetting && 'Advanced Settings'}</Button>
+        </Space>
+
+        <Button
+          shape='round'
+          disabled={!swapAllowed}
+          type='primary'
+          onClick={confirmSwap}
+        >
+          Confirm
+        </Button>
+      </TallRow>
+      <TallRow align='top'>
+        {editingSetting &&
+          <Space direction='vertical' size='large'>
+            <Space>
+              <Text style={textStyle}>
+                Slippage tolerance &nbsp;
+                <Tooltip title='Your transaction will revert if price changes unfavorable by more than this percentage'>
+                  <QuestionCircleOutlined />
+                </Tooltip>
+              </Text>
+              {/* TODO: there is no validation for the value yet */}
+              <Input addonAfter={<PercentageOutlined />} placeholder='0.0' value={slippageTolerance} onChange={({ target: { value } }) => setSlippageTolerance(value)} />
+            </Space>
+            <Space>
+              <Text style={textStyle}>
+                Transaction deadline &nbsp;
+                <Tooltip title='Your transaction will revert if it is pending for more than this long'>
+                  <QuestionCircleOutlined />
+                </Tooltip>
+              </Text>
+              {/* TODO: there is no validation for the value yet */}
+              <Input addonAfter='minutes' placeholder='0' value={transactionDeadline} onChange={({ target: { value } }) => setTransactionDeadline(value)} />
+            </Space>
+          </Space>}
       </TallRow>
     </>
   )
