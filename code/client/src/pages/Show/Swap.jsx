@@ -1,19 +1,19 @@
 import { TallRow } from '../../components/Grid'
 import { Col, Typography, Select, Image, Button, message, Row, Tooltip, Input, Space } from 'antd'
 import React, { useCallback, useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
-import { mockCryptos } from './mock-cryptos'
+import { useDispatch, useSelector } from 'react-redux'
 import ONEConstants from '../../../../lib/constants'
 import util from '../../util'
 import { DefaultTrackedERC20, HarmonyONE, withKeys } from '../../components/TokenAssets'
 import api from '../../api'
 import { InputBox } from '../../components/Text'
 import BN from 'bn.js'
-import { CloseOutlined, PercentageOutlined, QuestionCircleOutlined, SettingOutlined, SwapOutlined } from '@ant-design/icons'
+import { PercentageOutlined, QuestionCircleOutlined, SwapOutlined } from '@ant-design/icons'
+import { OtpStack, useOtpState } from '../../components/OtpStack'
+import { FallbackImage } from '../../constants/ui'
 const { Text } = Typography
 
-// TODO: some token's images are not available, we may want a CDN or other service that can retrieve icons dynamically.
-const cryptoIconUrl = (symbol) => `https://qokka-public.s3-us-west-1.amazonaws.com/crypto-logos/${symbol.toLowerCase()}.png`
+const tokenIconUrl = (symbol) => `https://res.cloudinary.com/sushi-cdn/image/fetch/w_64/https://raw.githubusercontent.com/sushiswap/icons/master/token/${symbol.toLowerCase()}.jpg`
 
 // TODO: remove this mock exchange rate.
 const mockExchangeRate = () => Math.floor(Math.random() * 100)
@@ -52,21 +52,18 @@ const amountInputStyle = {
  * If it is selected, display only the symbol, otherwise display symbol and name.
  */
 const TokenLabel = ({ token, selected }) => (
-  <>
+  <Row align='middle' style={{ flexWrap: 'nowrap', width: 'fit-content' }}>
     <Image
       preview={false}
       width={24}
       height={24}
-      wrapperStyle={{ marginRight: '15px' }}
-      style={{ display: 'inline' }}
-      src={cryptoIconUrl(token.symbol)}
+      fallback={FallbackImage}
+      wrapperStyle={{ marginRight: '16px' }}
+      src={tokenIconUrl(token.symbol)}
     />
-    <Text>
-      {
-        selected ? token.symbol : `${token.symbol} ${token.name}`
-      }
-    </Text>
-  </>
+    {selected && <Text> {token.symbol.toUpperCase()} </Text>}
+    {!selected && <Text style={{ fontSize: 10 }}> {token.symbol.toUpperCase()}<br />{token.name}</Text>}
+  </Row>
 )
 
 /**
@@ -199,13 +196,15 @@ const Swap = ({ address }) => {
   const wallets = useSelector(state => state.wallet.wallets)
   const network = useSelector(state => state.wallet.network)
   const wallet = wallets[address] || {}
+  const dispatch = useDispatch()
+
+  const doubleOtp = wallet.doubleOtp
+  const { state: otpState } = useOtpState()
+  const { otpInput, otp2Input, resetOtp } = otpState
+
   const tokenBalances = wallet.tokenBalances || {}
   const trackedTokens = (wallet.trackedTokens || []).filter(e => e.tokenType === ONEConstants.TokenType.ERC20)
-  const harmonyToken = {
-    name: HarmonyONE.name,
-    icon: HarmonyONE.icon,
-    symbol: HarmonyONE.symbol
-  }
+  const harmonyToken = { ...HarmonyONE }
   const harmonySelectOption = {
     ...harmonyToken,
     value: HarmonyONE.symbol,
@@ -215,7 +214,11 @@ const Swap = ({ address }) => {
   const [currentTrackedTokens, setCurrentTrackedTokens] = useState([harmonyToken, ...defaultTrackedTokens, ...(trackedTokens || [])])
   const balances = useSelector(state => state.wallet.balances)
   const balance = balances[address] || 0
-  const [supportedTokens, setSupportedTokens] = useState([])
+
+  const [pairs, setPairs] = useState([])
+  const [tokens, setTokens] = useState({})
+  const [targetTokens, setTargetTokens] = useState([])
+
   const [selectedTokenSwapFrom, setSelectedTokenSwapFrom] = useState(harmonySelectOption)
   const [selectedTokenSwapTo, setSelectedTokenSwapTo] = useState({ value: '', label: '' })
   const [swapAmountFormatted, setSwapAmountFormatted] = useState()
@@ -224,18 +227,22 @@ const Swap = ({ address }) => {
   const [exchangeRate, setExchangeRate] = useState()
   const [editingSetting, setEditingSetting] = useState(false)
   const [slippageTolerance, setSlippageTolerance] = useState('0.50')
-  const [transactionDeadline, setTransactionDeadline] = useState('30')
+  const [transactionDeadline, setTransactionDeadline] = useState('120')
 
   // Loads supported tokens that are available for swap.
   useEffect(() => {
-    const loadCryptos = async () => {
-      // TODO: this is not tokens supported by Harmony network, fetch supported tokens from Harmony network.
-      const loadedCryptos = await mockCryptos()
-      setSupportedTokens(loadedCryptos)
+    const getPairs = async () => {
+      const { pairs, tokens } = await api.sushi.getCachedTokenPairs()
+      // TODO: remove restrictions for token-token swaps later
+      const filteredPairs = (pairs || []).filter(e => e.t0 === ONEConstants.Sushi.WONE || e.t1 === ONEConstants.Sushi.WONE)
+      setPairs(filteredPairs)
+      Object.keys(tokens).forEach(addr => {
+        tokens[addr].address = addr
+      })
+      setTokens(tokens || {})
     }
-
-    loadCryptos()
-  }, [setSupportedTokens])
+    getPairs()
+  }, [])
 
   useEffect(() => {
     const loadTrackedTokensMetadata = async () => {
@@ -244,9 +251,7 @@ const Swap = ({ address }) => {
           if (trackedToken.symbol === HarmonyONE.symbol) {
             return trackedToken
           }
-
           const { name, symbol, decimals } = await api.blockchain.getTokenMetadata(trackedToken)
-
           return {
             ...trackedToken,
             name,
@@ -259,22 +264,39 @@ const Swap = ({ address }) => {
       }))
       setCurrentTrackedTokens(trackedTokensWithMetadata)
     }
-
     loadTrackedTokensMetadata()
   }, [])
 
   useEffect(() => {
     const tokenBalance = getSelectedTokenComputedBalance(selectedTokenSwapFrom, tokenBalances, balance)
-
     if (!tokenBalance) {
       setTokenBalanceFormatted('0')
     }
-
     setTokenBalanceFormatted(tokenBalance.formatted)
   }, [selectedTokenSwapFrom, tokenBalances, balance])
 
-  const swapOptions = (tokens, setSelectedToken) => tokens.map((token, index) => (
-    <Select.Option key={index} value={`${token.symbol} ${token.name}`} style={selectOptionStyle}>
+  useEffect(() => {
+    if (Object.keys(tokens).length === 0) {
+      return
+    }
+    console.log(selectedTokenSwapFrom)
+    console.log(tokens)
+    const from = selectedTokenSwapFrom.address || ONEConstants.Sushi.WONE
+    const tokensAsTo = pairs.filter(e => e.t0 === from).map(e => tokens[e.t1])
+    const tokensAsFrom = pairs.filter(e => e.t1 === from).map(e => tokens[e.t0])
+    const filteredTokens = {}
+    console.log({ tokensAsTo, tokensAsFrom })
+    tokensAsTo.forEach(t => {
+      filteredTokens[t.address] = { ...t, to: true }
+    })
+    tokensAsFrom.forEach(t => {
+      filteredTokens[t.address] = { ...t, from: true }
+    })
+    setTargetTokens(Object.keys(filteredTokens).map(k => filteredTokens[k]))
+  }, [selectedTokenSwapFrom, tokens, pairs])
+
+  const buildSwapOptions = (tokens, setSelectedToken) => tokens.map((token, index) => (
+    <Select.Option key={index} value={token.contractAddress || ONEConstants.Sushi.WONE} style={selectOptionStyle}>
       <Button
         type='text'
         block
@@ -286,13 +308,9 @@ const Swap = ({ address }) => {
     </Select.Option>
   ))
 
-  const handleSearchSupportedTokens = async (value) => {
-    setSelectedTokenSwapTo({ value })
-  }
+  const handleSearchSupportedTokens = async (value) => { setSelectedTokenSwapTo({ value }) }
 
-  const handleSearchCurrentTrackedTokens = async (value) => {
-    setSelectedTokenSwapFrom({ value })
-  }
+  const handleSearchCurrentTrackedTokens = async (value) => { setSelectedTokenSwapFrom({ value }) }
 
   const onSelectTokenSwapFrom = (token) => {
     handleSwapTokenSelected({
@@ -389,7 +407,7 @@ const Swap = ({ address }) => {
               value={selectedTokenSwapFrom}
               onSearch={handleSearchCurrentTrackedTokens}
             >
-              {swapOptions(currentTrackedTokens, onSelectTokenSwapFrom)}
+              {buildSwapOptions(currentTrackedTokens, onSelectTokenSwapFrom)}
             </Select>
           </Col>
           <Col span={16}>
@@ -419,7 +437,7 @@ const Swap = ({ address }) => {
               value={selectedTokenSwapTo}
               onSearch={handleSearchSupportedTokens}
             >
-              {swapOptions(supportedTokens, onSelectTokenSwapTo)}
+              {buildSwapOptions(targetTokens, onSelectTokenSwapTo)}
             </Select>
           </Col>
           <Col span={16}>
@@ -432,10 +450,12 @@ const Swap = ({ address }) => {
           <ExchangeRateButton exchangeRate={exchangeRate} selectedTokenSwapFrom={selectedTokenSwapFrom} selectedTokenSwapTo={selectedTokenSwapTo} />
         </Col>
       </TallRow>
-
+      <TallRow>
+        <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} />
+      </TallRow>
       <TallRow justify='space-between' align='baseline'>
         <Space size='large' align='top'>
-          <Button type='link' size='large' style={{ padding: 0 }} icon={editingSetting && <CloseOutlined />} onClick={() => setEditingSetting(!editingSetting)}>{!editingSetting && 'Advanced Settings'}</Button>
+          <Button type='link' size='large' style={{ padding: 0 }} onClick={() => setEditingSetting(!editingSetting)}>{editingSetting ? 'Close' : 'Advanced Settings'}</Button>
         </Space>
 
         <Button
@@ -468,7 +488,7 @@ const Swap = ({ address }) => {
                 </Tooltip>
               </Text>
               {/* TODO: there is no validation for the value yet */}
-              <Input addonAfter='minutes' placeholder='0' value={transactionDeadline} onChange={({ target: { value } }) => setTransactionDeadline(value)} />
+              <Input addonAfter='seconds' placeholder='0' value={transactionDeadline} onChange={({ target: { value } }) => setTransactionDeadline(value)} />
             </Space>
           </Space>}
       </TallRow>
