@@ -11,7 +11,7 @@ const fs = require('fs').promises
 const getTokenInfo = async (t) => {
   const [symbol, name, decimal, supply] = await Promise.all([t.methods.symbol().call(), t.methods.name().call(), t.methods.decimals().call(), t.methods.totalSupply().call()])
   return {
-    symbol, name, decimal, supply, address: t.address
+    symbol, name, decimal, supply, address: t.options.address
   }
 }
 // Obtain the list of pairs and underlying tokens from Sushiswap deployed on Harmony
