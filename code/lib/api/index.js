@@ -14,6 +14,10 @@ const IERC1155MetadataURI = require('../../build/contracts/IERC1155MetadataURI.j
 const Resolver = require('../../build/contracts/Resolver.json')
 const ReverseResolver = require('../../build/contracts/IDefaultReverseResolver.json')
 const Registrar = require('../../build/contracts/IRegistrar.json')
+// abi only - load with web3 or ethers
+const SushiRouter = require('../../external/IUniswapV2Router02.json')
+const SushiToken = require('../../external/IERC20Uniswap.json')
+const SushiPair = require('../../external/IUniswapV2Pair.json')
 
 const BN = require('bn.js')
 const ONEUtil = require('../util')
@@ -63,7 +67,7 @@ const initAPI = (store) => {
   })
 }
 
-// TODO: cleanup this mess
+// TODO: cleanup this mess after switching to w3
 const providers = {}; const contractWithProvider = {}; const networks = []; const web3instances = {}
 let activeNetwork = config.defaults.network
 let web3; let one
@@ -403,9 +407,82 @@ const api = {
         const ret = await c.query(label, name)
         return !!ret[0]
       }
+    },
+  },
 
+  sushi: {
+    getCachedTokenPairs: async () => {
+      const { data } = await base.get('/sushi')
+      return data
+    },
+    getAmountOut: async ({ amountIn, tokenAddress }) => {
+      const c = new web3.eth.Contract(SushiRouter, ONEConstants.Sushi.ROUTER)
+      const amountsOut = await c.methods.getAmountsOut(amountIn, [ONEConstants.Sushi.WONE, tokenAddress]).call()
+      return amountsOut[1]
+    },
+    getAmountIn: async ({ amountOut, tokenAddress }) => {
+      const c = new web3.eth.Contract(SushiRouter, ONEConstants.Sushi.ROUTER)
+      const amountsIn = await c.methods.getAmountsIn(amountOut, [ONEConstants.Sushi.WONE, tokenAddress]).call()
+      return amountsIn
+    },
+    getTokenInfo: async ({ tokenAddress }) => {
+      const t = new web3.eth.Contract(SushiToken, tokenAddress)
+      const [symbol, name, decimal, supply] = await Promise.all([t.methods.symbol().call(), t.methods.name().call(), t.methods.decimals().call(), t.methods.totalSupply().call()])
+      return {
+        symbol, name, decimal, supply, address: tokenAddress
+      }
+    },
+    getReserves: async ({ pairAddress }) => {
+      const t = new web3.eth.Contract(SushiPair, pairAddress)
+      const r = await t.methods.getReserves().call()
+      const [reserve0, reserve1, time] = [r[0], r[1], r[2]]
+      return { reserve0, reserve1, time }
+    },
+    swapForToken: async ({ address, neighbors, index, eotp, amountOut, amount, tokenAddress }) => {
+      // swapETHForExactTokens(uint amountOut, address[] calldata path, address to, uint deadline)
+      const data = ONEUtil.encodeCalldata(
+        'swapETHForExactTokens(uint256,address[],address,uint256)',
+        [ amountOut, [ONEConstants.Sushi.WONE, tokenAddress], address, Math.floor(Date.now() / 1000) + 60 ]
+      )
+      return api.relayer.reveal({
+        address,
+        neighbors,
+        index,
+        eotp,
+        operationType: ONEConstants.OperationType.CALL,
+        tokenType: ONEConstants.TokenType.NONE,
+        contractAddress: ONEConstants.Sushi.ROUTER,
+        dest: ONEConstants.EmptyAddress,
+        tokenId: 0,
+        amount,
+        data
+      })
+    },
+    swapForONE: async ({ address, neighbors, index, eotp, amountIn, amountOutMin, tokenAddress }) => {
+      // swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
+      const data = ONEUtil.encodeCalldata(
+        'swapExactTokensForETH(uint256,uint256,address[],address,uint256)',
+        [ amountIn, amountOutMin, [tokenAddress, ONEConstants.Sushi.WONE], address, Math.floor(Date.now() / 1000) + 60 ]
+      )
+      return api.relayer.reveal({
+        address,
+        neighbors,
+        index,
+        eotp,
+        operationType: ONEConstants.OperationType.CALL,
+        tokenType: ONEConstants.TokenType.NONE,
+        contractAddress: ONEConstants.Sushi.ROUTER,
+        dest: ONEConstants.EmptyAddress,
+        tokenId: 0,
+        amount: 0,
+        data
+      })
+    },
+    getTokenIcon: async ({ symbol }) => {
+      return `https://res.cloudinary.com/sushi-cdn/image/fetch/w_64/https://raw.githubusercontent.com/sushiswap/icons/master/token/${symbol.toLowerCase()}.jpg`
     }
   },
+
   relayer: {
     create: async ({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit, backlinks = [] }) => {
       const { data } = await base.post('/new', { root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit, backlinks })
