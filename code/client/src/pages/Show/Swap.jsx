@@ -107,7 +107,7 @@ const computeTokenBalance = (selectedToken, tokenBalances, oneWalletBalance) => 
       const computedBalance = util.computeBalance(oneWalletBalance, 0)
       return computedBalance
     }
-    const computedBalance = util.computeBalance(tokenBalances[selectedToken.address], undefined, selectedToken.decimals)
+    const computedBalance = util.computeBalance(tokenBalances[selectedToken.address], undefined, selectedToken.decimal)
     return computedBalance
   } catch (ex) {
     console.error(ex)
@@ -208,7 +208,11 @@ const Swap = ({ address }) => {
     }
     const erc20Tracked = (wallet.trackedTokens || []).filter(e => e.tokenType === ONEConstants.TokenType.ERC20)
     const trackedTokens = [harmonyToken, ...DefaultTrackedERC20(network), ...(erc20Tracked || [])]
-    trackedTokens.forEach(tt => { tt.address = tt.address || tt.contractAddress })
+    trackedTokens.forEach(tt => {
+      // align formats
+      tt.address = tt.address || tt.contractAddress
+      tt.decimal = tt.decimal || tt.decimals
+    })
     const updateFromTokens = async () => {
       const trackedTokensUpdated = await api.tokens.batchGetMetadata(trackedTokens)
       // ONE has null contractAddress
@@ -314,14 +318,14 @@ const Swap = ({ address }) => {
     }
     const useFrom = (util.isONE(selectedTokenSwapFrom) || util.isWONE(selectedTokenSwapFrom))
     const tokenAddress = useFrom ? selectedTokenSwapTo.address : selectedTokenSwapFrom.address
-    const outDecimals = useFrom ? selectedTokenSwapTo.decimals : selectedTokenSwapFrom.decimals
-    const inDecimals = useFrom ? selectedTokenSwapFrom.decimals : selectedTokenSwapTo.decimals
-    const { balance: amountIn, formatted: amountInFormatted } = util.toBalance(value, undefined, inDecimals)
+    const outDecimal = useFrom ? selectedTokenSwapTo.decimal : selectedTokenSwapFrom.decimal
+    const inDecimal = useFrom ? selectedTokenSwapFrom.decimal : selectedTokenSwapTo.decimal
+    const { balance: amountIn, formatted: amountInFormatted } = util.toBalance(value, undefined, inDecimal)
     const amountOut = await api.sushi.getAmountOut({ amountIn, tokenAddress, inverse: useFrom !== isFrom })
 
-    const { formatted: amountOutFormatted } = util.computeBalance(amountOut, undefined, outDecimals)
+    const { formatted: amountOutFormatted } = util.computeBalance(amountOut, undefined, outDecimal)
     toSetter(amountOutFormatted)
-    console.log({ amountOutFormatted, amountInFormatted, amountIn })
+    console.log({ amountOutFormatted, amountInFormatted, inDecimal, outDecimal, amountOut: amountOut.toString(), amountIn: amountIn.toString() })
     let exchangeRate = parseFloat(amountOutFormatted) / parseFloat(amountInFormatted)
     if (!useFrom) {
       exchangeRate = 1 / exchangeRate
