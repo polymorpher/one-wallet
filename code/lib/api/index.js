@@ -417,15 +417,17 @@ const api = {
       const { pairs, tokens } = data || {}
       return { pairs, tokens }
     },
-    getAmountOut: async ({ amountIn, tokenAddress }) => {
+    getAmountOut: async ({ amountIn, tokenAddress, inverse }) => {
       const c = new web3.eth.Contract(SushiRouter, ONEConstants.Sushi.ROUTER)
-      const amountsOut = await c.methods.getAmountsOut(amountIn, [ONEConstants.Sushi.WONE, tokenAddress]).call()
+      const path = inverse ? [tokenAddress, ONEConstants.Sushi.WONE] : [ONEConstants.Sushi.WONE, tokenAddress]
+      const amountsOut = await c.methods.getAmountsOut(amountIn, path).call()
       return amountsOut[1]
     },
-    getAmountIn: async ({ amountOut, tokenAddress }) => {
+    getAmountIn: async ({ amountOut, tokenAddress, inverse }) => {
       const c = new web3.eth.Contract(SushiRouter, ONEConstants.Sushi.ROUTER)
-      const amountsIn = await c.methods.getAmountsIn(amountOut, [ONEConstants.Sushi.WONE, tokenAddress]).call()
-      return amountsIn
+      const path = inverse ? [ONEConstants.Sushi.WONE, tokenAddress] : [tokenAddress, ONEConstants.Sushi.WONE]
+      const amountsIn = await c.methods.getAmountsIn(amountOut, path).call()
+      return amountsIn[0]
     },
     getTokenInfo: async ({ tokenAddress }) => {
       const t = new web3.eth.Contract(SushiToken, tokenAddress)
