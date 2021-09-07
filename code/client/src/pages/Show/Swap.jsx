@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import ONEConstants from '../../../../lib/constants'
 import util from '../../util'
-import { DefaultTrackedERC20, HarmonyONE, withKeys } from '../../components/TokenAssets'
+import { DefaultTrackedERC20, HarmonyONE } from '../../components/TokenAssets'
 import api from '../../api'
 import { InputBox } from '../../components/Text'
 import BN from 'bn.js'
@@ -59,7 +59,7 @@ const TokenLabel = ({ token, selected }) => (
       height={24}
       fallback={FallbackImage}
       wrapperStyle={{ marginRight: '16px' }}
-      src={tokenIconUrl(token.symbol)}
+      src={tokenIconUrl(token.iconSymbol || token.symbol)}
     />
     {selected && <Text> {token.symbol.toUpperCase()} </Text>}
     {!selected && <Text style={{ fontSize: 10 }}> {token.symbol.toUpperCase()}<br />{token.name}</Text>}
@@ -120,12 +120,9 @@ const getSelectedTokenComputedBalance = (selectedToken, tokenBalances, oneWallet
   try {
     if (selectedToken && selectedToken.symbol === HarmonyONE.symbol) {
       const computedBalance = util.computeBalance(oneWalletBalance, 0)
-
       return computedBalance
     }
-
     const computedBalance = util.computeBalance(tokenBalances[selectedToken.address], undefined, selectedToken.decimals)
-
     return computedBalance
   } catch (ex) {
     console.error(ex)
@@ -203,24 +200,25 @@ const Swap = ({ address }) => {
   const { otpInput, otp2Input, resetOtp } = otpState
 
   const tokenBalances = wallet.tokenBalances || {}
-  const trackedTokens = (wallet.trackedTokens || []).filter(e => e.tokenType === ONEConstants.TokenType.ERC20)
+
   const harmonyToken = { ...HarmonyONE }
   const harmonySelectOption = {
     ...harmonyToken,
     value: HarmonyONE.symbol,
     label: <TokenLabel token={harmonyToken} selected />
   }
-  const defaultTrackedTokens = withKeys(DefaultTrackedERC20(network))
-  const [currentTrackedTokens, setCurrentTrackedTokens] = useState([harmonyToken, ...defaultTrackedTokens, ...(trackedTokens || [])])
+
   const balances = useSelector(state => state.wallet.balances)
   const balance = balances[address] || 0
 
   const [pairs, setPairs] = useState([])
   const [tokens, setTokens] = useState({})
-  const [targetTokens, setTargetTokens] = useState([])
+  const [fromTokens, setFromTokens] = useState([])
+  const [toTokens, setToTokens] = useState([])
+  const emptySelectOption = { value: '', label: '' }
 
   const [selectedTokenSwapFrom, setSelectedTokenSwapFrom] = useState(harmonySelectOption)
-  const [selectedTokenSwapTo, setSelectedTokenSwapTo] = useState({ value: '', label: '' })
+  const [selectedTokenSwapTo, setSelectedTokenSwapTo] = useState(emptySelectOption)
   const [swapAmountFormatted, setSwapAmountFormatted] = useState()
   const [targetSwapAmountFormatted, setTargetSwapAmountFormatted] = useState()
   const [tokenBalanceFormatted, setTokenBalanceFormatted] = useState('0')
@@ -245,27 +243,21 @@ const Swap = ({ address }) => {
   }, [])
 
   useEffect(() => {
-    const loadTrackedTokensMetadata = async () => {
-      const trackedTokensWithMetadata = await Promise.all(currentTrackedTokens.map(async (trackedToken) => {
-        try {
-          if (trackedToken.symbol === HarmonyONE.symbol) {
-            return trackedToken
-          }
-          const { name, symbol, decimals } = await api.blockchain.getTokenMetadata(trackedToken)
-          return {
-            ...trackedToken,
-            name,
-            symbol,
-            decimals
-          }
-        } catch (ex) {
-          console.error(ex)
-        }
-      }))
-      setCurrentTrackedTokens(trackedTokensWithMetadata)
+    if (Object.keys(tokens).length === 0) {
+      return
     }
-    loadTrackedTokensMetadata()
-  }, [])
+    const erc20Tracked = (wallet.trackedTokens || []).filter(e => e.tokenType === ONEConstants.TokenType.ERC20)
+    const trackedTokens = [harmonyToken, ...DefaultTrackedERC20(network), ...(erc20Tracked || [])]
+    const updateFromTokens = async () => {
+      const trackedTokensUpdated = await api.tokens.batchGetMetadata(trackedTokens)
+      // ONE has null contractAddress
+      const filteredTokens = trackedTokensUpdated.filter(t => t.contractAddress === null || tokens[t.contractAddress])
+
+      filteredTokens.sort((t0, t1) => (t1.priority || 0) - (t0.priority || 0))
+      setFromTokens(filteredTokens)
+    }
+    updateFromTokens()
+  }, [tokens])
 
   useEffect(() => {
     const tokenBalance = getSelectedTokenComputedBalance(selectedTokenSwapFrom, tokenBalances, balance)
@@ -279,24 +271,30 @@ const Swap = ({ address }) => {
     if (Object.keys(tokens).length === 0) {
       return
     }
-    console.log(selectedTokenSwapFrom)
-    console.log(tokens)
-    const from = selectedTokenSwapFrom.address || ONEConstants.Sushi.WONE
+    // console.log(selectedTokenSwapFrom)
+    // console.log(tokens)
+    const from = selectedTokenSwapFrom.address || selectedTokenSwapFrom.contractAddress || ONEConstants.Sushi.WONE
     const tokensAsTo = pairs.filter(e => e.t0 === from).map(e => tokens[e.t1])
     const tokensAsFrom = pairs.filter(e => e.t1 === from).map(e => tokens[e.t0])
     const filteredTokens = {}
-    console.log({ tokensAsTo, tokensAsFrom })
-    tokensAsTo.forEach(t => {
-      filteredTokens[t.address] = { ...t, to: true }
-    })
-    tokensAsFrom.forEach(t => {
-      filteredTokens[t.address] = { ...t, from: true }
-    })
-    setTargetTokens(Object.keys(filteredTokens).map(k => filteredTokens[k]))
+    // console.log({ tokensAsTo, tokensAsFrom })
+    tokensAsTo.forEach(t => { filteredTokens[t.address] = { ...t, to: true } })
+    tokensAsFrom.forEach(t => { filteredTokens[t.address] = { ...t, from: true } })
+    const toTokens = Object.keys(filteredTokens).map(k => filteredTokens[k])
+    // ONE can be exchanged to WONE
+    if (!selectedTokenSwapFrom.address) {
+      toTokens.push(tokens[ONEConstants.Sushi.WONE])
+    }
+    console.log(toTokens)
+    toTokens.sort((t0, t1) => (t1.priority || 0) - (t0.priority || 0))
+    setToTokens(toTokens)
+    if (toTokens.length === 0) {
+      setSelectedTokenSwapTo(emptySelectOption)
+    }
   }, [selectedTokenSwapFrom, tokens, pairs])
 
   const buildSwapOptions = (tokens, setSelectedToken) => tokens.map((token, index) => (
-    <Select.Option key={index} value={token.contractAddress || ONEConstants.Sushi.WONE} style={selectOptionStyle}>
+    <Select.Option key={index} value={token.symbol || 'one'} style={selectOptionStyle}>
       <Button
         type='text'
         block
@@ -407,7 +405,7 @@ const Swap = ({ address }) => {
               value={selectedTokenSwapFrom}
               onSearch={handleSearchCurrentTrackedTokens}
             >
-              {buildSwapOptions(currentTrackedTokens, onSelectTokenSwapFrom)}
+              {buildSwapOptions(fromTokens, onSelectTokenSwapFrom)}
             </Select>
           </Col>
           <Col span={16}>
@@ -437,7 +435,7 @@ const Swap = ({ address }) => {
               value={selectedTokenSwapTo}
               onSearch={handleSearchSupportedTokens}
             >
-              {buildSwapOptions(targetTokens, onSelectTokenSwapTo)}
+              {buildSwapOptions(toTokens, onSelectTokenSwapTo)}
             </Select>
           </Col>
           <Col span={16}>
