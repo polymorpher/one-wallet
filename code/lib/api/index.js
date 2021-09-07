@@ -442,11 +442,11 @@ const api = {
       const [reserve0, reserve1, time] = [r[0], r[1], r[2]]
       return { reserve0, reserve1, time }
     },
-    swapForToken: async ({ address, neighbors, index, eotp, amountOut, amount, tokenAddress }) => {
+    swapForToken: async ({ address, neighbors, index, eotp, amountOut, amount, tokenAddress, deadline }) => {
       // swapETHForExactTokens(uint amountOut, address[] calldata path, address to, uint deadline)
       const data = ONEUtil.encodeCalldata(
         'swapETHForExactTokens(uint256,address[],address,uint256)',
-        [ amountOut, [ONEConstants.Sushi.WONE, tokenAddress], address, Math.floor(Date.now() / 1000) + 60 ]
+        [ amountOut, [ONEConstants.Sushi.WONE, tokenAddress], address, deadline ]
       )
       return api.relayer.reveal({
         address,
