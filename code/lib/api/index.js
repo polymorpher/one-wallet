@@ -484,6 +484,12 @@ const api = {
     },
     getTokenIcon: async ({ symbol }) => {
       return `https://res.cloudinary.com/sushi-cdn/image/fetch/w_64/https://raw.githubusercontent.com/sushiswap/icons/master/token/${symbol.toLowerCase()}.jpg`
+    },
+    getAllowance: async ({ address, contractAddress }) => {
+      const t = new web3.eth.Contract(SushiToken, contractAddress)
+      const r = await t.methods.allowance(address, ONEConstants.Sushi.ROUTER).call()
+      // returns a BN
+      return r
     }
   },
 

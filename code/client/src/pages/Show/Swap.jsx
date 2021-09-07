@@ -370,7 +370,7 @@ const Swap = ({ address }) => {
       message.error('Deadline must be between 0-3600 seconds')
       return
     }
-    console.log(otpInput)
+    // console.log(otpInput)
     const { otp, otp2, invalidOtp2, invalidOtp } = prepareValidation({ state: { otpInput, otp2Input, doubleOtp }, checkAmount: false, checkDest: false }) || {}
     if (invalidOtp || invalidOtp2) return
     // console.log(`swapping [${fromAmountFormatted}] from [${tokenFrom.name}] to [${tokenTo.name}]`)
