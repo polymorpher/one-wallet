@@ -8,15 +8,24 @@ import { DefaultTrackedERC20, HarmonyONE } from '../../components/TokenAssets'
 import api from '../../api'
 import { InputBox } from '../../components/Text'
 import BN from 'bn.js'
-import { PercentageOutlined, QuestionCircleOutlined, SwapOutlined } from '@ant-design/icons'
+import {
+  CheckCircleOutlined,
+  LoadingOutlined,
+  PercentageOutlined,
+  QuestionCircleOutlined,
+  SwapOutlined
+} from '@ant-design/icons'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { FallbackImage } from '../../constants/ui'
+import ShowUtils from './show-util'
+import { SmartFlows } from '../../../../lib/api/flow'
+import ONE from '../../../../lib/onewallet'
+import { useRandomWorker } from './randomWorker'
+import ONEUtil from '../../../../lib/util'
+import { handleTrackNewToken } from '../../components/ERC20Grid'
 const { Text } = Typography
 
 const tokenIconUrl = (symbol) => `https://res.cloudinary.com/sushi-cdn/image/fetch/w_64/https://raw.githubusercontent.com/sushiswap/icons/master/token/${symbol.toLowerCase()}.jpg`
-
-// TODO: remove this mock exchange rate.
-const mockExchangeRate = () => Math.floor(Math.random() * 100)
 
 const textStyle = {
   paddingRight: '8px',
@@ -116,37 +125,6 @@ const getTokenBalance = (selectedToken, tokenBalances, oneBalance) => {
 }
 
 /**
- * Handles swap token selection. Either a "swap from" token or a "swap to" token can be handled.
- * TODO: actual exchange rate should be fetched and updated here.
- * If the selected token changes, the target swap amount will be automatically updated based on fetched exchange rate.
- */
-const handleSwapTokenSelected = async ({
-  token,
-  shouldCalculateExchangeRate,
-  swapAmountFormatted,
-  setSelectedToken,
-  setExchangeRate,
-  setTargetSwapAmountFormatted
-}) => {
-  setSelectedToken({ ...token, value: token.symbol, label: <TokenLabel token={token} selected /> })
-
-  if (shouldCalculateExchangeRate) {
-    // TODO: Fetch exchange rate for token.symbol and selectedTokenSwapTo.value
-    const rate = mockExchangeRate()
-
-    setExchangeRate(rate)
-
-    const amount = util.formatNumber(swapAmountFormatted, 4)
-
-    const calculatedTargetAmount = util.formatNumber(amount * rate, 4)
-
-    if (rate && !isNaN(calculatedTargetAmount)) {
-      setTargetSwapAmountFormatted(calculatedTargetAmount.toString())
-    }
-  }
-}
-
-/**
  * Renders swap coins from ONE wallet or tracked token to another token tab.
  */
 const Swap = ({ address }) => {
@@ -154,7 +132,7 @@ const Swap = ({ address }) => {
   const network = useSelector(state => state.wallet.network)
   const wallet = wallets[address] || {}
   const dispatch = useDispatch()
-
+  const [stage, setStage] = useState(-1)
   const doubleOtp = wallet.doubleOtp
   const { state: otpState } = useOtpState()
   const { otpInput, otp2Input, resetOtp } = otpState
@@ -189,6 +167,8 @@ const Swap = ({ address }) => {
   const [slippageTolerance, setSlippageTolerance] = useState('0.50')
   const [transactionDeadline, setTransactionDeadline] = useState('120')
 
+  const [currentTrackedTokens, setCurrentTrackedTokens] = useState([])
+
   // Loads supported tokens that are available for swap.
   useEffect(() => {
     const getPairs = async () => {
@@ -222,6 +202,7 @@ const Swap = ({ address }) => {
 
       filteredTokens.sort((t0, t1) => (t1.priority || 0) - (t0.priority || 0))
       setFromTokens(filteredTokens)
+      setCurrentTrackedTokens(trackedTokensUpdated)
     }
     updateFromTokens()
   }, [tokens])
@@ -361,6 +342,8 @@ const Swap = ({ address }) => {
     setTokenTo({ ...token, value: token.symbol, label: <TokenLabel token={token} selected /> })
     // onAmountChange(true)({ target: { value: swapAmountFormatted } })
   }
+  const { resetWorker, recoverRandomness } = useRandomWorker()
+  const { prepareValidation, onRevealSuccess, ...handlers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
 
   // TODO: this is not implemented, we need to check slippage tolerance and transaction deadline etc.
   const confirmSwap = useCallback(() => {
@@ -373,8 +356,58 @@ const Swap = ({ address }) => {
       message.error(`Insufficient balance (got ${tokenBalanceFormatted}, need ${fromAmountFormatted})`)
       return
     }
-    // TODO: actual swapping functionalities.
+
+    const slippage = Math.floor(parseFloat(slippageTolerance.trim()) * 100)
+    if (!(slippage > 0 && slippage < 10000)) {
+      message.error('Slippage tolerance must be a number between 0-100 with at most 2 decimal precision')
+      return
+    }
+    const deadline = parseInt(transactionDeadline)
+    if (!(deadline < 3600 && deadline > 0)) {
+      message.error('Deadline must be between 0-3600 seconds')
+      return
+    }
+
+    const { otp, otp2, invalidOtp2, invalidOtp } = prepareValidation({
+      state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp }, checkAmount: false, checkDest: false
+    }) || {}
+    if (invalidOtp || invalidOtp2) return
     // console.log(`swapping [${fromAmountFormatted}] from [${tokenFrom.name}] to [${tokenTo.name}]`)
+    if (!(util.isONE(tokenFrom))) {
+      message.error('Unsupported at this time')
+      return
+    }
+    const now = Math.floor(Date.now() / 1000)
+    const amountOut = new BN(toAmount).muln(10000 - slippage).divn(10000).toString()
+
+    const hexData = ONEUtil.encodeCalldata(
+      'swapETHForExactTokens(uint256,address[],address,uint256)',
+      [amountOut, [ONEConstants.Sushi.WONE, tokenTo.address], address, (now + deadline)])
+    const args = { amount: fromAmount.toString(), operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: ONEConstants.Sushi.ROUTER, tokenId: 0, dest: ONEConstants.EmptyAddress }
+    if (util.isONE(tokenFrom)) {
+      SmartFlows.commitReveal({
+        wallet,
+        otp,
+        otp2,
+        recoverRandomness,
+        commitHashGenerator: ONE.computeGeneralOperationHash,
+        commitHashArgs: { ...args, data: ONEUtil.hexStringToBytes(hexData) },
+        prepareProof: () => setStage(0),
+        beforeCommit: () => setStage(1),
+        afterCommit: () => setStage(2),
+        revealAPI: api.relayer.reveal,
+        revealArgs: { ...args, data: hexData },
+        onRevealSuccess: async (txId) => {
+          onRevealSuccess(txId)
+          const tt = await handleTrackNewToken({ newContractAddress: tokenTo.address, currentTrackedTokens, dispatch, address })
+          if (tt) {
+            setCurrentTrackedTokens(tts => [...tts, tt])
+            message.success(`New token tracked: ${tt.name} (${tt.symbol}) (${tt.contractAddress}`)
+          }
+        },
+        ...handlers
+      })
+    }
   }, [tokenFrom, tokenTo, tokenBalances, balance, fromAmountFormatted, toAmountFormatted])
 
   const swapAllowed =
@@ -454,15 +487,11 @@ const Swap = ({ address }) => {
         <Space size='large' align='top'>
           <Button type='link' size='large' style={{ padding: 0 }} onClick={() => setEditingSetting(!editingSetting)}>{editingSetting ? 'Close' : 'Advanced Settings'}</Button>
         </Space>
-
-        <Button
-          shape='round'
-          disabled={!swapAllowed}
-          type='primary'
-          onClick={confirmSwap}
-        >
-          Confirm
-        </Button>
+        <Space>
+          {stage >= 0 && stage < 3 && <LoadingOutlined />}
+          {stage === 3 && <CheckCircleOutlined />}
+          <Button type='primary' size='large' shape='round' disabled={!swapAllowed || stage >= 0} onClick={confirmSwap}>Confirm</Button>
+        </Space>
       </TallRow>
       <TallRow align='top'>
         {editingSetting &&
