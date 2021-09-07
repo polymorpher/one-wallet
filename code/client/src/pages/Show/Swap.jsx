@@ -160,7 +160,7 @@ const handleSwapAmountChange = ({
  * TODO: actual exchange rate should be fetched and updated here.
  * If the selected token changes, the target swap amount will be automatically updated based on fetched exchange rate.
  */
-const handleSwapTokenSelected = ({
+const handleSwapTokenSelected = async ({
   token,
   shouldCalculateExchangeRate,
   swapAmountFormatted,
@@ -282,10 +282,13 @@ const Swap = ({ address }) => {
     tokensAsFrom.forEach(t => { filteredTokens[t.address] = { ...t, from: true } })
     const toTokens = Object.keys(filteredTokens).map(k => filteredTokens[k])
     // ONE can be exchanged to WONE
-    if (!selectedTokenSwapFrom.address) {
+    if (!selectedTokenSwapFrom.address && !selectedTokenSwapFrom.contractAddress) {
       toTokens.push(tokens[ONEConstants.Sushi.WONE])
+    } else {
+      // any token except ONE itself can be exchanged to ONE
+      toTokens.push(HarmonyONE)
     }
-    console.log(toTokens)
+
     toTokens.sort((t0, t1) => (t1.priority || 0) - (t0.priority || 0))
     setToTokens(toTokens)
     if (toTokens.length === 0) {
@@ -305,10 +308,6 @@ const Swap = ({ address }) => {
       </Button>
     </Select.Option>
   ))
-
-  const handleSearchSupportedTokens = async (value) => { setSelectedTokenSwapTo({ value }) }
-
-  const handleSearchCurrentTrackedTokens = async (value) => { setSelectedTokenSwapFrom({ value }) }
 
   const onSelectTokenSwapFrom = (token) => {
     handleSwapTokenSelected({
@@ -403,7 +402,7 @@ const Swap = ({ address }) => {
               labelInValue
               style={tokenSelectorStyle}
               value={selectedTokenSwapFrom}
-              onSearch={handleSearchCurrentTrackedTokens}
+              onSearch={(value) => { setSelectedTokenSwapFrom({ value }) }}
             >
               {buildSwapOptions(fromTokens, onSelectTokenSwapFrom)}
             </Select>
@@ -433,7 +432,7 @@ const Swap = ({ address }) => {
               labelInValue
               style={tokenSelectorStyle}
               value={selectedTokenSwapTo}
-              onSearch={handleSearchSupportedTokens}
+              onSearch={(value) => { setSelectedTokenSwapTo({ value }) }}
             >
               {buildSwapOptions(toTokens, onSelectTokenSwapTo)}
             </Select>
