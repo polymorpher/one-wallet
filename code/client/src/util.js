@@ -216,6 +216,10 @@ export default {
   releaseNotesUrl: ({ majorVersion, minorVersion }) => {
     return `https://github.com/polymorpher/one-wallet/wiki/Release-Notes#v${majorVersion}.${minorVersion}`
   },
+
+  isWONE: (token) => token.address === ONEConstants.Sushi.WONE || token.contractAddress === ONEConstants.Sushi.WONE,
+
+  isONE: (token) => !token.address && !token.contractAddress
 }
 
 function getWindowDimensions () {
