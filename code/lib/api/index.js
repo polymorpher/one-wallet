@@ -16,6 +16,7 @@ const ReverseResolver = require('../../build/contracts/IDefaultReverseResolver.j
 const Registrar = require('../../build/contracts/IRegistrar.json')
 // abi only - load with web3 or ethers
 const SushiRouter = require('../../external/IUniswapV2Router02.json')
+const SushiFactory = require('../../external/IUniswapV2Factory.json')
 const SushiToken = require('../../external/IERC20Uniswap.json')
 const SushiPair = require('../../external/IUniswapV2Pair.json')
 
@@ -435,6 +436,11 @@ const api = {
       return {
         symbol, name, decimal, supply, address: tokenAddress
       }
+    },
+    getPair: async ({ t0, t1 }) => {
+      const factory = new web3.eth.Contract(SushiFactory, ONEConstants.Sushi.FACTORY)
+      const pair = await factory.methods.getPair(t0, t1).call()
+      return pair
     },
     getReserves: async ({ pairAddress }) => {
       const t = new web3.eth.Contract(SushiPair, pairAddress)
