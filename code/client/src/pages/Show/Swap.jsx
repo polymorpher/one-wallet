@@ -337,7 +337,7 @@ const Swap = ({ address }) => {
     const { formatted: amountOutFormatted } = util.computeBalance(amountOut, undefined, outDecimal)
     toSetter(amountOutFormatted)
     preciseToSetter(amountOut)
-    console.log({ useFrom, amountOutFormatted, amountInFormatted, inDecimal, outDecimal, amountOut: amountOut.toString(), amountIn: amountIn.toString() })
+    // console.log({ useFrom, amountOutFormatted, amountInFormatted, inDecimal, outDecimal, amountOut: amountOut.toString(), amountIn: amountIn.toString() })
     let exchangeRate = parseFloat(amountOutFormatted) / parseFloat(amountInFormatted)
     if (!isFrom) {
       exchangeRate = 1 / exchangeRate
@@ -368,13 +368,13 @@ const Swap = ({ address }) => {
     const { balance: tokenBalance, formatted: tokenBalanceFormatted } = getTokenBalance(tokenFrom, tokenBalances, balance)
 
     if (!(new BN(tokenBalance).gte(new BN(fromAmount)))) {
-      console.log(new BN(tokenBalance).toString())
-      console.log(new BN(fromAmount).toString())
+      // console.log(new BN(tokenBalance).toString())
+      // console.log(new BN(fromAmount).toString())
       message.error(`Insufficient balance (got ${tokenBalanceFormatted}, need ${fromAmountFormatted})`)
       return
     }
     // TODO: actual swapping functionalities.
-    console.log(`swapping [${fromAmountFormatted}] from [${tokenFrom.name}] to [${tokenTo.name}]`)
+    // console.log(`swapping [${fromAmountFormatted}] from [${tokenFrom.name}] to [${tokenTo.name}]`)
   }, [tokenFrom, tokenTo, tokenBalances, balance, fromAmountFormatted, toAmountFormatted])
 
   const swapAllowed =
