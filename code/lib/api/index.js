@@ -22,6 +22,7 @@ const SushiPair = require('../../external/IUniswapV2Pair.json')
 const BN = require('bn.js')
 const ONEUtil = require('../util')
 const ONEConstants = require('../constants')
+const { HarmonyONE } = require('../../client/src/components/TokenAssets')
 
 const apiConfig = {
   relayer: config.defaults.relayer,
@@ -635,6 +636,28 @@ const api = {
       return data === 'OK'
     }
   },
+
+  // utilities around tokens
+  tokens: {
+    batchGetMetadata: async (tokens) => {
+      return Promise.all(tokens.map(async (t) => {
+        try {
+          if (t.symbol === HarmonyONE.symbol) {
+            return t
+          }
+          const { name, symbol, decimals } = await api.blockchain.getTokenMetadata(t)
+          return {
+            ...t,
+            name,
+            symbol,
+            decimals
+          }
+        } catch (ex) {
+          console.error(ex)
+        }
+      }))
+    }
+  }
 }
 
 if (window) {
