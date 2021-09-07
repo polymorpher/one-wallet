@@ -306,7 +306,9 @@ const Swap = ({ address }) => {
       return
     }
     if (!preciseValue) {
-      preciseFromSetter(util.toBalance(value, undefined, isFrom ? tokenFrom.decimal : tokenTo.decimal))
+      const { balance: preciseAmount } = util.toBalance(value, undefined, isFrom ? tokenFrom.decimal : tokenTo.decimal)
+      // console.log('preciseFromSetter', value, preciseAmount)
+      preciseFromSetter(preciseAmount)
     }
     const useFrom = (util.isONE(tokenFrom) || util.isWONE(tokenFrom))
     const tokenAddress = useFrom ? tokenTo.address : tokenFrom.address
@@ -346,10 +348,11 @@ const Swap = ({ address }) => {
   const { prepareValidation, onRevealSuccess, ...handlers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
 
   // TODO: this is not implemented, we need to check slippage tolerance and transaction deadline etc.
-  const confirmSwap = useCallback(() => {
+  const confirmSwap = () => {
     // const { balance: fromBalance } = util.toBalance(fromAmountFormatted, undefined, selectedTokenSwapFrom.decimal)
     const { balance: tokenBalance, formatted: tokenBalanceFormatted } = getTokenBalance(tokenFrom, tokenBalances, balance)
-
+    console.log(new BN(tokenBalance).toString())
+    console.log(new BN(fromAmount).toString())
     if (!(new BN(tokenBalance).gte(new BN(fromAmount)))) {
       // console.log(new BN(tokenBalance).toString())
       // console.log(new BN(fromAmount).toString())
@@ -367,10 +370,8 @@ const Swap = ({ address }) => {
       message.error('Deadline must be between 0-3600 seconds')
       return
     }
-
-    const { otp, otp2, invalidOtp2, invalidOtp } = prepareValidation({
-      state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp }, checkAmount: false, checkDest: false
-    }) || {}
+    console.log(otpInput)
+    const { otp, otp2, invalidOtp2, invalidOtp } = prepareValidation({ state: { otpInput, otp2Input, doubleOtp }, checkAmount: false, checkDest: false }) || {}
     if (invalidOtp || invalidOtp2) return
     // console.log(`swapping [${fromAmountFormatted}] from [${tokenFrom.name}] to [${tokenTo.name}]`)
     if (!(util.isONE(tokenFrom))) {
@@ -408,7 +409,7 @@ const Swap = ({ address }) => {
         ...handlers
       })
     }
-  }, [tokenFrom, tokenTo, tokenBalances, balance, fromAmountFormatted, toAmountFormatted])
+  }
 
   const swapAllowed =
     tokenFrom.value !== '' &&
