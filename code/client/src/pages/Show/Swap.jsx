@@ -295,7 +295,7 @@ const Swap = ({ address }) => {
     const fromSetter = isFrom ? setFromAmountFormatted : setToAmountFormatted
     const toSetter = isFrom ? setToAmountFormatted : setFromAmountFormatted
     fromSetter(value)
-    if (!util.validBalance(value, true)) {
+    if (!util.validBalance(value, true) || parseFloat(value) === 0) {
       if (isFrom) {
         setToAmountFormatted(undefined)
       } else {
