@@ -6,7 +6,7 @@ import ONEConstants from '../../../../lib/constants'
 import util from '../../util'
 import { DefaultTrackedERC20, HarmonyONE } from '../../components/TokenAssets'
 import api from '../../api'
-import { InputBox } from '../../components/Text'
+import { Hint, InputBox, Warning } from '../../components/Text'
 import BN from 'bn.js'
 import {
   CheckCircleOutlined,
@@ -23,7 +23,7 @@ import ONE from '../../../../lib/onewallet'
 import { useRandomWorker } from './randomWorker'
 import ONEUtil from '../../../../lib/util'
 import { handleTrackNewToken } from '../../components/ERC20Grid'
-const { Text } = Typography
+const { Text, Title } = Typography
 
 const tokenIconUrl = (symbol) => `https://res.cloudinary.com/sushi-cdn/image/fetch/w_64/https://raw.githubusercontent.com/sushiswap/icons/master/token/${symbol.toLowerCase()}.jpg`
 
@@ -166,8 +166,9 @@ const Swap = ({ address }) => {
   const [editingSetting, setEditingSetting] = useState(false)
   const [slippageTolerance, setSlippageTolerance] = useState('0.50')
   const [transactionDeadline, setTransactionDeadline] = useState('120')
-
   const [currentTrackedTokens, setCurrentTrackedTokens] = useState([])
+  const [tokenAllowance, setTokenAllowance] = useState()
+  const [tokenReserve, setTokenReserve] = useState()
 
   // Loads supported tokens that are available for swap.
   useEffect(() => {
@@ -257,7 +258,41 @@ const Swap = ({ address }) => {
   useEffect(() => {
     // console.log({ toAmountFormatted, fromAmountFormatted })
     onAmountChange(false)({ target: { value: toAmountFormatted } })
+
+    const getTokenAllowance = async () => {
+      if (tokenFrom.address && tokenFrom.contractAddress) {
+        // TODO: allowance returns as string, it should return BN?
+        const allowance = await api.sushi.getAllowance({ address: tokenFrom.address, contractAddress: tokenFrom.contractAddress })
+
+        setTokenAllowance(new BN(allowance))
+      } else {
+        setTokenAllowance(undefined)
+      }
+    }
+
+    getTokenAllowance()
   }, [tokenFrom])
+
+  // Checks token reserves for selected tokenFrom and tokenTo.
+  useEffect(() => {
+    const getTokenReserve = async () => {
+      if (tokenTo.value) {
+        try {
+          const pairRequestPayload = { t0: tokenFrom.address || address, t1: tokenTo.address || address }
+          const pairAddress = await api.sushi.getPair(pairRequestPayload)
+          const reserve = await api.sushi.getReserves({ pairAddress })
+          setTokenReserve(reserve)
+        } catch (e) {
+          console.error(e)
+          setTokenReserve(undefined)
+        }
+      } else {
+        setTokenReserve(undefined)
+      }
+    }
+
+    getTokenReserve()
+  }, [tokenFrom, tokenTo])
 
   const buildSwapOptions = (tokens, setSelectedToken) => tokens.map((token, index) => (
     <Select.Option key={index} value={token.symbol || 'one'} style={selectOptionStyle}>
@@ -299,16 +334,16 @@ const Swap = ({ address }) => {
       preciseValue !== undefined && preciseToSetter(preciseValue)
       return
     }
+    if (!preciseValue) {
+      const { balance: preciseAmount } = util.toBalance(value, undefined, isFrom ? tokenFrom.decimal : tokenTo.decimal)
+      // console.log('preciseFromSetter', value, preciseAmount)
+      preciseFromSetter(preciseAmount)
+    }
     if (!tokenTo.value) {
       setExchangeRate(undefined)
       toSetter(undefined)
       preciseToSetter(undefined)
       return
-    }
-    if (!preciseValue) {
-      const { balance: preciseAmount } = util.toBalance(value, undefined, isFrom ? tokenFrom.decimal : tokenTo.decimal)
-      // console.log('preciseFromSetter', value, preciseAmount)
-      preciseFromSetter(preciseAmount)
     }
     const useFrom = (util.isONE(tokenFrom) || util.isWONE(tokenFrom))
     const tokenAddress = useFrom ? tokenTo.address : tokenFrom.address
@@ -411,11 +446,20 @@ const Swap = ({ address }) => {
     }
   }
 
+  const approveToken = () => {
+    // TODO: implement approve token.
+    console.log(`Approving token [${tokenFrom.symbol}]`)
+  }
+
   const swapAllowed =
     tokenFrom.value !== '' &&
     tokenTo.value !== '' &&
     fromAmountFormatted !== '' && !isNaN(fromAmountFormatted) &&
     toAmountFormatted !== '' && !isNaN(toAmountFormatted)
+
+  const tokenApproved = !tokenAllowance || (tokenAllowance && tokenAllowance.gt(fromAmount || new BN(0)))
+
+  const insufficientLiquidity = tokenReserve && (tokenReserve.reserve1 === '0' || tokenReserve.reserve2 === '0')
 
   return (
     <>
@@ -481,6 +525,19 @@ const Swap = ({ address }) => {
           <ExchangeRateButton exchangeRate={exchangeRate} selectedTokenSwapFrom={tokenFrom} selectedTokenSwapTo={tokenTo} />
         </Col>
       </TallRow>
+      {
+        insufficientLiquidity
+          ? (
+            <TallRow>
+              <Col span={24} style={{ textAlign: 'center' }}>
+                <Warning>
+                  Insufficient liquidity for this trade
+                </Warning>
+              </Col>
+            </TallRow>
+            )
+          : <></>
+      }
       <TallRow>
         <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} />
       </TallRow>
@@ -491,9 +548,49 @@ const Swap = ({ address }) => {
         <Space>
           {stage >= 0 && stage < 3 && <LoadingOutlined />}
           {stage === 3 && <CheckCircleOutlined />}
-          <Button type='primary' size='large' shape='round' disabled={!swapAllowed || stage >= 0} onClick={confirmSwap}>Confirm</Button>
+          {
+            tokenApproved
+              ? (
+                <Button
+                  type='primary'
+                  size='large'
+                  shape='round'
+                  disabled={!swapAllowed || stage >= 0 || insufficientLiquidity}
+                  onClick={confirmSwap}
+                >
+                  Confirm
+                </Button>
+                )
+              : (
+                <Button
+                  type='primary'
+                  size='large'
+                  shape='round'
+                  onClick={approveToken}
+                >
+                  Approve
+                </Button>
+                )
+          }
         </Space>
       </TallRow>
+      {
+        !tokenApproved
+          ? (
+            <TallRow>
+              <Col style={{ textAlign: 'right' }}>
+                <Title level={4}>
+                  Allow 1wallet to spend your {tokenFrom.symbol}?
+                </Title>
+                <Hint>
+                  Do you trust this site? By granting this permission,
+                  you're allowing 1wallet to withdraw your {tokenFrom.symbol} and automate transactions for you.
+                </Hint>
+              </Col>
+            </TallRow>
+            )
+          : <></>
+      }
       <TallRow align='top'>
         {editingSetting &&
           <Space direction='vertical' size='large'>
