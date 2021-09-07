@@ -98,13 +98,13 @@ const ExchangeRateButton = ({ exchangeRate, selectedTokenSwapFrom, selectedToken
  * Otherwise use token balances to compute the balance.
  * @param {*} selectedToken selected token or wallet.
  * @param {*} tokenBalances all tracked token balances.
- * @param {*} oneWalletBalance Harmony ONE wallet balance in raw format.
+ * @param {*} oneBalance Harmony ONE wallet balance in raw format.
  * @returns computed balance.
  */
-const computeTokenBalance = (selectedToken, tokenBalances, oneWalletBalance) => {
+const getTokenBalance = (selectedToken, tokenBalances, oneBalance) => {
   try {
     if (selectedToken && selectedToken.symbol === HarmonyONE.symbol) {
-      const computedBalance = util.computeBalance(oneWalletBalance, 0)
+      const computedBalance = util.computeBalance(oneBalance, 0)
       return computedBalance
     }
     const computedBalance = util.computeBalance(tokenBalances[selectedToken.address], undefined, selectedToken.decimal)
@@ -177,9 +177,11 @@ const Swap = ({ address }) => {
   const [toTokens, setToTokens] = useState([])
   const emptySelectOption = { value: '', label: '' }
 
-  const [selectedTokenSwapFrom, setSelectedTokenSwapFrom] = useState(harmonySelectOption)
-  const [selectedTokenSwapTo, setSelectedTokenSwapTo] = useState(emptySelectOption)
+  const [tokenFrom, setTokenFrom] = useState(harmonySelectOption)
+  const [tokenTo, setTokenTo] = useState(emptySelectOption)
   const [fromAmountFormatted, setFromAmountFormatted] = useState()
+  const [fromAmount, setFromAmount] = useState()
+  const [toAmount, setToAmount] = useState()
   const [toAmountFormatted, setToAmountFormatted] = useState()
   const [tokenBalanceFormatted, setTokenBalanceFormatted] = useState('0')
   const [exchangeRate, setExchangeRate] = useState()
@@ -225,12 +227,12 @@ const Swap = ({ address }) => {
   }, [tokens])
 
   useEffect(() => {
-    const tokenBalance = computeTokenBalance(selectedTokenSwapFrom, tokenBalances, balance)
+    const tokenBalance = getTokenBalance(tokenFrom, tokenBalances, balance)
     if (!tokenBalance) {
       setTokenBalanceFormatted('0')
     }
     setTokenBalanceFormatted(tokenBalance.formatted)
-  }, [selectedTokenSwapFrom, tokenBalances, balance])
+  }, [tokenFrom, tokenBalances, balance])
 
   useEffect(() => {
     if (Object.keys(tokens).length === 0) {
@@ -238,7 +240,7 @@ const Swap = ({ address }) => {
     }
     // console.log(selectedTokenSwapFrom)
     // console.log(tokens)
-    const from = selectedTokenSwapFrom.address || selectedTokenSwapFrom.contractAddress || ONEConstants.Sushi.WONE
+    const from = tokenFrom.address || tokenFrom.contractAddress || ONEConstants.Sushi.WONE
     const tokensAsTo = pairs.filter(e => e.t0 === from).map(e => tokens[e.t1])
     const tokensAsFrom = pairs.filter(e => e.t1 === from).map(e => tokens[e.t0])
     const filteredTokens = {}
@@ -247,7 +249,7 @@ const Swap = ({ address }) => {
     tokensAsFrom.forEach(t => { filteredTokens[t.address] = { ...t, from: true } })
     const toTokens = Object.keys(filteredTokens).map(k => filteredTokens[k])
     // ONE can be exchanged to WONE
-    if (!selectedTokenSwapFrom.address && !selectedTokenSwapFrom.contractAddress) {
+    if (!tokenFrom.address && !tokenFrom.contractAddress) {
       toTokens.push(tokens[ONEConstants.Sushi.WONE])
     } else {
       // any token except ONE itself can be exchanged to ONE
@@ -257,24 +259,24 @@ const Swap = ({ address }) => {
     toTokens.sort((t0, t1) => (t1.priority || 0) - (t0.priority || 0))
     setToTokens(toTokens)
     if (toTokens.length === 0) {
-      setSelectedTokenSwapTo(emptySelectOption)
+      setTokenTo(emptySelectOption)
     }
-    if (!util.isONE(selectedTokenSwapTo) && !util.isWONE(selectedTokenSwapTo)) {
-      if (!filteredTokens[selectedTokenSwapTo.address]) {
-        setSelectedTokenSwapTo(emptySelectOption)
+    if (!util.isONE(tokenTo) && !util.isWONE(tokenTo)) {
+      if (!filteredTokens[tokenTo.address]) {
+        setTokenTo(emptySelectOption)
       }
     }
-  }, [selectedTokenSwapFrom, tokens, pairs])
+  }, [tokenFrom, tokens, pairs])
 
   useEffect(() => {
     // console.log({ fromAmountFormatted, toAmountFormatted })
     onAmountChange(true)({ target: { value: fromAmountFormatted } })
-  }, [selectedTokenSwapTo])
+  }, [tokenTo])
 
   useEffect(() => {
     // console.log({ toAmountFormatted, fromAmountFormatted })
     onAmountChange(false)({ target: { value: toAmountFormatted } })
-  }, [selectedTokenSwapFrom])
+  }, [tokenFrom])
 
   const buildSwapOptions = (tokens, setSelectedToken) => tokens.map((token, index) => (
     <Select.Option key={index} value={token.symbol || 'one'} style={selectOptionStyle}>
@@ -290,84 +292,94 @@ const Swap = ({ address }) => {
   ))
 
   // TODO - check liquidity of both tokens
-  const onAmountChange = useCallback((isFrom) => async ({ target: { value } } = {}) => {
+  const onAmountChange = useCallback((isFrom) => async ({ target: { value, preciseValue } } = {}) => {
     // console.log({ isFrom, value, selectedTokenSwapTo, selectedTokenSwapFrom })
     const fromSetter = isFrom ? setFromAmountFormatted : setToAmountFormatted
     const toSetter = isFrom ? setToAmountFormatted : setFromAmountFormatted
+    const preciseToSetter = isFrom ? setToAmount : setFromAmount
+    const preciseFromSetter = isFrom ? setFromAmount : setToAmount
     fromSetter(value)
+    if (preciseValue) {
+      preciseFromSetter(preciseValue)
+    }
     if (!util.validBalance(value, true) || parseFloat(value) === 0) {
       if (isFrom) {
         setToAmountFormatted(undefined)
+        setToAmount(undefined)
       } else {
         setFromAmountFormatted(undefined)
+        setFromAmount(undefined)
       }
       return
     }
-    if (util.isONE(selectedTokenSwapFrom) && util.isWONE(selectedTokenSwapTo)) {
+    if ((util.isONE(tokenFrom) && util.isWONE(tokenTo)) || util.isWONE(tokenFrom) && util.isONE(tokenTo)) {
       setExchangeRate(1)
-      return toSetter(value)
-    }
-    if (util.isWONE(selectedTokenSwapFrom) && util.isONE(selectedTokenSwapTo)) {
-      setExchangeRate(1)
-      return toSetter(value)
-    }
-    if (!selectedTokenSwapTo.value) {
-      setExchangeRate(undefined)
-      toSetter(undefined)
+      toSetter(value)
+      preciseValue !== undefined && preciseToSetter(preciseValue)
       return
     }
-    const useFrom = (util.isONE(selectedTokenSwapFrom) || util.isWONE(selectedTokenSwapFrom))
-    const tokenAddress = useFrom ? selectedTokenSwapTo.address : selectedTokenSwapFrom.address
-    const outDecimal = useFrom ? selectedTokenSwapTo.decimal : selectedTokenSwapFrom.decimal
-    const inDecimal = useFrom ? selectedTokenSwapFrom.decimal : selectedTokenSwapTo.decimal
+    if (!tokenTo.value) {
+      setExchangeRate(undefined)
+      toSetter(undefined)
+      preciseToSetter(undefined)
+      return
+    }
+    if (!preciseValue) {
+      preciseFromSetter(util.toBalance(value, undefined, isFrom ? tokenFrom.decimal : tokenTo.decimal))
+    }
+    const useFrom = (util.isONE(tokenFrom) || util.isWONE(tokenFrom))
+    const tokenAddress = useFrom ? tokenTo.address : tokenFrom.address
+    const outDecimal = useFrom ? tokenTo.decimal : tokenFrom.decimal
+    const inDecimal = useFrom ? tokenFrom.decimal : tokenTo.decimal
     const { balance: amountIn, formatted: amountInFormatted } = util.toBalance(value, undefined, inDecimal)
     const amountOut = await api.sushi.getAmountOut({ amountIn, tokenAddress, inverse: useFrom !== isFrom })
 
     const { formatted: amountOutFormatted } = util.computeBalance(amountOut, undefined, outDecimal)
     toSetter(amountOutFormatted)
-    console.log({ amountOutFormatted, amountInFormatted, inDecimal, outDecimal, amountOut: amountOut.toString(), amountIn: amountIn.toString() })
+    preciseToSetter(amountOut)
+    console.log({ useFrom, amountOutFormatted, amountInFormatted, inDecimal, outDecimal, amountOut: amountOut.toString(), amountIn: amountIn.toString() })
     let exchangeRate = parseFloat(amountOutFormatted) / parseFloat(amountInFormatted)
-    if (!useFrom) {
+    if (!isFrom) {
       exchangeRate = 1 / exchangeRate
     }
     setExchangeRate(exchangeRate)
-  }, [setExchangeRate, selectedTokenSwapTo, selectedTokenSwapFrom, setToAmountFormatted, setFromAmountFormatted])
+  }, [setExchangeRate, tokenTo, tokenFrom, setToAmountFormatted, setFromAmountFormatted])
 
   const setMaxSwapAmount = useCallback(() => {
-    const tokenBalance = computeTokenBalance(selectedTokenSwapFrom, tokenBalances, balance)
-    const amount = tokenBalance ? tokenBalance.formatted : '0'
-    setFromAmountFormatted(amount)
-    onAmountChange(true)({ target: { value: amount } })
-  }, [selectedTokenSwapFrom, balance, tokenBalances, onAmountChange, setFromAmountFormatted])
+    const { balance: tokenBalance, formatted } = getTokenBalance(tokenFrom, tokenBalances, balance)
+    setFromAmountFormatted(formatted || '0')
+    setFromAmount(tokenBalance)
+    onAmountChange(true)({ target: { value: formatted, preciseValue: tokenBalance } })
+  }, [tokenFrom, balance, tokenBalances, onAmountChange, setFromAmountFormatted])
 
   const onSelectTokenSwapFrom = (token) => {
-    setSelectedTokenSwapFrom({ ...token, value: token.symbol, label: <TokenLabel token={token} selected /> })
+    setTokenFrom({ ...token, value: token.symbol, label: <TokenLabel token={token} selected /> })
     // onAmountChange(false)({ target: { value: targetSwapAmountFormatted } })
   }
 
   const onSelectTokenSwapTo = (token) => {
-    setSelectedTokenSwapTo({ ...token, value: token.symbol, label: <TokenLabel token={token} selected /> })
+    setTokenTo({ ...token, value: token.symbol, label: <TokenLabel token={token} selected /> })
     // onAmountChange(true)({ target: { value: swapAmountFormatted } })
   }
 
   // TODO: this is not implemented, we need to check slippage tolerance and transaction deadline etc.
   const confirmSwap = useCallback(() => {
-    const swapAmountBalance = util.toBalance(fromAmountFormatted)
-    const computedTokenBalance = computeTokenBalance(selectedTokenSwapFrom, tokenBalances, balance)
-    const tokenBalanceBn = new BN(computedTokenBalance.balance)
-    const swapAmountBn = new BN(swapAmountBalance.balance)
+    // const { balance: fromBalance } = util.toBalance(fromAmountFormatted, undefined, selectedTokenSwapFrom.decimal)
+    const { balance: tokenBalance, formatted: tokenBalanceFormatted } = getTokenBalance(tokenFrom, tokenBalances, balance)
 
-    if (swapAmountBalance && tokenBalanceBn.gte(swapAmountBn)) {
-      // TODO: actual swapping functionalities.
-      console.log(`swapping [${fromAmountFormatted}] from [${selectedTokenSwapFrom.name}] to [${selectedTokenSwapTo.name}]`)
-    } else {
-      message.error('Not enough balance to swap')
+    if (!(new BN(tokenBalance).gte(new BN(fromAmount)))) {
+      console.log(new BN(tokenBalance).toString())
+      console.log(new BN(fromAmount).toString())
+      message.error(`Insufficient balance (got ${tokenBalanceFormatted}, need ${fromAmountFormatted})`)
+      return
     }
-  }, [selectedTokenSwapFrom, selectedTokenSwapTo, tokenBalances, balance, fromAmountFormatted])
+    // TODO: actual swapping functionalities.
+    console.log(`swapping [${fromAmountFormatted}] from [${tokenFrom.name}] to [${tokenTo.name}]`)
+  }, [tokenFrom, tokenTo, tokenBalances, balance, fromAmountFormatted, toAmountFormatted])
 
   const swapAllowed =
-    selectedTokenSwapFrom.value !== '' &&
-    selectedTokenSwapTo.value !== '' &&
+    tokenFrom.value !== '' &&
+    tokenTo.value !== '' &&
     fromAmountFormatted !== '' && !isNaN(fromAmountFormatted) &&
     toAmountFormatted !== '' && !isNaN(toAmountFormatted)
 
@@ -389,8 +401,8 @@ const Swap = ({ address }) => {
               bordered={false}
               labelInValue
               style={tokenSelectorStyle}
-              value={selectedTokenSwapFrom}
-              onSearch={(value) => { setSelectedTokenSwapFrom({ value }) }}
+              value={tokenFrom}
+              onSearch={(value) => { setTokenFrom({ value }) }}
             >
               {buildSwapOptions(fromTokens, onSelectTokenSwapFrom)}
             </Select>
@@ -419,8 +431,8 @@ const Swap = ({ address }) => {
               bordered={false}
               labelInValue
               style={tokenSelectorStyle}
-              value={selectedTokenSwapTo}
-              onSearch={(value) => { setSelectedTokenSwapTo({ value }) }}
+              value={tokenTo}
+              onSearch={(value) => { setTokenTo({ value }) }}
             >
               {buildSwapOptions(toTokens, onSelectTokenSwapTo)}
             </Select>
@@ -432,7 +444,7 @@ const Swap = ({ address }) => {
       </TallRow>
       <TallRow align='middle'>
         <Col span={24}>
-          <ExchangeRateButton exchangeRate={exchangeRate} selectedTokenSwapFrom={selectedTokenSwapFrom} selectedTokenSwapTo={selectedTokenSwapTo} />
+          <ExchangeRateButton exchangeRate={exchangeRate} selectedTokenSwapFrom={tokenFrom} selectedTokenSwapTo={tokenTo} />
         </Col>
       </TallRow>
       <TallRow>
