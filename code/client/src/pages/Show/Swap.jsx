@@ -558,7 +558,7 @@ const Swap = ({ address }) => {
     fromAmountFormatted !== '' && !isNaN(fromAmountFormatted) &&
     toAmountFormatted !== '' && !isNaN(toAmountFormatted)
 
-  const tokenApproved = util.isONE(tokenFrom) || tokenAllowance.gt(fromAmount ? new BN(fromAmount) : new BN(0))
+  const tokenApproved = util.isONE(tokenFrom) || isTrivialSwap(tokenTo, tokenFrom) || tokenAllowance.gt(fromAmount ? new BN(fromAmount) : new BN(0))
 
   const insufficientLiquidity = !updatingReserve && tokenTo.value && toAmount && !isTrivialSwap(tokenFrom, tokenTo) && !isTrivialSwap(tokenTo, tokenFrom) && tokenReserve.to.lt(new BN(toAmount || 0))
 
