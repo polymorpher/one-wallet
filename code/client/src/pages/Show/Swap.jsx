@@ -448,7 +448,9 @@ const Swap = ({ address }) => {
           onRevealSuccess(txId)
           const tt = await handleTrackNewToken({ newContractAddress: tokenTo.address, currentTrackedTokens, dispatch, address })
           if (tt) {
+            dispatch(walletActions.trackTokens({ address, tokens: [tt] }))
             setCurrentTrackedTokens(tts => [...tts, tt])
+
             message.success(`New token tracked: ${tt.name} (${tt.symbol}) (${tt.contractAddress}`)
           }
           Chaining.refreshBalance(dispatch, [address])
