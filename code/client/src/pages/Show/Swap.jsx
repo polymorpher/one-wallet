@@ -562,6 +562,14 @@ const Swap = ({ address }) => {
 
   const insufficientLiquidity = !updatingReserve && tokenTo.value && toAmount && !isTrivialSwap(tokenFrom, tokenTo) && !isTrivialSwap(tokenTo, tokenFrom) && tokenReserve.to.lt(new BN(toAmount || 0))
 
+  if (!(wallet.majorVersion >= 10)) {
+    return (
+      <TallRow align='middle'>
+        <Warning>Your wallet is too old. Please upgrade to at least version 10.1 to use swap</Warning>
+      </TallRow>
+    )
+  }
+
   return (
     <>
       <TallRow>
