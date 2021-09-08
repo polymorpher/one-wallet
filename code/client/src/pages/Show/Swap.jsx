@@ -89,7 +89,7 @@ const ExchangeRate = ({ exchangeRate, selectedTokenSwapFrom, selectedTokenSwapTo
     return <></>
   }
 
-  return exchangeRate && util.formatNumber(exchangeRate, 10) && (
+  return exchangeRate && util.formatNumber(exchangeRate, 10) !== 'NaN' && (
     <Row justify='end'>
       <Space align='center'>
         <Button block type='text' style={{ marginRight: 32 }} icon={<SwapOutlined />} onClick={onFlipExchangeRate} />
