@@ -24,6 +24,7 @@ import { useRandomWorker } from './randomWorker'
 import ONEUtil from '../../../../lib/util'
 import { handleTrackNewToken } from '../../components/ERC20Grid'
 import { Link } from 'react-router-dom'
+import { Chaining } from '../../api/flow'
 const { Text, Title } = Typography
 
 const tokenIconUrl = (symbol) => `https://res.cloudinary.com/sushi-cdn/image/fetch/w_64/https://raw.githubusercontent.com/sushiswap/icons/master/token/${symbol.toLowerCase()}.jpg`
@@ -267,7 +268,7 @@ const Swap = ({ address }) => {
 
     const getTokenAllowance = async () => {
       if (tokenFrom.address) {
-        const allowance = await api.sushi.getAllowance({ address: tokenFrom.address, contractAddress: tokenFrom.contractAddress })
+        const allowance = await api.sushi.getAllowance({ address, contractAddress: tokenFrom.address })
         setTokenAllowance(new BN(allowance))
       } else {
         setTokenAllowance(new BN(0))
@@ -461,8 +462,32 @@ const Swap = ({ address }) => {
   }
 
   const approveToken = () => {
-    // TODO: implement approve token.
-    console.log(`Approving token [${tokenFrom.symbol}]`)
+    const { otp, otp2, invalidOtp2, invalidOtp } = prepareValidation({ state: { otpInput, otp2Input, doubleOtp }, checkAmount: false, checkDest: false }) || {}
+    if (invalidOtp || invalidOtp2) return
+    const hexData = ONEUtil.encodeCalldata(
+      'approve(address,uint256)',
+      [ONEConstants.Sushi.ROUTER, new BN(new Uint8Array(32).fill(0xff)).toString()])
+    const args = { amount: 0, operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: tokenFrom.address, tokenId: 0, dest: ONEConstants.EmptyAddress }
+
+    SmartFlows.commitReveal({
+      wallet,
+      otp,
+      otp2,
+      recoverRandomness,
+      commitHashGenerator: ONE.computeGeneralOperationHash,
+      commitHashArgs: { ...args, data: ONEUtil.hexStringToBytes(hexData) },
+      prepareProof: () => setStage(0),
+      beforeCommit: () => setStage(1),
+      afterCommit: () => setStage(2),
+      revealAPI: api.relayer.reveal,
+      revealArgs: { ...args, data: hexData },
+      onRevealSuccess: async (txId) => {
+        onRevealSuccess(txId)
+        message.info('Verifying token approval status... It might take 5-10 seconds')
+        Chaining.refreshAllowance({ address, contractAddress: tokenFrom.address, onAllowanceReceived: setTokenAllowance })
+      },
+      ...handlers
+    })
   }
 
   const swapAllowed =
