@@ -453,7 +453,7 @@ const Swap = ({ address }) => {
 
     const hexData = ONEUtil.encodeCalldata(
       'swapTokensForExactETH(uint256,uint256,address[],address,uint256)',
-      [amountOut.toString(), fromAmount.toString(), [ONEConstants.Sushi.WONE, tokenTo.address], address, (now + deadline)])
+      [amountOut.toString(), fromAmount.toString(), [tokenFrom.address, ONEConstants.Sushi.WONE], address, (now + deadline)])
     const args = { amount: 0, operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: ONEConstants.Sushi.ROUTER, tokenId: 0, dest: ONEConstants.EmptyAddress }
     commonCommitReveal({ otp, otp2, hexData, args })
   }
