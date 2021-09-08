@@ -448,46 +448,6 @@ const api = {
       const [reserve0, reserve1, time] = [r[0], r[1], r[2]]
       return { reserve0, reserve1, time }
     },
-    swapForToken: async ({ address, neighbors, index, eotp, amountOut, amount, tokenAddress, deadline }) => {
-      // swapETHForExactTokens(uint amountOut, address[] calldata path, address to, uint deadline)
-      const data = ONEUtil.encodeCalldata(
-        'swapETHForExactTokens(uint256,address[],address,uint256)',
-        [ amountOut, [ONEConstants.Sushi.WONE, tokenAddress], address, deadline ]
-      )
-      return api.relayer.reveal({
-        address,
-        neighbors,
-        index,
-        eotp,
-        operationType: ONEConstants.OperationType.CALL,
-        tokenType: ONEConstants.TokenType.NONE,
-        contractAddress: ONEConstants.Sushi.ROUTER,
-        dest: ONEConstants.EmptyAddress,
-        tokenId: 0,
-        amount,
-        data
-      })
-    },
-    swapForONE: async ({ address, neighbors, index, eotp, amountIn, amountOutMin, tokenAddress }) => {
-      // swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
-      const data = ONEUtil.encodeCalldata(
-        'swapExactTokensForETH(uint256,uint256,address[],address,uint256)',
-        [ amountIn, amountOutMin, [tokenAddress, ONEConstants.Sushi.WONE], address, Math.floor(Date.now() / 1000) + 60 ]
-      )
-      return api.relayer.reveal({
-        address,
-        neighbors,
-        index,
-        eotp,
-        operationType: ONEConstants.OperationType.CALL,
-        tokenType: ONEConstants.TokenType.NONE,
-        contractAddress: ONEConstants.Sushi.ROUTER,
-        dest: ONEConstants.EmptyAddress,
-        tokenId: 0,
-        amount: 0,
-        data
-      })
-    },
     getTokenIcon: async ({ symbol }) => {
       return `https://res.cloudinary.com/sushi-cdn/image/fetch/w_64/https://raw.githubusercontent.com/sushiswap/icons/master/token/${symbol.toLowerCase()}.jpg`
     },
