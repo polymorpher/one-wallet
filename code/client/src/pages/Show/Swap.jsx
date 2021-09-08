@@ -424,7 +424,7 @@ const Swap = ({ address }) => {
   const { resetWorker, recoverRandomness } = useRandomWorker()
   const { prepareValidation, onRevealSuccess, ...handlers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
 
-  const commonCommitReveal = ({ otp, otp2, hexData, args, extraHandlers }) => {
+  const commonCommitReveal = ({ otp, otp2, hexData, args, trackToken, updateFromBalance }) => {
     SmartFlows.commitReveal({
       wallet,
       otp,
@@ -437,9 +437,29 @@ const Swap = ({ address }) => {
       afterCommit: () => setStage(2),
       revealAPI: api.relayer.reveal,
       revealArgs: { ...args, data: hexData },
-      onRevealSuccess,
+      onRevealSuccess: async (txId) => {
+        onRevealSuccess(txId)
+        if (trackToken) {
+          const tt = await handleTrackNewToken({
+            newContractAddress: tokenTo.address,
+            currentTrackedTokens,
+            dispatch,
+            address
+          })
+          if (tt) {
+            dispatch(walletActions.trackTokens({ address, tokens: [tt] }))
+            setCurrentTrackedTokens(tts => [...tts, tt])
+            message.success(`New token tracked: ${tt.name} (${tt.symbol}) (${tt.contractAddress}`)
+          }
+          Chaining.refreshBalance(dispatch, [address])
+          Chaining.refreshTokenBalance({ dispatch, address, token: tt || currentTrackedTokens.find(t => t.contractAddress === tokenTo.address) })
+        }
+        if (updateFromBalance) {
+          Chaining.refreshBalance(dispatch, [address])
+          Chaining.refreshTokenBalance({ dispatch, address, token: tokenFrom })
+        }
+      },
       ...handlers,
-      ...extraHandlers
     })
   }
   const handleSwapONEToToken = ({ slippage, deadline, otp, otp2 }) => {
@@ -450,26 +470,7 @@ const Swap = ({ address }) => {
       'swapETHForExactTokens(uint256,address[],address,uint256)',
       [amountOut, [ONEConstants.Sushi.WONE, tokenTo.address], address, (now + deadline)])
     const args = { amount: fromAmount.toString(), operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: ONEConstants.Sushi.ROUTER, tokenId: 0, dest: ONEConstants.EmptyAddress }
-    commonCommitReveal({
-      otp,
-      otp2,
-      hexData,
-      args,
-      extraHandlers: {
-        onRevealSuccess: async (txId) => {
-          onRevealSuccess(txId)
-          const tt = await handleTrackNewToken({ newContractAddress: tokenTo.address, currentTrackedTokens, dispatch, address })
-          if (tt) {
-            dispatch(walletActions.trackTokens({ address, tokens: [tt] }))
-            setCurrentTrackedTokens(tts => [...tts, tt])
-
-            message.success(`New token tracked: ${tt.name} (${tt.symbol}) (${tt.contractAddress}`)
-          }
-          Chaining.refreshBalance(dispatch, [address])
-          Chaining.refreshTokenBalance({ dispatch, address, token: tt })
-        }
-      }
-    })
+    commonCommitReveal({ otp, otp2, hexData, args, trackToken: true })
   }
   const handleSwapTokenToONE = ({ slippage, deadline, otp, otp2 }) => {
     const now = Math.floor(Date.now() / 1000)
@@ -479,29 +480,17 @@ const Swap = ({ address }) => {
       'swapExactTokensForETH(uint256,uint256,address[],address,uint256)',
       [fromAmount.toString(), amountOut.toString(), [tokenFrom.address, ONEConstants.Sushi.WONE], address, (now + deadline)])
     const args = { amount: 0, operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: ONEConstants.Sushi.ROUTER, tokenId: 0, dest: ONEConstants.EmptyAddress }
-    commonCommitReveal({
-      otp,
-      otp2,
-      hexData,
-      args,
-      extraHandlers: {
-        onRevealSuccess: async (txId) => {
-          onRevealSuccess(txId)
-          Chaining.refreshBalance(dispatch, [address])
-          Chaining.refreshTokenBalance({ dispatch, address, token: tokenFrom })
-        }
-      }
-    })
+    commonCommitReveal({ otp, otp2, hexData, args, updateFromBalance: true })
   }
   const handleSwapONEToWONE = ({ otp, otp2 }) => {
     const hexData = ONEUtil.encodeCalldata('deposit()', [])
     const args = { amount: fromAmount.toString(), operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: ONEConstants.Sushi.WONE, tokenId: 0, dest: ONEConstants.EmptyAddress }
-    commonCommitReveal({ otp, otp2, hexData, args })
+    commonCommitReveal({ otp, otp2, hexData, args, trackToken: true })
   }
   const handleSwapWONEToONE = ({ otp, otp2 }) => {
     const hexData = ONEUtil.encodeCalldata('withdraw(uint256)', [fromAmount.toString()])
     const args = { amount: 0, operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: ONEConstants.Sushi.WONE, tokenId: 0, dest: ONEConstants.EmptyAddress }
-    commonCommitReveal({ otp, otp2, hexData, args })
+    commonCommitReveal({ otp, otp2, hexData, args, updateFromBalance: true })
   }
   const confirmSwap = () => {
     // const { balance: fromBalance } = util.toBalance(fromAmountFormatted, undefined, selectedTokenSwapFrom.decimal)
