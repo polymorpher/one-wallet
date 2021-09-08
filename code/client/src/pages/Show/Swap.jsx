@@ -283,13 +283,14 @@ const Swap = ({ address }) => {
         setTokenReserve({ from: new BN(0), to: new BN(0) })
         return
       }
-      if (isTrivialSwap(tokenFrom, tokenTo) || isTrivialSwap(tokenTo, tokenFrom)) {
-        setTokenReserve({ from: new BN(0), to: new BN(0) })
-        return
-      }
+
       try {
-        const pairRequestPayload = { t0: tokenFrom.address || ONEConstants.Sushi.WONE, t1: tokenTo.address || ONEConstants.Sushi.WONE }
-        const pairAddress = await api.sushi.getPair(pairRequestPayload)
+        const req = { t0: tokenFrom.address || ONEConstants.Sushi.WONE, t1: tokenTo.address || ONEConstants.Sushi.WONE }
+        if (req.t0 === req.t1) {
+          setTokenReserve({ from: new BN(0), to: new BN(0) })
+          return
+        }
+        const pairAddress = await api.sushi.getPair(req)
         const { reserve0, reserve1 } = await api.sushi.getReserves({ pairAddress })
         setTokenReserve({ from: new BN(reserve0), to: new BN(reserve1) })
       } catch (e) {
@@ -324,7 +325,7 @@ const Swap = ({ address }) => {
     if (preciseValue) {
       preciseFromSetter(preciseValue)
     }
-    if (!util.validBalance(value, true) || parseFloat(value) === 0) {
+    if (!util.validBalance(value, true) || parseFloat(value) === 0 || value === '') {
       if (isFrom) {
         setToAmountFormatted(undefined)
         setToAmount(undefined)
@@ -340,6 +341,7 @@ const Swap = ({ address }) => {
       preciseValue !== undefined && preciseToSetter(preciseValue)
       return
     }
+
     if (!preciseValue) {
       const { balance: preciseAmount } = util.toBalance(value, undefined, isFrom ? tokenFrom.decimal : tokenTo.decimal)
       // console.log('preciseFromSetter', value, preciseAmount)
@@ -565,7 +567,7 @@ const Swap = ({ address }) => {
               <Hint>
                 You only need to do this once for each token. Only with your approval, SushiSwap can swap your {tokenFrom.symbol} for ONE or another token.
                 <br /><br />
-                SushiSwap operates as a smart contract. Based on its <Link to='https://github.com/sushiswap/sushiswap' target='_blank' rel='noreferrer'>source code</Link>, it can only transfers your token when you initiate a swap.
+                SushiSwap operates as a smart contract. Based on its <Link to='https://github.com/sushiswap/sushiswap' target='_blank' rel='noreferrer'>source code</Link>, it can only move your token when you initiate a swap.
               </Hint>
             </Col>
           </TallRow>
