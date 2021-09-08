@@ -11,19 +11,19 @@ export const KnownERC20 = {
     icon: IconBUSD,
     symbol: 'BUSD',
     name: 'Binance USD',
-    contractAddress: '0xe176ebe47d621b984a73036b9da5d834411ef734'
+    contractAddress: '0xE176EBE47d621b984a73036B9DA5d834411ef734'
   },
   VIPER: {
     icon: IconVIPER,
     symbol: 'VIPER',
     name: 'Viper',
-    contractAddress: '0xea589e93ff18b1a1f1e9bac7ef3e86ab62addc79'
+    contractAddress: '0xEa589E93Ff18b1a1F1e9BaC7EF3E86Ab62addc79'
   },
   ONEMOON: {
     icon: IconONEMOON,
     symbol: 'ONEMOON',
     name: 'OneMoon',
-    contractAddress: '0xcb35e4945c7f463c5ccbe3bf9f0389ab9321248f'
+    contractAddress: '0xCB35e4945c7F463c5CCBE3BF9f0389ab9321248F'
   }
 }
 
@@ -32,7 +32,8 @@ export const HarmonyONE = {
   icon: IconONE,
   symbol: 'ONE',
   name: 'Harmony ONE',
-  contractAddress: null
+  contractAddress: null,
+  priority: 1e+6,
 }
 
 export const DefaultTrackedERC20 = network => {

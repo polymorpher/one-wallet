@@ -17,6 +17,38 @@ import { handleAddressError } from '../handler'
 import ONEConstants from '../../../lib/constants'
 const { Text, Link } = Typography
 
+export const handleTrackNewToken = async ({ newContractAddress, currentTrackedTokens, dispatch, address }) => {
+  if (!newContractAddress || newContractAddress.length < 42) {
+    return
+  }
+  const contractAddress = util.safeExec(util.normalizedAddress, [newContractAddress], handleAddressError)
+  if (!contractAddress) {
+    return
+  }
+  const existing = currentTrackedTokens.find(t => t.contractAddress === contractAddress)
+  if (existing) {
+    message.error(`You already added ${existing.name} (${existing.symbol}) (${existing.contractAddress})`)
+    return
+  }
+  try {
+    const tt = { tokenType: ONEConstants.TokenType.ERC20, tokenId: 0, contractAddress }
+    const key = ONEUtil.hexView(ONE.computeTokenKey(tt).hash)
+    dispatch(walletActions.fetchTokenBalance({ address, ...tt, key }))
+    tt.key = key
+    try {
+      const { name, symbol, decimals } = await api.blockchain.getTokenMetadata(tt)
+      tt.name = name
+      tt.symbol = symbol
+      tt.decimals = decimals
+    } catch (ex) {
+      console.error(ex)
+    }
+    return tt
+  } catch (ex) {
+    message.error(`Unable to retrieve balance from ${newContractAddress}. It might not be a valid HRC20 contract address`)
+  }
+}
+
 const GridItem = ({ style, children, icon, name, symbol, contractAddress, balance, addNew, selected, onSelected }) => {
   const bech32ContractAddress = util.safeOneAddress(contractAddress)
   const abbrBech32ContractAddress = util.ellipsisAddress(bech32ContractAddress)
@@ -111,36 +143,11 @@ export const ERC20Grid = ({ address }) => {
 
   useEffect(() => {
     const f = async function () {
-      if (!newContractAddress || newContractAddress.length < 42) {
-        return
-      }
-      const contractAddress = util.safeExec(util.normalizedAddress, [newContractAddress], handleAddressError)
-      if (!contractAddress) {
-        return
-      }
-      const existing = currentTrackedTokens.find(t => t.contractAddress === contractAddress)
-      if (existing) {
-        message.error(`You already added ${existing.name} (${existing.symbol}) (${existing.contractAddress})`)
-        return
-      }
-      try {
-        const tt = { tokenType: ONEConstants.TokenType.ERC20, tokenId: 0, contractAddress }
-        const key = ONEUtil.hexView(ONE.computeTokenKey(tt).hash)
-        dispatch(walletActions.fetchTokenBalance({ address, ...tt, key }))
-        tt.key = key
-        try {
-          const { name, symbol, decimals } = await api.blockchain.getTokenMetadata(tt)
-          tt.name = name
-          tt.symbol = symbol
-          tt.decimals = decimals
-        } catch (ex) {
-          console.error(ex)
-        }
+      const tt = await handleTrackNewToken({ newContractAddress, currentTrackedTokens, setCurrentTrackedTokens, dispatch, address })
+      if (tt) {
         setCurrentTrackedTokens(tts => [...tts, tt])
         message.success(`New token added: ${tt.name} (${tt.symbol}) (${tt.contractAddress}`)
         setSection(null)
-      } catch (ex) {
-        message.error(`Unable to retrieve balance from ${newContractAddress}. It might not be a valid HRC20 contract address`)
       }
     }
     f()

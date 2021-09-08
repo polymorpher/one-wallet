@@ -150,7 +150,6 @@ const PurchaseDomain = ({ show, address, onClose }) => {
           }
           onClose()
         }, 2500)
-
       }
     })
   }
