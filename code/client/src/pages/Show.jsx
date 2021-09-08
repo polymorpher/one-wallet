@@ -26,8 +26,16 @@ import PurchaseDomain from './Show/PurchaseDomain'
 import Upgrade from './Show/Upgrade'
 import TransferDomain from './Show/TransferDomain'
 import Sign from './Show/Sign'
+import Swap from './Show/Swap'
 
-const tabList = [{ key: 'coins', tab: 'Coins' }, { key: 'nft', tab: 'Collectibles' }, { key: 'about', tab: 'About' }, { key: 'help', tab: 'Recover' }]
+const tabList = [
+  { key: 'coins', tab: 'Coins' },
+  { key: 'nft', tab: 'Collectibles' },
+  { key: 'about', tab: 'About' },
+  { key: 'help', tab: 'Recover' },
+  { key: 'swap', tab: 'Swap', dev: true }
+]
+
 const Show = () => {
   const history = useHistory()
   const location = useLocation()
@@ -88,7 +96,7 @@ const Show = () => {
         show={!section}
         title={<WalletTitle address={address} />}
         style={{ minHeight: 320, maxWidth: 720 }}
-        tabList={tabList}
+        tabList={dev ? tabList : tabList.filter(e => !e.dev)}
         activeTabKey={activeTab}
         onTabChange={key => showTab(key)}
       >
@@ -98,6 +106,7 @@ const Show = () => {
         {activeTab === 'coins' && <ERC20Grid address={address} />}
         {activeTab === 'nft' && <NFTGrid address={address} />}
         {activeTab === 'help' && <Recovery address={address} />}
+        {activeTab === 'swap' && <Swap address={address} />}
         <Upgrade address={address} />
       </AnimatedSection>
 

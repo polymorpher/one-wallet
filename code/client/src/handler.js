@@ -1,6 +1,8 @@
 import { message } from 'antd'
 import * as Sentry from '@sentry/browser'
 
+// For UI Error handling
+
 export const handleAPIError = (ex) => {
   console.trace(ex)
   const error = ex.response?.data?.error || ex.toString()

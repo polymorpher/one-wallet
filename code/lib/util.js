@@ -217,11 +217,10 @@ const utils = {
   encodeCalldata: (method, values = []) => {
     const selector = abi.encodeFunctionSignature(method)
     const m = method.match(/.+\((.*)\)/)
-    if (!m || !m[1]) {
+    if (!m) {
       return null
     }
     const params = m[1] ? m[1].split(',') : []
-    console.log(params)
     const encodedParameters = abi.encodeParameters(params, values)
     return selector + encodedParameters.slice(2)
   },
