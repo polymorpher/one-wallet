@@ -124,6 +124,10 @@ const getTokenBalance = (selectedToken, tokenBalances, oneBalance) => {
   }
 }
 
+const isTrivialSwap = (tokenFrom, tokenTo) => {
+  return util.isONE(tokenFrom) && util.isWONE(tokenTo)
+}
+
 /**
  * Renders swap coins from ONE wallet or tracked token to another token tab.
  */
@@ -167,8 +171,8 @@ const Swap = ({ address }) => {
   const [slippageTolerance, setSlippageTolerance] = useState('0.50')
   const [transactionDeadline, setTransactionDeadline] = useState('120')
   const [currentTrackedTokens, setCurrentTrackedTokens] = useState([])
-  const [tokenAllowance, setTokenAllowance] = useState()
-  const [tokenReserve, setTokenReserve] = useState()
+  const [tokenAllowance, setTokenAllowance] = useState(new BN(0))
+  const [tokenReserve, setTokenReserve] = useState({ from: new BN(0), to: new BN(0) })
 
   // Loads supported tokens that are available for swap.
   useEffect(() => {
@@ -260,13 +264,11 @@ const Swap = ({ address }) => {
     onAmountChange(false)({ target: { value: toAmountFormatted } })
 
     const getTokenAllowance = async () => {
-      if (tokenFrom.address && tokenFrom.contractAddress) {
-        // TODO: allowance returns as string, it should return BN?
+      if (tokenFrom.address) {
         const allowance = await api.sushi.getAllowance({ address: tokenFrom.address, contractAddress: tokenFrom.contractAddress })
-
         setTokenAllowance(new BN(allowance))
       } else {
-        setTokenAllowance(undefined)
+        setTokenAllowance(new BN(0))
       }
     }
 
@@ -276,21 +278,20 @@ const Swap = ({ address }) => {
   // Checks token reserves for selected tokenFrom and tokenTo.
   useEffect(() => {
     const getTokenReserve = async () => {
-      if (tokenTo.value) {
-        try {
-          const pairRequestPayload = { t0: tokenFrom.address || address, t1: tokenTo.address || address }
-          const pairAddress = await api.sushi.getPair(pairRequestPayload)
-          const reserve = await api.sushi.getReserves({ pairAddress })
-          setTokenReserve(reserve)
-        } catch (e) {
-          console.error(e)
-          setTokenReserve(undefined)
-        }
-      } else {
-        setTokenReserve(undefined)
+      if (!tokenTo.value) {
+        setTokenReserve({ from: new BN(0), to: new BN(0) })
+        return
+      }
+      try {
+        const pairRequestPayload = { t0: tokenFrom.address || ONEConstants.Sushi.WONE, t1: tokenTo.address || ONEConstants.Sushi.WONE }
+        const pairAddress = await api.sushi.getPair(pairRequestPayload)
+        const { reserve0, reserve1 } = await api.sushi.getReserves({ pairAddress })
+        setTokenReserve({ from: new BN(reserve0), to: new BN(reserve1) })
+      } catch (e) {
+        console.error(e)
+        setTokenReserve({ from: new BN(0), to: new BN(0) })
       }
     }
-
     getTokenReserve()
   }, [tokenFrom, tokenTo])
 
@@ -457,9 +458,9 @@ const Swap = ({ address }) => {
     fromAmountFormatted !== '' && !isNaN(fromAmountFormatted) &&
     toAmountFormatted !== '' && !isNaN(toAmountFormatted)
 
-  const tokenApproved = !tokenAllowance || (tokenAllowance && tokenAllowance.gt(fromAmount || new BN(0)))
+  const tokenApproved = util.isONE(tokenFrom) || tokenAllowance.gte(fromAmount || new BN(0))
 
-  const insufficientLiquidity = tokenReserve && (tokenReserve.reserve1 === '0' || tokenReserve.reserve2 === '0')
+  const insufficientLiquidity = !isTrivialSwap(tokenFrom, tokenTo) && !isTrivialSwap(tokenTo, tokenFrom) && tokenReserve.to.lt(new BN(toAmount || 0))
 
   return (
     <>
@@ -525,19 +526,15 @@ const Swap = ({ address }) => {
           <ExchangeRateButton exchangeRate={exchangeRate} selectedTokenSwapFrom={tokenFrom} selectedTokenSwapTo={tokenTo} />
         </Col>
       </TallRow>
-      {
-        insufficientLiquidity
-          ? (
-            <TallRow>
-              <Col span={24} style={{ textAlign: 'center' }}>
-                <Warning>
-                  Insufficient liquidity for this trade
-                </Warning>
-              </Col>
-            </TallRow>
-            )
-          : <></>
-      }
+      {insufficientLiquidity &&
+        <TallRow>
+          <Col span={24}>
+            <Warning>
+              Insufficient liquidity in SushiSwap. Please reduce expected amount or try a different token pair.
+            </Warning>
+          </Col>
+        </TallRow>}
+
       <TallRow>
         <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} />
       </TallRow>
@@ -548,48 +545,23 @@ const Swap = ({ address }) => {
         <Space>
           {stage >= 0 && stage < 3 && <LoadingOutlined />}
           {stage === 3 && <CheckCircleOutlined />}
-          {
-            tokenApproved
-              ? (
-                <Button
-                  type='primary'
-                  size='large'
-                  shape='round'
-                  disabled={!swapAllowed || stage >= 0 || insufficientLiquidity}
-                  onClick={confirmSwap}
-                >
-                  Confirm
-                </Button>
-                )
-              : (
-                <Button
-                  type='primary'
-                  size='large'
-                  shape='round'
-                  onClick={approveToken}
-                >
-                  Approve
-                </Button>
-                )
-          }
+          {tokenApproved
+            ? <Button type='primary' size='large' shape='round' disabled={!swapAllowed || stage >= 0 || insufficientLiquidity} onClick={confirmSwap}>Confirm</Button>
+            : <Button type='primary' size='large' shape='round' onClick={approveToken}>Approve</Button>}
         </Space>
       </TallRow>
       {
-        !tokenApproved
-          ? (
-            <TallRow>
-              <Col style={{ textAlign: 'right' }}>
-                <Title level={4}>
-                  Allow 1wallet to spend your {tokenFrom.symbol}?
-                </Title>
-                <Hint>
-                  Do you trust this site? By granting this permission,
-                  you're allowing 1wallet to withdraw your {tokenFrom.symbol} and automate transactions for you.
-                </Hint>
-              </Col>
-            </TallRow>
-            )
-          : <></>
+        !tokenApproved &&
+          <TallRow>
+            <Col style={{ textAlign: 'right' }}>
+              <Title level={4}>
+                Authorize SushiSwap to transfer your token {tokenFrom.symbol} on behalf of your 1wallet?
+              </Title>
+              <Hint>
+                You only need to do this once for each token. Only with your approval, SushiSwap smart contract can swap your {tokenFrom.symbol} for ONE or another token. SushiSwap is a decentralized exchange and its smart contract is audited and made available open source. The smart contract can only transfers your token when you initiate a swap. Therefore, even with the authorization, you don't need to worry about unauthorized access of your tokens by SushiSwap or its admins.
+              </Hint>
+            </Col>
+          </TallRow>
       }
       <TallRow align='top'>
         {editingSetting &&
