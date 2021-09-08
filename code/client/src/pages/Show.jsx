@@ -33,7 +33,7 @@ const tabList = [
   { key: 'nft', tab: 'Collectibles' },
   { key: 'about', tab: 'About' },
   { key: 'help', tab: 'Recover' },
-  { key: 'swap', tab: 'Swap' }
+  { key: 'swap', tab: 'Swap', dev: true }
 ]
 
 const Show = () => {
@@ -96,7 +96,7 @@ const Show = () => {
         show={!section}
         title={<WalletTitle address={address} />}
         style={{ minHeight: 320, maxWidth: 720 }}
-        tabList={tabList}
+        tabList={dev ? tabList : tabList.filter(e => !e.dev)}
         activeTabKey={activeTab}
         onTabChange={key => showTab(key)}
       >
@@ -106,7 +106,7 @@ const Show = () => {
         {activeTab === 'coins' && <ERC20Grid address={address} />}
         {activeTab === 'nft' && <NFTGrid address={address} />}
         {activeTab === 'help' && <Recovery address={address} />}
-        {dev && activeTab === 'swap' && <Swap address={address} />}
+        {activeTab === 'swap' && <Swap address={address} />}
         <Upgrade address={address} />
       </AnimatedSection>
 
