@@ -1,8 +1,7 @@
 import WalletConstants from '../constants/wallet'
 import walletActions from '../state/modules/wallet/actions'
 import { EotpBuilders, SecureFlows, Flows, SmartFlows } from '../../../lib/api/flow'
-import api from '../../../lib/api'
-import BN from 'bn.js'
+import { api } from '../../../lib/api'
 
 export { EotpBuilders, SecureFlows, Flows, SmartFlows }
 
