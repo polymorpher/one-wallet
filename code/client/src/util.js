@@ -45,23 +45,26 @@ export default {
     return true
   },
 
-  toBalance: (formatted, price, decimals) => {
+  toBalance: (formatted, price, decimals, maxPrecision) => {
     if (!exports.default.validBalance(formatted, true)) {
       return { balance: 0, formatted: '0', fiat: 0, fiatFormatted: '0', valid: false }
     }
-    const f = parseFloat(formatted)
-    const balance = ONEUtil.toFraction(f, null, decimals)
-    const fiat = f * (price || 0)
-    const fiatFormatted = exports.default.formatNumber(fiat)
+    const balance = ONEUtil.toFraction(formatted, null, decimals)
+    let fiat, fiatFormatted
+    if (price !== undefined && price !== null) {
+      const f = parseFloat(formatted)
+      fiat = f * (price || 0)
+      fiatFormatted = exports.default.formatNumber(fiat, maxPrecision)
+    }
     return { balance, formatted, fiat, fiatFormatted, valid: true }
   },
 
-  computeBalance: (balance, price, decimals) => {
+  computeBalance: (balance, price, decimals, maxPrecision) => {
     if (!exports.default.validBalance(balance)) {
       return { balance: 0, formatted: '0', fiat: 0, fiatFormatted: '0', valid: false }
     }
     const ones = ONEUtil.toOne(balance || 0, null, decimals)
-    const formatted = exports.default.formatNumber(ones)
+    const formatted = exports.default.formatNumber(ones, maxPrecision)
     const fiat = (price || 0) * parseFloat(ones)
     const fiatFormatted = exports.default.formatNumber(fiat)
     return { balance, formatted, fiat, fiatFormatted, valid: true }
@@ -216,6 +219,10 @@ export default {
   releaseNotesUrl: ({ majorVersion, minorVersion }) => {
     return `https://github.com/polymorpher/one-wallet/wiki/Release-Notes#v${majorVersion}.${minorVersion}`
   },
+
+  isWONE: (token) => token.address === ONEConstants.Sushi.WONE || token.contractAddress === ONEConstants.Sushi.WONE,
+
+  isONE: (token) => !token.address && !token.contractAddress
 }
 
 function getWindowDimensions () {

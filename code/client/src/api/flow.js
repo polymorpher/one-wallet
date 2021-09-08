@@ -1,6 +1,7 @@
 import WalletConstants from '../constants/wallet'
 import walletActions from '../state/modules/wallet/actions'
 import { EotpBuilders, SecureFlows, Flows, SmartFlows } from '../../../lib/api/flow'
+import { api } from '../../../lib/api'
 
 export { EotpBuilders, SecureFlows, Flows, SmartFlows }
 
@@ -24,6 +25,13 @@ export const Chaining = {
       setTimeout(() => {
         dispatch(walletActions.fetchTokenBalance({ address, contractAddress, tokenType, tokenId, key }))
       }, t)
+    })
+  },
+
+  refreshAllowance: ({ address, contractAddress, onAllowanceReceived }) => {
+    WalletConstants.fetchDelaysAfterTransfer.forEach(async t => {
+      const allowance = await api.sushi.getAllowance({ address, contractAddress })
+      onAllowanceReceived && onAllowanceReceived(allowance)
     })
   }
 }

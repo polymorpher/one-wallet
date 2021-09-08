@@ -106,7 +106,7 @@ const Show = () => {
         {activeTab === 'coins' && <ERC20Grid address={address} />}
         {activeTab === 'nft' && <NFTGrid address={address} />}
         {activeTab === 'help' && <Recovery address={address} />}
-        {activeTab === 'swap' && <Swap address={address} />}
+        {dev && activeTab === 'swap' && <Swap address={address} />}
         <Upgrade address={address} />
       </AnimatedSection>
 

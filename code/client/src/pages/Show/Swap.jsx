@@ -1,31 +1,50 @@
 import { TallRow } from '../../components/Grid'
-import { Col, Typography, Select, Image, Button, message, Row, Tooltip, Input } from 'antd'
+import { Col, Typography, Select, Image, Button, message, Row, Tooltip, Input, Space } from 'antd'
 import React, { useCallback, useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
-import { mockCryptos } from './mock-cryptos'
+import { useDispatch, useSelector } from 'react-redux'
 import ONEConstants from '../../../../lib/constants'
 import util from '../../util'
 import { DefaultTrackedERC20, HarmonyONE, withKeys } from '../../components/TokenAssets'
 import api from '../../api'
-import { InputBox } from '../../components/Text'
+import { Hint, InputBox, Warning } from '../../components/Text'
 import BN from 'bn.js'
-import { CloseOutlined, PercentageOutlined, QuestionCircleOutlined, SettingOutlined, SwapOutlined } from '@ant-design/icons'
-const { Text } = Typography
+import {
+  CheckCircleOutlined,
+  LoadingOutlined,
+  PercentageOutlined,
+  QuestionCircleOutlined,
+  SwapOutlined
+} from '@ant-design/icons'
+import { OtpStack, useOtpState } from '../../components/OtpStack'
+import { FallbackImage } from '../../constants/ui'
+import ShowUtils from './show-util'
+import { SmartFlows } from '../../../../lib/api/flow'
+import ONE from '../../../../lib/onewallet'
+import { useRandomWorker } from './randomWorker'
+import ONEUtil from '../../../../lib/util'
+import { handleTrackNewToken } from '../../components/ERC20Grid'
+import { Link } from 'react-router-dom'
+import { Chaining } from '../../api/flow'
+import walletActions from '../../state/modules/wallet/actions'
+import { CommitRevealProgress } from '../../components/CommitRevealProgress'
+const { Text, Title } = Typography
 
-// TODO: some token's images are not available, we may want a CDN or other service that can retrieve icons dynamically.
-const cryptoIconUrl = (symbol) => `https://qokka-public.s3-us-west-1.amazonaws.com/crypto-logos/${symbol.toLowerCase()}.png`
-
-// TODO: remove this mock exchange rate.
-const mockExchangeRate = () => Math.floor(Math.random() * 100)
+const tokenIconUrl = (token) => {
+  if (token.icon) {
+    return token.icon
+  }
+  const symbol = token.iconSymbol || token.symbol
+  return `https://res.cloudinary.com/sushi-cdn/image/fetch/w_64/https://raw.githubusercontent.com/sushiswap/icons/master/token/${symbol.toLowerCase()}.jpg`
+}
 
 const textStyle = {
-  paddingRight: '10px',
+  paddingRight: '8px',
   display: 'block'
 }
 
 const optionButtonStyle = {
   textAlign: 'left',
-  height: '50px'
+  height: '48px',
 }
 
 const selectOptionStyle = {
@@ -33,12 +52,18 @@ const selectOptionStyle = {
 }
 
 const maxButtonStyle = {
-  marginLeft: '20px',
+  marginLeft: '24px',
   bottom: '1px'
 }
 
+const tokenSelectorStyle = {
+  minWidth: '160px', border: 'none', borderBottom: '1px solid lightgrey',
+}
+
 const amountInputStyle = {
-  margin: 0
+  margin: 0,
+  flex: 1,
+  borderBottom: '1px solid lightgrey'
 }
 
 /**
@@ -46,62 +71,44 @@ const amountInputStyle = {
  * If it is selected, display only the symbol, otherwise display symbol and name.
  */
 const TokenLabel = ({ token, selected }) => (
-  <>
+  <Row align='middle' style={{ flexWrap: 'nowrap', width: 'fit-content' }}>
     <Image
       preview={false}
       width={24}
       height={24}
-      wrapperStyle={{ marginRight: '15px' }}
-      style={{ display: 'inline' }}
-      src={cryptoIconUrl(token.symbol)}
+      fallback={FallbackImage}
+      wrapperStyle={{ marginRight: '16px' }}
+      src={tokenIconUrl(token)}
     />
-    <Text>
-      {
-        selected ? token.symbol : `${token.symbol} ${token.name}`
-      }
-    </Text>
-  </>
+    {selected && <Text> {token.symbol.toUpperCase()} </Text>}
+    {!selected && <Text style={{ fontSize: 10 }}> {token.symbol.toUpperCase()}<br />{token.name}</Text>}
+  </Row>
 )
 
 /**
  * Renders exchange rate within a button that can flip the exchange rate.
  */
-const ExchangeRateButton = ({ exchangeRate, selectedTokenSwapFrom, selectedTokenSwapTo }) => {
+const ExchangeRate = ({ exchangeRate, selectedTokenSwapFrom, selectedTokenSwapTo }) => {
   const [flippedExchangeRate, setFlippedExchangeRate] = useState(false)
 
   const onFlipExchangeRate = () => {
     setFlippedExchangeRate(!flippedExchangeRate)
   }
+  if (!exchangeRate) {
+    return <></>
+  }
 
-  return (
-    <>
-      {
-        exchangeRate
-          ? (
-            <Button block type='text' style={{ padding: '0 35px 0 0', textAlign: 'left' }} onClick={onFlipExchangeRate}>
-              <Text type='secondary'>
-                Exchange Rate
-              </Text>
-              <Text type='secondary' style={{ float: 'right' }}>
-                {
-                  flippedExchangeRate
-                    ? (
-                      <>
-                        1 {selectedTokenSwapTo.symbol} = {1 / exchangeRate} {selectedTokenSwapFrom.symbol} <SwapOutlined />
-                      </>
-                      )
-                    : (
-                      <>
-                        1 {selectedTokenSwapFrom.symbol} = {exchangeRate} {selectedTokenSwapTo.symbol} <SwapOutlined />
-                      </>
-                      )
-                }
-              </Text>
-            </Button>
-            )
-          : <></>
-      }
-    </>
+  return exchangeRate && util.formatNumber(exchangeRate, 10) !== 'NaN' && (
+    <Row justify='end'>
+      <Space align='center'>
+        <Button block type='text' style={{ marginRight: 32 }} icon={<SwapOutlined />} onClick={onFlipExchangeRate} />
+        <Text type='secondary' style={{ float: 'right' }}>
+          {flippedExchangeRate
+            ? (<>1 {selectedTokenSwapTo.symbol} = {util.formatNumber(1 / exchangeRate, 10)} {selectedTokenSwapFrom.symbol}</>)
+            : (<>1 {selectedTokenSwapFrom.symbol} = {util.formatNumber(exchangeRate, 10)} {selectedTokenSwapTo.symbol}</>)}
+        </Text>
+      </Space>
+    </Row>
   )
 }
 
@@ -110,19 +117,16 @@ const ExchangeRateButton = ({ exchangeRate, selectedTokenSwapFrom, selectedToken
  * Otherwise use token balances to compute the balance.
  * @param {*} selectedToken selected token or wallet.
  * @param {*} tokenBalances all tracked token balances.
- * @param {*} oneWalletBalance Harmony ONE wallet balance in raw format.
+ * @param {*} oneBalance Harmony ONE wallet balance in raw format.
  * @returns computed balance.
  */
-const getSelectedTokenComputedBalance = (selectedToken, tokenBalances, oneWalletBalance) => {
+const getTokenBalance = (selectedToken, tokenBalances, oneBalance) => {
   try {
     if (selectedToken && selectedToken.symbol === HarmonyONE.symbol) {
-      const computedBalance = util.computeBalance(oneWalletBalance, 0)
-
+      const computedBalance = util.computeBalance(oneBalance, 0)
       return computedBalance
     }
-
-    const computedBalance = util.computeBalance(tokenBalances[selectedToken.address], undefined, selectedToken.decimals)
-
+    const computedBalance = util.computeBalance(tokenBalances[selectedToken.key], undefined, selectedToken.decimal)
     return computedBalance
   } catch (ex) {
     console.error(ex)
@@ -130,60 +134,8 @@ const getSelectedTokenComputedBalance = (selectedToken, tokenBalances, oneWallet
   }
 }
 
-/**
- * Handles a swap amount change, it can be either swap amount or target swap amount.
- * A swap amount or target swap amount is automatically set based on the provided exchange rate.
- */
-const handleSwapAmountChange = ({
-  value,
-  exchangeRate,
-  setSwapAmountFunc,
-  setCalculatedAmountFunc
-}) => {
-  if (isNaN(value)) {
-    setSwapAmountFunc(undefined)
-  } else {
-    const amount = util.formatNumber(value, 4)
-
-    setSwapAmountFunc(value)
-
-    const calculatedAmount = util.formatNumber(amount * exchangeRate, 4)
-
-    if (exchangeRate && !isNaN(calculatedAmount)) {
-      setCalculatedAmountFunc(calculatedAmount.toString())
-    }
-  }
-}
-
-/**
- * Handles swap token selection. Either a "swap from" token or a "swap to" token can be handled.
- * TODO: actual exchange rate should be fetched and updated here.
- * If the selected token changes, the target swap amount will be automatically updated based on fetched exchange rate.
- */
-const handleSwapTokenSelected = ({
-  token,
-  shouldCalculateExchangeRate,
-  swapAmountFormatted,
-  setSelectedToken,
-  setExchangeRate,
-  setTargetSwapAmountFormatted
-}) => {
-  setSelectedToken({ ...token, value: token.symbol, label: <TokenLabel token={token} selected /> })
-
-  if (shouldCalculateExchangeRate) {
-    // TODO: Fetch exchange rate for token.symbol and selectedTokenSwapTo.value
-    const rate = mockExchangeRate()
-
-    setExchangeRate(rate)
-
-    const amount = util.formatNumber(swapAmountFormatted, 4)
-
-    const calculatedTargetAmount = util.formatNumber(amount * rate, 4)
-
-    if (rate && !isNaN(calculatedTargetAmount)) {
-      setTargetSwapAmountFormatted(calculatedTargetAmount.toString())
-    }
-  }
+const isTrivialSwap = (tokenFrom, tokenTo) => {
+  return util.isONE(tokenFrom) && util.isWONE(tokenTo)
 }
 
 /**
@@ -193,266 +145,560 @@ const Swap = ({ address }) => {
   const wallets = useSelector(state => state.wallet.wallets)
   const network = useSelector(state => state.wallet.network)
   const wallet = wallets[address] || {}
+  const dispatch = useDispatch()
+  const [stage, setStage] = useState(-1)
+  const doubleOtp = wallet.doubleOtp
+  const { state: otpState } = useOtpState()
+  const { otpInput, otp2Input, resetOtp } = otpState
+
   const tokenBalances = wallet.tokenBalances || {}
-  const trackedTokens = (wallet.trackedTokens || []).filter(e => e.tokenType === ONEConstants.TokenType.ERC20)
-  const harmonyToken = {
-    name: HarmonyONE.name,
-    icon: HarmonyONE.icon,
-    symbol: HarmonyONE.symbol
-  }
+
+  const harmonyToken = { ...HarmonyONE }
   const harmonySelectOption = {
     ...harmonyToken,
     value: HarmonyONE.symbol,
     label: <TokenLabel token={harmonyToken} selected />
   }
-  const defaultTrackedTokens = withKeys(DefaultTrackedERC20(network))
-  const [currentTrackedTokens, setCurrentTrackedTokens] = useState([harmonyToken, ...defaultTrackedTokens, ...(trackedTokens || [])])
+
   const balances = useSelector(state => state.wallet.balances)
   const balance = balances[address] || 0
-  const [supportedTokens, setSupportedTokens] = useState([])
-  const [selectedTokenSwapFrom, setSelectedTokenSwapFrom] = useState(harmonySelectOption)
-  const [selectedTokenSwapTo, setSelectedTokenSwapTo] = useState({ value: '', label: '' })
-  const [swapAmountFormatted, setSwapAmountFormatted] = useState()
-  const [targetSwapAmountFormatted, setTargetSwapAmountFormatted] = useState()
-  const [selectedTokenBalance, setSelectedTokenBalance] = useState('0')
+
+  const [pairs, setPairs] = useState([])
+  const [tokens, setTokens] = useState({})
+  const [fromTokens, setFromTokens] = useState([])
+  const [toTokens, setToTokens] = useState([])
+  const emptySelectOption = { value: '', label: '' }
+
+  const [tokenFrom, setTokenFrom] = useState(harmonySelectOption)
+  const [tokenTo, setTokenTo] = useState(emptySelectOption)
+  const [fromAmountFormatted, setFromAmountFormatted] = useState()
+  const [fromAmount, setFromAmount] = useState()
+  const [toAmount, setToAmount] = useState()
+  const [toAmountFormatted, setToAmountFormatted] = useState()
+  const [tokenBalanceFormatted, setTokenBalanceFormatted] = useState('0')
   const [exchangeRate, setExchangeRate] = useState()
   const [editingSetting, setEditingSetting] = useState(false)
   const [slippageTolerance, setSlippageTolerance] = useState('0.50')
-  const [transactionDeadline, setTransactionDeadline] = useState('30')
+  const [transactionDeadline, setTransactionDeadline] = useState('120')
+  const [currentTrackedTokens, setCurrentTrackedTokens] = useState([])
+  const [tokenAllowance, setTokenAllowance] = useState(new BN(0))
+  const [tokenReserve, setTokenReserve] = useState({ from: new BN(0), to: new BN(0) })
+  const [updatingReserve, setUpdatingReserve] = useState(false)
 
   // Loads supported tokens that are available for swap.
   useEffect(() => {
-    const loadCryptos = async () => {
-      // TODO: this is not tokens supported by Harmony network, fetch supported tokens from Harmony network.
-      const loadedCryptos = await mockCryptos()
-      setSupportedTokens(loadedCryptos)
+    const getPairs = async () => {
+      const { pairs, tokens } = await api.sushi.getCachedTokenPairs()
+      // TODO: remove restrictions for token-token swaps later
+      const filteredPairs = (pairs || []).filter(e => e.t0 === ONEConstants.Sushi.WONE || e.t1 === ONEConstants.Sushi.WONE)
+      setPairs(filteredPairs)
+      Object.keys(tokens).forEach(addr => {
+        tokens[addr].address = addr
+      })
+      setTokens(tokens || {})
     }
-
-    loadCryptos()
-  }, [setSupportedTokens])
-
-  useEffect(() => {
-    const loadTrackedTokensMetadata = async () => {
-      const trackedTokensWithMetadata = await Promise.all(currentTrackedTokens.map(async (trackedToken) => {
-        try {
-          if (trackedToken.symbol === HarmonyONE.symbol) {
-            return trackedToken
-          }
-
-          const { name, symbol, decimals } = await api.blockchain.getTokenMetadata(trackedToken)
-
-          return {
-            ...trackedToken,
-            name,
-            symbol,
-            decimals
-          }
-        } catch (ex) {
-          console.error(ex)
-        }
-      }))
-      setCurrentTrackedTokens(trackedTokensWithMetadata)
-    }
-
-    loadTrackedTokensMetadata()
+    getPairs()
   }, [])
 
   useEffect(() => {
-    const tokenBalance = getSelectedTokenComputedBalance(selectedTokenSwapFrom, tokenBalances, balance)
+    if (Object.keys(tokens).length === 0) {
+      return
+    }
+    const erc20Tracked = (wallet.trackedTokens || []).filter(e => e.tokenType === ONEConstants.TokenType.ERC20)
+    const trackedTokens = [harmonyToken, ...withKeys(DefaultTrackedERC20(network)), ...(erc20Tracked || [])]
+    trackedTokens.forEach(tt => {
+      // align formats
+      tt.address = tt.address || tt.contractAddress
+      tt.decimal = tt.decimal || tt.decimals
+      if (tokens[tt.address]) {
+        const cached = tokens[tt.address]
+        tt.priority = cached.priority
+        tt.iconSymbol = cached.iconSymbol
+      }
+      const { tokenType, tokenId, contractAddress, key } = tt
+      if (contractAddress && key) {
+        dispatch(walletActions.fetchTokenBalance({ address, tokenType, tokenId, contractAddress, key }))
+      }
+    })
+    const updateFromTokens = async () => {
+      const trackedTokensUpdated = await api.tokens.batchGetMetadata(trackedTokens)
+      // ONE has null contractAddress
+      const filteredTokens = trackedTokensUpdated.filter(t => t.contractAddress === null || tokens[t.contractAddress])
 
+      filteredTokens.sort((t0, t1) => (t1.priority || 0) - (t0.priority || 0))
+      setFromTokens(filteredTokens)
+      setCurrentTrackedTokens(trackedTokensUpdated)
+    }
+    updateFromTokens()
+  }, [tokens])
+
+  useEffect(() => {
+    const tokenBalance = getTokenBalance(tokenFrom, tokenBalances, balance)
+    // console.log(tokenFrom)
+    // console.log(tokenBalance)
     if (!tokenBalance) {
-      setSelectedTokenBalance('0')
+      setTokenBalanceFormatted('0')
+    }
+    setTokenBalanceFormatted(tokenBalance.formatted)
+  }, [tokenFrom, tokenBalances, balance])
+
+  useEffect(() => {
+    if (Object.keys(tokens).length === 0) {
+      return
+    }
+    // console.log(selectedTokenSwapFrom)
+    // console.log(tokens)
+    const from = tokenFrom.address || tokenFrom.contractAddress || ONEConstants.Sushi.WONE
+    const tokensAsTo = pairs.filter(e => e.t0 === from).map(e => tokens[e.t1])
+    const tokensAsFrom = pairs.filter(e => e.t1 === from).map(e => tokens[e.t0])
+    const filteredTokens = {}
+    // console.log({ tokensAsTo, tokensAsFrom })
+    tokensAsTo.forEach(t => { filteredTokens[t.address] = { ...t, to: true } })
+    tokensAsFrom.forEach(t => { filteredTokens[t.address] = { ...t, from: true } })
+    const toTokens = Object.keys(filteredTokens).map(k => filteredTokens[k])
+    // ONE can be exchanged to WONE
+    if (util.isONE(tokenFrom)) {
+      toTokens.push(tokens[ONEConstants.Sushi.WONE])
+    } else {
+      // any token except ONE itself can be exchanged to ONE
+      toTokens.push(HarmonyONE)
+      // disable token <-> token exchanges for now
+      for (let i = 0; i < toTokens.length - 1; i++) {
+        toTokens[i].disabled = true
+      }
     }
 
-    setSelectedTokenBalance(tokenBalance.formatted)
-  }, [selectedTokenSwapFrom, tokenBalances, balance])
+    toTokens.sort((t0, t1) => (t1.priority || 0) - (t0.priority || 0))
+    setToTokens(toTokens)
+    if (toTokens.length === 0) {
+      setTokenTo(emptySelectOption)
+    }
+    if (!util.isONE(tokenTo) && !util.isWONE(tokenTo)) {
+      if (!filteredTokens[tokenTo.address]) {
+        setTokenTo(emptySelectOption)
+      }
+    }
+  }, [tokenFrom, tokens, pairs])
 
-  const swapOptions = (tokens, setSelectedToken) => tokens.map((token, index) => (
-    <Select.Option key={index} value={`${token.symbol} ${token.name}`} style={selectOptionStyle}>
+  useEffect(() => {
+    // console.log({ fromAmountFormatted, toAmountFormatted })
+    onAmountChange(true)({ target: { value: fromAmountFormatted } })
+  }, [tokenTo])
+
+  useEffect(() => {
+    // console.log({ toAmountFormatted, fromAmountFormatted })
+    onAmountChange(false)({ target: { value: toAmountFormatted } })
+
+    const getTokenAllowance = async () => {
+      if (tokenFrom.address) {
+        const allowance = await api.sushi.getAllowance({ address, contractAddress: tokenFrom.address })
+        // console.log({ allowance: allowance.toString(), contractAddress: tokenFrom.address })
+        setTokenAllowance(allowance)
+      } else {
+        setTokenAllowance(new BN(0))
+      }
+    }
+
+    getTokenAllowance()
+  }, [tokenFrom])
+
+  // Checks token reserves for selected tokenFrom and tokenTo.
+  useEffect(() => {
+    const getTokenReserve = async () => {
+      setUpdatingReserve(true)
+      if (!tokenTo.value) {
+        setTokenReserve({ from: new BN(0), to: new BN(0) })
+        return
+      }
+
+      try {
+        const req = { t0: tokenFrom.address || ONEConstants.Sushi.WONE, t1: tokenTo.address || ONEConstants.Sushi.WONE }
+        if (req.t0 === req.t1) {
+          setTokenReserve({ from: new BN(0), to: new BN(0) })
+          return
+        }
+        const pairAddress = await api.sushi.getPair(req)
+        if (!pairAddress || pairAddress === ONEConstants.EmptyAddress) {
+          setTokenReserve({ from: new BN(0), to: new BN(0) })
+          return
+        }
+        const { reserve0, reserve1 } = await api.sushi.getReserves({ pairAddress })
+        setTokenReserve({ from: new BN(reserve0), to: new BN(reserve1) })
+      } catch (e) {
+        console.error(e)
+        setTokenReserve({ from: new BN(0), to: new BN(0) })
+      }
+    }
+    getTokenReserve().then(() => setUpdatingReserve(false))
+  }, [tokenFrom, tokenTo])
+
+  const buildSwapOptions = (tokens, setSelectedToken) => tokens.map((token, index) => {
+    const inner = (
       <Button
         type='text'
         block
         style={optionButtonStyle}
         onClick={() => setSelectedToken(token)}
+        disabled={token.disabled}
       >
         <TokenLabel token={token} />
       </Button>
-    </Select.Option>
-  ))
+    )
+    const outer = token.disabled ? <Tooltip title='This option is temporarily disabled. It will be available in the future version of 1wallet'>{inner}</Tooltip> : inner
+    return <Select.Option key={index} value={token.symbol || 'one'} style={selectOptionStyle}>{outer}</Select.Option>
+  })
 
-  const handleSearchSupportedTokens = async (value) => {
-    setSelectedTokenSwapTo({ value })
-  }
+  // TODO - check liquidity of both tokens
+  const onAmountChange = useCallback((isFrom) => async ({ target: { value, preciseValue } } = {}) => {
+    // console.log({ isFrom, value, selectedTokenSwapTo, selectedTokenSwapFrom })
+    const fromSetter = isFrom ? setFromAmountFormatted : setToAmountFormatted
+    const toSetter = isFrom ? setToAmountFormatted : setFromAmountFormatted
+    const preciseToSetter = isFrom ? setToAmount : setFromAmount
+    const preciseFromSetter = isFrom ? setFromAmount : setToAmount
+    fromSetter(value)
+    if (preciseValue) {
+      preciseFromSetter(preciseValue)
+    }
+    if (!util.validBalance(value, true) || parseFloat(value) === 0 || value === '') {
+      if (isFrom) {
+        setToAmountFormatted(undefined)
+        setToAmount(undefined)
+      } else {
+        setFromAmountFormatted(undefined)
+        setFromAmount(undefined)
+      }
+      return
+    }
+    if (isTrivialSwap(tokenFrom, tokenTo) || isTrivialSwap(tokenTo, tokenFrom) || tokenFrom.value === tokenTo.value) {
+      setExchangeRate(1)
+      toSetter(value)
+      preciseValue !== undefined && preciseToSetter(preciseValue)
+      return
+    }
 
-  const handleSearchCurrentTrackedTokens = async (value) => {
-    setSelectedTokenSwapFrom({ value })
-  }
+    if (!preciseValue) {
+      const { balance: preciseAmount } = util.toBalance(value, undefined, isFrom ? tokenFrom.decimal : tokenTo.decimal)
+      // console.log('preciseFromSetter', value, preciseAmount)
+      preciseFromSetter(preciseAmount)
+    }
+    if (!tokenTo.value) {
+      setExchangeRate(undefined)
+      toSetter(undefined)
+      preciseToSetter(undefined)
+      return
+    }
+    const useFrom = (util.isONE(tokenFrom) || util.isWONE(tokenFrom))
+    const tokenAddress = useFrom ? tokenTo.address : tokenFrom.address
+    const outDecimal = isFrom ? tokenTo.decimal : tokenFrom.decimal
+    const valueDecimal = isFrom ? tokenFrom.decimal : tokenTo.decimal
+    const { balance: amountIn, formatted: amountInFormatted } = util.toBalance(value, undefined, valueDecimal)
+    const amountOut = await api.sushi.getAmountOut({ amountIn, tokenAddress, inverse: useFrom !== isFrom })
+
+    const { formatted: amountOutFormatted } = util.computeBalance(amountOut, undefined, outDecimal)
+    toSetter(amountOutFormatted)
+    preciseToSetter(amountOut)
+    // console.log({ useFrom, amountOutFormatted, amountInFormatted, valueDecimal, outDecimal, amountOut: amountOut.toString(), amountIn: amountIn.toString() })
+    let exchangeRate = parseFloat(amountOutFormatted) / parseFloat(amountInFormatted)
+    if (!isFrom) {
+      exchangeRate = 1 / exchangeRate
+    }
+    setExchangeRate(exchangeRate)
+  }, [setExchangeRate, tokenTo, tokenFrom, setToAmountFormatted, setFromAmountFormatted])
+
+  const setMaxSwapAmount = useCallback(() => {
+    const { balance: tokenBalance, formatted } = getTokenBalance(tokenFrom, tokenBalances, balance)
+    setFromAmountFormatted(formatted || '0')
+    setFromAmount(tokenBalance)
+    onAmountChange(true)({ target: { value: formatted, preciseValue: tokenBalance } })
+  }, [tokenFrom, balance, tokenBalances, onAmountChange, setFromAmountFormatted])
 
   const onSelectTokenSwapFrom = (token) => {
-    handleSwapTokenSelected({
-      token,
-      swapAmountFormatted,
-      setExchangeRate,
-      setTargetSwapAmountFormatted,
-      shouldCalculateExchangeRate: selectedTokenSwapTo.value !== '',
-      setSelectedToken: setSelectedTokenSwapFrom,
-    })
+    setTokenFrom({ ...token, value: token.symbol, label: <TokenLabel token={token} selected /> })
+    // onAmountChange(false)({ target: { value: targetSwapAmountFormatted } })
   }
 
   const onSelectTokenSwapTo = (token) => {
-    handleSwapTokenSelected({
-      token,
-      swapAmountFormatted,
-      setExchangeRate,
-      setTargetSwapAmountFormatted,
-      shouldCalculateExchangeRate: selectedTokenSwapFrom.value !== '',
-      setSelectedToken: setSelectedTokenSwapTo,
+    setTokenTo({ ...token, value: token.symbol, label: <TokenLabel token={token} selected /> })
+    // onAmountChange(true)({ target: { value: swapAmountFormatted } })
+  }
+  const { resetWorker, recoverRandomness } = useRandomWorker()
+  const { prepareValidation, onRevealSuccess, ...handlers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
+
+  const commonCommitReveal = ({ otp, otp2, hexData, args, trackToken, updateFromBalance }) => {
+    SmartFlows.commitReveal({
+      wallet,
+      otp,
+      otp2,
+      recoverRandomness,
+      commitHashGenerator: ONE.computeGeneralOperationHash,
+      commitHashArgs: { ...args, data: ONEUtil.hexStringToBytes(hexData) },
+      prepareProof: () => setStage(0),
+      beforeCommit: () => setStage(1),
+      afterCommit: () => setStage(2),
+      revealAPI: api.relayer.reveal,
+      revealArgs: { ...args, data: hexData },
+      onRevealSuccess: async (txId) => {
+        onRevealSuccess(txId)
+        if (trackToken) {
+          const tt = await handleTrackNewToken({
+            newContractAddress: tokenTo.address,
+            currentTrackedTokens,
+            dispatch,
+            address
+          })
+          if (tt) {
+            dispatch(walletActions.trackTokens({ address, tokens: [tt] }))
+            setCurrentTrackedTokens(tts => [...tts, tt])
+            message.success(`New token tracked: ${tt.name} (${tt.symbol}) (${tt.contractAddress}`)
+          }
+          Chaining.refreshBalance(dispatch, [address])
+          Chaining.refreshTokenBalance({ dispatch, address, token: tt || currentTrackedTokens.find(t => t.contractAddress === tokenTo.address) })
+        }
+        if (updateFromBalance) {
+          Chaining.refreshBalance(dispatch, [address])
+          Chaining.refreshTokenBalance({ dispatch, address, token: tokenFrom })
+        }
+      },
+      ...handlers,
+    })
+  }
+  const handleSwapONEToToken = ({ slippage, deadline, otp, otp2 }) => {
+    const now = Math.floor(Date.now() / 1000)
+    const amountOut = new BN(toAmount).muln(10000 - slippage).divn(10000).toString()
+
+    const hexData = ONEUtil.encodeCalldata(
+      'swapETHForExactTokens(uint256,address[],address,uint256)',
+      [amountOut, [ONEConstants.Sushi.WONE, tokenTo.address], address, (now + deadline)])
+    const args = { amount: fromAmount.toString(), operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: ONEConstants.Sushi.ROUTER, tokenId: 0, dest: ONEConstants.EmptyAddress }
+    commonCommitReveal({ otp, otp2, hexData, args, trackToken: true })
+  }
+  const handleSwapTokenToONE = ({ slippage, deadline, otp, otp2 }) => {
+    const now = Math.floor(Date.now() / 1000)
+    const amountOut = new BN(toAmount).muln(10000 - slippage).divn(10000).toString()
+
+    const hexData = ONEUtil.encodeCalldata(
+      'swapExactTokensForETH(uint256,uint256,address[],address,uint256)',
+      [fromAmount.toString(), amountOut.toString(), [tokenFrom.address, ONEConstants.Sushi.WONE], address, (now + deadline)])
+    const args = { amount: 0, operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: ONEConstants.Sushi.ROUTER, tokenId: 0, dest: ONEConstants.EmptyAddress }
+    commonCommitReveal({ otp, otp2, hexData, args, updateFromBalance: true })
+  }
+  const handleSwapONEToWONE = ({ otp, otp2 }) => {
+    const hexData = ONEUtil.encodeCalldata('deposit()', [])
+    const args = { amount: fromAmount.toString(), operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: ONEConstants.Sushi.WONE, tokenId: 0, dest: ONEConstants.EmptyAddress }
+    commonCommitReveal({ otp, otp2, hexData, args, trackToken: true })
+  }
+  const handleSwapWONEToONE = ({ otp, otp2 }) => {
+    const hexData = ONEUtil.encodeCalldata('withdraw(uint256)', [fromAmount.toString()])
+    const args = { amount: 0, operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: ONEConstants.Sushi.WONE, tokenId: 0, dest: ONEConstants.EmptyAddress }
+    commonCommitReveal({ otp, otp2, hexData, args, updateFromBalance: true })
+  }
+  const confirmSwap = () => {
+    // const { balance: fromBalance } = util.toBalance(fromAmountFormatted, undefined, selectedTokenSwapFrom.decimal)
+    const { balance: tokenBalance, formatted: tokenBalanceFormatted } = getTokenBalance(tokenFrom, tokenBalances, balance)
+    // console.log(new BN(tokenBalance).toString())
+    // console.log(new BN(fromAmount).toString())
+    if (!(new BN(tokenBalance).gte(new BN(fromAmount)))) {
+      // console.log(new BN(tokenBalance).toString())
+      // console.log(new BN(fromAmount).toString())
+      message.error(`Insufficient balance (got ${tokenBalanceFormatted}, need ${fromAmountFormatted})`)
+      return
+    }
+
+    const slippage = Math.floor(parseFloat(slippageTolerance.trim()) * 100)
+    if (!(slippage > 0 && slippage < 10000)) {
+      message.error('Slippage tolerance must be a number between 0-100 with at most 2 decimal precision')
+      return
+    }
+    const deadline = parseInt(transactionDeadline)
+    if (!(deadline < 3600 && deadline > 0)) {
+      message.error('Deadline must be between 0-3600 seconds')
+      return
+    }
+    // console.log(otpInput)
+    const { otp, otp2, invalidOtp2, invalidOtp } = prepareValidation({ state: { otpInput, otp2Input, doubleOtp }, checkAmount: false, checkDest: false }) || {}
+    if (invalidOtp || invalidOtp2) return
+    // console.log(`swapping [${fromAmountFormatted}] from [${tokenFrom.name}] to [${tokenTo.name}]`)
+    if (util.isONE(tokenFrom) && util.isWONE(tokenTo)) {
+      return handleSwapONEToWONE({ otp, otp2 })
+    }
+    if (util.isONE(tokenTo) && util.isWONE(tokenFrom)) {
+      return handleSwapWONEToONE({ otp, otp2 })
+    }
+    if (util.isONE(tokenFrom)) {
+      return handleSwapONEToToken({ slippage, deadline, otp, otp2 })
+    }
+    handleSwapTokenToONE({ slippage, deadline, otp, otp2 })
+  }
+
+  const approveToken = () => {
+    const { otp, otp2, invalidOtp2, invalidOtp } = prepareValidation({ state: { otpInput, otp2Input, doubleOtp }, checkAmount: false, checkDest: false }) || {}
+    if (invalidOtp || invalidOtp2) return
+    const hexData = ONEUtil.encodeCalldata(
+      'approve(address,uint256)',
+      [ONEConstants.Sushi.ROUTER, new BN(new Uint8Array(32).fill(0xff)).toString()])
+    const args = { amount: 0, operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: tokenFrom.address, tokenId: 0, dest: ONEConstants.EmptyAddress }
+    commonCommitReveal({
+      otp,
+      otp2,
+      hexData,
+      args,
+      extraHandlers: {
+        onRevealSuccess: async (txId) => {
+          onRevealSuccess(txId)
+          message.info('Verifying token approval status... It might take 5-10 seconds')
+          Chaining.refreshAllowance({ address, contractAddress: tokenFrom.address, onAllowanceReceived: setTokenAllowance })
+        },
+      }
     })
   }
 
-  const onSwapAmountChange = useCallback((value) => {
-    handleSwapAmountChange({
-      value,
-      exchangeRate,
-      setSwapAmountFunc: setSwapAmountFormatted,
-      setCalculatedAmountFunc: setTargetSwapAmountFormatted
-    })
-  }, [exchangeRate, setTargetSwapAmountFormatted, setSwapAmountFormatted])
-
-  const onTargetSwapAmountChange = useCallback((value) => {
-    handleSwapAmountChange({
-      value,
-      exchangeRate: 1 / exchangeRate,
-      setSwapAmountFunc: setTargetSwapAmountFormatted,
-      setCalculatedAmountFunc: setSwapAmountFormatted
-    })
-  }, [exchangeRate, setTargetSwapAmountFormatted, setSwapAmountFormatted])
-
-  const setMaxSwapAmount = useCallback(() => {
-    const tokenBalance = getSelectedTokenComputedBalance(selectedTokenSwapFrom, tokenBalances, balance)
-
-    const amount = tokenBalance ? tokenBalance.formatted : '0'
-
-    handleSwapAmountChange({
-      exchangeRate,
-      value: amount,
-      setSwapAmountFunc: setSwapAmountFormatted,
-      setCalculatedAmountFunc: setTargetSwapAmountFormatted
-    })
-  }, [exchangeRate, setSwapAmountFormatted, setTargetSwapAmountFormatted])
-
-  // TODO: this is not implemented, we need to check slippage tolerance and transaction deadline etc.
-  const confirmSwap = useCallback(() => {
-    const swapAmountBalance = util.toBalance(swapAmountFormatted)
-    const computedTokenBalance = getSelectedTokenComputedBalance(selectedTokenSwapFrom, tokenBalances, balance)
-    const tokenBalanceBn = new BN(computedTokenBalance.balance)
-    const swapAmountBn = new BN(swapAmountBalance.balance)
-
-    if (swapAmountBalance && tokenBalanceBn.gte(swapAmountBn)) {
-      // TODO: actual swapping functionalities.
-      console.log(`swapping [${swapAmountFormatted}] from [${selectedTokenSwapFrom.name}] to [${selectedTokenSwapTo.name}]`)
-    } else {
-      message.error('Not enough balance to swap')
-    }
-  }, [selectedTokenSwapFrom, selectedTokenSwapTo, tokenBalances, balance, swapAmountFormatted])
-
   const swapAllowed =
-    selectedTokenSwapFrom.value !== '' &&
-    selectedTokenSwapTo.value !== '' &&
-    swapAmountFormatted !== '' && !isNaN(swapAmountFormatted) &&
-    targetSwapAmountFormatted !== '' && !isNaN(targetSwapAmountFormatted)
+    tokenFrom.value !== '' &&
+    tokenTo.value !== '' &&
+    fromAmountFormatted !== '' && !isNaN(fromAmountFormatted) &&
+    toAmountFormatted !== '' && !isNaN(toAmountFormatted)
+
+  const tokenApproved = util.isONE(tokenFrom) || isTrivialSwap(tokenTo, tokenFrom) || tokenAllowance.gt(fromAmount ? new BN(fromAmount) : new BN(0))
+
+  const insufficientLiquidity = !updatingReserve && tokenTo.value && toAmount && !isTrivialSwap(tokenFrom, tokenTo) && !isTrivialSwap(tokenTo, tokenFrom) && tokenReserve.to.lt(new BN(toAmount || 0))
+
+  if (!(wallet.majorVersion >= 10)) {
+    return (
+      <TallRow align='middle'>
+        <Warning>Your wallet is too old. Please upgrade to at least version 10.1 to use swap</Warning>
+      </TallRow>
+    )
+  }
 
   return (
     <>
-      <Row align='bottom'>
-        <Col span={2}>
-          <Tooltip title='Setting'>
-            <Button type='text' size='large' icon={editingSetting ? <CloseOutlined /> : <SettingOutlined />} onClick={() => setEditingSetting(!editingSetting)} />
-          </Tooltip>
-        </Col>
-        {
-          editingSetting
-            ? (
-              <>
-                <Col span={8}>
-                  <Text style={textStyle}>
-                    Slippage tolerance &nbsp;
-                    <Tooltip title='Your transaction will revert if price changes unfavorable by more than this percentage'>
-                      <QuestionCircleOutlined />
-                    </Tooltip>
-                  </Text>
-                  {/* TODO: there is no validation for the value yet */}
-                  <Input addonAfter={<PercentageOutlined />} placeholder='0.0' value={slippageTolerance} onChange={({ target: { value } }) => setSlippageTolerance(value)} />
-                </Col>
-                <Col span={8} offset={2}>
-                  <Text style={textStyle}>
-                    Transaction deadline &nbsp;
-                    <Tooltip title='Your transaction will revert if it is pending for more than this long'>
-                      <QuestionCircleOutlined />
-                    </Tooltip>
-                  </Text>
-                  {/* TODO: there is no validation for the value yet */}
-                  <Input addonAfter='minutes' placeholder='0' value={transactionDeadline} onChange={({ target: { value } }) => setTransactionDeadline(value)} />
-                </Col>
-              </>
-              )
-            : <></>
-        }
-      </Row>
-      <TallRow align='middle'>
-        <Col span={12}>
-          <Text style={textStyle} type='secondary'>Swap From</Text>
-          <Select
-            showSearch
-            labelInValue
-            style={{ width: 280 }}
-            value={selectedTokenSwapFrom}
-            onSearch={handleSearchCurrentTrackedTokens}
-          >
-            {swapOptions(currentTrackedTokens, onSelectTokenSwapFrom)}
-          </Select>
-        </Col>
-        <Col span={12}>
-          <Text style={textStyle} type='secondary'>Amount (Balance: {selectedTokenBalance})</Text>
-          <InputBox style={amountInputStyle} placeholder='0.00' value={swapAmountFormatted} onChange={({ target: { value } }) => onSwapAmountChange(value)} />
-          <Button style={maxButtonStyle} shape='round' onClick={setMaxSwapAmount}>Max</Button>
-        </Col>
+      <TallRow>
+        <Row align='middle' style={{ width: '100%' }} gutter={32}>
+          <Col span={8}>
+            <Text style={textStyle} type='secondary'>From</Text>
+          </Col>
+          <Col span={16}>
+            <Text style={textStyle} type='secondary'>Amount (Balance: {tokenBalanceFormatted})</Text>
+          </Col>
+        </Row>
+        <Row align='middle' style={{ width: '100%' }} gutter={32}>
+          <Col span={8}>
+            <Select
+              showSearch
+              bordered={false}
+              labelInValue
+              style={tokenSelectorStyle}
+              value={tokenFrom}
+              onSearch={(value) => { setTokenFrom({ value }) }}
+            >
+              {buildSwapOptions(fromTokens, onSelectTokenSwapFrom)}
+            </Select>
+          </Col>
+          <Col span={16}>
+            <Row>
+              <InputBox size='default' style={amountInputStyle} placeholder='0.00' value={fromAmountFormatted} onChange={onAmountChange(true)} />
+              <Button style={maxButtonStyle} shape='round' onClick={setMaxSwapAmount}>Max</Button>
+            </Row>
+          </Col>
+        </Row>
       </TallRow>
-      <TallRow align='middle'>
-        <Col span={12}>
-          <Text style={textStyle} type='secondary'>Swap To</Text>
-          <Select
-            showSearch
-            labelInValue
-            style={{ width: 280 }}
-            value={selectedTokenSwapTo}
-            onSearch={handleSearchSupportedTokens}
-          >
-            {swapOptions(supportedTokens, onSelectTokenSwapTo)}
-          </Select>
-        </Col>
-        <Col span={12}>
-          <Text style={textStyle} type='secondary'>Target Amount</Text>
-          <InputBox style={amountInputStyle} placeholder='0.00' value={targetSwapAmountFormatted} onChange={({ target: { value } }) => onTargetSwapAmountChange(value)} />
-        </Col>
+      <TallRow>
+        <Row align='middle' style={{ width: '100%' }}>
+          <Col span={8}>
+            <Text style={textStyle} type='secondary'>To</Text>
+          </Col>
+          <Col span={16}>
+            <Text style={textStyle} type='secondary'>Expected Amount</Text>
+          </Col>
+        </Row>
+        <Row align='middle' style={{ width: '100%' }}>
+          <Col span={8}>
+            <Select
+              showSearch
+              bordered={false}
+              labelInValue
+              style={tokenSelectorStyle}
+              value={tokenTo}
+              onSearch={(value) => { setTokenTo({ value }) }}
+            >
+              {buildSwapOptions(toTokens, onSelectTokenSwapTo)}
+            </Select>
+          </Col>
+          <Col span={16}>
+            <InputBox size='default' style={{ ...amountInputStyle, width: '100%' }} placeholder='0.00' value={toAmountFormatted} onChange={onAmountChange(false)} />
+          </Col>
+        </Row>
       </TallRow>
       <TallRow align='middle'>
         <Col span={24}>
-          <ExchangeRateButton exchangeRate={exchangeRate} selectedTokenSwapFrom={selectedTokenSwapFrom} selectedTokenSwapTo={selectedTokenSwapTo} />
+          <ExchangeRate exchangeRate={exchangeRate} selectedTokenSwapFrom={tokenFrom} selectedTokenSwapTo={tokenTo} />
         </Col>
       </TallRow>
-      <TallRow align='middle'>
-        <Col span={6}>
-          <Button
-            shape='round'
-            disabled={!swapAllowed}
-            type='primary'
-            onClick={confirmSwap}
-          >
-            Confirm
-          </Button>
-        </Col>
+      {insufficientLiquidity &&
+        <TallRow>
+          <Col span={24}>
+            <Warning>
+              Insufficient liquidity in SushiSwap. Please reduce expected amount or try a different token pair.
+            </Warning>
+          </Col>
+        </TallRow>}
+
+      <TallRow>
+        <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} />
       </TallRow>
+      <TallRow justify='space-between' align='baseline'>
+        <Space size='large' align='top'>
+          <Button type='link' size='large' style={{ padding: 0 }} onClick={() => setEditingSetting(!editingSetting)}>{editingSetting ? 'Close' : 'Advanced Settings'}</Button>
+        </Space>
+        <Space>
+          {stage >= 0 && stage < 3 && <LoadingOutlined />}
+          {stage === 3 && <CheckCircleOutlined />}
+          {tokenApproved
+            ? <Button type='primary' size='large' shape='round' disabled={!swapAllowed || stage >= 0 || insufficientLiquidity} onClick={confirmSwap}>Confirm</Button>
+            : <Button type='primary' size='large' shape='round' onClick={approveToken}>Approve</Button>}
+        </Space>
+      </TallRow>
+      {
+        !tokenApproved &&
+          <TallRow>
+            <Col span={24}>
+              <Title level={4}>
+                Authorize SushiSwap to transfer your {tokenFrom.symbol}?
+              </Title>
+              <Hint>
+                You only need to do this once for each token. Only with your approval, SushiSwap can swap your {tokenFrom.symbol} for ONE or another token.
+                <br /><br />
+                SushiSwap operates as a smart contract. Based on its <Link to='https://github.com/sushiswap/sushiswap' target='_blank' rel='noreferrer'>source code</Link>, it can only move your token when you initiate a swap.
+              </Hint>
+            </Col>
+          </TallRow>
+      }
+      <TallRow align='top'>
+        {editingSetting &&
+          <Space direction='vertical' size='large'>
+            <Space>
+              <Text style={textStyle}>
+                Slippage tolerance &nbsp;
+                <Tooltip title='Your transaction will revert if price changes unfavorable by more than this percentage'>
+                  <QuestionCircleOutlined />
+                </Tooltip>
+              </Text>
+              {/* TODO: there is no validation for the value yet */}
+              <Input addonAfter={<PercentageOutlined />} placeholder='0.0' value={slippageTolerance} onChange={({ target: { value } }) => setSlippageTolerance(value)} />
+            </Space>
+            <Space>
+              <Text style={textStyle}>
+                Transaction deadline &nbsp;
+                <Tooltip title='Your transaction will revert if it is pending for more than this long'>
+                  <QuestionCircleOutlined />
+                </Tooltip>
+              </Text>
+              {/* TODO: there is no validation for the value yet */}
+              <Input addonAfter='seconds' placeholder='0' value={transactionDeadline} onChange={({ target: { value } }) => setTransactionDeadline(value)} />
+            </Space>
+          </Space>}
+      </TallRow>
+      <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
     </>
   )
 }

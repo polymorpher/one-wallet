@@ -1,0 +1,1280 @@
+{
+  "pairs": [
+    {
+      "t0": "0x985458E523dB3d53125813eD68c274899e9DfAb4",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xBf255d8c30DbaB84eA42110EA7DC870F01c0013A"
+    },
+    {
+      "t0": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "t1": "0xE176EBE47d621b984a73036B9DA5d834411ef734",
+      "pair": "0x8c36Ede15c5E4B0E1f9764351a7A7A0037c5e103"
+    },
+    {
+      "t0": "0x6983D1E6DEf3690C4d616b13597A09e6193EA013",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xeb049F1eD546F8efC3AD57f6c7D22F081CcC7375"
+    },
+    {
+      "t0": "0x3095c7557bCb296ccc6e363DE01b760bA031F2d9",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xc3670b927eF42eed252e483e2446352C238D9905"
+    },
+    {
+      "t0": "0x3C2B8Be99c50593081EAA2A724F0B8285F5aba8f",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x2c7862b408bb3DBFF277110FFdE1B4EAa45C692a"
+    },
+    {
+      "t0": "0x0aB43550A6915F9f67d0c454C2E90385E6497EaA",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x7233719eE1FFB3Ec44490D7bF6D1D0c542116523"
+    },
+    {
+      "t0": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "t1": "0xEa589E93Ff18b1a1F1e9BaC7EF3E86Ab62addc79",
+      "pair": "0x3046ed650E06778c0B7eCa7D066fe33B073f1877"
+    },
+    {
+      "t0": "0x0aB43550A6915F9f67d0c454C2E90385E6497EaA",
+      "t1": "0xE176EBE47d621b984a73036B9DA5d834411ef734",
+      "pair": "0xDA64F9053A971531a75071A729A6432FB65ed60D"
+    },
+    {
+      "t0": "0x3C2B8Be99c50593081EAA2A724F0B8285F5aba8f",
+      "t1": "0xE176EBE47d621b984a73036B9DA5d834411ef734",
+      "pair": "0x33a766Cb0695d7e82b4b749432F6e14EED8Aa1d0"
+    },
+    {
+      "t0": "0xA40A69049Fa071C82560AF96Fa22e948eFA7848C",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x63775Cc927f0ebFCdaDe03CBa38868bf81b8f2e0"
+    },
+    {
+      "t0": "0xBEC775Cb42AbFa4288dE81F387a9b1A3c4Bc552A",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x468dc50884962D6F81733aC0c23c04611aC219F9"
+    },
+    {
+      "t0": "0x6983D1E6DEf3690C4d616b13597A09e6193EA013",
+      "t1": "0x985458E523dB3d53125813eD68c274899e9DfAb4",
+      "pair": "0xf74dBC6B2cC589542551BAd527f4E6b20d746724"
+    },
+    {
+      "t0": "0x985458E523dB3d53125813eD68c274899e9DfAb4",
+      "t1": "0xEa589E93Ff18b1a1F1e9BaC7EF3E86Ab62addc79",
+      "pair": "0x8967B540b0993F24e5371b367a31Dda5f05925de"
+    },
+    {
+      "t0": "0xBEC775Cb42AbFa4288dE81F387a9b1A3c4Bc552A",
+      "t1": "0xEa589E93Ff18b1a1F1e9BaC7EF3E86Ab62addc79",
+      "pair": "0xd5dAEF0264532bF34A01B4e36F3aa686a904f30b"
+    },
+    {
+      "t0": "0x0dD740Db89B9fDA3Baadf7396DdAD702b6E8D6f5",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x0981D7353261Ba15d1682E3DC01332E6c0E9efB1"
+    },
+    {
+      "t0": "0xD5377FDed7476aF1692bc3af1370F2B491518A65",
+      "t1": "0xE176EBE47d621b984a73036B9DA5d834411ef734",
+      "pair": "0x53930a16afb5E96f2c49f00d3783C9672B65ab4b"
+    },
+    {
+      "t0": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "t1": "0xD5377FDed7476aF1692bc3af1370F2B491518A65",
+      "pair": "0xD5bCB5C669c2DEc764f5389011c66192E6b36120"
+    },
+    {
+      "t0": "0xCB35e4945c7F463c5CCBE3BF9f0389ab9321248F",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x2C4B7B6eB98b278bdd51303f12F68AA46F6C633F"
+    },
+    {
+      "t0": "0x0AB8894cDA70a6EFd32Ce7563834444E2811B182",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xa6Acc7b82710769734A675F0141497f2599351e5"
+    },
+    {
+      "t0": "0x45734927Fa2f616FbE19E65f42A0ef3d37d1c80A",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x1970f700091772EE229Aa9640e580956383ebECd"
+    },
+    {
+      "t0": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "t1": "0xE450F29C9c85C4F06397667261BaD1198f371739",
+      "pair": "0x8e0cB8266dB1785BC60a42c372BF60d28a71e9bC"
+    },
+    {
+      "t0": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "t1": "0xeC588e90F9a5f58AB4339f0F7792A3eC4A1e2D18",
+      "pair": "0x484B540132e56472E1Bdbca99A6825D1473BbA63"
+    },
+    {
+      "t0": "0xA357cf457D8bcb5e34cBBEC822A33E6eCD5df39B",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x38597313c92027cc3C0735F5289C9c1A715e228f"
+    },
+    {
+      "t0": "0x1487094050934cE184BD307A9BcBa77500BFc1a5",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x2777A790a0bB2067cbce9a5bf29c4Ff14DD75bF6"
+    },
+    {
+      "t0": "0x8c54cB6e427Da9A8b37f55dE7624211ABB685EE0",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xCC0365Dc4f92815B6716e61926828135cFF2D615"
+    },
+    {
+      "t0": "0x5c3b97f096a4b05b958346292C4ddb4114889B72",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x8AccfD9d999Ba11dE5EdfbDAeb2846007b4E92b9"
+    },
+    {
+      "t0": "0x01Da8a10EF752E524Fc1Ba503eFF71cdc03C27Ca",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x0986dA1b4faFa30A6A9d3E51A0Fb59566DA47623"
+    },
+    {
+      "t0": "0x985458E523dB3d53125813eD68c274899e9DfAb4",
+      "t1": "0xBEC775Cb42AbFa4288dE81F387a9b1A3c4Bc552A",
+      "pair": "0xCF699fC5eFc7E3a0abb7bfA9f9A0592B0606405B"
+    },
+    {
+      "t0": "0x8cf74821F8d6632a5058D39972B3F77C839718Ad",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x8D87b56ee1921013e2ee9a2522b917290bc19d31"
+    },
+    {
+      "t0": "0x45734927Fa2f616FbE19E65f42A0ef3d37d1c80A",
+      "t1": "0xe3e267b18464F3CEE00D2e70E18981648998aE9A",
+      "pair": "0xd0a69FD08330C6aD81E34F80DE29483638AC4875"
+    },
+    {
+      "t0": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "t1": "0xDf54bB9FaDE3E2d6b881cBd65353d03060df4a48",
+      "pair": "0xE761D5E473D9d5AA8b7Db71e1b3FEcBB4EC76206"
+    },
+    {
+      "t0": "0x218532a12a389a4a92fC0C5Fb22901D1c19198aA",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xF369437b8bF942b40F712BfA9b1FcA26eD48529D"
+    },
+    {
+      "t0": "0xC4114A0796ff34147e8129d5f75d2452a4059a28",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x1Da77eC351d2DE18022f4D091bc8bf5ad534B523"
+    },
+    {
+      "t0": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "t1": "0xD8ecd9D2ef5dA0327c2D834B8D118febCce03F4c",
+      "pair": "0x3025b31Ba70eC9CcEB4Dc79C9375C9ED69667f97"
+    },
+    {
+      "t0": "0xB89b0b0B90bfc2e3b212Ec6ec2A2073375C95641",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x77E647446D4949A84EedFefecC1c6777D74E5731"
+    },
+    {
+      "t0": "0x985458E523dB3d53125813eD68c274899e9DfAb4",
+      "t1": "0xE176EBE47d621b984a73036B9DA5d834411ef734",
+      "pair": "0x44617f7E7F38932EB6176B5c093C103Df4e29B74"
+    },
+    {
+      "t0": "0x16A33af6eBE6F08d597c91E16D3A80f14f528872",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xCf21102ac5Ea475b0d5766225CCf84199e2C38B8"
+    },
+    {
+      "t0": "0x301259f392B551CA8c592C9f676FCD2f9A0A84C5",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xD375123fD88C66F25879eFdE1FEF999415Cf52ca"
+    },
+    {
+      "t0": "0x27F6fb2D058F9437B970a44566a9624BB7EfdD6a",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xE4bD63Eb0e3464Dc6ff7fF06D13b843f84602b3B"
+    },
+    {
+      "t0": "0x46e44d81c5D576C260069b81B127741001f9C018",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xde56574D9BD2Ba5d5F5100105cd63a89d638FD04"
+    },
+    {
+      "t0": "0xbC699c0364AF7c911E520D8ab42438788D22c0db",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x9209ea88A403E1aB9faEa61b7Eec4E1538E90b12"
+    },
+    {
+      "t0": "0x61d4dc26C6dEbacf8D036e0d37Bcb3705d5e55B0",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xb38088d5C24ee7b654D401A902A2C2B12B556e47"
+    },
+    {
+      "t0": "0x97981F351951b5a85806DAC2f505CFe96E5BCe58",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xf218B09333C5bD963850533CDae36504dFd2991a"
+    },
+    {
+      "t0": "0xc2ef7418919D0981F24dE589bacFD00DD677b8EC",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x616526963850d305911982CDfF8F3a911222cA38"
+    },
+    {
+      "t0": "0x11B3B3dFa80eBaC9D3095CDa65d84e8d4b68de05",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xcE4d6888038bb11b430652a124ffEb11f3Ee5eba"
+    },
+    {
+      "t0": "0xc218F6CA7a278BF7b97FEb445935f198a9Dbefbe",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xd9cb8Ff271c3C85cD31775a876100b70d32d6510"
+    },
+    {
+      "t0": "0x0672F5380b554EbCf567b3EA67510be619470605",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xC78205c6a46556EA1C7B167990dfd48D71857752"
+    },
+    {
+      "t0": "0x56028F550f4FBe3700a5CEC4f7cf257FC44adBe7",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x5c3417692db1d61f276cA56c42c1369063Ee9EEF"
+    },
+    {
+      "t0": "0xAFD871f684F21Ab9D7137608C71808f83D75e6fc",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x66A917CEB08c2222a098aE878400CAe8879B9406"
+    },
+    {
+      "t0": "0x3C2B8Be99c50593081EAA2A724F0B8285F5aba8f",
+      "t1": "0xBEC775Cb42AbFa4288dE81F387a9b1A3c4Bc552A",
+      "pair": "0x1D27B99edE9efc0c4f09B9028d5d1C54B899d208"
+    },
+    {
+      "t0": "0xa5140e9c33c8FaA4adbFC410b9C683e20AA32Fd5",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xC47F49AB50F25157FeD4d754AB624C1d9A6Cc070"
+    },
+    {
+      "t0": "0x3C2B8Be99c50593081EAA2A724F0B8285F5aba8f",
+      "t1": "0x6983D1E6DEf3690C4d616b13597A09e6193EA013",
+      "pair": "0x02f4d0021E3cb8736108E11C8DF02FbBd6EEEDBf"
+    },
+    {
+      "t0": "0x6983D1E6DEf3690C4d616b13597A09e6193EA013",
+      "t1": "0xEf977d2f931C1978Db5F6747666fa1eACB0d0339",
+      "pair": "0xc5B8129B411EF5f5BE22e74De6fE86C3b69e641d"
+    },
+    {
+      "t0": "0x6983D1E6DEf3690C4d616b13597A09e6193EA013",
+      "t1": "0xBEC775Cb42AbFa4288dE81F387a9b1A3c4Bc552A",
+      "pair": "0x5eF7622Cf0D40Bde750987031F614a9032911152"
+    },
+    {
+      "t0": "0x20274440e827319D62216dc1f64af67271E1034f",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xf59dF7ACEfc24701F20eCA6597E0b0bA0307531A"
+    },
+    {
+      "t0": "0x91aCbFc784C73777d8013db48afC2D698a4AE751",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x871b55b44C9ee12643cc932763691eaA7890F5cb"
+    },
+    {
+      "t0": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "t1": "0xEf977d2f931C1978Db5F6747666fa1eACB0d0339",
+      "pair": "0x194f4a320cbda15a0910d1AE20E0049Cdc50916e"
+    },
+    {
+      "t0": "0xbDa99C8695986B45a0dD3979cC6f3974D9753D30",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xd4DF7429999643FbbBE067d6b82c1e131567FB5b"
+    },
+    {
+      "t0": "0x985458E523dB3d53125813eD68c274899e9DfAb4",
+      "t1": "0xEf977d2f931C1978Db5F6747666fa1eACB0d0339",
+      "pair": "0xcf921A922Bc404f26B0b1bC4Ada65b4F7B5852Eb"
+    },
+    {
+      "t0": "0x3C2B8Be99c50593081EAA2A724F0B8285F5aba8f",
+      "t1": "0x985458E523dB3d53125813eD68c274899e9DfAb4",
+      "pair": "0x0c51171b913Db10ade3fd625548E69C9C63aFb96"
+    },
+    {
+      "t0": "0x34704c70e9eC9fB9A921da6DAAD7D3e19f43c734",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xC757341B82b894aFd9C886A15352FF06A451EAB2"
+    },
+    {
+      "t0": "0x2F459Dd7CBcC9D8323621f6Fb430Cd0555411E7B",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xf1C16Cd5e34299F66B358af72c29eF2312899930"
+    },
+    {
+      "t0": "0x7d0546dBb1Dca8108d99Aa389A8e9Ce0C40B2370",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xF1341224Be7d620308b6C462dF9560e42AF84435"
+    },
+    {
+      "t0": "0x3095c7557bCb296ccc6e363DE01b760bA031F2d9",
+      "t1": "0x6983D1E6DEf3690C4d616b13597A09e6193EA013",
+      "pair": "0x39bE7c95276954a6f7070F9BAa38db2123691Ed0"
+    },
+    {
+      "t0": "0x6008C8769BFACd92251bA838382e7e5637C7e74D",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xC45DfA840895BC5a86939309706CFB6597772309"
+    },
+    {
+      "t0": "0x8D4F19bec883Ba20F4f295706C53F760Cd0BC2B0",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xDA9BBAF94F6C38D6fbDA44d7EDAF4172CE4680b0"
+    },
+    {
+      "t0": "0x301259f392B551CA8c592C9f676FCD2f9A0A84C5",
+      "t1": "0xBEC775Cb42AbFa4288dE81F387a9b1A3c4Bc552A",
+      "pair": "0x98293BBAe9Fa5f424F00B99a1437AeA156914c33"
+    },
+    {
+      "t0": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "t1": "0xD0e9D764cdA4C66D1540bc45E3d9891BDA34EDc5",
+      "pair": "0xF35e228cf446D92BEae8f66cE2E4555EA000B5d6"
+    },
+    {
+      "t0": "0x224e64ec1BDce3870a6a6c777eDd450454068FEC",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x4dABF6C57A8beA012F1EAa1259Ceed2a62AC7df2"
+    },
+    {
+      "t0": "0x3C2B8Be99c50593081EAA2A724F0B8285F5aba8f",
+      "t1": "0xEa589E93Ff18b1a1F1e9BaC7EF3E86Ab62addc79",
+      "pair": "0xDa2eF91D78257aA4B44a55E791300e775e4f3AE5"
+    },
+    {
+      "t0": "0xB8E0497018c991E86311b64EFd9D57b06aEDbBAE",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x12f5FE3Ab36ced7FB1065b260A0D244EAa6e5584"
+    },
+    {
+      "t0": "0x3095c7557bCb296ccc6e363DE01b760bA031F2d9",
+      "t1": "0xBEC775Cb42AbFa4288dE81F387a9b1A3c4Bc552A",
+      "pair": "0x07A24aEf1612A5bd2C5ae3e292C8eA93FEF91Cb8"
+    },
+    {
+      "t0": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "t1": "0xe112b5f917e882033084f64615fb9a3B37e617Bb",
+      "pair": "0xfACB542F7AdE287BAdA3482060D2fF10e99BcdfE"
+    },
+    {
+      "t0": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "t1": "0xE0fFcea14c72d6Bd9467C82C590c454F82F5cE1A",
+      "pair": "0x7EB167Bd93ff95Ef1510794bd85fB6511e36f291"
+    },
+    {
+      "t0": "0x3C2B8Be99c50593081EAA2A724F0B8285F5aba8f",
+      "t1": "0xEf977d2f931C1978Db5F6747666fa1eACB0d0339",
+      "pair": "0x6c14D85463E6679a7bd4a3d6C1C6426d4F2D35Ee"
+    },
+    {
+      "t0": "0xE176EBE47d621b984a73036B9DA5d834411ef734",
+      "t1": "0xEf977d2f931C1978Db5F6747666fa1eACB0d0339",
+      "pair": "0xA9BE5ae6B8F1Dd68A2E0bb05Bc056eAD04cD33A8"
+    },
+    {
+      "t0": "0x44cED87b9F1492Bf2DCf5c16004832569f7f6cBa",
+      "t1": "0x985458E523dB3d53125813eD68c274899e9DfAb4",
+      "pair": "0x4185c1b02fd9B178a89e9cF02FC8F81349111554"
+    },
+    {
+      "t0": "0x8D4F19bec883Ba20F4f295706C53F760Cd0BC2B0",
+      "t1": "0xE176EBE47d621b984a73036B9DA5d834411ef734",
+      "pair": "0xaf76D3F893F9a071C15992996EE91d7126959B21"
+    },
+    {
+      "t0": "0x8D4F19bec883Ba20F4f295706C53F760Cd0BC2B0",
+      "t1": "0x985458E523dB3d53125813eD68c274899e9DfAb4",
+      "pair": "0x7bbba9117702AAF51e9a0D93DC83f10e9DFB8aA4"
+    },
+    {
+      "t0": "0xCB35e4945c7F463c5CCBE3BF9f0389ab9321248F",
+      "t1": "0xE176EBE47d621b984a73036B9DA5d834411ef734",
+      "pair": "0x5FEbE5D65e2C5C200A9CdDa271f61eaE9b1AFc00"
+    },
+    {
+      "t0": "0x224e64ec1BDce3870a6a6c777eDd450454068FEC",
+      "t1": "0x3C2B8Be99c50593081EAA2A724F0B8285F5aba8f",
+      "pair": "0x8EC537ee664441d61e61F9D83a115508a507eC37"
+    },
+    {
+      "t0": "0x7531905C4C80b602CFf46Badc1671FbAD496f043",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x4a54986B77a8d47DefdD1067cEbdDE4293650Fa3"
+    },
+    {
+      "t0": "0x698ee360d70F355Ce4fEdf6232a48eF678E311Aa",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xd5abB7e3B2d180Fc82464899E51500AeCB86A51A"
+    },
+    {
+      "t0": "0x224e64ec1BDce3870a6a6c777eDd450454068FEC",
+      "t1": "0x6983D1E6DEf3690C4d616b13597A09e6193EA013",
+      "pair": "0x9293DFDd719eE2163f2e158E66Ef75722Ed712B4"
+    },
+    {
+      "t0": "0x6983D1E6DEf3690C4d616b13597A09e6193EA013",
+      "t1": "0xeB6C08ccB4421b6088e581ce04fcFBed15893aC3",
+      "pair": "0xa46BBA980512E328E344Ce12BB969563f3429F05"
+    },
+    {
+      "t0": "0x89eAd464bcdd5464307F313c3a571E725042B90e",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x6f9a9081d72c3e3A191e5a1903f1aaA163beC17F"
+    },
+    {
+      "t0": "0x224e64ec1BDce3870a6a6c777eDd450454068FEC",
+      "t1": "0xBEC775Cb42AbFa4288dE81F387a9b1A3c4Bc552A",
+      "pair": "0x494F89131098Cb73e65d22D03f2b333D6Db3Ef18"
+    },
+    {
+      "t0": "0x3502536768d55ABC1BF254Bc35601c54bf22783c",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x48D6CEc3fFB644DF1C262bdA4AF59EFD66Eb1C85"
+    },
+    {
+      "t0": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "t1": "0xdEd960d1015a341D35460099Fa7c9b9F6C2C7d9e",
+      "pair": "0x9235970EA9b92D36fA299B0820d0749b667610CA"
+    },
+    {
+      "t0": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "t1": "0xeB6C08ccB4421b6088e581ce04fcFBed15893aC3",
+      "pair": "0x55E17A1085943e7E044F2964c4fbb22Fc225Aac6"
+    },
+    {
+      "t0": "0x0dD740Db89B9fDA3Baadf7396DdAD702b6E8D6f5",
+      "t1": "0x224e64ec1BDce3870a6a6c777eDd450454068FEC",
+      "pair": "0x76a601737bCD08654EBd36eC55E06eD59D5Ea32B"
+    },
+    {
+      "t0": "0x218532a12a389a4a92fC0C5Fb22901D1c19198aA",
+      "t1": "0x6983D1E6DEf3690C4d616b13597A09e6193EA013",
+      "pair": "0x7708BA78Ae4295eA3FC5D3834D7b688DDf1d4e22"
+    },
+    {
+      "t0": "0x0aB43550A6915F9f67d0c454C2E90385E6497EaA",
+      "t1": "0x3C2B8Be99c50593081EAA2A724F0B8285F5aba8f",
+      "pair": "0x220F4dB16A3FF2A021445efd1277012768e32482"
+    },
+    {
+      "t0": "0x3Ec248eD4B69142A40FB2F2b9d990125a830A598",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xE328A50409104A1f8B564521274C5566eCacf7B9"
+    },
+    {
+      "t0": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "t1": "0xda73f5C25C0D644Afd20dA5535558956B192b262",
+      "pair": "0x7b93D301D33F771b9bB2Ad64ac6914479783699B"
+    },
+    {
+      "t0": "0x86dd7Ad4E6fe09E4A5445cc2c9acD729bEDB95ed",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x0Fa42a6B600A2c7Fb45bD3F717b58aCE216d4292"
+    },
+    {
+      "t0": "0xB8E0497018c991E86311b64EFd9D57b06aEDbBAE",
+      "t1": "0xEa589E93Ff18b1a1F1e9BaC7EF3E86Ab62addc79",
+      "pair": "0x3eBDafd69d527a9b78E51B49B9974Def6307cC97"
+    },
+    {
+      "t0": "0xE328A50409104A1f8B564521274C5566eCacf7B9",
+      "t1": "0xEa589E93Ff18b1a1F1e9BaC7EF3E86Ab62addc79",
+      "pair": "0x64e3f13Bb7664d510A4a3A51309e74AFA8729D0f"
+    },
+    {
+      "t0": "0x3c4Af26feE98c01c35a97e33F625928455F2F2c9",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x60AA5201D9121C9D675D1d11B077FC1Dda147cD4"
+    },
+    {
+      "t0": "0x9EfD25bD90e68FcC6B05426C3d34b34183d85351",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x73f986edEB8418ECd9F930f6Db27FFf741b7e7E3"
+    },
+    {
+      "t0": "0x14A7B318fED66FfDcc80C1517C172c13852865De",
+      "t1": "0x6983D1E6DEf3690C4d616b13597A09e6193EA013",
+      "pair": "0xbB680Ba75F7e3e404923D04D484af5ce96b4A4bF"
+    },
+    {
+      "t0": "0x6983D1E6DEf3690C4d616b13597A09e6193EA013",
+      "t1": "0xcF323Aad9E522B93F11c352CaA519Ad0E14eB40F",
+      "pair": "0x913De0F91169680c32C8F27212361272Ef4FDfd9"
+    },
+    {
+      "t0": "0x40d2f81bD135B5282CB2aA18F19cF7098079D012",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x1C3761414888254B09c7CE3e750b3F771e611727"
+    },
+    {
+      "t0": "0xcF323Aad9E522B93F11c352CaA519Ad0E14eB40F",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xb6cf122D3B25dF698C0695C55CE8cDA4D912Be17"
+    },
+    {
+      "t0": "0x7CB8a4992fB87dFD2B3c99904Ca3c6ca8D11D251",
+      "t1": "0xF4C7a021635ABfAceF34B44d2E029f5c5Aef8725",
+      "pair": "0x38aeFA4E7BAfd4a8B8F680cd312102C560EF9251"
+    },
+    {
+      "t0": "0x22719E4f66cB4C66e71cBDb330aC20d9338634d7",
+      "t1": "0x7CB8a4992fB87dFD2B3c99904Ca3c6ca8D11D251",
+      "pair": "0xd3e74B4CB6AEe586d42B27FD421e692D5c71308f"
+    },
+    {
+      "t0": "0x22719E4f66cB4C66e71cBDb330aC20d9338634d7",
+      "t1": "0xF4C7a021635ABfAceF34B44d2E029f5c5Aef8725",
+      "pair": "0xbff493598126b41407692F263d6BC1A4D11D16Ea"
+    },
+    {
+      "t0": "0x14A7B318fED66FfDcc80C1517C172c13852865De",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x8d53Fb107c3Ea9836Fb93C5f601b3dB151ADaa4d"
+    },
+    {
+      "t0": "0x14A7B318fED66FfDcc80C1517C172c13852865De",
+      "t1": "0xBEC775Cb42AbFa4288dE81F387a9b1A3c4Bc552A",
+      "pair": "0xB28c5e08735725C20C13ec36CD05C1A9841B7230"
+    },
+    {
+      "t0": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "t1": "0xfe1b516A7297eb03229A8B5AfAD80703911E81cB",
+      "pair": "0x7D183C0E2D2Db4ff643218b2bc05626522F862A7"
+    },
+    {
+      "t0": "0x775d7816afbEf935ea9c21a3aC9972F269A39004",
+      "t1": "0xeB6C08ccB4421b6088e581ce04fcFBed15893aC3",
+      "pair": "0x944E4E8BBd2877678A0C8ffE3Dd82d7Ecee72f4f"
+    },
+    {
+      "t0": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "t1": "0xeC84B55a19C7F56E6Cb9970A1e2e0cf9F293283F",
+      "pair": "0xedad1BC7f369BFCa52EA904248b7524d6804900B"
+    },
+    {
+      "t0": "0xb2593da089bB24fa291110BaBC99df0D925D0E4F",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x2E37823E237e68F1a2D11CC38E901c74b28Af6f0"
+    },
+    {
+      "t0": "0xCD712c572D95295a8e5A7Adb935d9A50DA56F25d",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xCec18207eD2AF4dab33f568887b748dD598Bb5FC"
+    },
+    {
+      "t0": "0xdEd960d1015a341D35460099Fa7c9b9F6C2C7d9e",
+      "t1": "0xeC84B55a19C7F56E6Cb9970A1e2e0cf9F293283F",
+      "pair": "0x17F0b33d70c44846b6b53204dD3f1533C3f25092"
+    },
+    {
+      "t0": "0x08CB2917245BBE75C8C9c6Dc4a7B3765Dae02b31",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x4dCCaB4A54FD641C3666ea26258D875c843eEdeE"
+    },
+    {
+      "t0": "0xC458F65131D1624f337f2ee06F6bF29bbF566046",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x3A91A25f1ddB7137346F4bf7F33754f9DEAD7489"
+    },
+    {
+      "t0": "0x95CE547D730519A90dEF30d647F37D9E5359B6Ae",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x45020C93DB94278dF5E5B1712eccc7cFD1CE1feC"
+    },
+    {
+      "t0": "0xB8E0497018c991E86311b64EFd9D57b06aEDbBAE",
+      "t1": "0xeB6C08ccB4421b6088e581ce04fcFBed15893aC3",
+      "pair": "0x5eE5b3570AF1332D808281D497927b36B2f6e381"
+    },
+    {
+      "t0": "0x63cf309500d8be0B9fDB8F1fb66C821236c0438c",
+      "t1": "0x6983D1E6DEf3690C4d616b13597A09e6193EA013",
+      "pair": "0x40112850EFd90e9e17b56de35d86BdFf9f4d07Fd"
+    },
+    {
+      "t0": "0xa7a22299918828D791240f9Ec310c2E066592053",
+      "t1": "0xBEC775Cb42AbFa4288dE81F387a9b1A3c4Bc552A",
+      "pair": "0x109fe9AE6705B2A8B95B277562C9A26938Ad97Cb"
+    },
+    {
+      "t0": "0x6983D1E6DEf3690C4d616b13597A09e6193EA013",
+      "t1": "0xa7a22299918828D791240f9Ec310c2E066592053",
+      "pair": "0x844B052d17c4824D9339b137eAe60e5971422a0A"
+    },
+    {
+      "t0": "0xa7a22299918828D791240f9Ec310c2E066592053",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x880F3013149004F9cA89aD196Ac69f5d283d2995"
+    },
+    {
+      "t0": "0x63cf309500d8be0B9fDB8F1fb66C821236c0438c",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xCDb60E0D185A53283987048C1536798Ec0AF4Cb7"
+    },
+    {
+      "t0": "0x8a5da5a1fEe8A224Baa3E4E80FD2C02a494049c3",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x71932f5218857D56cF1B442740262cCe0a3450A2"
+    },
+    {
+      "t0": "0x7b5Ed1bc616943c587033696Ba223d144b29E5B4",
+      "t1": "0xEf977d2f931C1978Db5F6747666fa1eACB0d0339",
+      "pair": "0x582323f6a8B2f3E744d3cFf018217E04477fE148"
+    },
+    {
+      "t0": "0x7b5Ed1bc616943c587033696Ba223d144b29E5B4",
+      "t1": "0x8a5da5a1fEe8A224Baa3E4E80FD2C02a494049c3",
+      "pair": "0x6E4079458d4fEbd8858EAB08788CB7FdE3c38502"
+    },
+    {
+      "t0": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "t1": "0xf498a433819a5DB3DFCc110100527CF4bFcAFe47",
+      "pair": "0x3DEc9B2b2E90B3B737f63Bb7bF16bBEe89b3626A"
+    },
+    {
+      "t0": "0x139C70f74613e229B1aAb2c39df8f73D54df5c80",
+      "t1": "0x985458E523dB3d53125813eD68c274899e9DfAb4",
+      "pair": "0xc3E1D0025117814E15117e0F9432C4B5131a7631"
+    },
+    {
+      "t0": "0x139C70f74613e229B1aAb2c39df8f73D54df5c80",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x93d21751F3c875a30C9fD9C5F0a1c45331Fe1FA7"
+    },
+    {
+      "t0": "0x8Eb03202275bD598AdC23678008eF88655544910",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x392917d08DCe5604641bbD2BC0ce6B28b95e7FB4"
+    },
+    {
+      "t0": "0x892D81221484F690C0a97d3DD18B9144A3ECDFB7",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xCA0AD524Cc424b6d2BFe671a54159c7458bd4bb3"
+    },
+    {
+      "t0": "0x50BE620F3890182Fd7BF388cCd5e1811EF639f24",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0xAA55DbdFFd59c231e3f1aC66fD1D8503BCD6C0Bc"
+    },
+    {
+      "t0": "0xBEC775Cb42AbFa4288dE81F387a9b1A3c4Bc552A",
+      "t1": "0xcF323Aad9E522B93F11c352CaA519Ad0E14eB40F",
+      "pair": "0xB2460A92DcC2b7b774869f67a4C29586f823D789"
+    },
+    {
+      "t0": "0x139C70f74613e229B1aAb2c39df8f73D54df5c80",
+      "t1": "0x70831eE5F8A0434BD2dDB1e45ED24cBca8B41fec",
+      "pair": "0xC9c5BDb615C32A2b161d9e453fADDebaF83B5884"
+    },
+    {
+      "t0": "0x139C70f74613e229B1aAb2c39df8f73D54df5c80",
+      "t1": "0x7BF379FcB16b4a6F648371cD72D9D443EF24168F",
+      "pair": "0x18b4181a13C8286fe52440653f6B570e91db6ca5"
+    }
+  ],
+  "tokens": {
+    "0x985458E523dB3d53125813eD68c274899e9DfAb4": {
+      "symbol": "1USDC",
+      "name": "USD Coin",
+      "decimal": "6",
+      "supply": "8393126136535",
+      "iconSymbol": "usdc",
+      "priority": 93
+    },
+    "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a": {
+      "symbol": "WONE",
+      "name": "Wrapped ONE",
+      "decimal": "18",
+      "supply": "242924575848980304128221415",
+      "priority": 1000
+    },
+    "0xE176EBE47d621b984a73036B9DA5d834411ef734": {
+      "symbol": "BUSD",
+      "name": "Binance USD",
+      "decimal": "18",
+      "supply": "4495145744165000000000000",
+      "priority": 99
+    },
+    "0x6983D1E6DEf3690C4d616b13597A09e6193EA013": {
+      "symbol": "1ETH",
+      "name": "ETH",
+      "decimal": "18",
+      "supply": "8619820988000000000000",
+      "iconSymbol": "eth",
+      "priority": 98
+    },
+    "0x3095c7557bCb296ccc6e363DE01b760bA031F2d9": {
+      "symbol": "1WBTC",
+      "name": "Wrapped BTC",
+      "decimal": "8",
+      "supply": "40751390700",
+      "iconSymbol": "btc",
+      "priority": 97
+    },
+    "0x3C2B8Be99c50593081EAA2A724F0B8285F5aba8f": {
+      "symbol": "1USDT",
+      "name": "Tether USD",
+      "decimal": "6",
+      "supply": "6882300422665",
+      "iconSymbol": "usdt",
+      "priority": 96
+    },
+    "0x0aB43550A6915F9f67d0c454C2E90385E6497EaA": {
+      "symbol": "bscBUSD",
+      "name": "BUSD Token",
+      "decimal": "18",
+      "supply": "2778717851087000000000000",
+      "priority": 95
+    },
+    "0xEa589E93Ff18b1a1F1e9BaC7EF3E86Ab62addc79": {
+      "symbol": "VIPER",
+      "name": "Viper",
+      "decimal": "18",
+      "supply": "338044758378556898536099684",
+      "priority": 89
+    },
+    "0xA40A69049Fa071C82560AF96Fa22e948eFA7848C": {
+      "symbol": "Lufy",
+      "name": "Fluffy",
+      "decimal": "18",
+      "supply": "100000000000000000000"
+    },
+    "0xBEC775Cb42AbFa4288dE81F387a9b1A3c4Bc552A": {
+      "symbol": "1SUSHI",
+      "name": "SushiToken",
+      "decimal": "18",
+      "supply": "176702022571000000000000",
+      "iconSymbol": "sushi",
+      "priority": 88
+    },
+    "0x0dD740Db89B9fDA3Baadf7396DdAD702b6E8D6f5": {
+      "symbol": "hMOCHI",
+      "name": "MochiSwap Token",
+      "decimal": "18",
+      "supply": "35929683729932387741740435"
+    },
+    "0xD5377FDed7476aF1692bc3af1370F2B491518A65": {
+      "symbol": "CTR",
+      "name": "CREATOR",
+      "decimal": "18",
+      "supply": "10000000000000000000000000000"
+    },
+    "0xCB35e4945c7F463c5CCBE3BF9f0389ab9321248F": {
+      "symbol": "ONEMOON",
+      "name": "OneMoon",
+      "decimal": "9",
+      "supply": "1000000000000000000000000",
+      "priority": 76
+    },
+    "0x0AB8894cDA70a6EFd32Ce7563834444E2811B182": {
+      "symbol": "MAKI",
+      "name": "MAKIMOON",
+      "decimal": "9",
+      "supply": "10000000000000000"
+    },
+    "0x45734927Fa2f616FbE19E65f42A0ef3d37d1c80A": {
+      "symbol": "MAKI",
+      "name": "MAKIMOON",
+      "decimal": "9",
+      "supply": "10000000000000000"
+    },
+    "0xE450F29C9c85C4F06397667261BaD1198f371739": {
+      "symbol": "OneGalaxy",
+      "name": "OneGalaxy",
+      "decimal": "9",
+      "supply": "10000000000000000"
+    },
+    "0xeC588e90F9a5f58AB4339f0F7792A3eC4A1e2D18": {
+      "symbol": "GW",
+      "name": "A Glass of Water",
+      "decimal": "9",
+      "supply": "10000000000000000"
+    },
+    "0xA357cf457D8bcb5e34cBBEC822A33E6eCD5df39B": {
+      "symbol": "OneGalaxy",
+      "name": "OneGalaxy",
+      "decimal": "9",
+      "supply": "10000000000000000"
+    },
+    "0x1487094050934cE184BD307A9BcBa77500BFc1a5": {
+      "symbol": "OneGalaxy",
+      "name": "OneGalaxy",
+      "decimal": "9",
+      "supply": "10000000000000000"
+    },
+    "0x8c54cB6e427Da9A8b37f55dE7624211ABB685EE0": {
+      "symbol": "OneGalaxy",
+      "name": "OneGalaxy",
+      "decimal": "9",
+      "supply": "10000000000000000"
+    },
+    "0x5c3b97f096a4b05b958346292C4ddb4114889B72": {
+      "symbol": "OneGalaxy",
+      "name": "OneGalaxy",
+      "decimal": "9",
+      "supply": "10000000000000000"
+    },
+    "0x01Da8a10EF752E524Fc1Ba503eFF71cdc03C27Ca": {
+      "symbol": "asdasd",
+      "name": "asdasd",
+      "decimal": "9",
+      "supply": "1000000000000000000000000"
+    },
+    "0x8cf74821F8d6632a5058D39972B3F77C839718Ad": {
+      "symbol": "LAIKA",
+      "name": "LaikaProtocol",
+      "decimal": "9",
+      "supply": "1000000000000000000000000"
+    },
+    "0xe3e267b18464F3CEE00D2e70E18981648998aE9A": {
+      "symbol": "DJJ",
+      "name": "JarJar",
+      "decimal": "18",
+      "supply": "910000001000000000000000002"
+    },
+    "0xDf54bB9FaDE3E2d6b881cBd65353d03060df4a48": {
+      "symbol": "LSD",
+      "name": "Lysergic acid diethylamide",
+      "decimal": "18",
+      "supply": "2025332344000000000000000000"
+    },
+    "0x218532a12a389a4a92fC0C5Fb22901D1c19198aA": {
+      "symbol": "LINK",
+      "name": "ChainLink Token",
+      "decimal": "18",
+      "supply": "1000000000000000000000000000",
+      "priority": 85
+    },
+    "0xC4114A0796ff34147e8129d5f75d2452a4059a28": {
+      "symbol": "FURRY",
+      "name": "Furrmony",
+      "decimal": "9",
+      "supply": "1000000000000000000000000"
+    },
+    "0xD8ecd9D2ef5dA0327c2D834B8D118febCce03F4c": {
+      "symbol": "1PETRON",
+      "name": "PETRON PAY SECURITY TOKEN",
+      "decimal": "18",
+      "supply": "50000000000000000"
+    },
+    "0xB89b0b0B90bfc2e3b212Ec6ec2A2073375C95641": {
+      "symbol": "SAFEMOON",
+      "name": "SafeMoon",
+      "decimal": "9",
+      "supply": "1000000000000000000000000",
+      "priority": 74
+    },
+    "0x16A33af6eBE6F08d597c91E16D3A80f14f528872": {
+      "symbol": "FURRY",
+      "name": "Furrmony",
+      "decimal": "9",
+      "supply": "1000000000000000000000000"
+    },
+    "0x301259f392B551CA8c592C9f676FCD2f9A0A84C5": {
+      "symbol": "1MATIC",
+      "name": "Matic Token",
+      "decimal": "18",
+      "supply": "187369321176000000000000",
+      "iconSymbol": "matic",
+      "priority": 86
+    },
+    "0x27F6fb2D058F9437B970a44566a9624BB7EfdD6a": {
+      "symbol": "abc",
+      "name": "ABC",
+      "decimal": "9",
+      "supply": "1000000000000000000000000"
+    },
+    "0x46e44d81c5D576C260069b81B127741001f9C018": {
+      "symbol": "bad",
+      "name": "badtoken",
+      "decimal": "9",
+      "supply": "500000000000000000"
+    },
+    "0xbC699c0364AF7c911E520D8ab42438788D22c0db": {
+      "symbol": "CHEE",
+      "name": "Cheecoin",
+      "decimal": "9",
+      "supply": "100000000000000000"
+    },
+    "0x61d4dc26C6dEbacf8D036e0d37Bcb3705d5e55B0": {
+      "symbol": "PKMOON",
+      "name": "POKEMOON",
+      "decimal": "10",
+      "supply": "100000000000000000"
+    },
+    "0x97981F351951b5a85806DAC2f505CFe96E5BCe58": {
+      "symbol": "HT1",
+      "name": "Harmony Token1",
+      "decimal": "16",
+      "supply": "10000000000000000000000"
+    },
+    "0xc2ef7418919D0981F24dE589bacFD00DD677b8EC": {
+      "symbol": "WTW",
+      "name": "Wolley Token",
+      "decimal": "18",
+      "supply": "1000000000000000000000000000000"
+    },
+    "0x11B3B3dFa80eBaC9D3095CDa65d84e8d4b68de05": {
+      "symbol": "$ROUL",
+      "name": "Roul(ette)",
+      "decimal": "18",
+      "supply": "77777777000000000000000000"
+    },
+    "0xc218F6CA7a278BF7b97FEb445935f198a9Dbefbe": {
+      "symbol": "$ROUL",
+      "name": "Roul(ette)",
+      "decimal": "18",
+      "supply": "77777777000000000000000000"
+    },
+    "0x0672F5380b554EbCf567b3EA67510be619470605": {
+      "symbol": "NeM",
+      "name": "NewMoon",
+      "decimal": "9",
+      "supply": "1000000000000000000000"
+    },
+    "0x56028F550f4FBe3700a5CEC4f7cf257FC44adBe7": {
+      "symbol": "NBC",
+      "name": "NutcoinBearClub",
+      "decimal": "18",
+      "supply": "420000000000000000000"
+    },
+    "0xAFD871f684F21Ab9D7137608C71808f83D75e6fc": {
+      "symbol": "SOM",
+      "name": "SAFEONEMOON",
+      "decimal": "18",
+      "supply": "10000000000000000000000000000000"
+    },
+    "0xa5140e9c33c8FaA4adbFC410b9C683e20AA32Fd5": {
+      "symbol": "HMN",
+      "name": "HARMON",
+      "decimal": "18",
+      "supply": "165000000000000000000000000000"
+    },
+    "0xEf977d2f931C1978Db5F6747666fa1eACB0d0339": {
+      "symbol": "1DAI",
+      "name": "Dai Stablecoin",
+      "decimal": "18",
+      "supply": "2062128221268000000000000",
+      "iconSymbol": "dai",
+      "priority": 95
+    },
+    "0x20274440e827319D62216dc1f64af67271E1034f": {
+      "symbol": "DEAD",
+      "name": "Dead End",
+      "decimal": "9",
+      "supply": "127000000000000000000000000"
+    },
+    "0x91aCbFc784C73777d8013db48afC2D698a4AE751": {
+      "symbol": "LONE",
+      "name": "LuckyONE",
+      "decimal": "9",
+      "supply": "1000000000000000000000"
+    },
+    "0xbDa99C8695986B45a0dD3979cC6f3974D9753D30": {
+      "symbol": "LOOT",
+      "name": "Loot",
+      "decimal": "18",
+      "supply": "213634692794632615284034154"
+    },
+    "0x34704c70e9eC9fB9A921da6DAAD7D3e19f43c734": {
+      "symbol": "1DSLA",
+      "name": "DSLA",
+      "decimal": "18",
+      "supply": "24527414717558000000000000"
+    },
+    "0x2F459Dd7CBcC9D8323621f6Fb430Cd0555411E7B": {
+      "symbol": "JENN",
+      "name": "TokenJenny",
+      "decimal": "18",
+      "supply": "8999999233000000000000000"
+    },
+    "0x7d0546dBb1Dca8108d99Aa389A8e9Ce0C40B2370": {
+      "symbol": "LMA",
+      "name": "LMA - Art - Gallery",
+      "decimal": "18",
+      "supply": "1000000000000000000000000"
+    },
+    "0x6008C8769BFACd92251bA838382e7e5637C7e74D": {
+      "symbol": "COSMIC",
+      "name": "Cosmic Coin",
+      "decimal": "9",
+      "supply": "1000000000000000000"
+    },
+    "0x8D4F19bec883Ba20F4f295706C53F760Cd0BC2B0": {
+      "symbol": "MOONI",
+      "name": "Moonity",
+      "decimal": "9",
+      "supply": "1000000000000000000"
+    },
+    "0xD0e9D764cdA4C66D1540bc45E3d9891BDA34EDc5": {
+      "symbol": "ONELOVE",
+      "name": "One Love",
+      "decimal": "18",
+      "supply": "1000000000000000000000000000000"
+    },
+    "0x224e64ec1BDce3870a6a6c777eDd450454068FEC": {
+      "symbol": "UST",
+      "name": "Wrapped UST Token",
+      "decimal": "18",
+      "supply": "1380818388350000000000000"
+    },
+    "0xB8E0497018c991E86311b64EFd9D57b06aEDbBAE": {
+      "symbol": "VINCI",
+      "name": "DaVinci Token",
+      "decimal": "18",
+      "supply": "13410642000000000000000000",
+      "priority": 89
+    },
+    "0xe112b5f917e882033084f64615fb9a3B37e617Bb": {
+      "symbol": "bscJPYC",
+      "name": "JPY Coin on xDai on BSC",
+      "decimal": "18",
+      "supply": "1000000000000000000000"
+    },
+    "0xE0fFcea14c72d6Bd9467C82C590c454F82F5cE1A": {
+      "symbol": "ALCX",
+      "name": "ALCIONE",
+      "decimal": "18",
+      "supply": "100000000000000000000000000000"
+    },
+    "0x44cED87b9F1492Bf2DCf5c16004832569f7f6cBa": {
+      "symbol": "bscUSDC",
+      "name": "USD Coin",
+      "decimal": "18",
+      "supply": "37098920741000000000000",
+      "iconSymbol": "usdc",
+      "priority": 92
+    },
+    "0x7531905C4C80b602CFf46Badc1671FbAD496f043": {
+      "symbol": "MCONE",
+      "name": "McONE Coin",
+      "decimal": "9",
+      "supply": "100000000000000000"
+    },
+    "0x698ee360d70F355Ce4fEdf6232a48eF678E311Aa": {
+      "symbol": "seal",
+      "name": "SEALPUP",
+      "decimal": "18",
+      "supply": "1000000000000000000000000000000000"
+    },
+    "0xeB6C08ccB4421b6088e581ce04fcFBed15893aC3": {
+      "symbol": "1FRAX",
+      "name": "Frax",
+      "decimal": "18",
+      "supply": "513925456137000000000000"
+    },
+    "0x89eAd464bcdd5464307F313c3a571E725042B90e": {
+      "symbol": "JAH",
+      "name": "Jah ",
+      "decimal": "16",
+      "supply": "1440000000000000000000"
+    },
+    "0x3502536768d55ABC1BF254Bc35601c54bf22783c": {
+      "symbol": "SUSHI",
+      "name": "SushiToken",
+      "decimal": "18",
+      "supply": "50000000000000000000000"
+    },
+    "0xdEd960d1015a341D35460099Fa7c9b9F6C2C7d9e": {
+      "symbol": "CYANIDE",
+      "name": "Cyanide",
+      "decimal": "18",
+      "supply": "1000000000000000000000000000"
+    },
+    "0x3Ec248eD4B69142A40FB2F2b9d990125a830A598": {
+      "symbol": "NFT",
+      "name": "CryptoBunny",
+      "decimal": "18",
+      "supply": "69146869000000000000000000"
+    },
+    "0xda73f5C25C0D644Afd20dA5535558956B192b262": {
+      "symbol": "bscMOCHI",
+      "name": "MochiSwap Token",
+      "decimal": "18",
+      "supply": "10224232130811000000000000"
+    },
+    "0x86dd7Ad4E6fe09E4A5445cc2c9acD729bEDB95ed": {
+      "symbol": "MAKI",
+      "name": "MAKI",
+      "decimal": "9",
+      "supply": "15000000000000000"
+    },
+    "0xE328A50409104A1f8B564521274C5566eCacf7B9": {
+      "symbol": "SLP",
+      "name": "SushiSwap LP Token",
+      "decimal": "18",
+      "supply": "81541977248661498441"
+    },
+    "0x3c4Af26feE98c01c35a97e33F625928455F2F2c9": {
+      "symbol": "MAKI",
+      "name": "MAKI",
+      "decimal": "9",
+      "supply": "15000000000000000"
+    },
+    "0x9EfD25bD90e68FcC6B05426C3d34b34183d85351": {
+      "symbol": "MAKI",
+      "name": "MAKI",
+      "decimal": "9",
+      "supply": "15000000000000000"
+    },
+    "0x14A7B318fED66FfDcc80C1517C172c13852865De": {
+      "symbol": "1AXS",
+      "name": "Axie Infinity Shard",
+      "decimal": "18",
+      "supply": "4008867902000000000000"
+    },
+    "0xcF323Aad9E522B93F11c352CaA519Ad0E14eB40F": {
+      "symbol": "1AAVE",
+      "name": "Aave Token",
+      "decimal": "18",
+      "supply": "1778432189000000000000"
+    },
+    "0x40d2f81bD135B5282CB2aA18F19cF7098079D012": {
+      "symbol": "IKURA",
+      "name": "IKURA",
+      "decimal": "9",
+      "supply": "15000000000000000"
+    },
+    "0x7CB8a4992fB87dFD2B3c99904Ca3c6ca8D11D251": {
+      "symbol": "B",
+      "name": "B",
+      "decimal": "18",
+      "supply": "21000000000000000000000000"
+    },
+    "0xF4C7a021635ABfAceF34B44d2E029f5c5Aef8725": {
+      "symbol": "A",
+      "name": "A",
+      "decimal": "18",
+      "supply": "21000000000000000000000000"
+    },
+    "0x22719E4f66cB4C66e71cBDb330aC20d9338634d7": {
+      "symbol": "C",
+      "name": "C",
+      "decimal": "18",
+      "supply": "21000000000000000000000000"
+    },
+    "0xfe1b516A7297eb03229A8B5AfAD80703911E81cB": {
+      "symbol": "ROY",
+      "name": "Royale",
+      "decimal": "18",
+      "supply": "400000000000000000000000000"
+    },
+    "0x775d7816afbEf935ea9c21a3aC9972F269A39004": {
+      "symbol": "1FXS",
+      "name": "Frax Share",
+      "decimal": "18",
+      "supply": "5682990890000000000000"
+    },
+    "0xeC84B55a19C7F56E6Cb9970A1e2e0cf9F293283F": {
+      "symbol": "POISON",
+      "name": "Poison",
+      "decimal": "18",
+      "supply": "100000000000000000000000000"
+    },
+    "0xb2593da089bB24fa291110BaBC99df0D925D0E4F": {
+      "symbol": "TEST",
+      "name": "TEST",
+      "decimal": "9",
+      "supply": "15000000000000000"
+    },
+    "0xCD712c572D95295a8e5A7Adb935d9A50DA56F25d": {
+      "symbol": "TEST123",
+      "name": "TEST123",
+      "decimal": "9",
+      "supply": "15000000000000000"
+    },
+    "0x08CB2917245BBE75C8C9c6Dc4a7B3765Dae02b31": {
+      "symbol": "bscDOT",
+      "name": "Polkadot Token",
+      "decimal": "18",
+      "supply": "1593344219000000000000"
+    },
+    "0xC458F65131D1624f337f2ee06F6bF29bbF566046": {
+      "symbol": "WRSH",
+      "name": "Worship",
+      "decimal": "18",
+      "supply": "10000000000000000000000000000000"
+    },
+    "0x95CE547D730519A90dEF30d647F37D9E5359B6Ae": {
+      "symbol": "LUNA",
+      "name": "Wrapped LUNA Token",
+      "decimal": "18",
+      "supply": "3397781835000000000000"
+    },
+    "0x63cf309500d8be0B9fDB8F1fb66C821236c0438c": {
+      "symbol": "1YGG",
+      "name": "Yield Guild Games Token",
+      "decimal": "18",
+      "supply": "11801998912000000000000"
+    },
+    "0xa7a22299918828D791240f9Ec310c2E066592053": {
+      "symbol": "1xSUSHI",
+      "name": "SushiBar",
+      "decimal": "18",
+      "supply": "2193220244000000000000"
+    },
+    "0x8a5da5a1fEe8A224Baa3E4E80FD2C02a494049c3": {
+      "symbol": "TWO",
+      "name": "TwoToken",
+      "decimal": "18",
+      "supply": "1832271244029628420429686"
+    },
+    "0x7b5Ed1bc616943c587033696Ba223d144b29E5B4": {
+      "symbol": "FARMONY",
+      "name": "FarmonyToken",
+      "decimal": "18",
+      "supply": "828849543791758107733"
+    },
+    "0xf498a433819a5DB3DFCc110100527CF4bFcAFe47": {
+      "symbol": "1YLDY",
+      "name": "Yieldly",
+      "decimal": "18",
+      "supply": "20213000000000000000000"
+    },
+    "0x139C70f74613e229B1aAb2c39df8f73D54df5c80": {
+      "symbol": "FOX",
+      "name": "FarmersOnly Token",
+      "decimal": "18",
+      "supply": "1000000000000000000000"
+    },
+    "0x8Eb03202275bD598AdC23678008eF88655544910": {
+      "symbol": "RADI",
+      "name": "Radiant",
+      "decimal": "18",
+      "supply": "10000000000000000000000000"
+    },
+    "0x892D81221484F690C0a97d3DD18B9144A3ECDFB7": {
+      "symbol": "MAGIC",
+      "name": "Magic",
+      "decimal": "18",
+      "supply": "13947804843146067415720713"
+    },
+    "0x50BE620F3890182Fd7BF388cCd5e1811EF639f24": {
+      "symbol": "HAL",
+      "name": "Halcyon",
+      "decimal": "18",
+      "supply": "30000000000000000000000"
+    },
+    "0x70831eE5F8A0434BD2dDB1e45ED24cBca8B41fec": {
+      "symbol": "BABYJEWEL",
+      "name": "BABYJEWEL",
+      "decimal": "18",
+      "supply": "100000000000000000000000000000"
+    },
+    "0x7BF379FcB16b4a6F648371cD72D9D443EF24168F": {
+      "symbol": "AME",
+      "name": "Amethyst",
+      "decimal": "18",
+      "supply": "122113543592086749159624"
+    }
+  }
+}
