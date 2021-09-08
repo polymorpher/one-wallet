@@ -23,6 +23,7 @@ import ONE from '../../../../lib/onewallet'
 import { useRandomWorker } from './randomWorker'
 import ONEUtil from '../../../../lib/util'
 import { handleTrackNewToken } from '../../components/ERC20Grid'
+import { Link } from 'react-router-dom'
 const { Text, Title } = Typography
 
 const tokenIconUrl = (symbol) => `https://res.cloudinary.com/sushi-cdn/image/fetch/w_64/https://raw.githubusercontent.com/sushiswap/icons/master/token/${symbol.toLowerCase()}.jpg`
@@ -279,6 +280,10 @@ const Swap = ({ address }) => {
   useEffect(() => {
     const getTokenReserve = async () => {
       if (!tokenTo.value) {
+        setTokenReserve({ from: new BN(0), to: new BN(0) })
+        return
+      }
+      if (isTrivialSwap(tokenFrom, tokenTo) || isTrivialSwap(tokenTo, tokenFrom)) {
         setTokenReserve({ from: new BN(0), to: new BN(0) })
         return
       }
@@ -553,12 +558,14 @@ const Swap = ({ address }) => {
       {
         !tokenApproved &&
           <TallRow>
-            <Col style={{ textAlign: 'right' }}>
+            <Col span={24}>
               <Title level={4}>
-                Authorize SushiSwap to transfer your token {tokenFrom.symbol} on behalf of your 1wallet?
+                Authorize SushiSwap to transfer your {tokenFrom.symbol}?
               </Title>
               <Hint>
-                You only need to do this once for each token. Only with your approval, SushiSwap smart contract can swap your {tokenFrom.symbol} for ONE or another token. SushiSwap is a decentralized exchange and its smart contract is audited and made available open source. The smart contract can only transfers your token when you initiate a swap. Therefore, even with the authorization, you don't need to worry about unauthorized access of your tokens by SushiSwap or its admins.
+                You only need to do this once for each token. Only with your approval, SushiSwap can swap your {tokenFrom.symbol} for ONE or another token.
+                <br /><br />
+                SushiSwap operates as a smart contract. Based on its <Link to='https://github.com/sushiswap/sushiswap' target='_blank' rel='noreferrer'>source code</Link>, it can only transfers your token when you initiate a swap.
               </Hint>
             </Col>
           </TallRow>
