@@ -495,7 +495,7 @@ const api = {
       const t = new web3.eth.Contract(SushiToken, contractAddress)
       const r = await t.methods.allowance(address, ONEConstants.Sushi.ROUTER).call()
       // returns a BN
-      return r
+      return new BN(r)
     }
   },
 
