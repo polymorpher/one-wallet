@@ -32,7 +32,8 @@ export const HarmonyONE = {
   icon: IconONE,
   symbol: 'ONE',
   name: 'Harmony ONE',
-  contractAddress: null
+  contractAddress: null,
+  priority: 1e+6,
 }
 
 export const DefaultTrackedERC20 = network => {

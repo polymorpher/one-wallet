@@ -245,11 +245,15 @@ const Swap = ({ address }) => {
     tokensAsFrom.forEach(t => { filteredTokens[t.address] = { ...t, from: true } })
     const toTokens = Object.keys(filteredTokens).map(k => filteredTokens[k])
     // ONE can be exchanged to WONE
-    if (!tokenFrom.address && !tokenFrom.contractAddress) {
+    if (util.isONE(tokenFrom)) {
       toTokens.push(tokens[ONEConstants.Sushi.WONE])
     } else {
       // any token except ONE itself can be exchanged to ONE
       toTokens.push(HarmonyONE)
+      // disable token <-> token exchanges for now
+      for (let i = 0; i < toTokens.length - 1; i++) {
+        toTokens[i].disabled = true
+      }
     }
 
     toTokens.sort((t0, t1) => (t1.priority || 0) - (t0.priority || 0))
@@ -315,18 +319,21 @@ const Swap = ({ address }) => {
     getTokenReserve().then(() => setUpdatingReserve(false))
   }, [tokenFrom, tokenTo])
 
-  const buildSwapOptions = (tokens, setSelectedToken) => tokens.map((token, index) => (
-    <Select.Option key={index} value={token.symbol || 'one'} style={selectOptionStyle}>
+  const buildSwapOptions = (tokens, setSelectedToken) => tokens.map((token, index) => {
+    const inner = (
       <Button
         type='text'
         block
         style={optionButtonStyle}
         onClick={() => setSelectedToken(token)}
+        disabled={token.disabled}
       >
         <TokenLabel token={token} />
       </Button>
-    </Select.Option>
-  ))
+    )
+    const outer = token.disabled ? <Tooltip title='This option is temporarily disabled. It will be available in the future version of 1wallet'>{inner}</Tooltip> : inner
+    return <Select.Option key={index} value={token.symbol || 'one'} style={selectOptionStyle}>{outer}</Select.Option>
+  })
 
   // TODO - check liquidity of both tokens
   const onAmountChange = useCallback((isFrom) => async ({ target: { value, preciseValue } } = {}) => {
