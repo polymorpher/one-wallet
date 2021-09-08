@@ -26,6 +26,7 @@ import { handleTrackNewToken } from '../../components/ERC20Grid'
 import { Link } from 'react-router-dom'
 import { Chaining } from '../../api/flow'
 import walletActions from '../../state/modules/wallet/actions'
+import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 const { Text, Title } = Typography
 
 const tokenIconUrl = (symbol) => `https://res.cloudinary.com/sushi-cdn/image/fetch/w_64/https://raw.githubusercontent.com/sushiswap/icons/master/token/${symbol.toLowerCase()}.jpg`
@@ -450,6 +451,8 @@ const Swap = ({ address }) => {
             setCurrentTrackedTokens(tts => [...tts, tt])
             message.success(`New token tracked: ${tt.name} (${tt.symbol}) (${tt.contractAddress}`)
           }
+          Chaining.refreshBalance(dispatch, [address])
+          Chaining.refreshTokenBalance({ dispatch, address, token: tt })
         }
       }
     })
@@ -462,7 +465,19 @@ const Swap = ({ address }) => {
       'swapTokensForExactETH(uint256,uint256,address[],address,uint256)',
       [amountOut.toString(), fromAmount.toString(), [tokenFrom.address, ONEConstants.Sushi.WONE], address, (now + deadline)])
     const args = { amount: 0, operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: ONEConstants.Sushi.ROUTER, tokenId: 0, dest: ONEConstants.EmptyAddress }
-    commonCommitReveal({ otp, otp2, hexData, args })
+    commonCommitReveal({
+      otp,
+      otp2,
+      hexData,
+      args,
+      extraHandlers: {
+        onRevealSuccess: async (txId) => {
+          onRevealSuccess(txId)
+          Chaining.refreshBalance(dispatch, [address])
+          Chaining.refreshTokenBalance({ dispatch, address, token: tokenFrom })
+        }
+      }
+    })
   }
   const handleSwapONEToWONE = ({ otp, otp2 }) => {
     const hexData = ONEUtil.encodeCalldata('deposit()', [])
@@ -672,6 +687,7 @@ const Swap = ({ address }) => {
             </Space>
           </Space>}
       </TallRow>
+      <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
     </>
   )
 }
