@@ -79,7 +79,7 @@ const TokenLabel = ({ token, selected }) => (
 /**
  * Renders exchange rate within a button that can flip the exchange rate.
  */
-const ExchangeRateButton = ({ exchangeRate, selectedTokenSwapFrom, selectedTokenSwapTo }) => {
+const ExchangeRate = ({ exchangeRate, selectedTokenSwapFrom, selectedTokenSwapTo }) => {
   const [flippedExchangeRate, setFlippedExchangeRate] = useState(false)
 
   const onFlipExchangeRate = () => {
@@ -89,7 +89,7 @@ const ExchangeRateButton = ({ exchangeRate, selectedTokenSwapFrom, selectedToken
     return <></>
   }
 
-  return exchangeRate && (
+  return exchangeRate && util.formatNumber(exchangeRate, 10) && (
     <Row justify='end'>
       <Space align='center'>
         <Button block type='text' style={{ marginRight: 32 }} icon={<SwapOutlined />} onClick={onFlipExchangeRate} />
@@ -174,6 +174,7 @@ const Swap = ({ address }) => {
   const [currentTrackedTokens, setCurrentTrackedTokens] = useState([])
   const [tokenAllowance, setTokenAllowance] = useState(new BN(0))
   const [tokenReserve, setTokenReserve] = useState({ from: new BN(0), to: new BN(0) })
+  const [updatingReserve, setUpdatingReserve] = useState(false)
 
   // Loads supported tokens that are available for swap.
   useEffect(() => {
@@ -279,6 +280,7 @@ const Swap = ({ address }) => {
   // Checks token reserves for selected tokenFrom and tokenTo.
   useEffect(() => {
     const getTokenReserve = async () => {
+      setUpdatingReserve(true)
       if (!tokenTo.value) {
         setTokenReserve({ from: new BN(0), to: new BN(0) })
         return
@@ -291,6 +293,10 @@ const Swap = ({ address }) => {
           return
         }
         const pairAddress = await api.sushi.getPair(req)
+        if (!pairAddress || pairAddress === ONEConstants.EmptyAddress) {
+          setTokenReserve({ from: new BN(0), to: new BN(0) })
+          return
+        }
         const { reserve0, reserve1 } = await api.sushi.getReserves({ pairAddress })
         setTokenReserve({ from: new BN(reserve0), to: new BN(reserve1) })
       } catch (e) {
@@ -298,7 +304,7 @@ const Swap = ({ address }) => {
         setTokenReserve({ from: new BN(0), to: new BN(0) })
       }
     }
-    getTokenReserve()
+    getTokenReserve().then(() => setUpdatingReserve(false))
   }, [tokenFrom, tokenTo])
 
   const buildSwapOptions = (tokens, setSelectedToken) => tokens.map((token, index) => (
@@ -467,7 +473,7 @@ const Swap = ({ address }) => {
 
   const tokenApproved = util.isONE(tokenFrom) || tokenAllowance.gte(fromAmount || new BN(0))
 
-  const insufficientLiquidity = !isTrivialSwap(tokenFrom, tokenTo) && !isTrivialSwap(tokenTo, tokenFrom) && tokenReserve.to.lt(new BN(toAmount || 0))
+  const insufficientLiquidity = !updatingReserve && tokenTo.value && toAmount && !isTrivialSwap(tokenFrom, tokenTo) && !isTrivialSwap(tokenTo, tokenFrom) && tokenReserve.to.lt(new BN(toAmount || 0))
 
   return (
     <>
@@ -530,7 +536,7 @@ const Swap = ({ address }) => {
       </TallRow>
       <TallRow align='middle'>
         <Col span={24}>
-          <ExchangeRateButton exchangeRate={exchangeRate} selectedTokenSwapFrom={tokenFrom} selectedTokenSwapTo={tokenTo} />
+          <ExchangeRate exchangeRate={exchangeRate} selectedTokenSwapFrom={tokenFrom} selectedTokenSwapTo={tokenTo} />
         </Col>
       </TallRow>
       {insufficientLiquidity &&
