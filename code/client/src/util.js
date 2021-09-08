@@ -49,10 +49,13 @@ export default {
     if (!exports.default.validBalance(formatted, true)) {
       return { balance: 0, formatted: '0', fiat: 0, fiatFormatted: '0', valid: false }
     }
-    const f = parseFloat(formatted)
-    const balance = ONEUtil.toFraction(f, null, decimals)
-    const fiat = f * (price || 0)
-    const fiatFormatted = exports.default.formatNumber(fiat, maxPrecision)
+    const balance = ONEUtil.toFraction(formatted, null, decimals)
+    let fiat, fiatFormatted
+    if (price !== undefined && price !== null) {
+      const f = parseFloat(formatted)
+      fiat = f * (price || 0)
+      fiatFormatted = exports.default.formatNumber(fiat, maxPrecision)
+    }
     return { balance, formatted, fiat, fiatFormatted, valid: true }
   },
 
