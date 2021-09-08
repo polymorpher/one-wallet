@@ -29,7 +29,13 @@ import walletActions from '../../state/modules/wallet/actions'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 const { Text, Title } = Typography
 
-const tokenIconUrl = (symbol) => `https://res.cloudinary.com/sushi-cdn/image/fetch/w_64/https://raw.githubusercontent.com/sushiswap/icons/master/token/${symbol.toLowerCase()}.jpg`
+const tokenIconUrl = (token) => {
+  if (token.icon) {
+    return token.icon
+  }
+  const symbol = token.iconSymbol || token.symbol
+  return `https://res.cloudinary.com/sushi-cdn/image/fetch/w_64/https://raw.githubusercontent.com/sushiswap/icons/master/token/${symbol.toLowerCase()}.jpg`
+}
 
 const textStyle = {
   paddingRight: '8px',
@@ -72,7 +78,7 @@ const TokenLabel = ({ token, selected }) => (
       height={24}
       fallback={FallbackImage}
       wrapperStyle={{ marginRight: '16px' }}
-      src={tokenIconUrl(token.iconSymbol || token.symbol)}
+      src={tokenIconUrl(token)}
     />
     {selected && <Text> {token.symbol.toUpperCase()} </Text>}
     {!selected && <Text style={{ fontSize: 10 }}> {token.symbol.toUpperCase()}<br />{token.name}</Text>}
@@ -204,6 +210,11 @@ const Swap = ({ address }) => {
       // align formats
       tt.address = tt.address || tt.contractAddress
       tt.decimal = tt.decimal || tt.decimals
+      if (tokens[tt.address]) {
+        const cached = tokens[tt.address]
+        tt.priority = cached.priority
+        tt.iconSymbol = cached.iconSymbol
+      }
       const { tokenType, tokenId, contractAddress, key } = tt
       if (contractAddress && key) {
         dispatch(walletActions.fetchTokenBalance({ address, tokenType, tokenId, contractAddress, key }))
@@ -357,7 +368,7 @@ const Swap = ({ address }) => {
       }
       return
     }
-    if ((util.isONE(tokenFrom) && util.isWONE(tokenTo)) || util.isWONE(tokenFrom) && util.isONE(tokenTo)) {
+    if (isTrivialSwap(tokenFrom, tokenTo) || isTrivialSwap(tokenTo, tokenFrom) || tokenFrom.value === tokenTo.value) {
       setExchangeRate(1)
       toSetter(value)
       preciseValue !== undefined && preciseToSetter(preciseValue)
@@ -377,15 +388,15 @@ const Swap = ({ address }) => {
     }
     const useFrom = (util.isONE(tokenFrom) || util.isWONE(tokenFrom))
     const tokenAddress = useFrom ? tokenTo.address : tokenFrom.address
-    const outDecimal = useFrom ? tokenTo.decimal : tokenFrom.decimal
-    const inDecimal = useFrom ? tokenFrom.decimal : tokenTo.decimal
-    const { balance: amountIn, formatted: amountInFormatted } = util.toBalance(value, undefined, inDecimal)
+    const outDecimal = isFrom ? tokenTo.decimal : tokenFrom.decimal
+    const valueDecimal = isFrom ? tokenFrom.decimal : tokenTo.decimal
+    const { balance: amountIn, formatted: amountInFormatted } = util.toBalance(value, undefined, valueDecimal)
     const amountOut = await api.sushi.getAmountOut({ amountIn, tokenAddress, inverse: useFrom !== isFrom })
 
     const { formatted: amountOutFormatted } = util.computeBalance(amountOut, undefined, outDecimal)
     toSetter(amountOutFormatted)
     preciseToSetter(amountOut)
-    // console.log({ useFrom, amountOutFormatted, amountInFormatted, inDecimal, outDecimal, amountOut: amountOut.toString(), amountIn: amountIn.toString() })
+    console.log({ useFrom, amountOutFormatted, amountInFormatted, valueDecimal, outDecimal, amountOut: amountOut.toString(), amountIn: amountIn.toString() })
     let exchangeRate = parseFloat(amountOutFormatted) / parseFloat(amountInFormatted)
     if (!isFrom) {
       exchangeRate = 1 / exchangeRate
@@ -464,8 +475,8 @@ const Swap = ({ address }) => {
     const amountOut = new BN(toAmount).muln(10000 - slippage).divn(10000).toString()
 
     const hexData = ONEUtil.encodeCalldata(
-      'swapTokensForExactETH(uint256,uint256,address[],address,uint256)',
-      [amountOut.toString(), fromAmount.toString(), [tokenFrom.address, ONEConstants.Sushi.WONE], address, (now + deadline)])
+      'swapExactTokensForETH(uint256,uint256,address[],address,uint256)',
+      [fromAmount.toString(), amountOut.toString(), [tokenFrom.address, ONEConstants.Sushi.WONE], address, (now + deadline)])
     const args = { amount: 0, operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: ONEConstants.Sushi.ROUTER, tokenId: 0, dest: ONEConstants.EmptyAddress }
     commonCommitReveal({
       otp,
