@@ -178,13 +178,13 @@ const Send = ({
           />
         </Col>
       </Row>
-      <Row align='middle' style={{ marginBottom: '10px' }}>
-        <Col sm={4} xs={6}>
-          <Label wide={!isMobile} style={{ fontSize: isMobile ? '12px' : undefined }}>
-            <Hint>Amount</Hint>
+      <Row align='middle' style={{ marginBottom: '10px', flexWrap: 'nowrap' }}>
+        <Col xs={4}>
+          <Label wide={!isMobile}>
+            <Hint>{isMobile ? '' : 'Amount'}</Hint>
           </Label>
         </Col>
-        <Col sm={!isNFT ? 16 : 18} xs={8}>
+        <Col sm={!isNFT ? 16 : 18} flex={1}>
           <InputBox
             margin='auto'
             width='100%'
@@ -196,7 +196,7 @@ const Send = ({
         {
           !isNFT && <Col sm={2} xs={4}><Hint>{selectedToken.symbol}</Hint></Col>
         }
-        <Col xs={2}>
+        <Col>
           <Button type='secondary' shape='round' onClick={useMaxAmount} disabled={!!prefillAmount}>max</Button>
         </Col>
       </Row>
