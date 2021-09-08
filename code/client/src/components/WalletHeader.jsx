@@ -99,7 +99,7 @@ const WalletHeader = () => {
   const [relayerEditVisible, setRelayerEditVisible] = useState(false)
   return (
     <PageHeader
-      style={{ background: '#ffffff' }}
+      style={{ background: '#ffffff', padding: isMobile ? 8 : undefined }}
       onBack={action && (() => history.goBack())}
       title={!isMobile && titleCase(action || '')}
       subTitle={!isMobile && <Hint>{subtitle}</Hint>}

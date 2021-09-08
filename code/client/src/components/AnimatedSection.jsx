@@ -26,14 +26,14 @@ const mobileTabBar = (props) => {
   const activeKey = props.activeKey
 
   return (
-    <Space size='small' wrap style={{ marginBottom: '20px' }}>
+    <Space size='small' wrap style={{ marginBottom: '20px', marginTop: '10px' }}>
       {
         panes.map((pane) => (
           <Button
             key={pane.key}
             type='text'
             onClick={(e) => props.onTabClick(pane.key, e)}
-            size='large'
+            size='small'
             style={{
               color: activeKey === pane.key ? '#1890ff' : '#000000',
               borderBottom: activeKey === pane.key ? '1px solid #1890ff' : 'none',
@@ -63,7 +63,7 @@ const AnimatedSection = ({ show = true, children, style, ...params }) => {
             renderTabBar: isMobile ? mobileTabBar : undefined
           }}
           style={{
-            padding: isMobile ? 8 : 32,
+            padding: isMobile ? 24 : 32,
             ...defaultStyle,
             ...transitionStyles[state],
             ...style

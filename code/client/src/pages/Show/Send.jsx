@@ -179,12 +179,12 @@ const Send = ({
         </Col>
       </Row>
       <Row align='middle' style={{ marginBottom: '10px' }}>
-        <Col xs={4}>
+        <Col sm={4} xs={6}>
           <Label wide={!isMobile} style={{ fontSize: isMobile ? '12px' : undefined }}>
             <Hint>Amount</Hint>
           </Label>
         </Col>
-        <Col sm={!isNFT ? 16 : 18} xs={10}>
+        <Col sm={!isNFT ? 16 : 18} xs={8}>
           <InputBox
             margin='auto'
             width='100%'

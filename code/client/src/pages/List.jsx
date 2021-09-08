@@ -82,11 +82,11 @@ const List = () => {
       </Row>
       <Row style={{ marginTop: 36 }}>
         <Space direction='vertical'>
-          <Space align='baseline' style={{ justifyContent: 'space-between' }}>
+          <Space align='baseline' style={{ justifyContent: 'space-between', marginLeft: isMobile ? '24px' : undefined }}>
             <Title level={titleLevel} style={{ marginRight: isMobile ? 16 : 48 }}>Total Balance</Title>
             <Title level={titleLevel}>{formatted}</Title><Text type='secondary'>ONE</Text>
           </Space>
-          <Space align='baseline' style={{ justifyContent: 'space-between' }}>
+          <Space align='baseline' style={{ justifyContent: 'space-between', marginLeft: isMobile ? '24px' : undefined }}>
             <Title level={titleLevel} style={{ marginRight: isMobile ? 16 : 48, opacity: 0 }}>Total Balance</Title>
             <Title style={{ whiteSpace: 'nowrap' }} level={titleLevel}>≈ ${fiatFormatted}</Title><Text type='secondary'>USD</Text>
           </Space>

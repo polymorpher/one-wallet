@@ -23,11 +23,23 @@ const LocalRoutes = () => {
   const networkWallets = util.filterNetworkWallets(wallets, network)
   const { isMobile } = useWindowDimensions()
   return (
-    <Layout style={{ minHeight: '100vh', paddingBottom: isMobile ? '50px' : undefined }}>
+    <Layout style={{
+      minHeight: '100vh'
+    }}
+    >
       <SiderMenu />
       <Layout>
         <WalletHeader />
-        <Layout.Content style={{ padding: isMobile ? 16 : 32 }}>
+        <Layout.Content
+          style={
+            {
+              paddingBottom: isMobile ? 0 : 32,
+              paddingTop: isMobile ? 8 : 32,
+              paddingLeft: isMobile ? 0 : 32,
+              paddingRight: isMobile ? 0 : 32
+            }
+          }
+        >
           <Switch>
             <Route
               path={Paths.dev} render={() => {
