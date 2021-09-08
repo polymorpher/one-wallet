@@ -292,7 +292,8 @@ const Swap = ({ address }) => {
     const getTokenAllowance = async () => {
       if (tokenFrom.address) {
         const allowance = await api.sushi.getAllowance({ address, contractAddress: tokenFrom.address })
-        setTokenAllowance(new BN(allowance))
+        // console.log({ allowance: allowance.toString(), contractAddress: tokenFrom.address })
+        setTokenAllowance(allowance)
       } else {
         setTokenAllowance(new BN(0))
       }
@@ -396,7 +397,7 @@ const Swap = ({ address }) => {
     const { formatted: amountOutFormatted } = util.computeBalance(amountOut, undefined, outDecimal)
     toSetter(amountOutFormatted)
     preciseToSetter(amountOut)
-    console.log({ useFrom, amountOutFormatted, amountInFormatted, valueDecimal, outDecimal, amountOut: amountOut.toString(), amountIn: amountIn.toString() })
+    // console.log({ useFrom, amountOutFormatted, amountInFormatted, valueDecimal, outDecimal, amountOut: amountOut.toString(), amountIn: amountIn.toString() })
     let exchangeRate = parseFloat(amountOutFormatted) / parseFloat(amountInFormatted)
     if (!isFrom) {
       exchangeRate = 1 / exchangeRate
@@ -568,7 +569,7 @@ const Swap = ({ address }) => {
     fromAmountFormatted !== '' && !isNaN(fromAmountFormatted) &&
     toAmountFormatted !== '' && !isNaN(toAmountFormatted)
 
-  const tokenApproved = util.isONE(tokenFrom) || tokenAllowance.gte(fromAmount || new BN(0))
+  const tokenApproved = util.isONE(tokenFrom) || tokenAllowance.gt(fromAmount ? new BN(fromAmount) : new BN(0))
 
   const insufficientLiquidity = !updatingReserve && tokenTo.value && toAmount && !isTrivialSwap(tokenFrom, tokenTo) && !isTrivialSwap(tokenTo, tokenFrom) && tokenReserve.to.lt(new BN(toAmount || 0))
 
