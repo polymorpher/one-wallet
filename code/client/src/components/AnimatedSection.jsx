@@ -56,6 +56,10 @@ const AnimatedSection = ({ show = true, children, style, ...params }) => {
       {state => (
         <Section
           data-show={show}
+          headStyle={{
+            padding: isMobile ? 0 : 24,
+            marginTop: isMobile ? -16 : 0,
+          }}
           bodyStyle={{
             padding: isMobile ? 8 : 24
           }}

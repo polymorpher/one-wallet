@@ -35,19 +35,20 @@ const Balance = ({ address }) => {
             </ExplorerLink>
           </Space>
         </Row>}
-      <Row style={{ marginTop: 16 }}>
-        <Col span={isMobile ? 24 : 12}>
-          <Title level={3} style={{ marginRight: isMobile ? undefined : 48 }}>Balance</Title>
-        </Col>
-        <Col span={isMobile ? 24 : 12} style={{ textAlign: isMobile ? 'right' : undefined }}>
-          <Space>
-            <Title level={3}>{formatted}</Title>
-            <Text type='secondary'>{selectedToken.symbol}</Text>
-          </Space>
-        </Col>
-      </Row>
+      {!isMobile &&
+        <Row style={{ marginTop: 16 }}>
+          <Col span={isMobile ? 24 : 12}>
+            <Title level={3} style={{ marginRight: isMobile ? undefined : 48 }}>Balance</Title>
+          </Col>
+          <Col span={isMobile ? 24 : 12} style={{ textAlign: isMobile ? 'center' : undefined }}>
+            <Space>
+              <Title level={3}>{formatted}</Title>
+              <Text type='secondary'>{selectedToken.symbol}</Text>
+            </Space>
+          </Col>
+        </Row>}
       {selectedToken.key === 'one' &&
-        <Row style={{ textAlign: isMobile ? 'right' : undefined }}>
+        <Row style={{ textAlign: isMobile ? 'center' : undefined, marginTop: isMobile ? 32 : undefined }}>
           <Col span={isMobile ? 24 : 12} />
           <Col span={isMobile ? 24 : 12}>
             <Space>
@@ -56,7 +57,7 @@ const Balance = ({ address }) => {
             </Space>
           </Col>
         </Row>}
-      <Row style={{ marginTop: 16, textAlign: isMobile ? 'right' : undefined }}>
+      <Row style={{ marginTop: 16, textAlign: isMobile ? 'center' : undefined }}>
         <Col span={isMobile ? 24 : 12} />
         <Col span={isMobile ? 24 : undefined}>
           <Button type='primary' size='large' shape='round' onClick={showTransfer} disabled={!util.isNonZeroBalance(selectedTokenBalance)}> Send </Button>
