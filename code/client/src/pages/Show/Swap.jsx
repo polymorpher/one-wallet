@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import ONEConstants from '../../../../lib/constants'
 import util from '../../util'
-import { DefaultTrackedERC20, HarmonyONE } from '../../components/TokenAssets'
+import { DefaultTrackedERC20, HarmonyONE, withKeys } from '../../components/TokenAssets'
 import api from '../../api'
 import { Hint, InputBox, Warning } from '../../components/Text'
 import BN from 'bn.js'
@@ -25,6 +25,7 @@ import ONEUtil from '../../../../lib/util'
 import { handleTrackNewToken } from '../../components/ERC20Grid'
 import { Link } from 'react-router-dom'
 import { Chaining } from '../../api/flow'
+import walletActions from '../../state/modules/wallet/actions'
 const { Text, Title } = Typography
 
 const tokenIconUrl = (symbol) => `https://res.cloudinary.com/sushi-cdn/image/fetch/w_64/https://raw.githubusercontent.com/sushiswap/icons/master/token/${symbol.toLowerCase()}.jpg`
@@ -118,7 +119,7 @@ const getTokenBalance = (selectedToken, tokenBalances, oneBalance) => {
       const computedBalance = util.computeBalance(oneBalance, 0)
       return computedBalance
     }
-    const computedBalance = util.computeBalance(tokenBalances[selectedToken.address], undefined, selectedToken.decimal)
+    const computedBalance = util.computeBalance(tokenBalances[selectedToken.key], undefined, selectedToken.decimal)
     return computedBalance
   } catch (ex) {
     console.error(ex)
@@ -197,11 +198,15 @@ const Swap = ({ address }) => {
       return
     }
     const erc20Tracked = (wallet.trackedTokens || []).filter(e => e.tokenType === ONEConstants.TokenType.ERC20)
-    const trackedTokens = [harmonyToken, ...DefaultTrackedERC20(network), ...(erc20Tracked || [])]
+    const trackedTokens = [harmonyToken, ...withKeys(DefaultTrackedERC20(network)), ...(erc20Tracked || [])]
     trackedTokens.forEach(tt => {
       // align formats
       tt.address = tt.address || tt.contractAddress
       tt.decimal = tt.decimal || tt.decimals
+      const { tokenType, tokenId, contractAddress, key } = tt
+      if (contractAddress && key) {
+        dispatch(walletActions.fetchTokenBalance({ address, tokenType, tokenId, contractAddress, key }))
+      }
     })
     const updateFromTokens = async () => {
       const trackedTokensUpdated = await api.tokens.batchGetMetadata(trackedTokens)
@@ -217,6 +222,8 @@ const Swap = ({ address }) => {
 
   useEffect(() => {
     const tokenBalance = getTokenBalance(tokenFrom, tokenBalances, balance)
+    // console.log(tokenFrom)
+    // console.log(tokenBalance)
     if (!tokenBalance) {
       setTokenBalanceFormatted('0')
     }
@@ -401,8 +408,8 @@ const Swap = ({ address }) => {
   const confirmSwap = () => {
     // const { balance: fromBalance } = util.toBalance(fromAmountFormatted, undefined, selectedTokenSwapFrom.decimal)
     const { balance: tokenBalance, formatted: tokenBalanceFormatted } = getTokenBalance(tokenFrom, tokenBalances, balance)
-    console.log(new BN(tokenBalance).toString())
-    console.log(new BN(fromAmount).toString())
+    // console.log(new BN(tokenBalance).toString())
+    // console.log(new BN(fromAmount).toString())
     if (!(new BN(tokenBalance).gte(new BN(fromAmount)))) {
       // console.log(new BN(tokenBalance).toString())
       // console.log(new BN(fromAmount).toString())
