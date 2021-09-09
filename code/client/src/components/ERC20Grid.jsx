@@ -57,8 +57,10 @@ const GridItem = ({ style, children, icon, name, symbol, contractAddress, balanc
   const gridInnerRef = useRef()
 
   const handleResize = useCallback(() => {
-    const width = gridInnerRef.current?.parentNode.clientWidth
-    setMobileGridHeight(width ? `${width}px` : '50%')
+    if (isMobile) {
+      const width = gridInnerRef.current?.parentNode.clientWidth
+      setMobileGridHeight(width ? `${width}px` : '50%')
+    }
   }, [setMobileGridHeight])
 
   useEffect(() => {
