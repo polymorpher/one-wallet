@@ -174,6 +174,9 @@ const utils = {
   getVersion: ({ majorVersion, minorVersion }) => `${majorVersion}.${minorVersion}`,
 
   securityParameters: ({ majorVersion, minorVersion }) => {
+    if (majorVersion <= 7) {
+      return { randomness: 0, hasher: 'sha256' }
+    }
     const keys = Object.keys(securityParams)
     const v = utils.getVersion({ majorVersion, minorVersion })
     for (let k of keys) {
