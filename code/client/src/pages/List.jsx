@@ -41,15 +41,24 @@ const WalletCard = ({ wallet }) => {
       extra={<Space style={{ alignItems: 'baseline' }}><Title level={3} style={{ marginBottom: 0 }}>{formatted}</Title><Text type='secondary'>ONE</Text></Space>}
     >
       <Space direction='vertical' size='large'>
-        <Space><Title level={4}>≈ ${fiatFormatted}</Title><Text type='secondary'>USD</Text></Space>
+        <Space>
+          <Title level={4}>≈ ${fiatFormatted}</Title>
+          <Text type='secondary'>USD</Text>
+        </Space>
         <Text
           ellipsis={{ tooltip: oneAddress }} style={{ width: 196 }} onClick={() => {
             navigator.clipboard.writeText(oneAddress)
             message.info('Copied address to clipboard')
           }}
-        >{oneAddress}
+        >
+          {oneAddress}
         </Text>
-        {(walletOutdated || util.isEmptyAddress(wallet.lastResortAddress)) && <Tag color='warning' style={{ position: 'absolute', bottom: 16, right: 16 }}>needs attention</Tag>}
+        {
+          (walletOutdated || util.isEmptyAddress(wallet.lastResortAddress)) &&
+            <Tag color='warning' style={{ position: 'absolute', bottom: isMobile ? 32 : 16, right: 16 }}>
+              needs attention
+            </Tag>
+        }
       </Space>
 
     </Card>
@@ -73,11 +82,11 @@ const List = () => {
       </Row>
       <Row style={{ marginTop: 36 }}>
         <Space direction='vertical'>
-          <Space align='baseline' style={{ justifyContent: 'space-between' }}>
+          <Space align='baseline' style={{ justifyContent: 'space-between', marginLeft: isMobile ? '24px' : undefined }}>
             <Title level={titleLevel} style={{ marginRight: isMobile ? 16 : 48 }}>Total Balance</Title>
             <Title level={titleLevel}>{formatted}</Title><Text type='secondary'>ONE</Text>
           </Space>
-          <Space align='baseline' style={{ justifyContent: 'space-between' }}>
+          <Space align='baseline' style={{ justifyContent: 'space-between', marginLeft: isMobile ? '24px' : undefined }}>
             <Title level={titleLevel} style={{ marginRight: isMobile ? 16 : 48, opacity: 0 }}>Total Balance</Title>
             <Title style={{ whiteSpace: 'nowrap' }} level={titleLevel}>≈ ${fiatFormatted}</Title><Text type='secondary'>USD</Text>
           </Space>

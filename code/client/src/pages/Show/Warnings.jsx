@@ -1,5 +1,5 @@
 import { Warning } from '../../components/Text'
-import util from '../../util'
+import util, { useWindowDimensions } from '../../util'
 import ONEUtil from '../../../../lib/util'
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -12,10 +12,13 @@ const Warnings = ({ address }) => {
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
   const walletOutdated = util.isWalletOutdated(wallet)
+  const { isMobile } = useWindowDimensions()
 
   const confirmNoteDownAddress = () => {
     dispatch(walletActions.userAcknowledgedToSaveAddress({ address }))
   }
+
+  const displayOneAddress = util.safeOneAddress(address)
 
   return (
     <>
@@ -25,15 +28,18 @@ const Warnings = ({ address }) => {
         // to save the wallet address for future references.
         !wallet.acknowledgedToSaveAddress &&
           <Warning info>
-            <Space direction='vertical'>
+            <Space direction='vertical' style={{ width: '100%' }}>
               <Text>
                 Please save your wallet address or get a domain name. You may need it later to restore your wallet, in case you lost the wallet.
               </Text>
               <Row justify='space-between'>
-                <Text copyable>{util.safeOneAddress(address)}</Text>
+                <Text copyable>
+                  {
+                    isMobile ? util.ellipsisAddress(displayOneAddress) : displayOneAddress
+                  }
+                </Text>
                 <Button shape='round' type='primary' onClick={confirmNoteDownAddress}>Dismiss</Button>
               </Row>
-
             </Space>
             <br />
           </Warning>

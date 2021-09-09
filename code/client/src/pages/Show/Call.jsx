@@ -8,12 +8,11 @@ import AnimatedSection from '../../components/AnimatedSection'
 import util from '../../util'
 import BN from 'bn.js'
 import ShowUtils from './show-util'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import ONEUtil from '../../../../lib/util'
 import { api } from '../../../../lib/api'
-import { Chaining } from '../../api/flow'
 import ONEConstants from '../../../../lib/constants'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
@@ -30,7 +29,6 @@ const Call = ({
   prefillMethod, // function signature, (abi selector) https://docs.soliditylang.org/en/develop/abi-spec.html#function-selector
   prefillData, // array of values corresponding to parameters in function signature
 }) => {
-  const dispatch = useDispatch()
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
   const network = useSelector(state => state.wallet.network)
@@ -119,7 +117,7 @@ const Call = ({
 
   return (
     <AnimatedSection
-      style={{ width: 720 }}
+      style={{ maxWidth: 720 }}
       show={show} title={<Title level={2}>Call Contract Function</Title>} extra={[
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
       ]}

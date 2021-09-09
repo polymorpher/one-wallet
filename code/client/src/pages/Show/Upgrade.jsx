@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import React, { useState } from 'react'
 import ONEConstants from '../../../../lib/constants'
 import ONEUtil from '../../../../lib/util'
-import util from '../../util'
+import util, { useWindowDimensions } from '../../util'
 import config from '../../config'
 import BN from 'bn.js'
 import { Button, Card, Typography, Space, message, Row, Steps } from 'antd'
@@ -49,6 +49,7 @@ const Upgrade = ({ address, onClose }) => {
   const balanceGreaterThanLimit = new BN(balance).gt(new BN(dailyLimit))
   const excessBalance = balanceGreaterThanLimit ? new BN(balance).sub(new BN(dailyLimit)) : new BN(0)
   const { formatted: excessBalanceFormatted } = util.computeBalance(excessBalance)
+  const { isMobile } = useWindowDimensions()
 
   const { state: otpState } = useOtpState()
   const { otpInput, otp2Input } = otpState
@@ -131,10 +132,19 @@ const Upgrade = ({ address, onClose }) => {
 
   return (
     <Card style={CardStyle} bodyStyle={{ height: '100%' }}>
-      <Space direction='vertical' align='center' size='large' style={{ height: '100%', justifyContent: 'center', display: 'flex' }}>
+      <Space
+        direction='vertical'
+        align='center'
+        size='large'
+        style={{
+          height: '100%',
+          justifyContent: isMobile ? 'start' : 'center',
+          display: 'flex'
+        }}
+      >
         {!confirmUpgradeVisible &&
           <>
-            <Title>An upgrade is available.</Title>
+            <Title level={isMobile ? 4 : 2}>An upgrade is available.</Title>
             <Text>Your wallet: v{ONEUtil.getVersion(wallet)}</Text>
             <Text>Latest version: v{ONEUtil.getVersion(latestVersion)}</Text>
             <Button type='primary' shape='round' size='large' onClick={() => setConfirmUpgradeVisible(true)}>Upgrade Now</Button>

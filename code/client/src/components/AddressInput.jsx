@@ -1,5 +1,5 @@
 import { CloseOutlined, SearchOutlined } from '@ant-design/icons'
-import { Select, Button, Tooltip, Row, Col, Spin, Typography } from 'antd'
+import { Select, Button, Tooltip, Row, Col, Spin, Typography, Space } from 'antd'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
@@ -17,7 +17,7 @@ const delayDomainOperationMillis = 1000
  * Renders address input that provides type ahead search for any known addresses.
  * Known addresses are addresses that have been entered by user for at least once.
  */
-const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSelectOptions, disableManualInput, disabled }) => {
+const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSelectOptions, disableManualInput, disabled, style }) => {
   const dispatch = useDispatch()
 
   const [searchingAddress, setSearchingAddress] = useState(false)
@@ -222,30 +222,31 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
     filterValue
   }) => {
     const oneAddress = util.safeOneAddress(address)
-    const longAddressLabel = label ? `(${label}) ${oneAddress}` : oneAddress
-    const shortenAddressLabel = label ? `(${label}) ${util.ellipsisAddress(oneAddress)}` : util.ellipsisAddress(oneAddress)
-    const displayText = util.shouldShortenAddress({ label: label, isMobile })
-      ? shortenAddressLabel
-      : longAddressLabel
+    const addressDisplay = util.shouldShortenAddress({ label: label, isMobile })
+      ? util.ellipsisAddress(oneAddress)
+      : oneAddress
 
     return (
-      <Select.Option key={displayText} value={filterValue} style={{ padding: 0 }}>
+      <Select.Option key={addressDisplay} value={filterValue} style={{ padding: 0 }}>
         <Row align='left'>
-          <Col span={!displayDeleteButton ? 24 : 21}>
+          <Col span={!displayDeleteButton ? 24 : 20}>
             <Tooltip title={oneAddress}>
               <Button
                 block
                 type='text'
-                style={{ textAlign: 'left', height: '50px' }}
+                style={{ textAlign: 'left', height: '100%', padding: '5px' }}
                 onClick={() => {
-                  onSelectAddress({ value: address, label: displayText, key, domainName })
+                  onSelectAddress({ value: address, label: addressDisplay, key, domainName })
                 }}
               >
-                {displayText}
+                <Space direction={isMobile ? 'vertical' : 'horizontal'}>
+                  {label ? `(${label})` : ''}
+                  {addressDisplay}
+                </Space>
               </Button>
             </Tooltip>
           </Col>
-          <Col span={3}>
+          <Col span={4}>
             {
             displayDeleteButton
               ? (
@@ -276,7 +277,8 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
       labelInValue
       style={{
         width: isMobile ? '100%' : 500,
-        borderBottom: '1px dashed black'
+        borderBottom: '1px dashed black',
+        ...style
       }}
       notFoundContent={searchingAddress ? <Spin size='small' /> : <Text type='secondary'>No address found</Text>}
       bordered={false}

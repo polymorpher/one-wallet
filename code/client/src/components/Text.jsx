@@ -6,7 +6,7 @@ import util from '../util'
 
 const { Text, Title, Link } = Typography
 
-export const Heading = styled(Title).attrs(() => ({ level: 2 }))`
+export const Heading = styled(Title).attrs((props) => ({ level: 2, ...props }))`
   //font-size: 24px;
   //color: #1f1f1f;
 `
@@ -47,11 +47,11 @@ export const NormalLabel = styled.div`
 export const WideLabel = styled.div`
   width: 96px;
 `
-export const Label = ({ wide, children }) => {
+export const Label = ({ wide, children, ...props }) => {
   if (wide) {
-    return <WideLabel>{children}</WideLabel>
+    return <WideLabel {...props}>{children}</WideLabel>
   }
-  return <NormalLabel>{children}</NormalLabel>
+  return <NormalLabel {...props}>{children}</NormalLabel>
 }
 
 export const ExplorerLink = styled(Link).attrs(e => ({ ...e, style: { color: '#888888' }, target: '_blank', rel: 'noopener noreferrer' }))`

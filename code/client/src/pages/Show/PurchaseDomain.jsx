@@ -189,7 +189,7 @@ const PurchaseDomain = ({ show, address, onClose }) => {
   const titleLevel = isMobile ? 4 : 3
   return (
     <AnimatedSection
-      style={{ width: 720 }}
+      style={{ maxWidth: 720 }}
       show={show} title={<Title level={2}>Get Domain</Title>} extra={[
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
       ]}

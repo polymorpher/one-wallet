@@ -3,12 +3,12 @@ import { unionWith, isNull, isUndefined } from 'lodash'
 import walletActions from '../state/modules/wallet/actions'
 
 import { PlusCircleOutlined } from '@ant-design/icons'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { TallRow } from './Grid'
 import { api } from '../../../lib/api'
 import ONE from '../../../lib/onewallet'
 import ONEUtil from '../../../lib/util'
-import util from '../util'
+import util, { useWindowDimensions } from '../util'
 import { Warning, Hint, InputBox, Heading } from './Text'
 import { withKeys, DefaultTrackedERC20, HarmonyONE } from './TokenAssets'
 import { useDispatch, useSelector } from 'react-redux'
@@ -50,23 +50,74 @@ export const handleTrackNewToken = async ({ newContractAddress, currentTrackedTo
 }
 
 const GridItem = ({ style, children, icon, name, symbol, contractAddress, balance, addNew, selected, onSelected }) => {
+  const { isMobile } = useWindowDimensions()
   const bech32ContractAddress = util.safeOneAddress(contractAddress)
   const abbrBech32ContractAddress = util.ellipsisAddress(bech32ContractAddress)
+  const [mobileGridHeight, setMobileGridHeight] = useState('50%')
+  const gridInnerRef = useRef()
+
+  const handleResize = useCallback(() => {
+    if (isMobile) {
+      const width = gridInnerRef.current?.parentNode.clientWidth
+      setMobileGridHeight(width ? `${width}px` : '50%')
+    }
+  }, [setMobileGridHeight])
+
+  useEffect(() => {
+    window.addEventListener('resize', handleResize)
+  }, [])
+
+  useEffect(() => {
+    handleResize()
+  }, [gridInnerRef.current?.parentNode.clientWidth])
+
   return (
-    <Card.Grid style={{ ...style, ...(selected && { backgroundColor: '#fafafa' }) }} onClick={onSelected}>
-      {addNew && <Text style={{ textAlign: 'center' }}><PlusCircleOutlined style={{ fontSize: 24 }} /><br /><br />Add Token</Text>}
-      {children}
-      {!children && !addNew &&
-        <Space direction='vertical'>
-          <Row justify='center' style={{ alignItems: 'center' }} gutter={8}>
-            {icon && <Col><Image preview={false} src={icon} wrapperStyle={{ height: 32, width: 32 }} /></Col>}
-            {symbol && <Col><Text style={{ fontSize: 24 }}>{symbol}</Text></Col>}
-            {!symbol && <Col><Text style={{ fontSize: 24 }}>{abbrBech32ContractAddress}</Text></Col>}
-          </Row>
-          <Row justify='center' style={{ alignItems: 'center' }}>
-            <Space><Hint style={{ textAlign: 'center' }}>Balance</Hint><Text>{abbr(balance, 1)}</Text></Space>
-          </Row>
-        </Space>}
+    <Card.Grid
+      style={{
+        ...style,
+        ...(selected && { backgroundColor: '#fafafa' }),
+        height: isMobile ? mobileGridHeight : style.height,
+        padding: isMobile ? 0 : 24
+      }}
+      onClick={onSelected}
+    >
+      <div style={{ textAlign: 'center' }} ref={gridInnerRef}>
+        {addNew && <Text style={{ textAlign: 'center' }}><PlusCircleOutlined style={{ fontSize: 24 }} /><br /><br />Add Token</Text>}
+        {children}
+        {!children && !addNew &&
+          <Space direction='vertical'>
+            <Row justify='center' style={{ alignItems: 'center' }} gutter={8}>
+              {icon && <Col><Image preview={false} src={icon} wrapperStyle={{ height: 32, width: 32 }} /></Col>}
+              {symbol && !isMobile && <Col><Text style={{ fontSize: isMobile ? 12 : 24 }}>{symbol}</Text></Col>}
+              {!symbol && <Col><Text style={{ fontSize: isMobile ? 12 : 24 }}>{abbrBech32ContractAddress}</Text></Col>}
+            </Row>
+            <Row justify='center' style={{ alignItems: 'center' }}>
+              <Space>
+                {
+                !isMobile
+                  ? (
+                    <Hint style={{ textAlign: 'center' }}>
+                      Balance
+                    </Hint>
+                    )
+                  : <Hint style={{ fontSize: 12 }}>{symbol}</Hint>
+                }
+                {
+                  !isMobile ? <Text>{abbr(balance, 1)}</Text> : <></>
+                }
+              </Space>
+            </Row>
+            {
+              isMobile
+                ? (
+                  <Row justify='center' style={{ alignItems: 'center' }}>
+                    <Hint style={{ fontSize: 12 }}>{abbr(balance, 1)}</Hint>
+                  </Row>
+                  )
+                : <></>
+            }
+          </Space>}
+      </div>
     </Card.Grid>
   )
 }
@@ -88,8 +139,19 @@ export const ERC20Grid = ({ address }) => {
   const selected = (selectedToken && selectedToken.tokenType === ONEConstants.TokenType.ERC20) || HarmonyONE
   const [section, setSection] = useState()
   const [newContractAddress, setNewContractAddress] = useState('')
+  const { isMobile } = useWindowDimensions()
 
-  const gridItemStyle = { width: '200px', height: '200px', display: 'flex', justifyContent: 'center', flexDirection: 'column', cursor: 'pointer', color: disabled && 'grey', opacity: disabled && 0.5 }
+  const gridItemStyle = {
+    width: isMobile ? '50%' : '200px',
+    height: isMobile ? undefined : '200px',
+    display: 'flex',
+    justifyContent: 'center',
+    flexDirection: 'column',
+    cursor: 'pointer',
+    color: disabled && 'grey',
+    opacity: disabled && 0.5
+  }
+
   useEffect(() => {
     let cancelled = false
     if (walletOutdated) {
@@ -185,7 +247,10 @@ export const ERC20Grid = ({ address }) => {
                 selected={selected.key === key}
                 key={key}
                 style={gridItemStyle}
-                icon={icon} name={name} symbol={symbol} balance={displayBalance}
+                icon={icon}
+                name={name}
+                symbol={symbol}
+                balance={displayBalance}
                 onSelected={onSelect(key)}
               />
             )
