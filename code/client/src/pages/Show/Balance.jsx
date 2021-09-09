@@ -27,7 +27,7 @@ const Balance = ({ address }) => {
   return (
     <>
       {selectedToken.key !== 'one' &&
-        <Row style={{ marginTop: 16 }}>
+        <Row style={{ marginTop: 16 }} justify={isMobile ? 'center' : undefined}>
           <Space size='large' align='baseline'>
             <Title level={3}>{selectedToken.name}</Title>
             <ExplorerLink style={{ opacity: 0.5 }} copyable={{ text: selectedTokenBech32Address }} href={util.getNetworkExplorerUrl(selectedTokenBech32Address, network)}>
@@ -35,21 +35,22 @@ const Balance = ({ address }) => {
             </ExplorerLink>
           </Space>
         </Row>}
-      {!isMobile &&
-        <Row style={{ marginTop: 16 }}>
+
+      <Row style={{ marginTop: 16 }}>
+        {!isMobile &&
           <Col span={isMobile ? 24 : 12}>
             <Title level={3} style={{ marginRight: isMobile ? undefined : 48 }}>Balance</Title>
-          </Col>
-          <Col span={isMobile ? 24 : 12} style={{ textAlign: isMobile ? 'center' : undefined }}>
-            <Space>
-              <Title level={3}>{formatted}</Title>
-              <Text type='secondary'>{selectedToken.symbol}</Text>
-            </Space>
-          </Col>
-        </Row>}
+          </Col>}
+        <Col span={isMobile ? 24 : 12} style={{ textAlign: isMobile ? 'center' : undefined }}>
+          <Space>
+            <Title level={3}>{formatted}</Title>
+            <Text type='secondary'>{selectedToken.symbol}</Text>
+          </Space>
+        </Col>
+      </Row>
       {selectedToken.key === 'one' &&
-        <Row style={{ textAlign: isMobile ? 'center' : undefined, marginTop: isMobile ? 32 : undefined }}>
-          <Col span={isMobile ? 24 : 12} />
+        <Row style={{ textAlign: isMobile ? 'center' : undefined }}>
+          {!isMobile && <Col span={isMobile ? 24 : 12} />}
           <Col span={isMobile ? 24 : 12}>
             <Space>
               <Title level={4}>≈ ${fiatFormatted}</Title>
