@@ -24,7 +24,7 @@ const computeMerkleTree = async ({
   const counter = Math.floor(effectiveTime / otpInterval)
   const seed = processOtpSeed(otpSeed)
   const seed2 = otpSeed2 && processOtpSeed(otpSeed2)
-  // console.log('Generating Wallet with parameters', { seed, height, otpInterval, effectiveTime })
+  // console.log('Generating Wallet with parameters', { seed, seed2, height, otpInterval, effectiveTime, randomness, hasher, maxOperationsPerInterval })
   const buildProgressObserver = (max, stage, offset) => (i, n) => (i + (offset || 0)) % reportInterval === 0 && progressObserver(i + (offset || 0), max || n, stage || 0)
   const otps = genOTP({ seed, counter, n, progressObserver: buildProgressObserver(seed2 ? n * 2 : n, 0, 0) })
   const otps2 = seed2 && genOTP({ seed: seed2, counter, n, progressObserver: buildProgressObserver(n * 2, 0, n) })
