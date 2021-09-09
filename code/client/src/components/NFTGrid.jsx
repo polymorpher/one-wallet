@@ -71,31 +71,25 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
   return (
     <GridItem style={fullView ? styleFullView : style} hoverable={false} onClick={() => !fullView && interactable && setFullView(true)} data-full-view={fullView}>
       {!fullView &&
-        <Row>
-          <Col span={24}>
-            <Image
-              preview={false}
-              src={util.replaceIPFSLink(metadata?.image) || FallbackImage}
-              fallback={FallbackImage}
-              wrapperStyle={wrapperStyle}
-              style={{ objectFit: 'cover', width: '100%', height: isMobile ? undefined : '100%' }}
-            />
-          </Col>
+        <Row style={{ height: wrapperStyle.height || 'auto' }}>
+          <Image
+            preview={false}
+            src={util.replaceIPFSLink(metadata?.image) || FallbackImage}
+            fallback={FallbackImage}
+            wrapperStyle={wrapperStyle}
+            style={{ objectFit: 'cover', width: '100%', height: isMobile ? undefined : '100%' }}
+          />
         </Row>}
       {!fullView &&
         <Row justify='space-between' style={{ padding: 8 }}>
-          <Col span={12}>
-            {metadata && <Text style={{ fontSize: 12, lineHeight: '16px' }}>{displayName}</Text>}
-          </Col>
-          <Col span={12}>
-            {!metadata &&
-              <Text
-                style={{ fontSize: 12 }}
-                copyable={{ text: abbrBech32ContractAddress }}
-              >{util.ellipsisAddress(abbrBech32ContractAddress)}
-              </Text>}
-            <Text style={{ fontSize: 12, lineHeight: '16px' }}>{displayBalance}</Text>
-          </Col>
+          {metadata && <Text style={{ fontSize: 12, lineHeight: '16px' }}>{displayName}</Text>}
+          {!metadata &&
+            <Text
+              style={{ fontSize: 12 }}
+              copyable={{ text: abbrBech32ContractAddress }}
+            >{util.ellipsisAddress(abbrBech32ContractAddress)}
+            </Text>}
+          <Text style={{ fontSize: 12, lineHeight: '16px' }}>{displayBalance}</Text>
         </Row>}
       {fullView &&
         <Row style={{ height: wrapperStyle.height || 'auto' }}>
