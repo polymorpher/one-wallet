@@ -74,7 +74,8 @@ const GridItem = ({ style, children, icon, name, symbol, contractAddress, balanc
       style={{
         ...style,
         ...(selected && { backgroundColor: '#fafafa' }),
-        height: isMobile ? mobileGridHeight : undefined
+        height: isMobile ? mobileGridHeight : style.height,
+        padding: isMobile ? 0 : 24
       }}
       onClick={onSelected}
     >
