@@ -1,14 +1,12 @@
-import { Card, Image, Row, Space, Typography, Col, Divider, Button, message, Carousel } from 'antd'
-import { unionWith, isNull, isUndefined, differenceBy } from 'lodash'
+import { Card, Image, Row, Space, Typography, Col, Button, message, Carousel } from 'antd'
+import { unionWith, differenceBy } from 'lodash'
 import walletActions from '../state/modules/wallet/actions'
 import React, { useState, useEffect } from 'react'
 import { AverageRow, TallRow } from './Grid'
 import { api } from '../../../lib/api'
-import ONE from '../../../lib/onewallet'
-import ONEUtil from '../../../lib/util'
 import util, { useWindowDimensions } from '../util'
-import { Warning, Hint, InputBox, Heading } from './Text'
-import { withKeys, HarmonyONE } from './TokenAssets'
+import { Warning, Heading } from './Text'
+import { withKeys } from './TokenAssets'
 import { useDispatch, useSelector } from 'react-redux'
 import ONEConstants from '../../../lib/constants'
 import { FallbackImage } from '../constants/ui'
@@ -73,22 +71,31 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
   return (
     <GridItem style={fullView ? styleFullView : style} hoverable={false} onClick={() => !fullView && interactable && setFullView(true)} data-full-view={fullView}>
       {!fullView &&
-        <Row style={{ height: wrapperStyle.height || 'auto' }}>
-          <Image
-            preview={false} src={util.replaceIPFSLink(metadata?.image) || FallbackImage} fallback={FallbackImage}
-            wrapperStyle={wrapperStyle} style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-          />
+        <Row>
+          <Col span={24}>
+            <Image
+              preview={false}
+              src={util.replaceIPFSLink(metadata?.image) || FallbackImage}
+              fallback={FallbackImage}
+              wrapperStyle={wrapperStyle}
+              style={{ objectFit: 'cover', width: '100%', height: isMobile ? undefined : '100%' }}
+            />
+          </Col>
         </Row>}
       {!fullView &&
         <Row justify='space-between' style={{ padding: 8 }}>
-          {metadata && <Text style={{ fontSize: 12, lineHeight: '16px' }}>{displayName}</Text>}
-          {!metadata &&
-            <Text
-              style={{ fontSize: 12 }}
-              copyable={{ text: abbrBech32ContractAddress }}
-            >{util.ellipsisAddress(abbrBech32ContractAddress)}
-            </Text>}
-          <Text style={{ fontSize: 12, lineHeight: '16px' }}>{displayBalance}</Text>
+          <Col span={12}>
+            {metadata && <Text style={{ fontSize: 12, lineHeight: '16px' }}>{displayName}</Text>}
+          </Col>
+          <Col span={12}>
+            {!metadata &&
+              <Text
+                style={{ fontSize: 12 }}
+                copyable={{ text: abbrBech32ContractAddress }}
+              >{util.ellipsisAddress(abbrBech32ContractAddress)}
+              </Text>}
+            <Text style={{ fontSize: 12, lineHeight: '16px' }}>{displayBalance}</Text>
+          </Col>
         </Row>}
       {fullView &&
         <Row style={{ height: wrapperStyle.height || 'auto' }}>
@@ -175,10 +182,12 @@ export const NFTGrid = ({ address }) => {
   const walletOutdated = !util.canWalletSupportToken(wallet)
   const [currentTrackedTokens, setCurrentTrackedTokens] = useState(trackedTokens || [])
   const [disabled, setDisabled] = useState(true)
+  const { isMobile } = useWindowDimensions()
+
   const gridItemStyle = {
     padding: 0,
-    width: '296px',
-    height: '296px',
+    width: isMobile ? '100%' : '296px',
+    height: isMobile ? '100%' : '296px',
     display: 'flex',
     justifyContent: 'center',
     flexDirection: 'column',
@@ -194,7 +203,7 @@ export const NFTGrid = ({ address }) => {
     flexDirection: 'column',
   }
   const imageWrapperStyle = {
-    height: '264px'
+    height: isMobile ? 'auto' : '264px'
   }
   const imageWrapperStyleFullView = {
     maxHeight: '600px',
@@ -246,7 +255,7 @@ export const NFTGrid = ({ address }) => {
     <>
       {disabled && <Warning style={{ marginTop: 16, marginBottom: 16 }}>Your wallet is too outdated. Please create a new wallet to use tokens or NFTs.</Warning>}
 
-      <TallRow>
+      <TallRow justify='center'>
         {currentTrackedTokens.map(tt => {
           const { name, symbol, key, uri, contractAddress, tokenType } = tt
           const balance = tokenBalances[key]
