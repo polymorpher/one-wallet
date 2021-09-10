@@ -90,6 +90,14 @@ const getQRCodeUri = (otpSeed, otpDisplayName, mode = OTPUriMode.STANDARD) => {
   return null
 }
 
+const getGoogleAuthenticatorAppLink = (os) => {
+  let link = 'https://apps.apple.com/us/app/google-authenticator/id388497605'
+  if (os === OSType.Android) {
+    link = 'https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2'
+  }
+  return <Link href={link} target='_blank' rel='noreferrer'>Google Authenticator</Link>
+}
+
 const getSecondCodeName = (name) => `${name} - 2nd`
 
 // not constructing qrCodeData on the fly (from seed) because generating a PNG takes noticeable amount of time. Caller needs to make sure qrCodeData is consistent with seed
@@ -352,13 +360,13 @@ const Create = () => {
           <Space direction='vertical'>
             {/* <Heading>Now, scan the QR code with your Google Authenticator</Heading> */}
             <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
-            <Hint>You need the 6-digit code from Google authenticator to transfer funds. You can restore your wallet using Google authenticator on any device.</Hint>
+            <Hint>You need the 6-digit code from {getGoogleAuthenticatorAppLink(os)} to transfer funds. You can restore your wallet using Google Authenticator on any device. {isMobile && 'Tap the QR code to import'}</Hint>
             {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData })}
           </Space>
         </Row>
         <Row>
           <Space direction='vertical' size='large' align='center'>
-            <Hint>After you are done, type in the 6-digit code from Google authenticator</Hint>
+            <Hint>After you are done, type in the 6-digit code from Google Authenticator</Hint>
             <Hint style={{ fontSize: isMobile ? 12 : undefined }}>
               Code for <b>Harmony ({name})</b>
             </Hint>
@@ -373,7 +381,7 @@ const Create = () => {
                 <Hint style={{ fontSize: isMobile ? 12 : undefined }}>
                   Use two codes to enhance security
                 </Hint>
-                <Tooltip title={<div>You will need to scan another QR-code on the next page. Each time you make a transaction, you will need to type in two 6-digit codes, which are shown simultaneously next to each other on your Google authenticator.<br /><br />This is advisable if you intend to make larger transactions with this wallet</div>}>
+                <Tooltip title={<div>You will need to scan another QR-code on the next page. Each time you make a transaction, you will need to type in two 6-digit codes, which are shown simultaneously next to each other on your Google Authenticator.<br /><br />This is advisable if you intend to make larger transactions with this wallet</div>}>
                   <QuestionCircleOutlined />
                 </Tooltip>
               </Space>
@@ -391,7 +399,7 @@ const Create = () => {
         </Row>
         <Row>
           <Space direction='vertical' size='large' align='center'>
-            <Hint>Type in the <b>second</b> 6-digit code from Google authenticator</Hint>
+            <Hint>Type in the <b>second</b> 6-digit code from Google Authenticator</Hint>
             <Hint style={{ fontSize: isMobile ? 12 : undefined }}>Code for <b>Harmony ({getSecondCodeName(name)})</b></Hint>
             <OtpBox
               shouldAutoFocus={!isMobile}
