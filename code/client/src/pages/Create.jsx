@@ -183,7 +183,7 @@ const Create = () => {
 
   useEffect(() => {
     if (section === sectionViews.setupOtp && worker) {
-      console.log('Posting to worker. Security parameters:', securityParameters)
+      // console.log('Posting to worker. Security parameters:', securityParameters)
       const t = Math.floor(Date.now() / WalletConstants.interval) * WalletConstants.interval
       setEffectiveTime(t)
       worker && worker.postMessage({
@@ -252,7 +252,7 @@ const Create = () => {
         lastResortAddress: normalizedAddress,
         dailyLimit: ONEUtil.toFraction(dailyLimit).toString()
       })
-      console.log('Deployed. Received contract address', address)
+      // console.log('Deployed. Received contract address', address)
       const wallet = {
         name,
         address,
@@ -299,7 +299,7 @@ const Create = () => {
         setHseed(hseed)
         setLayers(layers)
         setSlotSize(maxOperationsPerInterval)
-        console.log('Received created wallet from worker:', result)
+        // console.log('Received created wallet from worker:', result)
       }
     }
     setWorker(worker)
@@ -340,7 +340,7 @@ const Create = () => {
             {/* <Heading>Now, scan the QR code with your Google Authenticator</Heading> */}
             <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
             <Hint>You need the 6-digit code from Google authenticator to transfer funds. You can restore your wallet using Google authenticator on any device.</Hint>
-            {buildQRCodeComponent(seed, name, os, isMobile, qrCodeData)}
+            {buildQRCodeComponent({seed, name, os, isMobile, qrCodeData})}
           </Space>
         </Row>
         <Row>
@@ -373,7 +373,7 @@ const Create = () => {
           <Space direction='vertical'>
             <Heading>Create Your 1wallet (second code)</Heading>
             <Hint align='center'>Scan with your Google Authenticator to setup the <b>second</b> code</Hint>
-            {buildQRCodeComponent(seed2, getSecondCodeName(name), os, isMobile, secondOtpQrCodeData)}
+            {buildQRCodeComponent({seed2, getSecondCodeName(name), os, isMobile, secondOtpQrCodeData})}
           </Space>
         </Row>
         <Row>
