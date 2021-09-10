@@ -296,7 +296,7 @@ const api = {
         tt.push({
           tokenType: tokenTypes[i].toNumber(),
           contractAddress: contracts[i],
-          tokenId: tokenIds[i].toNumber()
+          tokenId: tokenIds[i].toString()
         })
       }
       return tt

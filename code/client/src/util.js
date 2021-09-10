@@ -159,7 +159,13 @@ export default {
   },
 
   replaceIPFSLink: link => {
-    if (!link || !link.startsWith('ipfs://')) {
+    if (!link) {
+      return link
+    }
+    if (link.indexOf('://') < 0) {
+      return exports.default.replaceIPFSLink(`ipfs://${link}`)
+    }
+    if (!link.startsWith('ipfs://')) {
       return link
     }
     let end = link.indexOf('?')

@@ -68,6 +68,7 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
 
   const interactable = !disabled && util.isNonZeroBalance(balance)
 
+  // console.log(util.replaceIPFSLink(metadata?.image))
   return (
     <GridItem style={fullView ? styleFullView : style} hoverable={false} onClick={() => !fullView && interactable && setFullView(true)} data-full-view={fullView}>
       {!fullView &&
