@@ -239,9 +239,46 @@ function getWindowDimensions () {
   }
 }
 
+export const OSType = {
+  Unknown: 0,
+  iOS: 1,
+  Android: 2,
+  Windows: 3,
+}
+function iOSDetect () {
+  return [
+    'iPad Simulator',
+    'iPhone Simulator',
+    'iPod Simulator',
+    'iPad',
+    'iPhone',
+    'iPod'
+  ].includes(navigator.platform) ||
+    // iPad on iOS 13 detection
+    (navigator.userAgent.includes('Mac') && 'ontouchend' in document)
+}
+
+function getMobileOS () {
+  const userAgent = navigator.userAgent || navigator.vendor || window.opera
+  // Windows Phone must come first because its UA also contains "Android"
+  if (/windows phone/i.test(userAgent)) {
+    return OSType.Windows
+  }
+  if (/android/i.test(userAgent)) {
+    return OSType.Android
+  }
+  // https://stackoverflow.com/questions/9038625/detect-if-device-is-ios/9039885#9039885
+  if (iOSDetect() || (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream)) {
+    return OSType.iOS
+  }
+  return OSType.Unknown
+}
+
 export function useWindowDimensions () {
   const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions())
   const isMobile = !(windowDimensions.width >= 992)
+
+  const os = isMobile && getMobileOS()
 
   useEffect(() => {
     function handleResize () {
@@ -252,7 +289,7 @@ export function useWindowDimensions () {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  return { isMobile, ...windowDimensions }
+  return { isMobile, os, ...windowDimensions }
 }
 
 /**

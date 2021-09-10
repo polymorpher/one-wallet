@@ -6,6 +6,7 @@ import api from '../api'
 import ONEUtil from '../../../lib/util'
 import ONEConstants from '../../../lib/constants'
 import ONENames from '../../../lib/names'
+import { MigrationPayload } from '../proto/oauthMigration'
 // import { uniqueNamesGenerator, colors, animals } from 'unique-names-generator'
 import {
   Button,
@@ -28,7 +29,7 @@ import qrcode from 'qrcode'
 import storage from '../storage'
 import walletActions from '../state/modules/wallet/actions'
 import WalletConstants from '../constants/wallet'
-import util, { useWindowDimensions } from '../util'
+import util, { useWindowDimensions, OSType } from '../util'
 import { handleAPIError, handleAddressError } from '../handler'
 import { Hint, Heading, InputBox, Warning } from '../components/Text'
 import OtpBox from '../components/OtpBox'
@@ -56,6 +57,49 @@ const generateOtpSeed = () => {
   return window.crypto.getRandomValues(otpSeedBuffer)
 }
 
+const OTPUriMode = {
+  STANDARD: 0,
+  MIGRATION: 1,
+  TOTP: 2, // seems deprecated, should not use unless it is for testing
+}
+
+const getQRCodeUri = (otpSeed, otpDisplayName, mode = OTPUriMode.STANDARD) => {
+  if (mode === OTPUriMode.STANDARD) {
+    // otpauth://TYPE/LABEL?PARAMETERS
+    return `otpauth://totp/${otpDisplayName}?secret=${b32.encode(otpSeed)}&issuer=Harmony`
+  }
+  if (mode === OTPUriMode.MIGRATION) {
+    const payload = MigrationPayload.create({ otp_parameters: [{ issuer: 'Harmony', secret: otpSeed, name: otpDisplayName }] })
+    const encoded = MigrationPayload.encode(payload).finish().toString('base64')
+    console.log(encoded)
+    return `otpauth-migration://offline?data=${encoded}`
+  }
+  return null
+}
+
+const getSecondCodeName = (name) => `${name} - 2nd`
+
+// not constructing qrCodeData on the fly (from seed) because generating a PNG takes noticeable amount of time. Caller needs to make sure qrCodeData is consistent with seed
+const buildQRCodeComponent = ({ seed, name, os, isMobile, qrCodeData }) => {
+  const image = <Image src={qrCodeData} preview={false} width={isMobile ? 192 : 256} />
+  let href
+  if (os === OSType.iOS) {
+    href = getQRCodeUri(seed, name, OTPUriMode.MIGRATION)
+  } else if (os === OSType.Android) {
+    href = getQRCodeUri(seed, name, OTPUriMode.STANDARD)
+  } else if (isMobile) {
+    // To test in more devices
+    href = getQRCodeUri(seed, name, OTPUriMode.MIGRATION)
+  }
+
+  return (
+    <Row justify='center'>
+      {isMobile && qrCodeData && <Link href={href} target='_blank' rel='noreferrer'>{image}</Link>}
+      {!isMobile && qrCodeData && image}
+    </Row>
+  )
+}
+
 const sectionViews = {
   setupWalletDetails: 1,
   setupOtp: 2,
@@ -67,7 +111,7 @@ const sectionViews = {
 const Create = () => {
   const generateNewOtpName = () => genName(Object.keys(wallets).map(k => wallets[k].name))
 
-  const { isMobile } = useWindowDimensions()
+  const { isMobile, os } = useWindowDimensions()
   const dispatch = useDispatch()
   const history = useHistory()
   const network = useSelector(state => state.wallet.network)
@@ -126,15 +170,10 @@ const Create = () => {
     minorVersion: ONEConstants.MinorVersion,
   })
 
-  const getQRCodeUri = (otpSeed, otpDisplayName) => {
-    // otpauth://TYPE/LABEL?PARAMETERS
-    return `otpauth://totp/${otpDisplayName}?secret=${b32.encode(otpSeed)}&issuer=Harmony`
-  }
-
   useEffect(() => {
     (async function () {
-      const otpUri = getQRCodeUri(seed, name)
-      const secondOtpUri = getQRCodeUri(seed2, `${name} - 2nd`)
+      const otpUri = getQRCodeUri(seed, name, OTPUriMode.MIGRATION)
+      const secondOtpUri = getQRCodeUri(seed2, getSecondCodeName(name), OTPUriMode.MIGRATION)
       const otpQrCodeData = await qrcode.toDataURL(otpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       const secondOtpQrCodeData = await qrcode.toDataURL(secondOtpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       setQRCodeData(otpQrCodeData)
@@ -301,9 +340,7 @@ const Create = () => {
             {/* <Heading>Now, scan the QR code with your Google Authenticator</Heading> */}
             <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
             <Hint>You need the 6-digit code from Google authenticator to transfer funds. You can restore your wallet using Google authenticator on any device.</Hint>
-            <Row justify='center'>
-              {qrCodeData && <Image src={qrCodeData} preview={false} width={isMobile ? 192 : 256} />}
-            </Row>
+            {buildQRCodeComponent(seed, name, os, isMobile, qrCodeData)}
           </Space>
         </Row>
         <Row>
@@ -336,15 +373,13 @@ const Create = () => {
           <Space direction='vertical'>
             <Heading>Create Your 1wallet (second code)</Heading>
             <Hint align='center'>Scan with your Google Authenticator to setup the <b>second</b> code</Hint>
-            <Row justify='center'>
-              {secondOtpQrCodeData && <Image src={secondOtpQrCodeData} preview={false} width={isMobile ? 192 : 256} />}
-            </Row>
+            {buildQRCodeComponent(seed2, getSecondCodeName(name), os, isMobile, secondOtpQrCodeData)}
           </Space>
         </Row>
         <Row>
           <Space direction='vertical' size='large' align='center'>
             <Hint>Type in the <b>second</b> 6-digit code from Google authenticator</Hint>
-            <Hint style={{ fontSize: isMobile ? 12 : undefined }}>Code for <b>Harmony ({name} - 2nd)</b></Hint>
+            <Hint style={{ fontSize: isMobile ? 12 : undefined }}>Code for <b>Harmony ({getSecondCodeName(name)})</b></Hint>
             <OtpBox
               shouldAutoFocus={!isMobile}
               ref={otpRef}
