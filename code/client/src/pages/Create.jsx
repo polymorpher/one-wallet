@@ -69,10 +69,23 @@ const getQRCodeUri = (otpSeed, otpDisplayName, mode = OTPUriMode.STANDARD) => {
     return `otpauth://totp/${otpDisplayName}?secret=${b32.encode(otpSeed)}&issuer=Harmony`
   }
   if (mode === OTPUriMode.MIGRATION) {
-    const payload = MigrationPayload.create({ otp_parameters: [{ issuer: 'Harmony', secret: otpSeed, name: otpDisplayName }] })
-    const encoded = MigrationPayload.encode(payload).finish().toString('base64')
-    console.log(encoded)
-    return `otpauth-migration://offline?data=${encoded}`
+    const payload = MigrationPayload.create({
+      otpParameters: [{
+        issuer: 'Harmony',
+        secret: otpSeed,
+        name: otpDisplayName,
+        algorithm: MigrationPayload.Algorithm.ALGORITHM_SHA1,
+        digits: MigrationPayload.DigitCount.DIGIT_COUNT_SIX,
+        type: MigrationPayload.OtpType.OTP_TYPE_TOTP,
+      }],
+      version: 1,
+      batchIndex: 0,
+      batchSize: 1,
+    })
+    const bytes = MigrationPayload.encode(payload).finish()
+    const b64 = Buffer.from(bytes).toString('base64')
+    // console.log({ payload, bytes, b64 })
+    return `otpauth-migration://offline?data=${b64}`
   }
   return null
 }

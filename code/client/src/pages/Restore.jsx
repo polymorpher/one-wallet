@@ -64,7 +64,9 @@ const Restore = () => {
     if (e && !secret) {
       try {
         const data = new URL(e).searchParams.get('data')
-        const params = MigrationPayload.decode(Buffer.from(data, 'base64')).otpParameters
+        const decoded = MigrationPayload.decode(Buffer.from(data, 'base64'))
+        // console.log(decoded)
+        const params = decoded.otpParameters
         const filteredParams = params.filter(e => e.issuer === 'ONE Wallet' || e.issuer === 'Harmony')
         if (filteredParams.length > 2) {
           message.error('You selected more than one authenticator entry to export. Please reselect on Google Authenticator')
