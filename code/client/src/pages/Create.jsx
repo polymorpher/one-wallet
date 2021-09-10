@@ -340,7 +340,7 @@ const Create = () => {
             {/* <Heading>Now, scan the QR code with your Google Authenticator</Heading> */}
             <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
             <Hint>You need the 6-digit code from Google authenticator to transfer funds. You can restore your wallet using Google authenticator on any device.</Hint>
-            {buildQRCodeComponent({seed, name, os, isMobile, qrCodeData})}
+            {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData })}
           </Space>
         </Row>
         <Row>
@@ -373,7 +373,7 @@ const Create = () => {
           <Space direction='vertical'>
             <Heading>Create Your 1wallet (second code)</Heading>
             <Hint align='center'>Scan with your Google Authenticator to setup the <b>second</b> code</Hint>
-            {buildQRCodeComponent({seed2, getSecondCodeName(name), os, isMobile, secondOtpQrCodeData})}
+            {buildQRCodeComponent({ seed: seed2, name: getSecondCodeName(name), os, isMobile, qrCodeData: secondOtpQrCodeData })}
           </Space>
         </Row>
         <Row>
