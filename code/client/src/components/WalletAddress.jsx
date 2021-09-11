@@ -47,11 +47,11 @@ const MOUSE_HOVER_DETECTION_DELAY = 1000
  * Renders the provided wallet's address in either ONE style or normal.
  * Provides the ability to copy the address and link to wallet explorer.
  */
-const WalletAddress = ({ showLabel, labelOverride, address, shorten, onToggle, addressStyle }) => {
+const WalletAddress = ({ showLabel, labelOverride, address, shorten, onToggle, addressStyle, alwaysShowOptions }) => {
   const network = useSelector(state => state.wallet.network)
   const knownAddresses = useSelector(state => state.wallet.knownAddresses)
   const [showAddressOptions, setShowAddressOptions] = useState(false)
-  const [showAddressOptionsLocked, setShowAddressOptionsLocked] = useState(false)
+  const [showAddressOptionsLocked, setShowAddressOptionsLocked] = useState(alwaysShowOptions || false)
   const [mouseOnOptions, setMouseOnOptions] = useState(false)
   const [mouseOnAddress, setMouseOnAddress] = useState(false)
   const [showOneAddress, setShowOneAddress] = useState(true)
@@ -78,13 +78,21 @@ const WalletAddress = ({ showLabel, labelOverride, address, shorten, onToggle, a
     }
   }, [mouseOnOptions, mouseOnAddress])
 
+  const addressOnClick = () => {
+    if (alwaysShowOptions) {
+      navigator.clipboard && navigator.clipboard.writeText(currentDisplayAddress)
+      return
+    }
+    setShowAddressOptionsLocked(!showAddressOptionsLocked)
+  }
+
   return (
     <Space size='small' align='baseline'>
       <Tooltip title={addressTooltipText}>
         <Button
           type='text'
           style={{ color: 'rgba(0, 0, 0, 0.45)', textAlign: 'left', ...addressStyle }}
-          onClick={() => setShowAddressOptionsLocked(!showAddressOptionsLocked)}
+          onClick={addressOnClick}
           onMouseEnter={() => setMouseOnAddress(true)}
           onMouseLeave={() => setTimeout(() => setMouseOnAddress(false), MOUSE_HOVER_DETECTION_DELAY)}
         >

@@ -10,6 +10,7 @@ import { SearchOutlined, LockOutlined, CloseOutlined, SettingOutlined } from '@a
 import config from '../config'
 import util, { useWindowDimensions } from '../util'
 import { Hint } from '../components/Text'
+import WalletAddress from './WalletAddress'
 // import Paths from '../constants/paths'
 const { Text, Link } = Typography
 
@@ -94,7 +95,7 @@ const WalletHeader = () => {
   const shortAddress = util.ellipsisAddress(oneAddress)
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
-  const subtitle = wallet.name ? `${wallet.name} (${shortAddress})` : shortAddress
+  const subtitle = <>{wallet.name && <Hint style={{ marginRight: 32 }}>{wallet.name}</Hint>}<WalletAddress address={address} shorten={false} alwaysShowOptions /></>
   const [settingsVisible, setSettingsVisible] = useState(false)
   const [relayerEditVisible, setRelayerEditVisible] = useState(false)
   return (
