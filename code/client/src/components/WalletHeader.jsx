@@ -93,7 +93,7 @@ const WalletHeader = () => {
   const address = routeAddress && util.safeNormalizedAddress(routeAddress) || ''
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
-  const subtitle = <>{wallet.name && <Hint style={{ marginRight: 32 }}>{wallet.name}</Hint>}<WalletAddress address={address} shorten={false} alwaysShowOptions /></>
+  const subtitle = address && <>{wallet.name && <Hint style={{ marginRight: 32 }}>{wallet.name}</Hint>}<WalletAddress address={address} shorten={false} alwaysShowOptions /></>
   const [settingsVisible, setSettingsVisible] = useState(false)
   const [relayerEditVisible, setRelayerEditVisible] = useState(false)
   return (
