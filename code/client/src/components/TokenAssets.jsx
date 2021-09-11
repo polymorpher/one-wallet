@@ -56,3 +56,38 @@ export const DefaultTrackedERC20 = network => {
 export const withKeys = (trackedTokens) => {
   return trackedTokens.map(tt => ({ ...tt, key: ONEUtil.hexView(ONE.computeTokenKey(tt).hash) }))
 }
+
+export const HarmonyPunk = {
+  contractAddress: '0xb938147a4f7a17e0c722eb82b82fb4436ae64d58',
+  fakeImagePattern: /https:\/\/na6t7p57pk\.execute-api\.us-east-1\.amazonaws.com\/onePunkURL\?index=([0-9]+)/,
+  realImageTemplate: 'https://punk-one-assets.s3.amazonaws.com/one_punk_{{id}}.png'
+}
+
+export const NFTMetadataTransformer = ({ contractAddress, metadata }) => {
+  if (contractAddress === HarmonyPunk.contractAddress) {
+    const m = metadata.image.match(HarmonyPunk.fakeImagePattern)
+    const image = HarmonyPunk.realImageTemplate.replaceAll('{{id}}', m[1])
+    return { ...metadata, image }
+  }
+  return metadata
+}
+
+export const TestPunk = {
+  id: '987',
+  name: 'Punk 987',
+  image: 'https://na6t7p57pk.execute-api.us-east-1.amazonaws.com/onePunkURL?index=987',
+  attributes: [
+    {
+      value: 'Nerd Glasses',
+      trait_type: 'Eyes'
+    },
+    {
+      value: 'White Male',
+      trait_type: 'Body'
+    },
+    {
+      value: 'Muttonchops',
+      trait_type: 'Beard'
+    }
+  ]
+}

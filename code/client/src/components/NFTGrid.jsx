@@ -6,7 +6,7 @@ import { AverageRow, TallRow } from './Grid'
 import { api } from '../../../lib/api'
 import util, { useWindowDimensions } from '../util'
 import { Warning, Heading } from './Text'
-import { withKeys } from './TokenAssets'
+import { NFTMetadataTransformer, withKeys } from './TokenAssets'
 import { useDispatch, useSelector } from 'react-redux'
 import ONEConstants from '../../../lib/constants'
 import { FallbackImage } from '../constants/ui'
@@ -17,7 +17,6 @@ import { useHistory } from 'react-router'
 const { Text, Title } = Typography
 
 const GridItem = styled(Card.Grid)`
-  
   &:hover{
     opacity: ${props => props['data-full-view'] ? 1.0 : 0.5};
   }
@@ -39,7 +38,9 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
     const f = async function () {
       try {
         const metadata = await api.web.get({ link: uri })
-        setMetadata(metadata)
+        const transformed = NFTMetadataTransformer({ contractAddress, metadata })
+        console.log(transformed)
+        setMetadata(transformed)
       } catch (ex) {
         const identifier = name && symbol ? `${name} (${symbol}) (${uri})` : `${uri}`
         message.error(`Unable to retrieve data for token ${identifier}`)
@@ -72,7 +73,7 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
   return (
     <GridItem style={fullView ? styleFullView : style} hoverable={false} onClick={() => !fullView && interactable && setFullView(true)} data-full-view={fullView}>
       {!fullView &&
-        <Row style={{ height: wrapperStyle.height || 'auto' }}>
+        <Row style={{ height: wrapperStyle.height || 'auto' }} justify='center'>
           <Image
             preview={false}
             src={util.replaceIPFSLink(metadata?.image) || FallbackImage}
