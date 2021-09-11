@@ -90,7 +90,6 @@ const WalletHeader = () => {
   const history = useHistory()
   const match = useRouteMatch('/:action/:address?')
   const { action, address: routeAddress } = match ? match.params : {}
-  const oneAddress = routeAddress && util.safeOneAddress(routeAddress) || ''
   const address = routeAddress && util.safeNormalizedAddress(routeAddress) || ''
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
