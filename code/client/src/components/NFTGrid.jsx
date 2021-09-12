@@ -111,19 +111,11 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
           >
             {imageType?.startsWith('video')
               ? <ReactPlayer url={util.replaceIPFSLink(metadata?.image)} style={imageStyle} playing controls width={imageStyle.width} height={imageStyle.height || 'auto'} />
-              : <>
-                <Image
+              : <Image
                   onClick={() => setFullView(false)}
-                  preview={false} src={util.replaceIPFSLink(metadata?.image)} fallback={FallbackImage}
+                  preview={false} src={animationUrl ? util.replaceIPFSLink(animationUrl) : util.replaceIPFSLink(metadata?.image)} fallback={FallbackImage}
                   wrapperStyle={wrapperStyle} style={{ objectFit: 'contain', width: '100%', height: '100%' }}
-                />
-                {animationUrl &&
-                  <Image
-                    onClick={() => setFullView(false)}
-                    preview={false} src={util.replaceIPFSLink(animationUrl)} fallback={FallbackImage}
-                    wrapperStyle={wrapperStyle} style={{ objectFit: 'contain', width: '100%', height: '100%' }}
-                  />}
-                </>}
+                />}
           </Carousel>
         </Row>}
       {fullView && metadata &&
@@ -137,7 +129,7 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
             <Text>{metadata.description}</Text>
             <AverageRow>
               <Space size='large'>
-                {metadata.image && <Button type='link' href={util.replaceIPFSLink(metadata.image)} target='_blank' style={{ padding: 0 }}>Download Image</Button>}
+                {metadata.image && <Button type='link' href={util.replaceIPFSLink(metadata.image)} target='_blank' style={{ padding: 0 }}>Download Asset</Button>}
                 {metadata.animation_url && <Button type='link' href={util.replaceIPFSLink(animationUrl)} target='_blank' style={{ padding: 0 }}>Download Animation</Button>}
               </Space>
             </AverageRow>
@@ -175,6 +167,10 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
             <AverageRow align='middle'>
               <Col span={isMobile ? 24 : 12}> <Title level={3}>Creator</Title></Col>
               <Col> <Text>{metadata?.properties?.artist}</Text> </Col>
+            </AverageRow>}
+          {imageType?.startsWith('video') &&
+            <AverageRow justify='end'>
+              <Button type='link' size='large' onClick={() => setFullView(false)}>Minimize</Button>
             </AverageRow>}
         </div>}
     </GridItem>
