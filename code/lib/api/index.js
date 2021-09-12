@@ -162,6 +162,10 @@ const api = {
     get: async ({ link }) => {
       const { data } = await axios.get(link)
       return data
+    },
+    head: async ({ link }) => {
+      const { headers } = await axios.head(link)
+      return headers
     }
   },
   binance: {
