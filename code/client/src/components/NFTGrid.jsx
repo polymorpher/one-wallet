@@ -14,6 +14,7 @@ import styled from 'styled-components'
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 import Paths from '../constants/paths'
 import { useHistory } from 'react-router'
+import ReactPlayer from 'react-player'
 const { Text, Title } = Typography
 
 const GridItem = styled(Card.Grid)`
@@ -30,6 +31,7 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
   const [fullView, setFullView] = useState(false)
   const bech32ContractAddress = util.safeOneAddress(contractAddress)
   const abbrBech32ContractAddress = util.ellipsisAddress(bech32ContractAddress)
+  const [imageType, setImageType] = useState()
 
   uri = util.replaceIPFSLink(uri)
   // console.log({ uri })
@@ -39,7 +41,10 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
       try {
         const metadata = await api.web.get({ link: uri })
         const transformed = NFTMetadataTransformer({ contractAddress, metadata })
-        console.log(transformed)
+        if (transformed.image) {
+          const { 'content-type': contentType } = await api.web.head({ link: util.replaceIPFSLink(transformed.image) })
+          setImageType(contentType)
+        }
         setMetadata(transformed)
       } catch (ex) {
         const identifier = name && symbol ? `${name} (${symbol}) (${uri})` : `${uri}`
@@ -69,18 +74,22 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
 
   const interactable = !disabled && util.isNonZeroBalance(balance)
 
+  const imageStyle = { objectFit: 'cover', width: '100%', height: isMobile ? undefined : '100%' }
+
   // console.log(util.replaceIPFSLink(metadata?.image))
   return (
     <GridItem style={fullView ? styleFullView : style} hoverable={false} onClick={() => !fullView && interactable && setFullView(true)} data-full-view={fullView}>
       {!fullView &&
         <Row style={{ height: wrapperStyle.height || 'auto' }} justify='center'>
-          <Image
-            preview={false}
-            src={util.replaceIPFSLink(metadata?.image) || FallbackImage}
-            fallback={FallbackImage}
-            wrapperStyle={wrapperStyle}
-            style={{ objectFit: 'cover', width: '100%', height: isMobile ? undefined : '100%' }}
-          />
+          {imageType?.startsWith('video')
+            ? <ReactPlayer url={util.replaceIPFSLink(metadata?.image)} style={imageStyle} width={imageStyle.width} height={imageStyle.height || 'auto'} playing muted />
+            : <Image
+                preview={false}
+                src={util.replaceIPFSLink(metadata?.image) || FallbackImage}
+                fallback={FallbackImage}
+                wrapperStyle={wrapperStyle}
+                style={imageStyle}
+              />}
         </Row>}
       {!fullView &&
         <Row justify='space-between' style={{ padding: 8 }}>
@@ -100,17 +109,21 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
             prevArrow={<SlickButtonFix><LeftOutlined /></SlickButtonFix>}
             nextArrow={<SlickButtonFix><RightOutlined /></SlickButtonFix>}
           >
-            <Image
-              onClick={() => setFullView(false)}
-              preview={false} src={util.replaceIPFSLink(metadata?.image)} fallback={FallbackImage}
-              wrapperStyle={wrapperStyle} style={{ objectFit: 'contain', width: '100%', height: '100%' }}
-            />
-            {animationUrl &&
-              <Image
-                onClick={() => setFullView(false)}
-                preview={false} src={util.replaceIPFSLink(animationUrl)} fallback={FallbackImage}
-                wrapperStyle={wrapperStyle} style={{ objectFit: 'contain', width: '100%', height: '100%' }}
-              />}
+            {imageType?.startsWith('video')
+              ? <ReactPlayer url={util.replaceIPFSLink(metadata?.image)} style={imageStyle} playing controls width={imageStyle.width} height={imageStyle.height || 'auto'} />
+              : <>
+                <Image
+                  onClick={() => setFullView(false)}
+                  preview={false} src={util.replaceIPFSLink(metadata?.image)} fallback={FallbackImage}
+                  wrapperStyle={wrapperStyle} style={{ objectFit: 'contain', width: '100%', height: '100%' }}
+                />
+                {animationUrl &&
+                  <Image
+                    onClick={() => setFullView(false)}
+                    preview={false} src={util.replaceIPFSLink(animationUrl)} fallback={FallbackImage}
+                    wrapperStyle={wrapperStyle} style={{ objectFit: 'contain', width: '100%', height: '100%' }}
+                  />}
+                </>}
           </Carousel>
         </Row>}
       {fullView && metadata &&

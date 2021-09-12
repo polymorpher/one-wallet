@@ -149,7 +149,7 @@ const Send = ({
       title={
         <Title level={isMobile ? 5 : 2}>
           {
-            isMobile ? '' : 'Send:'
+            isMobile ? '' : 'Send: '
           }
           {titleSuffix}
         </Title>
