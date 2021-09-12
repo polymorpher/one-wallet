@@ -33,7 +33,7 @@ const computeContractAddress = (nonce) => {
 }
 
 const timeString = timestamp => {
-  return moment(timestamp).tz('America/Los_Angeles').format('YYYY-MM-DDThh:mm:ssZ')
+  return moment(timestamp).tz('America/Los_Angeles').format('YYYY-MM-DDTHH:mm:ssZ')
 }
 
 async function f () {
