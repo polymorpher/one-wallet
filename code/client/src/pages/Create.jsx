@@ -102,7 +102,7 @@ const getSecondCodeName = (name) => `${name} - 2nd`
 
 // not constructing qrCodeData on the fly (from seed) because generating a PNG takes noticeable amount of time. Caller needs to make sure qrCodeData is consistent with seed
 const buildQRCodeComponent = ({ seed, name, os, isMobile, qrCodeData }) => {
-  const image = <Image src={qrCodeData} preview={false} width={isMobile ? 192 : 256} />
+  const image = (url) => <Image src={qrCodeData} preview={false} width={isMobile ? 192 : 256} onClick={url && (() => window.open(url, '_self').focus())} />
   let href
   if (os === OSType.iOS) {
     href = getQRCodeUri(seed, name, OTPUriMode.MIGRATION)
@@ -115,8 +115,8 @@ const buildQRCodeComponent = ({ seed, name, os, isMobile, qrCodeData }) => {
 
   return (
     <Row justify='center'>
-      {isMobile && qrCodeData && <Link href={href} target='_blank' rel='noreferrer'>{image}</Link>}
-      {!isMobile && qrCodeData && image}
+      {isMobile && qrCodeData && image(href)}
+      {!isMobile && qrCodeData && image()}
     </Row>
   )
 }
