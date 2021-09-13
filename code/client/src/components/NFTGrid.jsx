@@ -41,7 +41,7 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
       try {
         const metadata = await api.web.get({ link: uri })
         const transformed = NFTMetadataTransformer({ contractAddress, metadata })
-        if (transformed.image) {
+        if (transformed.image && (transformed.image.length - transformed.image.lastIndexOf('.')) > 5) {
           const { 'content-type': contentType } = await api.web.head({ link: util.replaceIPFSLink(transformed.image) })
           setImageType(contentType)
         }
