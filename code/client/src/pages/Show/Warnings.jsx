@@ -32,11 +32,9 @@ const Warnings = ({ address }) => {
               <Text>
                 Please save your wallet address or get a domain name. You may need it later to restore your wallet, in case you lost the wallet.
               </Text>
-              <Row justify='space-between'>
-                <Text copyable>
-                  {
-                    isMobile ? util.ellipsisAddress(displayOneAddress) : displayOneAddress
-                  }
+              <Row justify={isMobile ? 'center' : 'space-between'} style={{ flexWrap: 'wrap' }}>
+                <Text copyable style={isMobile && { width: '100%', marginBottom: 16 }}>
+                  {displayOneAddress}
                 </Text>
                 <Button shape='round' type='primary' onClick={confirmNoteDownAddress}>Dismiss</Button>
               </Row>
