@@ -48,6 +48,7 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
         setMetadata(transformed)
       } catch (ex) {
         const identifier = name && symbol ? `${name} (${symbol}) (${uri})` : `${uri}`
+        console.error(ex)
         message.error(`Unable to retrieve data for token ${identifier}`)
       }
     }
