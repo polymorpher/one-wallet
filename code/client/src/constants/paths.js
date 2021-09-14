@@ -3,6 +3,7 @@ export default {
   root: base + '/',
   dev: base + '/dev',
   create: base + '/create',
+  create2: base + '/create2',
   wallets: base + '/wallets',
   restore: base + '/restore',
 

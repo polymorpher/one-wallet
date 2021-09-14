@@ -49,6 +49,7 @@ const LocalRoutes = () => {
             />
             <Route path={Paths.auth} component={WalletAuth} />
             <Route path={Paths.create} component={CreatePage} />
+            <Route path={Paths.create2} render={() => <CreatePage advancedSetting />} />
             <Route path={Paths.wallets} component={ListPage} />
             <Route path={Paths.restore} component={RestorePage} />
             <Route path={Paths.show} component={ShowPage} />

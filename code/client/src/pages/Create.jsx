@@ -129,14 +129,14 @@ const sectionViews = {
   walletSetupDone: 5
 }
 
-const Create = () => {
-  const generateNewOtpName = () => genName(Object.keys(wallets).map(k => wallets[k].name))
-
+const Create = ({ advancedSetting }) => {
+  const dev = useSelector(state => state.wallet.dev)
   const { isMobile, os } = useWindowDimensions()
   const dispatch = useDispatch()
   const history = useHistory()
   const network = useSelector(state => state.wallet.network)
   const wallets = useSelector(state => state.wallet.wallets)
+  const generateNewOtpName = () => genName(Object.keys(wallets).map(k => wallets[k].name))
   const [name, setName] = useState(generateNewOtpName())
   // eslint-disable-next-line no-unused-vars
   const [seed, setSeed] = useState(generateOtpSeed())
@@ -163,7 +163,7 @@ const Create = () => {
     : oneWalletTreasurySelectOption
 
   const [lastResortAddress, setLastResortAddress] = useState(defaultRecoveryAddress)
-  const [dailyLimit] = useState(WalletConstants.defaultDailyLimit)
+  const [dailyLimit, setDailyLimit] = useState(WalletConstants.defaultDailyLimit)
 
   const [worker, setWorker] = useState()
   const [root, setRoot] = useState()
@@ -181,7 +181,6 @@ const Create = () => {
   const [qrCodeData, setQRCodeData] = useState()
   const [secondOtpQrCodeData, setSecondOtpQrCodeData] = useState()
   const [otp, setOtp] = useState('')
-
   const [deploying, setDeploying] = useState()
 
   const otpRef = useRef()
@@ -222,6 +221,18 @@ const Create = () => {
   useEffect(() => {
     const settingUpSecondOtp = section === sectionViews.setupSecondOtp
     if (otp.length !== 6) {
+      return
+    }
+    if (otp === '0x1337' || otp === 'expert') {
+      history.push(Paths.create2)
+      message.success('Expert mode unlocked')
+      setOtp('')
+      return
+    }
+    if (advancedSetting && (otp === '0x0000' || otp === 'normal')) {
+      history.push(Paths.create)
+      message.success('Expert mode disabled')
+      setOtp('')
       return
     }
     const currentSeed = settingUpSecondOtp ? seed2 : seed
@@ -376,16 +387,17 @@ const Create = () => {
               value={otp}
               onChange={setOtp}
             />
-            <Checkbox onChange={() => setDoubleOtp(!doubleOtp)}>
-              <Space>
-                <Hint style={{ fontSize: isMobile ? 12 : undefined }}>
-                  Use two codes to enhance security
-                </Hint>
-                <Tooltip title={<div>You will need to scan another QR-code on the next page. Each time you make a transaction, you will need to type in two 6-digit codes, which are shown simultaneously next to each other on your Google Authenticator.<br /><br />This is advisable if you intend to make larger transactions with this wallet</div>}>
-                  <QuestionCircleOutlined />
-                </Tooltip>
-              </Space>
-            </Checkbox>
+            {advancedSetting &&
+              <Checkbox onChange={() => setDoubleOtp(!doubleOtp)}>
+                <Space>
+                  <Hint style={{ fontSize: isMobile ? 12 : undefined }}>
+                    Use two codes to enhance security
+                  </Hint>
+                  <Tooltip title={<div>You will need to scan another QR-code on the next page. Each time you make a transaction, you will need to type in two 6-digit codes, which are shown simultaneously next to each other on your Google Authenticator.<br /><br />This is advisable if you intend to make larger transactions with this wallet</div>}>
+                    <QuestionCircleOutlined />
+                  </Tooltip>
+                </Space>
+              </Checkbox>}
           </Space>
         </Row>
       </AnimatedSection>
@@ -416,12 +428,16 @@ const Create = () => {
             <Heading>Prepare Your 1wallet</Heading>
           </Space>
         </Row>
-        {/* <Row style={{ marginBottom: 16 }}> */}
-        {/*  <Space direction='vertical' size='small'> */}
-        {/*    <Hint>Set up a daily spending limit:</Hint> */}
-        {/*    <InputBox margin={16} width={200} value={dailyLimit} onChange={({ target: { value } }) => setDailyLimit(parseInt(value || 0))} suffix='ONE' /> */}
-        {/*  </Space> */}
-        {/* </Row> */}
+        {advancedSetting &&
+          <Row style={{ marginBottom: 16 }}>
+            <Space direction='vertical' size='small'>
+              <Hint>Set up a daily spending limit:</Hint>
+              <InputBox
+                margin={16} width={200} value={dailyLimit}
+                onChange={({ target: { value } }) => setDailyLimit(parseInt(value || 0))} suffix='ONE'
+              />
+            </Space>
+          </Row>}
         <Row style={{ marginBottom: 48 }}>
           <Space direction='vertical' size='small' style={{ width: '100%' }}>
             <Hint>Set up a fund recovery address:</Hint>
