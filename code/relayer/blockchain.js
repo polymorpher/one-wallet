@@ -33,7 +33,7 @@ const ensureDir = async (p) => {
 }
 
 const initCachedLibraries = async () => {
-  const p = path.join(config.cache, ONEConfig.lastContractUpdateVersion || ONEConfig.version)
+  const p = path.join(config.cache, ONEConfig.lastLibraryUpdateVersion || ONEConfig.version)
   await ensureDir(p)
   for (let network of networks) {
     libraries[network] = {}

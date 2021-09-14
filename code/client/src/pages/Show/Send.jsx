@@ -202,7 +202,7 @@ const Send = ({
       </Row>
       {
         selectedToken.key === 'one' &&
-          <Row align='middle' justify='end' style={{ marginBottom: '10px' }}>
+          <Row align='middle' justify='end' style={{ marginBottom: isMobile ? 16 : 32, marginTop: isMobile ? 16 : 32, paddingRight: 80 }}>
             <Col>
               <Title
                 level={4}

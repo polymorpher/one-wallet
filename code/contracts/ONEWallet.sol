@@ -43,7 +43,7 @@ contract ONEWallet is TokenManager, IONEWallet {
     uint256 constant AUTO_RECOVERY_MANDATORY_WAIT_TIME = 14 days;
     address constant ONE_WALLET_TREASURY = 0x02F2cF45DD4bAcbA091D78502Dba3B2F431a54D3;
 
-    uint32 constant majorVersion = 0xa; // a change would require client to migrate
+    uint32 constant majorVersion = 0xb; // a change would require client to migrate
     uint32 constant minorVersion = 0x1; // a change would not require the client to migrate
 
     /// commit management
@@ -215,17 +215,8 @@ contract ONEWallet is TokenManager, IONEWallet {
     }
 
     function _transfer(address payable dest, uint256 amount) internal returns (bool) {
-        uint32 day = uint32(block.timestamp / SECONDS_PER_DAY);
-        if (day > lastTransferDay) {
-            spentToday = 0;
-            lastTransferDay = day;
-        }
-        if (spentToday + amount > dailyLimit) {
-            emit ExceedDailyLimit(amount, dailyLimit, spentToday, dest);
-            return false;
-        }
-        if (address(this).balance < amount) {
-            emit InsufficientFund(amount, address(this).balance, dest);
+        bool withinLimit = _checkDailyLimit(dest, amount);
+        if (!withinLimit) {
             return false;
         }
         spentToday += amount;
@@ -237,7 +228,6 @@ contract ONEWallet is TokenManager, IONEWallet {
             emit UnknownTransferError(dest);
             return false;
         }
-
         emit PaymentSent(amount, dest);
         return true;
     }
@@ -510,11 +500,35 @@ contract ONEWallet is TokenManager, IONEWallet {
         }
     }
 
+    function _checkDailyLimit(address dest, uint256 amount) internal returns (bool){
+        uint32 day = uint32(block.timestamp / SECONDS_PER_DAY);
+        if (day > lastTransferDay) {
+            spentToday = 0;
+            lastTransferDay = day;
+        }
+        if (spentToday + amount > dailyLimit) {
+            emit ExceedDailyLimit(amount, dailyLimit, spentToday, dest);
+            return false;
+        }
+        if (address(this).balance < amount) {
+            emit InsufficientFund(amount, address(this).balance, dest);
+            return false;
+        }
+        return true;
+    }
+
     function _callContract(address contractAddress, uint256 amount, bytes memory encodedWithSignature) internal {
+        bool withLimit = _checkDailyLimit(contractAddress, amount);
+        if (!withLimit) {
+            emit ExternalCallFailed(contractAddress, amount, encodedWithSignature, "");
+            return;
+        }
+        spentToday += amount;
         (bool success, bytes memory ret) = contractAddress.call{value : amount}(encodedWithSignature);
         if (success) {
             emit ExternalCallCompleted(contractAddress, amount, encodedWithSignature, ret);
         } else {
+            spentToday -= amount;
             emit ExternalCallFailed(contractAddress, amount, encodedWithSignature, ret);
         }
     }

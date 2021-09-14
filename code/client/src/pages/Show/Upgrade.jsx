@@ -161,9 +161,10 @@ const Upgrade = ({ address, onClose }) => {
                 <li>Your will get a new wallet address. Everything else remains the same (e.g. authenticator)</li>
                 <li>From now on, everything sent to your old address will be forwarded to the new address</li>
                 <li>All your collectibles will be immediately transferred to your new address</li>
-                <li>All tracked tokens will be immediately transferred to the new address </li>
+                <li>All tokens you sent (not swapped) at least once will be transferred to the new address </li>
                 <li>Your new address can fully control your old address, and claim anything not transferred</li>
                 {!balanceGreaterThanLimit && <li> All your funds ({formatted} ONE) will be immediately transferred to your new address</li>}
+                <li>If there is anything not automatically transferred, you will be able to reclaim them after upgrade</li>
               </ul>
             </Text>
             {balanceGreaterThanLimit &&

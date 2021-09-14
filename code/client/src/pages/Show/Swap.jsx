@@ -406,7 +406,12 @@ const Swap = ({ address }) => {
   }, [setExchangeRate, tokenTo, tokenFrom, setToAmountFormatted, setFromAmountFormatted])
 
   const setMaxSwapAmount = useCallback(() => {
-    const { balance: tokenBalance, formatted } = getTokenBalance(tokenFrom, tokenBalances, balance)
+    const { dailyLimit } = wallet
+    let { balance: tokenBalance, formatted } = getTokenBalance(tokenFrom, tokenBalances, balance)
+    if (util.isONE(tokenFrom) && new BN(dailyLimit).lt(new BN(tokenBalance))) {
+      tokenBalance = dailyLimit
+      formatted = ONEUtil.toOne(dailyLimit)
+    }
     setFromAmountFormatted(formatted || '0')
     setFromAmount(tokenBalance)
     onAmountChange(true)({ target: { value: formatted, preciseValue: tokenBalance } })
@@ -444,7 +449,8 @@ const Swap = ({ address }) => {
             newContractAddress: tokenTo.address,
             currentTrackedTokens,
             dispatch,
-            address
+            address,
+            hideWarning: true
           })
           if (tt) {
             dispatch(walletActions.trackTokens({ address, tokens: [tt] }))
