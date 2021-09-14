@@ -17,7 +17,7 @@ import { handleAddressError } from '../handler'
 import ONEConstants from '../../../lib/constants'
 const { Text, Link } = Typography
 
-export const handleTrackNewToken = async ({ newContractAddress, currentTrackedTokens, dispatch, address }) => {
+export const handleTrackNewToken = async ({ newContractAddress, currentTrackedTokens, dispatch, address, hideWarning }) => {
   if (!newContractAddress || newContractAddress.length < 42) {
     return
   }
@@ -26,7 +26,7 @@ export const handleTrackNewToken = async ({ newContractAddress, currentTrackedTo
     return
   }
   const existing = currentTrackedTokens.find(t => t.contractAddress === contractAddress)
-  if (existing) {
+  if (existing && !hideWarning) {
     message.error(`You already added ${existing.name} (${existing.symbol}) (${existing.contractAddress})`)
     return
   }
