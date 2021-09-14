@@ -82,14 +82,13 @@ library WalletGraph {
         DomainManager.reclaimReverseDomain(address(rev), fqdn);
     }
 
-    function command(IONEWallet[] storage backlinkAddresses, OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address payable dest, uint256 amount, bytes calldata data) public {
-        (address backlink, bytes memory commandData) = abi.decode(data, (address, bytes));
-        uint32 position = findBacklink(backlinkAddresses, backlink);
-        if (position == backlinkAddresses.length) {
+    function command(IONEWallet[] storage backlinkAddresses, TokenType tokenType, address contractAddress, uint256 tokenId, address payable dest, uint256 amount, bytes calldata data) public {
+        (address backlink, uint16 operationType, bytes memory commandData) = abi.decode(data, (address, uint16, bytes));
+        if (findBacklink(backlinkAddresses, backlink) == backlinkAddresses.length) {
             emit CommandFailed(backlink, "Not linked", commandData);
             return;
         }
-        try IONEWallet(backlink).reveal(new bytes32[](0), 0, bytes32(0), operationType, tokenType, contractAddress, tokenId, dest, amount, commandData){
+        try IONEWallet(backlink).reveal(new bytes32[](0), 0, bytes32(0), OperationType(operationType), tokenType, contractAddress, tokenId, dest, amount, commandData){
             emit CommandDispatched(backlink, commandData);
         }catch Error(string memory reason){
             emit CommandFailed(backlink, reason, commandData);

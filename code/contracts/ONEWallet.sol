@@ -44,7 +44,7 @@ contract ONEWallet is TokenManager, IONEWallet {
     address constant ONE_WALLET_TREASURY = 0x02F2cF45DD4bAcbA091D78502Dba3B2F431a54D3;
 
     uint32 constant majorVersion = 0xb; // a change would require client to migrate
-    uint32 constant minorVersion = 0x1; // a change would not require the client to migrate
+    uint32 constant minorVersion = 0x2; // a change would not require the client to migrate
 
     /// commit management
     CommitManager.CommitState commitState;
@@ -346,7 +346,7 @@ contract ONEWallet is TokenManager, IONEWallet {
         } else if (operationType == OperationType.FORWARD) {
             _forward(dest);
         } else if (operationType == OperationType.COMMAND) {
-            backlinkAddresses.command(operationType, tokenType, contractAddress, tokenId, dest, amount, data);
+            backlinkAddresses.command(tokenType, contractAddress, tokenId, dest, amount, data);
         } else if (operationType == OperationType.BACKLINK_ADD) {
             _backlinkAdd(data);
         } else if (operationType == OperationType.BACKLINK_DELETE) {
