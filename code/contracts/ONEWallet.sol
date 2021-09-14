@@ -44,7 +44,7 @@ contract ONEWallet is TokenManager, IONEWallet {
     address constant ONE_WALLET_TREASURY = 0x02F2cF45DD4bAcbA091D78502Dba3B2F431a54D3;
 
     uint32 constant majorVersion = 0xb; // a change would require client to migrate
-    uint32 constant minorVersion = 0x2; // a change would not require the client to migrate
+    uint32 constant minorVersion = 0x3; // a change would not require the client to migrate
 
     /// commit management
     CommitManager.CommitState commitState;
@@ -192,6 +192,7 @@ contract ONEWallet is TokenManager, IONEWallet {
             remainingAllowanceToday = address(this).balance;
         }
         _transfer(forwardAddress, remainingAllowanceToday);
+        TokenManager._recoverAllTokens(dest);
         for (uint32 i = 0; i < backlinkAddresses.length; i++) {
             try backlinkAddresses[i].reveal(new bytes32[](0), 0, bytes32(0), OperationType.FORWARD, TokenType.NONE, address(0), 0, dest, 0, bytes("")){
                 emit BackLinkUpdated(dest, address(backlinkAddresses[i]));
