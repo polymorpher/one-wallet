@@ -3,7 +3,7 @@ export default {
   interval: 30 * 1000,
   defaultDuration: 3600 * 1000 * 24 * 364,
   defaultSpendingLimit: 1000, // ONEs
-  defaultSpendingInterval: 86400, // 3600 * 24
+  defaultSpendingInterval: ONEConstants.DefaultSpendingInterval,
   minDuration: 3600 * 1000 * 24 * 120,
   maxDuration: 3600 * 1000 * 24 * 364 * 2,
   maxTransferAttempts: 3,

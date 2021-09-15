@@ -218,7 +218,7 @@ const api = {
         spendingAmount = r[0]
         lastSpendingInterval = r[1]
         spendingLimit = dailyLimit
-        spendingInterval = 86400 // default value for pre-v12 wallets i.e. dailyLimit
+        spendingInterval = ONEConstants.DefaultSpendingInterval // default value for pre-v12 wallets i.e. dailyLimit
       }
 
       if (raw) {
