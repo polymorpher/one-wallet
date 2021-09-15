@@ -206,6 +206,21 @@ const api = {
         if (config.debug) console.log(`Failed to get wallet version. Wallet might be too old. Error: ${ex.toString()}`)
       }
       const [root, height, interval, t0, lifespan, maxOperationsPerInterval, lastResortAddress, dailyLimit] = Object.keys(result).map(k => result[k])
+      let spendingLimit, spendingAmount, lastSpendingInterval, spendingInterval
+      if (majorVersion >= 12) {
+        const r = await c.getCurrentSpendingState()
+        spendingLimit = r[0]
+        spendingAmount = r[1]
+        lastSpendingInterval = r[2]
+        spendingInterval = r[3]
+      } else {
+        const r = await c.getCurrentSpending()
+        spendingAmount = r[0]
+        lastSpendingInterval = r[1]
+        spendingLimit = dailyLimit
+        spendingInterval = new BN(ONEConstants.DefaultSpendingInterval) // default value for pre-v12 wallets i.e. dailyLimit
+      }
+
       if (raw) {
         return {
           root,
@@ -218,6 +233,10 @@ const api = {
           dailyLimit: dailyLimit.toString(10),
           majorVersion: majorVersion ? majorVersion.toNumber() : 0,
           minorVersion: minorVersion ? minorVersion.toNumber() : 0,
+          spendingAmount,
+          lastSpendingInterval,
+          spendingLimit,
+          spendingInterval
         }
       }
       const intervalMs = interval.toNumber() * 1000
@@ -229,9 +248,12 @@ const api = {
         duration: lifespan.toNumber() * intervalMs,
         slotSize: maxOperationsPerInterval.toNumber(),
         lastResortAddress,
-        dailyLimit: dailyLimit.toString(10),
         majorVersion: majorVersion ? majorVersion.toNumber() : 0,
         minorVersion: minorVersion ? minorVersion.toNumber() : 0,
+        spendingLimit: spendingLimit.toString(),
+        lastSpendingInterval: lastSpendingInterval.toNumber(),
+        spendingAmount: spendingAmount.toString(),
+        spendingInterval: spendingInterval.toNumber() * 1000
       }
     },
     getBalance: async ({ address }) => {
@@ -464,8 +486,8 @@ const api = {
   },
 
   relayer: {
-    create: async ({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit, backlinks = [] }) => {
-      const { data } = await base.post('/new', { root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit, backlinks })
+    create: async ({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, spendingInterval, backlinks = [] }) => {
+      const { data } = await base.post('/new', { root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, spendingInterval, backlinks })
       return data
     },
     commit: async ({ address, hash, paramsHash, verificationHash }) => {

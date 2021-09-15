@@ -406,11 +406,11 @@ const Swap = ({ address }) => {
   }, [setExchangeRate, tokenTo, tokenFrom, setToAmountFormatted, setFromAmountFormatted])
 
   const setMaxSwapAmount = useCallback(() => {
-    const { dailyLimit } = wallet
+    const maxSpending = util.getMaxSpending(wallet)
     let { balance: tokenBalance, formatted } = getTokenBalance(tokenFrom, tokenBalances, balance)
-    if (util.isONE(tokenFrom) && new BN(dailyLimit).lt(new BN(tokenBalance))) {
-      tokenBalance = dailyLimit
-      formatted = ONEUtil.toOne(dailyLimit)
+    if (util.isONE(tokenFrom) && new BN(maxSpending).lt(new BN(tokenBalance))) {
+      tokenBalance = maxSpending
+      formatted = ONEUtil.toOne(maxSpending)
     }
     setFromAmountFormatted(formatted || '0')
     setFromAmount(tokenBalance)

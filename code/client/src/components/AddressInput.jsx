@@ -146,7 +146,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
 
     if (validAddress) {
       const existingKnownAddress = knownAddresses[validAddress]
-
+      // console.log(addressObject)
       setAddressCallback(addressObject.label
         ? {
             ...addressObject,
@@ -222,10 +222,8 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
     filterValue
   }) => {
     const oneAddress = util.safeOneAddress(address)
-    const addressDisplay = util.shouldShortenAddress({ label: label, isMobile })
-      ? util.ellipsisAddress(oneAddress)
-      : oneAddress
-
+    const addressDisplay = util.shouldShortenAddress({ label, isMobile }) ? util.ellipsisAddress(oneAddress) : oneAddress
+    const displayLabel = `${label ? `(${label})` : ''} ${addressDisplay}`
     return (
       <Select.Option key={addressDisplay} value={filterValue} style={{ padding: 0 }}>
         <Row align='left'>
@@ -236,7 +234,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
                 type='text'
                 style={{ textAlign: 'left', height: '100%', padding: '5px' }}
                 onClick={() => {
-                  onSelectAddress({ value: address, label: addressDisplay, key, domainName })
+                  onSelectAddress({ value: address, label: displayLabel, key, domainName })
                 }}
               >
                 <Space direction={isMobile ? 'vertical' : 'horizontal'}>
@@ -250,7 +248,13 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
             {
             displayDeleteButton
               ? (
-                <Button type='text' style={{ textAlign: 'left', height: '50px' }} onClick={() => deleteKnownAddress(address)}>
+                <Button
+                  type='text' style={{ textAlign: 'left', height: '50px' }} onClick={(e) => {
+                    deleteKnownAddress(address)
+                    e.stopPropagation()
+                    return false
+                  }}
+                >
                   <CloseOutlined />
                 </Button>
                 )

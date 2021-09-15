@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.4;
 
+import "./SpendingManager.sol";
 import "./CommitManager.sol";
 import "./TokenManager.sol";
 import "./DomainManager.sol";
@@ -13,55 +14,48 @@ contract ONEWallet is TokenManager, IONEWallet {
     using TokenTracker for TokenTracker.TokenTrackerState;
     using WalletGraph for IONEWallet[];
     using SignatureManager for SignatureManager.SignatureTracker;
-    /// Some variables can be immutable, but doing so would increase contract size. We are at threshold at the moment (~24KiB) so until we separate the contracts, we will do everything to minimize contract size
-    bytes32 root; // Note: @ivan brought up a good point in reducing this to 16-bytes so hash of two consecutive nodes can be done in a single word (to save gas and reduce blockchain clutter). Let's not worry about that for now and re-evalaute this later.
-    uint8 height; // including the root. e.g. for a tree with 4 leaves, the height is 3.
-    uint8 interval; // otp interval in seconds, default is 30
-    uint32 t0; // starting time block (effectiveTime (in ms) / interval)
-    uint32 lifespan;  // in number of block (e.g. 1 block per [interval] seconds)
-    uint8  maxOperationsPerInterval; // number of transactions permitted per OTP interval. Each transaction shall have a unique nonce. The nonce is auto-incremented within each interval
+    using SpendingManager for SpendingManager.SpendingState;
+    using CommitManager for CommitManager.CommitState;
+
+    CoreSetting core;
     uint32 _numLeaves; // 2 ** (height - 1)
 
     /// global mutable variables
     address payable recoveryAddress; // where money will be sent during a recovery process (or when the wallet is beyond its lifespan)
-    uint256 dailyLimit; // uint128 is sufficient, but uint256 is more efficient since EVM works with 32-byte words.
-    uint256 spentToday; // note: instead of tracking the money spent for the last 24h, we are simply tracking money spent per 24h block based on UTC time. It is good enough for now, but we may want to change this later.
-    uint32 lastTransferDay;
+
+    SpendingManager.SpendingState spendingState;
+
     uint256 lastOperationTime; // in seconds; record the time for the last successful reveal
     address payable forwardAddress; // a non-empty forward address assumes full control of this contract. A forward address can only be set upon a successful recovery or upgrade operation.
     IONEWallet[] backlinkAddresses; // to be set in next version - these are addresses forwarding funds and tokens to this contract AND must have their forwardAddress updated if this contract's forwardAddress is set or updated. One example of such an address is a previous version of the wallet "upgrading" to a new version. See more at https://github.com/polymorpher/one-wallet/issues/78
 
-    /// nonce tracking
-    mapping(uint32 => uint8) nonces; // keys: otp index (=timestamp in seconds / interval - t0); values: the expected nonce for that otp interval. An reveal with a nonce less than the expected value will be rejected
-    uint32[] nonceTracker; // list of nonces keys that have a non-zero value. keys cannot possibly result a successful reveal (indices beyond REVEAL_MAX_DELAY old) are auto-deleted during a clean up procedure that is called every time the nonces are incremented for some key. For each deleted key, the corresponding key in nonces will also be deleted. So the size of nonceTracker and nonces are both bounded.
-
     // constants
-
-    uint32 constant SECONDS_PER_DAY = 86400;
     uint256 constant AUTO_RECOVERY_TRIGGER_AMOUNT = 1 ether;
     uint32 constant MAX_COMMIT_SIZE = 120;
     uint256 constant AUTO_RECOVERY_MANDATORY_WAIT_TIME = 14 days;
     address constant ONE_WALLET_TREASURY = 0x02F2cF45DD4bAcbA091D78502Dba3B2F431a54D3;
 
-    uint32 constant majorVersion = 0xb; // a change would require client to migrate
-    uint32 constant minorVersion = 0x3; // a change would not require the client to migrate
+    uint32 constant majorVersion = 0xc; // a change would require client to migrate
+    uint32 constant minorVersion = 0x1; // a change would not require the client to migrate
 
     /// commit management
     CommitManager.CommitState commitState;
     SignatureManager.SignatureTracker signatures;
 
-    constructor(bytes32 root_, uint8 height_, uint8 interval_, uint32 t0_, uint32 lifespan_, uint8 maxOperationsPerInterval_,
-        address payable recoveryAddress_, uint256 dailyLimit_, IONEWallet[] memory backlinkAddresses_)
+    constructor(CoreSetting memory core_, SpendingManager.SpendingState memory spendingState_, address payable recoveryAddress_, IONEWallet[] memory backlinkAddresses_)
     {
-        root = root_;
-        height = height_;
-        interval = interval_;
-        t0 = t0_;
-        lifespan = lifespan_;
+        core.root = core_.root;
+        core.height = core_.height;
+        core.interval = core_.interval;
+        core.t0 = core_.t0;
+        core.lifespan = core_.lifespan;
+        core.maxOperationsPerInterval = core_.maxOperationsPerInterval;
+
+        spendingState.spendingLimit = spendingState_.spendingLimit;
+        spendingState.spendingInterval = spendingState_.spendingInterval;
+
         recoveryAddress = recoveryAddress_;
-        dailyLimit = dailyLimit_;
-        maxOperationsPerInterval = maxOperationsPerInterval_;
-        _numLeaves = uint32(2 ** (height_ - 1));
+        _numLeaves = uint32(2 ** (core_.height - 1));
         backlinkAddresses = backlinkAddresses_;
     }
 
@@ -120,26 +114,30 @@ contract ONEWallet is TokenManager, IONEWallet {
 
     function retire() external override returns (bool)
     {
-        require(uint32(block.timestamp / interval) - t0 > lifespan, "Too early");
+        require(uint32(block.timestamp / core.interval) - core.t0 > core.lifespan, "Too early");
         require(_isRecoveryAddressSet(), "Recovery not set");
         require(_drain(), "Recovery failed");
         return true;
     }
 
     function getInfo() external override view returns (bytes32, uint8, uint8, uint32, uint32, uint8, address, uint256){
-        return (root, height, interval, t0, lifespan, maxOperationsPerInterval, recoveryAddress, dailyLimit);
+        return (core.root, core.height, core.interval, core.t0, core.lifespan, core.maxOperationsPerInterval, recoveryAddress, 0);
     }
 
     function getVersion() external override pure returns (uint32, uint32){
         return (majorVersion, minorVersion);
     }
 
-    function getCurrentSpending() external override view returns (uint256, uint256){
-        return (spentToday, lastTransferDay);
+    function getCurrentSpending() external override pure returns (uint256, uint256){
+        revert();
+    }
+
+    function getCurrentSpendingState() external override view returns (uint256, uint256, uint32, uint32){
+        return spendingState.getState();
     }
 
     function getNonce() external override view returns (uint8){
-        return nonces[uint32(block.timestamp) / interval - t0];
+        return commitState.getNonce(core.interval, core.t0);
     }
 
     function getTrackedTokens() external override view returns (TokenType[] memory, address[] memory, uint256[] memory){
@@ -157,7 +155,7 @@ contract ONEWallet is TokenManager, IONEWallet {
     }
 
     function getAllCommits() external override view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
-        return CommitManager.getAllCommits(commitState);
+        return commitState.getAllCommits();
     }
 
     function findCommit(bytes32 /*hash*/) external override pure returns (bytes32, bytes32, uint32, bool){
@@ -165,11 +163,11 @@ contract ONEWallet is TokenManager, IONEWallet {
     }
 
     function lookupCommit(bytes32 hash) external override view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
-        return CommitManager.lookupCommit(commitState, hash);
+        return commitState.lookupCommit(hash);
     }
 
     function commit(bytes32 hash, bytes32 paramsHash, bytes32 verificationHash) external override {
-        CommitManager.cleanupCommits(commitState);
+        commitState.cleanupCommits();
         CommitManager.Commit memory nc = CommitManager.Commit(paramsHash, verificationHash, uint32(block.timestamp), false);
         require(commitState.commits.length < MAX_COMMIT_SIZE, "Too many");
         commitState.commits.push(hash);
@@ -186,12 +184,8 @@ contract ONEWallet is TokenManager, IONEWallet {
         if (!_isRecoveryAddressSet()) {
             _setRecoveryAddress(forwardAddress);
         }
-        uint32 today = uint32(block.timestamp / SECONDS_PER_DAY);
-        uint256 remainingAllowanceToday = today > lastTransferDay ? dailyLimit : dailyLimit - spentToday;
-        if (remainingAllowanceToday > address(this).balance) {
-            remainingAllowanceToday = address(this).balance;
-        }
-        _transfer(forwardAddress, remainingAllowanceToday);
+        uint256 budget = spendingState.getRemainingAllowance();
+        _transfer(forwardAddress, budget);
         TokenManager._recoverAllTokens(dest);
         for (uint32 i = 0; i < backlinkAddresses.length; i++) {
             try backlinkAddresses[i].reveal(new bytes32[](0), 0, bytes32(0), OperationType.FORWARD, TokenType.NONE, address(0), 0, dest, 0, bytes("")){
@@ -216,17 +210,16 @@ contract ONEWallet is TokenManager, IONEWallet {
     }
 
     function _transfer(address payable dest, uint256 amount) internal returns (bool) {
-        bool withinLimit = _checkDailyLimit(dest, amount);
-        if (!withinLimit) {
+        bool canSpend = spendingState.canSpend(dest, amount);
+        if (!canSpend) {
             return false;
         }
-        spentToday += amount;
-        (bool success,) = dest.call{value : amount}("");
+        spendingState.accountSpending(amount);
+        (bool success, bytes memory ret) = dest.call{value : amount}("");
         // we do not want to revert the whole transaction if this operation fails, since EOTP is already revealed
         if (!success) {
-            spentToday -= amount;
-            // TODO: decode error string from returned value of .call{...}("")
-            emit UnknownTransferError(dest);
+            spendingState.spentAmount -= amount;
+            emit TransferError(dest, ret);
             return false;
         }
         emit PaymentSent(amount, dest);
@@ -359,19 +352,23 @@ contract ONEWallet is TokenManager, IONEWallet {
         } else if (operationType == OperationType.REVOKE) {
             signatures.revokeHandler(contractAddress, tokenId, dest, amount);
         } else if (operationType == OperationType.CALL) {
-            _callContract(contractAddress, amount, data);
+            if (tokenId == 0) {
+                _callContract(contractAddress, amount, data);
+            } else {
+                _multiCall(data);
+            }
         }
     }
 
     /// This is just a wrapper around a modifier previously called `isCorrectProof`, to avoid "Stack too deep" error. Duh.
     function _isCorrectProof(bytes32[] calldata neighbors, uint32 position, bytes32 eotp) view internal {
-        require(neighbors.length == height - 1, "Bad neighbors");
+        require(neighbors.length == core.height - 1, "Bad neighbors");
         bytes32 h = sha256(bytes.concat(eotp));
         if (position == _numLeaves - 1) {
             // special case: recover only
             h = eotp;
         }
-        for (uint8 i = 0; i < height - 1; i++) {
+        for (uint8 i = 0; i < core.height - 1; i++) {
             if ((position & 0x01) == 0x01) {
                 h = sha256(bytes.concat(neighbors[i], h));
             } else {
@@ -379,7 +376,7 @@ contract ONEWallet is TokenManager, IONEWallet {
             }
             position >>= 1;
         }
-        require(root == h, "Proof is incorrect");
+        require(core.root == h, "Proof is incorrect");
         return;
     }
 
@@ -388,8 +385,8 @@ contract ONEWallet is TokenManager, IONEWallet {
     /// This function verifies that the first valid entry with respect to the given `eotp` in `commitState.commitLocker[hash]` matches the provided `paramsHash` and `verificationHash`. An entry is valid with respect to `eotp` iff `h3(entry.paramsHash . eotp)` equals `entry.verificationHash`
     function _verifyReveal(bytes32 hash, uint32 indexWithNonce, bytes32 paramsHash, bytes32 eotp, OperationType operationType) view internal returns (uint32)
     {
-        uint32 index = indexWithNonce / maxOperationsPerInterval;
-        uint8 nonce = uint8(indexWithNonce % maxOperationsPerInterval);
+        uint32 index = indexWithNonce / core.maxOperationsPerInterval;
+        uint8 nonce = uint8(indexWithNonce % core.maxOperationsPerInterval);
         CommitManager.Commit[] storage cc = commitState.commitLocker[hash];
         require(cc.length > 0, "No commit found");
         for (uint32 i = 0; i < cc.length; i++) {
@@ -401,9 +398,9 @@ contract ONEWallet is TokenManager, IONEWallet {
             }
             require(c.paramsHash == paramsHash, "Param mismatch");
             if (operationType != OperationType.RECOVER) {
-                uint32 counter = c.timestamp / interval - t0;
+                uint32 counter = c.timestamp / core.interval - core.t0;
                 require(counter == index, "Time mismatch");
-                uint8 expectedNonce = nonces[counter];
+                uint8 expectedNonce = commitState.nonces[counter];
                 require(nonce >= expectedNonce, "Nonce too low");
             }
             require(!c.completed, "Commit already done");
@@ -421,51 +418,12 @@ contract ONEWallet is TokenManager, IONEWallet {
         CommitManager.Commit storage c = cc[commitIndex];
         assert(c.timestamp > 0);
         if (operationType != OperationType.RECOVER) {
-            uint32 index = uint32(c.timestamp) / interval - t0;
-            _incrementNonce(index);
-            _cleanupNonces();
+            uint32 index = uint32(c.timestamp) / core.interval - core.t0;
+            commitState.incrementNonce(index);
+            commitState.cleanupNonces(core.interval, core.t0);
         }
         c.completed = true;
         lastOperationTime = block.timestamp;
-    }
-
-    /// This function removes all tracked nonce values correspond to interval blocks that are older than block.timestamp - REVEAL_MAX_DELAY. In doing so, extraneous data in the blockchain is removed, and both nonces and nonceTracker are bounded in size.
-    function _cleanupNonces() internal {
-        uint32 tMin = uint32(block.timestamp) - CommitManager.REVEAL_MAX_DELAY;
-        uint32 indexMinUnadjusted = tMin / interval;
-        uint32 indexMin = 0;
-        if (indexMinUnadjusted > t0) {
-            indexMin = indexMinUnadjusted - t0;
-        }
-        uint32[] memory nonZeroNonces = new uint32[](nonceTracker.length);
-        uint32 numValidIndices = 0;
-        for (uint8 i = 0; i < nonceTracker.length; i++) {
-            uint32 index = nonceTracker[i];
-            if (index < indexMin) {
-                delete nonces[index];
-            } else {
-                nonZeroNonces[numValidIndices] = index;
-            unchecked {
-                numValidIndices++;
-            }
-            }
-        }
-        // TODO (@polymorpher): This can be later made more efficient by inline assembly. https://ethereum.stackexchange.com/questions/51891/how-to-pop-from-decrease-the-length-of-a-memory-array-in-solidity
-        uint32[] memory reducedArray = new uint32[](numValidIndices);
-        for (uint8 i = 0; i < numValidIndices; i++) {
-            reducedArray[i] = nonZeroNonces[i];
-        }
-        nonceTracker = reducedArray;
-    }
-
-    function _incrementNonce(uint32 index) internal {
-        uint8 v = nonces[index];
-        if (v == 0) {
-            nonceTracker.push(index);
-        }
-    unchecked{
-        nonces[index] = v + 1;
-    }
     }
 
     function _isRecoveryAddressSet() internal view returns (bool) {
@@ -501,36 +459,33 @@ contract ONEWallet is TokenManager, IONEWallet {
         }
     }
 
-    function _checkDailyLimit(address dest, uint256 amount) internal returns (bool){
-        uint32 day = uint32(block.timestamp / SECONDS_PER_DAY);
-        if (day > lastTransferDay) {
-            spentToday = 0;
-            lastTransferDay = day;
-        }
-        if (spentToday + amount > dailyLimit) {
-            emit ExceedDailyLimit(amount, dailyLimit, spentToday, dest);
-            return false;
-        }
-        if (address(this).balance < amount) {
-            emit InsufficientFund(amount, address(this).balance, dest);
-            return false;
-        }
-        return true;
-    }
-
     function _callContract(address contractAddress, uint256 amount, bytes memory encodedWithSignature) internal {
-        bool withLimit = _checkDailyLimit(contractAddress, amount);
-        if (!withLimit) {
+        bool canSpend = spendingState.canSpend(contractAddress, amount);
+        if (!canSpend) {
             emit ExternalCallFailed(contractAddress, amount, encodedWithSignature, "");
             return;
         }
-        spentToday += amount;
+        spendingState.accountSpending(amount);
         (bool success, bytes memory ret) = contractAddress.call{value : amount}(encodedWithSignature);
         if (success) {
             emit ExternalCallCompleted(contractAddress, amount, encodedWithSignature, ret);
         } else {
-            spentToday -= amount;
+            spendingState.spentAmount -= amount;
             emit ExternalCallFailed(contractAddress, amount, encodedWithSignature, ret);
+        }
+    }
+
+    function _multiCall(bytes calldata data) internal {
+        (address[] memory dest, uint256[] memory amounts, bytes[] memory encoded) = abi.decode(data, (address[], uint256[], bytes[]));
+        uint256 totalAmount = 0;
+        for (uint32 i = 0; i < amounts.length; i++) {
+            totalAmount += amounts[i];
+        }
+        if (!spendingState.canSpend(address(0), totalAmount)) {
+            return;
+        }
+        for (uint32 i = 0; i < dest.length; i++) {
+            _callContract(dest[i], amounts[i], encoded[i]);
         }
     }
 

@@ -60,8 +60,8 @@ const Send = ({
   const { metadata } = selectedToken
   const titleSuffix = isNFT ? 'Collectible' : `${selectedToken.name} (${selectedToken.symbol})`
 
-  const { dailyLimit } = wallet
-  const { formatted: dailyLimitFormatted } = util.computeBalance(dailyLimit, price)
+  const maxSpending = util.getMaxSpending(wallet)
+  const { formatted: spendingLimitFormatted } = util.computeBalance(maxSpending, price)
 
   const {
     balance: transferAmount,
@@ -74,8 +74,8 @@ const Send = ({
       setInputAmount(selectedTokenBalance.toString())
       return
     }
-    if (new BN(selectedTokenBalance, 10).gt(new BN(dailyLimit, 10))) {
-      setInputAmount(dailyLimitFormatted)
+    if (new BN(selectedTokenBalance, 10).gt(new BN(maxSpending, 10))) {
+      setInputAmount(spendingLimitFormatted)
     } else {
       setInputAmount(formatted)
     }

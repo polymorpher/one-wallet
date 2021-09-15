@@ -4,9 +4,17 @@ pragma solidity ^0.8.4;
 import "./Enums.sol";
 
 interface IONEWallet {
-    event InsufficientFund(uint256 amount, uint256 balance, address dest);
-    event ExceedDailyLimit(uint256 amount, uint256 limit, uint256 current, address dest);
-    event UnknownTransferError(address dest);
+    struct CoreSetting{
+        /// Some variables can be immutable, but doing so would increase contract size. We are at threshold at the moment (~24KiB) so until we separate the contracts, we will do everything to minimize contract size
+        bytes32 root; // Note: @ivan brought up a good point in reducing this to 16-bytes so hash of two consecutive nodes can be done in a single word (to save gas and reduce blockchain clutter). Let's not worry about that for now and re-evalaute this later.
+        uint8 height; // including the root. e.g. for a tree with 4 leaves, the height is 3.
+        uint8 interval; // otp interval in seconds, default is 30
+        uint32 t0; // starting time block (effectiveTime (in ms) / interval)
+        uint32 lifespan;  // in number of block (e.g. 1 block per [interval] seconds)
+        uint8  maxOperationsPerInterval; // number of transactions permitted per OTP interval. Each transaction shall have a unique nonce. The nonce is auto-incremented within each interval
+    }
+
+    event TransferError(address dest, bytes error);
     event LastResortAddressNotSet();
     event RecoveryAddressUpdated(address dest);
     event PaymentReceived(uint256 amount, address from);
@@ -32,7 +40,10 @@ interface IONEWallet {
 
     function getVersion() external pure returns (uint32, uint32);
 
+    // DEPRECATED
     function getCurrentSpending() external view returns (uint256, uint256);
+
+    function getCurrentSpendingState() external view returns (uint256, uint256, uint32, uint32);
 
     function getNonce() external view returns (uint8);
     /// DEPRECATED

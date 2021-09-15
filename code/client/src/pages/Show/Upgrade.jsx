@@ -25,7 +25,8 @@ const CardStyle = {
   left: 0,
   top: 0,
   zIndex: 100,
-  backdropFilter: 'blur(10px)'
+  backdropFilter: 'blur(10px)',
+  webkitBackdropFilter: 'blur(10px)'
 }
 
 const Upgrade = ({ address, onClose }) => {
@@ -40,15 +41,16 @@ const Upgrade = ({ address, onClose }) => {
   const requireUpdate = majorVersion && (!(parseInt(majorVersion) >= ONEConstants.MajorVersion) || parseInt(minorVersion) === 0)
   const canUpgrade = majorVersion >= config.minUpgradableVersion
   const latestVersion = { majorVersion: ONEConstants.MajorVersion, minorVersion: ONEConstants.MinorVersion }
-  const { dailyLimit } = wallet
-  const { formatted: dailyLimitFormatted } = util.computeBalance(dailyLimit)
+  const maxSpend = util.getMaxSpending(wallet)
+  const { formatted: maxSpendFormatted } = util.computeBalance(maxSpend)
   const balances = useSelector(state => state.wallet.balances)
   const { balance, formatted } = util.computeBalance(balances[address])
   const oneLastResort = util.safeOneAddress(lastResortAddress)
   const oneAddress = util.safeOneAddress(address)
-  const balanceGreaterThanLimit = new BN(balance).gt(new BN(dailyLimit))
-  const excessBalance = balanceGreaterThanLimit ? new BN(balance).sub(new BN(dailyLimit)) : new BN(0)
-  const { formatted: excessBalanceFormatted } = util.computeBalance(excessBalance)
+  const balanceGreaterThanLimit = new BN(balance).gt(new BN(maxSpend))
+
+  const excessBalance = balanceGreaterThanLimit ? new BN(balance).sub(new BN(maxSpend)) : new BN(0)
+  const { formatted: excessBalanceFormatted } = util.computeBalance(excessBalance.toString())
   const { isMobile } = useWindowDimensions()
 
   const { state: otpState } = useOtpState()
@@ -69,7 +71,8 @@ const Upgrade = ({ address, onClose }) => {
       lifespan,
       maxOperationsPerInterval,
       lastResortAddress,
-      dailyLimit,
+      spendingLimit,
+      spendingInterval
     } = await api.blockchain.getWallet({ address, raw: true })
     const backlinks = await api.blockchain.getBacklinks({ address })
 
@@ -81,7 +84,8 @@ const Upgrade = ({ address, onClose }) => {
       lifespan,
       slotSize: maxOperationsPerInterval,
       lastResortAddress,
-      dailyLimit,
+      spendingLimit: spendingLimit.toString(),
+      spendingInterval: spendingInterval.toString(),
       backlinks: [...backlinks, address]
     })
     const { otp, otp2, invalidOtp2, invalidOtp } = prepareValidation({ state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp }, checkAmount: false, checkDest: false }) || {}
@@ -139,6 +143,7 @@ const Upgrade = ({ address, onClose }) => {
         style={{
           height: '100%',
           justifyContent: isMobile ? 'start' : 'center',
+          paddingTop: isMobile && 32,
           display: 'flex'
         }}
       >
@@ -171,7 +176,7 @@ const Upgrade = ({ address, onClose }) => {
               <Text type='danger'>
                 You have a high value wallet. There are some extra steps for you:
                 <ul>
-                  <li> {dailyLimitFormatted} ONE will be immediately transferred to your new address</li>
+                  <li> {maxSpendFormatted} ONE will be immediately transferred to your new address</li>
                   <li> You need to approve transferring the rest ({excessBalanceFormatted} ONE) by sending some ONE to the old address</li>
                   <li> Your recovery address is {oneLastResort}</li>
                   <li> Send any amount (except 1.0 ONE) to {oneAddress}</li>

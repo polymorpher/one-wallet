@@ -15,6 +15,9 @@ library CommitManager {
     struct CommitState {
         mapping(bytes32 => Commit[]) commitLocker;
         bytes32[] commits;  // self-clean on commit (auto delete commits that are beyond REVEAL_MAX_DELAY), so it's bounded by the number of commits an attacker can spam within REVEAL_MAX_DELAY time in the worst case, which is not too bad.
+        /// nonce tracking
+        mapping(uint32 => uint8) nonces; // keys: otp index (=timestamp in seconds / interval - t0); values: the expected nonce for that otp interval. An reveal with a nonce less than the expected value will be rejected
+        uint32[] nonceTracker; // list of nonces keys that have a non-zero value. keys cannot possibly result a successful reveal (indices beyond REVEAL_MAX_DELAY old) are auto-deleted during a clean up procedure that is called every time the nonces are incremented for some key. For each deleted key, the corresponding key in nonces will also be deleted. So the size of nonceTracker and nonces are both bounded.
     }
 
 
@@ -169,5 +172,48 @@ library CommitManager {
             commitState.commits.pop();
         }
         // TODO (@polymorpher): upgrade the above code after solidity implements proper support for struct-array memory-storage copy operation.
+    }
+
+    function getNonce(CommitState storage cs, uint8 interval, uint32 t0) external view returns (uint8){
+        return cs.nonces[uint32(block.timestamp) / interval - t0];
+    }
+
+    function incrementNonce(CommitState storage cs, uint32 index) external {
+        uint8 v = cs.nonces[index];
+        if (v == 0) {
+            cs.nonceTracker.push(index);
+        }
+    unchecked{
+        cs.nonces[index] = v + 1;
+    }
+    }
+
+    /// This function removes all tracked nonce values correspond to interval blocks that are older than block.timestamp - REVEAL_MAX_DELAY. In doing so, extraneous data in the blockchain is removed, and both nonces and nonceTracker are bounded in size.
+    function cleanupNonces(CommitState storage cs, uint8 interval, uint32 t0) external {
+        uint32 tMin = uint32(block.timestamp) - REVEAL_MAX_DELAY;
+        uint32 indexMinUnadjusted = tMin / interval;
+        uint32 indexMin = 0;
+        if (indexMinUnadjusted > t0) {
+            indexMin = indexMinUnadjusted - t0;
+        }
+        uint32[] memory nonZeroNonces = new uint32[](cs.nonceTracker.length);
+        uint32 numValidIndices = 0;
+        for (uint8 i = 0; i < cs.nonceTracker.length; i++) {
+            uint32 index = cs.nonceTracker[i];
+            if (index < indexMin) {
+                delete cs.nonces[index];
+            } else {
+                nonZeroNonces[numValidIndices] = index;
+            unchecked {
+                numValidIndices++;
+            }
+            }
+        }
+        // TODO (@polymorpher): This can be later made more efficient by inline assembly. https://ethereum.stackexchange.com/questions/51891/how-to-pop-from-decrease-the-length-of-a-memory-array-in-solidity
+        uint32[] memory reducedArray = new uint32[](numValidIndices);
+        for (uint8 i = 0; i < numValidIndices; i++) {
+            reducedArray[i] = nonZeroNonces[i];
+        }
+        cs.nonceTracker = reducedArray;
     }
 }

@@ -102,7 +102,8 @@ const Restore = () => {
   const [duration, setDuration] = useState()
   const [slotSize, setSlotSize] = useState()
   const [lastResortAddress, setLastResortAddress] = useState()
-  const [dailyLimit, setDailyLimit] = useState()
+  const [spendingLimit, setSpendingLimit] = useState()
+  const [spendingInterval, setSpendingInterval] = useState()
 
   const [progress, setProgress] = useState(0)
   const [progressStage, setProgressStage] = useState(0)
@@ -136,11 +137,14 @@ const Restore = () => {
             duration,
             effectiveTime,
             lastResortAddress,
-            dailyLimit,
             hseed: ONEUtil.hexView(hseed),
+            majorVersion,
+            minorVersion,
             doubleOtp,
             network,
-            ...securityParameters
+            ...securityParameters,
+            spendingLimit,
+            spendingInterval
           }
           dispatch(walletActions.updateWallet(wallet))
           dispatch(walletActions.fetchBalance({ address }))
@@ -186,9 +190,13 @@ const Restore = () => {
           duration,
           slotSize,
           lastResortAddress,
-          dailyLimit,
           majorVersion,
-          minorVersion
+          minorVersion,
+
+          spendingAmount,
+          lastSpendingInterval,
+          spendingLimit,
+          spendingInterval
         } = await api.blockchain.getWallet({ address })
         console.log('Retrieved wallet:', {
           root,
@@ -196,7 +204,11 @@ const Restore = () => {
           duration,
           slotSize,
           lastResortAddress,
-          dailyLimit
+
+          spendingAmount,
+          lastSpendingInterval,
+          spendingLimit,
+          spendingInterval
         })
         setAddress(address)
         setRoot(root)
@@ -204,7 +216,8 @@ const Restore = () => {
         setDuration(duration)
         setSlotSize(slotSize)
         setLastResortAddress(lastResortAddress)
-        setDailyLimit(dailyLimit)
+        setSpendingLimit(spendingLimit)
+        setSpendingInterval(spendingInterval)
         setSection(2)
         setMajorVersion(majorVersion)
         setMinorVersion(minorVersion)

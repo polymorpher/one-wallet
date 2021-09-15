@@ -47,27 +47,32 @@ router.use((req, res, next) => {
 // TODO: rate limiting + fingerprinting + delay with backoff
 
 router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), globalLimiter({ max: 250 }), async (req, res) => {
-  let { root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit, backlinks } = req.body
+  let { root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, backlinks, spendingInterval } = req.body
   // root is hex string, 32 bytes
   height = parseInt(height)
   interval = parseInt(interval)
   t0 = parseInt(t0)
   lifespan = parseInt(lifespan)
   slotSize = parseInt(slotSize)
+  spendingInterval = parseInt(spendingInterval)
   backlinks = backlinks || []
   lastResortAddress = lastResortAddress || config.nullAddress
   // lastResortAddress is hex string, 20 bytes
   // dailyLimit is a BN in string form
   if (config.debug || config.verbose) {
-    console.log(`[/new] `, { root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit, backlinks })
+    console.log(`[/new] `, { core: { root, height, interval, t0, lifespan, slotSize }, spending: { spendingLimit, spendingInterval }, lastResortAddress, backlinks })
   }
-  if (!checkParams({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit, backlinks }, res)) {
+  if (!checkParams({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, spendingInterval, backlinks }, res)) {
     return
+  }
+  if (spendingLimit === 0) {
+    // since we renamed dailyLimit to spendingLimit we must make sure client is not using the old name / format
+    return res.status(StatusCodes.BAD_REQUEST).json({ error: 'spendingLimit cannot be 0' })
   }
 
   // TODO parameter verification
   try {
-    const wallet = await blockchain.getContract(req.network).new(root, height, interval, t0, lifespan, slotSize, lastResortAddress, new BN(dailyLimit, 10), backlinks)
+    const wallet = await blockchain.getContract(req.network).new([root, height, interval, t0, lifespan, slotSize], [new BN(spendingLimit, 10), 0, 0, new BN(spendingInterval, 10) ], lastResortAddress, backlinks)
     return res.json({ success: true, address: wallet.address })
   } catch (ex) {
     console.error(ex)

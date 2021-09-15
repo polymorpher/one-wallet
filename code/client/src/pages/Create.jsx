@@ -130,6 +130,7 @@ const sectionViews = {
 }
 
 const Create = ({ advancedSetting }) => {
+  // eslint-disable-next-line no-unused-vars
   const dev = useSelector(state => state.wallet.dev)
   const { isMobile, os } = useWindowDimensions()
   const dispatch = useDispatch()
@@ -163,7 +164,8 @@ const Create = ({ advancedSetting }) => {
     : oneWalletTreasurySelectOption
 
   const [lastResortAddress, setLastResortAddress] = useState(defaultRecoveryAddress)
-  const [dailyLimit, setDailyLimit] = useState(WalletConstants.defaultDailyLimit)
+  const [spendingLimit, setSpendingLimit] = useState(WalletConstants.defaultSpendingLimit) // ONEs, number
+  const [spendingInterval, setSpendingInterval] = useState(WalletConstants.defaultSpendingInterval) // seconds, number
 
   const [worker, setWorker] = useState()
   const [root, setRoot] = useState()
@@ -282,7 +284,8 @@ const Create = ({ advancedSetting }) => {
         lifespan: duration / WalletConstants.interval,
         slotSize,
         lastResortAddress: normalizedAddress,
-        dailyLimit: ONEUtil.toFraction(dailyLimit).toString()
+        spendingLimit: ONEUtil.toFraction(spendingLimit).toString(),
+        spendingInterval,
       })
       // console.log('Deployed. Received contract address', address)
       const wallet = {
@@ -293,11 +296,15 @@ const Create = ({ advancedSetting }) => {
         slotSize,
         effectiveTime,
         lastResortAddress: normalizedAddress,
-        dailyLimit: ONEUtil.toFraction(dailyLimit).toString(),
+        spendingLimit: ONEUtil.toFraction(spendingLimit).toString(),
         hseed: ONEUtil.hexView(hseed),
+        spendingInterval: spendingInterval * 1000,
+        majorVersion: ONEConstants.MajorVersion,
+        minorVersion: ONEConstants.MinorVersion,
         network,
         doubleOtp,
         ...securityParameters,
+        expert: !!advancedSetting,
       }
       await storeLayers()
       dispatch(walletActions.updateWallet(wallet))
@@ -431,11 +438,23 @@ const Create = ({ advancedSetting }) => {
         {advancedSetting &&
           <Row style={{ marginBottom: 16 }}>
             <Space direction='vertical' size='small'>
-              <Hint>Set up a daily spending limit:</Hint>
-              <InputBox
-                margin={16} width={200} value={dailyLimit}
-                onChange={({ target: { value } }) => setDailyLimit(parseInt(value || 0))} suffix='ONE'
-              />
+              <Hint>Set up a spending limit:</Hint>
+              <Space align='baseline'>
+                <InputBox
+                  margin={16} width={160} value={spendingLimit}
+                  onChange={({ target: { value } }) => setSpendingLimit(parseInt(value || 0))} suffix='ONE'
+                />
+                <Hint>per</Hint>
+                <InputBox
+                  margin={16} width={128} value={spendingInterval}
+                  onChange={({ target: { value } }) => setSpendingInterval(parseInt(value || 0))}
+                />
+                <Hint>seconds</Hint>
+              </Space>
+              <Row justify='end'>
+                <Hint>≈ {humanizeDuration(spendingInterval * 1000, { largest: 2, round: true })}</Hint>
+              </Row>
+
             </Space>
           </Row>}
         <Row style={{ marginBottom: 48 }}>
@@ -491,7 +510,7 @@ const Create = ({ advancedSetting }) => {
           <Space direction='vertical'>
             <Hint>No private key. No mnemonic. Simple and Secure. </Hint>
             <Hint>To learn more, visit <Link href='https://github.com/polymorpher/one-wallet/wiki'>1wallet Wiki</Link></Hint>
-            <Hint>In Beta, your wallet is subject to a daily spending limit of {WalletConstants.defaultDailyLimit} ONE</Hint>
+            <Hint>In Beta, your wallet is subject to a daily spending limit of {WalletConstants.defaultSpendingLimit} ONE</Hint>
           </Space>
         </Row>
       </AnimatedSection>
