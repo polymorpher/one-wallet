@@ -1,6 +1,6 @@
 require('dotenv').config()
 const createError = require('http-errors')
-const rateLimit = require('express-rate-limit')
+// const rateLimit = require('express-rate-limit')
 const Fingerprint = require('express-fingerprint')
 const express = require('express')
 const path = require('path')
@@ -85,7 +85,7 @@ if (config.corsOrigins) {
   })
 }
 
-app.use(express.static(path.join(__dirname, 'public')), rateLimit({ windowMs: 1000 * 60, max: 6 }))
+app.use(express.static(path.join(__dirname, 'public')))
 app.options('*', async (_req, res) => res.end())
 app.use('/', _index)
 
