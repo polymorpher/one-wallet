@@ -31,22 +31,22 @@ library SpendingManager {
     }
 
     function canSpend(SpendingState storage ss, uint256 amount) view external returns (bool){
-        if (!isWithinLimit(ss, amount)) {
+        if (address(this).balance < amount) {
             return false;
         }
-        if (address(this).balance < amount) {
+        if (!isWithinLimit(ss, amount)) {
             return false;
         }
         return true;
     }
 
     function canSpend(SpendingState storage ss, address dest, uint256 amount) external returns (bool){
-        if (!isWithinLimit(ss, amount)) {
-            emit ExceedSpendingLimit(amount, ss.spendingLimit, ss.spentAmount, ss.spendingInterval, dest);
-            return false;
-        }
         if (address(this).balance < amount) {
             emit InsufficientFund(amount, address(this).balance, dest);
+            return false;
+        }
+        if (!isWithinLimit(ss, amount)) {
+            emit ExceedSpendingLimit(amount, ss.spendingLimit, ss.spentAmount, ss.spendingInterval, dest);
             return false;
         }
         return true;
