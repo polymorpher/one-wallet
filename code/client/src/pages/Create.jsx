@@ -437,18 +437,21 @@ const Create = ({ advancedSetting }) => {
           <Row style={{ marginBottom: 16 }}>
             <Space direction='vertical' size='small'>
               <Hint>Set up a spending limit:</Hint>
-              <Space>
+              <Space align='baseline'>
                 <InputBox
-                  margin={16} width={200} value={spendingLimit}
+                  margin={16} width={160} value={spendingLimit}
                   onChange={({ target: { value } }) => setSpendingLimit(parseInt(value || 0))} suffix='ONE'
                 />
                 <Hint>per</Hint>
                 <InputBox
-                  margin={16} width={200} value={spendingInterval}
-                  onChange={({ target: { value } }) => setSpendingInterval(parseInt(spendingInterval || 0))} suffix='ONE'
+                  margin={16} width={128} value={spendingInterval}
+                  onChange={({ target: { value } }) => setSpendingInterval(parseInt(value || 0))}
                 />
                 <Hint>seconds</Hint>
               </Space>
+              <Row justify='end'>
+                <Hint>≈ {humanizeDuration(spendingInterval * 1000, { largest: 2, round: true })}</Hint>
+              </Row>
 
             </Space>
           </Row>}
