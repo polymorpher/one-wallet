@@ -64,9 +64,9 @@
       "type": "event"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.4+commit.c7e474f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"limit\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"current\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"spendingInterval\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"ExceedSpendingLimit\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"balance\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"InsufficientFund\",\"type\":\"event\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/SpendingManager.sol\":\"SpendingManager\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/SpendingManager.sol\":{\"keccak256\":\"0xd6146dfdd3832136c95f05820e52d70c92b1b69374c7eb8ef13549145532f176\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://424332f986fef96a1d836dc81e7975dc5ddd068328ee720da11849fbeb453e9f\",\"dweb:/ipfs/QmWrHGhvPz2GhHnUkGSVtifFYcZi1Hg429ppoDyKi4SAjs\"]}},\"version\":1}",
-  "bytecode": "0x6104a261003a600b82828239805160001a60731461002d57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe730000000000000000000000000000000000000000301460806040526004361061006c5760003560e01c806305b722d6146100715780630ebee46e146100d45780634a59245e14610104578063c9c80f8f14610117578063ddc7babd14610138578063f6ea7d891461015a575b600080fd5b6100a361007f36600461038c565b80546001820154600290920154909263ffffffff8083169264010000000090041690565b60408051948552602085019390935263ffffffff918216928401929092521660608201526080015b60405180910390f35b8180156100e057600080fd5b506100f46100ef3660046103a4565b61016d565b60405190151581526020016100cb565b6100f46101123660046103e6565b610251565b61012a61012536600461038c565b61027d565b6040519081526020016100cb565b81801561014457600080fd5b506101586101533660046103e6565b6102e6565b005b6100f46101683660046103e6565b61035b565b60006101798483610251565b6101f657835460018501546002860154604080518681526020810194909452830191909152640100000000900463ffffffff1660608201526001600160a01b03841660808201527f55e3e9bfe128ba9adab893485d7dcbbbce711ba4ae2ab5154181467093f1d4239060a0015b60405180910390a150600061024a565b8147101561024657604080518381524760208201526001600160a01b038516918101919091527fd90084f259c3c1dbd378c6c23cff1383005852e0d9829773e15afdbaf15fb7d8906060016101e6565b5060015b9392505050565b60008061025d8461027d565b905082811015610271576000915050610277565b60019150505b92915050565b6002810154600090819061029f90640100000000900463ffffffff164261041f565b600284015490915060009063ffffffff908116908316116102d057600184015484546102cb919061043f565b6102d3565b83545b90504781111561024a5750479392505050565b600282015460009061030690640100000000900463ffffffff164261041f565b600284015490915063ffffffff908116908216111561033e576000600184015560028301805463ffffffff191663ffffffff83161790555b81836001015461034e9190610407565b8360010181905550505050565b60006103678383610251565b61037357506000610277565b8147101561038357506000610277565b50600192915050565b60006020828403121561039d578081fd5b5035919050565b6000806000606084860312156103b8578182fd5b8335925060208401356001600160a01b03811681146103d5578283fd5b929592945050506040919091013590565b600080604083850312156103f8578182fd5b50508035926020909101359150565b6000821982111561041a5761041a610456565b500190565b60008261043a57634e487b7160e01b81526012600452602481fd5b500490565b60008282101561045157610451610456565b500390565b634e487b7160e01b600052601160045260246000fdfea26469706673582212201f8931d4e146d4d597c7ea99f08aa55f26edd8f80b14a9b6150be458149d7ac664736f6c63430008040033",
-  "deployedBytecode": "0x730000000000000000000000000000000000000000301460806040526004361061006c5760003560e01c806305b722d6146100715780630ebee46e146100d45780634a59245e14610104578063c9c80f8f14610117578063ddc7babd14610138578063f6ea7d891461015a575b600080fd5b6100a361007f36600461038c565b80546001820154600290920154909263ffffffff8083169264010000000090041690565b60408051948552602085019390935263ffffffff918216928401929092521660608201526080015b60405180910390f35b8180156100e057600080fd5b506100f46100ef3660046103a4565b61016d565b60405190151581526020016100cb565b6100f46101123660046103e6565b610251565b61012a61012536600461038c565b61027d565b6040519081526020016100cb565b81801561014457600080fd5b506101586101533660046103e6565b6102e6565b005b6100f46101683660046103e6565b61035b565b60006101798483610251565b6101f657835460018501546002860154604080518681526020810194909452830191909152640100000000900463ffffffff1660608201526001600160a01b03841660808201527f55e3e9bfe128ba9adab893485d7dcbbbce711ba4ae2ab5154181467093f1d4239060a0015b60405180910390a150600061024a565b8147101561024657604080518381524760208201526001600160a01b038516918101919091527fd90084f259c3c1dbd378c6c23cff1383005852e0d9829773e15afdbaf15fb7d8906060016101e6565b5060015b9392505050565b60008061025d8461027d565b905082811015610271576000915050610277565b60019150505b92915050565b6002810154600090819061029f90640100000000900463ffffffff164261041f565b600284015490915060009063ffffffff908116908316116102d057600184015484546102cb919061043f565b6102d3565b83545b90504781111561024a5750479392505050565b600282015460009061030690640100000000900463ffffffff164261041f565b600284015490915063ffffffff908116908216111561033e576000600184015560028301805463ffffffff191663ffffffff83161790555b81836001015461034e9190610407565b8360010181905550505050565b60006103678383610251565b61037357506000610277565b8147101561038357506000610277565b50600192915050565b60006020828403121561039d578081fd5b5035919050565b6000806000606084860312156103b8578182fd5b8335925060208401356001600160a01b03811681146103d5578283fd5b929592945050506040919091013590565b600080604083850312156103f8578182fd5b50508035926020909101359150565b6000821982111561041a5761041a610456565b500190565b60008261043a57634e487b7160e01b81526012600452602481fd5b500490565b60008282101561045157610451610456565b500390565b634e487b7160e01b600052601160045260246000fdfea26469706673582212201f8931d4e146d4d597c7ea99f08aa55f26edd8f80b14a9b6150be458149d7ac664736f6c63430008040033",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.4+commit.c7e474f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"limit\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"current\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"spendingInterval\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"ExceedSpendingLimit\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"balance\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"InsufficientFund\",\"type\":\"event\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/SpendingManager.sol\":\"SpendingManager\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/SpendingManager.sol\":{\"keccak256\":\"0x16d35e1ae9de8419f1e642b855ff910fc3da37cb60e4c5ce59f7bdbe3765d904\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://d363953e4d88e318b30d3a3dc6e9c5726fa0d7b1083639d9746baf08209165d2\",\"dweb:/ipfs/QmS3J3gKS2jcfTzb336sy7haijyXSpUZyiYLwGQAgYvhx4\"]}},\"version\":1}",
+  "bytecode": "0x6104a261003a600b82828239805160001a60731461002d57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe730000000000000000000000000000000000000000301460806040526004361061006c5760003560e01c806305b722d6146100715780630ebee46e146100d45780634a59245e14610104578063c9c80f8f14610117578063ddc7babd14610138578063f6ea7d891461015a575b600080fd5b6100a361007f36600461038c565b80546001820154600290920154909263ffffffff8083169264010000000090041690565b60408051948552602085019390935263ffffffff918216928401929092521660608201526080015b60405180910390f35b8180156100e057600080fd5b506100f46100ef3660046103a4565b61016d565b60405190151581526020016100cb565b6100f46101123660046103e6565b610251565b61012a61012536600461038c565b61027d565b6040519081526020016100cb565b81801561014457600080fd5b506101586101533660046103e6565b6102e6565b005b6100f46101683660046103e6565b61035b565b6000814710156101cb57604080518381524760208201526001600160a01b038516918101919091527fd90084f259c3c1dbd378c6c23cff1383005852e0d9829773e15afdbaf15fb7d8906060015b60405180910390a150600061024a565b6101d58483610251565b61024657835460018501546002860154604080518681526020810194909452830191909152640100000000900463ffffffff1660608201526001600160a01b03841660808201527f55e3e9bfe128ba9adab893485d7dcbbbce711ba4ae2ab5154181467093f1d4239060a0016101bb565b5060015b9392505050565b60008061025d8461027d565b905082811015610271576000915050610277565b60019150505b92915050565b6002810154600090819061029f90640100000000900463ffffffff164261041f565b600284015490915060009063ffffffff908116908316116102d057600184015484546102cb919061043f565b6102d3565b83545b90504781111561024a5750479392505050565b600282015460009061030690640100000000900463ffffffff164261041f565b600284015490915063ffffffff908116908216111561033e576000600184015560028301805463ffffffff191663ffffffff83161790555b81836001015461034e9190610407565b8360010181905550505050565b60008147101561036d57506000610277565b6103778383610251565b61038357506000610277565b50600192915050565b60006020828403121561039d578081fd5b5035919050565b6000806000606084860312156103b8578182fd5b8335925060208401356001600160a01b03811681146103d5578283fd5b929592945050506040919091013590565b600080604083850312156103f8578182fd5b50508035926020909101359150565b6000821982111561041a5761041a610456565b500190565b60008261043a57634e487b7160e01b81526012600452602481fd5b500490565b60008282101561045157610451610456565b500390565b634e487b7160e01b600052601160045260246000fdfea2646970667358221220bba1c0f07b42a6e815d83d625da1cdbf0c156c6fb9b22f7ae0ac791469f9734164736f6c63430008040033",
+  "deployedBytecode": "0x730000000000000000000000000000000000000000301460806040526004361061006c5760003560e01c806305b722d6146100715780630ebee46e146100d45780634a59245e14610104578063c9c80f8f14610117578063ddc7babd14610138578063f6ea7d891461015a575b600080fd5b6100a361007f36600461038c565b80546001820154600290920154909263ffffffff8083169264010000000090041690565b60408051948552602085019390935263ffffffff918216928401929092521660608201526080015b60405180910390f35b8180156100e057600080fd5b506100f46100ef3660046103a4565b61016d565b60405190151581526020016100cb565b6100f46101123660046103e6565b610251565b61012a61012536600461038c565b61027d565b6040519081526020016100cb565b81801561014457600080fd5b506101586101533660046103e6565b6102e6565b005b6100f46101683660046103e6565b61035b565b6000814710156101cb57604080518381524760208201526001600160a01b038516918101919091527fd90084f259c3c1dbd378c6c23cff1383005852e0d9829773e15afdbaf15fb7d8906060015b60405180910390a150600061024a565b6101d58483610251565b61024657835460018501546002860154604080518681526020810194909452830191909152640100000000900463ffffffff1660608201526001600160a01b03841660808201527f55e3e9bfe128ba9adab893485d7dcbbbce711ba4ae2ab5154181467093f1d4239060a0016101bb565b5060015b9392505050565b60008061025d8461027d565b905082811015610271576000915050610277565b60019150505b92915050565b6002810154600090819061029f90640100000000900463ffffffff164261041f565b600284015490915060009063ffffffff908116908316116102d057600184015484546102cb919061043f565b6102d3565b83545b90504781111561024a5750479392505050565b600282015460009061030690640100000000900463ffffffff164261041f565b600284015490915063ffffffff908116908216111561033e576000600184015560028301805463ffffffff191663ffffffff83161790555b81836001015461034e9190610407565b8360010181905550505050565b60008147101561036d57506000610277565b6103778383610251565b61038357506000610277565b50600192915050565b60006020828403121561039d578081fd5b5035919050565b6000806000606084860312156103b8578182fd5b8335925060208401356001600160a01b03811681146103d5578283fd5b929592945050506040919091013590565b600080604083850312156103f8578182fd5b50508035926020909101359150565b6000821982111561041a5761041a610456565b500190565b60008261043a57634e487b7160e01b81526012600452602481fd5b500490565b60008282101561045157610451610456565b500390565b634e487b7160e01b600052601160045260246000fdfea2646970667358221220bba1c0f07b42a6e815d83d625da1cdbf0c156c6fb9b22f7ae0ac791469f9734164736f6c63430008040033",
   "immutableReferences": {},
   "generatedSources": [],
   "deployedGeneratedSources": [
@@ -2421,8 +2421,8 @@
     }
   ],
   "sourceMap": "102:2726:17:-:0;;;;;;;;;;;;;;;-1:-1:-1;;;102:2726:17;;;;;;;;;;;;;;;;;",
-  "deployedSourceMap": "102:2726:17:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;2621:204;;;;;;:::i;:::-;2739:16;;2757:14;;;;2773:23;;;;;2739:16;;2773:23;;;;;2798:19;;;;;2621:204;;;;;2500:25:21;;;2556:2;2541:18;;2534:34;;;;2587:10;2633:15;;;2613:18;;;2606:43;;;;2685:15;2680:2;2665:18;;2658:43;2487:3;2472:19;2621:204:17;;;;;;;;1799:464;;;;;;;;;;-1:-1:-1;1799:464:17;;;;;:::i;:::-;;:::i;:::-;;;1188:14:21;;1181:22;1163:41;;1151:2;1136:18;1799:464:17;1118:92:21;1273:238:17;;;;;;:::i;:::-;;:::i;813:454::-;;;;;;:::i;:::-;;:::i;:::-;;;1369:25:21;;;1357:2;1342:18;813:454:17;1324:76:21;2269:346:17;;;;;;;;;;-1:-1:-1;2269:346:17;;;;;:::i;:::-;;:::i;:::-;;1517:276;;;;;;:::i;:::-;;:::i;1799:464::-;1891:4;1911:25;1925:2;1929:6;1911:13;:25::i;:::-;1906:176;;1985:16;;2003:14;;;;2019:19;;;;1957:88;;;2013:25:21;;;2069:2;2054:18;;2047:34;;;;2097:18;;2090:34;;;;2019:19:17;;;;;2155:2:21;2140:18;;2133:51;-1:-1:-1;;;;;2221:32:21;;2215:3;2200:19;;2193:61;1957:88:17;;2000:3:21;1985:19;1957:88:17;;;;;;;;-1:-1:-1;2066:5:17;2059:12;;1906:176;2119:6;2095:21;:30;2091:145;;;2146:53;;;1607:25:21;;;2171:21:17;1663:2:21;1648:18;;1641:34;-1:-1:-1;;;;;1711:32:21;;1691:18;;;1684:60;;;;2146:53:17;;1595:2:21;1580:18;2146:53:17;1562:188:21;2091:145:17;-1:-1:-1;2252:4:17;1799:464;;;;;;:::o;1273:238::-;1359:4;1374:14;1391:25;1413:2;1391:21;:25::i;:::-;1374:42;;1439:6;1430;:15;1426:58;;;1468:5;1461:12;;;;;1426:58;1500:4;1493:11;;;1273:238;;;;;:::o;813:454::-;953:19;;;;891:7;;;;935:37;;953:19;;;;;935:15;:37;:::i;:::-;1023:23;;;;910:63;;-1:-1:-1;983:26:17;;1023:23;;;;1012:34;;;;:89;;1087:14;;;;1068:16;;:33;;1087:14;1068:33;:::i;:::-;1012:89;;;1049:16;;1012:89;983:118;;1136:21;1115:18;:42;1111:115;;;-1:-1:-1;1194:21:17;1242:18;813:454;-1:-1:-1;;;813:454:17:o;2269:346::-;2398:19;;;;2355:15;;2380:37;;2398:19;;;;;2380:15;:37;:::i;:::-;2443:23;;;;2355:63;;-1:-1:-1;2443:23:17;;;;2432:34;;;;2428:131;;;2499:1;2482:14;;;:18;2514:23;;;:34;;-1:-1:-1;;2514:34:17;;;;;;;2428:131;2602:6;2585:2;:14;;;:23;;;;:::i;:::-;2568:2;:14;;:40;;;;2269:346;;;:::o;1517:276::-;1600:4;1620:25;1634:2;1638:6;1620:13;:25::i;:::-;1615:69;;-1:-1:-1;1668:5:17;1661:12;;1615:69;1721:6;1697:21;:30;1693:73;;;-1:-1:-1;1750:5:17;1743:12;;1693:73;-1:-1:-1;1782:4:17;1517:276;;;;:::o;14:222:21:-;105:6;158:2;146:9;137:7;133:23;129:32;126:2;;;179:6;171;164:22;126:2;-1:-1:-1;207:23:21;;116:120;-1:-1:-1;116:120:21:o;241:474::-;350:6;358;366;419:2;407:9;398:7;394:23;390:32;387:2;;;440:6;432;425:22;387:2;468:23;;;-1:-1:-1;541:2:21;526:18;;513:32;-1:-1:-1;;;;;574:31:21;;564:42;;554:2;;625:6;617;610:22;554:2;377:338;;653:5;;-1:-1:-1;;;705:2:21;690:18;;;;677:32;;377:338::o;720:290::-;820:6;828;881:2;869:9;860:7;856:23;852:32;849:2;;;902:6;894;887:22;849:2;-1:-1:-1;;930:23:21;;;1000:2;985:18;;;972:32;;-1:-1:-1;839:171:21:o;2712:128::-;2752:3;2783:1;2779:6;2776:1;2773:13;2770:2;;;2789:18;;:::i;:::-;-1:-1:-1;2825:9:21;;2760:80::o;2845:217::-;2885:1;2911;2901:2;;-1:-1:-1;;;2936:31:21;;2990:4;2987:1;2980:15;3018:4;2943:1;3008:15;2901:2;-1:-1:-1;3047:9:21;;2891:171::o;3067:125::-;3107:4;3135:1;3132;3129:8;3126:2;;;3140:18;;:::i;:::-;-1:-1:-1;3177:9:21;;3116:76::o;3197:127::-;3258:10;3253:3;3249:20;3246:1;3239:31;3289:4;3286:1;3279:15;3313:4;3310:1;3303:15",
-  "source": "// SPDX-License-Identifier: Apache-2.0\npragma solidity ^0.8.4;\n\n// TODO: support token spending limit\nlibrary SpendingManager {\n    event ExceedSpendingLimit(uint256 amount, uint256 limit, uint256 current, uint256 spendingInterval, address dest);\n    event InsufficientFund(uint256 amount, uint256 balance, address dest);\n\n    struct SpendingState {\n        uint256 spendingLimit; // maximum amount of wei allowed to be spent per interval\n        uint256 spentAmount; // amount spent for the current time interval\n        uint32 lastSpendingInterval; // last time interval when spending of ONE occurred (block.timestamp / spendingInterval)\n        uint32 spendingInterval; // number of seconds per interval of spending, e.g. when this equals 86400, the spending limit represents a daily spending limit\n    }\n\n    function getRemainingAllowance(SpendingState storage ss) view public returns (uint256) {\n        uint32 interval = uint32(block.timestamp / ss.spendingInterval);\n        uint256 remainingAllowance = interval > ss.lastSpendingInterval ? ss.spendingLimit : ss.spendingLimit - ss.spentAmount;\n        if (remainingAllowance > address(this).balance) {\n            remainingAllowance = address(this).balance;\n        }\n        return remainingAllowance;\n    }\n\n    function isWithinLimit(SpendingState storage ss, uint256 amount) view public returns (bool){\n        uint256 budget = getRemainingAllowance(ss);\n        if (budget < amount) {\n            return false;\n        }\n        return true;\n    }\n\n    function canSpend(SpendingState storage ss, uint256 amount) view external returns (bool){\n        if (!isWithinLimit(ss, amount)) {\n            return false;\n        }\n        if (address(this).balance < amount) {\n            return false;\n        }\n        return true;\n    }\n\n    function canSpend(SpendingState storage ss, address dest, uint256 amount) external returns (bool){\n        if (!isWithinLimit(ss, amount)) {\n            emit ExceedSpendingLimit(amount, ss.spendingLimit, ss.spentAmount, ss.spendingInterval, dest);\n            return false;\n        }\n        if (address(this).balance < amount) {\n            emit InsufficientFund(amount, address(this).balance, dest);\n            return false;\n        }\n        return true;\n    }\n\n    function accountSpending(SpendingState storage ss, uint256 amount) external {\n        uint32 interval = uint32(block.timestamp / ss.spendingInterval);\n        if (interval > ss.lastSpendingInterval) {\n            ss.spentAmount = 0;\n            ss.lastSpendingInterval = interval;\n        }\n        ss.spentAmount = ss.spentAmount + amount;\n    }\n\n    function getState(SpendingState storage ss) external view returns (uint256, uint256, uint32, uint32){\n        return (ss.spendingLimit, ss.spentAmount, ss.lastSpendingInterval, ss.spendingInterval);\n    }\n\n}\n",
+  "deployedSourceMap": "102:2726:17:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;2621:204;;;;;;:::i;:::-;2739:16;;2757:14;;;;2773:23;;;;;2739:16;;2773:23;;;;;2798:19;;;;;2621:204;;;;;2500:25:21;;;2556:2;2541:18;;2534:34;;;;2587:10;2633:15;;;2613:18;;;2606:43;;;;2685:15;2680:2;2665:18;;2658:43;2487:3;2472:19;2621:204:17;;;;;;;;1799:464;;;;;;;;;;-1:-1:-1;1799:464:17;;;;;:::i;:::-;;:::i;:::-;;;1188:14:21;;1181:22;1163:41;;1151:2;1136:18;1799:464:17;1118:92:21;1273:238:17;;;;;;:::i;:::-;;:::i;813:454::-;;;;;;:::i;:::-;;:::i;:::-;;;1369:25:21;;;1357:2;1342:18;813:454:17;1324:76:21;2269:346:17;;;;;;;;;;-1:-1:-1;2269:346:17;;;;;:::i;:::-;;:::i;:::-;;1517:276;;;;;;:::i;:::-;;:::i;1799:464::-;1891:4;1934:6;1910:21;:30;1906:145;;;1961:53;;;1607:25:21;;;1986:21:17;1663:2:21;1648:18;;1641:34;-1:-1:-1;;;;;1711:32:21;;1691:18;;;1684:60;;;;1961:53:17;;1595:2:21;1580:18;1961:53:17;;;;;;;;-1:-1:-1;2035:5:17;2028:12;;1906:145;2065:25;2079:2;2083:6;2065:13;:25::i;:::-;2060:176;;2139:16;;2157:14;;;;2173:19;;;;2111:88;;;2013:25:21;;;2069:2;2054:18;;2047:34;;;;2097:18;;2090:34;;;;2173:19:17;;;;;2155:2:21;2140:18;;2133:51;-1:-1:-1;;;;;2221:32:21;;2215:3;2200:19;;2193:61;2111:88:17;;2000:3:21;1985:19;2111:88:17;1967:293:21;2060:176:17;-1:-1:-1;2252:4:17;1799:464;;;;;;:::o;1273:238::-;1359:4;1374:14;1391:25;1413:2;1391:21;:25::i;:::-;1374:42;;1439:6;1430;:15;1426:58;;;1468:5;1461:12;;;;;1426:58;1500:4;1493:11;;;1273:238;;;;;:::o;813:454::-;953:19;;;;891:7;;;;935:37;;953:19;;;;;935:15;:37;:::i;:::-;1023:23;;;;910:63;;-1:-1:-1;983:26:17;;1023:23;;;;1012:34;;;;:89;;1087:14;;;;1068:16;;:33;;1087:14;1068:33;:::i;:::-;1012:89;;;1049:16;;1012:89;983:118;;1136:21;1115:18;:42;1111:115;;;-1:-1:-1;1194:21:17;1242:18;813:454;-1:-1:-1;;;813:454:17:o;2269:346::-;2398:19;;;;2355:15;;2380:37;;2398:19;;;;;2380:15;:37;:::i;:::-;2443:23;;;;2355:63;;-1:-1:-1;2443:23:17;;;;2432:34;;;;2428:131;;;2499:1;2482:14;;;:18;2514:23;;;:34;;-1:-1:-1;;2514:34:17;;;;;;;2428:131;2602:6;2585:2;:14;;;:23;;;;:::i;:::-;2568:2;:14;;:40;;;;2269:346;;;:::o;1517:276::-;1600:4;1643:6;1619:21;:30;1615:73;;;-1:-1:-1;1672:5:17;1665:12;;1615:73;1702:25;1716:2;1720:6;1702:13;:25::i;:::-;1697:69;;-1:-1:-1;1750:5:17;1743:12;;1697:69;-1:-1:-1;1782:4:17;1517:276;;;;:::o;14:222:21:-;105:6;158:2;146:9;137:7;133:23;129:32;126:2;;;179:6;171;164:22;126:2;-1:-1:-1;207:23:21;;116:120;-1:-1:-1;116:120:21:o;241:474::-;350:6;358;366;419:2;407:9;398:7;394:23;390:32;387:2;;;440:6;432;425:22;387:2;468:23;;;-1:-1:-1;541:2:21;526:18;;513:32;-1:-1:-1;;;;;574:31:21;;564:42;;554:2;;625:6;617;610:22;554:2;377:338;;653:5;;-1:-1:-1;;;705:2:21;690:18;;;;677:32;;377:338::o;720:290::-;820:6;828;881:2;869:9;860:7;856:23;852:32;849:2;;;902:6;894;887:22;849:2;-1:-1:-1;;930:23:21;;;1000:2;985:18;;;972:32;;-1:-1:-1;839:171:21:o;2712:128::-;2752:3;2783:1;2779:6;2776:1;2773:13;2770:2;;;2789:18;;:::i;:::-;-1:-1:-1;2825:9:21;;2760:80::o;2845:217::-;2885:1;2911;2901:2;;-1:-1:-1;;;2936:31:21;;2990:4;2987:1;2980:15;3018:4;2943:1;3008:15;2901:2;-1:-1:-1;3047:9:21;;2891:171::o;3067:125::-;3107:4;3135:1;3132;3129:8;3126:2;;;3140:18;;:::i;:::-;-1:-1:-1;3177:9:21;;3116:76::o;3197:127::-;3258:10;3253:3;3249:20;3246:1;3239:31;3289:4;3286:1;3279:15;3313:4;3310:1;3303:15",
+  "source": "// SPDX-License-Identifier: Apache-2.0\npragma solidity ^0.8.4;\n\n// TODO: support token spending limit\nlibrary SpendingManager {\n    event ExceedSpendingLimit(uint256 amount, uint256 limit, uint256 current, uint256 spendingInterval, address dest);\n    event InsufficientFund(uint256 amount, uint256 balance, address dest);\n\n    struct SpendingState {\n        uint256 spendingLimit; // maximum amount of wei allowed to be spent per interval\n        uint256 spentAmount; // amount spent for the current time interval\n        uint32 lastSpendingInterval; // last time interval when spending of ONE occurred (block.timestamp / spendingInterval)\n        uint32 spendingInterval; // number of seconds per interval of spending, e.g. when this equals 86400, the spending limit represents a daily spending limit\n    }\n\n    function getRemainingAllowance(SpendingState storage ss) view public returns (uint256) {\n        uint32 interval = uint32(block.timestamp / ss.spendingInterval);\n        uint256 remainingAllowance = interval > ss.lastSpendingInterval ? ss.spendingLimit : ss.spendingLimit - ss.spentAmount;\n        if (remainingAllowance > address(this).balance) {\n            remainingAllowance = address(this).balance;\n        }\n        return remainingAllowance;\n    }\n\n    function isWithinLimit(SpendingState storage ss, uint256 amount) view public returns (bool){\n        uint256 budget = getRemainingAllowance(ss);\n        if (budget < amount) {\n            return false;\n        }\n        return true;\n    }\n\n    function canSpend(SpendingState storage ss, uint256 amount) view external returns (bool){\n        if (address(this).balance < amount) {\n            return false;\n        }\n        if (!isWithinLimit(ss, amount)) {\n            return false;\n        }\n        return true;\n    }\n\n    function canSpend(SpendingState storage ss, address dest, uint256 amount) external returns (bool){\n        if (address(this).balance < amount) {\n            emit InsufficientFund(amount, address(this).balance, dest);\n            return false;\n        }\n        if (!isWithinLimit(ss, amount)) {\n            emit ExceedSpendingLimit(amount, ss.spendingLimit, ss.spentAmount, ss.spendingInterval, dest);\n            return false;\n        }\n        return true;\n    }\n\n    function accountSpending(SpendingState storage ss, uint256 amount) external {\n        uint32 interval = uint32(block.timestamp / ss.spendingInterval);\n        if (interval > ss.lastSpendingInterval) {\n            ss.spentAmount = 0;\n            ss.lastSpendingInterval = interval;\n        }\n        ss.spentAmount = ss.spentAmount + amount;\n    }\n\n    function getState(SpendingState storage ss) external view returns (uint256, uint256, uint32, uint32){\n        return (ss.spendingLimit, ss.spentAmount, ss.lastSpendingInterval, ss.spendingInterval);\n    }\n\n}\n",
   "sourcePath": "/Users/polymorpher/git/one-wallet/code/contracts/SpendingManager.sol",
   "ast": {
     "absolutePath": "project:/contracts/SpendingManager.sol",
@@ -3837,7 +3837,141 @@
               "statements": [
                 {
                   "condition": {
-                    "id": 6204,
+                    "commonType": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    },
+                    "id": 6206,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftExpression": {
+                      "expression": {
+                        "arguments": [
+                          {
+                            "id": 6202,
+                            "name": "this",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 4294967268,
+                            "src": "1627:4:17",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_contract$_SpendingManager_$6352",
+                              "typeString": "library SpendingManager"
+                            }
+                          }
+                        ],
+                        "expression": {
+                          "argumentTypes": [
+                            {
+                              "typeIdentifier": "t_contract$_SpendingManager_$6352",
+                              "typeString": "library SpendingManager"
+                            }
+                          ],
+                          "id": 6201,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "lValueRequested": false,
+                          "nodeType": "ElementaryTypeNameExpression",
+                          "src": "1619:7:17",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_type$_t_address_$",
+                            "typeString": "type(address)"
+                          },
+                          "typeName": {
+                            "id": 6200,
+                            "name": "address",
+                            "nodeType": "ElementaryTypeName",
+                            "src": "1619:7:17",
+                            "typeDescriptions": {}
+                          }
+                        },
+                        "id": 6203,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "typeConversion",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "1619:13:17",
+                        "tryCall": false,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      "id": 6204,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "balance",
+                      "nodeType": "MemberAccess",
+                      "src": "1619:21:17",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "BinaryOperation",
+                    "operator": "<",
+                    "rightExpression": {
+                      "id": 6205,
+                      "name": "amount",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 6195,
+                      "src": "1643:6:17",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "1619:30:17",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "id": 6210,
+                  "nodeType": "IfStatement",
+                  "src": "1615:73:17",
+                  "trueBody": {
+                    "id": 6209,
+                    "nodeType": "Block",
+                    "src": "1651:37:17",
+                    "statements": [
+                      {
+                        "expression": {
+                          "hexValue": "66616c7365",
+                          "id": 6207,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "kind": "bool",
+                          "lValueRequested": false,
+                          "nodeType": "Literal",
+                          "src": "1672:5:17",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bool",
+                            "typeString": "bool"
+                          },
+                          "value": "false"
+                        },
+                        "functionReturnParameters": 6199,
+                        "id": 6208,
+                        "nodeType": "Return",
+                        "src": "1665:12:17"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "condition": {
+                    "id": 6215,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -3845,28 +3979,28 @@
                     "nodeType": "UnaryOperation",
                     "operator": "!",
                     "prefix": true,
-                    "src": "1619:26:17",
+                    "src": "1701:26:17",
                     "subExpression": {
                       "arguments": [
                         {
-                          "id": 6201,
+                          "id": 6212,
                           "name": "ss",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
                           "referencedDeclaration": 6193,
-                          "src": "1634:2:17",
+                          "src": "1716:2:17",
                           "typeDescriptions": {
                             "typeIdentifier": "t_struct$_SpendingState_$6110_storage_ptr",
                             "typeString": "struct SpendingManager.SpendingState storage pointer"
                           }
                         },
                         {
-                          "id": 6202,
+                          "id": 6213,
                           "name": "amount",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
                           "referencedDeclaration": 6195,
-                          "src": "1638:6:17",
+                          "src": "1720:6:17",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
@@ -3884,18 +4018,18 @@
                             "typeString": "uint256"
                           }
                         ],
-                        "id": 6200,
+                        "id": 6211,
                         "name": "isWithinLimit",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
                         "referencedDeclaration": 6190,
-                        "src": "1620:13:17",
+                        "src": "1702:13:17",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_internal_view$_t_struct$_SpendingState_$6110_storage_ptr_$_t_uint256_$returns$_t_bool_$",
                           "typeString": "function (struct SpendingManager.SpendingState storage pointer,uint256) view returns (bool)"
                         }
                       },
-                      "id": 6203,
+                      "id": 6214,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -3903,7 +4037,7 @@
                       "lValueRequested": false,
                       "names": [],
                       "nodeType": "FunctionCall",
-                      "src": "1620:25:17",
+                      "src": "1702:25:17",
                       "tryCall": false,
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
@@ -3915,143 +4049,9 @@
                       "typeString": "bool"
                     }
                   },
-                  "id": 6208,
-                  "nodeType": "IfStatement",
-                  "src": "1615:69:17",
-                  "trueBody": {
-                    "id": 6207,
-                    "nodeType": "Block",
-                    "src": "1647:37:17",
-                    "statements": [
-                      {
-                        "expression": {
-                          "hexValue": "66616c7365",
-                          "id": 6205,
-                          "isConstant": false,
-                          "isLValue": false,
-                          "isPure": true,
-                          "kind": "bool",
-                          "lValueRequested": false,
-                          "nodeType": "Literal",
-                          "src": "1668:5:17",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_bool",
-                            "typeString": "bool"
-                          },
-                          "value": "false"
-                        },
-                        "functionReturnParameters": 6199,
-                        "id": 6206,
-                        "nodeType": "Return",
-                        "src": "1661:12:17"
-                      }
-                    ]
-                  }
-                },
-                {
-                  "condition": {
-                    "commonType": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
-                    },
-                    "id": 6215,
-                    "isConstant": false,
-                    "isLValue": false,
-                    "isPure": false,
-                    "lValueRequested": false,
-                    "leftExpression": {
-                      "expression": {
-                        "arguments": [
-                          {
-                            "id": 6211,
-                            "name": "this",
-                            "nodeType": "Identifier",
-                            "overloadedDeclarations": [],
-                            "referencedDeclaration": 4294967268,
-                            "src": "1705:4:17",
-                            "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_SpendingManager_$6352",
-                              "typeString": "library SpendingManager"
-                            }
-                          }
-                        ],
-                        "expression": {
-                          "argumentTypes": [
-                            {
-                              "typeIdentifier": "t_contract$_SpendingManager_$6352",
-                              "typeString": "library SpendingManager"
-                            }
-                          ],
-                          "id": 6210,
-                          "isConstant": false,
-                          "isLValue": false,
-                          "isPure": true,
-                          "lValueRequested": false,
-                          "nodeType": "ElementaryTypeNameExpression",
-                          "src": "1697:7:17",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_type$_t_address_$",
-                            "typeString": "type(address)"
-                          },
-                          "typeName": {
-                            "id": 6209,
-                            "name": "address",
-                            "nodeType": "ElementaryTypeName",
-                            "src": "1697:7:17",
-                            "typeDescriptions": {}
-                          }
-                        },
-                        "id": 6212,
-                        "isConstant": false,
-                        "isLValue": false,
-                        "isPure": false,
-                        "kind": "typeConversion",
-                        "lValueRequested": false,
-                        "names": [],
-                        "nodeType": "FunctionCall",
-                        "src": "1697:13:17",
-                        "tryCall": false,
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_address",
-                          "typeString": "address"
-                        }
-                      },
-                      "id": 6213,
-                      "isConstant": false,
-                      "isLValue": false,
-                      "isPure": false,
-                      "lValueRequested": false,
-                      "memberName": "balance",
-                      "nodeType": "MemberAccess",
-                      "src": "1697:21:17",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_uint256",
-                        "typeString": "uint256"
-                      }
-                    },
-                    "nodeType": "BinaryOperation",
-                    "operator": "<",
-                    "rightExpression": {
-                      "id": 6214,
-                      "name": "amount",
-                      "nodeType": "Identifier",
-                      "overloadedDeclarations": [],
-                      "referencedDeclaration": 6195,
-                      "src": "1721:6:17",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_uint256",
-                        "typeString": "uint256"
-                      }
-                    },
-                    "src": "1697:30:17",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_bool",
-                      "typeString": "bool"
-                    }
-                  },
                   "id": 6219,
                   "nodeType": "IfStatement",
-                  "src": "1693:73:17",
+                  "src": "1697:69:17",
                   "trueBody": {
                     "id": 6218,
                     "nodeType": "Block",
@@ -4230,102 +4230,123 @@
               "statements": [
                 {
                   "condition": {
-                    "id": 6239,
+                    "commonType": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    },
+                    "id": 6241,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
-                    "nodeType": "UnaryOperation",
-                    "operator": "!",
-                    "prefix": true,
-                    "src": "1910:26:17",
-                    "subExpression": {
-                      "arguments": [
-                        {
-                          "id": 6236,
-                          "name": "ss",
-                          "nodeType": "Identifier",
-                          "overloadedDeclarations": [],
-                          "referencedDeclaration": 6226,
-                          "src": "1925:2:17",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_struct$_SpendingState_$6110_storage_ptr",
-                            "typeString": "struct SpendingManager.SpendingState storage pointer"
-                          }
-                        },
-                        {
-                          "id": 6237,
-                          "name": "amount",
-                          "nodeType": "Identifier",
-                          "overloadedDeclarations": [],
-                          "referencedDeclaration": 6230,
-                          "src": "1929:6:17",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_uint256",
-                            "typeString": "uint256"
-                          }
-                        }
-                      ],
+                    "leftExpression": {
                       "expression": {
-                        "argumentTypes": [
+                        "arguments": [
                           {
-                            "typeIdentifier": "t_struct$_SpendingState_$6110_storage_ptr",
-                            "typeString": "struct SpendingManager.SpendingState storage pointer"
-                          },
-                          {
-                            "typeIdentifier": "t_uint256",
-                            "typeString": "uint256"
+                            "id": 6237,
+                            "name": "this",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 4294967268,
+                            "src": "1918:4:17",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_contract$_SpendingManager_$6352",
+                              "typeString": "library SpendingManager"
+                            }
                           }
                         ],
-                        "id": 6235,
-                        "name": "isWithinLimit",
-                        "nodeType": "Identifier",
-                        "overloadedDeclarations": [],
-                        "referencedDeclaration": 6190,
-                        "src": "1911:13:17",
+                        "expression": {
+                          "argumentTypes": [
+                            {
+                              "typeIdentifier": "t_contract$_SpendingManager_$6352",
+                              "typeString": "library SpendingManager"
+                            }
+                          ],
+                          "id": 6236,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "lValueRequested": false,
+                          "nodeType": "ElementaryTypeNameExpression",
+                          "src": "1910:7:17",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_type$_t_address_$",
+                            "typeString": "type(address)"
+                          },
+                          "typeName": {
+                            "id": 6235,
+                            "name": "address",
+                            "nodeType": "ElementaryTypeName",
+                            "src": "1910:7:17",
+                            "typeDescriptions": {}
+                          }
+                        },
+                        "id": 6238,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "typeConversion",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "1910:13:17",
+                        "tryCall": false,
                         "typeDescriptions": {
-                          "typeIdentifier": "t_function_internal_view$_t_struct$_SpendingState_$6110_storage_ptr_$_t_uint256_$returns$_t_bool_$",
-                          "typeString": "function (struct SpendingManager.SpendingState storage pointer,uint256) view returns (bool)"
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
                         }
                       },
-                      "id": 6238,
+                      "id": 6239,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
-                      "kind": "functionCall",
                       "lValueRequested": false,
-                      "names": [],
-                      "nodeType": "FunctionCall",
-                      "src": "1911:25:17",
-                      "tryCall": false,
+                      "memberName": "balance",
+                      "nodeType": "MemberAccess",
+                      "src": "1910:21:17",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_bool",
-                        "typeString": "bool"
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
                       }
                     },
+                    "nodeType": "BinaryOperation",
+                    "operator": "<",
+                    "rightExpression": {
+                      "id": 6240,
+                      "name": "amount",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 6230,
+                      "src": "1934:6:17",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "1910:30:17",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
                     }
                   },
-                  "id": 6254,
+                  "id": 6255,
                   "nodeType": "IfStatement",
-                  "src": "1906:176:17",
+                  "src": "1906:145:17",
                   "trueBody": {
-                    "id": 6253,
+                    "id": 6254,
                     "nodeType": "Block",
-                    "src": "1938:144:17",
+                    "src": "1942:109:17",
                     "statements": [
                       {
                         "eventCall": {
                           "arguments": [
                             {
-                              "id": 6241,
+                              "id": 6243,
                               "name": "amount",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
                               "referencedDeclaration": 6230,
-                              "src": "1977:6:17",
+                              "src": "1978:6:17",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_uint256",
                                 "typeString": "uint256"
@@ -4333,92 +4354,81 @@
                             },
                             {
                               "expression": {
-                                "id": 6242,
-                                "name": "ss",
-                                "nodeType": "Identifier",
-                                "overloadedDeclarations": [],
-                                "referencedDeclaration": 6226,
-                                "src": "1985:2:17",
+                                "arguments": [
+                                  {
+                                    "id": 6246,
+                                    "name": "this",
+                                    "nodeType": "Identifier",
+                                    "overloadedDeclarations": [],
+                                    "referencedDeclaration": 4294967268,
+                                    "src": "1994:4:17",
+                                    "typeDescriptions": {
+                                      "typeIdentifier": "t_contract$_SpendingManager_$6352",
+                                      "typeString": "library SpendingManager"
+                                    }
+                                  }
+                                ],
+                                "expression": {
+                                  "argumentTypes": [
+                                    {
+                                      "typeIdentifier": "t_contract$_SpendingManager_$6352",
+                                      "typeString": "library SpendingManager"
+                                    }
+                                  ],
+                                  "id": 6245,
+                                  "isConstant": false,
+                                  "isLValue": false,
+                                  "isPure": true,
+                                  "lValueRequested": false,
+                                  "nodeType": "ElementaryTypeNameExpression",
+                                  "src": "1986:7:17",
+                                  "typeDescriptions": {
+                                    "typeIdentifier": "t_type$_t_address_$",
+                                    "typeString": "type(address)"
+                                  },
+                                  "typeName": {
+                                    "id": 6244,
+                                    "name": "address",
+                                    "nodeType": "ElementaryTypeName",
+                                    "src": "1986:7:17",
+                                    "typeDescriptions": {}
+                                  }
+                                },
+                                "id": 6247,
+                                "isConstant": false,
+                                "isLValue": false,
+                                "isPure": false,
+                                "kind": "typeConversion",
+                                "lValueRequested": false,
+                                "names": [],
+                                "nodeType": "FunctionCall",
+                                "src": "1986:13:17",
+                                "tryCall": false,
                                 "typeDescriptions": {
-                                  "typeIdentifier": "t_struct$_SpendingState_$6110_storage_ptr",
-                                  "typeString": "struct SpendingManager.SpendingState storage pointer"
+                                  "typeIdentifier": "t_address",
+                                  "typeString": "address"
                                 }
                               },
-                              "id": 6243,
-                              "isConstant": false,
-                              "isLValue": true,
-                              "isPure": false,
-                              "lValueRequested": false,
-                              "memberName": "spendingLimit",
-                              "nodeType": "MemberAccess",
-                              "referencedDeclaration": 6103,
-                              "src": "1985:16:17",
-                              "typeDescriptions": {
-                                "typeIdentifier": "t_uint256",
-                                "typeString": "uint256"
-                              }
-                            },
-                            {
-                              "expression": {
-                                "id": 6244,
-                                "name": "ss",
-                                "nodeType": "Identifier",
-                                "overloadedDeclarations": [],
-                                "referencedDeclaration": 6226,
-                                "src": "2003:2:17",
-                                "typeDescriptions": {
-                                  "typeIdentifier": "t_struct$_SpendingState_$6110_storage_ptr",
-                                  "typeString": "struct SpendingManager.SpendingState storage pointer"
-                                }
-                              },
-                              "id": 6245,
-                              "isConstant": false,
-                              "isLValue": true,
-                              "isPure": false,
-                              "lValueRequested": false,
-                              "memberName": "spentAmount",
-                              "nodeType": "MemberAccess",
-                              "referencedDeclaration": 6105,
-                              "src": "2003:14:17",
-                              "typeDescriptions": {
-                                "typeIdentifier": "t_uint256",
-                                "typeString": "uint256"
-                              }
-                            },
-                            {
-                              "expression": {
-                                "id": 6246,
-                                "name": "ss",
-                                "nodeType": "Identifier",
-                                "overloadedDeclarations": [],
-                                "referencedDeclaration": 6226,
-                                "src": "2019:2:17",
-                                "typeDescriptions": {
-                                  "typeIdentifier": "t_struct$_SpendingState_$6110_storage_ptr",
-                                  "typeString": "struct SpendingManager.SpendingState storage pointer"
-                                }
-                              },
-                              "id": 6247,
-                              "isConstant": false,
-                              "isLValue": true,
-                              "isPure": false,
-                              "lValueRequested": false,
-                              "memberName": "spendingInterval",
-                              "nodeType": "MemberAccess",
-                              "referencedDeclaration": 6109,
-                              "src": "2019:19:17",
-                              "typeDescriptions": {
-                                "typeIdentifier": "t_uint32",
-                                "typeString": "uint32"
-                              }
-                            },
-                            {
                               "id": 6248,
+                              "isConstant": false,
+                              "isLValue": false,
+                              "isPure": false,
+                              "lValueRequested": false,
+                              "memberName": "balance",
+                              "nodeType": "MemberAccess",
+                              "src": "1986:21:17",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            },
+                            {
+                              "id": 6249,
                               "name": "dest",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
                               "referencedDeclaration": 6228,
-                              "src": "2040:4:17",
+                              "src": "2009:4:17",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_address",
                                 "typeString": "address"
@@ -4436,30 +4446,22 @@
                                 "typeString": "uint256"
                               },
                               {
-                                "typeIdentifier": "t_uint256",
-                                "typeString": "uint256"
-                              },
-                              {
-                                "typeIdentifier": "t_uint32",
-                                "typeString": "uint32"
-                              },
-                              {
                                 "typeIdentifier": "t_address",
                                 "typeString": "address"
                               }
                             ],
-                            "id": 6240,
-                            "name": "ExceedSpendingLimit",
+                            "id": 6242,
+                            "name": "InsufficientFund",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 6093,
-                            "src": "1957:19:17",
+                            "referencedDeclaration": 6101,
+                            "src": "1961:16:17",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_function_event_nonpayable$_t_uint256_$_t_uint256_$_t_uint256_$_t_uint256_$_t_address_$returns$__$",
-                              "typeString": "function (uint256,uint256,uint256,uint256,address)"
+                              "typeIdentifier": "t_function_event_nonpayable$_t_uint256_$_t_uint256_$_t_address_$returns$__$",
+                              "typeString": "function (uint256,uint256,address)"
                             }
                           },
-                          "id": 6249,
+                          "id": 6250,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -4467,28 +4469,28 @@
                           "lValueRequested": false,
                           "names": [],
                           "nodeType": "FunctionCall",
-                          "src": "1957:88:17",
+                          "src": "1961:53:17",
                           "tryCall": false,
                           "typeDescriptions": {
                             "typeIdentifier": "t_tuple$__$",
                             "typeString": "tuple()"
                           }
                         },
-                        "id": 6250,
+                        "id": 6251,
                         "nodeType": "EmitStatement",
-                        "src": "1952:93:17"
+                        "src": "1956:58:17"
                       },
                       {
                         "expression": {
                           "hexValue": "66616c7365",
-                          "id": 6251,
+                          "id": 6252,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": true,
                           "kind": "bool",
                           "lValueRequested": false,
                           "nodeType": "Literal",
-                          "src": "2066:5:17",
+                          "src": "2035:5:17",
                           "typeDescriptions": {
                             "typeIdentifier": "t_bool",
                             "typeString": "bool"
@@ -4496,109 +4498,88 @@
                           "value": "false"
                         },
                         "functionReturnParameters": 6234,
-                        "id": 6252,
+                        "id": 6253,
                         "nodeType": "Return",
-                        "src": "2059:12:17"
+                        "src": "2028:12:17"
                       }
                     ]
                   }
                 },
                 {
                   "condition": {
-                    "commonType": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
-                    },
-                    "id": 6261,
+                    "id": 6260,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
-                    "leftExpression": {
-                      "expression": {
-                        "arguments": [
-                          {
-                            "id": 6257,
-                            "name": "this",
-                            "nodeType": "Identifier",
-                            "overloadedDeclarations": [],
-                            "referencedDeclaration": 4294967268,
-                            "src": "2103:4:17",
-                            "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_SpendingManager_$6352",
-                              "typeString": "library SpendingManager"
-                            }
-                          }
-                        ],
-                        "expression": {
-                          "argumentTypes": [
-                            {
-                              "typeIdentifier": "t_contract$_SpendingManager_$6352",
-                              "typeString": "library SpendingManager"
-                            }
-                          ],
-                          "id": 6256,
-                          "isConstant": false,
-                          "isLValue": false,
-                          "isPure": true,
-                          "lValueRequested": false,
-                          "nodeType": "ElementaryTypeNameExpression",
-                          "src": "2095:7:17",
+                    "nodeType": "UnaryOperation",
+                    "operator": "!",
+                    "prefix": true,
+                    "src": "2064:26:17",
+                    "subExpression": {
+                      "arguments": [
+                        {
+                          "id": 6257,
+                          "name": "ss",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 6226,
+                          "src": "2079:2:17",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_type$_t_address_$",
-                            "typeString": "type(address)"
-                          },
-                          "typeName": {
-                            "id": 6255,
-                            "name": "address",
-                            "nodeType": "ElementaryTypeName",
-                            "src": "2095:7:17",
-                            "typeDescriptions": {}
+                            "typeIdentifier": "t_struct$_SpendingState_$6110_storage_ptr",
+                            "typeString": "struct SpendingManager.SpendingState storage pointer"
                           }
                         },
-                        "id": 6258,
-                        "isConstant": false,
-                        "isLValue": false,
-                        "isPure": false,
-                        "kind": "typeConversion",
-                        "lValueRequested": false,
-                        "names": [],
-                        "nodeType": "FunctionCall",
-                        "src": "2095:13:17",
-                        "tryCall": false,
+                        {
+                          "id": 6258,
+                          "name": "amount",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 6230,
+                          "src": "2083:6:17",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": [
+                          {
+                            "typeIdentifier": "t_struct$_SpendingState_$6110_storage_ptr",
+                            "typeString": "struct SpendingManager.SpendingState storage pointer"
+                          },
+                          {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        ],
+                        "id": 6256,
+                        "name": "isWithinLimit",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 6190,
+                        "src": "2065:13:17",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_address",
-                          "typeString": "address"
+                          "typeIdentifier": "t_function_internal_view$_t_struct$_SpendingState_$6110_storage_ptr_$_t_uint256_$returns$_t_bool_$",
+                          "typeString": "function (struct SpendingManager.SpendingState storage pointer,uint256) view returns (bool)"
                         }
                       },
                       "id": 6259,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
+                      "kind": "functionCall",
                       "lValueRequested": false,
-                      "memberName": "balance",
-                      "nodeType": "MemberAccess",
-                      "src": "2095:21:17",
+                      "names": [],
+                      "nodeType": "FunctionCall",
+                      "src": "2065:25:17",
+                      "tryCall": false,
                       "typeDescriptions": {
-                        "typeIdentifier": "t_uint256",
-                        "typeString": "uint256"
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
                       }
                     },
-                    "nodeType": "BinaryOperation",
-                    "operator": "<",
-                    "rightExpression": {
-                      "id": 6260,
-                      "name": "amount",
-                      "nodeType": "Identifier",
-                      "overloadedDeclarations": [],
-                      "referencedDeclaration": 6230,
-                      "src": "2119:6:17",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_uint256",
-                        "typeString": "uint256"
-                      }
-                    },
-                    "src": "2095:30:17",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -4606,22 +4587,22 @@
                   },
                   "id": 6275,
                   "nodeType": "IfStatement",
-                  "src": "2091:145:17",
+                  "src": "2060:176:17",
                   "trueBody": {
                     "id": 6274,
                     "nodeType": "Block",
-                    "src": "2127:109:17",
+                    "src": "2092:144:17",
                     "statements": [
                       {
                         "eventCall": {
                           "arguments": [
                             {
-                              "id": 6263,
+                              "id": 6262,
                               "name": "amount",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
                               "referencedDeclaration": 6230,
-                              "src": "2163:6:17",
+                              "src": "2131:6:17",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_uint256",
                                 "typeString": "uint256"
@@ -4629,72 +4610,83 @@
                             },
                             {
                               "expression": {
-                                "arguments": [
-                                  {
-                                    "id": 6266,
-                                    "name": "this",
-                                    "nodeType": "Identifier",
-                                    "overloadedDeclarations": [],
-                                    "referencedDeclaration": 4294967268,
-                                    "src": "2179:4:17",
-                                    "typeDescriptions": {
-                                      "typeIdentifier": "t_contract$_SpendingManager_$6352",
-                                      "typeString": "library SpendingManager"
-                                    }
-                                  }
-                                ],
-                                "expression": {
-                                  "argumentTypes": [
-                                    {
-                                      "typeIdentifier": "t_contract$_SpendingManager_$6352",
-                                      "typeString": "library SpendingManager"
-                                    }
-                                  ],
-                                  "id": 6265,
-                                  "isConstant": false,
-                                  "isLValue": false,
-                                  "isPure": true,
-                                  "lValueRequested": false,
-                                  "nodeType": "ElementaryTypeNameExpression",
-                                  "src": "2171:7:17",
-                                  "typeDescriptions": {
-                                    "typeIdentifier": "t_type$_t_address_$",
-                                    "typeString": "type(address)"
-                                  },
-                                  "typeName": {
-                                    "id": 6264,
-                                    "name": "address",
-                                    "nodeType": "ElementaryTypeName",
-                                    "src": "2171:7:17",
-                                    "typeDescriptions": {}
-                                  }
-                                },
-                                "id": 6267,
-                                "isConstant": false,
-                                "isLValue": false,
-                                "isPure": false,
-                                "kind": "typeConversion",
-                                "lValueRequested": false,
-                                "names": [],
-                                "nodeType": "FunctionCall",
-                                "src": "2171:13:17",
-                                "tryCall": false,
+                                "id": 6263,
+                                "name": "ss",
+                                "nodeType": "Identifier",
+                                "overloadedDeclarations": [],
+                                "referencedDeclaration": 6226,
+                                "src": "2139:2:17",
                                 "typeDescriptions": {
-                                  "typeIdentifier": "t_address",
-                                  "typeString": "address"
+                                  "typeIdentifier": "t_struct$_SpendingState_$6110_storage_ptr",
+                                  "typeString": "struct SpendingManager.SpendingState storage pointer"
+                                }
+                              },
+                              "id": 6264,
+                              "isConstant": false,
+                              "isLValue": true,
+                              "isPure": false,
+                              "lValueRequested": false,
+                              "memberName": "spendingLimit",
+                              "nodeType": "MemberAccess",
+                              "referencedDeclaration": 6103,
+                              "src": "2139:16:17",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            },
+                            {
+                              "expression": {
+                                "id": 6265,
+                                "name": "ss",
+                                "nodeType": "Identifier",
+                                "overloadedDeclarations": [],
+                                "referencedDeclaration": 6226,
+                                "src": "2157:2:17",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_struct$_SpendingState_$6110_storage_ptr",
+                                  "typeString": "struct SpendingManager.SpendingState storage pointer"
+                                }
+                              },
+                              "id": 6266,
+                              "isConstant": false,
+                              "isLValue": true,
+                              "isPure": false,
+                              "lValueRequested": false,
+                              "memberName": "spentAmount",
+                              "nodeType": "MemberAccess",
+                              "referencedDeclaration": 6105,
+                              "src": "2157:14:17",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            },
+                            {
+                              "expression": {
+                                "id": 6267,
+                                "name": "ss",
+                                "nodeType": "Identifier",
+                                "overloadedDeclarations": [],
+                                "referencedDeclaration": 6226,
+                                "src": "2173:2:17",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_struct$_SpendingState_$6110_storage_ptr",
+                                  "typeString": "struct SpendingManager.SpendingState storage pointer"
                                 }
                               },
                               "id": 6268,
                               "isConstant": false,
-                              "isLValue": false,
+                              "isLValue": true,
                               "isPure": false,
                               "lValueRequested": false,
-                              "memberName": "balance",
+                              "memberName": "spendingInterval",
                               "nodeType": "MemberAccess",
-                              "src": "2171:21:17",
+                              "referencedDeclaration": 6109,
+                              "src": "2173:19:17",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_uint256",
-                                "typeString": "uint256"
+                                "typeIdentifier": "t_uint32",
+                                "typeString": "uint32"
                               }
                             },
                             {
@@ -4721,19 +4713,27 @@
                                 "typeString": "uint256"
                               },
                               {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              },
+                              {
+                                "typeIdentifier": "t_uint32",
+                                "typeString": "uint32"
+                              },
+                              {
                                 "typeIdentifier": "t_address",
                                 "typeString": "address"
                               }
                             ],
-                            "id": 6262,
-                            "name": "InsufficientFund",
+                            "id": 6261,
+                            "name": "ExceedSpendingLimit",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 6101,
-                            "src": "2146:16:17",
+                            "referencedDeclaration": 6093,
+                            "src": "2111:19:17",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_function_event_nonpayable$_t_uint256_$_t_uint256_$_t_address_$returns$__$",
-                              "typeString": "function (uint256,uint256,address)"
+                              "typeIdentifier": "t_function_event_nonpayable$_t_uint256_$_t_uint256_$_t_uint256_$_t_uint256_$_t_address_$returns$__$",
+                              "typeString": "function (uint256,uint256,uint256,uint256,address)"
                             }
                           },
                           "id": 6270,
@@ -4744,7 +4744,7 @@
                           "lValueRequested": false,
                           "names": [],
                           "nodeType": "FunctionCall",
-                          "src": "2146:53:17",
+                          "src": "2111:88:17",
                           "tryCall": false,
                           "typeDescriptions": {
                             "typeIdentifier": "t_tuple$__$",
@@ -4753,7 +4753,7 @@
                         },
                         "id": 6271,
                         "nodeType": "EmitStatement",
-                        "src": "2141:58:17"
+                        "src": "2106:93:17"
                       },
                       {
                         "expression": {
@@ -7217,7 +7217,141 @@
               "statements": [
                 {
                   "condition": {
-                    "id": 6204,
+                    "commonType": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    },
+                    "id": 6206,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftExpression": {
+                      "expression": {
+                        "arguments": [
+                          {
+                            "id": 6202,
+                            "name": "this",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 4294967268,
+                            "src": "1627:4:17",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_contract$_SpendingManager_$6352",
+                              "typeString": "library SpendingManager"
+                            }
+                          }
+                        ],
+                        "expression": {
+                          "argumentTypes": [
+                            {
+                              "typeIdentifier": "t_contract$_SpendingManager_$6352",
+                              "typeString": "library SpendingManager"
+                            }
+                          ],
+                          "id": 6201,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "lValueRequested": false,
+                          "nodeType": "ElementaryTypeNameExpression",
+                          "src": "1619:7:17",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_type$_t_address_$",
+                            "typeString": "type(address)"
+                          },
+                          "typeName": {
+                            "id": 6200,
+                            "name": "address",
+                            "nodeType": "ElementaryTypeName",
+                            "src": "1619:7:17",
+                            "typeDescriptions": {}
+                          }
+                        },
+                        "id": 6203,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "typeConversion",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "1619:13:17",
+                        "tryCall": false,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      "id": 6204,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "balance",
+                      "nodeType": "MemberAccess",
+                      "src": "1619:21:17",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "BinaryOperation",
+                    "operator": "<",
+                    "rightExpression": {
+                      "id": 6205,
+                      "name": "amount",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 6195,
+                      "src": "1643:6:17",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "1619:30:17",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "id": 6210,
+                  "nodeType": "IfStatement",
+                  "src": "1615:73:17",
+                  "trueBody": {
+                    "id": 6209,
+                    "nodeType": "Block",
+                    "src": "1651:37:17",
+                    "statements": [
+                      {
+                        "expression": {
+                          "hexValue": "66616c7365",
+                          "id": 6207,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "kind": "bool",
+                          "lValueRequested": false,
+                          "nodeType": "Literal",
+                          "src": "1672:5:17",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bool",
+                            "typeString": "bool"
+                          },
+                          "value": "false"
+                        },
+                        "functionReturnParameters": 6199,
+                        "id": 6208,
+                        "nodeType": "Return",
+                        "src": "1665:12:17"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "condition": {
+                    "id": 6215,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -7225,28 +7359,28 @@
                     "nodeType": "UnaryOperation",
                     "operator": "!",
                     "prefix": true,
-                    "src": "1619:26:17",
+                    "src": "1701:26:17",
                     "subExpression": {
                       "arguments": [
                         {
-                          "id": 6201,
+                          "id": 6212,
                           "name": "ss",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
                           "referencedDeclaration": 6193,
-                          "src": "1634:2:17",
+                          "src": "1716:2:17",
                           "typeDescriptions": {
                             "typeIdentifier": "t_struct$_SpendingState_$6110_storage_ptr",
                             "typeString": "struct SpendingManager.SpendingState storage pointer"
                           }
                         },
                         {
-                          "id": 6202,
+                          "id": 6213,
                           "name": "amount",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
                           "referencedDeclaration": 6195,
-                          "src": "1638:6:17",
+                          "src": "1720:6:17",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
@@ -7264,18 +7398,18 @@
                             "typeString": "uint256"
                           }
                         ],
-                        "id": 6200,
+                        "id": 6211,
                         "name": "isWithinLimit",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
                         "referencedDeclaration": 6190,
-                        "src": "1620:13:17",
+                        "src": "1702:13:17",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_internal_view$_t_struct$_SpendingState_$6110_storage_ptr_$_t_uint256_$returns$_t_bool_$",
                           "typeString": "function (struct SpendingManager.SpendingState storage pointer,uint256) view returns (bool)"
                         }
                       },
-                      "id": 6203,
+                      "id": 6214,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -7283,7 +7417,7 @@
                       "lValueRequested": false,
                       "names": [],
                       "nodeType": "FunctionCall",
-                      "src": "1620:25:17",
+                      "src": "1702:25:17",
                       "tryCall": false,
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
@@ -7295,143 +7429,9 @@
                       "typeString": "bool"
                     }
                   },
-                  "id": 6208,
-                  "nodeType": "IfStatement",
-                  "src": "1615:69:17",
-                  "trueBody": {
-                    "id": 6207,
-                    "nodeType": "Block",
-                    "src": "1647:37:17",
-                    "statements": [
-                      {
-                        "expression": {
-                          "hexValue": "66616c7365",
-                          "id": 6205,
-                          "isConstant": false,
-                          "isLValue": false,
-                          "isPure": true,
-                          "kind": "bool",
-                          "lValueRequested": false,
-                          "nodeType": "Literal",
-                          "src": "1668:5:17",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_bool",
-                            "typeString": "bool"
-                          },
-                          "value": "false"
-                        },
-                        "functionReturnParameters": 6199,
-                        "id": 6206,
-                        "nodeType": "Return",
-                        "src": "1661:12:17"
-                      }
-                    ]
-                  }
-                },
-                {
-                  "condition": {
-                    "commonType": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
-                    },
-                    "id": 6215,
-                    "isConstant": false,
-                    "isLValue": false,
-                    "isPure": false,
-                    "lValueRequested": false,
-                    "leftExpression": {
-                      "expression": {
-                        "arguments": [
-                          {
-                            "id": 6211,
-                            "name": "this",
-                            "nodeType": "Identifier",
-                            "overloadedDeclarations": [],
-                            "referencedDeclaration": 4294967268,
-                            "src": "1705:4:17",
-                            "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_SpendingManager_$6352",
-                              "typeString": "library SpendingManager"
-                            }
-                          }
-                        ],
-                        "expression": {
-                          "argumentTypes": [
-                            {
-                              "typeIdentifier": "t_contract$_SpendingManager_$6352",
-                              "typeString": "library SpendingManager"
-                            }
-                          ],
-                          "id": 6210,
-                          "isConstant": false,
-                          "isLValue": false,
-                          "isPure": true,
-                          "lValueRequested": false,
-                          "nodeType": "ElementaryTypeNameExpression",
-                          "src": "1697:7:17",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_type$_t_address_$",
-                            "typeString": "type(address)"
-                          },
-                          "typeName": {
-                            "id": 6209,
-                            "name": "address",
-                            "nodeType": "ElementaryTypeName",
-                            "src": "1697:7:17",
-                            "typeDescriptions": {}
-                          }
-                        },
-                        "id": 6212,
-                        "isConstant": false,
-                        "isLValue": false,
-                        "isPure": false,
-                        "kind": "typeConversion",
-                        "lValueRequested": false,
-                        "names": [],
-                        "nodeType": "FunctionCall",
-                        "src": "1697:13:17",
-                        "tryCall": false,
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_address",
-                          "typeString": "address"
-                        }
-                      },
-                      "id": 6213,
-                      "isConstant": false,
-                      "isLValue": false,
-                      "isPure": false,
-                      "lValueRequested": false,
-                      "memberName": "balance",
-                      "nodeType": "MemberAccess",
-                      "src": "1697:21:17",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_uint256",
-                        "typeString": "uint256"
-                      }
-                    },
-                    "nodeType": "BinaryOperation",
-                    "operator": "<",
-                    "rightExpression": {
-                      "id": 6214,
-                      "name": "amount",
-                      "nodeType": "Identifier",
-                      "overloadedDeclarations": [],
-                      "referencedDeclaration": 6195,
-                      "src": "1721:6:17",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_uint256",
-                        "typeString": "uint256"
-                      }
-                    },
-                    "src": "1697:30:17",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_bool",
-                      "typeString": "bool"
-                    }
-                  },
                   "id": 6219,
                   "nodeType": "IfStatement",
-                  "src": "1693:73:17",
+                  "src": "1697:69:17",
                   "trueBody": {
                     "id": 6218,
                     "nodeType": "Block",
@@ -7610,102 +7610,123 @@
               "statements": [
                 {
                   "condition": {
-                    "id": 6239,
+                    "commonType": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    },
+                    "id": 6241,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
-                    "nodeType": "UnaryOperation",
-                    "operator": "!",
-                    "prefix": true,
-                    "src": "1910:26:17",
-                    "subExpression": {
-                      "arguments": [
-                        {
-                          "id": 6236,
-                          "name": "ss",
-                          "nodeType": "Identifier",
-                          "overloadedDeclarations": [],
-                          "referencedDeclaration": 6226,
-                          "src": "1925:2:17",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_struct$_SpendingState_$6110_storage_ptr",
-                            "typeString": "struct SpendingManager.SpendingState storage pointer"
-                          }
-                        },
-                        {
-                          "id": 6237,
-                          "name": "amount",
-                          "nodeType": "Identifier",
-                          "overloadedDeclarations": [],
-                          "referencedDeclaration": 6230,
-                          "src": "1929:6:17",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_uint256",
-                            "typeString": "uint256"
-                          }
-                        }
-                      ],
+                    "leftExpression": {
                       "expression": {
-                        "argumentTypes": [
+                        "arguments": [
                           {
-                            "typeIdentifier": "t_struct$_SpendingState_$6110_storage_ptr",
-                            "typeString": "struct SpendingManager.SpendingState storage pointer"
-                          },
-                          {
-                            "typeIdentifier": "t_uint256",
-                            "typeString": "uint256"
+                            "id": 6237,
+                            "name": "this",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 4294967268,
+                            "src": "1918:4:17",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_contract$_SpendingManager_$6352",
+                              "typeString": "library SpendingManager"
+                            }
                           }
                         ],
-                        "id": 6235,
-                        "name": "isWithinLimit",
-                        "nodeType": "Identifier",
-                        "overloadedDeclarations": [],
-                        "referencedDeclaration": 6190,
-                        "src": "1911:13:17",
+                        "expression": {
+                          "argumentTypes": [
+                            {
+                              "typeIdentifier": "t_contract$_SpendingManager_$6352",
+                              "typeString": "library SpendingManager"
+                            }
+                          ],
+                          "id": 6236,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "lValueRequested": false,
+                          "nodeType": "ElementaryTypeNameExpression",
+                          "src": "1910:7:17",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_type$_t_address_$",
+                            "typeString": "type(address)"
+                          },
+                          "typeName": {
+                            "id": 6235,
+                            "name": "address",
+                            "nodeType": "ElementaryTypeName",
+                            "src": "1910:7:17",
+                            "typeDescriptions": {}
+                          }
+                        },
+                        "id": 6238,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "typeConversion",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "1910:13:17",
+                        "tryCall": false,
                         "typeDescriptions": {
-                          "typeIdentifier": "t_function_internal_view$_t_struct$_SpendingState_$6110_storage_ptr_$_t_uint256_$returns$_t_bool_$",
-                          "typeString": "function (struct SpendingManager.SpendingState storage pointer,uint256) view returns (bool)"
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
                         }
                       },
-                      "id": 6238,
+                      "id": 6239,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
-                      "kind": "functionCall",
                       "lValueRequested": false,
-                      "names": [],
-                      "nodeType": "FunctionCall",
-                      "src": "1911:25:17",
-                      "tryCall": false,
+                      "memberName": "balance",
+                      "nodeType": "MemberAccess",
+                      "src": "1910:21:17",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_bool",
-                        "typeString": "bool"
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
                       }
                     },
+                    "nodeType": "BinaryOperation",
+                    "operator": "<",
+                    "rightExpression": {
+                      "id": 6240,
+                      "name": "amount",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 6230,
+                      "src": "1934:6:17",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "1910:30:17",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
                     }
                   },
-                  "id": 6254,
+                  "id": 6255,
                   "nodeType": "IfStatement",
-                  "src": "1906:176:17",
+                  "src": "1906:145:17",
                   "trueBody": {
-                    "id": 6253,
+                    "id": 6254,
                     "nodeType": "Block",
-                    "src": "1938:144:17",
+                    "src": "1942:109:17",
                     "statements": [
                       {
                         "eventCall": {
                           "arguments": [
                             {
-                              "id": 6241,
+                              "id": 6243,
                               "name": "amount",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
                               "referencedDeclaration": 6230,
-                              "src": "1977:6:17",
+                              "src": "1978:6:17",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_uint256",
                                 "typeString": "uint256"
@@ -7713,92 +7734,81 @@
                             },
                             {
                               "expression": {
-                                "id": 6242,
-                                "name": "ss",
-                                "nodeType": "Identifier",
-                                "overloadedDeclarations": [],
-                                "referencedDeclaration": 6226,
-                                "src": "1985:2:17",
+                                "arguments": [
+                                  {
+                                    "id": 6246,
+                                    "name": "this",
+                                    "nodeType": "Identifier",
+                                    "overloadedDeclarations": [],
+                                    "referencedDeclaration": 4294967268,
+                                    "src": "1994:4:17",
+                                    "typeDescriptions": {
+                                      "typeIdentifier": "t_contract$_SpendingManager_$6352",
+                                      "typeString": "library SpendingManager"
+                                    }
+                                  }
+                                ],
+                                "expression": {
+                                  "argumentTypes": [
+                                    {
+                                      "typeIdentifier": "t_contract$_SpendingManager_$6352",
+                                      "typeString": "library SpendingManager"
+                                    }
+                                  ],
+                                  "id": 6245,
+                                  "isConstant": false,
+                                  "isLValue": false,
+                                  "isPure": true,
+                                  "lValueRequested": false,
+                                  "nodeType": "ElementaryTypeNameExpression",
+                                  "src": "1986:7:17",
+                                  "typeDescriptions": {
+                                    "typeIdentifier": "t_type$_t_address_$",
+                                    "typeString": "type(address)"
+                                  },
+                                  "typeName": {
+                                    "id": 6244,
+                                    "name": "address",
+                                    "nodeType": "ElementaryTypeName",
+                                    "src": "1986:7:17",
+                                    "typeDescriptions": {}
+                                  }
+                                },
+                                "id": 6247,
+                                "isConstant": false,
+                                "isLValue": false,
+                                "isPure": false,
+                                "kind": "typeConversion",
+                                "lValueRequested": false,
+                                "names": [],
+                                "nodeType": "FunctionCall",
+                                "src": "1986:13:17",
+                                "tryCall": false,
                                 "typeDescriptions": {
-                                  "typeIdentifier": "t_struct$_SpendingState_$6110_storage_ptr",
-                                  "typeString": "struct SpendingManager.SpendingState storage pointer"
+                                  "typeIdentifier": "t_address",
+                                  "typeString": "address"
                                 }
                               },
-                              "id": 6243,
-                              "isConstant": false,
-                              "isLValue": true,
-                              "isPure": false,
-                              "lValueRequested": false,
-                              "memberName": "spendingLimit",
-                              "nodeType": "MemberAccess",
-                              "referencedDeclaration": 6103,
-                              "src": "1985:16:17",
-                              "typeDescriptions": {
-                                "typeIdentifier": "t_uint256",
-                                "typeString": "uint256"
-                              }
-                            },
-                            {
-                              "expression": {
-                                "id": 6244,
-                                "name": "ss",
-                                "nodeType": "Identifier",
-                                "overloadedDeclarations": [],
-                                "referencedDeclaration": 6226,
-                                "src": "2003:2:17",
-                                "typeDescriptions": {
-                                  "typeIdentifier": "t_struct$_SpendingState_$6110_storage_ptr",
-                                  "typeString": "struct SpendingManager.SpendingState storage pointer"
-                                }
-                              },
-                              "id": 6245,
-                              "isConstant": false,
-                              "isLValue": true,
-                              "isPure": false,
-                              "lValueRequested": false,
-                              "memberName": "spentAmount",
-                              "nodeType": "MemberAccess",
-                              "referencedDeclaration": 6105,
-                              "src": "2003:14:17",
-                              "typeDescriptions": {
-                                "typeIdentifier": "t_uint256",
-                                "typeString": "uint256"
-                              }
-                            },
-                            {
-                              "expression": {
-                                "id": 6246,
-                                "name": "ss",
-                                "nodeType": "Identifier",
-                                "overloadedDeclarations": [],
-                                "referencedDeclaration": 6226,
-                                "src": "2019:2:17",
-                                "typeDescriptions": {
-                                  "typeIdentifier": "t_struct$_SpendingState_$6110_storage_ptr",
-                                  "typeString": "struct SpendingManager.SpendingState storage pointer"
-                                }
-                              },
-                              "id": 6247,
-                              "isConstant": false,
-                              "isLValue": true,
-                              "isPure": false,
-                              "lValueRequested": false,
-                              "memberName": "spendingInterval",
-                              "nodeType": "MemberAccess",
-                              "referencedDeclaration": 6109,
-                              "src": "2019:19:17",
-                              "typeDescriptions": {
-                                "typeIdentifier": "t_uint32",
-                                "typeString": "uint32"
-                              }
-                            },
-                            {
                               "id": 6248,
+                              "isConstant": false,
+                              "isLValue": false,
+                              "isPure": false,
+                              "lValueRequested": false,
+                              "memberName": "balance",
+                              "nodeType": "MemberAccess",
+                              "src": "1986:21:17",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            },
+                            {
+                              "id": 6249,
                               "name": "dest",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
                               "referencedDeclaration": 6228,
-                              "src": "2040:4:17",
+                              "src": "2009:4:17",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_address",
                                 "typeString": "address"
@@ -7816,30 +7826,22 @@
                                 "typeString": "uint256"
                               },
                               {
-                                "typeIdentifier": "t_uint256",
-                                "typeString": "uint256"
-                              },
-                              {
-                                "typeIdentifier": "t_uint32",
-                                "typeString": "uint32"
-                              },
-                              {
                                 "typeIdentifier": "t_address",
                                 "typeString": "address"
                               }
                             ],
-                            "id": 6240,
-                            "name": "ExceedSpendingLimit",
+                            "id": 6242,
+                            "name": "InsufficientFund",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 6093,
-                            "src": "1957:19:17",
+                            "referencedDeclaration": 6101,
+                            "src": "1961:16:17",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_function_event_nonpayable$_t_uint256_$_t_uint256_$_t_uint256_$_t_uint256_$_t_address_$returns$__$",
-                              "typeString": "function (uint256,uint256,uint256,uint256,address)"
+                              "typeIdentifier": "t_function_event_nonpayable$_t_uint256_$_t_uint256_$_t_address_$returns$__$",
+                              "typeString": "function (uint256,uint256,address)"
                             }
                           },
-                          "id": 6249,
+                          "id": 6250,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -7847,28 +7849,28 @@
                           "lValueRequested": false,
                           "names": [],
                           "nodeType": "FunctionCall",
-                          "src": "1957:88:17",
+                          "src": "1961:53:17",
                           "tryCall": false,
                           "typeDescriptions": {
                             "typeIdentifier": "t_tuple$__$",
                             "typeString": "tuple()"
                           }
                         },
-                        "id": 6250,
+                        "id": 6251,
                         "nodeType": "EmitStatement",
-                        "src": "1952:93:17"
+                        "src": "1956:58:17"
                       },
                       {
                         "expression": {
                           "hexValue": "66616c7365",
-                          "id": 6251,
+                          "id": 6252,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": true,
                           "kind": "bool",
                           "lValueRequested": false,
                           "nodeType": "Literal",
-                          "src": "2066:5:17",
+                          "src": "2035:5:17",
                           "typeDescriptions": {
                             "typeIdentifier": "t_bool",
                             "typeString": "bool"
@@ -7876,109 +7878,88 @@
                           "value": "false"
                         },
                         "functionReturnParameters": 6234,
-                        "id": 6252,
+                        "id": 6253,
                         "nodeType": "Return",
-                        "src": "2059:12:17"
+                        "src": "2028:12:17"
                       }
                     ]
                   }
                 },
                 {
                   "condition": {
-                    "commonType": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
-                    },
-                    "id": 6261,
+                    "id": 6260,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
-                    "leftExpression": {
-                      "expression": {
-                        "arguments": [
-                          {
-                            "id": 6257,
-                            "name": "this",
-                            "nodeType": "Identifier",
-                            "overloadedDeclarations": [],
-                            "referencedDeclaration": 4294967268,
-                            "src": "2103:4:17",
-                            "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_SpendingManager_$6352",
-                              "typeString": "library SpendingManager"
-                            }
-                          }
-                        ],
-                        "expression": {
-                          "argumentTypes": [
-                            {
-                              "typeIdentifier": "t_contract$_SpendingManager_$6352",
-                              "typeString": "library SpendingManager"
-                            }
-                          ],
-                          "id": 6256,
-                          "isConstant": false,
-                          "isLValue": false,
-                          "isPure": true,
-                          "lValueRequested": false,
-                          "nodeType": "ElementaryTypeNameExpression",
-                          "src": "2095:7:17",
+                    "nodeType": "UnaryOperation",
+                    "operator": "!",
+                    "prefix": true,
+                    "src": "2064:26:17",
+                    "subExpression": {
+                      "arguments": [
+                        {
+                          "id": 6257,
+                          "name": "ss",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 6226,
+                          "src": "2079:2:17",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_type$_t_address_$",
-                            "typeString": "type(address)"
-                          },
-                          "typeName": {
-                            "id": 6255,
-                            "name": "address",
-                            "nodeType": "ElementaryTypeName",
-                            "src": "2095:7:17",
-                            "typeDescriptions": {}
+                            "typeIdentifier": "t_struct$_SpendingState_$6110_storage_ptr",
+                            "typeString": "struct SpendingManager.SpendingState storage pointer"
                           }
                         },
-                        "id": 6258,
-                        "isConstant": false,
-                        "isLValue": false,
-                        "isPure": false,
-                        "kind": "typeConversion",
-                        "lValueRequested": false,
-                        "names": [],
-                        "nodeType": "FunctionCall",
-                        "src": "2095:13:17",
-                        "tryCall": false,
+                        {
+                          "id": 6258,
+                          "name": "amount",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 6230,
+                          "src": "2083:6:17",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": [
+                          {
+                            "typeIdentifier": "t_struct$_SpendingState_$6110_storage_ptr",
+                            "typeString": "struct SpendingManager.SpendingState storage pointer"
+                          },
+                          {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        ],
+                        "id": 6256,
+                        "name": "isWithinLimit",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 6190,
+                        "src": "2065:13:17",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_address",
-                          "typeString": "address"
+                          "typeIdentifier": "t_function_internal_view$_t_struct$_SpendingState_$6110_storage_ptr_$_t_uint256_$returns$_t_bool_$",
+                          "typeString": "function (struct SpendingManager.SpendingState storage pointer,uint256) view returns (bool)"
                         }
                       },
                       "id": 6259,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
+                      "kind": "functionCall",
                       "lValueRequested": false,
-                      "memberName": "balance",
-                      "nodeType": "MemberAccess",
-                      "src": "2095:21:17",
+                      "names": [],
+                      "nodeType": "FunctionCall",
+                      "src": "2065:25:17",
+                      "tryCall": false,
                       "typeDescriptions": {
-                        "typeIdentifier": "t_uint256",
-                        "typeString": "uint256"
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
                       }
                     },
-                    "nodeType": "BinaryOperation",
-                    "operator": "<",
-                    "rightExpression": {
-                      "id": 6260,
-                      "name": "amount",
-                      "nodeType": "Identifier",
-                      "overloadedDeclarations": [],
-                      "referencedDeclaration": 6230,
-                      "src": "2119:6:17",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_uint256",
-                        "typeString": "uint256"
-                      }
-                    },
-                    "src": "2095:30:17",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -7986,22 +7967,22 @@
                   },
                   "id": 6275,
                   "nodeType": "IfStatement",
-                  "src": "2091:145:17",
+                  "src": "2060:176:17",
                   "trueBody": {
                     "id": 6274,
                     "nodeType": "Block",
-                    "src": "2127:109:17",
+                    "src": "2092:144:17",
                     "statements": [
                       {
                         "eventCall": {
                           "arguments": [
                             {
-                              "id": 6263,
+                              "id": 6262,
                               "name": "amount",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
                               "referencedDeclaration": 6230,
-                              "src": "2163:6:17",
+                              "src": "2131:6:17",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_uint256",
                                 "typeString": "uint256"
@@ -8009,72 +7990,83 @@
                             },
                             {
                               "expression": {
-                                "arguments": [
-                                  {
-                                    "id": 6266,
-                                    "name": "this",
-                                    "nodeType": "Identifier",
-                                    "overloadedDeclarations": [],
-                                    "referencedDeclaration": 4294967268,
-                                    "src": "2179:4:17",
-                                    "typeDescriptions": {
-                                      "typeIdentifier": "t_contract$_SpendingManager_$6352",
-                                      "typeString": "library SpendingManager"
-                                    }
-                                  }
-                                ],
-                                "expression": {
-                                  "argumentTypes": [
-                                    {
-                                      "typeIdentifier": "t_contract$_SpendingManager_$6352",
-                                      "typeString": "library SpendingManager"
-                                    }
-                                  ],
-                                  "id": 6265,
-                                  "isConstant": false,
-                                  "isLValue": false,
-                                  "isPure": true,
-                                  "lValueRequested": false,
-                                  "nodeType": "ElementaryTypeNameExpression",
-                                  "src": "2171:7:17",
-                                  "typeDescriptions": {
-                                    "typeIdentifier": "t_type$_t_address_$",
-                                    "typeString": "type(address)"
-                                  },
-                                  "typeName": {
-                                    "id": 6264,
-                                    "name": "address",
-                                    "nodeType": "ElementaryTypeName",
-                                    "src": "2171:7:17",
-                                    "typeDescriptions": {}
-                                  }
-                                },
-                                "id": 6267,
-                                "isConstant": false,
-                                "isLValue": false,
-                                "isPure": false,
-                                "kind": "typeConversion",
-                                "lValueRequested": false,
-                                "names": [],
-                                "nodeType": "FunctionCall",
-                                "src": "2171:13:17",
-                                "tryCall": false,
+                                "id": 6263,
+                                "name": "ss",
+                                "nodeType": "Identifier",
+                                "overloadedDeclarations": [],
+                                "referencedDeclaration": 6226,
+                                "src": "2139:2:17",
                                 "typeDescriptions": {
-                                  "typeIdentifier": "t_address",
-                                  "typeString": "address"
+                                  "typeIdentifier": "t_struct$_SpendingState_$6110_storage_ptr",
+                                  "typeString": "struct SpendingManager.SpendingState storage pointer"
+                                }
+                              },
+                              "id": 6264,
+                              "isConstant": false,
+                              "isLValue": true,
+                              "isPure": false,
+                              "lValueRequested": false,
+                              "memberName": "spendingLimit",
+                              "nodeType": "MemberAccess",
+                              "referencedDeclaration": 6103,
+                              "src": "2139:16:17",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            },
+                            {
+                              "expression": {
+                                "id": 6265,
+                                "name": "ss",
+                                "nodeType": "Identifier",
+                                "overloadedDeclarations": [],
+                                "referencedDeclaration": 6226,
+                                "src": "2157:2:17",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_struct$_SpendingState_$6110_storage_ptr",
+                                  "typeString": "struct SpendingManager.SpendingState storage pointer"
+                                }
+                              },
+                              "id": 6266,
+                              "isConstant": false,
+                              "isLValue": true,
+                              "isPure": false,
+                              "lValueRequested": false,
+                              "memberName": "spentAmount",
+                              "nodeType": "MemberAccess",
+                              "referencedDeclaration": 6105,
+                              "src": "2157:14:17",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            },
+                            {
+                              "expression": {
+                                "id": 6267,
+                                "name": "ss",
+                                "nodeType": "Identifier",
+                                "overloadedDeclarations": [],
+                                "referencedDeclaration": 6226,
+                                "src": "2173:2:17",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_struct$_SpendingState_$6110_storage_ptr",
+                                  "typeString": "struct SpendingManager.SpendingState storage pointer"
                                 }
                               },
                               "id": 6268,
                               "isConstant": false,
-                              "isLValue": false,
+                              "isLValue": true,
                               "isPure": false,
                               "lValueRequested": false,
-                              "memberName": "balance",
+                              "memberName": "spendingInterval",
                               "nodeType": "MemberAccess",
-                              "src": "2171:21:17",
+                              "referencedDeclaration": 6109,
+                              "src": "2173:19:17",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_uint256",
-                                "typeString": "uint256"
+                                "typeIdentifier": "t_uint32",
+                                "typeString": "uint32"
                               }
                             },
                             {
@@ -8101,19 +8093,27 @@
                                 "typeString": "uint256"
                               },
                               {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              },
+                              {
+                                "typeIdentifier": "t_uint32",
+                                "typeString": "uint32"
+                              },
+                              {
                                 "typeIdentifier": "t_address",
                                 "typeString": "address"
                               }
                             ],
-                            "id": 6262,
-                            "name": "InsufficientFund",
+                            "id": 6261,
+                            "name": "ExceedSpendingLimit",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 6101,
-                            "src": "2146:16:17",
+                            "referencedDeclaration": 6093,
+                            "src": "2111:19:17",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_function_event_nonpayable$_t_uint256_$_t_uint256_$_t_address_$returns$__$",
-                              "typeString": "function (uint256,uint256,address)"
+                              "typeIdentifier": "t_function_event_nonpayable$_t_uint256_$_t_uint256_$_t_uint256_$_t_uint256_$_t_address_$returns$__$",
+                              "typeString": "function (uint256,uint256,uint256,uint256,address)"
                             }
                           },
                           "id": 6270,
@@ -8124,7 +8124,7 @@
                           "lValueRequested": false,
                           "names": [],
                           "nodeType": "FunctionCall",
-                          "src": "2146:53:17",
+                          "src": "2111:88:17",
                           "tryCall": false,
                           "typeDescriptions": {
                             "typeIdentifier": "t_tuple$__$",
@@ -8133,7 +8133,7 @@
                         },
                         "id": 6271,
                         "nodeType": "EmitStatement",
-                        "src": "2141:58:17"
+                        "src": "2106:93:17"
                       },
                       {
                         "expression": {
@@ -9190,7 +9190,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.2",
-  "updatedAt": "2021-09-15T09:19:12.999Z",
+  "updatedAt": "2021-09-15T10:55:38.226Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
