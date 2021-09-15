@@ -302,6 +302,7 @@ const Create = ({ advancedSetting }) => {
         network,
         doubleOtp,
         ...securityParameters,
+        expert: !!advancedSetting,
       }
       await storeLayers()
       dispatch(walletActions.updateWallet(wallet))
