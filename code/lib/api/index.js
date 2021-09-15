@@ -250,7 +250,7 @@ const api = {
         lastResortAddress,
         majorVersion: majorVersion ? majorVersion.toNumber() : 0,
         minorVersion: minorVersion ? minorVersion.toNumber() : 0,
-        spendingLimit: dailyLimit.toString(),
+        spendingLimit: spendingLimit.toString(),
         lastSpendingInterval: lastSpendingInterval.toNumber(),
         spendingAmount: spendingAmount.toString(),
         spendingInterval: spendingInterval.toNumber() * 1000
