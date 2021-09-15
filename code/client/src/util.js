@@ -4,6 +4,7 @@ import { isInteger, values } from 'lodash'
 import ONEUtil from '../../lib/util'
 import ONEConstants from '../../lib/constants'
 import { AddressError } from './constants/errors'
+import BN from 'bn.js'
 import config from './config'
 
 export default {
@@ -228,7 +229,21 @@ export default {
 
   isWONE: (token) => token.address === ONEConstants.Sushi.WONE || token.contractAddress === ONEConstants.Sushi.WONE,
 
-  isONE: (token) => !token.address && !token.contractAddress
+  isONE: (token) => !token.address && !token.contractAddress,
+
+  getMaxSpending: (wallet) => {
+    const {
+      spendingAmount,
+      lastSpendingInterval,
+      spendingLimit,
+      spendingInterval
+    } = wallet
+    const currentInterval = Math.floor(Date.now() / spendingInterval)
+    if (currentInterval > lastSpendingInterval) {
+      return spendingLimit
+    }
+    return new BN(spendingLimit).sub(new BN(spendingAmount))
+  }
 }
 
 function getWindowDimensions () {
