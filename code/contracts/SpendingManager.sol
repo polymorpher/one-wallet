@@ -24,7 +24,7 @@ library SpendingManager {
 
     function isWithinLimit(SpendingState storage ss, uint256 amount) view public returns (bool){
         uint256 budget = getRemainingAllowance(ss);
-        if (budget + amount > ss.spendingLimit) {
+        if (budget < amount) {
             return false;
         }
         return true;
