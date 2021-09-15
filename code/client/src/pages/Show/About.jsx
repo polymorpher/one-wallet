@@ -19,9 +19,9 @@ const About = ({ address }) => {
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
   const backlinks = wallet.backlinks || []
-  const { dailyLimit } = wallet
+  const { spendingLimit, spendingInterval } = wallet
   const price = useSelector(state => state.wallet.price)
-  const { formatted: dailyLimitFormatted, fiatFormatted: dailyLimitFiatFormatted } = util.computeBalance(dailyLimit, price)
+  const { formatted: spendingLimitFormatted, fiatFormatted: spendingLimitFiatFormatted } = util.computeBalance(spendingLimit, price)
 
   const onDeleteWallet = async () => {
     const { root, name } = wallet
@@ -45,15 +45,20 @@ const About = ({ address }) => {
         <Col span={isMobile ? 24 : 12}> <Title level={3}>Expires In</Title></Col>
         <Col> <Text>{humanizeDuration(wallet.duration + wallet.effectiveTime - Date.now(), { units: ['y', 'mo', 'd'], round: true })}</Text> </Col>
       </TallRow>
-      <TallRow>
-        <Col span={isMobile ? 24 : 12}> <Title level={3}>Daily Limit</Title></Col>
+      <TallRow align='baseline'>
+        <Col span={isMobile ? 24 : 12}> <Title level={3}>Spend Limit</Title></Col>
         <Col>
-          <Space>
-            <Text>{dailyLimitFormatted}</Text>
-            <Text type='secondary'>ONE</Text>
-            <Text>(≈ ${dailyLimitFiatFormatted}</Text>
-            <Text type='secondary'>USD)</Text>
-          </Space>
+          <Row>
+            <Space>
+              <Text>{spendingLimitFormatted}</Text>
+              <Text type='secondary'>ONE</Text>
+              <Text>(≈ ${spendingLimitFiatFormatted}</Text>
+              <Text type='secondary'>USD)</Text>
+            </Space>
+          </Row>
+          <Row>
+            <Text type='secondary'>per {humanizeDuration(spendingInterval, { largest: 2, round: true })}</Text>
+          </Row>
         </Col>
       </TallRow>
       {wallet.majorVersion &&
