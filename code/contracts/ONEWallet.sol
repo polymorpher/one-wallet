@@ -15,6 +15,7 @@ contract ONEWallet is TokenManager, IONEWallet {
     using WalletGraph for IONEWallet[];
     using SignatureManager for SignatureManager.SignatureTracker;
     using SpendingManager for SpendingManager.SpendingState;
+    using CommitManager for CommitManager.CommitState;
 
     CoreSetting core;
     uint32 _numLeaves; // 2 ** (height - 1)
@@ -28,18 +29,14 @@ contract ONEWallet is TokenManager, IONEWallet {
     address payable forwardAddress; // a non-empty forward address assumes full control of this contract. A forward address can only be set upon a successful recovery or upgrade operation.
     IONEWallet[] backlinkAddresses; // to be set in next version - these are addresses forwarding funds and tokens to this contract AND must have their forwardAddress updated if this contract's forwardAddress is set or updated. One example of such an address is a previous version of the wallet "upgrading" to a new version. See more at https://github.com/polymorpher/one-wallet/issues/78
 
-    /// nonce tracking
-    mapping(uint32 => uint8) nonces; // keys: otp index (=timestamp in seconds / interval - t0); values: the expected nonce for that otp interval. An reveal with a nonce less than the expected value will be rejected
-    uint32[] nonceTracker; // list of nonces keys that have a non-zero value. keys cannot possibly result a successful reveal (indices beyond REVEAL_MAX_DELAY old) are auto-deleted during a clean up procedure that is called every time the nonces are incremented for some key. For each deleted key, the corresponding key in nonces will also be deleted. So the size of nonceTracker and nonces are both bounded.
-
     // constants
     uint256 constant AUTO_RECOVERY_TRIGGER_AMOUNT = 1 ether;
     uint32 constant MAX_COMMIT_SIZE = 120;
     uint256 constant AUTO_RECOVERY_MANDATORY_WAIT_TIME = 14 days;
     address constant ONE_WALLET_TREASURY = 0x02F2cF45DD4bAcbA091D78502Dba3B2F431a54D3;
 
-    uint32 constant majorVersion = 0xb; // a change would require client to migrate
-    uint32 constant minorVersion = 0x4; // a change would not require the client to migrate
+    uint32 constant majorVersion = 0xc; // a change would require client to migrate
+    uint32 constant minorVersion = 0x0; // a change would not require the client to migrate
 
     /// commit management
     CommitManager.CommitState commitState;
@@ -136,11 +133,11 @@ contract ONEWallet is TokenManager, IONEWallet {
     }
 
     function getCurrentSpendingState() external override view returns (uint256, uint256, uint32, uint32){
-        return (spendingState.spendingLimit, spendingState.spentAmount, spendingState.lastSpendingInterval, spendingState.spendingInterval);
+        return spendingState.getState();
     }
 
     function getNonce() external override view returns (uint8){
-        return nonces[uint32(block.timestamp) / core.interval - core.t0];
+        return commitState.getNonce(core.interval, core.t0);
     }
 
     function getTrackedTokens() external override view returns (TokenType[] memory, address[] memory, uint256[] memory){
@@ -158,7 +155,7 @@ contract ONEWallet is TokenManager, IONEWallet {
     }
 
     function getAllCommits() external override view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
-        return CommitManager.getAllCommits(commitState);
+        return commitState.getAllCommits();
     }
 
     function findCommit(bytes32 /*hash*/) external override pure returns (bytes32, bytes32, uint32, bool){
@@ -166,11 +163,11 @@ contract ONEWallet is TokenManager, IONEWallet {
     }
 
     function lookupCommit(bytes32 hash) external override view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
-        return CommitManager.lookupCommit(commitState, hash);
+        return commitState.lookupCommit(hash);
     }
 
     function commit(bytes32 hash, bytes32 paramsHash, bytes32 verificationHash) external override {
-        CommitManager.cleanupCommits(commitState);
+        commitState.cleanupCommits();
         CommitManager.Commit memory nc = CommitManager.Commit(paramsHash, verificationHash, uint32(block.timestamp), false);
         require(commitState.commits.length < MAX_COMMIT_SIZE, "Too many");
         commitState.commits.push(hash);
@@ -355,7 +352,11 @@ contract ONEWallet is TokenManager, IONEWallet {
         } else if (operationType == OperationType.REVOKE) {
             signatures.revokeHandler(contractAddress, tokenId, dest, amount);
         } else if (operationType == OperationType.CALL) {
-            _callContract(contractAddress, amount, data);
+            if (tokenId == 0) {
+                _callContract(contractAddress, amount, data);
+            } else {
+                _multiCall(data);
+            }
         }
     }
 
@@ -399,7 +400,7 @@ contract ONEWallet is TokenManager, IONEWallet {
             if (operationType != OperationType.RECOVER) {
                 uint32 counter = c.timestamp / core.interval - core.t0;
                 require(counter == index, "Time mismatch");
-                uint8 expectedNonce = nonces[counter];
+                uint8 expectedNonce = commitState.nonces[counter];
                 require(nonce >= expectedNonce, "Nonce too low");
             }
             require(!c.completed, "Commit already done");
@@ -418,50 +419,11 @@ contract ONEWallet is TokenManager, IONEWallet {
         assert(c.timestamp > 0);
         if (operationType != OperationType.RECOVER) {
             uint32 index = uint32(c.timestamp) / core.interval - core.t0;
-            _incrementNonce(index);
-            _cleanupNonces();
+            commitState.incrementNonce(index);
+            commitState.cleanupNonces(core.interval, core.t0);
         }
         c.completed = true;
         lastOperationTime = block.timestamp;
-    }
-
-    /// This function removes all tracked nonce values correspond to interval blocks that are older than block.timestamp - REVEAL_MAX_DELAY. In doing so, extraneous data in the blockchain is removed, and both nonces and nonceTracker are bounded in size.
-    function _cleanupNonces() internal {
-        uint32 tMin = uint32(block.timestamp) - CommitManager.REVEAL_MAX_DELAY;
-        uint32 indexMinUnadjusted = tMin / core.interval;
-        uint32 indexMin = 0;
-        if (indexMinUnadjusted > core.t0) {
-            indexMin = indexMinUnadjusted - core.t0;
-        }
-        uint32[] memory nonZeroNonces = new uint32[](nonceTracker.length);
-        uint32 numValidIndices = 0;
-        for (uint8 i = 0; i < nonceTracker.length; i++) {
-            uint32 index = nonceTracker[i];
-            if (index < indexMin) {
-                delete nonces[index];
-            } else {
-                nonZeroNonces[numValidIndices] = index;
-            unchecked {
-                numValidIndices++;
-            }
-            }
-        }
-        // TODO (@polymorpher): This can be later made more efficient by inline assembly. https://ethereum.stackexchange.com/questions/51891/how-to-pop-from-decrease-the-length-of-a-memory-array-in-solidity
-        uint32[] memory reducedArray = new uint32[](numValidIndices);
-        for (uint8 i = 0; i < numValidIndices; i++) {
-            reducedArray[i] = nonZeroNonces[i];
-        }
-        nonceTracker = reducedArray;
-    }
-
-    function _incrementNonce(uint32 index) internal {
-        uint8 v = nonces[index];
-        if (v == 0) {
-            nonceTracker.push(index);
-        }
-    unchecked{
-        nonces[index] = v + 1;
-    }
     }
 
     function _isRecoveryAddressSet() internal view returns (bool) {
@@ -510,6 +472,20 @@ contract ONEWallet is TokenManager, IONEWallet {
         } else {
             spendingState.spentAmount -= amount;
             emit ExternalCallFailed(contractAddress, amount, encodedWithSignature, ret);
+        }
+    }
+
+    function _multiCall(bytes calldata data) internal {
+        (address[] memory dest, uint256[] memory amounts, bytes[] memory encoded) = abi.decode(data, (address[], uint256[], bytes[]));
+        uint256 totalAmount = 0;
+        for (uint32 i = 0; i < amounts.length; i++) {
+            totalAmount += amounts[i];
+        }
+        if (!spendingState.canSpend(address(0), totalAmount)) {
+            return;
+        }
+        for (uint32 i = 0; i < dest.length; i++) {
+            _callContract(dest[i], amounts[i], encoded[i]);
         }
     }
 

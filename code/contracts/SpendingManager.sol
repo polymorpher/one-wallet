@@ -30,6 +30,16 @@ library SpendingManager {
         return true;
     }
 
+    function canSpend(SpendingState storage ss, uint256 amount) view external returns (bool){
+        if (!isWithinLimit(ss, amount)) {
+            return false;
+        }
+        if (address(this).balance < amount) {
+            return false;
+        }
+        return true;
+    }
+
     function canSpend(SpendingState storage ss, address dest, uint256 amount) external returns (bool){
         if (!isWithinLimit(ss, amount)) {
             emit ExceedSpendingLimit(amount, ss.spendingLimit, ss.spentAmount, ss.spendingInterval, dest);
@@ -49,6 +59,10 @@ library SpendingManager {
             ss.lastSpendingInterval = interval;
         }
         ss.spentAmount = ss.spentAmount + amount;
+    }
+
+    function getState(SpendingState storage ss) external view returns (uint256, uint256, uint32, uint32){
+        return (ss.spendingLimit, ss.spentAmount, ss.lastSpendingInterval, ss.spendingInterval);
     }
 
 }
