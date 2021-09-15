@@ -299,6 +299,8 @@ const Create = ({ advancedSetting }) => {
         spendingLimit: ONEUtil.toFraction(spendingLimit).toString(),
         hseed: ONEUtil.hexView(hseed),
         spendingInterval: spendingInterval * 1000,
+        majorVersion: ONEConstants.MajorVersion,
+        minorVersion: ONEConstants.MinorVersion,
         network,
         doubleOtp,
         ...securityParameters,
