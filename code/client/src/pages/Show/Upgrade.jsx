@@ -25,7 +25,8 @@ const CardStyle = {
   left: 0,
   top: 0,
   zIndex: 100,
-  backdropFilter: 'blur(10px)'
+  backdropFilter: 'blur(10px)',
+  webkitBackdropFilter: 'blur(10px)'
 }
 
 const Upgrade = ({ address, onClose }) => {
@@ -142,6 +143,7 @@ const Upgrade = ({ address, onClose }) => {
         style={{
           height: '100%',
           justifyContent: isMobile ? 'start' : 'center',
+          paddingTop: isMobile && 32,
           display: 'flex'
         }}
       >
