@@ -47,7 +47,14 @@ export const NormalLabel = styled.div`
 export const WideLabel = styled.div`
   width: 96px;
 `
-export const Label = ({ wide, children, ...props }) => {
+export const UltraWideLabel = styled.div`
+  width: 128px;
+`
+
+export const Label = ({ ultraWide, wide, children, ...props }) => {
+  if (ultraWide) {
+    return <UltraWideLabel {...props}>{children}</UltraWideLabel>
+  }
   if (wide) {
     return <WideLabel {...props}>{children}</WideLabel>
   }
