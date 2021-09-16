@@ -26,7 +26,7 @@ const CardStyle = {
   top: 0,
   zIndex: 100,
   backdropFilter: 'blur(10px)',
-  webkitBackdropFilter: 'blur(10px)'
+  WebkitBackdropFilter: 'blur(10px)'
 }
 
 const Upgrade = ({ address, onClose }) => {
