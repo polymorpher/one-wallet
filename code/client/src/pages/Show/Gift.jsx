@@ -25,6 +25,7 @@ import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
 import humanizeDuration from 'humanize-duration'
 import { useMetadata, useNFTs } from '../../components/NFTGrid'
+import { TallRow } from '../../components/Grid'
 const { Title, Text } = Typography
 
 const SimpleNFTRow = ({ nft, amount, onClick, onAmountChange, onDelete }) => {
@@ -50,6 +51,7 @@ const Gift = ({
   prefilledClaimInterval // int, non-zero
 }) => {
   const { isMobile } = useWindowDimensions()
+  const network = useSelector(state => state.wallet.network)
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
   const dispatch = useDispatch()
@@ -64,6 +66,61 @@ const Gift = ({
   const [selectedNFTs, setSelectedNFTs] = useState([])
   const { nfts, nftMap, loaded } = useNFTs({ address })
   const [nftAmounts, setNftAmounts] = useState([])
+
+  const { resetWorker, recoverRandomness } = useRandomWorker()
+  const { prepareValidation, onRevealSuccess, ...handlers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
+
+  const createRedPacket = () => {
+    const { otp, otp2, invalidOtp2, invalidOtp, amount: totalAmount } = prepareValidation({ state: { otpInput, otp2Input, doubleOtp, transferAmount: totalAmountInput }, checkDest: false }) || {}
+    if (invalidOtp || invalidOtp2) return
+    const { spendingLimit, valid: spendingLimitValid } = util.toBalance(claimLimitInput)
+    if (!spendingLimitValid || !(parseInt(spendingLimit) > 0)) {
+      message.error('Invalid spending limit')
+      return
+    }
+    if (!(claimInterval > 0)) {
+      message.error('Invalid claim interval')
+      return
+    }
+    for (let i = 0; i < selectedNFTs.length; i++) {
+      if (!(nftAmounts[i] > 0)) {
+        message.error(`Invalid amount for collectible at position ${i} `)
+        return
+      }
+    }
+    const redpacketAddress = '' // TODO
+    const calls = []
+    calls.push({ method: '', amount: totalAmount, dest: redpacketAddress })
+    for (let i = 0; i < selectedNFTs.length; i++) {
+      const nft = nftMap[selectedNFTs[i]]
+      const dest = nft.contractAddress
+      if (nft.tokenType === ONEConstants.TokenType.ERC721) {
+        calls.push({ dest, method: 'safeTransferFrom(address,address,uint256,bytes)', values: [address, redpacketAddress, nft.tokenId, '0x'] })
+      } else if (nft.tokenType === ONEConstants.TokenType.ERC1155) {
+        calls.push({ dest, method: 'safeTransferFrom(address,address,uint256,uint256,bytes)', values: [address, redpacketAddress, nft.tokenId, nftAmounts[i], '0x'] })
+      } else {
+        message.error(`Invalid token type ${nft.tokenType} for token at position ${i}`)
+        return
+      }
+    }
+    const hexData = ONEUtil.encodeMultiCall(calls)
+    const args = { amount: 0, operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: ONEConstants.EmptyAddress, tokenId: 1, dest: ONEConstants.EmptyAddress }
+
+    SmartFlows.commitReveal({
+      wallet,
+      otp,
+      otp2,
+      recoverRandomness,
+      commitHashGenerator: ONE.computeGeneralOperationHash,
+      commitHashArgs: { ...args, data: ONEUtil.hexStringToBytes(hexData) },
+      prepareProof: () => setStage(0),
+      beforeCommit: () => setStage(1),
+      afterCommit: () => setStage(2),
+      revealAPI: api.relayer.reveal,
+      revealArgs: { ...args, data: hexData },
+      ...handlers
+    })
+  }
 
   return (
     <>
@@ -91,7 +148,7 @@ const Gift = ({
           <Label ultraWide><Hint>Add Collectibles</Hint></Label>
           <Space direction='vertical'>
             {selectedNFTs.map((key, i) => (
-              <SimpleNFTRow
+              key && <SimpleNFTRow
                 key={key} nft={nftMap[key]} amount={nftAmounts[i]} onAmountChange={v => {
                   setNftAmounts(amounts => [...amounts.slice(0, i), parseInt(v || 0), ...amounts.slice(i + 1)])
                 }}
@@ -99,7 +156,7 @@ const Gift = ({
                   setSelectedNFTs(s => [...s.slice(0, i), ...s.slice(i + 1)])
                   setNftAmounts(s => [...s.slice(0, i), ...s.slice(i + 1)])
                 }}
-              />
+                     />
             ))}
             <Select
               placeholder={<Space><PlusCircleOutlined /><Hint>Add More...</Hint></Space>}
@@ -134,6 +191,20 @@ const Gift = ({
             </Select>
           </Space>
         </Space>
+        <TallRow>
+          <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} />
+        </TallRow>
+        <Row justify='end' align='baseline'>
+          <Space>
+            {stage >= 0 && stage < 3 && <LoadingOutlined />}
+            {stage === 3 && <CheckCircleOutlined />}
+            <Button type='primary' size='large' shape='round' disabled={stage >= 0} onClick={createRedPacket}>Create Red Packet</Button>
+          </Space>
+        </Row>
+        <Hint>
+          The collectibles you selected plus {totalAmountInput} ONE will be transferred to the red packet. The red packet is controlled by your wallet. You can reclaim the remaining funds and collectibles at any time. The red packet will automatically expire in a week.
+        </Hint>
+        <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
       </Space>
     </>
   )
