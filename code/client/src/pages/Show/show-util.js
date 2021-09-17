@@ -53,7 +53,7 @@ export default {
     const onRevealSuccess = (txId) => {
       setStage(3)
       if (config.networks[network].explorer) {
-        const link = config.networks[network].explorer.replaceAll('{{txId}}', txId)
+        const link = config.networks[network].explorer.replace(/{{txId}}/, txId)
         message.success(<Text>Done! View transaction <Link href={link} target='_blank' rel='noreferrer'>{util.ellipsisAddress(txId)}</Link></Text>, 10)
       } else {
         message.success(<Text>Done! Copy transaction id: <Text copyable={{ text: txId }}>{util.ellipsisAddress(txId)} </Text></Text>, 10)
