@@ -238,15 +238,19 @@ const Gift = ({
           <Label ultraWide><Hint>Add Collectibles</Hint></Label>
           <Space direction='vertical'>
             {selectedNFTs.map((key, i) => (
-              key && <SimpleNFTRow
-                key={key} nft={nftMap[key]} amount={nftAmounts[i]} onAmountChange={v => {
-                  setNftAmounts(amounts => [...amounts.slice(0, i), parseInt(v || 0), ...amounts.slice(i + 1)])
-                }}
-                onDelete={() => {
-                  setSelectedNFTs(s => [...s.slice(0, i), ...s.slice(i + 1)])
-                  setNftAmounts(s => [...s.slice(0, i), ...s.slice(i + 1)])
-                }}
-                     />
+              key &&
+                <SimpleNFTRow
+                  key={key}
+                  nft={nftMap[key]}
+                  amount={nftAmounts[i]}
+                  onAmountChange={v => {
+                    setNftAmounts(amounts => [...amounts.slice(0, i), parseInt(v || 0), ...amounts.slice(i + 1)])
+                  }}
+                  onDelete={() => {
+                    setSelectedNFTs(s => [...s.slice(0, i), ...s.slice(i + 1)])
+                    setNftAmounts(s => [...s.slice(0, i), ...s.slice(i + 1)])
+                  }}
+                />
             ))}
             <Select
               placeholder={<Space><PlusCircleOutlined /><Hint>Add More...</Hint></Space>}
@@ -257,13 +261,13 @@ const Gift = ({
               }}
               bordered={false}
             >
-              {loaded && nfts.map(nft => {
+              {loaded && nfts.map((nft) => {
                 const { key } = nft
                 if (!key) {
-                  return <></>
+                  return undefined
                 }
                 if (selectedNFTs.includes(key)) {
-                  return <></>
+                  return undefined
                 }
                 const onClick = () => {
                   if (!key) {
