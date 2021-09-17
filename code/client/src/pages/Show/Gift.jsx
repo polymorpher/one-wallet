@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux'
 import React, { useEffect, useRef, useState, Suspense } from 'react'
-import { Button, Row, Space, Typography, message, Input, Select, Spin } from 'antd'
+import { Button, Row, Space, Typography, message, Input, Select, Spin, Image } from 'antd'
 import {
   CheckCircleOutlined,
   CloseOutlined,
@@ -29,7 +29,41 @@ import { TallRow } from '../../components/Grid'
 import WalletConstants from '../../constants/wallet'
 import { handleAPIError } from '../../handler'
 import WalletCreateProgress from '../../components/WalletCreateProgress'
-const { Title, Text } = Typography
+import config from '../../config'
+import qrcode from 'qrcode'
+const { Title, Text, Link } = Typography
+
+const Share = ({ seed, redPacketAddress, address, isMobile, onClose }) => {
+  const [qrCodeData, setQRCodeData] = useState()
+  const [url, setUrl] = useState()
+  useEffect(() => {
+    const settings = { seed: ONEUtil.hexString(seed), maker: address, address: redPacketAddress }
+    const b64 = Buffer.from(JSON.stringify(settings)).toString('base64')
+    const url = `${config.rootUrl}/redpacket?data=${b64}`
+    setUrl(url)
+    qrcode.toDataURL(url, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
+      .then(data => setQRCodeData(data)).catch(ex => {
+        console.error(ex)
+        message.error('Something went wrong with generating QR code for red packet')
+      })
+  }, [])
+  return (
+    <Row justify='center'>
+      <Space direction='vertical' style={{ alignItems: 'center' }}>
+        <Title level={2}>Your red packet is ready!</Title>
+        <Text>Share the QR code or the link below. Anyone with the link or the code can claim the red packet.</Text>
+        {!qrCodeData && <Text>Generating QR Code...</Text>}
+        <Image
+          src={qrCodeData}
+          preview={false}
+          width={isMobile ? 192 : 256}
+        />
+        {url && <Link href={url} target='_blank' copyable rel='noreferrer' ellipsis style={{ width: 256 }}>{url}</Link>}
+        <Button type='primary' shape='round' style={{ marginTop: 32 }} onClick={() => onClose && onClose()}>Make Another</Button>
+      </Space>
+    </Row>
+  )
+}
 
 const SimpleNFTRow = ({ isMobile, nft, amount, balance, onClick, onAmountChange, onDelete }) => {
   const { displayName } = useMetadata(nft)
@@ -58,10 +92,10 @@ const Gift = ({
   prefilledClaimInterval // int, non-zero
 }) => {
   const { isMobile } = useWindowDimensions()
+  const price = useSelector(state => state.wallet.price)
   const network = useSelector(state => state.wallet.network)
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
-  const dispatch = useDispatch()
   const [stage, setStage] = useState(-1)
   const doubleOtp = wallet.doubleOtp
   const { state: otpState } = useOtpState()
@@ -78,6 +112,10 @@ const Gift = ({
   const { nfts, nftMap, loaded } = useNFTs({ address })
   useTokenBalanceTracker({ tokens: nfts, address })
   const [nftAmounts, setNftAmounts] = useState([])
+  const {
+    balance: transferAmount,
+    fiatFormatted: transferFiatAmountFormatted
+  } = util.toBalance(totalAmountInput || 0, price)
 
   // generated stuff
   const [confirmedMakingPacket, setConfirmedMakingPacket] = useState(false)
@@ -91,7 +129,6 @@ const Gift = ({
   const [progressStage, setProgressStage] = useState(0)
   const [redPacketAddress, setRedPacketAddress] = useState() // '0x12345678901234567890'
   const [effectiveTime, setEffectiveTime] = useState()
-  const [qrCodeData, setQRCodeData] = useState()
 
   const { resetWorker, recoverRandomness } = useRandomWorker()
   const { prepareValidation, onRevealSuccess, ...handlers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
@@ -134,9 +171,9 @@ const Gift = ({
         setRedPacketAddress(newAddress)
       } catch (ex) {
         handleAPIError(ex)
-        setDeploying(false)
         setConfirmedMakingPacket(false)
       }
+      setDeploying(false)
     }
     f()
   }, [root, layers, claimLimitInput, claimInterval])
@@ -164,7 +201,7 @@ const Gift = ({
       message.error('INTERNAL ERROR: must make red packet 1wallet first')
       return
     }
-    const { otp, otp2, invalidOtp2, invalidOtp, amount: totalAmount } = prepareValidation({ state: { otpInput, otp2Input, doubleOtp, transferAmount: new BN(totalAmountInput) }, checkDest: false }) || {}
+    const { otp, otp2, invalidOtp2, invalidOtp, amount: totalAmount } = prepareValidation({ state: { otpInput, otp2Input, doubleOtp, transferAmount }, checkDest: false }) || {}
     if (invalidOtp || invalidOtp2) return
     const { spendingLimit, valid: spendingLimitValid } = util.toBalance(claimLimitInput)
     if (!spendingLimitValid || !(new BN(spendingLimit).gt(0))) {
@@ -227,114 +264,146 @@ const Gift = ({
     setConfirmedMakingPacket(true)
   }
 
-  return (
-    <>
-      <Space direction='vertical' size='large'>
-        <Text>Create a red packet with some ONEs and collectibles (NFTs) inside. You can share the red packet as a QR code or a link. Others can claim ONEs and collectibles in the red packet by scanning the QR code or visiting the link</Text>
-        <Space align='baseline' size='large'>
-          <Label ultraWide><Hint>Total Amount</Hint></Label>
-          <InputBox margin='auto' width={200} value={totalAmountInput} onChange={({ target: { value } }) => setTotalAmountInput(value)} disabled={!!prefilledTotalAmount} suffix='ONE' />
-        </Space>
-        <Space align='baseline' size='large'>
-          <Label ultraWide><Hint>Per Claim Limit</Hint></Label>
-          <InputBox margin='auto' width={200} value={claimLimitInput} onChange={({ target: { value } }) => setClaimLimitInput(value)} disabled={!!prefilledClaimLimit} suffix='ONE' />
-        </Space>
-        <Space direction='vertical'>
+  if (section === sections.share) {
+    return (
+      <>
+        <Share isMobile={isMobile} address={address} redPacketAddress={redPacketAddress} seed={seed} onClose={() => setSection(sections.prepare)} />
+      </>
+    )
+  }
+
+  if (section === sections.prepare) {
+    return (
+      <>
+        <Space direction='vertical' size='large'>
+          <Text>Create a red packet with some ONEs and collectibles (NFTs) inside. You can share the red packet as a QR code or a link. Others can claim ONEs and collectibles in the red packet by scanning the QR code or visiting the link</Text>
           <Space align='baseline' size='large'>
-            <Label ultraWide><Hint>Claim Interval</Hint></Label>
-            <InputBox margin='auto' width={200} value={claimInterval} onChange={({ target: { value } }) => setClaimInterval(parseInt(value || 0))} disabled={!!prefilledClaimLimit} suffix='seconds' />
+            <Label ultraWide><Hint>Total Amount</Hint></Label>
+            <Space direction={isMobile ? 'vertical' : 'horizontal'} align='end'>
+              <InputBox
+                margin='auto' width={200} value={totalAmountInput}
+                onChange={({ target: { value } }) => setTotalAmountInput(value)}
+                disabled={!!prefilledTotalAmount} suffix='ONE'
+              />
+              <Hint>≈ ${transferFiatAmountFormatted} USD</Hint>
+            </Space>
           </Space>
-          {claimInterval > 60 &&
-            <Row justify='end'>
-              <Hint>≈ {humanizeDuration(claimInterval * 1000, { largest: 2, round: true })}</Hint>
-            </Row>}
-        </Space>
-        <Space align='baseline' size='large' direction={isMobile ? 'vertical' : 'horizontal'}>
-          <Label ultraWide><Hint>Add Collectibles</Hint></Label>
+          <Space align='baseline' size='large'>
+            <Label ultraWide><Hint>Per Claim Limit</Hint></Label>
+            <InputBox
+              margin='auto' width={200} value={claimLimitInput}
+              onChange={({ target: { value } }) => setClaimLimitInput(value)} disabled={!!prefilledClaimLimit}
+              suffix='ONE'
+            />
+          </Space>
           <Space direction='vertical'>
-            {selectedNFTs.map((key, i) => (
-              key &&
-                <SimpleNFTRow
-                  key={key}
-                  balance={new BN(tokenBalances[key])}
-                  nft={nftMap[key]}
-                  amount={nftAmounts[i]}
-                  onAmountChange={v => {
-                    setNftAmounts(amounts => [...amounts.slice(0, i), parseInt(v || 0), ...amounts.slice(i + 1)])
-                  }}
-                  onDelete={() => {
-                    setSelectedNFTs(s => [...s.slice(0, i), ...s.slice(i + 1)])
-                    setNftAmounts(s => [...s.slice(0, i), ...s.slice(i + 1)])
-                  }}
-                />
-            ))}
-            <Select
-              placeholder={<Space><PlusCircleOutlined /><Hint>Add More...</Hint></Space>}
-              labelInValue
-              style={{
-                width: isMobile ? '100%' : 256,
-                borderBottom: '1px dashed black',
-              }}
-              bordered={false}
-            >
-              {loaded && nfts.map((nft) => {
-                const { key } = nft
-                if (!key) {
-                  return undefined
-                }
-                if (selectedNFTs.includes(key)) {
-                  return undefined
-                }
-                const onClick = () => {
-                  if (!key) {
-                    return
-                  }
-                  setSelectedNFTs(s => [...s, key])
-                  setNftAmounts(s => [...s, 1])
-                }
-                return (
-                  <Select.Option key={key} value={key}>
-                    <SimpleNFTRow nft={nftMap[key]} onClick={onClick} />
-                  </Select.Option>
-                )
-              })}
-            </Select>
+            <Space align='baseline' size='large'>
+              <Label ultraWide><Hint>Claim Interval</Hint></Label>
+              <InputBox
+                margin='auto' width={200} value={claimInterval}
+                onChange={({ target: { value } }) => setClaimInterval(parseInt(value || 0))}
+                disabled={!!prefilledClaimLimit} suffix='seconds'
+              />
+            </Space>
+            {claimInterval > 60 &&
+              <Row justify='end'>
+                <Hint>≈ {humanizeDuration(claimInterval * 1000, { largest: 2, round: true })}</Hint>
+              </Row>}
           </Space>
+          <Space align='baseline' size='large' direction={isMobile ? 'vertical' : 'horizontal'}>
+            <Label ultraWide><Hint>Add Collectibles</Hint></Label>
+            <Space direction='vertical'>
+              {selectedNFTs.map((key, i) => (
+                key &&
+                  <SimpleNFTRow
+                    key={key}
+                    balance={new BN(tokenBalances[key])}
+                    nft={nftMap[key]}
+                    amount={nftAmounts[i]}
+                    onAmountChange={v => {
+                      setNftAmounts(amounts => [...amounts.slice(0, i), parseInt(v || 0), ...amounts.slice(i + 1)])
+                    }}
+                    onDelete={() => {
+                      setSelectedNFTs(s => [...s.slice(0, i), ...s.slice(i + 1)])
+                      setNftAmounts(s => [...s.slice(0, i), ...s.slice(i + 1)])
+                    }}
+                  />
+              ))}
+              <Select
+                placeholder={<Space><PlusCircleOutlined /><Hint>Add More...</Hint></Space>}
+                labelInValue
+                style={{
+                  width: isMobile ? '100%' : 256,
+                  borderBottom: '1px dashed black',
+                }}
+                bordered={false}
+              >
+                {loaded && nfts.map((nft) => {
+                  const { key } = nft
+                  if (!key) {
+                    return undefined
+                  }
+                  if (selectedNFTs.includes(key)) {
+                    return undefined
+                  }
+                  const onClick = () => {
+                    if (!key) {
+                      return
+                    }
+                    setSelectedNFTs(s => [...s, key])
+                    setNftAmounts(s => [...s, 1])
+                  }
+                  return (
+                    <Select.Option key={key} value={key}>
+                      <SimpleNFTRow nft={nftMap[key]} onClick={onClick} />
+                    </Select.Option>
+                  )
+                })}
+              </Select>
+            </Space>
+          </Space>
+          {!redPacketAddress &&
+            <Row justify='end'>
+              <Button
+                disabled={deploying} type='primary' shape='round' size='large'
+                onClick={confirmMakingRedPacket}
+              >Create Red Packet
+              </Button>
+            </Row>}
+          {redPacketAddress &&
+            <>
+              <TallRow>
+                <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} />
+              </TallRow>
+              <Row justify='end' align='baseline'>
+                <Space>
+                  {stage >= 0 && stage < 3 && <LoadingOutlined />}
+                  {stage === 3 && <CheckCircleOutlined />}
+                  <Button
+                    type='primary' size='large' shape='round' disabled={stage >= 0}
+                    onClick={createRedPacket}
+                  >Confirm Transfer Assets
+                  </Button>
+                </Space>
+              </Row>
+            </>}
+          <Hint>
+            The collectibles you selected plus {totalAmountInput} ONE will be transferred to the red packet. The red packet is controlled by your wallet. You can reclaim the remaining funds and collectibles at any time. The red packet will automatically expire in a week.
+          </Hint>
+          {deploying && <WalletCreateProgress
+            title='Preparing red packet...' subtitle='Encrypting your red packet'
+            progress={progress} isMobile={isMobile} progressStage={progressStage}
+                        />}
+          {redPacketAddress && <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />}
         </Space>
-        {!redPacketAddress &&
-          <Row justify='end'>
-            <Button disabled={deploying} type='primary' shape='round' size='large' onClick={confirmMakingRedPacket}>Create Red Packet</Button>
-          </Row>}
-        {redPacketAddress &&
-          <>
-            <TallRow>
-              <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} />
-            </TallRow>
-            <Row justify='end' align='baseline'>
-              <Space>
-                {stage >= 0 && stage < 3 && <LoadingOutlined />}
-                {stage === 3 && <CheckCircleOutlined />}
-                <Button
-                  type='primary' size='large' shape='round' disabled={stage >= 0}
-                  onClick={createRedPacket}
-                >Confirm Transfer Assets
-                </Button>
-              </Space>
-            </Row>
-          </>}
-        <Hint>
-          The collectibles you selected plus {totalAmountInput} ONE will be transferred to the red packet. The red packet is controlled by your wallet. You can reclaim the remaining funds and collectibles at any time. The red packet will automatically expire in a week.
-        </Hint>
-        {deploying && <WalletCreateProgress title='Preparing red packet...' subtitle='Encrypting your red packet' progress={progress} isMobile={isMobile} progressStage={progressStage} />}
-        {redPacketAddress && <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />}
-      </Space>
-    </>
-  )
+      </>
+    )
+  }
 }
 
 export default Gift
 
-const GiftModule = ({
+export const GiftModule = ({
   address,
   show,
   onClose, // optional
