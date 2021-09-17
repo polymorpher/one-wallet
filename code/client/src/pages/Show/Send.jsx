@@ -124,6 +124,7 @@ const Send = ({
         prepareProofFailed,
         commitHashGenerator: ONE.computeGeneralOperationHash,
         commitHashArgs: { dest, amount, operationType: ONEConstants.OperationType.TRANSFER_TOKEN, tokenType: selectedToken.tokenType, contractAddress: selectedToken.contractAddress, tokenId: selectedToken.tokenId },
+        prepareProof: () => setStage(0),
         beforeCommit: () => setStage(1),
         afterCommit: () => setStage(2),
         onCommitError,
