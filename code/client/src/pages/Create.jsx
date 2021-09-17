@@ -21,7 +21,7 @@ import {
   Checkbox,
   Tooltip
 } from 'antd'
-import { RedoOutlined, LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+import { RedoOutlined, LoadingOutlined, QuestionCircleOutlined, SnippetsOutlined } from '@ant-design/icons'
 import humanizeDuration from 'humanize-duration'
 import AnimatedSection from '../components/AnimatedSection'
 import b32 from 'hi-base32'
@@ -102,7 +102,14 @@ const getSecondCodeName = (name) => `${name} - 2nd`
 
 // not constructing qrCodeData on the fly (from seed) because generating a PNG takes noticeable amount of time. Caller needs to make sure qrCodeData is consistent with seed
 const buildQRCodeComponent = ({ seed, name, os, isMobile, qrCodeData }) => {
-  const image = (url) => <Image src={qrCodeData} preview={false} width={isMobile ? 192 : 256} onClick={url && (() => window.open(url, '_self').focus())} />
+  const image = (url) =>
+    <Image
+      src={qrCodeData}
+      preview={false}
+      width={isMobile ? 192 : 256}
+      style={isMobile && { border: '1px solid lightgrey', borderRadius: 8, boxShadow: '0px 0px 10px lightgrey' }}
+      onClick={url && (() => window.open(url, '_self').focus())}
+    />
   let href
   if (os === OSType.iOS) {
     href = getQRCodeUri(seed, name, OTPUriMode.MIGRATION)
@@ -378,13 +385,14 @@ const Create = ({ advancedSetting }) => {
           <Space direction='vertical'>
             {/* <Heading>Now, scan the QR code with your Google Authenticator</Heading> */}
             <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
-            <Hint>You need the 6-digit code from {getGoogleAuthenticatorAppLink(os)} to transfer funds. You can restore your wallet using Google Authenticator on any device. {isMobile && 'Tap the QR code to import'}</Hint>
+            {!isMobile && <Hint>Scan the QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use, copy, or restore the wallet </Hint>}
+            {isMobile && <Hint>Tap QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use, copy, or restore the wallet</Hint>}
             {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData })}
           </Space>
         </Row>
-        <Row>
+        <Row style={{ marginTop: 16 }}>
           <Space direction='vertical' size='large' align='center'>
-            <Hint>After you are done, type in the 6-digit code from Google Authenticator</Hint>
+            <Hint>Copy the 6-digit code from authenticator</Hint>
             <Hint style={{ fontSize: isMobile ? 12 : undefined }}>
               Code for <b>Harmony ({name})</b>
             </Hint>
@@ -394,6 +402,7 @@ const Create = ({ advancedSetting }) => {
               value={otp}
               onChange={setOtp}
             />
+            {isMobile && <Button type='default' shape='round' icon={<SnippetsOutlined />} onClick={() => { navigator.clipboard.readText().then(t => setOtp(t)) }}>Paste from Clipboard</Button>}
             {advancedSetting &&
               <Checkbox onChange={() => setDoubleOtp(!doubleOtp)}>
                 <Space>
@@ -412,13 +421,13 @@ const Create = ({ advancedSetting }) => {
         <Row>
           <Space direction='vertical'>
             <Heading>Create Your 1wallet (second code)</Heading>
-            <Hint align='center'>Scan with your Google Authenticator to setup the <b>second</b> code</Hint>
+            <Hint align='center'>{isMobile ? 'Tap' : 'Scan'} to setup the <b>second</b> code</Hint>
             {buildQRCodeComponent({ seed: seed2, name: getSecondCodeName(name), os, isMobile, qrCodeData: secondOtpQrCodeData })}
           </Space>
         </Row>
         <Row>
           <Space direction='vertical' size='large' align='center'>
-            <Hint>Type in the <b>second</b> 6-digit code from Google Authenticator</Hint>
+            <Hint>Copy the 6-digit code from authenticator</Hint>
             <Hint style={{ fontSize: isMobile ? 12 : undefined }}>Code for <b>Harmony ({getSecondCodeName(name)})</b></Hint>
             <OtpBox
               shouldAutoFocus={!isMobile}
@@ -426,6 +435,7 @@ const Create = ({ advancedSetting }) => {
               value={otp}
               onChange={setOtp}
             />
+            {isMobile && <Button type='default' shape='round' icon={<SnippetsOutlined />} onClick={() => { navigator.clipboard.readText().then(t => setOtp(t)) }}>Paste from Clipboard</Button>}
           </Space>
         </Row>
       </AnimatedSection>
