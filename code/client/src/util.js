@@ -246,6 +246,11 @@ export default {
   }
 }
 
+export const generateOtpSeed = () => {
+  const otpSeedBuffer = new Uint8Array(20)
+  return window.crypto.getRandomValues(otpSeedBuffer)
+}
+
 function getWindowDimensions () {
   const { innerWidth: width, innerHeight: height } = window
   return {
