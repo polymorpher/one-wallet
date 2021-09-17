@@ -6,7 +6,7 @@ const WalletCreateProgress = ({ progress, progressStage, isMobile, title, subtit
   return (
     <>
       <Hint>{title || 'One moment... we are still preparing your wallet'}</Hint>
-      <Space size='large' direction={isMobile && 'vertical'}>
+      <Space size='large' direction={isMobile && 'vertical'} style={{ marginTop: 16 }}>
         <Progress
           type='circle'
           strokeColor={{
