@@ -6,6 +6,7 @@ export default {
   create2: base + '/create2',
   wallets: base + '/wallets',
   restore: base + '/restore',
+  unwrap: base + '/unwrap',
 
   show: base + '/show/:address/:action?',
   showAddress: (address, action) => base + `/show/${address}${action ? `/${action}` : ''}`,

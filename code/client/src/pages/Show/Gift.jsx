@@ -37,7 +37,7 @@ const Share = ({ seed, redPacketAddress, address, network, isMobile, onClose }) 
   useEffect(() => {
     const settings = { seed: ONEUtil.hexString(seed), maker: address, address: redPacketAddress, network }
     const b64 = Buffer.from(JSON.stringify(settings)).toString('base64')
-    const url = `${config.rootUrl}/redpacket?data=${b64}`
+    const url = `${config.rootUrl}/unwrap?data=${b64}`
     setUrl(url)
     qrcode.toDataURL(url, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       .then(data => setQRCodeData(data)).catch(ex => {
@@ -386,7 +386,7 @@ const Gift = ({
               </Row>
             </>}
           <Hint>
-            The collectibles you selected plus {totalAmountInput} ONE will be transferred to the red packet. The red packet is controlled by your wallet. You can reclaim the remaining funds and collectibles at any time. The red packet will automatically expire in a week.
+            The collectibles you selected plus {totalAmountInput} ONE will be transferred to the red packet. The red packet is controlled by your wallet. You can reclaim the remaining funds and collectibles at any time. The red packet will automatically expire in 5 days.
           </Hint>
           {deploying && <WalletCreateProgress
             title='Preparing red packet...' subtitle='Encrypting your red packet'
