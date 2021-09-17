@@ -224,6 +224,16 @@ export const useNFTs = ({ address }) => {
   return { nfts: currentTrackedTokens, nftMap: tokenMap, disabled, loaded }
 }
 
+export const useTokenBalanceTracker = ({ tokens, address }) => {
+  const dispatch = useDispatch()
+  useEffect(() => {
+    (tokens || []).forEach(tt => {
+      const { tokenType, tokenId, contractAddress, key } = tt
+      dispatch(walletActions.fetchTokenBalance({ address, tokenType, tokenId, contractAddress, key }))
+    })
+  }, [tokens])
+}
+
 export const NFTGrid = ({ address }) => {
   const history = useHistory()
   const dispatch = useDispatch()
@@ -233,7 +243,7 @@ export const NFTGrid = ({ address }) => {
   const trackedTokens = (wallet.trackedTokens || []).filter(util.isNFT)
 
   const { nfts: currentTrackedTokens, disabled } = useNFTs({ address })
-
+  useTokenBalanceTracker({ tokens: currentTrackedTokens, address })
   const { isMobile } = useWindowDimensions()
 
   const gridItemStyle = {
@@ -264,10 +274,6 @@ export const NFTGrid = ({ address }) => {
   }
 
   useEffect(() => {
-    (currentTrackedTokens || []).forEach(tt => {
-      const { tokenType, tokenId, contractAddress, key } = tt
-      dispatch(walletActions.fetchTokenBalance({ address, tokenType, tokenId, contractAddress, key }))
-    })
     const newTokens = differenceBy(currentTrackedTokens, trackedTokens, e => e.key)
     dispatch(walletActions.trackTokens({ address, tokens: newTokens }))
   }, [currentTrackedTokens])
