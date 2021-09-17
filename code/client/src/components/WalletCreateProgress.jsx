@@ -4,7 +4,7 @@ import React from 'react'
 
 const WalletCreateProgress = ({ progress, progressStage, isMobile, title, subtitle }) => {
   return (
-    <>
+    <Space direction='vertical'>
       <Hint>{title || 'One moment... we are still preparing your wallet'}</Hint>
       <Space size='large' direction={isMobile && 'vertical'} style={{ marginTop: 16 }}>
         <Progress
@@ -22,7 +22,7 @@ const WalletCreateProgress = ({ progress, progressStage, isMobile, title, subtit
           </Timeline>
         </Space>
       </Space>
-    </>
+    </Space>
   )
 }
 
