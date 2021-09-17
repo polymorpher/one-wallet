@@ -31,11 +31,11 @@ import config from '../../config'
 import qrcode from 'qrcode'
 const { Title, Text, Link } = Typography
 
-const Share = ({ seed, redPacketAddress, address, isMobile, onClose }) => {
+const Share = ({ seed, redPacketAddress, address, network, isMobile, onClose }) => {
   const [qrCodeData, setQRCodeData] = useState()
   const [url, setUrl] = useState()
   useEffect(() => {
-    const settings = { seed: ONEUtil.hexString(seed), maker: address, address: redPacketAddress }
+    const settings = { seed: ONEUtil.hexString(seed), maker: address, address: redPacketAddress, network }
     const b64 = Buffer.from(JSON.stringify(settings)).toString('base64')
     const url = `${config.rootUrl}/redpacket?data=${b64}`
     setUrl(url)
@@ -265,7 +265,7 @@ const Gift = ({
   if (section === sections.share) {
     return (
       <>
-        <Share isMobile={isMobile} address={address} redPacketAddress={redPacketAddress} seed={seed} onClose={() => setSection(sections.prepare)} />
+        <Share network={network} isMobile={isMobile} address={address} redPacketAddress={redPacketAddress} seed={seed} onClose={() => setSection(sections.prepare)} />
       </>
     )
   }
