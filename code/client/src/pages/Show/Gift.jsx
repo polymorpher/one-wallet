@@ -31,17 +31,18 @@ import { handleAPIError } from '../../handler'
 import WalletCreateProgress from '../../components/WalletCreateProgress'
 const { Title, Text } = Typography
 
-const SimpleNFTRow = ({ nft, amount, onClick, onAmountChange, onDelete }) => {
+const SimpleNFTRow = ({ isMobile, nft, amount, balance, onClick, onAmountChange, onDelete }) => {
   const { displayName } = useMetadata(nft)
   if (!nft || !displayName) {
     return <></>
   }
   return (
-    <Space onClick={onClick} style={{ width: '100%' }}>
+    <Space onClick={onClick} style={{ width: '100%', flexWrap: 'wrap' }}>
       {!onAmountChange && amount !== undefined && <Hint>{amount} × </Hint>}
       {onAmountChange && <><InputBox margin='auto' style={{ borderBottom: '1px solid black' }} width={64} value={amount} onChange={({ target: { value } }) => onAmountChange(value)} /> <Hint> × </Hint> </>}
       <Text>{displayName}</Text>
       {onDelete && <CloseCircleOutlined style={{ marginLeft: 32 }} onClick={onDelete} />}
+      {amount !== undefined && balance !== undefined && !(balance.gte(new BN(amount))) && <Text type='danger'>Insufficient Balance</Text>}
     </Space>
   )
 }
@@ -70,9 +71,9 @@ const Gift = ({
 
   const tokenBalances = wallet.tokenBalances || {}
 
-  const [totalAmountInput, setTotalAmountInput] = useState(prefilledTotalAmount || 100) // ONEs, string
-  const [claimLimitInput, setClaimLimitInput] = useState(prefilledClaimLimit || 25) // ONEs, string
-  const [claimInterval, setClaimInterval] = useState(prefilledClaimInterval || 30) // seconds, int
+  const [totalAmountInput, setTotalAmountInput] = useState(prefilledTotalAmount || 3) // ONEs, string
+  const [claimLimitInput, setClaimLimitInput] = useState(prefilledClaimLimit || 1) // ONEs, string
+  const [claimInterval, setClaimInterval] = useState(prefilledClaimInterval || 60) // seconds, int
   const [selectedNFTs, setSelectedNFTs] = useState([])
   const { nfts, nftMap, loaded } = useNFTs({ address })
   useTokenBalanceTracker({ tokens: nfts, address })
@@ -82,6 +83,8 @@ const Gift = ({
   const [confirmedMakingPacket, setConfirmedMakingPacket] = useState(false)
   const [deploying, setDeploying] = useState(false)
   const [seed] = useState(generateOtpSeed())
+  const [layers, setLayers] = useState()
+  const [root, setRoot] = useState()
   const [worker, setWorker] = useState()
   const [slotSize] = useState(1)
   const [progress, setProgress] = useState(0)
@@ -103,29 +106,40 @@ const Gift = ({
         setProgressStage(stage)
       }
       if (status === 'done') {
-        const { root, layers, maxOperationsPerInterval } = result
-        // console.log('Received created wallet from worker:', result)
-        try {
-          const { address: newAddress } = await api.relayer.create({
-            root: ONEUtil.hexString(root),
-            height: layers.length,
-            interval: WalletConstants.interval / 1000,
-            t0: effectiveTime / WalletConstants.interval,
-            lifespan: WalletConstants.redPacketDuration / WalletConstants.interval,
-            slotSize: maxOperationsPerInterval,
-            lastResortAddress: address,
-            spendingLimit: ONEUtil.toFraction(claimLimitInput).toString(),
-            spendingInterval: claimInterval,
-          })
-          setRedPacketAddress(newAddress)
-        } catch (ex) {
-          handleAPIError(ex)
-          setDeploying(false)
-        }
+        const { root, layers } = result
+        setLayers(layers)
+        setRoot(root)
       }
     }
     setWorker(worker)
   }, [])
+
+  useEffect(() => {
+    const f = async () => {
+      if (!root || !layers) {
+        return
+      }
+      try {
+        const { address: newAddress } = await api.relayer.create({
+          root: ONEUtil.hexString(root),
+          height: layers.length,
+          interval: WalletConstants.interval / 1000,
+          t0: effectiveTime / WalletConstants.interval,
+          lifespan: WalletConstants.redPacketDuration / WalletConstants.interval,
+          slotSize,
+          lastResortAddress: address,
+          spendingLimit: ONEUtil.toFraction(claimLimitInput).toString(),
+          spendingInterval: claimInterval,
+        })
+        setRedPacketAddress(newAddress)
+      } catch (ex) {
+        handleAPIError(ex)
+        setDeploying(false)
+        setConfirmedMakingPacket(false)
+      }
+    }
+    f()
+  }, [root, layers, claimLimitInput, claimInterval])
 
   useEffect(() => {
     if (confirmedMakingPacket && worker) {
@@ -150,7 +164,7 @@ const Gift = ({
       message.error('INTERNAL ERROR: must make red packet 1wallet first')
       return
     }
-    const { otp, otp2, invalidOtp2, invalidOtp, amount: totalAmount } = prepareValidation({ state: { otpInput, otp2Input, doubleOtp, transferAmount: totalAmountInput }, checkDest: false }) || {}
+    const { otp, otp2, invalidOtp2, invalidOtp, amount: totalAmount } = prepareValidation({ state: { otpInput, otp2Input, doubleOtp, transferAmount: new BN(totalAmountInput) }, checkDest: false }) || {}
     if (invalidOtp || invalidOtp2) return
     const { spendingLimit, valid: spendingLimitValid } = util.toBalance(claimLimitInput)
     if (!spendingLimitValid || !(parseInt(spendingLimit) > 0)) {
@@ -166,7 +180,8 @@ const Gift = ({
         message.error(`Invalid amount for collectible at position ${i} `)
         return
       }
-      if (!(tokenBalances[selectedNFTs[i]] <= nftAmounts[i])) {
+      const tokenBalance = new BN(tokenBalances[selectedNFTs[i]])
+      if (!(tokenBalance.lte(new BN(nftAmounts[i])))) {
         message.error(`Insufficient token balance at position ${i}`)
         return
       }
@@ -234,13 +249,14 @@ const Gift = ({
               <Hint>≈ {humanizeDuration(claimInterval * 1000, { largest: 2, round: true })}</Hint>
             </Row>}
         </Space>
-        <Space align='baseline' size='large'>
+        <Space align='baseline' size='large' direction={isMobile ? 'vertical' : 'horizontal'}>
           <Label ultraWide><Hint>Add Collectibles</Hint></Label>
           <Space direction='vertical'>
             {selectedNFTs.map((key, i) => (
               key &&
                 <SimpleNFTRow
                   key={key}
+                  balance={new BN(tokenBalances[key])}
                   nft={nftMap[key]}
                   amount={nftAmounts[i]}
                   onAmountChange={v => {
@@ -309,7 +325,7 @@ const Gift = ({
         <Hint>
           The collectibles you selected plus {totalAmountInput} ONE will be transferred to the red packet. The red packet is controlled by your wallet. You can reclaim the remaining funds and collectibles at any time. The red packet will automatically expire in a week.
         </Hint>
-        {deploying && <WalletCreateProgress progress={progress} isMobile={isMobile} progressStage={progressStage} />}
+        {deploying && <WalletCreateProgress title='Preparing red packet...' subtitle='Encrypting your red packet' progress={progress} isMobile={isMobile} progressStage={progressStage} />}
         {redPacketAddress && <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />}
       </Space>
     </>
