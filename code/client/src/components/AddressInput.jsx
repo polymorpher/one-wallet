@@ -109,6 +109,8 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
         !isEmpty(knownAddress.domain?.name)
       )
 
+      const unlabelledWalletAddress = wallets.filter(w => existingKnownAddresses.find(a => !a.label && !a.domain?.name && a.address === w.address))
+
       // Init the known address entries for existing wallets.
       walletsNotInKnownAddresses.forEach((wallet) => {
         dispatch(walletActions.setKnownAddress({
@@ -117,6 +119,13 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
           network: wallet.network,
           creationTime: wallet.effectiveTime,
           numUsed: 0
+        }))
+      })
+
+      unlabelledWalletAddress.forEach((w) => {
+        dispatch(walletActions.setKnownAddress({
+          ...knownAddresses[w],
+          label: w.name,
         }))
       })
 
