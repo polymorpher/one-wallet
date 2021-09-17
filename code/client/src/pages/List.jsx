@@ -8,6 +8,7 @@ import { useHistory, useLocation } from 'react-router'
 import Paths from '../constants/paths'
 import BN from 'bn.js'
 import { getAddress } from '@harmony-js/crypto'
+import storage from '../storage'
 const { Text, Title } = Typography
 
 const walletShortName = (fullName) => {
@@ -71,14 +72,32 @@ const List = () => {
   const balances = useSelector(state => state.wallet.balances)
   const price = useSelector(state => state.wallet.price)
   const network = useSelector(state => state.wallet.network)
-  const totalBalance = Object.keys(balances).filter(a => wallets[a] && wallets[a].network === network).map(a => balances[a])
+  const dispatch = useDispatch()
+  const totalBalance = Object.keys(balances)
+    .filter(a => wallets[a] && wallets[a].network === network && !wallets[a].temp)
+    .map(a => balances[a])
     .reduce((a, b) => a.add(new BN(b, 10)), new BN(0)).toString()
   const { formatted, fiatFormatted } = util.computeBalance(totalBalance, price)
   const titleLevel = isMobile ? 4 : 3
+  useEffect(() => {
+    const now = Date.now()
+    Object.keys(wallets || []).forEach((k) => {
+      if (!wallets[k] || !wallets[k].temp) {
+        return
+      }
+      if (wallets[k].temp < now) {
+        const { root } = wallets[k]
+        dispatch(walletActions.deleteWallet(k))
+        if (root) {
+          storage.removeItem(root)
+        }
+      }
+    })
+  }, [wallets])
   return (
     <>
       <Row gutter={[24, 24]}>
-        {values(wallets).filter(w => w.network === network).map(w => <Col span={isMobile && 24} key={w.address}><WalletCard wallet={w} /></Col>)}
+        {values(wallets).filter(w => w.network === network && !w.temp).map(w => <Col span={isMobile && 24} key={w.address}><WalletCard wallet={w} /></Col>)}
       </Row>
       <Row style={{ marginTop: 36 }}>
         <Space direction='vertical'>
