@@ -16,8 +16,6 @@ import {
   Slider,
   Image,
   message,
-  Progress,
-  Timeline,
   Checkbox,
   Tooltip
 } from 'antd'
@@ -29,12 +27,13 @@ import qrcode from 'qrcode'
 import storage from '../storage'
 import walletActions from '../state/modules/wallet/actions'
 import WalletConstants from '../constants/wallet'
-import util, { useWindowDimensions, OSType } from '../util'
+import util, { useWindowDimensions, OSType, generateOtpSeed } from '../util'
 import { handleAPIError, handleAddressError } from '../handler'
 import { Hint, Heading, InputBox, Warning } from '../components/Text'
 import OtpBox from '../components/OtpBox'
 import { getAddress } from '@harmony-js/crypto'
 import AddressInput from '../components/AddressInput'
+import WalletCreateProgress from '../components/WalletCreateProgress'
 const { Text, Link } = Typography
 
 // const genName = () => uniqueNamesGenerator({
@@ -50,11 +49,6 @@ const genName = (existingNames) => {
     return genName()
   }
   return name
-}
-
-const generateOtpSeed = () => {
-  const otpSeedBuffer = new Uint8Array(20)
-  return window.crypto.getRandomValues(otpSeedBuffer)
 }
 
 const OTPUriMode = {
@@ -504,26 +498,7 @@ const Create = ({ advancedSetting }) => {
               <Button disabled={!root || deploying} type='primary' shape='round' size='large' onClick={() => deploy()}>Create Now</Button>
               {deploying && <LoadingOutlined />}
             </Space>
-            {!root &&
-              <>
-                <Hint>One moment... we are still preparing your wallet</Hint>
-                <Space size='large' direction={isMobile && 'vertical'}>
-                  <Progress
-                    type='circle'
-                    strokeColor={{
-                      '0%': '#108ee9',
-                      '100%': '#87d068',
-                    }}
-                    percent={progress}
-                  />
-                  <Space direction='vertical'>
-                    <Timeline pending={progressStage < 2 && 'Securing your keyless 1wallet'}>
-                      <Timeline.Item color={progressStage < 1 ? 'grey' : 'green'}>Securing the wallet</Timeline.Item>
-                      <Timeline.Item color={progressStage < 2 ? 'grey' : 'green'}>Preparing signatures</Timeline.Item>
-                    </Timeline>
-                  </Space>
-                </Space>
-              </>}
+            {!root && <WalletCreateProgress progress={progress} isMobile={isMobile} progressStage={progressStage} />}
           </Space>
         </Row>
         <Row>
