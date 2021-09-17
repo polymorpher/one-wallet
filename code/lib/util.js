@@ -242,7 +242,7 @@ const utils = {
       dests.push(dest)
       encoded.push(utils.encodeCalldata(method, values))
     }
-    return abi.encodeParameters(['address[]', 'uint256[]', 'bytes[]'], dests, amounts, encoded)
+    return abi.encodeParameters(['address[]', 'uint256[]', 'bytes[]'], [dests, amounts, encoded])
   },
 
   bytesConcat: (...args) => {
