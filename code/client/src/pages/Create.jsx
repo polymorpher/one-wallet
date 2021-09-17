@@ -151,6 +151,7 @@ const Create = ({ advancedSetting }) => {
   // eslint-disable-next-line no-unused-vars
   const [seed2, setSeed2] = useState(generateOtpSeed())
   const [duration, setDuration] = useState(WalletConstants.defaultDuration)
+  const [showRecoveryDetail, setShowRecoveryDetail] = useState(false)
 
   // Used for Recovery address setup. Only used when user does not choose a Recovery address.
   const oneWalletTreasurySelectOption = {
@@ -467,26 +468,35 @@ const Create = ({ advancedSetting }) => {
 
             </Space>
           </Row>}
-        <Row style={{ marginBottom: 48 }}>
-          <Space direction='vertical' size='small' style={{ width: '100%' }}>
-            <Hint>Set up a fund recovery address:</Hint>
-            <AddressInput
-              addressValue={lastResortAddress}
-              setAddressCallback={setLastResortAddress}
-              extraSelectOptions={[{
-                address: WalletConstants.oneWalletTreasury.address,
-                label: '1wallet treasury'
-              }]}
-            />
-            <Hint>
-              {lastResortAddress.value !== WalletConstants.oneWalletTreasury.address && <span style={{ color: 'red' }}>You cannot change this later. </span>}
-              If you lost your authenticator, your can recover funds to this address. You can also send 1.0 ONE from the recovery address to trigger auto-recovery. You can use any wallet address as a recovery address. It does not need to be a 1wallet.
-            </Hint>
-            {lastResortAddress.value === WalletConstants.oneWalletTreasury.address &&
-              <Warning style={{ marginTop: 24 }}>
-                We suggest you choose your own address, such as an account from Harmony CLI wallet or Chrome Extension wallet. <br /><br /> 1wallet treasury generally cannot recover your funds except in rare cases which many users are affected by software bugs. <br /><br /> 1wallet treasury is managed by 5 reputable owners and requires a majority vote to make any transfer.<br /><br />If you choose 1wallet treasury as the recovery address, you have an opportunity to change it later in your wallet.
-              </Warning>}
-          </Space>
+        <Row style={{ marginBottom: 24 }}>
+          {!showRecoveryDetail &&
+            <Space>
+              <Button style={{ padding: 0 }} type='link' onClick={() => setShowRecoveryDetail(true)}>Set up a recovery address?</Button>
+              <Tooltip title={'It is where you could send your money to, if you lost the authenticator. You don\'t have to set it up. By default it goes to Harmony'}>
+                <QuestionCircleOutlined />
+              </Tooltip>
+
+            </Space>}
+          {showRecoveryDetail &&
+            <Space direction='vertical' size='small' style={{ width: '100%' }}>
+              <Hint>Set up a fund recovery address (it's public):</Hint>
+              <AddressInput
+                addressValue={lastResortAddress}
+                setAddressCallback={setLastResortAddress}
+                extraSelectOptions={[{
+                  address: WalletConstants.oneWalletTreasury.address,
+                  label: '1wallet treasury'
+                }]}
+              />
+              <Hint>
+                {lastResortAddress.value !== WalletConstants.oneWalletTreasury.address && <span style={{ color: 'red' }}>This is permanent. </span>}
+                If you lost access, you can still send your assets there or use <Link href='https://github.com/polymorpher/one-wallet/releases/tag/v0.2' target='_blank' rel='noreferrer'>auto-recovery</Link>
+              </Hint>
+              {lastResortAddress.value === WalletConstants.oneWalletTreasury.address &&
+                <Warning style={{ marginTop: 24 }}>
+                  Please use your own address if you can. 1wallet treasury is controlled by Harmony team. They may help you recover funds as the last resort.
+                </Warning>}
+            </Space>}
         </Row>
         <Row style={{ marginBottom: 32 }}>
           <Space direction='vertical'>
