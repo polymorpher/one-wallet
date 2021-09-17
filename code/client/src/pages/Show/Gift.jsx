@@ -167,7 +167,7 @@ const Gift = ({
     const { otp, otp2, invalidOtp2, invalidOtp, amount: totalAmount } = prepareValidation({ state: { otpInput, otp2Input, doubleOtp, transferAmount: new BN(totalAmountInput) }, checkDest: false }) || {}
     if (invalidOtp || invalidOtp2) return
     const { spendingLimit, valid: spendingLimitValid } = util.toBalance(claimLimitInput)
-    if (!spendingLimitValid || !(parseInt(spendingLimit) > 0)) {
+    if (!spendingLimitValid || !(new BN(spendingLimit).gt(0))) {
       message.error('Invalid spending limit')
       return
     }
