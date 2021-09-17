@@ -216,7 +216,7 @@ const Gift = ({
         return
       }
       const tokenBalance = new BN(tokenBalances[selectedNFTs[i]])
-      if (!(tokenBalance.lte(new BN(nftAmounts[i])))) {
+      if (!(tokenBalance.gte(new BN(nftAmounts[i])))) {
         message.error(`Insufficient token balance at position ${i}`)
         return
       }
