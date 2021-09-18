@@ -47,7 +47,7 @@ const UnwrapNFTGridItem = ({ isMobile, balance, name, symbol, uri, contractAddre
   }
   // console.log({ displayName, displayBalance, balance })
   const imageStyle = { objectFit: 'cover', width: '100%', height: isMobile ? undefined : '100%' }
-  const wrapperStyle = { height: isMobile ? 'auto' : '264px' }
+  const wrapperStyle = { height: isMobile ? 'auto' : '224px' }
   return (
     <GridItem style={style} hoverable={false} onClick={onClick}>
       <Row style={{ ...wrapperStyle, border: selected && '2px green solid' }} justify='center'>
@@ -82,8 +82,8 @@ const UnwrapNFTGrid = ({ nfts, tokenBalances, isMobile, onClick, selected }) => 
 
   const gridItemStyle = {
     padding: 0,
-    width: isMobile ? '100%' : '296px',
-    height: isMobile ? '100%' : '296px',
+    width: isMobile ? '100%' : '256px',
+    height: isMobile ? '100%' : '256px',
     display: 'flex',
     justifyContent: 'center',
     flexDirection: 'column',
