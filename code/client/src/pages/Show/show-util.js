@@ -11,7 +11,7 @@ export default {
   buildHelpers: ({ setStage, network, resetOtp, resetWorker, onSuccess }) => {
     const restart = () => {
       setStage(-1)
-      resetOtp()
+      resetOtp && resetOtp()
       resetWorker()
     }
 
