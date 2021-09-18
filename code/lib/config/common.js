@@ -17,7 +17,7 @@ module.exports = {
   networks: {
     ...(DEBUG && {
       'eth-ganache': {
-        name: 'Ethereum Ganache',
+        name: 'Ganache',
         url: 'http://127.0.0.1:7545',
         // explorer: 'https://explorer.harmony.one/#/tx/{{txId}}',
       }
