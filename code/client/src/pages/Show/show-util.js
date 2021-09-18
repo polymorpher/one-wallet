@@ -12,7 +12,7 @@ export default {
     const restart = () => {
       setStage(-1)
       resetOtp && resetOtp()
-      resetWorker()
+      resetWorker && resetWorker()
     }
 
     const onCommitError = (ex) => {
