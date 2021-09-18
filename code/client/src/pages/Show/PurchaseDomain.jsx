@@ -82,7 +82,7 @@ const prepareName = (name) => {
   if (name.indexOf(' ') < 0) {
     name = `${name} ${ONENames.randomWord()} ${ONENames.randomWord()}`
   }
-  name = name.replaceAll(/ /g, '-').toLowerCase()
+  name = name.replace(/ /g, '-').toLowerCase()
   return name
 }
 
