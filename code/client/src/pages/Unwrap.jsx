@@ -57,7 +57,8 @@ const UnwrapNFTGridItem = ({ isMobile, balance, name, symbol, uri, contractAddre
           ? <ReactPlayer url={util.replaceIPFSLink(metadata?.image)} style={imageStyle} width={imageStyle.width} height={imageStyle.height || 'auto'} playing muted />
           : <Image
               preview={false}
-              src={animationUrl ? util.replaceIPFSLink(animationUrl) : util.replaceIPFSLink(metadata?.image)}
+              // src={animationUrl ? util.replaceIPFSLink(animationUrl) : util.replaceIPFSLink(metadata?.image)}
+              src={util.replaceIPFSLink(metadata?.image)}
               fallback={FallbackImage}
               wrapperStyle={wrapperStyle}
               style={imageStyle}
@@ -159,12 +160,12 @@ const Unwrap = () => {
 
   const { nfts, nftMap } = useNFTs({ address })
   useTokenBalanceTracker({ tokens: nfts, address })
-  const tokenBalances = wallet.tokenBalances || {}
+  const tokenBalances = wallet?.tokenBalances || {}
   const [selected, setSelected] = useState()
 
   const [stage, setStage] = useState(-1)
   const operationInterval = 30
-  const spendingInterval = Math.floor(wallet.spendingInterval / 1000 || operationInterval)
+  const spendingInterval = Math.floor(wallet?.spendingInterval / 1000 || operationInterval)
 
   const showNextClaim = maxAmount.lt(spendingLimitAmount) || nonce > 0
 
@@ -179,6 +180,7 @@ const Unwrap = () => {
     }, 2500)
     const timer2 = setInterval(async () => {
       const nonce = await api.blockchain.getNonce({ address })
+      // console.log(nonce)
       setNonce(nonce)
     }, 2500)
     const timer3 = setInterval(() => setNow(Date.now()), 1000)
@@ -243,23 +245,21 @@ const Unwrap = () => {
           }
           storage.setItem(root, layers)
           const wallet = {
-            data: {
-              name: 'Red Packet ' + util.ellipsisAddress(address),
-              address,
-              root,
-              duration,
-              effectiveTime,
-              lastResortAddress,
-              hseed: ONEUtil.hexView(hseed),
-              majorVersion,
-              minorVersion,
-              network,
-              randomness: 0,
-              hasher: 'sha256',
-              spendingLimit,
-              spendingInterval,
-              temp: effectiveTime + duration,
-            },
+            name: 'Red Packet ' + util.ellipsisAddress(address),
+            address,
+            root,
+            duration,
+            effectiveTime,
+            lastResortAddress,
+            hseed: ONEUtil.hexView(hseed),
+            majorVersion,
+            minorVersion,
+            network,
+            randomness: 0,
+            hasher: 'sha256',
+            spendingLimit,
+            spendingInterval,
+            temp: effectiveTime + duration,
             _merge: true
           }
           dispatch(walletActions.updateWallet(wallet))
@@ -288,7 +288,7 @@ const Unwrap = () => {
 
   const { prepareValidation, onRevealSuccess, ...handlers } = ShowUtils.buildHelpers({ setStage, network })
   const doClaim = () => {
-    const { dest } = prepareValidation({ state: { transferTo } })
+    const { dest } = prepareValidation({ state: { transferTo }, checkAmount: false, checkOtp: false })
     if (!dest) {
       return
     }
@@ -320,7 +320,7 @@ const Unwrap = () => {
     const otp = ONEUtil.decodeOtp(ONEUtil.genOTP({ seed }))
     const args = { amount: 0, operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: ONEConstants.EmptyAddress, tokenId: 1, dest: ONEConstants.EmptyAddress }
 
-    console.log({ otp })
+    // console.log({ otp })
     SmartFlows.commitReveal({
       wallet,
       otp,
