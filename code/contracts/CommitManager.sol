@@ -175,7 +175,7 @@ library CommitManager {
     }
 
     function getNonce(CommitState storage cs, uint8 interval, uint32 t0) external view returns (uint8){
-        return cs.nonces[uint32(block.timestamp) / interval - t0];
+        return cs.nonces[uint32(block.timestamp) / uint32(interval) - t0];
     }
 
     function incrementNonce(CommitState storage cs, uint32 index) external {
