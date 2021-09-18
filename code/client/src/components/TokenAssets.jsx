@@ -67,7 +67,7 @@ export const NFTMetadataTransformer = ({ contractAddress, metadata }) => {
   if (contractAddress === HarmonyPunk.contractAddress) {
     const m = metadata.image.match(HarmonyPunk.fakeImagePattern)
     if (m) {
-      const image = HarmonyPunk.realImageTemplate.replaceAll('{{id}}', m[1])
+      const image = HarmonyPunk.realImageTemplate.replace(/{{id}}/, m[1])
       return { ...metadata, image }
     }
     return metadata

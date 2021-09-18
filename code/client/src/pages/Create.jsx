@@ -16,12 +16,10 @@ import {
   Slider,
   Image,
   message,
-  Progress,
-  Timeline,
   Checkbox,
   Tooltip
 } from 'antd'
-import { RedoOutlined, LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+import { RedoOutlined, LoadingOutlined, QuestionCircleOutlined, SnippetsOutlined } from '@ant-design/icons'
 import humanizeDuration from 'humanize-duration'
 import AnimatedSection from '../components/AnimatedSection'
 import b32 from 'hi-base32'
@@ -29,12 +27,13 @@ import qrcode from 'qrcode'
 import storage from '../storage'
 import walletActions from '../state/modules/wallet/actions'
 import WalletConstants from '../constants/wallet'
-import util, { useWindowDimensions, OSType } from '../util'
+import util, { useWindowDimensions, OSType, generateOtpSeed } from '../util'
 import { handleAPIError, handleAddressError } from '../handler'
 import { Hint, Heading, InputBox, Warning } from '../components/Text'
 import OtpBox from '../components/OtpBox'
 import { getAddress } from '@harmony-js/crypto'
 import AddressInput from '../components/AddressInput'
+import WalletCreateProgress from '../components/WalletCreateProgress'
 const { Text, Link } = Typography
 
 // const genName = () => uniqueNamesGenerator({
@@ -50,11 +49,6 @@ const genName = (existingNames) => {
     return genName()
   }
   return name
-}
-
-const generateOtpSeed = () => {
-  const otpSeedBuffer = new Uint8Array(20)
-  return window.crypto.getRandomValues(otpSeedBuffer)
 }
 
 const OTPUriMode = {
@@ -102,7 +96,14 @@ const getSecondCodeName = (name) => `${name} - 2nd`
 
 // not constructing qrCodeData on the fly (from seed) because generating a PNG takes noticeable amount of time. Caller needs to make sure qrCodeData is consistent with seed
 const buildQRCodeComponent = ({ seed, name, os, isMobile, qrCodeData }) => {
-  const image = (url) => <Image src={qrCodeData} preview={false} width={isMobile ? 192 : 256} onClick={url && (() => window.open(url, '_self').focus())} />
+  const image = (url) =>
+    <Image
+      src={qrCodeData}
+      preview={false}
+      width={isMobile ? 192 : 256}
+      style={isMobile && { border: '1px solid lightgrey', borderRadius: 8, boxShadow: '0px 0px 10px lightgrey' }}
+      onClick={url && (() => window.open(url, '_self').focus())}
+    />
   let href
   if (os === OSType.iOS) {
     href = getQRCodeUri(seed, name, OTPUriMode.MIGRATION)
@@ -144,6 +145,7 @@ const Create = ({ advancedSetting }) => {
   // eslint-disable-next-line no-unused-vars
   const [seed2, setSeed2] = useState(generateOtpSeed())
   const [duration, setDuration] = useState(WalletConstants.defaultDuration)
+  const [showRecoveryDetail, setShowRecoveryDetail] = useState(false)
 
   // Used for Recovery address setup. Only used when user does not choose a Recovery address.
   const oneWalletTreasurySelectOption = {
@@ -152,16 +154,12 @@ const Create = ({ advancedSetting }) => {
   }
 
   // A valid wallet of user's wallets in the network can be used as default recovery wallet.
-  const defaultRecoveryWallet = Object.keys(wallets)
-    .map((address) => ({ ...wallets[address], oneAddress: util.safeOneAddress(wallets[address].address) }))
-    .find((wallet) => util.safeOneAddress(wallet.address) && wallet.network === network)
+  // const defaultRecoveryWallet = Object.keys(wallets)
+  //   .map((address) => ({ ...wallets[address], oneAddress: util.safeOneAddress(wallets[address].address) }))
+  //   .find((wallet) => util.safeOneAddress(wallet.address) && wallet.network === network && !wallet.temp)
 
-  const defaultRecoveryAddress = defaultRecoveryWallet
-    ? {
-        value: defaultRecoveryWallet.oneAddress,
-        label: `(${defaultRecoveryWallet.name}) ${defaultRecoveryWallet.oneAddress}`
-      }
-    : oneWalletTreasurySelectOption
+  // const defaultRecoveryAddress = defaultRecoveryWallet ? { value: defaultRecoveryWallet.oneAddress, label: `(${defaultRecoveryWallet.name}) ${defaultRecoveryWallet.oneAddress}` } : oneWalletTreasurySelectOption
+  const defaultRecoveryAddress = oneWalletTreasurySelectOption
 
   const [lastResortAddress, setLastResortAddress] = useState(defaultRecoveryAddress)
   const [spendingLimit, setSpendingLimit] = useState(WalletConstants.defaultSpendingLimit) // ONEs, number
@@ -378,13 +376,14 @@ const Create = ({ advancedSetting }) => {
           <Space direction='vertical'>
             {/* <Heading>Now, scan the QR code with your Google Authenticator</Heading> */}
             <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
-            <Hint>You need the 6-digit code from {getGoogleAuthenticatorAppLink(os)} to transfer funds. You can restore your wallet using Google Authenticator on any device. {isMobile && 'Tap the QR code to import'}</Hint>
+            {!isMobile && <Hint>Scan the QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use, copy, or restore the wallet </Hint>}
+            {isMobile && <Hint>Tap QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use, copy, or restore the wallet</Hint>}
             {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData })}
           </Space>
         </Row>
-        <Row>
-          <Space direction='vertical' size='large' align='center'>
-            <Hint>After you are done, type in the 6-digit code from Google Authenticator</Hint>
+        <Row style={{ marginTop: 16 }}>
+          <Space direction='vertical' size='large' align='center' style={{ width: '100%' }}>
+            <Hint>Copy the 6-digit code from authenticator</Hint>
             <Hint style={{ fontSize: isMobile ? 12 : undefined }}>
               Code for <b>Harmony ({name})</b>
             </Hint>
@@ -394,6 +393,7 @@ const Create = ({ advancedSetting }) => {
               value={otp}
               onChange={setOtp}
             />
+            {isMobile && <Button type='default' shape='round' icon={<SnippetsOutlined />} onClick={() => { navigator.clipboard.readText().then(t => setOtp(t)) }}>Paste from Clipboard</Button>}
             {advancedSetting &&
               <Checkbox onChange={() => setDoubleOtp(!doubleOtp)}>
                 <Space>
@@ -412,13 +412,13 @@ const Create = ({ advancedSetting }) => {
         <Row>
           <Space direction='vertical'>
             <Heading>Create Your 1wallet (second code)</Heading>
-            <Hint align='center'>Scan with your Google Authenticator to setup the <b>second</b> code</Hint>
+            <Hint align='center'>{isMobile ? 'Tap' : 'Scan'} to setup the <b>second</b> code</Hint>
             {buildQRCodeComponent({ seed: seed2, name: getSecondCodeName(name), os, isMobile, qrCodeData: secondOtpQrCodeData })}
           </Space>
         </Row>
         <Row>
           <Space direction='vertical' size='large' align='center'>
-            <Hint>Type in the <b>second</b> 6-digit code from Google Authenticator</Hint>
+            <Hint>Copy the 6-digit code from authenticator</Hint>
             <Hint style={{ fontSize: isMobile ? 12 : undefined }}>Code for <b>Harmony ({getSecondCodeName(name)})</b></Hint>
             <OtpBox
               shouldAutoFocus={!isMobile}
@@ -426,6 +426,7 @@ const Create = ({ advancedSetting }) => {
               value={otp}
               onChange={setOtp}
             />
+            {isMobile && <Button type='default' shape='round' icon={<SnippetsOutlined />} onClick={() => { navigator.clipboard.readText().then(t => setOtp(t)) }}>Paste from Clipboard</Button>}
           </Space>
         </Row>
       </AnimatedSection>
@@ -457,26 +458,35 @@ const Create = ({ advancedSetting }) => {
 
             </Space>
           </Row>}
-        <Row style={{ marginBottom: 48 }}>
-          <Space direction='vertical' size='small' style={{ width: '100%' }}>
-            <Hint>Set up a fund recovery address:</Hint>
-            <AddressInput
-              addressValue={lastResortAddress}
-              setAddressCallback={setLastResortAddress}
-              extraSelectOptions={[{
-                address: WalletConstants.oneWalletTreasury.address,
-                label: '1wallet treasury'
-              }]}
-            />
-            <Hint>
-              {lastResortAddress.value !== WalletConstants.oneWalletTreasury.address && <span style={{ color: 'red' }}>You cannot change this later. </span>}
-              If you lost your authenticator, your can recover funds to this address. You can also send 1.0 ONE from the recovery address to trigger auto-recovery. You can use any wallet address as a recovery address. It does not need to be a 1wallet.
-            </Hint>
-            {lastResortAddress.value === WalletConstants.oneWalletTreasury.address &&
-              <Warning style={{ marginTop: 24 }}>
-                We suggest you choose your own address, such as an account from Harmony CLI wallet or Chrome Extension wallet. <br /><br /> 1wallet treasury generally cannot recover your funds except in rare cases which many users are affected by software bugs. <br /><br /> 1wallet treasury is managed by 5 reputable owners and requires a majority vote to make any transfer.<br /><br />If you choose 1wallet treasury as the recovery address, you have an opportunity to change it later in your wallet.
-              </Warning>}
-          </Space>
+        <Row style={{ marginBottom: 24 }}>
+          {!showRecoveryDetail &&
+            <Space>
+              <Button style={{ padding: 0 }} type='link' onClick={() => setShowRecoveryDetail(true)}>Set up a recovery address?</Button>
+              <Tooltip title={'It is where you could send your money to, if you lost the authenticator. You don\'t have to set it up. By default it goes to Harmony'}>
+                <QuestionCircleOutlined />
+              </Tooltip>
+
+            </Space>}
+          {showRecoveryDetail &&
+            <Space direction='vertical' size='small' style={{ width: '100%' }}>
+              <Hint>Set up a fund recovery address (it's public):</Hint>
+              <AddressInput
+                addressValue={lastResortAddress}
+                setAddressCallback={setLastResortAddress}
+                extraSelectOptions={[{
+                  address: WalletConstants.oneWalletTreasury.address,
+                  label: '1wallet treasury'
+                }]}
+              />
+              <Hint>
+                {lastResortAddress.value !== WalletConstants.oneWalletTreasury.address && <span style={{ color: 'red' }}>This is permanent. </span>}
+                If you lost access, you can still send your assets there or use <Link href='https://github.com/polymorpher/one-wallet/releases/tag/v0.2' target='_blank' rel='noreferrer'>auto-recovery</Link>
+              </Hint>
+              {lastResortAddress.value === WalletConstants.oneWalletTreasury.address &&
+                <Warning style={{ marginTop: 24 }}>
+                  Please use your own address if you can. 1wallet treasury is controlled by Harmony team. They may help you recover funds as the last resort.
+                </Warning>}
+            </Space>}
         </Row>
         <Row style={{ marginBottom: 32 }}>
           <Space direction='vertical'>
@@ -484,26 +494,7 @@ const Create = ({ advancedSetting }) => {
               <Button disabled={!root || deploying} type='primary' shape='round' size='large' onClick={() => deploy()}>Create Now</Button>
               {deploying && <LoadingOutlined />}
             </Space>
-            {!root &&
-              <>
-                <Hint>One moment... we are still preparing your wallet</Hint>
-                <Space size='large' direction={isMobile && 'vertical'}>
-                  <Progress
-                    type='circle'
-                    strokeColor={{
-                      '0%': '#108ee9',
-                      '100%': '#87d068',
-                    }}
-                    percent={progress}
-                  />
-                  <Space direction='vertical'>
-                    <Timeline pending={progressStage < 2 && 'Securing your keyless 1wallet'}>
-                      <Timeline.Item color={progressStage < 1 ? 'grey' : 'green'}>Securing the wallet</Timeline.Item>
-                      <Timeline.Item color={progressStage < 2 ? 'grey' : 'green'}>Preparing signatures</Timeline.Item>
-                    </Timeline>
-                  </Space>
-                </Space>
-              </>}
+            {!root && <WalletCreateProgress progress={progress} isMobile={isMobile} progressStage={progressStage} />}
           </Space>
         </Row>
         <Row>

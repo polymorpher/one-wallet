@@ -192,9 +192,6 @@ const Restore = () => {
           lastResortAddress,
           majorVersion,
           minorVersion,
-
-          spendingAmount,
-          lastSpendingInterval,
           spendingLimit,
           spendingInterval
         } = await api.blockchain.getWallet({ address })
@@ -204,9 +201,6 @@ const Restore = () => {
           duration,
           slotSize,
           lastResortAddress,
-
-          spendingAmount,
-          lastSpendingInterval,
           spendingLimit,
           spendingInterval
         })

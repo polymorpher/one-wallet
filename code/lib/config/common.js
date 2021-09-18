@@ -3,8 +3,8 @@ const DEBUG = process.env.DEBUG
 module.exports = {
   appId: 'ONEWallet',
   appName: '1wallet',
-  version: 'v0.12.1',
-  lastLibraryUpdateVersion: 'v0.12.1',
+  version: 'v0.12.2',
+  lastLibraryUpdateVersion: 'v0.12.2',
   minWalletVersion: parseInt(process.env.MIN_WALLET_VERSION || 3),
   minUpgradableVersion: parseInt(process.env.MIN_UPGRADABLE_WALLET_VERSION || 9),
   defaults: {
@@ -25,7 +25,7 @@ module.exports = {
     'harmony-mainnet': {
       name: 'Harmony Mainnet',
       url: 'https://api.s0.t.hmny.io',
-      explorer: 'https://explorer.harmony.one/#/tx/{{txId}}',
+      explorer: 'https://explorer.harmony.one/tx/{{txId}}',
       chainId: 1,
     },
     'harmony-testnet': {

@@ -17,14 +17,15 @@ const delayDomainOperationMillis = 1000
  * Renders address input that provides type ahead search for any known addresses.
  * Known addresses are addresses that have been entered by user for at least once.
  */
-const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSelectOptions, disableManualInput, disabled, style }) => {
+const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSelectOptions, disableManualInput, disabled, style, allowTemp }) => {
   const dispatch = useDispatch()
 
   const [searchingAddress, setSearchingAddress] = useState(false)
 
   const [searchValue, setSearchValue] = useState('')
 
-  const wallets = useSelector(state => Object.keys(state.wallet.wallets).map((k) => state.wallet.wallets[k]))
+  const walletsMap = useSelector(state => state.wallet.wallets)
+  const wallets = Object.keys(walletsMap).map((k) => walletsMap[k])
 
   const knownAddresses = useSelector(state =>
     state.wallet.knownAddresses || {}
@@ -102,12 +103,14 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
 
       const walletsNotInKnownAddresses = wallets.filter((wallet) =>
         !existingKnownAddresses.find((knownAddress) =>
-          knownAddress.address === wallet.address && knownAddress.network === wallet.network)
+          knownAddress.address === wallet.address && knownAddress.network === wallet.network && (!wallet.temp || allowTemp))
       )
 
       const knownAddressesWithoutDomain = existingKnownAddresses.filter((knownAddress) =>
         !isEmpty(knownAddress.domain?.name)
       )
+
+      const unlabelledWalletAddress = wallets.filter(w => existingKnownAddresses.find(a => !a.label && !a.domain?.name && a.address === w.address && (!w.temp || allowTemp)))
 
       // Init the known address entries for existing wallets.
       walletsNotInKnownAddresses.forEach((wallet) => {
@@ -117,6 +120,13 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
           network: wallet.network,
           creationTime: wallet.effectiveTime,
           numUsed: 0
+        }))
+      })
+
+      unlabelledWalletAddress.forEach((w) => {
+        dispatch(walletActions.setKnownAddress({
+          ...knownAddresses[w],
+          label: w.name,
         }))
       })
 
@@ -300,6 +310,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
           .filter((knownAddress) =>
             knownAddress.network === network &&
             notCurrentWallet(knownAddress.address) &&
+            (!walletsMap?.[knownAddress.address]?.temp || allowTemp) && // not a temporary wallet
             knownAddress.address !== WalletConstants.oneWalletTreasury.address)
           .sort((knownAddress) => knownAddress.label ? -1 : 0)
           .map((knownAddress, index) => {

@@ -27,13 +27,15 @@ import Upgrade from './Show/Upgrade'
 import TransferDomain from './Show/TransferDomain'
 import Sign from './Show/Sign'
 import Swap from './Show/Swap'
+import Gift from './Show/Gift'
 
 const tabList = [
   { key: 'coins', tab: 'Coins' },
   { key: 'nft', tab: 'Collectibles' },
   { key: 'about', tab: 'About' },
   { key: 'help', tab: 'Recover' },
-  { key: 'swap', tab: 'Swap' }
+  { key: 'swap', tab: 'Swap' },
+  { key: 'gift', tab: 'Gift'}
 ]
 
 const Show = () => {
@@ -107,6 +109,7 @@ const Show = () => {
         {activeTab === 'nft' && <NFTGrid address={address} />}
         {activeTab === 'help' && <Recovery address={address} />}
         {activeTab === 'swap' && <Swap address={address} />}
+        {activeTab === 'gift' && <Gift address={address} />}
         <Upgrade address={address} />
       </AnimatedSection>
 

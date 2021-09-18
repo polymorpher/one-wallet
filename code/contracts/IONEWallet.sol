@@ -46,6 +46,9 @@ interface IONEWallet {
     function getCurrentSpendingState() external view returns (uint256, uint256, uint32, uint32);
 
     function getNonce() external view returns (uint8);
+
+    function lastOperationTime() external view returns (uint256);
+
     /// DEPRECATED
     function getCommits() external pure returns (bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory);
 

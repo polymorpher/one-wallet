@@ -35,36 +35,41 @@ onmessage = async function (event) {
   }
   // console.log('worker: generating wallet:', event.data)
 
-  const {
-    hseed,
-    doubleOtp,
-    leaves,
-    root,
-    layers,
-    maxOperationsPerInterval,
-  } = await ONE.computeMerkleTree({
-    otpSeed: seed,
-    otpSeed2: seed2,
-    effectiveTime,
-    duration,
-    randomness,
-    hasher: ONEUtil.getHasher(hasher),
-    maxOperationsPerInterval: slotSize,
-    otpInterval: interval,
-    progressObserver: (current, total, stage) => {
-      postMessage({ status: 'working', current: current, total: total, stage })
-    }
-  })
-  console.log('worker: done')
-  postMessage({
-    status: 'done',
-    result: {
+  try {
+    const {
       hseed,
       doubleOtp,
       leaves,
       root,
       layers,
       maxOperationsPerInterval,
-    }
-  })
+    } = await ONE.computeMerkleTree({
+      otpSeed: seed,
+      otpSeed2: seed2,
+      effectiveTime,
+      duration,
+      randomness,
+      hasher: ONEUtil.getHasher(hasher),
+      maxOperationsPerInterval: slotSize,
+      otpInterval: interval,
+      progressObserver: (current, total, stage) => {
+        postMessage({ status: 'working', current: current, total: total, stage })
+      }
+    })
+    console.log('worker: done')
+    postMessage({
+      status: 'done',
+      result: {
+        hseed,
+        doubleOtp,
+        leaves,
+        root,
+        layers,
+        maxOperationsPerInterval,
+      }
+    })
+  } catch (ex) {
+    console.error(ex)
+    postMessage({ status: 'error', result: { error: ex.toString() } })
+  }
 }

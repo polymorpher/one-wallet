@@ -218,6 +218,9 @@ const utils = {
 
   // WARNING: returns string-encoded bytes (0x....), unlike other functions provided in this package
   encodeCalldata: (method, values = []) => {
+    if (!method) {
+      return '0x'
+    }
     const selector = abi.encodeFunctionSignature(method)
     const m = method.match(/.+\((.*)\)/)
     if (!m) {
@@ -226,6 +229,20 @@ const utils = {
     const params = m[1] ? m[1].split(',') : []
     const encodedParameters = abi.encodeParameters(params, values)
     return selector + encodedParameters.slice(2)
+  },
+
+  // WARNING: returns string-encoded bytes (0x....), unlike other functions provided in this package
+  encodeMultiCall: (calls) => {
+    const dests = []
+    const amounts = []
+    const encoded = []
+    for (let i = 0; i < calls.length; i++) {
+      const { amount, dest, method, values } = calls[i]
+      amounts.push(amount || 0)
+      dests.push(dest)
+      encoded.push(utils.encodeCalldata(method, values))
+    }
+    return abi.encodeParameters(['address[]', 'uint256[]', 'bytes[]'], [dests, amounts, encoded])
   },
 
   bytesConcat: (...args) => {

@@ -10,7 +10,8 @@ const config = merge({}, baseConfig, {
     // gateway: process.env.IPFS_GATEWAY || 'https://dweb.link/ipfs/{{hash}}'
     // gateway: process.env.IPFS_GATEWAY || 'https://gateway.pinata.cloud/ipfs/{{hash}}'
     gateway: process.env.IPFS_GATEWAY || 'https://1wallet.mypinata.cloud/ipfs/{{hash}}'
-  }
+  },
+  rootUrl: process.env.ROOT_URL || 'https://1wallet.crazy.one'
 })
 
 export default config

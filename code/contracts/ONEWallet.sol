@@ -25,7 +25,7 @@ contract ONEWallet is TokenManager, IONEWallet {
 
     SpendingManager.SpendingState spendingState;
 
-    uint256 lastOperationTime; // in seconds; record the time for the last successful reveal
+    uint256 public override lastOperationTime; // in seconds; record the time for the last successful reveal
     address payable forwardAddress; // a non-empty forward address assumes full control of this contract. A forward address can only be set upon a successful recovery or upgrade operation.
     IONEWallet[] backlinkAddresses; // to be set in next version - these are addresses forwarding funds and tokens to this contract AND must have their forwardAddress updated if this contract's forwardAddress is set or updated. One example of such an address is a previous version of the wallet "upgrading" to a new version. See more at https://github.com/polymorpher/one-wallet/issues/78
 
@@ -36,7 +36,7 @@ contract ONEWallet is TokenManager, IONEWallet {
     address constant ONE_WALLET_TREASURY = 0x02F2cF45DD4bAcbA091D78502Dba3B2F431a54D3;
 
     uint32 constant majorVersion = 0xc; // a change would require client to migrate
-    uint32 constant minorVersion = 0x1; // a change would not require the client to migrate
+    uint32 constant minorVersion = 0x2; // a change would not require the client to migrate
 
     /// commit management
     CommitManager.CommitState commitState;

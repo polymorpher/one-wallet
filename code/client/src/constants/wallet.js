@@ -13,5 +13,6 @@ export default {
   oneWalletTreasury: {
     label: '1wallet treasury',
     address: ONEConstants.TreasuryAddress
-  }
+  },
+  redPacketDuration: 3600 * 1000 * 24 * 5
 }

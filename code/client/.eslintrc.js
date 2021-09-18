@@ -20,6 +20,7 @@ module.exports = {
   },
   // 'parser': '@babel/eslint-parser',
   rules: {
+    'jsx-a11y/accessible-emoji': 0,
     'no-await-in-loop': 0,
     'no-underscore-dangle': 0,
     'react/jsx-fragments': 0,

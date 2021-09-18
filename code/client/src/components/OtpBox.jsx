@@ -20,7 +20,7 @@ const OtpBox = ({ onChange, value, inputStyle, ...params }, ref) => {
         height: isMobile ? 40 : 32,
         borderRadius: 8,
         borderWidth: 1,
-        fontSize: isMobile ? 12 : 16,
+        fontSize: 16,
         marginRight: isMobile ? 12 : 16,
         ...inputStyle
       }}

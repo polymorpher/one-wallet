@@ -17,7 +17,7 @@ import { useHistory } from 'react-router'
 import ReactPlayer from 'react-player'
 const { Text, Title } = Typography
 
-const GridItem = styled(Card.Grid)`
+export const GridItem = styled(Card.Grid)`
   &:hover{
     opacity: ${props => props['data-full-view'] ? 1.0 : 0.5};
   }
@@ -26,16 +26,22 @@ const SlickButtonFix = ({ currentSlide, slideCount, children, ...props }) => (
   <span {...props}>{children}</span>
 )
 
-const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageWrapperStyleFullView, tokenType, name, symbol, uri, contractAddress, balance, selected, onSend }) => {
-  const { isMobile } = useWindowDimensions()
-  const [fullView, setFullView] = useState(false)
-  const bech32ContractAddress = util.safeOneAddress(contractAddress)
-  const abbrBech32ContractAddress = util.ellipsisAddress(bech32ContractAddress)
+export const useMetadata = ({ name, symbol, uri, contractAddress, tokenType } = {}) => {
+  uri = util.replaceIPFSLink(uri)
+  const [metadata, setMetadata] = useState()
   const [imageType, setImageType] = useState()
 
-  uri = util.replaceIPFSLink(uri)
-  // console.log({ uri })
-  const [metadata, setMetadata] = useState()
+  let displayName = metadata?.name || name
+  if (metadata?.properties?.collection) {
+    displayName = `${metadata?.name} | ${metadata.properties.collection}`
+  }
+
+  if (symbol) {
+    displayName = `${displayName} | ${symbol}`
+  }
+
+  const animationUrl = metadata?.animation_url || metadata?.properties?.animation_url
+
   useEffect(() => {
     const f = async function () {
       try {
@@ -54,13 +60,16 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
     }
     f()
   }, [])
-  let displayName = metadata?.name || name
-  if (metadata?.properties?.collection) {
-    displayName = `${metadata?.name} | ${metadata.properties.collection}`
-  }
-  if (symbol) {
-    displayName = `${displayName} | ${symbol}`
-  }
+  return { metadata, imageType, displayName, animationUrl }
+}
+
+const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageWrapperStyleFullView, tokenType, name, symbol, uri, contractAddress, balance, selected, onSend }) => {
+  const { isMobile } = useWindowDimensions()
+  const { metadata, imageType, displayName, animationUrl } = useMetadata({ name, symbol, uri, contractAddress, tokenType })
+  const [fullView, setFullView] = useState(false)
+  const bech32ContractAddress = util.safeOneAddress(contractAddress)
+  const abbrBech32ContractAddress = util.ellipsisAddress(bech32ContractAddress)
+
   let displayBalance = 'No Longer Owned'
   if (util.isNonZeroBalance(balance)) {
     if (tokenType === ONEConstants.TokenType.ERC721) {
@@ -69,12 +78,8 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
       displayBalance = `Owned: ${balance}`
     }
   }
-  const animationUrl = metadata?.animation_url || metadata?.properties?.animation_url
-
   const wrapperStyle = fullView ? imageWrapperStyleFullView : imageWrapperStyle
-
   const interactable = !disabled && util.isNonZeroBalance(balance)
-
   const imageStyle = { objectFit: 'cover', width: '100%', height: isMobile ? undefined : '100%' }
 
   // console.log(util.replaceIPFSLink(metadata?.image))
@@ -178,6 +183,63 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
   )
 }
 
+export const useNFTs = ({ address }) => {
+  const wallet = useSelector(state => state.wallet.wallets[address])
+  const walletOutdated = !util.canWalletSupportToken(wallet)
+  const trackedTokens = (wallet?.trackedTokens || []).filter(util.isNFT)
+  const [currentTrackedTokens, setCurrentTrackedTokens] = useState(trackedTokens || [])
+  const [tokenMap, setTokenMap] = useState({})
+  const [disabled, setDisabled] = useState(true)
+  const [loaded, setLoaded] = useState(false)
+  useEffect(() => {
+    if (!address) {
+      return
+    }
+    if (walletOutdated) {
+      return
+    }
+    setDisabled(false)
+    const f = async () => {
+      let tts = await api.blockchain.getTrackedTokens({ address })
+      tts = tts.filter(util.isNFT)
+      tts = withKeys(tts)
+      tts = unionWith(tts, trackedTokens, (a, b) => a.key === b.key)
+      await Promise.all(tts.map(async tt => {
+        // if (tt.name && tt.symbol && tt.uri) { return }
+        try {
+          const { name, symbol, uri } = await api.blockchain.getTokenMetadata(tt)
+          Object.assign(tt, { name, symbol, uri })
+        } catch (ex) {
+          console.error(ex)
+        }
+      }))
+      setCurrentTrackedTokens(tts)
+      const map = {}
+      tts.forEach(tt => {
+        map[tt.key] = tt
+      })
+      setTokenMap(map)
+      setLoaded(true)
+    }
+    f()
+  }, [walletOutdated, address])
+
+  return { nfts: currentTrackedTokens, nftMap: tokenMap, disabled, loaded }
+}
+
+export const useTokenBalanceTracker = ({ tokens, address }) => {
+  const dispatch = useDispatch()
+  useEffect(() => {
+    if (!address) {
+      return
+    }
+    (tokens || []).forEach(tt => {
+      const { tokenType, tokenId, contractAddress, key } = tt
+      dispatch(walletActions.fetchTokenBalance({ address, tokenType, tokenId, contractAddress, key }))
+    })
+  }, [tokens, address])
+}
+
 export const NFTGrid = ({ address }) => {
   const history = useHistory()
   const dispatch = useDispatch()
@@ -185,9 +247,9 @@ export const NFTGrid = ({ address }) => {
   const selectedToken = util.isNFT(wallet.selectedToken) && wallet.selectedToken
   const tokenBalances = wallet.tokenBalances || {}
   const trackedTokens = (wallet.trackedTokens || []).filter(util.isNFT)
-  const walletOutdated = !util.canWalletSupportToken(wallet)
-  const [currentTrackedTokens, setCurrentTrackedTokens] = useState(trackedTokens || [])
-  const [disabled, setDisabled] = useState(true)
+
+  const { nfts: currentTrackedTokens, disabled } = useNFTs({ address })
+  useTokenBalanceTracker({ tokens: currentTrackedTokens, address })
   const { isMobile } = useWindowDimensions()
 
   const gridItemStyle = {
@@ -216,35 +278,8 @@ export const NFTGrid = ({ address }) => {
     width: '100%',
     cursor: 'pointer',
   }
-  useEffect(() => {
-    if (walletOutdated) {
-      return
-    }
-    setDisabled(false)
-    const f = async () => {
-      let tts = await api.blockchain.getTrackedTokens({ address })
-      tts = tts.filter(util.isNFT)
-      tts = withKeys(tts)
-      tts = unionWith(tts, trackedTokens, (a, b) => a.key === b.key)
-      await Promise.all(tts.map(async tt => {
-        // if (tt.name && tt.symbol && tt.uri) { return }
-        try {
-          const { name, symbol, uri } = await api.blockchain.getTokenMetadata(tt)
-          Object.assign(tt, { name, symbol, uri })
-        } catch (ex) {
-          console.error(ex)
-        }
-      }))
-      setCurrentTrackedTokens(tts)
-    }
-    f()
-  }, [walletOutdated])
 
   useEffect(() => {
-    (currentTrackedTokens || []).forEach(tt => {
-      const { tokenType, tokenId, contractAddress, key } = tt
-      dispatch(walletActions.fetchTokenBalance({ address, tokenType, tokenId, contractAddress, key }))
-    })
     const newTokens = differenceBy(currentTrackedTokens, trackedTokens, e => e.key)
     dispatch(walletActions.trackTokens({ address, tokens: newTokens }))
   }, [currentTrackedTokens])
