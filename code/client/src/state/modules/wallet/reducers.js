@@ -64,7 +64,7 @@ const reducer = handleActions(
 
     [walletActions.updateWallet]: (state, action) => ({
       ...state,
-      wallets: { ...state.wallets, [action.payload.address]: action.payload }
+      wallets: { ...state.wallets, [action.payload.address]: action.payload._merge ? { ...state.wallets[action.payload.address], ...action.payload.data } : action.payload }
     }),
 
     [walletActions.selectWallet]: (state, action) => ({
