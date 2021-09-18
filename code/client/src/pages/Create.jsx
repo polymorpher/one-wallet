@@ -386,7 +386,7 @@ const Create = ({ advancedSetting }) => {
           </Space>
         </Row>
         <Row style={{ marginTop: 16 }}>
-          <Space direction='vertical' size='large' align='center'>
+          <Space direction='vertical' size='large' align='center' style={{ width: '100%' }}>
             <Hint>Copy the 6-digit code from authenticator</Hint>
             <Hint style={{ fontSize: isMobile ? 12 : undefined }}>
               Code for <b>Harmony ({name})</b>
