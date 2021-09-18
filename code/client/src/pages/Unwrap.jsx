@@ -151,7 +151,7 @@ const Unwrap = () => {
   const { formatted, fiatFormatted } = util.computeBalance(balance, price)
   const firstWallet = Object.keys(wallets).map((address) => wallets[address])
     .find((wallet) => util.safeOneAddress(wallet.address) && wallet.network === network && !wallet.temp)
-  const defaultDest = firstWallet && { value: firstWallet.address, label: `(${firstWallet.name}) ${util.ellipsisAddress(util.safeOneAddress(firstWallet.address))}` }
+  const defaultDest = firstWallet ? { value: firstWallet.address, label: `(${firstWallet.name}) ${util.ellipsisAddress(util.safeOneAddress(firstWallet.address))}` } : { value: '', label: '' }
   const [transferTo, setTransferTo] = useState(defaultDest)
   const [nonce, setNonce] = useState(defaultDest)
   const [lastOperationTime, setLastOperationTime] = useState(defaultDest)
