@@ -17,7 +17,7 @@ import { useHistory } from 'react-router'
 import ReactPlayer from 'react-player'
 const { Text, Title } = Typography
 
-const GridItem = styled(Card.Grid)`
+export const GridItem = styled(Card.Grid)`
   &:hover{
     opacity: ${props => props['data-full-view'] ? 1.0 : 0.5};
   }
@@ -192,6 +192,9 @@ export const useNFTs = ({ address }) => {
   const [disabled, setDisabled] = useState(true)
   const [loaded, setLoaded] = useState(false)
   useEffect(() => {
+    if (!address) {
+      return
+    }
     if (walletOutdated) {
       return
     }
@@ -219,7 +222,7 @@ export const useNFTs = ({ address }) => {
       setLoaded(true)
     }
     f()
-  }, [walletOutdated])
+  }, [walletOutdated, address])
 
   return { nfts: currentTrackedTokens, nftMap: tokenMap, disabled, loaded }
 }
@@ -227,11 +230,14 @@ export const useNFTs = ({ address }) => {
 export const useTokenBalanceTracker = ({ tokens, address }) => {
   const dispatch = useDispatch()
   useEffect(() => {
+    if (!address) {
+      return
+    }
     (tokens || []).forEach(tt => {
       const { tokenType, tokenId, contractAddress, key } = tt
       dispatch(walletActions.fetchTokenBalance({ address, tokenType, tokenId, contractAddress, key }))
     })
-  }, [tokens])
+  }, [tokens, address])
 }
 
 export const NFTGrid = ({ address }) => {
