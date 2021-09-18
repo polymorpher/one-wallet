@@ -17,7 +17,7 @@ const delayDomainOperationMillis = 1000
  * Renders address input that provides type ahead search for any known addresses.
  * Known addresses are addresses that have been entered by user for at least once.
  */
-const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSelectOptions, disableManualInput, disabled, style }) => {
+const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSelectOptions, disableManualInput, disabled, style, allowTemp }) => {
   const dispatch = useDispatch()
 
   const [searchingAddress, setSearchingAddress] = useState(false)
@@ -102,14 +102,14 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
 
       const walletsNotInKnownAddresses = wallets.filter((wallet) =>
         !existingKnownAddresses.find((knownAddress) =>
-          knownAddress.address === wallet.address && knownAddress.network === wallet.network)
+          knownAddress.address === wallet.address && knownAddress.network === wallet.network && (!wallet.temp || allowTemp))
       )
 
       const knownAddressesWithoutDomain = existingKnownAddresses.filter((knownAddress) =>
         !isEmpty(knownAddress.domain?.name)
       )
 
-      const unlabelledWalletAddress = wallets.filter(w => existingKnownAddresses.find(a => !a.label && !a.domain?.name && a.address === w.address))
+      const unlabelledWalletAddress = wallets.filter(w => existingKnownAddresses.find(a => !a.label && !a.domain?.name && a.address === w.address && (!w.temp || allowTemp)))
 
       // Init the known address entries for existing wallets.
       walletsNotInKnownAddresses.forEach((wallet) => {
@@ -309,6 +309,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
           .filter((knownAddress) =>
             knownAddress.network === network &&
             notCurrentWallet(knownAddress.address) &&
+            (!wallets?.[knownAddress.address]?.temp || allowTemp) && // not a temporary wallet
             knownAddress.address !== WalletConstants.oneWalletTreasury.address)
           .sort((knownAddress) => knownAddress.label ? -1 : 0)
           .map((knownAddress, index) => {

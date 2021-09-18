@@ -182,6 +182,9 @@ export default {
   },
 
   canWalletSupportToken: wallet => {
+    if (!wallet) {
+      return false
+    }
     if (wallet.majorVersion > 5) {
       return true
     }
