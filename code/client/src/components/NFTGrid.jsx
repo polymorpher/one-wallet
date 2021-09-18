@@ -186,7 +186,7 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
 export const useNFTs = ({ address }) => {
   const wallet = useSelector(state => state.wallet.wallets[address])
   const walletOutdated = !util.canWalletSupportToken(wallet)
-  const trackedTokens = (wallet.trackedTokens || []).filter(util.isNFT)
+  const trackedTokens = (wallet?.trackedTokens || []).filter(util.isNFT)
   const [currentTrackedTokens, setCurrentTrackedTokens] = useState(trackedTokens || [])
   const [tokenMap, setTokenMap] = useState({})
   const [disabled, setDisabled] = useState(true)
