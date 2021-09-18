@@ -187,6 +187,11 @@ const api = {
     }
   },
   blockchain: {
+    getLastOperationTime: async ({ address }) => {
+      const c = await one.at(address)
+      const t = await c.lastOperationTime() // BN but convertible to uint32
+      return t.toNumber()
+    },
     getNonce: async ({ address }) => {
       const c = await one.at(address)
       const nonce = await c.getNonce()
