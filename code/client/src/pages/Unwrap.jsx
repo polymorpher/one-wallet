@@ -114,6 +114,10 @@ const UnwrapNFTGrid = ({ nfts, tokenBalances, isMobile, onClick, selected }) => 
                 if (key === selected) {
                   onClick(null)
                 } else {
+                  if (!new BN(tokenBalances[key]).gtn(0)) {
+                    message.error('Collectible is no longer available')
+                    return
+                  }
                   onClick(key)
                 }
               }}
@@ -181,7 +185,6 @@ const Unwrap = () => {
     }, 2500)
     const timer2 = setInterval(async () => {
       const [nonce, lastOperationTime] = await Promise.all([api.blockchain.getNonce({ address }), api.blockchain.getLastOperationTime({ address })])
-      // console.log(nonce)
       setLastOperationTime(lastOperationTime)
       setNonce(nonce)
     }, 2500)
@@ -306,7 +309,7 @@ const Unwrap = () => {
     const calls = []
     calls.push({ method: '', amount, dest })
     if (selected) {
-      if (!tokenBalances[selected] > 0) {
+      if (!new BN(tokenBalances[selected]).gtn(0)) {
         message.error('The selected collectible is no longer available. Please unselect it')
         return
       }
@@ -370,12 +373,13 @@ const Unwrap = () => {
     claimText += ' and the selected collectible'
   }
 
-  const outOfOperations = nonce > 0 && (lastOperationTime - Math.floor(now / 1000)) < 30
+  const outOfOperations = nonce > 0 && (Math.floor(now / 1000) - lastOperationTime) < 30
 
   return (
     <AnimatedSection show style={{ maxWidth: 640 }} title={<RedPacketTitle isMobile={isMobile} address={address} />}>
       <Row style={{ marginTop: 16, width: '100%' }}>
         <Space direction='vertical' style={{ width: '100%' }} size='large'>
+          <Space size='small'><Text>Packed by</Text> <WalletAddress address={wallet?.lastResortAddress} showLabel shorten /></Space>
           <Space direction='vertical' style={{ width: '100%', textAlign: 'center' }}>
             <Space>
               <Title level={3}>{formatted}</Title>
@@ -405,7 +409,7 @@ const Unwrap = () => {
           {outOfOperations && <Text>Someone just claimed from this red packet. Please wait for ~{operationInterval - Math.floor(now / 1000) % operationInterval} seconds</Text>}
           {showNextClaim &&
             <>
-              <Text>Next claim: in {spendingInterval - Math.floor(now / 1000) % (spendingInterval)} seconds. </Text>
+              <Text>Next available claim: in {spendingInterval - Math.floor(now / 1000) % (spendingInterval)} seconds. </Text>
               <Text>Maximum amount: up to {spendingLimitAmountFormatted} ONE</Text>
             </>}
         </Space>
