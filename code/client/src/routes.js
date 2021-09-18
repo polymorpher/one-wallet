@@ -14,6 +14,7 @@ import WalletAuth from './integration/WalletAuth'
 import { walletActions } from './state/modules/wallet'
 import config from './config'
 import util, { useWindowDimensions } from './util'
+import Unwrap from './pages/Unwrap'
 
 const LocalRoutes = () => {
   const dispatch = useDispatch()
@@ -53,6 +54,7 @@ const LocalRoutes = () => {
             <Route path={Paths.wallets} component={ListPage} />
             <Route path={Paths.restore} component={RestorePage} />
             <Route path={Paths.show} component={ShowPage} />
+            <Route path={Paths.unwrap} component={Unwrap} />
             <Route
               exact
               path={Paths.root}
