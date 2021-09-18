@@ -154,16 +154,12 @@ const Create = ({ advancedSetting }) => {
   }
 
   // A valid wallet of user's wallets in the network can be used as default recovery wallet.
-  const defaultRecoveryWallet = Object.keys(wallets)
-    .map((address) => ({ ...wallets[address], oneAddress: util.safeOneAddress(wallets[address].address) }))
-    .find((wallet) => util.safeOneAddress(wallet.address) && wallet.network === network && !wallet.temp)
+  // const defaultRecoveryWallet = Object.keys(wallets)
+  //   .map((address) => ({ ...wallets[address], oneAddress: util.safeOneAddress(wallets[address].address) }))
+  //   .find((wallet) => util.safeOneAddress(wallet.address) && wallet.network === network && !wallet.temp)
 
-  const defaultRecoveryAddress = defaultRecoveryWallet
-    ? {
-        value: defaultRecoveryWallet.oneAddress,
-        label: `(${defaultRecoveryWallet.name}) ${defaultRecoveryWallet.oneAddress}`
-      }
-    : oneWalletTreasurySelectOption
+  // const defaultRecoveryAddress = defaultRecoveryWallet ? { value: defaultRecoveryWallet.oneAddress, label: `(${defaultRecoveryWallet.name}) ${defaultRecoveryWallet.oneAddress}` } : oneWalletTreasurySelectOption
+  const defaultRecoveryAddress = oneWalletTreasurySelectOption
 
   const [lastResortAddress, setLastResortAddress] = useState(defaultRecoveryAddress)
   const [spendingLimit, setSpendingLimit] = useState(WalletConstants.defaultSpendingLimit) // ONEs, number
