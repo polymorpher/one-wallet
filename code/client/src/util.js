@@ -240,7 +240,7 @@ export default {
     } = wallet
     const currentInterval = Math.floor(Date.now() / spendingInterval)
     if (currentInterval > lastSpendingInterval) {
-      return spendingLimit
+      return new BN(spendingLimit)
     }
     return new BN(spendingLimit).sub(new BN(spendingAmount))
   }
