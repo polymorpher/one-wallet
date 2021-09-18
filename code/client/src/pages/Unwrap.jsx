@@ -19,9 +19,9 @@ import { GridItem, useMetadata, useNFTs, useTokenBalanceTracker } from '../compo
 import ReactPlayer from 'react-player'
 import { FallbackImage } from '../constants/ui'
 import ONEConstants from '../../../lib/constants'
-import { isEqual } from 'lodash'
 import { SmartFlows } from '../../../lib/api/flow'
 import ONE from '../../../lib/onewallet'
+import { useHistory } from 'react-router'
 const { Title, Text, Link } = Typography
 
 const RedPacketTitle = ({ isMobile, address }) => {
@@ -34,6 +34,7 @@ const RedPacketTitle = ({ isMobile, address }) => {
 }
 
 const UnwrapNFTGridItem = ({ isMobile, balance, name, symbol, uri, contractAddress, tokenType, style, onClick, selected }) => {
+  // eslint-disable-next-line no-unused-vars
   const { metadata, imageType, displayName, animationUrl } = useMetadata({ name, symbol, uri, contractAddress, tokenType })
   const bech32ContractAddress = util.safeOneAddress(contractAddress)
   const abbrBech32ContractAddress = util.ellipsisAddress(bech32ContractAddress)
@@ -133,6 +134,7 @@ const UnwrapNFTGrid = ({ nfts, tokenBalances, isMobile, onClick, selected }) => 
 const Unwrap = () => {
   const [progress, setProgress] = useState(0)
   const [progressStage, setProgressStage] = useState(0)
+  const history = useHistory()
 
   const dispatch = useDispatch()
   const { isMobile } = useWindowDimensions()

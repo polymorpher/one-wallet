@@ -112,7 +112,7 @@ export default {
 
     const prepareProofFailed = () => {
       setStage(-1)
-      resetOtp()
+      resetOtp && resetOtp()
       resetWorker && resetWorker()
     }
 
