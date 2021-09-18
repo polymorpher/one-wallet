@@ -24,7 +24,8 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
 
   const [searchValue, setSearchValue] = useState('')
 
-  const wallets = useSelector(state => Object.keys(state.wallet.wallets).map((k) => state.wallet.wallets[k]))
+  const walletsMap = useSelector(state => state.wallet.wallets)
+  const wallets = Object.keys(walletsMap).map((k) => walletsMap[k])
 
   const knownAddresses = useSelector(state =>
     state.wallet.knownAddresses || {}
@@ -309,7 +310,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
           .filter((knownAddress) =>
             knownAddress.network === network &&
             notCurrentWallet(knownAddress.address) &&
-            (!wallets?.[knownAddress.address]?.temp || allowTemp) && // not a temporary wallet
+            (!walletsMap?.[knownAddress.address]?.temp || allowTemp) && // not a temporary wallet
             knownAddress.address !== WalletConstants.oneWalletTreasury.address)
           .sort((knownAddress) => knownAddress.label ? -1 : 0)
           .map((knownAddress, index) => {
