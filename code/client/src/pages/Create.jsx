@@ -156,7 +156,7 @@ const Create = ({ advancedSetting }) => {
   // A valid wallet of user's wallets in the network can be used as default recovery wallet.
   const defaultRecoveryWallet = Object.keys(wallets)
     .map((address) => ({ ...wallets[address], oneAddress: util.safeOneAddress(wallets[address].address) }))
-    .find((wallet) => util.safeOneAddress(wallet.address) && wallet.network === network)
+    .find((wallet) => util.safeOneAddress(wallet.address) && wallet.network === network && !wallet.temp)
 
   const defaultRecoveryAddress = defaultRecoveryWallet
     ? {
