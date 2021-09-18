@@ -187,6 +187,21 @@ const api = {
     }
   },
   blockchain: {
+    getNonce: async ({ address }) => {
+      const c = await one.at(address)
+      const nonce = await c.getNonce()
+      return nonce.toNumber()
+    },
+    getSpending: async ({ address }) => {
+      const c = await one.at(address)
+      let spendingLimit, spendingAmount, lastSpendingInterval, spendingInterval
+      const r = await c.getCurrentSpendingState()
+      spendingLimit = new BN(r[0])
+      spendingAmount = new BN(r[1])
+      lastSpendingInterval = new BN(r[2])
+      spendingInterval = new BN(r[3])
+      return { spendingLimit, spendingAmount, lastSpendingInterval, spendingInterval }
+    },
     /**
      * Require contract >= v2
      * @param address
