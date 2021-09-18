@@ -148,6 +148,7 @@ const Unwrap = () => {
   const defaultDest = firstWallet && { value: firstWallet.address, label: `(${firstWallet.name}) ${util.ellipsisAddress(util.safeOneAddress(firstWallet.address))}` }
   const [transferTo, setTransferTo] = useState(defaultDest)
   const [nonce, setNonce] = useState(defaultDest)
+  const [lastOperationTime, setLastOperationTime] = useState(defaultDest)
   const [spendingAmount, setSpendingAmount] = useState()
   const [lastSpendingInterval, setLastSpendingInterval] = useState()
   const maxAmount = wallet ? util.getMaxSpending({ ...wallet, spendingAmount, lastSpendingInterval }) : new BN(0)
@@ -179,8 +180,9 @@ const Unwrap = () => {
       setLastSpendingInterval(lastSpendingInterval)
     }, 2500)
     const timer2 = setInterval(async () => {
-      const nonce = await api.blockchain.getNonce({ address })
+      const [nonce, lastOperationTime] = await Promise.all([api.blockchain.getNonce({ address }), api.blockchain.getLastOperationTime({ address })])
       // console.log(nonce)
+      setLastOperationTime(lastOperationTime)
       setNonce(nonce)
     }, 2500)
     const timer3 = setInterval(() => setNow(Date.now()), 1000)
@@ -368,6 +370,8 @@ const Unwrap = () => {
     claimText += ' and the selected collectible'
   }
 
+  const outOfOperations = nonce > 0 && (lastOperationTime - Math.floor(now / 1000)) < 30
+
   return (
     <AnimatedSection show style={{ maxWidth: 640 }} title={<RedPacketTitle isMobile={isMobile} address={address} />}>
       <Row style={{ marginTop: 16, width: '100%' }}>
@@ -392,13 +396,13 @@ const Unwrap = () => {
           </Space>
           <Row justify='center' style={{ width: '100%' }}>
             <Space direction='vertical' style={{ textAlign: 'center' }}>
-              <Button size='large' type='primary' shape='round' onClick={doClaim} disabled={nonce > 0 || stage >= 0 || !maxAmount.gt(0)}>
+              <Button size='large' type='primary' shape='round' onClick={doClaim} disabled={outOfOperations || stage >= 0 || !maxAmount.gt(0)}>
                 Claim Yours
               </Button>
               <Hint>{claimText}</Hint>
             </Space>
           </Row>
-          {nonce > 0 && <Text>Someone just claimed from this red packet. Please wait for ~{operationInterval - Math.floor(now / 1000) % operationInterval} seconds</Text>}
+          {outOfOperations && <Text>Someone just claimed from this red packet. Please wait for ~{operationInterval - Math.floor(now / 1000) % operationInterval} seconds</Text>}
           {showNextClaim &&
             <>
               <Text>Next claim: in {spendingInterval - Math.floor(now / 1000) % (spendingInterval)} seconds. </Text>
