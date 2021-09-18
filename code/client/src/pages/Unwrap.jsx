@@ -2,7 +2,7 @@ import util, { useWindowDimensions } from '../util'
 import { useDispatch, useSelector } from 'react-redux'
 import querystring from 'query-string'
 import React, { useEffect, useState } from 'react'
-import { Button, Row, Space, Typography, message, Select, Image, Spin, Col } from 'antd'
+import { Button, Row, Space, Typography, message, Image, Spin } from 'antd'
 import ONEUtil from '../../../lib/util'
 import storage from '../storage'
 import walletActions from '../state/modules/wallet/actions'
@@ -11,7 +11,7 @@ import WalletConstants from '../constants/wallet'
 import { api } from '../../../lib/api'
 import AnimatedSection from '../components/AnimatedSection'
 import AddressInput from '../components/AddressInput'
-import { Hint, InputBox, Label } from '../components/Text'
+import { Hint } from '../components/Text'
 import BN from 'bn.js'
 import ShowUtils from './Show/show-util'
 import WalletAddress from '../components/WalletAddress'
@@ -20,6 +20,8 @@ import ReactPlayer from 'react-player'
 import { FallbackImage } from '../constants/ui'
 import ONEConstants from '../../../lib/constants'
 import { isEqual } from 'lodash'
+import { SmartFlows } from '../../../lib/api/flow'
+import ONE from '../../../lib/onewallet'
 const { Title, Text, Link } = Typography
 
 const RedPacketTitle = ({ isMobile, address }) => {
@@ -107,7 +109,13 @@ const UnwrapNFTGrid = ({ nfts, tokenBalances, isMobile, onClick, selected }) => 
               contractAddress={contractAddress}
               symbol={symbol}
               balance={tokenBalances[key] || 0}
-              onClick={() => onClick(key)}
+              onClick={() => {
+                if (key === selected) {
+                  onClick(null)
+                } else {
+                  onClick(key)
+                }
+              }}
               selected={selected === key}
             />
           )
@@ -137,7 +145,7 @@ const Unwrap = () => {
   const firstWallet = Object.keys(wallets).map((address) => wallets[address])
     .find((wallet) => util.safeOneAddress(wallet.address) && wallet.network === network && !wallet.temp)
   const defaultDest = firstWallet && { value: firstWallet.address, label: `(${firstWallet.name}) ${util.ellipsisAddress(util.safeOneAddress(firstWallet.address))}` }
-  const [dest, setDest] = useState(defaultDest)
+  const [transferTo, setTransferTo] = useState(defaultDest)
   const [nonce, setNonce] = useState(defaultDest)
   const [spendingAmount, setSpendingAmount] = useState()
   const [lastSpendingInterval, setLastSpendingInterval] = useState()
@@ -149,7 +157,7 @@ const Unwrap = () => {
   const { formatted: spendingLimitAmountFormatted } = util.computeBalance(spendingLimitAmount)
   const [now, setNow] = useState(Date.now())
 
-  const { nfts, nftMap, loaded } = useNFTs({ address })
+  const { nfts, nftMap } = useNFTs({ address })
   useTokenBalanceTracker({ tokens: nfts, address })
   const tokenBalances = wallet.tokenBalances || {}
   const [selected, setSelected] = useState()
@@ -280,7 +288,56 @@ const Unwrap = () => {
 
   const { prepareValidation, onRevealSuccess, ...handlers } = ShowUtils.buildHelpers({ setStage, network })
   const doClaim = () => {
-    console.log(123)
+    const { dest } = prepareValidation({ state: { transferTo } })
+    if (!dest) {
+      return
+    }
+    // fake random
+    let amount
+    if (maxAmount.gt(minAmount)) {
+      amount = parseFloat(minAmountFormatted) + Math.random() * (parseFloat(maxAmountFormatted) - parseFloat(minAmountFormatted))
+      amount = ONEUtil.toFraction(amount).toString()
+    } else {
+      amount = maxAmount.toString()
+    }
+
+    const calls = []
+    calls.push({ method: '', amount, dest })
+    if (selected) {
+      if (!tokenBalances[selected] > 0) {
+        message.error('The selected collectible is no longer available. Please unselect it')
+        return
+      }
+      const nft = nftMap[selected]
+      if (nft.tokenType === ONEConstants.TokenType.ERC721) {
+        calls.push({ dest: nft.contractAddress, method: 'safeTransferFrom(address,address,uint256,bytes)', values: [address, dest, nft.tokenId, '0x'] })
+      } else if (nft.tokenType === ONEConstants.TokenType.ERC1155) {
+        calls.push({ dest: nft.contractAddress, method: 'safeTransferFrom(address,address,uint256,uint256,bytes)', values: [address, dest, nft.tokenId, 1, '0x'] })
+      }
+    }
+    const hexData = ONEUtil.encodeMultiCall(calls)
+    // generate otp
+    const otp = ONEUtil.decodeOtp(ONEUtil.genOTP({ seed }))
+    const args = { amount: 0, operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: ONEConstants.EmptyAddress, tokenId: 1, dest: ONEConstants.EmptyAddress }
+
+    console.log({ otp })
+    SmartFlows.commitReveal({
+      wallet,
+      otp,
+      commitHashGenerator: ONE.computeGeneralOperationHash,
+      commitHashArgs: { ...args, data: ONEUtil.hexStringToBytes(hexData) },
+      prepareProof: () => setStage(0),
+      beforeCommit: () => setStage(1),
+      afterCommit: () => setStage(2),
+      revealAPI: api.relayer.reveal,
+      revealArgs: { ...args, data: hexData },
+      ...handlers,
+      onRevealSuccess: (txId) => {
+        onRevealSuccess(txId)
+        message.success('Claim completed. Redirecting to your wallet...')
+        history.push(Paths.showAddress(dest))
+      }
+    })
   }
 
   if (error) {
@@ -325,10 +382,10 @@ const Unwrap = () => {
           </Space>
           <UnwrapNFTGrid nfts={nfts} isMobile={isMobile} selected={selected} onClick={(key) => setSelected(key)} tokenBalances={tokenBalances} />
           <Space direction='vertical' size='small'>
-            <Hint>Which wallet are you claiming it to?</Hint>
+            <Hint>To which wallet?</Hint>
             <AddressInput
-              addressValue={dest}
-              setAddressCallback={setDest}
+              addressValue={transferTo}
+              setAddressCallback={setTransferTo}
               currentWallet={wallet}
             />
             <Hint>Don't have 1wallet? <Link href={Paths.create}>Create now</Link></Hint>
@@ -336,7 +393,7 @@ const Unwrap = () => {
           <Row justify='center' style={{ width: '100%' }}>
             <Space direction='vertical' style={{ textAlign: 'center' }}>
               <Button size='large' type='primary' shape='round' onClick={doClaim} disabled={nonce > 0 || stage >= 0 || !maxAmount.gt(0)}>
-                Claim Your Share
+                Claim Yours
               </Button>
               <Hint>{claimText}</Hint>
             </Space>
