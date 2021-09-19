@@ -12,7 +12,7 @@ import storage from '../storage'
 const { Text, Title } = Typography
 
 const walletShortName = (fullName) => {
-  const walletNameParts = fullName.split(' ')
+  const walletNameParts = fullName.split(/[ -_]/)
 
   return walletNameParts.length > 1 ? `${walletNameParts[0]}...` : fullName
 }
