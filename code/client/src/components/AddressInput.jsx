@@ -14,6 +14,21 @@ const { Text } = Typography
 
 const delayDomainOperationMillis = 1000
 
+const ScanButton = ({ isMobile, showQrCodeScanner, setShowQrCodeScanner }) => {
+  const inner = showQrCodeScanner
+    ? <CloseOutlined style={{ fontSize: '24px', marginTop: -8 }} onClick={() => setShowQrCodeScanner(false)} />
+    : <ScanOutlined style={{ fontSize: '24px', marginTop: -8 }} onClick={() => setShowQrCodeScanner(true)} />
+
+  if (!isMobile) {
+    return (
+      <Tooltip title='Scan address QR Code'>
+        {inner}
+      </Tooltip>
+    )
+  }
+  return inner
+}
+
 /**
  * Renders address input that provides type ahead search for any known addresses.
  * Known addresses are addresses that have been entered by user for at least once.
@@ -50,18 +65,21 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
   }
 
   // Scanned value for address prefill will be ROOT_URL/to/{address}?d=xxx, we take address here for prefill.
-  const onScan = async (scannedValue) => {
+  const onScan = async (v) => {
     setSearchingAddress(true)
-
-    const url = scannedValue && scannedValue.split('?')[0]
-
-    const maybeAddress = url && url.split('/')[2]
-
+    if (!v) {
+      return
+    }
+    const pattern = /\/to\/([a-zA-Z0-9]{42})/
+    const m = v.match(pattern)
+    if (!m) {
+      message.error('Unrecognizable code')
+      return
+    }
+    const maybeAddress = m[1]
     const validAddress = util.safeNormalizedAddress(maybeAddress)
-
     if (maybeAddress && validAddress) {
       const oneAddress = util.safeOneAddress(validAddress)
-
       const domainName = await api.blockchain.domain.reverseLookup({ address: validAddress })
 
       onSelectAddress({
@@ -74,10 +92,8 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
 
     if (maybeAddress && !validAddress) {
       message.error('Address not found')
-
       setShowQrCodeScanner(false)
     }
-
     setSearchingAddress(false)
   }
 
@@ -322,37 +338,28 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
 
   return (
     <>
-      <Select
-        suffixIcon={
-          <Tooltip title='Scan QR code for address'>
-            {
-              showQrCodeScanner
-                ? (
-                  <CloseOutlined style={{ fontSize: '24px' }} onClick={() => setShowQrCodeScanner(false)} />
-                  )
-                : <ScanOutlined style={{ fontSize: '24px' }} onClick={() => setShowQrCodeScanner(true)} />
-            }
-          </Tooltip>
-        }
-        placeholder='one1......'
-        labelInValue
-        style={{
-          width: isMobile ? '100%' : 500,
-          borderBottom: '1px dashed black',
-          ...style
-        }}
-        notFoundContent={searchingAddress ? <Spin size='small' /> : <Text type='secondary'>No address found</Text>}
-        bordered={false}
-        showSearch
-        onBlur={onEnterSelect}
-        onInputKeyDown={onEnterSelect}
-        onSearch={onSearchAddress}
-        disabled={disabled}
-        {
+      <Space direction='vertical' style={{ width: '100%' }}>
+        <Select
+          suffixIcon={<ScanButton isMobile={isMobile} setShowQrCodeScanner={setShowQrCodeScanner} showQrCodeScanner={showQrCodeScanner} />}
+          placeholder='one1......'
+          labelInValue
+          style={{
+            width: isMobile ? '100%' : 500,
+            borderBottom: '1px dashed black',
+            ...style
+          }}
+          notFoundContent={searchingAddress ? <Spin size='small' /> : <Text type='secondary'>No address found</Text>}
+          bordered={false}
+          showSearch
+          onBlur={onEnterSelect}
+          onInputKeyDown={onEnterSelect}
+          onSearch={onSearchAddress}
+          disabled={disabled}
+          {
           ...selectInputValueProp
         }
-      >
-        {
+        >
+          {
           knownAddressesOptions
             .filter((knownAddress) =>
               knownAddress.network === network &&
@@ -378,7 +385,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
               })
             })
         }
-        {
+          {
           showSelectManualInputAddress && buildSelectOption({
             address: addressValue.value,
             label: addressValue.domainName,
@@ -386,19 +393,12 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
             filterValue: addressValue.filterValue
           })
         }
-        {
+          {
           extraSelectOptions ? extraSelectOptions.map(buildSelectOption) : <></>
         }
-      </Select>
-      {
-        showQrCodeScanner
-          ? (
-            <Row>
-              <QrCodeScanner shouldInit onScan={onScan} />
-            </Row>
-            )
-          : <></>
-      }
+        </Select>
+        {showQrCodeScanner && <QrCodeScanner shouldInit onScan={onScan} />}
+      </Space>
     </>
   )
 }

@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { message, Row, Select } from 'antd'
 import QrReader from 'react-qr-reader'
+import { useWindowDimensions } from '../util'
 
 const QrCodeScanner = ({ onScan, shouldInit }) => {
   const ref = useRef()
+  const { isMobile } = useWindowDimensions()
   const [videoDevices, setVideoDevices] = useState([])
   const [device, setDevice] = useState()
 
@@ -21,7 +23,12 @@ const QrCodeScanner = ({ onScan, shouldInit }) => {
       }
       // console.log(cams)
       setVideoDevices(cams)
-      setDevice(cams[0])
+      if (isMobile) {
+        const backCam = cams.find(e => e.label.toLowerCase().indexOf('back') >= 0)
+        setDevice(backCam || cams[0])
+      } else {
+        setDevice(cams[0])
+      }
     }
     shouldInit && videoDevices.length === 0 && f()
   }, [shouldInit])
