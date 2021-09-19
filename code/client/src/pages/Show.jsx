@@ -29,6 +29,7 @@ import Sign from './Show/Sign'
 import Swap from './Show/Swap'
 import Gift from './Show/Gift'
 import { message } from 'antd'
+import QRCode from './Show/QRCode'
 
 const tabList = [
   { key: 'coins', tab: 'Coins' },
@@ -107,7 +108,7 @@ const Show = () => {
     <>
       <AnimatedSection
         show={!section}
-        title={<WalletTitle address={address} />}
+        title={<WalletTitle address={address} onQrCodeClick={() => setActiveTab('qr')} />}
         style={{ minHeight: 320, maxWidth: 720 }}
         tabList={dev ? tabList : tabList.filter(e => !e.dev)}
         activeTabKey={activeTab}
@@ -121,6 +122,7 @@ const Show = () => {
         {activeTab === 'help' && <Recovery address={address} />}
         {activeTab === 'swap' && <Swap address={address} />}
         {activeTab === 'gift' && <Gift address={address} />}
+        {activeTab === 'qr' && <QRCode address={address} />}
         <Upgrade address={address} />
       </AnimatedSection>
 
