@@ -30,6 +30,7 @@ import Swap from './Show/Swap'
 import Gift from './Show/Gift'
 import { message } from 'antd'
 import QRCode from './Show/QRCode'
+import Scan from './Show/Scan'
 
 const tabList = [
   { key: 'coins', tab: 'Coins' },
@@ -37,7 +38,9 @@ const tabList = [
   { key: 'about', tab: 'About' },
   { key: 'help', tab: 'Recover' },
   { key: 'swap', tab: 'Swap' },
-  { key: 'gift', tab: 'Gift' }
+  { key: 'gift', tab: 'Gift' },
+  { key: 'qr' },
+  { key: 'scan' }
 ]
 
 const Show = () => {
@@ -104,13 +107,18 @@ const Show = () => {
     return <Redirect to={Paths.wallets} />
   }
 
+  let displayTabList = tabList.filter(e => e.tab)
+  if (dev) {
+    displayTabList = displayTabList.filter(e => !e.dev)
+  }
+
   return (
     <>
       <AnimatedSection
         show={!section}
-        title={<WalletTitle address={address} onQrCodeClick={() => setActiveTab('qr')} />}
+        title={<WalletTitle address={address} onQrCodeClick={() => showTab('qr')} onScanClick={() => showTab('scan')} />}
         style={{ minHeight: 320, maxWidth: 720 }}
-        tabList={dev ? tabList : tabList.filter(e => !e.dev)}
+        tabList={displayTabList}
         activeTabKey={activeTab}
         onTabChange={key => showTab(key)}
       >
@@ -123,6 +131,7 @@ const Show = () => {
         {activeTab === 'swap' && <Swap address={address} />}
         {activeTab === 'gift' && <Gift address={address} />}
         {activeTab === 'qr' && <QRCode address={address} />}
+        {activeTab === 'scan' && <Scan address={address} />}
         <Upgrade address={address} />
       </AnimatedSection>
 
