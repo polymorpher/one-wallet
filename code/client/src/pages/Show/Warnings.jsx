@@ -5,21 +5,20 @@ import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Button, Space, Typography, Row } from 'antd'
 import { walletActions } from '../../state/modules/wallet'
+import { useHistory } from 'react-router'
+import Paths from '../../constants/paths'
 const { Link, Text } = Typography
 
 const Warnings = ({ address }) => {
+  const history = useHistory()
   const dispatch = useDispatch()
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
   const walletOutdated = util.isWalletOutdated(wallet)
-  const { isMobile } = useWindowDimensions()
 
   const confirmNoteDownAddress = () => {
     dispatch(walletActions.userAcknowledgedToSaveAddress({ address }))
   }
-
-  const displayOneAddress = util.safeOneAddress(address)
-
   return (
     <>
       {
@@ -30,13 +29,11 @@ const Warnings = ({ address }) => {
           <Warning info>
             <Space direction='vertical' style={{ width: '100%' }}>
               <Text>
-                Please save your wallet address or get a domain name. You may need it later to restore your wallet, in case you lost the wallet.
+                Tips: you can save your address as a QR code so you won't lose it
               </Text>
-              <Row justify={isMobile ? 'center' : 'space-between'} style={{ flexWrap: 'wrap' }}>
-                <Text copyable style={isMobile && { width: '100%', marginBottom: 16 }}>
-                  {displayOneAddress}
-                </Text>
-                <Button shape='round' type='primary' onClick={confirmNoteDownAddress}>Dismiss</Button>
+              <Row justify='space-between' style={{ flexWrap: 'wrap' }}>
+                <Button shape='round' type='text' danger onClick={confirmNoteDownAddress}>Dismiss</Button>
+                <Button shape='round' type='primary' onClick={() => history.push(Paths.showAddress(address, 'qr'))}>Save Now</Button>
               </Row>
             </Space>
             <br />

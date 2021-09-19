@@ -30,7 +30,7 @@ const RequestPayment = ({ caller, callback, amount, dest, from }) => {
       return message.error(`normalizedAddress=${normalizedAddress}`)
     }
     const balance = balances[selectedAddress.value]
-    if (!(new BN(amount).lte(new BN(balance)))) {
+    if (amount && !(new BN(amount).lte(new BN(balance)))) {
       const { formatted: balanceFormatted } = util.computeBalance(balance)
       return message.error(`Insufficient balance (${balanceFormatted} ONE) in the selected wallet`)
     }
@@ -54,8 +54,8 @@ const RequestPayment = ({ caller, callback, amount, dest, from }) => {
       >
         <AverageRow>
           <Space direction='vertical'>
-            <Title level={3}>"{caller}" wants you to pay </Title>
-            <Title level={3}>{amountFormatted} ONE <Hint>(≈ ${amountFiatFormatted} USD)</Hint></Title>
+            <Title level={3}>"{caller}" wants you to pay</Title>
+            {amount && <Title level={3}>{amountFormatted} ONE <Hint>(≈ ${amountFiatFormatted} USD)</Hint></Title>}
             <Paragraph>To: <WalletAddress showLabel address={dest} /></Paragraph>
           </Space>
         </AverageRow>
@@ -74,7 +74,7 @@ const RequestPayment = ({ caller, callback, amount, dest, from }) => {
       {showSend &&
         <Send
           address={selectedAddress.value} show={showSend} onClose={onSendClose} onSuccess={onSuccess}
-          prefillAmount={amountFormatted} prefillDest={dest} overrideToken={HarmonyONE}
+          prefillAmount={amount && amountFormatted} prefillDest={dest} overrideToken={HarmonyONE}
         />}
     </>
   )

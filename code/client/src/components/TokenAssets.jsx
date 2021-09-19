@@ -75,6 +75,12 @@ export const NFTMetadataTransformer = ({ contractAddress, metadata }) => {
   return metadata
 }
 
+export const DefaultNFTs = [{
+  contractAddress: '0x977CA6A224002C678f96E4e87401d5d6F682EF7a',
+  tokenType: ONEConstants.TokenType.ERC1155,
+  tokenId: 2
+}]
+
 export const TestPunk = {
   id: '987',
   name: 'Punk 987',

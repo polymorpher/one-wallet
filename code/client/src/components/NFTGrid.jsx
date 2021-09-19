@@ -6,7 +6,7 @@ import { AverageRow, TallRow } from './Grid'
 import { api } from '../../../lib/api'
 import util, { useWindowDimensions } from '../util'
 import { Warning, Heading } from './Text'
-import { NFTMetadataTransformer, withKeys } from './TokenAssets'
+import { DefaultNFTs, NFTMetadataTransformer, withKeys } from './TokenAssets'
 import { useDispatch, useSelector } from 'react-redux'
 import ONEConstants from '../../../lib/constants'
 import { FallbackImage } from '../constants/ui'
@@ -15,6 +15,7 @@ import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 import Paths from '../constants/paths'
 import { useHistory } from 'react-router'
 import ReactPlayer from 'react-player'
+import WalletAddress from './WalletAddress'
 const { Text, Title } = Typography
 
 export const GridItem = styled(Card.Grid)`
@@ -70,7 +71,7 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
   const bech32ContractAddress = util.safeOneAddress(contractAddress)
   const abbrBech32ContractAddress = util.ellipsisAddress(bech32ContractAddress)
 
-  let displayBalance = 'No Longer Owned'
+  let displayBalance = <Text style={{ color: 'red' }}>Not Owned</Text>
   if (util.isNonZeroBalance(balance)) {
     if (tokenType === ONEConstants.TokenType.ERC721) {
       displayBalance = <Text style={{ color: 'purple' }}>Uniquely Owned</Text>
@@ -174,6 +175,10 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
               <Col span={isMobile ? 24 : 12}> <Title level={3}>Creator</Title></Col>
               <Col> <Text>{metadata?.properties?.artist}</Text> </Col>
             </AverageRow>}
+          <AverageRow align='middle'>
+            <Col span={isMobile ? 24 : 12}> <Title level={3}>Contract</Title></Col>
+            <Col> <WalletAddress address={contractAddress} /> </Col>
+          </AverageRow>
           {imageType?.startsWith('video') &&
             <AverageRow justify='end'>
               <Button type='link' size='large' onClick={() => setFullView(false)}>Minimize</Button>
@@ -183,7 +188,7 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
   )
 }
 
-export const useNFTs = ({ address }) => {
+export const useNFTs = ({ address, withDefault }) => {
   const wallet = useSelector(state => state.wallet.wallets[address])
   const walletOutdated = !util.canWalletSupportToken(wallet)
   const trackedTokens = (wallet?.trackedTokens || []).filter(util.isNFT)
@@ -201,6 +206,9 @@ export const useNFTs = ({ address }) => {
     setDisabled(false)
     const f = async () => {
       let tts = await api.blockchain.getTrackedTokens({ address })
+      if (withDefault) {
+        tts = [...DefaultNFTs, ...tts]
+      }
       tts = tts.filter(util.isNFT)
       tts = withKeys(tts)
       tts = unionWith(tts, trackedTokens, (a, b) => a.key === b.key)
@@ -248,7 +256,7 @@ export const NFTGrid = ({ address }) => {
   const tokenBalances = wallet.tokenBalances || {}
   const trackedTokens = (wallet.trackedTokens || []).filter(util.isNFT)
 
-  const { nfts: currentTrackedTokens, disabled } = useNFTs({ address })
+  const { nfts: currentTrackedTokens, disabled } = useNFTs({ address, withDefault: true })
   useTokenBalanceTracker({ tokens: currentTrackedTokens, address })
   const { isMobile } = useWindowDimensions()
 
