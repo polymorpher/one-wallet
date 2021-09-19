@@ -223,7 +223,7 @@ const Create = ({ advancedSetting }) => {
     if (otp.length !== 6) {
       return
     }
-    if (otp === '0x1337' || otp === 'expert') {
+    if (otp.toLowerCase() === '0x1337' || otp.toLowerCase() === 'expert') {
       history.push(Paths.create2)
       message.success('Expert mode unlocked')
       setOtp('')
@@ -440,17 +440,19 @@ const Create = ({ advancedSetting }) => {
           <Row style={{ marginBottom: 16 }}>
             <Space direction='vertical' size='small'>
               <Hint>Set up a spending limit:</Hint>
-              <Space align='baseline'>
+              <Space align='baseline' direction={isMobile ? 'vertical' : 'horizontal'}>
                 <InputBox
                   margin={16} width={160} value={spendingLimit}
                   onChange={({ target: { value } }) => setSpendingLimit(parseInt(value || 0))} suffix='ONE'
                 />
-                <Hint>per</Hint>
-                <InputBox
-                  margin={16} width={128} value={spendingInterval}
-                  onChange={({ target: { value } }) => setSpendingInterval(parseInt(value || 0))}
-                />
-                <Hint>seconds</Hint>
+                <Space align='baseline'>
+                  <Hint>per</Hint>
+                  <InputBox
+                    margin={16} width={128} value={spendingInterval}
+                    onChange={({ target: { value } }) => setSpendingInterval(parseInt(value || 0))}
+                  />
+                  <Hint>seconds</Hint>
+                </Space>
               </Space>
               <Row justify='end'>
                 <Hint>≈ {humanizeDuration(spendingInterval * 1000, { largest: 2, round: true })}</Hint>
