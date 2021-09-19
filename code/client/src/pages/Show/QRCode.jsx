@@ -6,7 +6,7 @@ import { Button, Image, Row, Space, Typography } from 'antd'
 import util from '../../util'
 const { Text } = Typography
 
-const QRCode = ({ address }) => {
+const QRCode = ({ address, name }) => {
   const [qrCodeData, setQRCodeData] = useState()
   const ref = useRef()
   useEffect(() => {
@@ -41,13 +41,15 @@ const QRCode = ({ address }) => {
       <Row style={{ width: '100%', marginTop: 16 }} justify='center'>
         <Space direction='vertical' style={{ textAlign: 'center' }}>
           <Text>Others can scan your QR code to send you assets</Text>
-          <div ref={ref}>
+          <div ref={ref} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <Image
               src={qrCodeData}
               preview={false}
               width='100%'
               style={{ maxWidth: 400 }}
             />
+            <Text>Your 1wallet: {name}</Text>
+            <Text>{util.safeOneAddress(address)}</Text>
           </div>
           <Button type='primary' shape='round' onClick={onCapture}>Save Image</Button>
         </Space>
