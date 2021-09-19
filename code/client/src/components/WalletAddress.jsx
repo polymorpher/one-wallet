@@ -87,11 +87,13 @@ const WalletAddress = ({ showLabel, labelOverride, address, shorten, onToggle, a
   }
 
   return (
-    <Space size='small' align='baseline'>
+    <Space size='small' align='baseline' style={{ flexWrap: 'wrap' }}>
       <Tooltip title={addressTooltipText}>
         <Button
           type='text'
-          style={{ color: 'rgba(0, 0, 0, 0.45)', textAlign: 'left', ...addressStyle }}
+          style={{
+            color: 'rgba(0, 0, 0, 0.45)', textAlign: 'left', wordBreak: 'break-word', overflowWrap: 'break-word', whiteSpace: 'break-spaces', height: 'fit-content', ...addressStyle
+          }}
           onClick={addressOnClick}
           onMouseEnter={() => setMouseOnAddress(true)}
           onMouseLeave={() => setTimeout(() => setMouseOnAddress(false), MOUSE_HOVER_DETECTION_DELAY)}
