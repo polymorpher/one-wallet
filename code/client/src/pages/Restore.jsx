@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useHistory } from 'react-router'
 import { Heading, Hint } from '../components/Text'
 import AnimatedSection from '../components/AnimatedSection'
-import { Space, Steps, message, Progress, Timeline } from 'antd'
+import { Space, Steps, message, Progress, Timeline, Upload, Button, Row } from 'antd'
 import { MigrationPayload } from '../proto/oauthMigration'
 import api from '../api'
 import ONEUtil from '../../../lib/util'
@@ -16,6 +16,8 @@ import Paths from '../constants/paths'
 import * as Sentry from '@sentry/browser'
 import AddressInput from '../components/AddressInput'
 import QrCodeScanner from '../components/QrCodeScanner'
+import { LoadingOutlined, ScanOutlined } from '@ant-design/icons'
+import jsQR from 'jsqr'
 
 const { Step } = Steps
 
@@ -30,6 +32,7 @@ const Restore = () => {
   const [name, setName] = useState()
   const [majorVersion, setMajorVersion] = useState()
   const [minorVersion, setMinorVersion] = useState()
+  const [qrCodeImageUploading, setQrCodeImageUploading] = useState()
 
   const onScan = (e) => {
     if (e && !secret) {
@@ -202,11 +205,69 @@ const Restore = () => {
     }
     f()
   }, [addressInput])
+
   useEffect(() => {
     if (secret && name) {
       onRestore()
     }
   }, [secret, name])
+
+  const convertURIToImageData = (uri) => new Promise((resolve, reject) => {
+    if (!uri) {
+      return reject(new Error('No URI detected'))
+    }
+
+    const canvas = document.createElement('canvas')
+
+    const context = canvas.getContext('2d')
+
+    const image = new Image()
+
+    image.addEventListener('load', function () {
+      canvas.width = image.width
+      canvas.height = image.height
+      context.drawImage(image, 0, 0, canvas.width, canvas.height)
+      resolve(context.getImageData(0, 0, canvas.width, canvas.height))
+    }, false)
+
+    image.src = uri
+  })
+
+  const getBase64 = (img) => new Promise((resolve) => {
+    const reader = new FileReader()
+
+    reader.addEventListener('load', () => resolve(reader.result))
+
+    reader.readAsDataURL(img)
+  })
+
+  const onQrcodeChange = async (info) => {
+    if (info.file.status === 'uploading') {
+      setQrCodeImageUploading(true)
+    }
+
+    if (info.file.status === 'done') {
+      const imageUri = await getBase64(info.file.originFileObj)
+
+      const imageData = await convertURIToImageData(imageUri)
+
+      const qrCode = jsQR(imageData.data, imageData.width, imageData.height)
+
+      onScan(qrCode.data)
+
+      setQrCodeImageUploading(false)
+    }
+  }
+
+  const beforeUpload = (file) => {
+    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png'
+
+    if (!isJpgOrPng) {
+      message.error('You can only upload JPG/PNG file')
+    }
+
+    return isJpgOrPng
+  }
 
   return (
     <>
@@ -230,6 +291,20 @@ const Restore = () => {
                 <Step title='Select Your Wallet' description='Make sure your wallet is selected. Unselect other accounts.' />
                 <Step title='Scan the QR code' description='Scan the exported QR code on your Google Authenticator app' />
               </Steps>
+              <Row justify='end'>
+                <Upload
+                  name='qrcode'
+                  style={{}}
+                  showUploadList={false}
+                  customRequest={({ onSuccess }) => {
+                    onSuccess('ok')
+                  }}
+                  beforeUpload={beforeUpload}
+                  onChange={onQrcodeChange}
+                >
+                  <Button icon={qrCodeImageUploading ? <LoadingOutlined /> : <ScanOutlined />}>Click to Upload QR Code</Button>
+                </Upload>
+              </Row>
               <QrCodeScanner shouldInit={section === 2} onScan={onScan} />
             </>}
           {secret &&
