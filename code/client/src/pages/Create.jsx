@@ -79,7 +79,7 @@ const getQRCodeUri = (otpSeed, otpDisplayName, mode = OTPUriMode.STANDARD) => {
     const bytes = MigrationPayload.encode(payload).finish()
     const b64 = Buffer.from(bytes).toString('base64')
     // console.log({ payload, bytes, b64 })
-    return `otpauth-migration://offline?data=${b64}`
+    return `otpauth-migration://offline?data=${encodeURIComponent(b64)}`
   }
   return null
 }
