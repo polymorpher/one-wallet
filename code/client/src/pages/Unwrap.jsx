@@ -22,6 +22,7 @@ import ONEConstants from '../../../lib/constants'
 import { SmartFlows } from '../../../lib/api/flow'
 import ONE from '../../../lib/onewallet'
 import { useHistory } from 'react-router'
+import { CheckCircleOutlined, LoadingOutlined } from '@ant-design/icons'
 const { Title, Text, Link } = Typography
 
 const RedPacketTitle = ({ isMobile, address }) => {
@@ -402,9 +403,13 @@ const Unwrap = () => {
           </Space>
           <Row justify='center' style={{ width: '100%' }}>
             <Space direction='vertical' style={{ textAlign: 'center' }}>
-              <Button size='large' type='primary' shape='round' onClick={doClaim} disabled={outOfOperations || stage >= 0 || !maxAmount.gt(0)}>
-                Claim Yours
-              </Button>
+              <Space>
+                {stage >= 0 && stage < 3 && <LoadingOutlined />}
+                {stage === 3 && <CheckCircleOutlined />}
+                <Button size='large' type='primary' shape='round' onClick={doClaim} disabled={outOfOperations || stage >= 0 || !maxAmount.gt(0)}>
+                  Claim Yours
+                </Button>
+              </Space>
               <Hint>{claimText}</Hint>
             </Space>
           </Row>
