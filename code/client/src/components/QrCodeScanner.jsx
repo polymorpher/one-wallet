@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Button, message, Row, Select, Upload } from 'antd'
 import QrReader from 'react-qr-reader'
 import { useWindowDimensions } from '../util'
-import { LoadingOutlined, ScanOutlined } from '@ant-design/icons'
+import { LoadingOutlined, UploadOutlined } from '@ant-design/icons'
 import jsQR from 'jsqr'
 
 const QrCodeScanner = ({ onScan, shouldInit, style }) => {
@@ -117,20 +117,6 @@ const QrCodeScanner = ({ onScan, shouldInit, style }) => {
           ? (
             <>
               <Row justify='end'>
-                <Upload
-                  name='qrcode'
-                  style={{}}
-                  showUploadList={false}
-                  customRequest={({ onSuccess }) => {
-                    onSuccess('ok')
-                  }}
-                  beforeUpload={beforeUpload}
-                  onChange={onQrcodeChange}
-                >
-                  <Button icon={qrCodeImageUploading ? <LoadingOutlined /> : <ScanOutlined />}>Click to Upload QR Code</Button>
-                </Upload>
-              </Row>
-              <Row justify='end'>
                 <Select style={{ }} bordered={false} value={device && device.label} onChange={onChange}>
                   {videoDevices.map(d => {
                     return <Select.Option key={d.label} value={d.deviceId}>{d.label} </Select.Option>
@@ -150,6 +136,19 @@ const QrCodeScanner = ({ onScan, shouldInit, style }) => {
                 onScan={onScan}
                 style={{ width: '100%', ...style }}
               />
+              <Row justify='center' style={{ marginTop: 16 }}>
+                <Upload
+                  name='qrcode'
+                  showUploadList={false}
+                  customRequest={({ onSuccess }) => {
+                    onSuccess('ok')
+                  }}
+                  beforeUpload={beforeUpload}
+                  onChange={onQrcodeChange}
+                >
+                  <Button icon={qrCodeImageUploading ? <LoadingOutlined /> : <UploadOutlined />}>Upload QR Code Image Instead</Button>
+                </Upload>
+              </Row>
             </>
             )
           : <></>
