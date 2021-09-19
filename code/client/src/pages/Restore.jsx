@@ -99,6 +99,7 @@ const Restore = () => {
           }
           storage.setItem(root, layers)
           const wallet = {
+            _merge: true,
             name,
             address,
             root,

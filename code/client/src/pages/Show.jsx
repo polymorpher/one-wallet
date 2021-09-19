@@ -28,6 +28,7 @@ import TransferDomain from './Show/TransferDomain'
 import Sign from './Show/Sign'
 import Swap from './Show/Swap'
 import Gift from './Show/Gift'
+import { message } from 'antd'
 
 const tabList = [
   { key: 'coins', tab: 'Coins' },
@@ -35,7 +36,7 @@ const tabList = [
   { key: 'about', tab: 'About' },
   { key: 'help', tab: 'Recover' },
   { key: 'swap', tab: 'Swap' },
-  { key: 'gift', tab: 'Gift'}
+  { key: 'gift', tab: 'Gift' }
 ]
 
 const Show = () => {
@@ -53,6 +54,7 @@ const Show = () => {
   const [section, setSection] = useState(action)
   const network = useSelector(state => state.wallet.network)
   const [activeTab, setActiveTab] = useState('coins')
+  const { temp, forwardAddress } = wallet
 
   useEffect(() => {
     if (!wallet) {
@@ -67,6 +69,15 @@ const Show = () => {
     dispatch(walletActions.fetchWallet({ address }))
     return () => { clearInterval(handler) }
   }, [])
+
+  useEffect(() => {
+    if (forwardAddress && forwardAddress !== ONEConstants.EmptyAddress && !temp) {
+      dispatch(walletActions.updateWallet({ ...wallet, address: forwardAddress, forwardAddress: ONEConstants.EmptyAddress }))
+      dispatch(walletActions.deleteWallet(address))
+      message.success('Detected upgraded version of this wallet. Redirecting there...')
+      setTimeout(() => history.push(Paths.showAddress(forwardAddress)), 500)
+    }
+  }, [temp, forwardAddress])
 
   const selectedToken = wallet?.selectedToken || HarmonyONE
 

@@ -9,9 +9,12 @@ import Paths from '../constants/paths'
 import BN from 'bn.js'
 import { getAddress } from '@harmony-js/crypto'
 import storage from '../storage'
+import ONEConstants from '../../../lib/constants'
 const { Text, Title } = Typography
-
 const walletShortName = (fullName) => {
+  if (!fullName) {
+    return null
+  }
   const walletNameParts = fullName.split(' ')
 
   return walletNameParts.length > 1 ? `${walletNameParts[0]}...` : fullName
@@ -21,7 +24,7 @@ const WalletCard = ({ wallet }) => {
   const { isMobile } = useWindowDimensions()
   const history = useHistory()
   const location = useLocation()
-  const { address, name } = wallet
+  const { address, name, forwardAddress, temp } = wallet
   const oneAddress = getAddress(address).bech32
   const dispatch = useDispatch()
   const balance = useSelector(state => state.wallet.balances[address])
@@ -79,25 +82,43 @@ const List = () => {
     .reduce((a, b) => a.add(new BN(b, 10)), new BN(0)).toString()
   const { formatted, fiatFormatted } = util.computeBalance(totalBalance, price)
   const titleLevel = isMobile ? 4 : 3
+
+  const purge = (wallet) => {
+    const { root, address } = wallet || {}
+    if (address) {
+      dispatch(walletActions.deleteWallet(address))
+    }
+    if (root) {
+      storage.removeItem(root)
+    }
+  }
   useEffect(() => {
     const now = Date.now()
-    Object.keys(wallets || []).forEach((k) => {
-      if (!wallets[k] || !wallets[k].temp) {
+    Object.keys(wallets || {}).forEach((address) => {
+      const wallet = wallets[address]
+      if (!wallet) {
         return
       }
-      if (wallets[k].temp < now) {
-        const { root } = wallets[k]
-        dispatch(walletActions.deleteWallet(k))
-        if (root) {
-          storage.removeItem(root)
-        }
+      if (
+        (wallet?.temp && wallet.temp < now) ||
+        address === ONEConstants.EmptyAddress ||
+        !wallet.network
+      ) {
+        purge(wallet)
       }
     })
   }, [wallets])
+
+  const isMatchingWallet = (w) => {
+    return w.network === network &&
+      !w.temp &&
+      w.address !== ONEConstants.EmptyAddress
+  }
+
   return (
     <>
       <Row gutter={[24, 24]}>
-        {values(wallets).filter(w => w.network === network && !w.temp).map(w => <Col span={isMobile && 24} key={w.address}><WalletCard wallet={w} /></Col>)}
+        {values(wallets).filter(w => isMatchingWallet(w)).map((w, i) => <Col span={isMobile && 24} key={`${w.address}-${i}`}><WalletCard wallet={w} /></Col>)}
       </Row>
       <Row style={{ marginTop: 36 }}>
         <Space direction='vertical'>
