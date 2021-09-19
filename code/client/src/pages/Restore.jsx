@@ -202,6 +202,7 @@ const Restore = () => {
     }
     f()
   }, [addressInput])
+
   useEffect(() => {
     if (secret && name) {
       onRestore()

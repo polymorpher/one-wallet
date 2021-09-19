@@ -1,13 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { message, Row, Select } from 'antd'
+import { Button, message, Row, Select, Upload } from 'antd'
 import QrReader from 'react-qr-reader'
 import { useWindowDimensions } from '../util'
+import { LoadingOutlined, UploadOutlined } from '@ant-design/icons'
+import jsQR from 'jsqr'
 
 const QrCodeScanner = ({ onScan, shouldInit, style }) => {
   const ref = useRef()
   const { isMobile } = useWindowDimensions()
   const [videoDevices, setVideoDevices] = useState([])
   const [device, setDevice] = useState()
+  const [qrCodeImageUploading, setQrCodeImageUploading] = useState()
 
   useEffect(() => {
     const numAttempts = 0
@@ -49,6 +52,64 @@ const QrCodeScanner = ({ onScan, shouldInit, style }) => {
     message.error(`Failed to parse QR code. Error: ${err}`)
   }
 
+  const convertURIToImageData = (uri) => new Promise((resolve, reject) => {
+    if (!uri) {
+      onError('No URI detected')
+      return reject(new Error('No URI detected'))
+    }
+
+    const canvas = document.createElement('canvas')
+
+    const context = canvas.getContext('2d')
+
+    const image = new Image()
+
+    image.addEventListener('load', function () {
+      canvas.width = image.width
+      canvas.height = image.height
+      context.drawImage(image, 0, 0, canvas.width, canvas.height)
+      resolve(context.getImageData(0, 0, canvas.width, canvas.height))
+    }, false)
+
+    image.src = uri
+  })
+
+  const getBase64 = (img) => new Promise((resolve) => {
+    const reader = new FileReader()
+
+    reader.addEventListener('load', () => resolve(reader.result))
+
+    reader.readAsDataURL(img)
+  })
+
+  const onQrcodeChange = async (info) => {
+    if (info.file.status === 'uploading') {
+      setQrCodeImageUploading(true)
+    }
+
+    if (info.file.status === 'done') {
+      const imageUri = await getBase64(info.file.originFileObj)
+
+      const imageData = await convertURIToImageData(imageUri)
+
+      const qrCode = jsQR(imageData.data, imageData.width, imageData.height)
+
+      onScan(qrCode.data)
+
+      setQrCodeImageUploading(false)
+    }
+  }
+
+  const beforeUpload = (file) => {
+    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png'
+
+    if (!isJpgOrPng) {
+      message.error('You can only upload JPG/PNG file')
+    }
+
+    return isJpgOrPng
+  }
+
   return (
     <>
       {
@@ -75,6 +136,19 @@ const QrCodeScanner = ({ onScan, shouldInit, style }) => {
                 onScan={onScan}
                 style={{ width: '100%', ...style }}
               />
+              <Row justify='center' style={{ marginTop: 16 }}>
+                <Upload
+                  name='qrcode'
+                  showUploadList={false}
+                  customRequest={({ onSuccess }) => {
+                    onSuccess('ok')
+                  }}
+                  beforeUpload={beforeUpload}
+                  onChange={onQrcodeChange}
+                >
+                  <Button icon={qrCodeImageUploading ? <LoadingOutlined /> : <UploadOutlined />}>Upload QR Code Image Instead</Button>
+                </Upload>
+              </Row>
             </>
             )
           : <></>
