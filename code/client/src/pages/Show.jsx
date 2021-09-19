@@ -130,7 +130,7 @@ const Show = () => {
         {activeTab === 'help' && <Recovery address={address} />}
         {activeTab === 'swap' && <Swap address={address} />}
         {activeTab === 'gift' && <Gift address={address} />}
-        {activeTab === 'qr' && <QRCode address={address} />}
+        {activeTab === 'qr' && <QRCode address={address} name={wallet.name} />}
         {activeTab === 'scan' && <Scan address={address} />}
         <Upgrade address={address} />
       </AnimatedSection>
