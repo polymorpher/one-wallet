@@ -1,5 +1,5 @@
-import { CloseOutlined, SearchOutlined } from '@ant-design/icons'
-import { Select, Button, Tooltip, Row, Col, Spin, Typography, Space } from 'antd'
+import { CloseOutlined, ScanOutlined } from '@ant-design/icons'
+import { Select, Button, Tooltip, Row, Col, Spin, Typography, Space, message } from 'antd'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
@@ -8,6 +8,7 @@ import WalletConstants from '../constants/wallet'
 import api from '../api'
 import { isEmpty, trim } from 'lodash'
 import ONEConstants from '../../../lib/constants'
+import QrCodeScanner from './QrCodeScanner'
 
 const { Text } = Typography
 
@@ -24,7 +25,10 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
 
   const [searchValue, setSearchValue] = useState('')
 
+  const [showQrCodeScanner, setShowQrCodeScanner] = useState('')
+
   const walletsMap = useSelector(state => state.wallet.wallets)
+
   const wallets = Object.keys(walletsMap).map((k) => walletsMap[k])
 
   const knownAddresses = useSelector(state =>
@@ -43,6 +47,38 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
   const onSearchAddress = (value) => {
     setSearchingAddress(true)
     setSearchValue(value)
+  }
+
+  // Scanned value for address prefill will be ROOT_URL/to/{address}?d=xxx, we take address here for prefill.
+  const onScan = async (scannedValue) => {
+    setSearchingAddress(true)
+
+    const url = scannedValue && scannedValue.split('?')[0]
+
+    const maybeAddress = url && url.split('/')[2]
+
+    const validAddress = util.safeNormalizedAddress(maybeAddress)
+
+    if (maybeAddress && validAddress) {
+      const oneAddress = util.safeOneAddress(validAddress)
+
+      const domainName = await api.blockchain.domain.reverseLookup({ address: validAddress })
+
+      onSelectAddress({
+        label: domainName || oneAddress,
+        value: validAddress
+      })
+
+      setShowQrCodeScanner(false)
+    }
+
+    if (maybeAddress && !validAddress) {
+      message.error('Address not found')
+
+      setShowQrCodeScanner(false)
+    }
+
+    setSearchingAddress(false)
   }
 
   useWaitExecution(
@@ -285,64 +321,85 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
     : {}
 
   return (
-    <Select
-      suffixIcon={<SearchOutlined />}
-      placeholder='one1......'
-      labelInValue
-      style={{
-        width: isMobile ? '100%' : 500,
-        borderBottom: '1px dashed black',
-        ...style
-      }}
-      notFoundContent={searchingAddress ? <Spin size='small' /> : <Text type='secondary'>No address found</Text>}
-      bordered={false}
-      showSearch
-      onBlur={onEnterSelect}
-      onInputKeyDown={onEnterSelect}
-      onSearch={onSearchAddress}
-      disabled={disabled}
-      {
-        ...selectInputValueProp
-      }
-    >
-      {
-        knownAddressesOptions
-          .filter((knownAddress) =>
-            knownAddress.network === network &&
-            notCurrentWallet(knownAddress.address) &&
-            (!walletsMap?.[knownAddress.address]?.temp || allowTemp) && // not a temporary wallet
-            knownAddress.address !== WalletConstants.oneWalletTreasury.address)
-          .sort((knownAddress) => knownAddress.label ? -1 : 0)
-          .map((knownAddress, index) => {
-            const oneAddress = util.safeOneAddress(knownAddress.address)
-            const addressLabel = knownAddress.label || knownAddress.domain?.name
+    <>
+      <Select
+        suffixIcon={
+          <Tooltip title='Scan QR code for address'>
+            {
+              showQrCodeScanner
+                ? (
+                  <CloseOutlined style={{ fontSize: '24px' }} onClick={() => setShowQrCodeScanner(false)} />
+                  )
+                : <ScanOutlined style={{ fontSize: '24px' }} onClick={() => setShowQrCodeScanner(true)} />
+            }
+          </Tooltip>
+        }
+        placeholder='one1......'
+        labelInValue
+        style={{
+          width: isMobile ? '100%' : 500,
+          borderBottom: '1px dashed black',
+          ...style
+        }}
+        notFoundContent={searchingAddress ? <Spin size='small' /> : <Text type='secondary'>No address found</Text>}
+        bordered={false}
+        showSearch
+        onBlur={onEnterSelect}
+        onInputKeyDown={onEnterSelect}
+        onSearch={onSearchAddress}
+        disabled={disabled}
+        {
+          ...selectInputValueProp
+        }
+      >
+        {
+          knownAddressesOptions
+            .filter((knownAddress) =>
+              knownAddress.network === network &&
+              notCurrentWallet(knownAddress.address) &&
+              (!walletsMap?.[knownAddress.address]?.temp || allowTemp) && // not a temporary wallet
+              knownAddress.address !== WalletConstants.oneWalletTreasury.address)
+            .sort((knownAddress) => knownAddress.label ? -1 : 0)
+            .map((knownAddress, index) => {
+              const oneAddress = util.safeOneAddress(knownAddress.address)
+              const addressLabel = knownAddress.label || knownAddress.domain?.name
 
-            // Only display actions for addresses that are not selected.
-            // User's wallets addresses are not deletable.
-            const displayDeleteButton = addressValue.value !== knownAddress.address && !walletsAddresses.includes(knownAddress.address)
+              // Only display actions for addresses that are not selected.
+              // User's wallets addresses are not deletable.
+              const displayDeleteButton = addressValue.value !== knownAddress.address && !walletsAddresses.includes(knownAddress.address)
 
-            return buildSelectOption({
-              key: index,
-              address: knownAddress.address,
-              displayDeleteButton,
-              label: addressLabel,
-              domainName: knownAddress.domain?.name,
-              filterValue: `${knownAddress.address} ${oneAddress} ${knownAddress.domain?.name}`
+              return buildSelectOption({
+                key: index,
+                address: knownAddress.address,
+                displayDeleteButton,
+                label: addressLabel,
+                domainName: knownAddress.domain?.name,
+                filterValue: `${knownAddress.address} ${oneAddress} ${knownAddress.domain?.name}`
+              })
             })
+        }
+        {
+          showSelectManualInputAddress && buildSelectOption({
+            address: addressValue.value,
+            label: addressValue.domainName,
+            domainName: addressValue.domainName,
+            filterValue: addressValue.filterValue
           })
-      }
+        }
+        {
+          extraSelectOptions ? extraSelectOptions.map(buildSelectOption) : <></>
+        }
+      </Select>
       {
-        showSelectManualInputAddress && buildSelectOption({
-          address: addressValue.value,
-          label: addressValue.domainName,
-          domainName: addressValue.domainName,
-          filterValue: addressValue.filterValue
-        })
+        showQrCodeScanner
+          ? (
+            <Row>
+              <QrCodeScanner shouldInit onScan={onScan} />
+            </Row>
+            )
+          : <></>
       }
-      {
-        extraSelectOptions ? extraSelectOptions.map(buildSelectOption) : <></>
-      }
-    </Select>
+    </>
   )
 }
 
