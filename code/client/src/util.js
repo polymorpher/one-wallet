@@ -249,6 +249,15 @@ export default {
   }
 }
 
+export const updateQRCodeState = (newValue, state) => {
+  if (!newValue || (newValue === state.last && (Date.now() - state.lastTime) < 5000)) {
+    return false
+  }
+  state.last = newValue
+  state.lastTime = Date.now()
+  return true
+}
+
 export const generateOtpSeed = () => {
   const otpSeedBuffer = new Uint8Array(20)
   return window.crypto.getRandomValues(otpSeedBuffer)

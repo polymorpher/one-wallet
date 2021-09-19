@@ -1,9 +1,7 @@
-import qrcode from 'qrcode'
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useRef } from 'react'
 import config from '../../config'
-import html2canvas from 'html2canvas'
-import { Button, Image, message, Row, Space, Typography } from 'antd'
-import util from '../../util'
+import { message, Row, Space, Typography } from 'antd'
+import util, { updateQRCodeState } from '../../util'
 import QrCodeScanner from '../../components/QrCodeScanner'
 import WalletConstants from '../../constants/wallet'
 import { useHistory } from 'react-router'
@@ -11,15 +9,29 @@ import Paths from '../../constants/paths'
 const { Text } = Typography
 
 const Scan = ({ address }) => {
+  const state = useRef({ last: undefined, lastTime: Date.now() }).current
   const history = useHistory()
   const onScan = (v) => {
-    if (!v) {
+    if (!updateQRCodeState(v, state)) {
       return
     }
-    const pattern = WalletConstants.qrcodePattern
-    const m = v.match(pattern)
+    let m = v.match(WalletConstants.qrcodePattern)
     if (!m) {
+      m = v.match(WalletConstants.unwrapPattern)
+      if (m) {
+        message.success('Found red packet. Redirecting...')
+        history.push(m[0])
+        return
+      }
+    }
+    if (!m) {
+      if (v.startsWith(config.rootUrl)) {
+        message.erorr('Code recognized. Redirecting...')
+        history.push(v)
+        return
+      }
       message.error('Unrecognizable code')
+
       return
     }
     const dest = util.safeNormalizedAddress(m[1])

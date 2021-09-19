@@ -15,5 +15,6 @@ export default {
     address: ONEConstants.TreasuryAddress
   },
   redPacketDuration: 3600 * 1000 * 24 * 5,
-  qrcodePattern: /\/to\/([a-zA-Z0-9]{42})/
+  qrcodePattern: /\/to\/([a-zA-Z0-9]{42})/,
+  unwrapPattern: /\/unwrap\?data=[a-zA-Z0-9]+/
 }

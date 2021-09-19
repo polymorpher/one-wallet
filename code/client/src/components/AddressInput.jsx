@@ -1,9 +1,9 @@
 import { CloseOutlined, ScanOutlined } from '@ant-design/icons'
 import { Select, Button, Tooltip, Row, Col, Spin, Typography, Space, message } from 'antd'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
-import util, { useWaitExecution, useWindowDimensions } from '../util'
+import util, { useWaitExecution, useWindowDimensions, updateQRCodeState } from '../util'
 import WalletConstants from '../constants/wallet'
 import api from '../api'
 import { isEmpty, trim } from 'lodash'
@@ -35,25 +35,17 @@ const ScanButton = ({ isMobile, showQrCodeScanner, setShowQrCodeScanner }) => {
  */
 const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSelectOptions, disableManualInput, disabled, style, allowTemp }) => {
   const dispatch = useDispatch()
-
+  const state = useRef({ last: undefined, lastTime: Date.now() }).current
   const [searchingAddress, setSearchingAddress] = useState(false)
-
   const [searchValue, setSearchValue] = useState('')
-
   const [showQrCodeScanner, setShowQrCodeScanner] = useState('')
-
   const walletsMap = useSelector(state => state.wallet.wallets)
-
   const wallets = Object.keys(walletsMap).map((k) => walletsMap[k])
-
   const knownAddresses = useSelector(state =>
     state.wallet.knownAddresses || {}
   )
-
   const network = useSelector(state => state.wallet.network)
-
   const { isMobile } = useWindowDimensions()
-
   const deleteKnownAddress = useCallback((address) => {
     setAddressCallback({ value: '', label: '' })
     dispatch(walletActions.deleteKnownAddress(address))
@@ -67,9 +59,12 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
   // Scanned value for address prefill will be ROOT_URL/to/{address}?d=xxx, we take address here for prefill.
   const onScan = async (v) => {
     setSearchingAddress(true)
-    if (!v) {
+    if (!updateQRCodeState(v, state)) {
       return
     }
+
+    state.last = v
+    state.lastTime = Date.now()
     const pattern = WalletConstants.qrcodePattern
     const m = v.match(pattern)
     if (!m) {
