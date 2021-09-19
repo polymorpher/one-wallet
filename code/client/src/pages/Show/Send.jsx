@@ -164,7 +164,7 @@ const Send = ({
           {isNFT && <Title level={4}>{metadata?.displayName}</Title>}
         </Col>
       </Row>
-      <Row align='middle' style={{ marginBottom: '10px' }}>
+      <Row align='baseline' style={{ marginBottom: '10px' }}>
         <Col xs={4}>
           <Label wide={!isMobile} style={{ fontSize: isMobile ? '12px' : undefined }}>
             <Hint>To</Hint>

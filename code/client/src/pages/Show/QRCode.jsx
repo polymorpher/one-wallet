@@ -49,7 +49,7 @@ const QRCode = ({ address, name }) => {
             <Image
               src={qrCodeData}
               preview={false}
-              width='100%'
+              width='85%'
               style={{ maxWidth: 400 }}
             />
             <Text>Your 1wallet: {name}</Text>
