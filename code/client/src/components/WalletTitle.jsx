@@ -37,17 +37,12 @@ const WalletTitle = ({ address, onQrCodeClick, onScanClick }) => {
   return (
     <Row justify='space-between' align='top' style={{ marginBottom: isMobile ? 0 : 16 }}>
       <Space size='small' align='baseline' direction='vertical'>
-        <Title level={isMobile ? 4 : 2} style={{ marginBottom: 0 }}>{wallet.name}</Title>
-        <Space direction='horizontal' size='small' align='start'>
-          {wallet.majorVersion >= 9 && (
-            hasDomainName
-              ? <Text type='secondary' style={{ paddingLeft: 16 }}>{domain}</Text>
-              : (
-                <Button type='primary' shape='round' onClick={onPurchaseDomain}>
-                  Get Domain
-                </Button>
-                )
-          )}
+        <Space align='center' size='large'>
+          <Title level={isMobile ? 4 : 2} style={{ marginBottom: 0 }}>{wallet.name}</Title>
+          <Button style={{ padding: 0, border: 'none' }} size='large' onClick={onQrCodeClick}><QrcodeOutlined style={{ fontSize: 32 }} /></Button>
+        </Space>
+
+        <Space direction='horizontal' size='small' align='start' style={{ marginLeft: -16 }}>
           <WalletAddress
             address={wallet.address}
             shorten={util.shouldShortenAddress({
@@ -55,10 +50,18 @@ const WalletTitle = ({ address, onQrCodeClick, onScanClick }) => {
               isMobile
             })}
           />
+          {wallet.majorVersion >= 9 && (
+            hasDomainName
+              ? <Text type='secondary' style={{ paddingLeft: 16 }}>{domain}</Text>
+              : (
+                <Button type='link' shape='round' onClick={onPurchaseDomain}>
+                  (get a domain?)
+                </Button>
+                )
+          )}
         </Space>
       </Space>
       <Space>
-        <Button style={{ padding: 0, border: 'none' }} size='large' onClick={onQrCodeClick}><QrcodeOutlined style={{ fontSize: 32 }} /></Button>
         <Button style={{ padding: 0, border: 'none' }} size='large' onClick={onScanClick}><ScanOutlined style={{ fontSize: 32 }} /></Button>
       </Space>
 
