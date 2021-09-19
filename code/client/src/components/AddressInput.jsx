@@ -70,7 +70,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
     if (!v) {
       return
     }
-    const pattern = /\/to\/([a-zA-Z0-9]{42})/
+    const pattern = WalletConstants.qrcodePattern
     const m = v.match(pattern)
     if (!m) {
       message.error('Unrecognizable code')

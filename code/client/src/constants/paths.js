@@ -12,13 +12,13 @@ export default {
   showAddress: (address, action) => base + `/show/${address}${action ? `/${action}` : ''}`,
 
   auth: base + '/auth/:action?/:address?',
-  doRedirect: (action, address) => {
+  doAuth: (action, address) => {
     if (!action) {
-      return base + '/redirect'
+      return base + '/auth'
     }
     if (!address) {
-      return base + `/redirect/${action}`
+      return base + `/auth/${action}`
     }
-    return base + `/redirect/${action}/${address}`
+    return base + `/auth/${action}/${address}`
   },
 }

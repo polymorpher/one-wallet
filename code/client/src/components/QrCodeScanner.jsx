@@ -3,7 +3,7 @@ import { message, Row, Select } from 'antd'
 import QrReader from 'react-qr-reader'
 import { useWindowDimensions } from '../util'
 
-const QrCodeScanner = ({ onScan, shouldInit }) => {
+const QrCodeScanner = ({ onScan, shouldInit, style }) => {
   const ref = useRef()
   const { isMobile } = useWindowDimensions()
   const [videoDevices, setVideoDevices] = useState([])
@@ -73,7 +73,7 @@ const QrCodeScanner = ({ onScan, shouldInit }) => {
                 delay={300}
                 onError={onError}
                 onScan={onScan}
-                style={{ width: '100%' }}
+                style={{ width: '100%', ...style }}
               />
             </>
             )

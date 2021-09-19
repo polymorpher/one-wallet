@@ -14,5 +14,6 @@ export default {
     label: '1wallet treasury',
     address: ONEConstants.TreasuryAddress
   },
-  redPacketDuration: 3600 * 1000 * 24 * 5
+  redPacketDuration: 3600 * 1000 * 24 * 5,
+  qrcodePattern: /\/to\/([a-zA-Z0-9]{42})/
 }

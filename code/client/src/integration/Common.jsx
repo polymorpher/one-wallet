@@ -32,7 +32,7 @@ export const WalletSelector = ({ from, onAddressSelected }) => {
       {from && selectedWallet &&
         <AverageRow>
           <Space direction='vertical'>
-            <Paragraph>Running from</Paragraph>
+            <Paragraph>Using</Paragraph>
             <Paragraph><WalletAddress showLabel address={from} /></Paragraph>
           </Space>
         </AverageRow>}
