@@ -37,7 +37,7 @@ const Share = ({ seed, redPacketAddress, address, network, isMobile, onClose }) 
   useEffect(() => {
     const settings = { seed: ONEUtil.hexString(seed), address: redPacketAddress, network }
     const b64 = Buffer.from(JSON.stringify(settings)).toString('base64')
-    const url = `${config.rootUrl}/unwrap?data=${b64}`
+    const url = `${config.rootUrl}/unwrap?data=${encodeURIComponent(b64)}`
     setUrl(url)
     qrcode.toDataURL(url, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       .then(data => setQRCodeData(data)).catch(ex => {
