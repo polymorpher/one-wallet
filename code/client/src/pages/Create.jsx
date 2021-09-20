@@ -34,6 +34,7 @@ import OtpBox from '../components/OtpBox'
 import { getAddress } from '@harmony-js/crypto'
 import AddressInput from '../components/AddressInput'
 import WalletCreateProgress from '../components/WalletCreateProgress'
+import { TallRow } from '../components/Grid'
 const { Text, Link } = Typography
 
 // const genName = () => uniqueNamesGenerator({
@@ -130,7 +131,7 @@ const sectionViews = {
   walletSetupDone: 5
 }
 
-const Create = ({ advancedSetting }) => {
+const Create = ({ expertMode, showRecovery }) => {
   // eslint-disable-next-line no-unused-vars
   const dev = useSelector(state => state.wallet.dev)
   const { isMobile, os } = useWindowDimensions()
@@ -150,7 +151,7 @@ const Create = ({ advancedSetting }) => {
   // Used for Recovery address setup. Only used when user does not choose a Recovery address.
   const oneWalletTreasurySelectOption = {
     value: WalletConstants.oneWalletTreasury.address,
-    label: `(1wallet Treasury) ${util.safeOneAddress(WalletConstants.oneWalletTreasury.address)}`
+    label: `(${WalletConstants.oneWalletTreasury.label}) ${util.safeOneAddress(WalletConstants.oneWalletTreasury.address)}`
   }
 
   // A valid wallet of user's wallets in the network can be used as default recovery wallet.
@@ -229,7 +230,7 @@ const Create = ({ advancedSetting }) => {
       setOtp('')
       return
     }
-    if (advancedSetting && (otp === '0x0000' || otp === 'normal')) {
+    if (expertMode && (otp === '0x0000' || otp === 'normal')) {
       history.push(Paths.create)
       message.success('Expert mode disabled')
       setOtp('')
@@ -259,7 +260,7 @@ const Create = ({ advancedSetting }) => {
   }
 
   const deploy = async () => {
-    if (!root) {
+    if (!(root && hseed && layers && slotSize)) {
       message.error('Cannot deploy wallet. Error: root is not set.')
       return
     }
@@ -302,7 +303,7 @@ const Create = ({ advancedSetting }) => {
         network,
         doubleOtp,
         ...securityParameters,
-        expert: !!advancedSetting,
+        expert: !!expertMode,
       }
       await storeLayers()
       dispatch(walletActions.updateWallet(wallet))
@@ -341,6 +342,13 @@ const Create = ({ advancedSetting }) => {
     }
     setWorker(worker)
   }, [])
+
+  useEffect(() => {
+    if (section === sectionViews.prepareWallet && !showRecovery &&
+      root && hseed && slotSize && layers) {
+      deploy()
+    }
+  }, [section, root, hseed, layers, slotSize])
 
   return (
     <>
@@ -394,7 +402,7 @@ const Create = ({ advancedSetting }) => {
               onChange={setOtp}
             />
             {isMobile && <Button type='default' shape='round' icon={<SnippetsOutlined />} onClick={() => { navigator.clipboard.readText().then(t => setOtp(t)) }}>Paste from Clipboard</Button>}
-            {advancedSetting &&
+            {expertMode &&
               <Checkbox onChange={() => setDoubleOtp(!doubleOtp)}>
                 <Space>
                   <Hint style={{ fontSize: isMobile ? 12 : undefined }}>
@@ -436,7 +444,7 @@ const Create = ({ advancedSetting }) => {
             <Heading>Prepare Your 1wallet</Heading>
           </Space>
         </Row>
-        {advancedSetting &&
+        {expertMode &&
           <Row style={{ marginBottom: 16 }}>
             <Space direction='vertical' size='small'>
               <Hint>Set up a spending limit:</Hint>
@@ -460,42 +468,53 @@ const Create = ({ advancedSetting }) => {
 
             </Space>
           </Row>}
-        <Row style={{ marginBottom: 24 }}>
-          {!showRecoveryDetail &&
-            <Space>
-              <Button style={{ padding: 0 }} type='link' onClick={() => setShowRecoveryDetail(true)}>Set up a recovery address?</Button>
-              <Tooltip title={'It is where you could send your money to, if you lost the authenticator. You don\'t have to set it up. By default it goes to Harmony'}>
-                <QuestionCircleOutlined />
-              </Tooltip>
+        {showRecovery &&
+          <Row style={{ marginBottom: 24 }}>
+            {!showRecoveryDetail &&
+              <Space>
+                <Button style={{ padding: 0 }} type='link' onClick={() => setShowRecoveryDetail(true)}>Set up a recovery address?</Button>
+                <Tooltip title={'It is where you could send your money to, if you lost the authenticator. You don\'t have to set it up. By default it goes to Harmony'}>
+                  <QuestionCircleOutlined />
+                </Tooltip>
 
-            </Space>}
-          {showRecoveryDetail &&
-            <Space direction='vertical' size='small' style={{ width: '100%' }}>
-              <Hint>Set up a fund recovery address (it's public):</Hint>
-              <AddressInput
-                addressValue={lastResortAddress}
-                setAddressCallback={setLastResortAddress}
-                extraSelectOptions={[{
-                  address: WalletConstants.oneWalletTreasury.address,
-                  label: '1wallet treasury'
-                }]}
-              />
-              <Hint>
-                {lastResortAddress.value !== WalletConstants.oneWalletTreasury.address && <span style={{ color: 'red' }}>This is permanent. </span>}
-                If you lost access, you can still send your assets there or use <Link href='https://github.com/polymorpher/one-wallet/releases/tag/v0.2' target='_blank' rel='noreferrer'>auto-recovery</Link>
-              </Hint>
-              {lastResortAddress.value === WalletConstants.oneWalletTreasury.address &&
-                <Warning style={{ marginTop: 24 }}>
-                  Please use your own address if you can. 1wallet treasury is controlled by Harmony team. They may help you recover funds as the last resort.
-                </Warning>}
-            </Space>}
-        </Row>
+              </Space>}
+            {showRecoveryDetail &&
+              <Space direction='vertical' size='small' style={{ width: '100%' }}>
+                <Hint>Set up a fund recovery address (it's public):</Hint>
+                <AddressInput
+                  addressValue={lastResortAddress}
+                  setAddressCallback={setLastResortAddress}
+                  extraSelectOptions={[{
+                    address: WalletConstants.oneWalletTreasury.address,
+                    label: WalletConstants.oneWalletTreasury.label
+                  }]}
+                />
+                <Hint>
+                  {lastResortAddress.value !== WalletConstants.oneWalletTreasury.address && <span style={{ color: 'red' }}>This is permanent. </span>}
+                  If you lost access, you can still send your assets there or use <Link href='https://github.com/polymorpher/one-wallet/releases/tag/v0.2' target='_blank' rel='noreferrer'>auto-recovery</Link>
+                </Hint>
+                {lastResortAddress.value === WalletConstants.oneWalletTreasury.address &&
+                  <Warning style={{ marginTop: 24 }}>
+                    Please use your own address if you can. 1wallet DAO is controlled by Harmony team. They may help you recover funds as the last resort.
+                  </Warning>}
+              </Space>}
+          </Row>}
         <Row style={{ marginBottom: 32 }}>
           <Space direction='vertical'>
-            <Space>
-              <Button disabled={!root || deploying} type='primary' shape='round' size='large' onClick={() => deploy()}>Create Now</Button>
-              {deploying && <LoadingOutlined />}
-            </Space>
+            {showRecovery &&
+              <Space>
+                <Button
+                  disabled={!root || deploying} type='primary' shape='round' size='large'
+                  onClick={() => deploy()}
+                >Create Now
+                </Button>
+                {deploying && <LoadingOutlined />}
+              </Space>}
+            {!showRecovery &&
+              <TallRow>
+                {(deploying || !root) && <Space><Text>Working on your 1wallet...</Text><LoadingOutlined /></Space>}
+                {(!deploying && root) && <Text>Your 1wallet is ready!</Text>}
+              </TallRow>}
             {!root && <WalletCreateProgress progress={progress} isMobile={isMobile} progressStage={progressStage} />}
           </Space>
         </Row>

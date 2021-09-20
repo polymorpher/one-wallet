@@ -11,7 +11,7 @@ export default {
   fetchBalanceFrequency: 15000,
   fetchDelaysAfterTransfer: [0, 2000, 5000],
   oneWalletTreasury: {
-    label: '1wallet treasury',
+    label: '1wallet DAO',
     address: ONEConstants.TreasuryAddress
   },
   redPacketDuration: 3600 * 1000 * 24 * 5,

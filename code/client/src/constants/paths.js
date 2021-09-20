@@ -2,8 +2,9 @@ export const base = process.env.PUBLIC_URL || ''
 export default {
   root: base + '/',
   dev: base + '/dev',
-  create: base + '/create',
-  create2: base + '/create2',
+  create: base + '/create', // simplified, mobile oriented
+  create1: base + '/create1', // desktop mode
+  create2: base + '/create2', // expert mode
   wallets: base + '/wallets',
   restore: base + '/restore',
   unwrap: base + '/unwrap',
