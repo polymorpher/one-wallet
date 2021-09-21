@@ -23,13 +23,32 @@ import { SmartFlows } from '../../../lib/api/flow'
 import ONE from '../../../lib/onewallet'
 import { useHistory } from 'react-router'
 import { CheckCircleOutlined, LoadingOutlined } from '@ant-design/icons'
+import humanizeDuration from 'humanize-duration'
 const { Title, Text, Link } = Typography
+
+const shortHumanizeDuration = humanizeDuration.humanizer({
+  language: 'shortEn',
+  languages: {
+    shortEn: {
+      y: () => 'y',
+      mo: () => 'mo',
+      w: () => 'w',
+      d: () => 'd',
+      h: () => 'h',
+      m: () => 'm',
+      s: () => 's',
+      ms: () => 'ms',
+    },
+  },
+})
 
 const RedPacketTitle = ({ isMobile, address }) => {
   return (
-    <Space size={isMobile ? 'small' : 'large'} align='baseline' direction={isMobile ? 'vertical' : 'horizontal'}>
-      <Title level={isMobile ? 4 : 2}><span role='img'>🧧</span> Red Packet</Title>
-      <WalletAddress address={address} shorten />
+    <Space direction='vertical'>
+      <Space size={isMobile ? 'small' : 'large'} align='baseline' direction={isMobile ? 'vertical' : 'horizontal'}>
+        <Title level={isMobile ? 4 : 2}><span role='img'>🧧</span> Red Packet</Title>
+        <WalletAddress address={address} shorten />
+      </Space>
     </Space>
   )
 }
@@ -145,6 +164,7 @@ const Unwrap = () => {
   const balances = useSelector(state => state.wallet.balances)
   const [seed, setSeed] = useState()
   const [address, setAddress] = useState()
+  const [message, setMessage] = useState()
   const [randomFactor, setRandomFactor] = useState(1)
   const [error, setError] = useState()
   const wallet = wallets[address]
@@ -158,7 +178,7 @@ const Unwrap = () => {
   const [lastOperationTime, setLastOperationTime] = useState(defaultDest)
   const [spendingAmount, setSpendingAmount] = useState()
   const [lastSpendingInterval, setLastSpendingInterval] = useState()
-  const maxAmount = wallet ? util.getMaxSpending({ ...wallet, spendingAmount, lastSpendingInterval }) : new BN(0)
+  const maxAmount = BN.min(wallet ? util.getMaxSpending({ ...wallet, spendingAmount, lastSpendingInterval }) : new BN(0), new BN(balance))
   const { formatted: maxAmountFormatted } = util.computeBalance(maxAmount.toString())
   const minAmount = wallet?.spendingLimit ? new BN(wallet.spendingLimit || 0).divn(randomFactor) : new BN(0)
   const { formatted: minAmountFormatted } = util.computeBalance(minAmount.toString())
@@ -207,6 +227,7 @@ const Unwrap = () => {
       // console.log(r)
       address = r.address
       seed = ONEUtil.hexStringToBytes(r.seed)
+      setMessage(r.message)
       setSeed(seed)
       setAddress(address)
       setRandomFactor(r.r || 2)
@@ -378,18 +399,31 @@ const Unwrap = () => {
 
   const outOfOperations = nonce > 0 && (Math.floor(now / 1000) - lastOperationTime) < 30
 
+  const inWaitBuffer = (wallet?.majorVersion === 12) && (!(wallet?.minorVersion >= 3)) && (Math.floor(now / 1000) % 30 > 25)
+
+  const expired = wallet.effectiveTime + wallet.duration < now
+
   return (
     <AnimatedSection show style={{ maxWidth: 640 }} title={<RedPacketTitle isMobile={isMobile} address={address} />}>
-      <Row style={{ marginTop: 16, width: '100%' }}>
+      <Row style={{ marginTop: isMobile && 16, width: '100%' }}>
         <Space direction='vertical' style={{ width: '100%' }} size='large'>
           <Space size='small'><Text>Packed by</Text> <WalletAddress address={wallet?.lastResortAddress} showLabel shorten /></Space>
+          {message && <Row justify='center'> <Text italic>"{message}"</Text></Row>}
+
           <Space direction='vertical' style={{ width: '100%', textAlign: 'center' }}>
             <Space>
-              <Title level={3}>{formatted}</Title>
-              <Text type='secondary'>ONE</Text>
-              <Hint>≈ ${fiatFormatted} USD</Hint>
+              <Title style={{ textDecoration: expired && 'line-through' }} level={3}>{formatted}</Title>
+              <Text style={{ textDecoration: expired && 'line-through' }} type='secondary'>ONE</Text>
+              <Hint style={{ textDecoration: expired && 'line-through' }}>≈ ${fiatFormatted} USD</Hint>
             </Space>
-            <Text>left to be claimed</Text>
+            {!expired && <Text>left to be claimed</Text>}
+            {expired &&
+              <Space direction='vertical' size='small'>
+                <Title level={3}>Expired!</Title>
+                <Text>Expired on {new Date(wallet.effectiveTime + wallet.duration).toLocaleString()} :(</Text>
+              </Space>}
+            {!expired && <Text type='secondary'>Expires in {shortHumanizeDuration(wallet.effectiveTime + wallet.duration - now, { round: true, delimiter: ' ', spacer: '' })}</Text>}
+
           </Space>
           <UnwrapNFTGrid nfts={nfts} isMobile={isMobile} selected={selected} onClick={(key) => setSelected(key)} tokenBalances={tokenBalances} />
           <Space direction='vertical' size='small'>
@@ -406,13 +440,14 @@ const Unwrap = () => {
               <Space>
                 {stage >= 0 && stage < 3 && <LoadingOutlined />}
                 {stage === 3 && <CheckCircleOutlined />}
-                <Button size='large' type='primary' shape='round' onClick={doClaim} disabled={outOfOperations || stage >= 0 || !maxAmount.gt(0)}>
+                <Button size='large' type='primary' shape='round' onClick={doClaim} disabled={outOfOperations || stage >= 0 || inWaitBuffer || expired || !maxAmount.gt(0)}>
                   Claim Yours
                 </Button>
               </Space>
               <Hint>{claimText}</Hint>
             </Space>
           </Row>
+          {inWaitBuffer && !outOfOperations && <Text>Preparing for the next claim. Wait for {operationInterval - Math.floor(now / 1000) % operationInterval} seconds</Text>}
           {outOfOperations && <Text>Someone just claimed from this red packet. Please wait for ~{operationInterval - Math.floor(now / 1000) % operationInterval} seconds</Text>}
           {showNextClaim &&
             <>
