@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useHistory, useRouteMatch } from 'react-router'
 import { Layout, Image, Menu, Row, Typography, Tag, Divider, Spin } from 'antd'
-import { PlusCircleOutlined, UnorderedListOutlined, HistoryOutlined, AuditOutlined, GithubOutlined, InfoCircleOutlined } from '@ant-design/icons'
+import { PlusCircleOutlined, UnorderedListOutlined, HistoryOutlined, AuditOutlined, GithubOutlined, InfoCircleOutlined, DollarOutlined } from '@ant-design/icons'
 import HarmonyLogo from '../assets/harmony.svg'
 import HarmonyIcon from '../assets/harmony-icon.svg'
 import config from '../config'
@@ -25,7 +25,8 @@ const SiderLink = styled(Link).attrs((e) => ({
 `
 
 const mobileMenuItemStyle = {
-  padding: '0 10px'
+  padding: '0 10px',
+  fontSize: 12
 }
 
 const LineDivider = ({ children }) => {
@@ -73,6 +74,7 @@ const SiderMenu = ({ ...args }) => {
               <Menu.Item key='create' style={mobileMenuItemStyle} icon={<PlusCircleOutlined />}>Create</Menu.Item>
               <Menu.Item key='wallets' style={mobileMenuItemStyle} icon={<UnorderedListOutlined />}>Wallets</Menu.Item>
               <Menu.Item key='restore' style={mobileMenuItemStyle} icon={<HistoryOutlined />}>Restore</Menu.Item>
+              <Menu.Item key='grant' style={mobileMenuItemStyle} icon={<DollarOutlined />}><SiderLink style={{ color: null }} href='https://harmony.one/wallet'>Grants</SiderLink></Menu.Item>
               <Menu.Item key='bug' style={mobileMenuItemStyle} icon={<GithubOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/issues'>Bug Report</SiderLink></Menu.Item>
               <Menu.Item key='audit' style={mobileMenuItemStyle} icon={<AuditOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/tree/master/audits'>Audits</SiderLink></Menu.Item>
               <Menu.Item key='wiki' style={mobileMenuItemStyle} icon={<InfoCircleOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/wiki'>Wiki</SiderLink></Menu.Item>
@@ -116,6 +118,7 @@ const SiderMenu = ({ ...args }) => {
               </Menu>
               <LineDivider />
               <Menu theme='dark' mode='inline' selectable={false}>
+                <Menu.Item key='grant' icon={<DollarOutlined />}><SiderLink style={{ color: null }} href='https://harmony.one/wallet'>Grants</SiderLink></Menu.Item>
                 <Menu.Item key='bug' icon={<GithubOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/issues'>Bug Report</SiderLink></Menu.Item>
                 <Menu.Item key='audit' icon={<AuditOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/tree/master/audits'>Audits</SiderLink></Menu.Item>
                 <Menu.Item key='wiki' icon={<InfoCircleOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/wiki'>Wiki</SiderLink></Menu.Item>
