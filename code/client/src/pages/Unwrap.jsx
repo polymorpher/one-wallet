@@ -227,7 +227,7 @@ const Unwrap = () => {
       // console.log(r)
       address = r.address
       seed = ONEUtil.hexStringToBytes(r.seed)
-      setMessage(r.message)
+      setMessage(r.m)
       setSeed(seed)
       setAddress(address)
       setRandomFactor(r.r || 2)

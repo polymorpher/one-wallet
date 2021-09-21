@@ -1,14 +1,14 @@
 import { useSelector } from 'react-redux'
 import React, { useEffect, useState } from 'react'
-import { Button, Row, Space, Typography, message, Select, Image } from 'antd'
+import { Button, Row, Space, Typography, message, Select, Image, Tooltip, Input } from 'antd'
 import {
   CheckCircleOutlined,
   CloseOutlined,
   CloseCircleOutlined,
   LoadingOutlined,
-  PlusCircleOutlined,
+  PlusCircleOutlined, QuestionCircleOutlined, PercentageOutlined,
 } from '@ant-design/icons'
-import { Hint, InputBox, Label } from '../../components/Text'
+import { Hint, InputBox, Label, UltraWideLabel } from '../../components/Text'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
 import util, { generateOtpSeed, useWindowDimensions } from '../../util'
@@ -31,11 +31,14 @@ import config from '../../config'
 import qrcode from 'qrcode'
 const { Title, Text, Link } = Typography
 
-const Share = ({ seed, redPacketAddress, address, network, isMobile, onClose }) => {
+const Share = ({ seed, redPacketAddress, address, network, isMobile, onClose, message, randomFactor }) => {
   const [qrCodeData, setQRCodeData] = useState()
   const [url, setUrl] = useState()
   useEffect(() => {
-    const settings = { seed: ONEUtil.hexString(seed), address: redPacketAddress, network }
+    const settings = { seed: ONEUtil.hexString(seed), address: redPacketAddress, network, r: randomFactor }
+    if (message) {
+      settings.m = message
+    }
     const b64 = Buffer.from(JSON.stringify(settings)).toString('base64')
     const url = `${config.rootUrl}/unwrap?data=${encodeURIComponent(b64)}`
     setUrl(url)
@@ -100,7 +103,9 @@ const Gift = ({
   const { otpInput, otp2Input, resetOtp } = otpState
 
   const [section, setSection] = useState(sections.prepare)
-
+  const [editingSetting, setEditingSetting] = useState(false)
+  const [randomFactor, setRandomFactor] = useState(2)
+  const [message, setMessage] = useState()
   const tokenBalances = wallet.tokenBalances || {}
 
   const [totalAmountInput, setTotalAmountInput] = useState(prefilledTotalAmount || 3) // ONEs, string
@@ -265,7 +270,7 @@ const Gift = ({
   if (section === sections.share) {
     return (
       <>
-        <Share network={network} isMobile={isMobile} address={address} redPacketAddress={redPacketAddress} seed={seed} onClose={() => setSection(sections.prepare)} />
+        <Share network={network} isMobile={isMobile} address={address} redPacketAddress={redPacketAddress} seed={seed} onClose={() => setSection(sections.prepare)} randomFactor={randomFactor} message={message} />
       </>
     )
   }
@@ -361,12 +366,36 @@ const Gift = ({
             </Space>
           </Space>
           {!redPacketAddress &&
-            <Row justify='end'>
+            <Row justify='space-between'>
+              <Button type='link' size='large' style={{ padding: 0 }} onClick={() => setEditingSetting(!editingSetting)}>{editingSetting ? 'Close' : 'Advanced Settings'}</Button>
               <Button
                 disabled={deploying} type='primary' shape='round' size='large'
                 onClick={confirmMakingRedPacket}
               >Create Red Packet
               </Button>
+            </Row>}
+          {editingSetting &&
+            <Row align='top'>
+              <Space direction='vertical' size='large'>
+                <Space>
+                  <Label ultraWide>
+                    Random Factor
+                  </Label>
+                  <Tooltip title='Recipients may claim a random amount of ONE between (per claim limit / random factor) and (per claim limit)  '>
+                    <QuestionCircleOutlined />
+                  </Tooltip>
+                  <InputBox margin='auto' value={randomFactor} onChange={({ target: { value } }) => setRandomFactor(parseFloat(value || 0))} />
+                </Space>
+                <Space>
+                  <Label ultraWide>
+                    Special Message
+                  </Label>
+                  <Tooltip title='Custom message you want every recipient to see'>
+                    <QuestionCircleOutlined />
+                  </Tooltip>
+                  <InputBox margin='auto' placeholder='...' value={message} onChange={({ target: { value } }) => setMessage(value)} />
+                </Space>
+              </Space>
             </Row>}
           {redPacketAddress &&
             <>
