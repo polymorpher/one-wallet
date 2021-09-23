@@ -35,6 +35,7 @@ import { getAddress } from '@harmony-js/crypto'
 import AddressInput from '../components/AddressInput'
 import WalletCreateProgress from '../components/WalletCreateProgress'
 import { TallRow } from '../components/Grid'
+import { FlashyButton } from '../components/Buttons'
 const { Text, Link } = Typography
 
 // const genName = () => uniqueNamesGenerator({
@@ -178,7 +179,7 @@ const Create = ({ expertMode, showRecovery }) => {
   const [doubleOtp, setDoubleOtp] = useState(false)
 
   const [durationVisible, setDurationVisible] = useState(false)
-  const [section, setSection] = useState(sectionViews.setupOtp)
+  const [section, setSection] = useState(sectionViews.prepareWallet)
   const [qrCodeData, setQRCodeData] = useState()
   const [secondOtpQrCodeData, setSecondOtpQrCodeData] = useState()
   const [otp, setOtp] = useState('')
@@ -485,7 +486,7 @@ const Create = ({ expertMode, showRecovery }) => {
             {!showRecoveryDetail &&
               <Space>
                 <Button style={{ padding: 0 }} type='link' onClick={() => setShowRecoveryDetail(true)}>Set up a recovery address?</Button>
-                <Tooltip title={'It is where you could send your money to, if you lost the authenticator. You don\'t have to set it up. By default it goes to Harmony'}>
+                <Tooltip title={'It is where you could send your money to if you lost the authenticator. You don\'t have to configure this. By default it goes to 1wallet DAO'}>
                   <QuestionCircleOutlined />
                 </Tooltip>
 
@@ -515,11 +516,11 @@ const Create = ({ expertMode, showRecovery }) => {
           <Space direction='vertical'>
             {showRecovery &&
               <Space>
-                <Button
+                <FlashyButton
                   disabled={!root || deploying} type='primary' shape='round' size='large'
                   onClick={() => deploy()}
-                >Create Now
-                </Button>
+                >Confirm: Create Now
+                </FlashyButton>
                 {deploying && <LoadingOutlined />}
               </Space>}
             {!showRecovery &&
