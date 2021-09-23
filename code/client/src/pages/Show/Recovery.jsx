@@ -7,6 +7,7 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import Paths from '../../constants/paths'
 import { useHistory } from 'react-router'
+import WalletConstants from '../../constants/wallet'
 const { Title } = Typography
 
 const Recovery = ({ address }) => {
@@ -25,7 +26,7 @@ const Recovery = ({ address }) => {
     <>
       <TallRow align='middle'>
         <Col span={isMobile ? 24 : 8}> <Title level={3}>Recovery Address</Title></Col>
-        {lastResortAddress && !util.isEmptyAddress(lastResortAddress) &&
+        {lastResortAddress && !util.isEmptyAddress(lastResortAddress) && lastResortAddress !== WalletConstants.oneWalletTreasury.address &&
           <Col>
             <WalletAddress
               showLabel
