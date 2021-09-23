@@ -226,7 +226,7 @@ const Create = ({ expertMode, showRecovery }) => {
         setSlotSize(1)
         worker.onmessage = (event) => {
           const { status, current, total, stage, result, salt: workerSalt } = event.data
-          if (workerSalt !== salt) {
+          if (workerSalt && workerSalt !== salt) {
             // console.log(`Discarding outdated worker result (salt=${workerSalt}, expected=${salt})`)
             return
           }
