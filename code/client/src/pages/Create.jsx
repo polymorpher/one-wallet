@@ -179,7 +179,7 @@ const Create = ({ expertMode, showRecovery }) => {
   const [doubleOtp, setDoubleOtp] = useState(false)
 
   const [durationVisible, setDurationVisible] = useState(false)
-  const [section, setSection] = useState(sectionViews.prepareWallet)
+  const [section, setSection] = useState(sectionViews.setupOtp)
   const [qrCodeData, setQRCodeData] = useState()
   const [secondOtpQrCodeData, setSecondOtpQrCodeData] = useState()
   const [otp, setOtp] = useState('')
