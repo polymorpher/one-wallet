@@ -206,18 +206,46 @@ const Create = ({ expertMode, showRecovery }) => {
     if (section === sectionViews.setupOtp && worker) {
       // console.log('Posting to worker. Security parameters:', securityParameters)
       const t = Math.floor(Date.now() / WalletConstants.interval) * WalletConstants.interval
+      const salt = ONEUtil.hexView(generateOtpSeed())
       setEffectiveTime(t)
-      worker && worker.postMessage({
-        seed,
-        seed2: doubleOtp && seed2,
-        effectiveTime: t,
-        duration,
-        slotSize,
-        interval: WalletConstants.interval,
-        ...securityParameters,
-      })
+      if (worker) {
+        worker.postMessage({
+          salt,
+          seed,
+          seed2: doubleOtp && seed2,
+          effectiveTime: t,
+          duration,
+          slotSize,
+          interval: WalletConstants.interval,
+          ...securityParameters,
+        })
+        setRoot(undefined)
+        setHseed(undefined)
+        setLayers(undefined)
+        setSlotSize(1)
+        worker.onmessage = (event) => {
+          const { status, current, total, stage, result, salt: workerSalt } = event.data
+          if (workerSalt !== salt) {
+            // console.log(`Discarding outdated worker result (salt=${workerSalt}, expected=${salt})`)
+            return
+          }
+          if (status === 'working') {
+            // console.log(`Completed ${(current / total * 100).toFixed(2)}%`)
+            setProgress(Math.round(current / total * 100))
+            setProgressStage(stage)
+          }
+          if (status === 'done') {
+            const { hseed, root, layers, maxOperationsPerInterval } = result
+            setRoot(root)
+            setHseed(hseed)
+            setLayers(layers)
+            setSlotSize(maxOperationsPerInterval)
+            // console.log('Received created wallet from worker:', result)
+          }
+        }
+      }
     }
-  }, [section, worker])
+  }, [section, worker, doubleOtp])
 
   useEffect(() => {
     const settingUpSecondOtp = section === sectionViews.setupSecondOtp
@@ -324,22 +352,6 @@ const Create = ({ expertMode, showRecovery }) => {
 
   useEffect(() => {
     const worker = new Worker('/ONEWalletWorker.js')
-    worker.onmessage = (event) => {
-      const { status, current, total, stage, result } = event.data
-      if (status === 'working') {
-        // console.log(`Completed ${(current / total * 100).toFixed(2)}%`)
-        setProgress(Math.round(current / total * 100))
-        setProgressStage(stage)
-      }
-      if (status === 'done') {
-        const { hseed, root, layers, maxOperationsPerInterval } = result
-        setRoot(root)
-        setHseed(hseed)
-        setLayers(layers)
-        setSlotSize(maxOperationsPerInterval)
-        // console.log('Received created wallet from worker:', result)
-      }
-    }
     setWorker(worker)
   }, [])
 
