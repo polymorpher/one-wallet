@@ -2,14 +2,11 @@ import styled, { keyframes } from 'styled-components'
 import { Button } from 'antd'
 
 const flashAnimation = keyframes`
-  0% {box-shadow: 0 0 0 lightblue;}
-  5% {box-shadow: 0 0 20px lightblue;}
-  7% {box-shadow: 0 0 0 lightblue;}
-  10% {box-shadow: 0 0 0 lightblue;}
-  15% {box-shadow: 0 0 20px lightblue;}
-  17% {box-shadow: 0 0 0 lightblue;}
-  100% {box-shadow: 0 0 0 lightblue;}
+  0% {opacity: 0.6;}
+  100% {opacity: 1.0;}
 `
 export const FlashyButton = styled(Button)`
-  animation: ${flashAnimation} 3s 2;
+  &:enabled {
+    animation: ${flashAnimation} 1s infinite alternate;
+  }
 `
