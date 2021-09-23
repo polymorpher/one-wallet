@@ -76,7 +76,7 @@ const Restore = () => {
   const [progress, setProgress] = useState(0)
   const [progressStage, setProgressStage] = useState(0)
 
-  const onRestore = async () => {
+  const onRestore = async (ignoreDoubleOtp) => {
     if (!root) {
       console.error('Root is not set. Abort.')
       return
@@ -94,6 +94,24 @@ const Restore = () => {
           const { hseed, root: computedRoot, layers, doubleOtp } = result
           if (!ONEUtil.bytesEqual(ONEUtil.hexToBytes(root), computedRoot)) {
             console.error('Roots are not equal', root, ONEUtil.hexString(computedRoot))
+            // console.error('Roots are not equal', root, ONEUtil.hexString(computedRoot), {
+            //   hseed,
+            //   doubleOtp,
+            //   secret,
+            //   secret2,
+            //   ignoreDoubleOtp,
+            //   ...securityParameters,
+            //   majorVersion,
+            //   minorVersion,
+            //   effectiveTime,
+            //   duration,
+            //   slotSize,
+            // })
+            if (!ignoreDoubleOtp && doubleOtp) {
+              message.error('Verification failed. Retrying using single authenticator code...')
+              onRestore(true)
+              return
+            }
             message.error('Verification failed. Your authenticator QR code might correspond to a different contract address.')
             return
           }
@@ -125,7 +143,7 @@ const Restore = () => {
       console.log('[Restore] Posting to worker')
       worker && worker.postMessage({
         seed: secret,
-        seed2: secret2,
+        seed2: !ignoreDoubleOtp && secret2,
         effectiveTime,
         duration,
         slotSize,
@@ -170,6 +188,8 @@ const Restore = () => {
           duration,
           slotSize,
           lastResortAddress,
+          majorVersion,
+          minorVersion,
           spendingLimit,
           spendingInterval
         })
