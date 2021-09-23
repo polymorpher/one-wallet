@@ -36,7 +36,7 @@ export const OtpStack = ({ wideLabel, walletName, otpState, doubleOtp }) => {
   }, [location])
 
   return (
-    <>
+    <Space direction='vertical'>
       <Space align='baseline' size='large' style={{ marginTop: 16 }}>
         <Label wide={wideLabel}>
           <Hint>Code {doubleOtp ? '1' : ''}</Hint>
@@ -64,6 +64,6 @@ export const OtpStack = ({ wideLabel, walletName, otpState, doubleOtp }) => {
             <QuestionCircleOutlined />
           </Tooltip>
         </Space>}
-    </>
+    </Space>
   )
 }
