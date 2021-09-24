@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
 import { values } from 'lodash'
@@ -82,6 +82,7 @@ const List = () => {
     .reduce((a, b) => a.add(new BN(b, 10)), new BN(0)).toString()
   const { formatted, fiatFormatted } = util.computeBalance(totalBalance, price)
   const titleLevel = isMobile ? 4 : 3
+  const [purged, setPurged] = useState(false)
 
   const purge = (wallet) => {
     const { root, address } = wallet || {}
@@ -93,7 +94,11 @@ const List = () => {
     }
   }
   useEffect(() => {
+    if (purged || !wallets || wallets.length === 0) {
+      return
+    }
     const now = Date.now()
+    setPurged(true)
     Object.keys(wallets || {}).forEach((address) => {
       const wallet = wallets[address]
       if (!wallet) {
