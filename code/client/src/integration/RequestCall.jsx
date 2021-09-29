@@ -2,7 +2,7 @@ import { Button, message, Space, Typography, Divider } from 'antd'
 import BN from 'bn.js'
 import AnimatedSection from '../components/AnimatedSection'
 import { AverageRow } from '../components/Grid'
-import { Hint, Li, Ul } from '../components/Text'
+import { Hint, Li, Ul, Warning } from '../components/Text'
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import util from '../util'
@@ -69,7 +69,7 @@ const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amo
         style={{ minHeight: 320, maxWidth: 720 }}
       >
         <AverageRow>
-          <Space direction='vertical'>
+          <Space direction='vertical' style={{ maxWidth: '100%' }}>
             <Title level={3}>"{caller}" wants your 1wallet to do something </Title>
             {calldata.comment && <Paragraph>Reason: {calldata.comment} </Paragraph>}
             {!calldata.comment && <Paragraph>The app did not provide any explanation </Paragraph>}
@@ -84,13 +84,21 @@ const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amo
             <Divider />
             <Title level={3}>Technical details</Title>
             <Paragraph>Call address: <WalletAddress showLabel address={dest} /></Paragraph>
-            <Paragraph>Function: {calldata.method}</Paragraph>
-            <Paragraph>Parameters:</Paragraph>
-            <Ul>
-              {calldata?.parameters?.map((kv, i) => {
-                return <Li key={`${i}-${kv.name}`}>[{i}] {kv.name}: {kv.value}</Li>
-              })}
-            </Ul>
+            {calldata.hex &&
+              <>
+                <Warning>The app is making a call using binary data, without disclosing method name or parameter values. Malicious apps may steal your NFTs or tokens using specific binary data. Please be cautious and double check the data and the safety of the app. If your tokens are stolen this way, 1wallet cannot help you recover your asset. Use it at your own risk. Please ask the app developer to provide call method name and parameter values. </Warning>
+                <Paragraph>Hex Data: {calldata.hex}</Paragraph>
+              </>}
+            {!calldata.hex &&
+              <>
+                <Paragraph>Function: {calldata.method}</Paragraph>
+                <Paragraph>Parameters:</Paragraph>
+                <Ul>
+                  {calldata?.parameters?.map((kv, i) => {
+                    return <Li key={`${i}-${kv.name}`}>[{i}] {kv.name}: {kv.value}</Li>
+                  })}
+                </Ul>
+              </>}
           </Space>
         </AverageRow>
         <Divider />
@@ -109,7 +117,8 @@ const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amo
       {showCall &&
         <Call
           address={selectedAddress.value} show={showCall} onClose={onCallClose} onSuccess={onSuccess}
-          prefillAmount={amountFormatted} prefillDest={dest} prefillData={calldata.parameters.map(e => e.value)} prefillMethod={calldata.method}
+          prefillHex={calldata.hex}
+          prefillAmount={amountFormatted} prefillDest={dest} prefillData={(calldata.parameters || []).map(e => e.value)} prefillMethod={calldata.method}
         />}
     </>
   )
