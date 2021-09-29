@@ -24,6 +24,7 @@ const Call = ({
   show,
   onClose, // optional
   onSuccess, // optional
+  prefillHex, // optional
   prefillAmount, // string, number of tokens, in whole amount (not wei)
   prefillDest, // contract address, string, hex format
   prefillMethod, // function signature, (abi selector) https://docs.soliditylang.org/en/develop/abi-spec.html#function-selector
@@ -49,8 +50,8 @@ const Call = ({
   const [transferTo, setTransferTo] = useState({ value: prefillDest || '', label: prefillDest ? util.oneAddress(prefillDest) : '' })
   const [inputAmount, setInputAmount] = useState(prefillAmount || '')
 
-  const [method, setMethod] = useState(prefillMethod || '')
-  const [dataInput, setDataInput] = useState(JSON.stringify(prefillData || [], null, 2))
+  const [method, setMethod] = useState(prefillHex ? '(Direct Call By Bytes)' : (prefillMethod || ''))
+  const [dataInput, setDataInput] = useState(prefillHex || JSON.stringify(prefillData || [], null, 2))
 
   const maxSpending = util.getMaxSpending(wallet)
   const { formatted: spendingLimitFormatted } = util.computeBalance(maxSpending, price)
@@ -78,16 +79,22 @@ const Call = ({
     if (invalidOtp || !dest || invalidOtp2) return
 
     let data
-    try {
-      data = JSON.parse(dataInput)
-    } catch (ex) {
-      message.error('Unable to parse data input. Please check again')
-      console.error(ex)
-      return
+    if (!prefillHex) {
+      try {
+        data = JSON.parse(dataInput)
+      } catch (ex) {
+        message.error('Unable to parse data input. Please check again')
+        console.error(ex)
+        return
+      }
     }
     let encodedData
     try {
-      encodedData = ONEUtil.encodeCalldata(method, data)
+      if (!prefillHex) {
+        encodedData = ONEUtil.encodeCalldata(method, data)
+      } else {
+        encodedData = prefillHex
+      }
       if (!encodedData) {
         message.error('Malformed data or method')
         return
@@ -151,11 +158,16 @@ const Call = ({
         <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} />
         <Space align='baseline' size='large'>
           <Label><Hint>Method</Hint></Label>
-          <InputBox margin='auto' width={500} value={method} onChange={({ target: { value } }) => setMethod(value)} disabled={!!prefillMethod} />
+          <InputBox margin='auto' width={500} value={method} onChange={({ target: { value } }) => setMethod(value)} disabled={!!(prefillMethod || prefillHex)} />
         </Space>
         <Space align='baseline' size='large'>
           <Label><Hint>Args</Hint></Label>
-          <TextArea style={{ border: '1px dashed black', margin: 'auto', width: 500 }} autoSize value={dataInput} onChange={({ target: { value } }) => setDataInput(value)} disabled={!!prefillData} />
+          <TextArea
+            style={{ border: '1px dashed black', margin: 'auto', width: 500 }}
+            autoSize
+            value={dataInput}
+            onChange={({ target: { value } }) => setDataInput(value)} disabled={!!(prefillData || prefillHex)}
+          />
         </Space>
       </Space>
       <Row justify='end' style={{ marginTop: 24 }}>
