@@ -19,7 +19,7 @@ As a smart contract wallet, it can do many things a traditional wallet couldn't 
 
 As a keyless wallet, 1wallet is protected by dynamically generated one-time-password from Google Authenticator every 30 seconds. No private key or password is stored at the client. This removes the biggest vulnerability for hacking and theft: you cannot lose private keys if you don't have it! It also removes the hassle of managing them and being forced to remember or write down a bunch of random recovery phrases.
 
-Since Google Authenticator operates offline and is well insulated<sup>1</sup> on your phone, it is much more secure than a private key wallet which usually stores a password protected private key on your hard drive in a file easy-to-access location, such as MetaMask - once your wallet file is copied and your password is leaked, your money is gone.
+Since Google Authenticator operates offline and is well insulated<sup>1</sup> on your phone, it is much more secure than a private key wallet which usually stores a password protected private key on your hard drive in a file easy-to-access location, such as MetaMask. Once your wallet file is copied and your password is leaked, your money is gone.
 
 1wallet is non-custodial. Only you, who controls the Google Authenticator that scanned the setup QR code, can access and control the wallet. The wallet's operations do not rely on any centralized server operated by any company.
 
