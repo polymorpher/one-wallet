@@ -16,7 +16,7 @@ export const WalletSelector = ({ from, onAddressSelected, filter = e => e, disab
   const selectedWallet = from && wallets[from]
   const buildAddressObject = wallet => wallet && wallet.address && ({ value: wallet.address, label: `(${wallet.name}) ${util.ellipsisAddress(util.safeOneAddress(wallet.address))}` })
   const firstEligibleWallet = walletList.find(filter)
-  const defaultUserAddress = firstEligibleWallet ? buildAddressObject(walletList[0]) : {}
+  const defaultUserAddress = firstEligibleWallet ? buildAddressObject(firstEligibleWallet) : {}
   const [selectedAddress, setSelectedAddress] = useState(selectedWallet ? buildAddressObject(selectedWallet) : defaultUserAddress)
   useEffect(() => {
     onAddressSelected && onAddressSelected(selectedAddress)
