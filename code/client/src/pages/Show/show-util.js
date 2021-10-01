@@ -62,7 +62,7 @@ export default {
       onSuccess && onSuccess(txId)
     }
 
-    const prepareValidation = ({ state: { otpInput, otp2Input, doubleOtp, selectedToken, transferTo, inputAmount, transferAmount }, checkAmount = true, checkDest = true, checkOtp = true } = {}) => {
+    const prepareValidation = ({ state: { otpInput, otp2Input, doubleOtp, selectedToken, transferTo, inputAmount, transferAmount }, checkAmount = true, checkDest = true, checkOtp = true, allowZero = false } = {}) => {
       let rawAmount
       const otp = util.parseOtp(otpInput)
       const otp2 = util.parseOtp(otp2Input)
@@ -89,7 +89,7 @@ export default {
           if (rawAmount.isZero() || rawAmount.isNeg()) {
             return message.error('Amount is invalid')
           }
-        } else if (!transferAmount || transferAmount.isZero() || transferAmount.isNeg()) {
+        } else if (!transferAmount || (transferAmount.isZero() && !allowZero) || transferAmount.isNeg()) {
           return message.error('Transfer amount is invalid')
         }
       }

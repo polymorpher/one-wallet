@@ -73,7 +73,7 @@ const Call = ({
 
   const doCall = () => {
     const { otp, otp2, invalidOtp2, invalidOtp, dest, amount } = prepareValidation({
-      state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp, transferTo, inputAmount, transferAmount }
+      state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp, transferTo, inputAmount, transferAmount }, allowZero: true
     }) || {}
 
     if (invalidOtp || !dest || invalidOtp2) return
