@@ -115,7 +115,8 @@ const Upgrade = ({ address, onClose }) => {
         const newWallet = {
           ...wallet,
           address: newAddress,
-          backlinks
+          backlinks,
+          _merge: true
         }
         dispatch(walletActions.updateWallet(newWallet))
         dispatch(walletActions.deleteWallet(address))
