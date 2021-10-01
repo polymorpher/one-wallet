@@ -7,7 +7,9 @@ import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 const { Text, Paragraph } = Typography
 
-export const WalletSelector = ({ from, onAddressSelected, filter = e => e }) => {
+export const WALLET_OUTDATED_DISABLED_TEXT = 'This wallet cannot be used for this purpose. It might be too old. Please upgrade or use a wallet with a newer version'
+
+export const WalletSelector = ({ from, onAddressSelected, filter = e => e, disabledText }) => {
   const network = useSelector(state => state.wallet.network)
   const wallets = useSelector(state => state.wallet.wallets)
   const walletList = Object.keys(wallets).map(e => wallets[e]).filter(e => e.network === network)
@@ -56,15 +58,16 @@ export const WalletSelector = ({ from, onAddressSelected, filter = e => e }) => 
               onBlur={() => {}}
               onSearch={() => {}}
             >
-              {walletList.filter(filter).map(wallet => {
+              {walletList.map(wallet => {
                 const { address, name } = wallet
                 const oneAddress = util.safeOneAddress(address)
                 const displayText = `(${name}) ${util.ellipsisAddress(oneAddress)}`
+                const enabled = filter(wallet)
                 return (
-                  <Select.Option key={displayText} value={displayText} style={{ padding: 0 }}>
+                  <Select.Option key={displayText} value={displayText} style={{ padding: 0 }} disabled={!enabled}>
                     <Row align='left'>
                       <Col span={24}>
-                        <Tooltip title={oneAddress}>
+                        <Tooltip title={disabledText ? disabledText + ' ' + oneAddress : oneAddress}>
                           <Button
                             block
                             type='text'

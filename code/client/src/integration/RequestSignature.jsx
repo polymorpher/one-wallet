@@ -6,11 +6,11 @@ import React, { useEffect, useState } from 'react'
 import util from '../util'
 import { handleAddressError } from '../handler'
 import humanizeDuration from 'humanize-duration'
-import { WalletSelector } from './Common'
+import { WALLET_OUTDATED_DISABLED_TEXT, WalletSelector } from './Common'
 import ONEUtil from '../../../lib/util'
 import Sign from '../pages/Show/Sign'
 import { QuestionCircleOutlined } from '@ant-design/icons'
-const { Title, Text, Paragraph } = Typography
+const { Title, Paragraph } = Typography
 const RequestSignature = ({ caller, callback, messageB64Encoded, raw, duration, from, commentB64Encoded }) => {
   const [message, setMessage] = useState('')
   const [comment, setComment] = useState('')
@@ -77,7 +77,7 @@ const RequestSignature = ({ caller, callback, messageB64Encoded, raw, duration, 
           </Space>
         </AverageRow>
         <Divider />
-        <WalletSelector from={from} onAddressSelected={setSelectedAddress} filter={e => e.majorVersion >= 10} />
+        <WalletSelector from={from} onAddressSelected={setSelectedAddress} filter={e => e.majorVersion >= 10} disabledText={WALLET_OUTDATED_DISABLED_TEXT} />
 
         {!showSign &&
           <AverageRow justify='space-between'>

@@ -9,7 +9,7 @@ import util from '../util'
 import WalletAddress from '../components/WalletAddress'
 import { handleAddressError } from '../handler'
 import Call from '../pages/Show/Call'
-import { WalletSelector } from './Common'
+import { WALLET_OUTDATED_DISABLED_TEXT, WalletSelector } from './Common'
 const { Title, Paragraph } = Typography
 const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amount, from }) => {
   dest = util.safeNormalizedAddress(dest)
@@ -102,7 +102,7 @@ const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amo
           </Space>
         </AverageRow>
         <Divider />
-        <WalletSelector from={from} onAddressSelected={setSelectedAddress} filter={e => e.majorVersion >= 10} />
+        <WalletSelector from={from} onAddressSelected={setSelectedAddress} filter={e => e.majorVersion >= 10} disabledText={WALLET_OUTDATED_DISABLED_TEXT} />
         {!showCall &&
           <AverageRow justify='space-between'>
             <Button size='large' type='text' onClick={cancel} danger>Cancel</Button>
