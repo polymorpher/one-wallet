@@ -64,17 +64,18 @@ export const WalletSelector = ({ from, onAddressSelected, filter = e => e, disab
                 const displayText = `(${name}) ${util.ellipsisAddress(oneAddress)}`
                 const enabled = filter(wallet)
                 return (
-                  <Select.Option key={displayText} value={displayText} style={{ padding: 0 }} disabled={!enabled}>
+                  <Select.Option key={displayText} value={displayText} style={{ padding: 0 }}>
                     <Row align='left'>
                       <Col span={24}>
-                        <Tooltip title={disabledText ? disabledText + ' ' + oneAddress : oneAddress}>
+                        <Tooltip title={(!enabled && disabledText) ? disabledText + ' ' + oneAddress : oneAddress}>
                           <Button
                             block
                             type='text'
-                            style={{ textAlign: 'left', height: '50px' }}
+                            style={{ textAlign: 'left', height: '50px', opacity: enabled ? 1.0 : 0.5 }}
                             onClick={() => {
                               setSelectedAddress({ value: address, label: displayText })
                             }}
+                            disabled={!enabled}
                           >
                             {displayText}
                           </Button>
