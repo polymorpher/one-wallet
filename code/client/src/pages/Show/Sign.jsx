@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Button, Row, Space, Typography, Input, Checkbox, Tooltip, Slider } from 'antd'
 import { CheckCircleOutlined, CloseOutlined, LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons'
-import { Hint, Label } from '../../components/Text'
+import { Hint, Label, Warning } from '../../components/Text'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
 import BN from 'bn.js'
@@ -98,7 +98,18 @@ const Sign = ({
       ...handlers
     })
   }
-
+  if (!(wallet.majorVersion > 10)) {
+    return (
+      <AnimatedSection
+        style={{ maxWidth: 720 }}
+        show={show} title={<Title level={2}>Sign Message</Title>} extra={[
+          <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
+        ]}
+      >
+        <Warning>Your wallet is too old. Please use a wallet that is at least version 10.1</Warning>
+      </AnimatedSection>
+    )
+  }
   return (
     <AnimatedSection
       style={{ maxWidth: 720 }}
@@ -141,7 +152,8 @@ const Sign = ({
           </Space>}
         <OtpStack wideLabel walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} />
       </Space>
-      <Row justify='end' style={{ marginTop: 24 }}>
+      <Row justify='space-between' style={{ marginTop: 24 }}>
+        <Button size='large' type='text' onClick={onClose} danger>Cancel</Button>
         <Space>
           {stage >= 0 && stage < 3 && <LoadingOutlined />}
           {stage === 3 && <CheckCircleOutlined />}

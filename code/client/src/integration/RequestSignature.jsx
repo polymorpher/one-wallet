@@ -77,7 +77,7 @@ const RequestSignature = ({ caller, callback, messageB64Encoded, raw, duration, 
           </Space>
         </AverageRow>
         <Divider />
-        <WalletSelector from={from} onAddressSelected={setSelectedAddress} />
+        <WalletSelector from={from} onAddressSelected={setSelectedAddress} filter={e => e.majorVersion >= 10} />
 
         {!showSign &&
           <AverageRow justify='space-between'>

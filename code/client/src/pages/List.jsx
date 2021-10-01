@@ -64,7 +64,6 @@ const WalletCard = ({ wallet }) => {
             </Tag>
         }
       </Space>
-
     </Card>
   )
 }

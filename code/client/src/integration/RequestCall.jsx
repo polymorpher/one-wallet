@@ -102,7 +102,7 @@ const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amo
           </Space>
         </AverageRow>
         <Divider />
-        <WalletSelector from={from} onAddressSelected={setSelectedAddress} />
+        <WalletSelector from={from} onAddressSelected={setSelectedAddress} filter={e => e.majorVersion >= 10} />
         {!showCall &&
           <AverageRow justify='space-between'>
             <Button size='large' type='text' onClick={cancel} danger>Cancel</Button>

@@ -7,7 +7,7 @@ import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 const { Text, Paragraph } = Typography
 
-export const WalletSelector = ({ from, onAddressSelected }) => {
+export const WalletSelector = ({ from, onAddressSelected, filter = e => e }) => {
   const network = useSelector(state => state.wallet.network)
   const wallets = useSelector(state => state.wallet.wallets)
   const walletList = Object.keys(wallets).map(e => wallets[e]).filter(e => e.network === network)
@@ -56,7 +56,7 @@ export const WalletSelector = ({ from, onAddressSelected }) => {
               onBlur={() => {}}
               onSearch={() => {}}
             >
-              {walletList.map(wallet => {
+              {walletList.filter(filter).map(wallet => {
                 const { address, name } = wallet
                 const oneAddress = util.safeOneAddress(address)
                 const displayText = `(${name}) ${util.ellipsisAddress(oneAddress)}`

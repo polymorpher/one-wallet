@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Button, Row, Space, Typography, message, Input } from 'antd'
 import { CheckCircleOutlined, CloseOutlined, LoadingOutlined } from '@ant-design/icons'
-import { Hint, InputBox, Label } from '../../components/Text'
+import { Hint, InputBox, Label, Warning } from '../../components/Text'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
@@ -32,6 +32,7 @@ const Call = ({
 }) => {
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
+  const { majorVersion } = wallet
   const network = useSelector(state => state.wallet.network)
 
   const doubleOtp = wallet.doubleOtp
@@ -121,6 +122,18 @@ const Call = ({
       ...handlers
     })
   }
+  if (!(majorVersion > 10)) {
+    return (
+      <AnimatedSection
+        style={{ maxWidth: 720 }}
+        show={show} title={<Title level={2}>Call Contract Function</Title>} extra={[
+          <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
+        ]}
+      >
+        <Warning>Your wallet is too old. Please use a wallet that is at least version 10.1</Warning>
+      </AnimatedSection>
+    )
+  }
 
   return (
     <AnimatedSection
@@ -170,7 +183,8 @@ const Call = ({
           />
         </Space>
       </Space>
-      <Row justify='end' style={{ marginTop: 24 }}>
+      <Row justify='space-between' style={{ marginTop: 24 }}>
+        <Button size='large' type='text' onClick={onClose} danger>Cancel</Button>
         <Space>
           {stage >= 0 && stage < 3 && <LoadingOutlined />}
           {stage === 3 && <CheckCircleOutlined />}
