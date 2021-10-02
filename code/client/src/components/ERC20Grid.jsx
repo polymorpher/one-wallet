@@ -2,7 +2,7 @@ import { Card, Image, Row, Space, Typography, Col, Divider, Button, message } fr
 import { unionWith, isNull, isUndefined } from 'lodash'
 import walletActions from '../state/modules/wallet/actions'
 
-import { PlusCircleOutlined } from '@ant-design/icons'
+import { CloseOutlined, PlusCircleOutlined } from '@ant-design/icons'
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { TallRow } from './Grid'
 import { api } from '../../../lib/api'
@@ -49,12 +49,13 @@ export const handleTrackNewToken = async ({ newContractAddress, currentTrackedTo
   }
 }
 
-const GridItem = ({ style, children, icon, name, symbol, contractAddress, balance, addNew, selected, onSelected }) => {
+const GridItem = ({ style, children, icon, name, symbol, tokenKey, contractAddress, balance, addNew, selected, onSelected, onUntrack }) => {
   const { isMobile } = useWindowDimensions()
   const bech32ContractAddress = util.safeOneAddress(contractAddress)
   const abbrBech32ContractAddress = util.ellipsisAddress(bech32ContractAddress)
   const [mobileGridHeight, setMobileGridHeight] = useState('50%')
   const gridInnerRef = useRef()
+  const [showUntrack, setShowUntrack] = useState(false)
 
   const handleResize = useCallback(() => {
     if (isMobile) {
@@ -80,8 +81,19 @@ const GridItem = ({ style, children, icon, name, symbol, contractAddress, balanc
         padding: isMobile ? 0 : 24
       }}
       onClick={onSelected}
+      onMouseEnter={() => { setShowUntrack(true) }}
+      onMouseLeave={() => { setShowUntrack(false) }}
     >
       <div style={{ textAlign: 'center' }} ref={gridInnerRef}>
+        {onUntrack && showUntrack &&
+          <Space style={{ position: 'absolute', right: 8, top: 8 }}>
+            <Button
+              key='close' type='text' icon={<CloseOutlined />} onClick={(e) => {
+                e.stopPropagation()
+                onUntrack(tokenKey)
+              }}
+            />
+          </Space>}
         {addNew && <Text style={{ textAlign: 'center' }}><PlusCircleOutlined style={{ fontSize: 24 }} /><br /><br />Add Token</Text>}
         {children}
         {!children && !addNew &&
@@ -129,6 +141,7 @@ export const ERC20Grid = ({ address }) => {
   const { selectedToken } = wallet
   const tokenBalances = wallet.tokenBalances || {}
   const trackedTokens = (wallet.trackedTokens || []).filter(e => e.tokenType === ONEConstants.TokenType.ERC20)
+  const untrackedTokenKeys = (wallet.untrackedTokens || [])
   const balances = useSelector(state => state.wallet.balances)
   const balance = balances[address] || 0
   const { formatted } = util.computeBalance(balance)
@@ -149,7 +162,8 @@ export const ERC20Grid = ({ address }) => {
     flexDirection: 'column',
     cursor: 'pointer',
     color: disabled && 'grey',
-    opacity: disabled && 0.5
+    opacity: disabled && 0.5,
+    position: 'relative'
   }
 
   useEffect(() => {
@@ -246,12 +260,17 @@ export const ERC20Grid = ({ address }) => {
                 disabled={disabled}
                 selected={selected.key === key}
                 key={key}
+                tokenKey={key}
                 style={gridItemStyle}
                 icon={icon}
                 name={name}
                 symbol={symbol}
                 balance={displayBalance}
                 onSelected={onSelect(key)}
+                onUntrack={(tokenKey) => {
+                  dispatch(walletActions.untrackTokens({ keys: [tokenKey], address }))
+                  setCurrentTrackedTokens(tts => tts.filter(tt => tt.key !== tokenKey))
+                }}
               />
             )
           })}
