@@ -3,7 +3,7 @@ import AnimatedSection from '../components/AnimatedSection'
 import { AverageRow } from '../components/Grid'
 import { Li, Ul } from '../components/Text'
 import React, { useState } from 'react'
-import { WalletSelector } from './Common'
+import { WALLET_OUTDATED_DISABLED_TEXT, WalletSelector } from './Common'
 const { Title, Text, Paragraph } = Typography
 const ConnectWallet = ({ caller, callback }) => {
   const [selectedAddress, setSelectedAddress] = useState({})
@@ -36,7 +36,7 @@ const ConnectWallet = ({ caller, callback }) => {
           </Text>
         </Space>
       </AverageRow>
-      <WalletSelector onAddressSelected={setSelectedAddress} />
+      <WalletSelector onAddressSelected={setSelectedAddress} filter={e => e.majorVersion >= 10} disabledText={WALLET_OUTDATED_DISABLED_TEXT} />
       <AverageRow justify='space-between'>
         <Button size='large' type='text' onClick={cancel} danger>Cancel</Button>
         <Button type='primary' size='large' shape='round' onClick={connect} disabled={!selectedAddress.value}>Connect</Button>
