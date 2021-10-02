@@ -31,6 +31,7 @@ import Gift from './Show/Gift'
 import { message } from 'antd'
 import QRCode from './Show/QRCode'
 import Scan from './Show/Scan'
+import NFTDashboard from './Show/NFTDashboard'
 
 const tabList = [
   { key: 'coins', tab: 'Coins' },
@@ -126,7 +127,7 @@ const Show = () => {
         {activeTab === 'about' && <About address={address} />}
         {activeTab === 'coins' && <Balance address={address} />}
         {activeTab === 'coins' && <ERC20Grid address={address} />}
-        {activeTab === 'nft' && <NFTGrid address={address} />}
+        {activeTab === 'nft' && <NFTDashboard address={address} />}
         {activeTab === 'help' && <Recovery address={address} />}
         {activeTab === 'swap' && <Swap address={address} />}
         {activeTab === 'gift' && <Gift address={address} />}

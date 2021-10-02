@@ -1,7 +1,7 @@
 import { handleActions } from 'redux-actions'
 import walletActions from './actions'
 import config from '../../../config'
-import { omit } from 'lodash'
+import { omit, uniq } from 'lodash'
 
 export const initialState = {
   wallets: {},
@@ -83,7 +83,8 @@ const reducer = handleActions(
         ...state.wallets,
         [action.payload.address]: {
           ...state.wallets[action.payload.address],
-          trackedTokens: [...(state.wallets?.[action.payload.address]?.trackedTokens || []), ...action.payload.tokens]
+          trackedTokens: [...(state.wallets?.[action.payload.address]?.trackedTokens || []), ...action.payload.tokens],
+          untrackedTokens: (state.wallets?.[action.payload.address]?.untrackedTokens || []).filter(k => (action.payload.tokens || []).find(t => t.key === k) === undefined)
         }
       }
     }),
@@ -93,7 +94,8 @@ const reducer = handleActions(
         ...state.wallets,
         [action.payload.address]: {
           ...state.wallets[action.payload.address],
-          trackedTokens: (state.wallets?.[action.payload.address]?.trackedTokens || []).filter(e => action.payload.keys.find(k => k === e.key) === undefined)
+          trackedTokens: (state.wallets?.[action.payload.address]?.trackedTokens || []).filter(e => action.payload.keys.find(k => k === e.key) === undefined),
+          untrackedTokens: uniq([...(state.wallets?.[action.payload.address]?.untrackedTokens || []), ...action.payload.keys])
         }
       }
     }),

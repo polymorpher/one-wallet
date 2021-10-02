@@ -8,6 +8,7 @@ const ONEWalletContract = require('../../build/contracts/IONEWallet.json')
 const IERC20 = require('../../build/contracts/IERC20.json')
 const IERC20Metadata = require('../../build/contracts/IERC20Metadata.json')
 const IERC721 = require('../../build/contracts/IERC721.json')
+const IERC165 = require('../../build/contracts/IERC165.json')
 const IERC721Metadata = require('../../build/contracts/IERC721Metadata.json')
 const IERC1155 = require('../../build/contracts/IERC1155.json')
 const IERC1155MetadataURI = require('../../build/contracts/IERC1155MetadataURI.json')
@@ -676,6 +677,54 @@ const api = {
           console.error(ex)
         }
       }))
+    },
+    getNFTType: async (contractAddress) => {
+      const c = new web3.eth.Contract(IERC165.abi, contractAddress)
+      const is721 = await c.methods.supportsInterface(ONEConstants.TokenInterfaces.ERC721).call()
+      if (is721) {
+        return ONEConstants.TokenType.ERC721
+      }
+      const is1155 = await c.methods.supportsInterface(ONEConstants.TokenInterfaces.ERC1155).call()
+      if (is1155) {
+        return ONEConstants.TokenType.ERC1155
+      }
+      return ONEConstants.TokenType.NONE
+    }
+  },
+  daVinci: {
+    query: async (tokenId) => {
+      const { data } = await axios.get(`https://davinci.gallery/api/orderbyartwork/${tokenId}`)
+      const { orderid: orderIdNum, created, startdate: startDateResponse, enddate: endDateResponse, owner, seller, tokenid: tokenIdResponse,
+        tokentype: tokenTypeResponse, sellprice, buyprice, royalties: royaltyResponse, beneficiary, collection, original: isOriginal,
+        address: orderId
+        // fees, artwork,
+      } = data
+      let tokenType = ONEConstants.TokenType.NONE
+      if (tokenTypeResponse === '1155') {
+        tokenType = ONEConstants.TokenType.ERC1155
+      } else if (tokenTypeResponse === '1155') {
+        tokenType = ONEConstants.TokenType.ERC721
+      }
+      const sellPrice = ONEUtil.toFraction(sellprice || 0)
+      const buyPrice = ONEUtil.toFraction(buyprice || 0)
+      const royalty = (royaltyResponse || 0) / 100
+      return {
+        orderId,
+        orderIdNum,
+        creationTime: Date.parse(created),
+        startTime: Date.parse(startDateResponse),
+        endTime: Date.parse(endDateResponse),
+        owner,
+        seller,
+        tokenId: tokenIdResponse,
+        tokenType,
+        sellPrice,
+        buyPrice,
+        royalty,
+        beneficiary,
+        collection,
+        isOriginal
+      }
     }
   }
 }

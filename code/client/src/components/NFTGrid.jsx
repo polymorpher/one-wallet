@@ -1,4 +1,4 @@
-import { Card, Image, Row, Space, Typography, Col, Button, message, Carousel } from 'antd'
+import { Card, Image, Row, Space, Typography, Col, Button, message, Carousel, Popconfirm } from 'antd'
 import { unionWith, differenceBy } from 'lodash'
 import walletActions from '../state/modules/wallet/actions'
 import React, { useState, useEffect } from 'react'
@@ -11,11 +11,12 @@ import { useDispatch, useSelector } from 'react-redux'
 import ONEConstants from '../../../lib/constants'
 import { FallbackImage } from '../constants/ui'
 import styled from 'styled-components'
-import { LeftOutlined, RightOutlined } from '@ant-design/icons'
+import { DeleteOutlined, LeftOutlined, PlusCircleOutlined, RightOutlined } from '@ant-design/icons'
 import Paths from '../constants/paths'
 import { useHistory } from 'react-router'
 import ReactPlayer from 'react-player'
 import WalletAddress from './WalletAddress'
+import TrackNewNFT from './TrackNewNFT'
 const { Text, Title } = Typography
 
 export const GridItem = styled(Card.Grid)`
@@ -27,10 +28,10 @@ const SlickButtonFix = ({ currentSlide, slideCount, children, ...props }) => (
   <span {...props}>{children}</span>
 )
 
-export const useMetadata = ({ name, symbol, uri, contractAddress, tokenType } = {}) => {
-  uri = util.replaceIPFSLink(uri)
+export const useMetadata = ({ name, symbol, uri, contractAddress, tokenType, ipfsGateway, forcedContentType } = {}) => {
+  uri = util.replaceIPFSLink(uri, ipfsGateway)
   const [metadata, setMetadata] = useState()
-  const [imageType, setImageType] = useState()
+  const [imageType, setImageType] = useState(forcedContentType)
 
   let displayName = metadata?.name || name
   if (metadata?.properties?.collection) {
@@ -42,14 +43,13 @@ export const useMetadata = ({ name, symbol, uri, contractAddress, tokenType } = 
   }
 
   const animationUrl = metadata?.animation_url || metadata?.properties?.animation_url
-
   useEffect(() => {
     const f = async function () {
       try {
         const metadata = await api.web.get({ link: uri })
         const transformed = NFTMetadataTransformer({ contractAddress, metadata })
-        if (transformed.image && (transformed.image.length - transformed.image.lastIndexOf('.')) > 5) {
-          const { 'content-type': contentType } = await api.web.head({ link: util.replaceIPFSLink(transformed.image) })
+        if (transformed.image && (transformed.image.length - transformed.image.lastIndexOf('.')) > 5 && !forcedContentType) {
+          const { 'content-type': contentType } = await api.web.head({ link: util.replaceIPFSLink(transformed.image, ipfsGateway) })
           setImageType(contentType)
         }
         setMetadata(transformed)
@@ -64,15 +64,20 @@ export const useMetadata = ({ name, symbol, uri, contractAddress, tokenType } = 
   return { metadata, imageType, displayName, animationUrl }
 }
 
-const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageWrapperStyleFullView, tokenType, name, symbol, uri, contractAddress, balance, selected, onSend }) => {
+export const NFTGridItem = ({
+  disabled, style, styleFullView, imageWrapperStyle, imageWrapperStyleFullView, tokenType, name, symbol, uri, contractAddress, balance, selected, onSend, tokenId, tokenKey, address, onUntrack,
+  ipfsGateway, ipfsImageGateway, initFullView, forcedContentType
+}) => {
+  const dispatch = useDispatch()
   const { isMobile } = useWindowDimensions()
-  const { metadata, imageType, displayName, animationUrl } = useMetadata({ name, symbol, uri, contractAddress, tokenType })
-  const [fullView, setFullView] = useState(false)
+  const { metadata, imageType, displayName, animationUrl } = useMetadata({ name, symbol, uri, contractAddress, tokenType, ipfsGateway, forcedContentType })
+  const [fullView, setFullView] = useState(initFullView)
   const bech32ContractAddress = util.safeOneAddress(contractAddress)
   const abbrBech32ContractAddress = util.ellipsisAddress(bech32ContractAddress)
-
+  const hasBalance = util.isNonZeroBalance(balance)
+  const [showUntrack, setShowUntrack] = useState(false)
   let displayBalance = <Text style={{ color: 'red' }}>Not Owned</Text>
-  if (util.isNonZeroBalance(balance)) {
+  if (hasBalance) {
     if (tokenType === ONEConstants.TokenType.ERC721) {
       displayBalance = <Text style={{ color: 'purple' }}>Uniquely Owned</Text>
     } else {
@@ -85,14 +90,39 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
 
   // console.log(util.replaceIPFSLink(metadata?.image))
   return (
-    <GridItem style={fullView ? styleFullView : style} hoverable={false} onClick={() => !fullView && interactable && setFullView(true)} data-full-view={fullView}>
+    <GridItem
+      style={fullView ? styleFullView : style} hoverable={false}
+      onClick={() => {
+        !fullView && interactable && setFullView(true)
+        if (!hasBalance && tokenKey) {
+          dispatch(walletActions.untrackTokens({ keys: [tokenKey], address }))
+          onUntrack && onUntrack([tokenKey])
+        }
+      }} data-full-view={fullView}
+      onMouseEnter={() => { setShowUntrack(true) }}
+      onMouseLeave={() => { setShowUntrack(false) }}
+    >
+      {showUntrack && !hasBalance && onUntrack &&
+        <Row style={{
+          height: '100%',
+          width: '100%',
+          backgroundColor: 'rgba(255,255,255,0.8)',
+          position: 'absolute',
+          zIndex: 10,
+          display: 'flex',
+          justifyContent: 'center',
+          flexDirection: 'column',
+        }}
+        >
+          <Text style={{ textAlign: 'center' }}><DeleteOutlined style={{ fontSize: 24 }} /><br /><br />Untrack This</Text>
+        </Row>}
       {!fullView &&
         <Row style={{ height: wrapperStyle.height || 'auto' }} justify='center'>
           {imageType?.startsWith('video')
             ? <ReactPlayer url={util.replaceIPFSLink(metadata?.image)} style={imageStyle} width={imageStyle.width} height={imageStyle.height || 'auto'} playing muted />
             : <Image
                 preview={false}
-                src={util.replaceIPFSLink(metadata?.image) || FallbackImage}
+                src={util.replaceIPFSLink(metadata?.image, ipfsImageGateway) || FallbackImage}
                 fallback={FallbackImage}
                 wrapperStyle={wrapperStyle}
                 style={imageStyle}
@@ -120,7 +150,7 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
               ? <ReactPlayer url={util.replaceIPFSLink(metadata?.image)} style={imageStyle} playing controls width={imageStyle.width} height={imageStyle.height || 'auto'} />
               : <Image
                   onClick={() => setFullView(false)}
-                  preview={false} src={animationUrl ? util.replaceIPFSLink(animationUrl) : util.replaceIPFSLink(metadata?.image)} fallback={FallbackImage}
+                  preview={false} src={animationUrl ? util.replaceIPFSLink(animationUrl, ipfsImageGateway) : util.replaceIPFSLink(metadata?.image, ipfsImageGateway)} fallback={FallbackImage}
                   wrapperStyle={wrapperStyle} style={{ objectFit: 'contain', width: '100%', height: '100%' }}
                 />}
           </Carousel>
@@ -130,7 +160,7 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
           <Space direction='vertical' style={{ marginBottom: 16, width: '100%' }}>
             <Row justify='space-between' style={{ width: '100%' }} align='middle'>
               <Heading>{metadata.name}</Heading>
-              <Button type='primary' shape='round' size='large' onClick={() => onSend({ ...metadata, displayName })}>Send</Button>
+              {onSend && <Button type='primary' shape='round' size='large' onClick={() => onSend({ ...metadata, displayName })}>Send</Button>}
             </Row>
 
             <Text>{metadata.description}</Text>
@@ -192,10 +222,13 @@ export const useNFTs = ({ address, withDefault }) => {
   const wallet = useSelector(state => state.wallet.wallets[address])
   const walletOutdated = !util.canWalletSupportToken(wallet)
   const trackedTokens = (wallet?.trackedTokens || []).filter(util.isNFT)
-  const [currentTrackedTokens, setCurrentTrackedTokens] = useState(trackedTokens || [])
+  const untrackedTokenKeys = (wallet.untrackedTokens || [])
+
+  const [currentTrackedTokens, setCurrentTrackedTokens] = useState((trackedTokens || []).filter(e => untrackedTokenKeys.find(k => k === e.key) === undefined))
   const [tokenMap, setTokenMap] = useState({})
   const [disabled, setDisabled] = useState(true)
   const [loaded, setLoaded] = useState(false)
+
   useEffect(() => {
     if (!address) {
       return
@@ -232,7 +265,7 @@ export const useNFTs = ({ address, withDefault }) => {
     f()
   }, [walletOutdated, address])
 
-  return { nfts: currentTrackedTokens, nftMap: tokenMap, disabled, loaded }
+  return { nfts: currentTrackedTokens, nftMap: tokenMap, disabled, loaded, setCurrentTrackedTokens }
 }
 
 export const useTokenBalanceTracker = ({ tokens, address }) => {
@@ -248,15 +281,16 @@ export const useTokenBalanceTracker = ({ tokens, address }) => {
   }, [tokens, address])
 }
 
-export const NFTGrid = ({ address }) => {
+export const NFTGrid = ({ address, onTrackNew }) => {
   const history = useHistory()
   const dispatch = useDispatch()
   const wallet = useSelector(state => state.wallet.wallets[address])
   const selectedToken = util.isNFT(wallet.selectedToken) && wallet.selectedToken
   const tokenBalances = wallet.tokenBalances || {}
   const trackedTokens = (wallet.trackedTokens || []).filter(util.isNFT)
+  const [showTrackNew, setShowTrackNew] = useState(false)
 
-  const { nfts: currentTrackedTokens, disabled } = useNFTs({ address, withDefault: true })
+  const { nfts: currentTrackedTokens, disabled, setCurrentTrackedTokens } = useNFTs({ address, withDefault: true })
   useTokenBalanceTracker({ tokens: currentTrackedTokens, address })
   const { isMobile } = useWindowDimensions()
 
@@ -269,7 +303,8 @@ export const NFTGrid = ({ address }) => {
     flexDirection: 'column',
     cursor: 'pointer',
     color: disabled && 'grey',
-    opacity: disabled && 0.5
+    opacity: disabled && 0.5,
+    position: 'relative',
   }
   const gridItemStyleFullView = {
     padding: 0,
@@ -303,14 +338,15 @@ export const NFTGrid = ({ address }) => {
   return (
     <>
       {disabled && <Warning style={{ marginTop: 16, marginBottom: 16 }}>Your wallet is too outdated. Please create a new wallet to use tokens or NFTs.</Warning>}
-
       <TallRow justify='center'>
         {currentTrackedTokens.map(tt => {
           const { name, symbol, key, uri, contractAddress, tokenType } = tt
           const balance = tokenBalances[key]
           return (
             <NFTGridItem
+              address={address}
               tokenType={tokenType}
+              tokenKey={key}
               imageWrapperStyle={imageWrapperStyle}
               disabled={disabled}
               selected={selectedToken.key === key}
@@ -324,9 +360,17 @@ export const NFTGrid = ({ address }) => {
               symbol={symbol}
               balance={balance}
               onSend={onSend(key)}
+              onUntrack={(keys) => {
+                setCurrentTrackedTokens(tts => tts.filter(tt => (keys || []).find(k => k === tt.key) === undefined))
+              }}
             />
           )
         })}
+
+        <GridItem style={{ ...gridItemStyle, minHeight: 128 }} onClick={() => setShowTrackNew(true)}>
+          <Text style={{ textAlign: 'center' }}><PlusCircleOutlined style={{ fontSize: 24 }} /><br /><br />Track Another</Text>
+        </GridItem>
+        {showTrackNew && <TrackNewNFT address={address} onClose={() => setShowTrackNew(false)} onTracked={(tt) => setCurrentTrackedTokens(tts => [...tts, tt])} />}
       </TallRow>
     </>
   )
