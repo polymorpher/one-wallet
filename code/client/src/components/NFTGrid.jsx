@@ -1,4 +1,4 @@
-import { Card, Image, Row, Space, Typography, Col, Button, message, Carousel } from 'antd'
+import { Card, Image, Row, Space, Typography, Col, Button, message, Carousel, Popconfirm } from 'antd'
 import { unionWith, differenceBy } from 'lodash'
 import walletActions from '../state/modules/wallet/actions'
 import React, { useState, useEffect } from 'react'
@@ -11,11 +11,12 @@ import { useDispatch, useSelector } from 'react-redux'
 import ONEConstants from '../../../lib/constants'
 import { FallbackImage } from '../constants/ui'
 import styled from 'styled-components'
-import { LeftOutlined, RightOutlined } from '@ant-design/icons'
+import { DeleteOutlined, LeftOutlined, PlusCircleOutlined, RightOutlined } from '@ant-design/icons'
 import Paths from '../constants/paths'
 import { useHistory } from 'react-router'
 import ReactPlayer from 'react-player'
 import WalletAddress from './WalletAddress'
+import TrackNewNFT from './TrackNewNFT'
 const { Text, Title } = Typography
 
 export const GridItem = styled(Card.Grid)`
@@ -64,15 +65,18 @@ export const useMetadata = ({ name, symbol, uri, contractAddress, tokenType } = 
   return { metadata, imageType, displayName, animationUrl }
 }
 
-const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageWrapperStyleFullView, tokenType, name, symbol, uri, contractAddress, balance, selected, onSend }) => {
+const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageWrapperStyleFullView, tokenType, name, symbol, uri, contractAddress, balance, selected, onSend, tokenId, tokenKey, address }) => {
+  const dispatch = useDispatch()
   const { isMobile } = useWindowDimensions()
   const { metadata, imageType, displayName, animationUrl } = useMetadata({ name, symbol, uri, contractAddress, tokenType })
   const [fullView, setFullView] = useState(false)
   const bech32ContractAddress = util.safeOneAddress(contractAddress)
   const abbrBech32ContractAddress = util.ellipsisAddress(bech32ContractAddress)
+  const hasBalance = util.isNonZeroBalance(balance)
+  const [showUntrack, setShowUntrack] = useState(false)
 
   let displayBalance = <Text style={{ color: 'red' }}>Not Owned</Text>
-  if (util.isNonZeroBalance(balance)) {
+  if (hasBalance) {
     if (tokenType === ONEConstants.TokenType.ERC721) {
       displayBalance = <Text style={{ color: 'purple' }}>Uniquely Owned</Text>
     } else {
@@ -85,7 +89,31 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
 
   // console.log(util.replaceIPFSLink(metadata?.image))
   return (
-    <GridItem style={fullView ? styleFullView : style} hoverable={false} onClick={() => !fullView && interactable && setFullView(true)} data-full-view={fullView}>
+    <GridItem
+      style={fullView ? styleFullView : style} hoverable={false}
+      onClick={() => {
+        !fullView && interactable && setFullView(true)
+        if (!hasBalance) {
+          dispatch(walletActions.untrackTokens({ keys: [tokenKey], address }))
+        }
+      }} data-full-view={fullView}
+      onMouseEnter={() => { setShowUntrack(true) }}
+      onMouseLeave={() => { setShowUntrack(false) }}
+    >
+      {showUntrack &&
+        <Row style={{
+          height: '100%',
+          width: '100%',
+          backgroundColor: 'rgba(255,255,255,0.8)',
+          position: 'absolute',
+          zIndex: 10,
+          display: 'flex',
+          justifyContent: 'center',
+          flexDirection: 'column',
+        }}
+        >
+          <Text style={{ textAlign: 'center' }}><DeleteOutlined style={{ fontSize: 24 }} /><br /><br />Untrack This</Text>
+        </Row>}
       {!fullView &&
         <Row style={{ height: wrapperStyle.height || 'auto' }} justify='center'>
           {imageType?.startsWith('video')
@@ -248,13 +276,14 @@ export const useTokenBalanceTracker = ({ tokens, address }) => {
   }, [tokens, address])
 }
 
-export const NFTGrid = ({ address }) => {
+export const NFTGrid = ({ address, onTrackNew }) => {
   const history = useHistory()
   const dispatch = useDispatch()
   const wallet = useSelector(state => state.wallet.wallets[address])
   const selectedToken = util.isNFT(wallet.selectedToken) && wallet.selectedToken
   const tokenBalances = wallet.tokenBalances || {}
   const trackedTokens = (wallet.trackedTokens || []).filter(util.isNFT)
+  const [showTrackNew, setShowTrackNew] = useState(false)
 
   const { nfts: currentTrackedTokens, disabled } = useNFTs({ address, withDefault: true })
   useTokenBalanceTracker({ tokens: currentTrackedTokens, address })
@@ -269,7 +298,8 @@ export const NFTGrid = ({ address }) => {
     flexDirection: 'column',
     cursor: 'pointer',
     color: disabled && 'grey',
-    opacity: disabled && 0.5
+    opacity: disabled && 0.5,
+    position: 'relative',
   }
   const gridItemStyleFullView = {
     padding: 0,
@@ -303,14 +333,15 @@ export const NFTGrid = ({ address }) => {
   return (
     <>
       {disabled && <Warning style={{ marginTop: 16, marginBottom: 16 }}>Your wallet is too outdated. Please create a new wallet to use tokens or NFTs.</Warning>}
-
       <TallRow justify='center'>
         {currentTrackedTokens.map(tt => {
-          const { name, symbol, key, uri, contractAddress, tokenType } = tt
+          const { name, symbol, key, uri, contractAddress, tokenType, tokenId } = tt
           const balance = tokenBalances[key]
           return (
             <NFTGridItem
+              address={address}
               tokenType={tokenType}
+              tokenKey={key}
               imageWrapperStyle={imageWrapperStyle}
               disabled={disabled}
               selected={selectedToken.key === key}
@@ -327,6 +358,11 @@ export const NFTGrid = ({ address }) => {
             />
           )
         })}
+
+        <GridItem style={{ ...gridItemStyle, minHeight: 128 }} onClick={() => setShowTrackNew(true)}>
+          <Text style={{ textAlign: 'center' }}><PlusCircleOutlined style={{ fontSize: 24 }} /><br /><br />Track Another</Text>
+        </GridItem>
+        {showTrackNew && <TrackNewNFT address={address} onClose={() => setShowTrackNew(false)} />}
       </TallRow>
     </>
   )
