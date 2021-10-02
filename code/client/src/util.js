@@ -159,12 +159,12 @@ export default {
     return token.tokenType === ONEConstants.TokenType.ERC721 || token.tokenType === ONEConstants.TokenType.ERC1155
   },
 
-  replaceIPFSLink: link => {
+  replaceIPFSLink: (link, ipfsGateway) => {
     if (!link) {
       return link
     }
     if (link.indexOf('://') < 0) {
-      return exports.default.replaceIPFSLink(`ipfs://${link}`)
+      return exports.default.replaceIPFSLink(`ipfs://${link}`, ipfsGateway)
     }
     if (!link.startsWith('ipfs://')) {
       return link
@@ -174,7 +174,8 @@ export default {
       end = link.length
     }
     const hash = link.slice(7, end)
-    return config.ipfs.gateway.replace('{{hash}}', hash)
+    console.log(link, ipfsGateway)
+    return (ipfsGateway || config.ipfs.gateway).replace('{{hash}}', hash)
   },
 
   isNonZeroBalance: balance => {
