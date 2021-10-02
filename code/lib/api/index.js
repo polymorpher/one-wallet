@@ -690,6 +690,40 @@ const api = {
       }
       return ONEConstants.TokenType.NONE
     }
+  },
+  daVinci: {
+    query: async (tokenId) => {
+      const { data } = await axios.get(`https://davinci.gallery/api/orderbyartwork/${tokenId}`)
+      const { orderid: orderId, created, startdate: startDateResponse, enddate: endDateResponse, owner, seller, tokenid: tokenIdResponse,
+        tokentype: tokenTypeResponse, sellprice, buyprice, royalties: royaltyResponse, beneficiary, collection, original: isOriginal,
+        // fees, address, artwork,
+      } = data
+      let tokenType = ONEConstants.TokenType.NONE
+      if (tokenTypeResponse === '1155') {
+        tokenType = ONEConstants.TokenType.ERC1155
+      } else if (tokenTypeResponse === '1155') {
+        tokenType = ONEConstants.TokenType.ERC721
+      }
+      const sellPrice = ONEUtil.toFraction(sellprice || 0)
+      const buyPrice = ONEUtil.toFraction(buyprice || 0)
+      const royalty = (royaltyResponse || 0) / 100
+      return {
+        orderId,
+        creationTime: Date.parse(created),
+        startTime: Date.parse(startDateResponse),
+        endTime: Date.parse(endDateResponse),
+        owner,
+        seller,
+        tokenId: tokenIdResponse,
+        tokenType,
+        sellPrice,
+        buyPrice,
+        royalty,
+        beneficiary,
+        collection,
+        isOriginal
+      }
+    }
   }
 }
 
