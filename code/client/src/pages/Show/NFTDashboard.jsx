@@ -1,27 +1,11 @@
-import { Card, Image, Row, Space, Typography, Col, Button, message, Carousel, Divider, Select } from 'antd'
-import { unionWith, differenceBy } from 'lodash'
-import walletActions from '../../state/modules/wallet/actions'
-import React, { useState, useEffect } from 'react'
-import { AverageRow, TallRow } from '../../components/Grid'
-import { api } from '../../../../lib/api'
-import util, { useWindowDimensions } from '../../util'
-import { Warning, Heading, Hint, InputBox, Label } from '../../components/Text'
-import { DefaultNFTs, NFTMetadataTransformer, withKeys } from '../../components/TokenAssets'
-import { useDispatch, useSelector } from 'react-redux'
-import ONEConstants from '../../../../lib/constants'
-import { FallbackImage } from '../../constants/ui'
-import styled from 'styled-components'
-import { LeftOutlined, RightOutlined } from '@ant-design/icons'
-import Paths from '../../constants/paths'
-import { useHistory } from 'react-router'
-import WalletAddress from '../../components/WalletAddress'
+import { Space, Typography, Button, Divider } from 'antd'
+
+import React, { useState } from 'react'
+import { TallRow } from '../../components/Grid'
 import { NFTGrid } from '../../components/NFTGrid'
-import { handleTrackNewToken } from '../../components/ERC20Grid'
-import { handleAddressError } from '../../handler'
-import ONEUtil from '../../../../lib/util'
-import ONE from '../../../../lib/onewallet'
-import BN from 'bn.js'
-const { Text, Title, Link } = Typography
+
+import BuyDaVinci from './BuyDaVinci'
+const { Title } = Typography
 
 const sections = {
   home: '',
@@ -30,6 +14,12 @@ const sections = {
 
 const NFTDashboard = ({ address }) => {
   const [section, setSection] = useState(sections.home)
+
+  if (section === sections.davinci) {
+    return (
+      <BuyDaVinci address={address} />
+    )
+  }
 
   return (
     <Space direction='vertical' style={{ width: '100%' }}>
