@@ -64,7 +64,7 @@ module.exports = {
   EmptyBech32Address: 'one1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqquzw7vz',
   TreasuryAddress: '0x02F2cF45DD4bAcbA091D78502Dba3B2F431a54D3',
   MajorVersion: 12,
-  MinorVersion: 3,
+  MinorVersion: 4,
   DefaultSpendingInterval: 86400, // 3600 * 24
   Domain: {
     DEFAULT_RENT_DURATION: 31536000, // 365 * 24 * 3600,
