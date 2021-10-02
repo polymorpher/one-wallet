@@ -101,7 +101,7 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
       onMouseEnter={() => { setShowUntrack(true) }}
       onMouseLeave={() => { setShowUntrack(false) }}
     >
-      {showUntrack &&
+      {showUntrack && !hasBalance &&
         <Row style={{
           height: '100%',
           width: '100%',
@@ -221,10 +221,13 @@ export const useNFTs = ({ address, withDefault }) => {
   const wallet = useSelector(state => state.wallet.wallets[address])
   const walletOutdated = !util.canWalletSupportToken(wallet)
   const trackedTokens = (wallet?.trackedTokens || []).filter(util.isNFT)
-  const [currentTrackedTokens, setCurrentTrackedTokens] = useState(trackedTokens || [])
+  const untrackedTokenKeys = (wallet.untrackedTokens || [])
+
+  const [currentTrackedTokens, setCurrentTrackedTokens] = useState((trackedTokens || []).filter(e => untrackedTokenKeys.find(k => k === e.key) === undefined))
   const [tokenMap, setTokenMap] = useState({})
   const [disabled, setDisabled] = useState(true)
   const [loaded, setLoaded] = useState(false)
+
   useEffect(() => {
     if (!address) {
       return

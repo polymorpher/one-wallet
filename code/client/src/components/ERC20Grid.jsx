@@ -147,7 +147,7 @@ export const ERC20Grid = ({ address }) => {
   const { formatted } = util.computeBalance(balance)
   const walletOutdated = !util.canWalletSupportToken(wallet)
   const defaultTrackedTokens = withKeys(DefaultTrackedERC20(network))
-  const [currentTrackedTokens, setCurrentTrackedTokens] = useState([...defaultTrackedTokens, ...(trackedTokens || [])])
+  const [currentTrackedTokens, setCurrentTrackedTokens] = useState([...defaultTrackedTokens, ...(trackedTokens || [])].filter(e => untrackedTokenKeys.find(k => k === e.key) === undefined))
   const [disabled, setDisabled] = useState(true)
   const selected = (selectedToken && selectedToken.tokenType === ONEConstants.TokenType.ERC20) || HarmonyONE
   const [section, setSection] = useState()
@@ -177,7 +177,7 @@ export const ERC20Grid = ({ address }) => {
       tts = tts.filter(e => e.tokenType === ONEConstants.TokenType.ERC20)
       // console.log('tts filtered', tts)
       tts.forEach(tt => { tt.key = ONEUtil.hexView(ONE.computeTokenKey(tt).hash) })
-      tts = unionWith(tts, defaultTrackedTokens, trackedTokens, (a, b) => a.key === b.key)
+      tts = unionWith(tts, defaultTrackedTokens, trackedTokens, (a, b) => a.key === b.key).filter(e => untrackedTokenKeys.find(k => k === e.key) === undefined)
 
       await Promise.all(tts.map(async tt => {
         // if (tt.name && tt.symbol) {
