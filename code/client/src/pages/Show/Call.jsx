@@ -5,7 +5,7 @@ import { Hint, InputBox, Label, Warning } from '../../components/Text'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
-import util from '../../util'
+import util, { useWindowDimensions } from '../../util'
 import BN from 'bn.js'
 import ShowUtils from './show-util'
 import { useSelector } from 'react-redux'
@@ -30,6 +30,7 @@ const Call = ({
   prefillMethod, // function signature, (abi selector) https://docs.soliditylang.org/en/develop/abi-spec.html#function-selector
   prefillData, // array of values corresponding to parameters in function signature
 }) => {
+  const { isMobile } = useWindowDimensions()
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
   const { majorVersion } = wallet
@@ -171,12 +172,12 @@ const Call = ({
         <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} />
         <Space align='baseline' size='large'>
           <Label><Hint>Method</Hint></Label>
-          <InputBox margin='auto' width={500} value={method} onChange={({ target: { value } }) => setMethod(value)} disabled={!!(prefillMethod || prefillHex)} />
+          <InputBox margin='auto' width={isMobile ? '100%' : 500} value={method} onChange={({ target: { value } }) => setMethod(value)} disabled={!!(prefillMethod || prefillHex)} />
         </Space>
         <Space align='baseline' size='large'>
           <Label><Hint>Args</Hint></Label>
           <TextArea
-            style={{ border: '1px dashed black', margin: 'auto', width: 500 }}
+            style={{ border: '1px dashed black', margin: 'auto', width: isMobile ? '100%' : 500 }}
             autoSize
             value={dataInput}
             onChange={({ target: { value } }) => setDataInput(value)} disabled={!!(prefillData || prefillHex)}
