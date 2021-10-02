@@ -9,6 +9,10 @@ module.exports = {
     'ERC1155': 2,
     'NONE': 3,
   },
+  TokenInterfaces: {
+    ERC721: '0x80ac58cd',
+    ERC1155: '0xd9b67a26',
+  },
   OperationType: {
     TRACK: 0,
     UNTRACK: 1,
