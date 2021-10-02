@@ -28,10 +28,10 @@ const SlickButtonFix = ({ currentSlide, slideCount, children, ...props }) => (
   <span {...props}>{children}</span>
 )
 
-export const useMetadata = ({ name, symbol, uri, contractAddress, tokenType, ipfsGateway } = {}) => {
+export const useMetadata = ({ name, symbol, uri, contractAddress, tokenType, ipfsGateway, forcedContentType } = {}) => {
   uri = util.replaceIPFSLink(uri, ipfsGateway)
   const [metadata, setMetadata] = useState()
-  const [imageType, setImageType] = useState()
+  const [imageType, setImageType] = useState(forcedContentType)
 
   let displayName = metadata?.name || name
   if (metadata?.properties?.collection) {
@@ -48,7 +48,7 @@ export const useMetadata = ({ name, symbol, uri, contractAddress, tokenType, ipf
       try {
         const metadata = await api.web.get({ link: uri })
         const transformed = NFTMetadataTransformer({ contractAddress, metadata })
-        if (transformed.image && (transformed.image.length - transformed.image.lastIndexOf('.')) > 5) {
+        if (transformed.image && (transformed.image.length - transformed.image.lastIndexOf('.')) > 5 && !forcedContentType) {
           const { 'content-type': contentType } = await api.web.head({ link: util.replaceIPFSLink(transformed.image, ipfsGateway) })
           setImageType(contentType)
         }
@@ -66,12 +66,12 @@ export const useMetadata = ({ name, symbol, uri, contractAddress, tokenType, ipf
 
 export const NFTGridItem = ({
   disabled, style, styleFullView, imageWrapperStyle, imageWrapperStyleFullView, tokenType, name, symbol, uri, contractAddress, balance, selected, onSend, tokenId, tokenKey, address, onUntrack,
-  ipfsGateway, ipfsImageGateway
+  ipfsGateway, ipfsImageGateway, initFullView, forcedContentType
 }) => {
   const dispatch = useDispatch()
   const { isMobile } = useWindowDimensions()
-  const { metadata, imageType, displayName, animationUrl } = useMetadata({ name, symbol, uri, contractAddress, tokenType, ipfsGateway })
-  const [fullView, setFullView] = useState(false)
+  const { metadata, imageType, displayName, animationUrl } = useMetadata({ name, symbol, uri, contractAddress, tokenType, ipfsGateway, forcedContentType })
+  const [fullView, setFullView] = useState(initFullView)
   const bech32ContractAddress = util.safeOneAddress(contractAddress)
   const abbrBech32ContractAddress = util.ellipsisAddress(bech32ContractAddress)
   const hasBalance = util.isNonZeroBalance(balance)
@@ -160,14 +160,14 @@ export const NFTGridItem = ({
           <Space direction='vertical' style={{ marginBottom: 16, width: '100%' }}>
             <Row justify='space-between' style={{ width: '100%' }} align='middle'>
               <Heading>{metadata.name}</Heading>
-              <Button type='primary' shape='round' size='large' onClick={() => onSend({ ...metadata, displayName })}>Send</Button>
+              {onSend && <Button type='primary' shape='round' size='large' onClick={() => onSend({ ...metadata, displayName })}>Send</Button>}
             </Row>
 
             <Text>{metadata.description}</Text>
             <AverageRow>
               <Space size='large'>
-                {metadata.image && <Button type='link' href={util.replaceIPFSLink(metadata.image, ipfsImageGateway)} target='_blank' style={{ padding: 0 }}>Download Asset</Button>}
-                {metadata.animation_url && <Button type='link' href={util.replaceIPFSLink(animationUrl, ipfsImageGateway)} target='_blank' style={{ padding: 0 }}>Download Animation</Button>}
+                {metadata.image && <Button type='link' href={util.replaceIPFSLink(metadata.image)} target='_blank' style={{ padding: 0 }}>Download Asset</Button>}
+                {metadata.animation_url && <Button type='link' href={util.replaceIPFSLink(animationUrl)} target='_blank' style={{ padding: 0 }}>Download Animation</Button>}
               </Space>
             </AverageRow>
           </Space>
