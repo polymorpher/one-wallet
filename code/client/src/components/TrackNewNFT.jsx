@@ -12,7 +12,7 @@ import { api } from '../../../lib/api'
 import { TallRow } from './Grid'
 import { Heading, Hint, InputBox, Label } from './Text'
 
-const TrackNewNFT = ({ onClose, address }) => {
+const TrackNewNFT = ({ onClose, onTracked, address }) => {
   const dispatch = useDispatch()
   const [newContractAddress, setNewContractAddress] = useState('')
   const [tokenTypeInput, setTokenTypeInput] = useState({ value: ONEConstants.TokenType.ERC1155, label: ONEConstants.TokenType[ONEConstants.TokenType.ERC1155] })
@@ -71,7 +71,8 @@ const TrackNewNFT = ({ onClose, address }) => {
         tt.symbol = symbol
         tt.uri = uri
         dispatch(walletActions.trackTokens({ address, tokens: [tt] }))
-        message.success(`New NFT added: (address=${tt.contractAddress}, tokenId=${tt.tokenId}) `)
+        message.success('New collectible tracked')
+        onTracked && onTracked(tt)
         onClose && onClose()
       }
     } catch (ex) {
@@ -82,7 +83,7 @@ const TrackNewNFT = ({ onClose, address }) => {
   return (
     <TallRow>
       <Space direction='vertical' size='large'>
-        <Heading>Track New Token</Heading>
+        <Heading>Track Another Collectible</Heading>
         <Space align='baseline' size='large'>
           <Label ultraWide><Hint>Contract Address</Hint></Label>
           <Space direction={isMobile ? 'vertical' : 'horizontal'} align='end'>
@@ -90,13 +91,13 @@ const TrackNewNFT = ({ onClose, address }) => {
           </Space>
         </Space>
         <Space align='baseline' size='large'>
-          <Label ultraWide><Hint>Token ID</Hint></Label>
+          <Label ultraWide><Hint>Collectible ID</Hint></Label>
           <Space direction={isMobile ? 'vertical' : 'horizontal'} align='end'>
             <InputBox margin='auto' width={200} value={tokenIdInput} onChange={({ target: { value } }) => setTokenIdInput(value)} placeholder='0x... or 123...' />
           </Space>
         </Space>
         <Space align='baseline' size='large'>
-          <Label ultraWide><Hint>Token Type</Hint></Label>
+          <Label ultraWide><Hint>Collectible Type</Hint></Label>
           <Space direction={isMobile ? 'vertical' : 'horizontal'} align='end'>
             <Select value={tokenTypeInput} labelInValue onChange={v => setTokenTypeInput(v)}>
               <Select.Option value={ONEConstants.TokenType.ERC1155}>{ONEConstants.TokenType[ONEConstants.TokenType.ERC1155]}</Select.Option>

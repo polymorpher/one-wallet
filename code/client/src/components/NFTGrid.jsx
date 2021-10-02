@@ -65,7 +65,7 @@ export const useMetadata = ({ name, symbol, uri, contractAddress, tokenType } = 
   return { metadata, imageType, displayName, animationUrl }
 }
 
-const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageWrapperStyleFullView, tokenType, name, symbol, uri, contractAddress, balance, selected, onSend, tokenId, tokenKey, address }) => {
+const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageWrapperStyleFullView, tokenType, name, symbol, uri, contractAddress, balance, selected, onSend, tokenId, tokenKey, address, onUntrack }) => {
   const dispatch = useDispatch()
   const { isMobile } = useWindowDimensions()
   const { metadata, imageType, displayName, animationUrl } = useMetadata({ name, symbol, uri, contractAddress, tokenType })
@@ -95,6 +95,7 @@ const NFTGridItem = ({ disabled, style, styleFullView, imageWrapperStyle, imageW
         !fullView && interactable && setFullView(true)
         if (!hasBalance) {
           dispatch(walletActions.untrackTokens({ keys: [tokenKey], address }))
+          onUntrack && onUntrack([tokenKey])
         }
       }} data-full-view={fullView}
       onMouseEnter={() => { setShowUntrack(true) }}
@@ -260,7 +261,7 @@ export const useNFTs = ({ address, withDefault }) => {
     f()
   }, [walletOutdated, address])
 
-  return { nfts: currentTrackedTokens, nftMap: tokenMap, disabled, loaded }
+  return { nfts: currentTrackedTokens, nftMap: tokenMap, disabled, loaded, setCurrentTrackedTokens }
 }
 
 export const useTokenBalanceTracker = ({ tokens, address }) => {
@@ -285,7 +286,7 @@ export const NFTGrid = ({ address, onTrackNew }) => {
   const trackedTokens = (wallet.trackedTokens || []).filter(util.isNFT)
   const [showTrackNew, setShowTrackNew] = useState(false)
 
-  const { nfts: currentTrackedTokens, disabled } = useNFTs({ address, withDefault: true })
+  const { nfts: currentTrackedTokens, disabled, setCurrentTrackedTokens } = useNFTs({ address, withDefault: true })
   useTokenBalanceTracker({ tokens: currentTrackedTokens, address })
   const { isMobile } = useWindowDimensions()
 
@@ -335,7 +336,7 @@ export const NFTGrid = ({ address, onTrackNew }) => {
       {disabled && <Warning style={{ marginTop: 16, marginBottom: 16 }}>Your wallet is too outdated. Please create a new wallet to use tokens or NFTs.</Warning>}
       <TallRow justify='center'>
         {currentTrackedTokens.map(tt => {
-          const { name, symbol, key, uri, contractAddress, tokenType, tokenId } = tt
+          const { name, symbol, key, uri, contractAddress, tokenType } = tt
           const balance = tokenBalances[key]
           return (
             <NFTGridItem
@@ -355,6 +356,9 @@ export const NFTGrid = ({ address, onTrackNew }) => {
               symbol={symbol}
               balance={balance}
               onSend={onSend(key)}
+              onUntrack={(keys) => {
+                setCurrentTrackedTokens(tts => tts.filter(tt => (keys || []).find(k => k === tt.key) === undefined))
+              }}
             />
           )
         })}
@@ -362,7 +366,7 @@ export const NFTGrid = ({ address, onTrackNew }) => {
         <GridItem style={{ ...gridItemStyle, minHeight: 128 }} onClick={() => setShowTrackNew(true)}>
           <Text style={{ textAlign: 'center' }}><PlusCircleOutlined style={{ fontSize: 24 }} /><br /><br />Track Another</Text>
         </GridItem>
-        {showTrackNew && <TrackNewNFT address={address} onClose={() => setShowTrackNew(false)} />}
+        {showTrackNew && <TrackNewNFT address={address} onClose={() => setShowTrackNew(false)} onTracked={(tt) => setCurrentTrackedTokens(tts => [...tts, tt])} />}
       </TallRow>
     </>
   )
