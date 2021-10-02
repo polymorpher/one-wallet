@@ -174,7 +174,8 @@ export default {
       end = link.length
     }
     const hash = link.slice(7, end)
-    console.log(link, ipfsGateway)
+    // console.log({ link, ipfsGateway })
+    // console.trace()
     return (ipfsGateway || config.ipfs.gateway).replace('{{hash}}', hash)
   },
 
@@ -247,6 +248,10 @@ export default {
       return new BN(spendingLimit)
     }
     return new BN(spendingLimit).sub(new BN(spendingAmount))
+  },
+
+  callArgs: ({ dest, amount }) => {
+    return { amount, operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: dest, tokenId: 0, dest: ONEConstants.EmptyAddress }
   }
 }
 
