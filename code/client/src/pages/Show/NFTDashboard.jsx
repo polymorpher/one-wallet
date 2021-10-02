@@ -17,7 +17,11 @@ const NFTDashboard = ({ address }) => {
 
   if (section === sections.davinci) {
     return (
-      <BuyDaVinci address={address} />
+      <BuyDaVinci
+        address={address} onClose={() => setSection(sections.home)} onSuccess={() => {
+          setSection(sections.home)
+        }}
+      />
     )
   }
 
