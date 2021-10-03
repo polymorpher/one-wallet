@@ -1,4 +1,4 @@
-import { Card, Image, Row, Space, Typography, Col, Button, message, Carousel, Popconfirm } from 'antd'
+import { Card, Image, Row, Space, Typography, Col, Button, message, Carousel, Popconfirm, Spin } from 'antd'
 import { unionWith, differenceBy } from 'lodash'
 import walletActions from '../state/modules/wallet/actions'
 import React, { useState, useEffect } from 'react'
@@ -155,6 +155,14 @@ export const NFTGridItem = ({
                 />}
           </Carousel>
         </Row>}
+      {fullView && !metadata &&
+        <AverageRow align='center' style={{ flexDirection: 'column', height: '100%' }}>
+          <Space direction='vertical' align='center' style={{ width: '100%' }}>
+            <Text>Loading...<Spin /></Text>
+            <Text type='secondary'>(daVinci assets may be very slow)</Text>
+            <Button onClick={() => setFullView(false)} danger type='text'>Hide</Button>
+          </Space>
+        </AverageRow>}
       {fullView && metadata &&
         <div style={{ padding: 16 }}>
           <Space direction='vertical' style={{ marginBottom: 16, width: '100%' }}>
@@ -309,7 +317,7 @@ export const NFTGrid = ({ address, onTrackNew }) => {
   const gridItemStyleFullView = {
     padding: 0,
     width: '100%',
-    // minHeight: '800px',
+    minHeight: '256px',
     display: 'flex',
     flexDirection: 'column',
   }
