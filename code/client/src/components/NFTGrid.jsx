@@ -227,7 +227,7 @@ export const NFTGridItem = ({
 }
 
 export const useNFTs = ({ address, withDefault }) => {
-  const wallet = useSelector(state => state.wallet.wallets[address])
+  const wallet = useSelector(state => state.wallet.wallets[address] || {})
   const walletOutdated = !util.canWalletSupportToken(wallet)
   const trackedTokens = (wallet?.trackedTokens || []).filter(util.isNFT)
   const untrackedTokenKeys = (wallet.untrackedTokens || [])

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
-import { values } from 'lodash'
+import { values, omit } from 'lodash'
 import { Card, Row, Space, Typography, message, Col, Tag } from 'antd'
 import util, { useWindowDimensions } from '../util'
 import { useHistory, useLocation } from 'react-router'
@@ -10,7 +10,9 @@ import BN from 'bn.js'
 import { getAddress } from '@harmony-js/crypto'
 import storage from '../storage'
 import ONEConstants from '../../../lib/constants'
+import * as Sentry from '@sentry/browser'
 const { Text, Title } = Typography
+
 const walletShortName = (fullName) => {
   if (!fullName) {
     return null
@@ -85,12 +87,13 @@ const List = () => {
 
   const purge = (wallet) => {
     const { root, address } = wallet || {}
-    if (address) {
-      dispatch(walletActions.deleteWallet(address))
-    }
-    if (root) {
-      storage.removeItem(root)
-    }
+    Sentry.captureMessage('purge\n' + JSON.stringify(omit(wallet, ['hseed'])))
+    // if (address) {
+    //   dispatch(walletActions.deleteWallet(address))
+    // }
+    // if (root) {
+    //   storage.removeItem(root)
+    // }
   }
   useEffect(() => {
     if (purged || !wallets || wallets.length === 0) {
