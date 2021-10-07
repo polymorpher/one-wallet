@@ -35,8 +35,8 @@ contract ONEWallet is TokenManager, IONEWallet {
     uint256 constant AUTO_RECOVERY_MANDATORY_WAIT_TIME = 14 days;
     address constant ONE_WALLET_TREASURY = 0x02F2cF45DD4bAcbA091D78502Dba3B2F431a54D3;
 
-    uint32 constant majorVersion = 0xc; // a change would require client to migrate
-    uint32 constant minorVersion = 0x2; // a change would not require the client to migrate
+    uint32 constant majorVersion = 0xd; // a change would require client to migrate
+    uint32 constant minorVersion = 0x1; // a change would not require the client to migrate
 
     /// commit management
     CommitManager.CommitState commitState;
@@ -399,7 +399,7 @@ contract ONEWallet is TokenManager, IONEWallet {
             require(c.paramsHash == paramsHash, "Param mismatch");
             if (operationType != OperationType.RECOVER) {
                 uint32 counter = c.timestamp / core.interval - core.t0;
-                require(counter == index, "Time mismatch");
+                require(counter == index || counter - 1 == index, "Time mismatch");
                 uint8 expectedNonce = commitState.nonces[counter];
                 require(nonce >= expectedNonce, "Nonce too low");
             }
