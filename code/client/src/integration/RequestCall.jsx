@@ -9,6 +9,7 @@ import util from '../util'
 import WalletAddress from '../components/WalletAddress'
 import { handleAddressError } from '../handler'
 import Call from '../pages/Show/Call'
+import { decodeKnownCall } from './knownCalls'
 import { WALLET_OUTDATED_DISABLED_TEXT, WalletSelector } from './Common'
 const { Title, Paragraph } = Typography
 const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amount, from }) => {
@@ -25,12 +26,45 @@ const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amo
   // - comment: anything the app developer wants to add to explain to the user what the app is asking for.
   const [calldata, setCalldata] = useState({})
   const [showCall, setShowCall] = useState(false)
+  const [callbackVerified, setCallbackVerified] = useState(false)
 
   useEffect(() => {
+    if (selectedAddress.value && (calldata.hex || calldata.method)) {
+      setShowCall(true)
+    }
+  }, [selectedAddress, calldata])
+
+  useEffect(() => {
+    const decodeHex = async (data) => {
+      const { error, name, method, parameters, verifiedDomains } = await decodeKnownCall({ address: dest, bytes: data.hex })
+      // console.log({ error, name, method, parameters })
+      if (error) {
+        message.error(error)
+        return
+      }
+      if (method && parameters) {
+        setCalldata({ ...data, name, method, parameters, decodedHex: true })
+      } else {
+        setCalldata(data)
+      }
+      if (verifiedDomains && callback) {
+        for (const r of verifiedDomains) {
+          if (callback.match(r)) {
+            setCallbackVerified(true)
+            break
+          }
+        }
+      }
+    }
+
     const calldataDecoded = Buffer.from(calldataB64Encoded || '', 'base64')
     try {
       const data = JSON.parse(calldataDecoded)
-      setCalldata(data)
+      if (data.hex) {
+        decodeHex(data)
+      } else {
+        setCalldata(data)
+      }
     } catch (ex) {
       message.error('Unable to parse call data from the app')
       console.error(ex)
@@ -84,18 +118,21 @@ const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amo
             <Divider />
             <Title level={3}>Technical details</Title>
             <Paragraph>Call address: <WalletAddress showLabel address={dest} /></Paragraph>
-            {calldata.hex &&
+            {calldata.hex && !calldata.decodedHex &&
               <>
-                <Warning>The app is making a call using binary data, without disclosing method name or parameter values. Malicious apps may steal your NFTs or tokens using specific binary data. Please be cautious and double check the data and the safety of the app. If your tokens are stolen this way, 1wallet cannot help you recover your asset. Use it at your own risk. Please ask the app developer to provide call method name and parameter values. </Warning>
+                <Warning>The app is making an unrecognizable call using binary data, without disclosing method name or parameter values. Malicious apps may steal your NFTs or tokens using specific binary data. Please be cautious and double check the data and the safety of the app. If your tokens are stolen this way, 1wallet cannot help you recover your asset. Use it at your own risk. Please ask the app developer to provide call method name and parameter values. </Warning>
                 <Paragraph>Hex Data: {calldata.hex}</Paragraph>
               </>}
-            {!calldata.hex &&
+            {!(calldata.hex && !calldata.decodedHex) &&
               <>
+                {calldata.decodedHex && <Paragraph>✅ Decoded and verified from binary call data</Paragraph>}
+                {calldata.decodedHex && <Paragraph>✅ Contract: {calldata.name}</Paragraph>}
+                {calldata.decodedHex && (callbackVerified ? <Paragraph>✅ Callback domain verified: {callback}</Paragraph> : <Paragraph>❌ Unrecognized callback domain: {callback}</Paragraph>)}
                 <Paragraph>Function: {calldata.method}</Paragraph>
                 <Paragraph>Parameters:</Paragraph>
                 <Ul>
                   {calldata?.parameters?.map((kv, i) => {
-                    return <Li key={`${i}-${kv.name}`}>[{i}] {kv.name}: {kv.value}</Li>
+                    return <Li ellipsis={{ expandable: true }} key={`${i}-${kv.name}`}>[{i}] {kv.name}: {kv.value}</Li>
                   })}
                 </Ul>
               </>}
