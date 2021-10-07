@@ -112,7 +112,7 @@ const SiderMenu = ({ ...args }) => {
               <LineDivider />
 
               <Menu theme='dark' mode='inline' onClick={nav} selectedKeys={[action]}>
-                <Menu.Item key='create1' icon={<PlusCircleOutlined />}>Create</Menu.Item>
+                <Menu.Item key='create' icon={<PlusCircleOutlined />}>Create</Menu.Item>
                 <Menu.Item key='wallets' icon={<UnorderedListOutlined />}>Wallets</Menu.Item>
                 <Menu.Item key='restore' icon={<HistoryOutlined />}>Restore</Menu.Item>
               </Menu>
