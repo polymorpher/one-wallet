@@ -99,7 +99,7 @@ const GridItem = ({ style, children, icon, name, symbol, tokenKey, contractAddre
         {!children && !addNew &&
           <Space direction='vertical'>
             <Row justify='center' style={{ alignItems: 'center' }} gutter={8}>
-              {icon && <Col><Image preview={false} src={icon} wrapperStyle={{ height: 32, width: 32 }} /></Col>}
+              {icon && <Col><Image preview={false} src={icon} style={{ height: 32, width: 32 }} /></Col>}
               {symbol && !isMobile && <Col><Text style={{ fontSize: isMobile ? 12 : 24 }}>{symbol}</Text></Col>}
               {!symbol && <Col><Text style={{ fontSize: isMobile ? 12 : 24 }}>{abbrBech32ContractAddress}</Text></Col>}
             </Row>
