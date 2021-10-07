@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { Input, Typography, Card } from 'antd'
 import util from '../util'
 
-const { Text, Title, Link } = Typography
+const { Text, Title, Link, Paragraph } = Typography
 
 export const Heading = styled(Title).attrs((props) => ({ level: 2, ...props }))`
   //font-size: 24px;
@@ -74,4 +74,9 @@ export const Ul = styled.ul`
   padding-left: 1em;
   text-indent: -1em;
 `
-export const Li = styled.li``
+export const Li = styled(Paragraph)`
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: break-spaces;
+  text-overflow: ellipsis;
+`

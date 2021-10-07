@@ -281,6 +281,10 @@ const api = {
       const balance = await web3.eth.getBalance(address)
       return balance
     },
+    getCode: async ({ address }) => {
+      const code = await web3.eth.getCode(address)
+      return code
+    },
     /**
      * Require contract >= v3, <= v6
      * @param address
