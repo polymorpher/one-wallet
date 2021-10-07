@@ -1,30 +1,72 @@
+import IconBTC from '../assets/btc.svg'
+import IconETH from '../assets/eth.svg'
+import IconUSDT from '../assets/tether.svg'
+import IconDAI from '../assets/dai.svg'
+import IconSushi from '../assets/sushi.svg'
+import IconUSDC from '../assets/usdc.svg'
+import IconAAVE from '../assets/aave.svg'
 import IconBUSD from '../assets/busd.svg'
+import IconBNB from '../assets/bnb.svg'
 import IconONE from '../assets/harmony-icon.svg'
-import IconVIPER from '../assets/viperswap.png'
-import IconONEMOON from '../assets/onemoon.png'
 import ONEConstants from '../../../lib/constants'
 import ONEUtil from '../../../lib/util'
 import ONE from '../../../lib/onewallet'
 
 export const KnownERC20 = {
+  '1ETH': {
+    icon: IconETH,
+    symbol: '1ETH',
+    name: 'Ethereum ETH',
+    contractAddress: '0x6983D1E6DEf3690C4d616b13597A09e6193EA013'
+  },
+  '1BTC': {
+    icon: IconBTC,
+    symbol: '1BTC',
+    name: 'Wrapped BTC',
+    contractAddress: '0x3095c7557bCb296ccc6e363DE01b760bA031F2d9'
+  },
+  '1USDC': {
+    icon: IconUSDC,
+    symbol: '1USDC',
+    name: 'USD Coin',
+    contractAddress: '0x985458E523dB3d53125813eD68c274899e9DfAb4'
+  },
   BUSD: {
     icon: IconBUSD,
     symbol: 'BUSD',
     name: 'Binance USD',
     contractAddress: '0xE176EBE47d621b984a73036B9DA5d834411ef734'
   },
-  VIPER: {
-    icon: IconVIPER,
-    symbol: 'VIPER',
-    name: 'Viper',
-    contractAddress: '0xEa589E93Ff18b1a1F1e9BaC7EF3E86Ab62addc79'
+  USDT: {
+    icon: IconUSDT,
+    symbol: '1USDT',
+    name: 'Tether USD',
+    contractAddress: '0x3C2B8Be99c50593081EAA2A724F0B8285F5aba8f'
   },
-  ONEMOON: {
-    icon: IconONEMOON,
-    symbol: 'ONEMOON',
-    name: 'OneMoon',
-    contractAddress: '0xCB35e4945c7F463c5CCBE3BF9f0389ab9321248F'
-  }
+  bscBUSD: {
+    icon: IconBNB,
+    symbol: 'bscBUSD',
+    name: 'BUSD Token',
+    contractAddress: '0x0aB43550A6915F9f67d0c454C2E90385E6497EaA'
+  },
+  '1SUSHI': {
+    icon: IconSushi,
+    symbol: '1SUSHI',
+    name: 'SushiToken',
+    contractAddress: '0xBEC775Cb42AbFa4288dE81F387a9b1A3c4Bc552A'
+  },
+  '1DAI': {
+    icon: IconDAI,
+    symbol: '1DAI',
+    name: 'Dai Stablecoin',
+    contractAddress: '0xEf977d2f931C1978Db5F6747666fa1eACB0d0339'
+  },
+  '1AAVE': {
+    icon: IconAAVE,
+    symbol: '1AAVE',
+    name: 'Aave Token',
+    contractAddress: '0xcF323Aad9E522B93F11c352CaA519Ad0E14eB40F'
+  },
 }
 
 export const HarmonyONE = {
