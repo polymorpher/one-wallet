@@ -87,13 +87,17 @@ const List = () => {
 
   const purge = (wallet) => {
     const { root, address } = wallet || {}
-    Sentry.captureEvent(omit(wallet, ['hseed']))
-    // if (address) {
-    //   dispatch(walletActions.deleteWallet(address))
-    // }
-    // if (root) {
-    //   storage.removeItem(root)
-    // }
+    Sentry.withScope(scope => {
+      scope.setContext(omit(wallet, ['hseed']))
+      Sentry.captureMessage('purge1')
+    })
+
+    if (address) {
+      dispatch(walletActions.deleteWallet(address))
+    }
+    if (root) {
+      storage.removeItem(root)
+    }
   }
   useEffect(() => {
     if (purged || !wallets || wallets.length === 0) {

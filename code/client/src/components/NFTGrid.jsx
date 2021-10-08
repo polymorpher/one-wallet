@@ -6,7 +6,7 @@ import { AverageRow, TallRow } from './Grid'
 import { api } from '../../../lib/api'
 import util, { useWindowDimensions } from '../util'
 import { Warning, Heading } from './Text'
-import { DefaultNFTs, NFTMetadataTransformer, withKeys } from './TokenAssets'
+import { DefaultNFTs, MetadataURITransformer, NFTMetadataTransformer, withKeys } from './TokenAssets'
 import { useDispatch, useSelector } from 'react-redux'
 import ONEConstants from '../../../lib/constants'
 import { FallbackImage } from '../constants/ui'
@@ -29,7 +29,7 @@ const SlickButtonFix = ({ currentSlide, slideCount, children, ...props }) => (
 )
 
 export const useMetadata = ({ name, symbol, uri, contractAddress, tokenType, ipfsGateway, forcedContentType } = {}) => {
-  uri = util.replaceIPFSLink(uri, ipfsGateway)
+  uri = util.replaceIPFSLink(MetadataURITransformer(uri), ipfsGateway)
   const [metadata, setMetadata] = useState()
   const [imageType, setImageType] = useState(forcedContentType)
 

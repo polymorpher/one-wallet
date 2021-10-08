@@ -160,8 +160,8 @@ const parseCommits = (result) => {
 }
 const api = {
   web: {
-    get: async ({ link }) => {
-      const { data } = await axios.get(link)
+    get: async ({ link, options }) => {
+      const { data } = await axios.get(link, options)
       return data
     },
     head: async ({ link }) => {
