@@ -2,7 +2,7 @@ import { TallRow, AverageRow } from '../../components/Grid'
 import { Button, Col, message, Popconfirm, Row, Space, Tooltip, Typography } from 'antd'
 import humanizeDuration from 'humanize-duration'
 import { DeleteOutlined, QuestionCircleOutlined } from '@ant-design/icons'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import util, { useWindowDimensions } from '../../util'
 import walletActions from '../../state/modules/wallet/actions'
@@ -22,6 +22,8 @@ const About = ({ address }) => {
   const { spendingLimit, spendingInterval } = wallet
   const price = useSelector(state => state.wallet.price)
   const { formatted: spendingLimitFormatted, fiatFormatted: spendingLimitFiatFormatted } = util.computeBalance(spendingLimit, price)
+  const [selectedBacklink, setSelectedBacklink] = useState()
+  const [inspecting, setInspecting] = useState()
 
   const onDeleteWallet = async () => {
     const { root, name } = wallet
@@ -35,6 +37,28 @@ const About = ({ address }) => {
       message.error(`Failed to delete wallet proofs. Error: ${ex}`)
     }
   }
+
+  const inspect = async (backlink) => {
+    const tempWallet = {
+      ...wallet,
+      address: backlink,
+      temp: Date.now()
+    }
+    setInspecting(true)
+    dispatch(walletActions.updateWallet(tempWallet))
+  }
+
+  useEffect(() => {
+    if (inspecting && selectedBacklink && wallets[selectedBacklink]) {
+      location.href = Paths.showAddress(selectedBacklink)
+      // history.push()
+    }
+  }, [wallets, inspecting, setInspecting])
+
+  const reclaim = async (backlink) => {
+
+  }
+
   return (
     <>
       <TallRow align='middle'>
@@ -74,7 +98,7 @@ const About = ({ address }) => {
             <Col span={isMobile ? 24 : 12}>
               <Space style={{ display: i > 0 && 'none' }}>
                 <Title level={3}>
-                  Linked Addresses
+                  Upgraded From
                 </Title>
                 <Tooltip title='These 1wallet addresses are controlled by this wallet. They will forward all funds and tokens received to this wallet.'>
                   <QuestionCircleOutlined />
@@ -83,7 +107,12 @@ const About = ({ address }) => {
 
             </Col>
             <Col>
-              <WalletAddress address={backlink} shorten addressStyle={{ padding: 0 }} />
+              <WalletAddress address={backlink} shorten addressStyle={{ padding: 0 }} onClick={(t) => setSelectedBacklink(t && backlink)} />
+              {selectedBacklink === backlink &&
+                <Row>
+                  <Button shape='round' onClick={() => inspect(backlink)}>Inspect</Button>
+                  <Button shape='round' onClick={() => reclaim(backlink)}>Reclaim</Button>
+                </Row>}
             </Col>
           </TallRow>)}
       </>
@@ -92,7 +121,7 @@ const About = ({ address }) => {
           <Col span={isMobile ? 24 : 12}>
             <Space>
               <Title level={3}>
-                Linked To
+                Controlled By
               </Title>
               <Tooltip title='This wallet is controlled by the 1wallet linked to it.'>
                 <QuestionCircleOutlined />
