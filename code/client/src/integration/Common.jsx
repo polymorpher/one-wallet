@@ -12,7 +12,7 @@ export const WALLET_OUTDATED_DISABLED_TEXT = 'This wallet cannot be used for thi
 export const WalletSelector = ({ from, onAddressSelected, filter = e => e, disabledText }) => {
   const network = useSelector(state => state.wallet.network)
   const wallets = useSelector(state => state.wallet.wallets)
-  const walletList = Object.keys(wallets).map(e => wallets[e]).filter(e => e.network === network)
+  const walletList = Object.keys(wallets).map(e => wallets[e]).filter(e => e.network === network && !e.temp)
   const selectedWallet = from && wallets[from]
   const buildAddressObject = wallet => wallet && wallet.address && ({ value: wallet.address, label: `(${wallet.name}) ${util.ellipsisAddress(util.safeOneAddress(wallet.address))}` })
   const firstEligibleWallet = walletList.find(filter)
