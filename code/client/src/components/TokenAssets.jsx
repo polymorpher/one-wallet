@@ -11,7 +11,7 @@ import IconONE from '../assets/harmony-icon.svg'
 import ONEConstants from '../../../lib/constants'
 import ONEUtil from '../../../lib/util'
 import ONE from '../../../lib/onewallet'
-
+import util from '../util'
 export const KnownERC20 = {
   '1ETH': {
     icon: IconETH,
@@ -103,6 +103,16 @@ export const HarmonyPunk = {
   contractAddress: '0xb938147a4f7a17e0c722eb82b82fb4436ae64d58',
   fakeImagePattern: /https:\/\/na6t7p57pk\.execute-api\.us-east-1\.amazonaws.com\/onePunkURL\?index=([0-9]+)/,
   realImageTemplate: 'https://punk-one-assets.s3.amazonaws.com/one_punk_{{id}}.png'
+}
+
+export const MetadataURITransformer = (url) => {
+  const IPFSIO = /https:\/\/ipfs\.io\/ipfs\/(.+)/
+  const m = url.match(IPFSIO)
+  if (m) {
+    const hash = m[1]
+    return util.replaceIPFSLink(hash)
+  }
+  return url
 }
 
 export const NFTMetadataTransformer = ({ contractAddress, metadata }) => {
