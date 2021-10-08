@@ -87,7 +87,7 @@ const List = () => {
 
   const purge = (wallet) => {
     const { root, address } = wallet || {}
-    Sentry.captureMessage('purge\n' + JSON.stringify(omit(wallet, ['hseed'])))
+    Sentry.captureEvent(omit(wallet, ['hseed']))
     // if (address) {
     //   dispatch(walletActions.deleteWallet(address))
     // }
