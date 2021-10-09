@@ -10,7 +10,7 @@ import { walletActions } from '../state/modules/wallet'
 import { QrcodeOutlined, ScanOutlined, WarningTwoTone } from '@ant-design/icons'
 import { Warning } from './Text'
 const { Title, Text } = Typography
-const WalletTitle = ({ address, onQrCodeClick, onScanClick }) => {
+const WalletTitle = ({ address, onQrCodeClick, onScanClick, noWarning }) => {
   const dispatch = useDispatch()
   const history = useHistory()
   const wallets = useSelector(state => state.wallet.wallets)
@@ -48,7 +48,6 @@ const WalletTitle = ({ address, onQrCodeClick, onScanClick }) => {
   return (
     <Row justify='space-between' align='top' style={{ marginBottom: isMobile ? 0 : 16 }}>
       <Space size='small' align='baseline' direction='vertical'>
-        {wallet.temp && <Warning>You are inspecting an old wallet</Warning>}
         <Space align='center' size='large'>
           <Title level={isMobile ? 4 : 2} style={{ marginBottom: 0 }}>{wallet.name}</Title>
           <Button style={{ padding: 0, border: 'none' }} size='large' onClick={onQrCodeClick}><QrcodeOutlined style={{ fontSize: 32 }} /></Button>
@@ -64,10 +63,7 @@ const WalletTitle = ({ address, onQrCodeClick, onScanClick }) => {
           />
           {wallet.majorVersion >= 9 && (
             hasDomainName
-              ? <Text type='secondary' style={{ paddingLeft: 16 }}>
-                {domain} {doubleLinked === null && <Tooltip title='Verifying domain...'><Spin /></Tooltip>}
-                {doubleLinked === false && <Tooltip title="This domain does not resolve back to the wallet's address, even though the wallet's address maps to the domain"> <WarningTwoTone twoToneColor='#ffcc00' /></Tooltip>}
-                </Text>
+              ? <Text type='secondary' style={{ paddingLeft: 16 }}> {domain} {doubleLinked === null && <Tooltip title='Verifying domain...'><Spin /></Tooltip>} {doubleLinked === false && <Tooltip title="This domain does not resolve back to the wallet's address, even though the wallet's address maps to the domain"> <WarningTwoTone twoToneColor='#ffcc00' /></Tooltip>}</Text>
               : (
                 <Button type='link' shape='round' onClick={onPurchaseDomain}>
                   (get a domain?)
@@ -75,6 +71,7 @@ const WalletTitle = ({ address, onQrCodeClick, onScanClick }) => {
                 )
           )}
         </Space>
+        {wallet.temp && !noWarning && <Warning>You are inspecting an old wallet. It won't show in your wallets.</Warning>}
       </Space>
       <Space>
         <Button style={{ padding: 0, border: 'none' }} size='large' onClick={onScanClick}><ScanOutlined style={{ fontSize: 32 }} /></Button>
