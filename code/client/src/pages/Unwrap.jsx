@@ -24,6 +24,7 @@ import ONE from '../../../lib/onewallet'
 import { useHistory } from 'react-router'
 import { CheckCircleOutlined, LoadingOutlined } from '@ant-design/icons'
 import humanizeDuration from 'humanize-duration'
+import config from '../config'
 const { Title, Text, Link } = Typography
 
 const shortHumanizeDuration = humanizeDuration.humanizer({
@@ -164,7 +165,7 @@ const Unwrap = () => {
   const balances = useSelector(state => state.wallet.balances)
   const [seed, setSeed] = useState()
   const [address, setAddress] = useState()
-  const [message, setMessage] = useState()
+  const [customMessage, setCustomMessage] = useState()
   const [randomFactor, setRandomFactor] = useState(1)
   const [error, setError] = useState()
   const wallet = wallets[address]
@@ -227,7 +228,7 @@ const Unwrap = () => {
       // console.log(r)
       address = r.address
       seed = ONEUtil.hexStringToBytes(r.seed)
-      setMessage(r.m)
+      setCustomMessage(r.m)
       setSeed(seed)
       setAddress(address)
       setRandomFactor(r.r || 2)
@@ -368,6 +369,16 @@ const Unwrap = () => {
       }
     })
   }
+  const doRetire = async () => {
+    try {
+      const { txId } = await api.relayer.retire({ address })
+      const link = config.networks[network].explorer.replace(/{{txId}}/, txId)
+      message.success(<Text>Done! View transaction <Link href={link} target='_blank' rel='noreferrer'>{util.ellipsisAddress(txId)}</Link></Text>, 10)
+    } catch (ex) {
+      console.error(ex)
+      message.error(`Failed to return assets to creator. Error: ${ex.toString()}`)
+    }
+  }
 
   if (error) {
     return (
@@ -408,7 +419,7 @@ const Unwrap = () => {
       <Row style={{ marginTop: isMobile && 16, width: '100%' }}>
         <Space direction='vertical' style={{ width: '100%' }} size='large'>
           <Space size='small'><Text>Packed by</Text> <WalletAddress address={wallet?.lastResortAddress} showLabel shorten /></Space>
-          {message && <Row justify='center'> <Text italic>"{message}"</Text></Row>}
+          {customMessage && <Row justify='center'> <Text italic>"{customMessage}"</Text></Row>}
 
           <Space direction='vertical' style={{ width: '100%', textAlign: 'center' }}>
             <Space>
@@ -421,6 +432,7 @@ const Unwrap = () => {
               <Space direction='vertical' size='small'>
                 <Title level={3}>Expired!</Title>
                 <Text>Expired on {new Date(wallet.effectiveTime + wallet.duration).toLocaleString()} :(</Text>
+                {(new BN(balance).gtn(0)) && <Button shape='round' onClick={doRetire}>Return Assets</Button>}
               </Space>}
             {!expired && <Text type='secondary'>Expires in {shortHumanizeDuration(wallet.effectiveTime + wallet.duration - now, { round: true, delimiter: ' ', spacer: '' })}</Text>}
 
