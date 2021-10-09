@@ -62,6 +62,9 @@ const Upgrade = ({ address, onClose }) => {
   const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
 
   const doUpgrade = async () => {
+    if (stage >= 0) {
+      return
+    }
     setStage(0)
     const {
       root,
@@ -131,7 +134,7 @@ const Upgrade = ({ address, onClose }) => {
     setSkipUpdate(true)
     onClose && onClose()
   }
-  if (!requireUpdate || skipUpdate || !canUpgrade) {
+  if (!requireUpdate || skipUpdate || !canUpgrade || wallet.temp) {
     return <></>
   }
 
@@ -159,8 +162,8 @@ const Upgrade = ({ address, onClose }) => {
           </>}
         {confirmUpgradeVisible &&
           <>
-            <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} />
-            <Button disabled={stage >= 0} type='primary' shape='round' size='large' onClick={doUpgrade}>Confirm Upgrade</Button>
+            <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} action='confirm upgrade' />
+
             <Text type='secondary'>
               How it works:
               <ul>

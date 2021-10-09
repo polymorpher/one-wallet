@@ -400,19 +400,8 @@ const Gift = ({
           {redPacketAddress &&
             <>
               <TallRow>
-                <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} />
+                <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={createRedPacket} action='confirm transfer assets' />
               </TallRow>
-              <Row justify='end' align='baseline'>
-                <Space>
-                  {stage >= 0 && stage < 3 && <LoadingOutlined />}
-                  {stage === 3 && <CheckCircleOutlined />}
-                  <Button
-                    type='primary' size='large' shape='round' disabled={stage >= 0}
-                    onClick={createRedPacket}
-                  >Confirm Transfer Assets
-                  </Button>
-                </Space>
-              </Row>
             </>}
           <Hint>
             The collectibles you selected plus {totalAmountInput} ONE will be transferred to the red packet. The red packet is controlled by your wallet. You can reclaim the remaining funds and collectibles at any time. The red packet will automatically expire in 5 days.

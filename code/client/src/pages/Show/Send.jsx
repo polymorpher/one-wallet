@@ -84,6 +84,9 @@ const Send = ({
   const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
 
   const doSend = () => {
+    if (stage >= 0) {
+      return
+    }
     const { otp, otp2, invalidOtp2, invalidOtp, dest, amount } = prepareValidation({
       state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp, selectedToken, transferTo, inputAmount, transferAmount }
     }) || {}
@@ -222,15 +225,10 @@ const Send = ({
             walletName={wallet.name}
             doubleOtp={doubleOtp}
             otpState={otpState}
+            onComplete={doSend}
+            action='send now'
           />
         </Col>
-      </Row>
-      <Row justify='end' style={{ marginTop: 24 }}>
-        <Space>
-          {stage >= 0 && stage < 3 && <LoadingOutlined />}
-          {stage === 3 && <CheckCircleOutlined />}
-          <Button type='primary' size='large' shape='round' disabled={stage >= 0} onClick={doSend}>Send</Button>
-        </Space>
       </Row>
       <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
     </AnimatedSection>

@@ -32,6 +32,9 @@ const SetRecovery = ({ address, onClose, show }) => {
   const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
 
   const doSetRecoveryAddress = async () => {
+    if (stage >= 0) {
+      return
+    }
     const { otp, otp2, invalidOtp2, invalidOtp, dest } = prepareValidation({
       state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp, transferTo },
       checkAmount: false
@@ -88,14 +91,8 @@ const SetRecovery = ({ address, onClose, show }) => {
             currentWallet={wallet}
           />
         </Space>
-        <OtpStack walletName={wallet.name} otpState={otpState} doubleOtp={wallet.doubleOtp} />
+        <OtpStack walletName={wallet.name} otpState={otpState} doubleOtp={wallet.doubleOtp} onComplete={doSetRecoveryAddress} action={'confirm'} />
       </Space>
-      <Row justify='end' style={{ marginTop: 24 }}>
-        <Space>
-          {stage >= 0 && stage < 3 && <LoadingOutlined />}
-          <Button type='primary' size='large' shape='round' disabled={stage >= 0} onClick={doSetRecoveryAddress}>Set</Button>
-        </Space>
-      </Row>
       <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
     </AnimatedSection>
   )

@@ -1,8 +1,9 @@
 // eslint-disable-next-line no-unused-vars
 import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
-import { Input, Typography, Card } from 'antd'
+import { Input, Typography, Card, Col, Spin } from 'antd'
 import util from '../util'
+import { AverageRow } from './Grid'
 
 const { Text, Title, Link, Paragraph } = Typography
 
@@ -80,3 +81,18 @@ export const Li = styled(Paragraph)`
   white-space: break-spaces;
   text-overflow: ellipsis;
 `
+
+export const LabeledRow = ({ label, ultrawide = false, isMobile, wide = !isMobile, children, labelSpan = 4, align = 'baseline', pending = false }) => {
+  return (
+    <AverageRow align={align}>
+      <Col xs={labelSpan}>
+        <Label ultrawide={ultrawide} wide={wide} style={{ fontSize: isMobile ? '12px' : undefined }}>
+          <Hint>{label}</Hint>
+        </Label>
+      </Col>
+      <Col xs={24 - labelSpan}>
+        {pending ? <Spin /> : children}
+      </Col>
+    </AverageRow>
+  )
+}

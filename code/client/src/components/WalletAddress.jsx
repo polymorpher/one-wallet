@@ -47,7 +47,7 @@ const MOUSE_HOVER_DETECTION_DELAY = 1000
  * Renders the provided wallet's address in either ONE style or normal.
  * Provides the ability to copy the address and link to wallet explorer.
  */
-const WalletAddress = ({ showLabel, labelOverride, address, shorten, onToggle, addressStyle, alwaysShowOptions }) => {
+const WalletAddress = ({ showLabel, labelOverride, address, shorten, onToggle, addressStyle, alwaysShowOptions, onClick }) => {
   const network = useSelector(state => state.wallet.network)
   const knownAddresses = useSelector(state => state.wallet.knownAddresses)
   const [showAddressOptions, setShowAddressOptions] = useState(false)
@@ -79,6 +79,7 @@ const WalletAddress = ({ showLabel, labelOverride, address, shorten, onToggle, a
   }, [mouseOnOptions, mouseOnAddress])
 
   const addressOnClick = () => {
+    onClick && onClick(!showAddressOptionsLocked)
     if (alwaysShowOptions) {
       navigator.clipboard && navigator.clipboard.writeText(currentDisplayAddress)
       return

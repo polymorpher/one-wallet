@@ -167,14 +167,9 @@ const BuyDaVinci = ({ address, onSuccess, onClose }) => {
               </Space>
             </Col>
           </Row>
-          <OtpStack walletName={wallet.name} doubleOtp={wallet.doubleOtp} otpState={otpState} />
+          <OtpStack walletName={wallet.name} doubleOtp={wallet.doubleOtp} otpState={otpState} onComplete={doBuy} action={'buy now'} />
           <TallRow justify='space-between' style={{ marginTop: 24 }}>
             <Button size='large' type='text' onClick={reset} danger>Cancel</Button>
-            <Space>
-              {stage >= 0 && stage < 3 && <LoadingOutlined />}
-              {stage === 3 && <CheckCircleOutlined />}
-              <Button type='primary' size='large' shape='round' disabled={stage >= 0} onClick={doBuy}>Buy</Button>
-            </Space>
           </TallRow>
           <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
         </>}
