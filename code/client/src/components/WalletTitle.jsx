@@ -8,6 +8,7 @@ import api from '../api'
 import { useDispatch, useSelector } from 'react-redux'
 import { walletActions } from '../state/modules/wallet'
 import { QrcodeOutlined, ScanOutlined, WarningTwoTone } from '@ant-design/icons'
+import { Warning } from './Text'
 const { Title, Text } = Typography
 const WalletTitle = ({ address, onQrCodeClick, onScanClick }) => {
   const dispatch = useDispatch()
@@ -47,6 +48,7 @@ const WalletTitle = ({ address, onQrCodeClick, onScanClick }) => {
   return (
     <Row justify='space-between' align='top' style={{ marginBottom: isMobile ? 0 : 16 }}>
       <Space size='small' align='baseline' direction='vertical'>
+        {wallet.temp && <Warning>You are inspecting an old wallet</Warning>}
         <Space align='center' size='large'>
           <Title level={isMobile ? 4 : 2} style={{ marginBottom: 0 }}>{wallet.name}</Title>
           <Button style={{ padding: 0, border: 'none' }} size='large' onClick={onQrCodeClick}><QrcodeOutlined style={{ fontSize: 32 }} /></Button>
