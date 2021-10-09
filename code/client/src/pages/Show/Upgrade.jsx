@@ -131,7 +131,7 @@ const Upgrade = ({ address, onClose }) => {
     setSkipUpdate(true)
     onClose && onClose()
   }
-  if (!requireUpdate || skipUpdate || !canUpgrade) {
+  if (!requireUpdate || skipUpdate || !canUpgrade || wallet.temp) {
     return <></>
   }
 
