@@ -32,6 +32,7 @@ import { message } from 'antd'
 import QRCode from './Show/QRCode'
 import Scan from './Show/Scan'
 import NFTDashboard from './Show/NFTDashboard'
+import Reclaim from './Show/Reclaim'
 
 const tabList = [
   { key: 'coins', tab: 'Coins' },
@@ -146,6 +147,11 @@ const Show = () => {
       />
       <TransferDomain
         show={section === 'domainTransfer'}
+        address={address}
+        onClose={showStartScreen}
+      />
+      <Reclaim
+        show={section === 'reclaim'}
         address={address}
         onClose={showStartScreen}
       />
