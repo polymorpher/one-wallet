@@ -1,4 +1,4 @@
-import { Button, Space, Typography, Row } from 'antd'
+import { Button, Space, Typography, Row, Spin, Tooltip } from 'antd'
 import WalletAddress from './WalletAddress'
 import util, { useWindowDimensions } from '../util'
 import React, { useEffect, useState } from 'react'
@@ -7,7 +7,7 @@ import { useHistory } from 'react-router'
 import api from '../api'
 import { useDispatch, useSelector } from 'react-redux'
 import { walletActions } from '../state/modules/wallet'
-import { QrcodeOutlined, ScanOutlined } from '@ant-design/icons'
+import { QrcodeOutlined, ScanOutlined, WarningTwoTone } from '@ant-design/icons'
 const { Title, Text } = Typography
 const WalletTitle = ({ address, onQrCodeClick, onScanClick }) => {
   const dispatch = useDispatch()
@@ -16,18 +16,28 @@ const WalletTitle = ({ address, onQrCodeClick, onScanClick }) => {
   const wallet = wallets[address] || {}
   const { isMobile } = useWindowDimensions()
   const [domain, setDomain] = useState(wallet.domain)
+  const [doubleLinked, setDoubleLinked] = useState(null)
   const hasDomainName = domain && domain !== ''
 
   useEffect(() => {
     const f = async () => {
+      setDoubleLinked(null)
       const lookup = await api.blockchain.domain.reverseLookup({ address })
       setDomain(lookup)
       if (lookup && (wallet.domain !== lookup)) {
         dispatch(walletActions.bindDomain({ address, domain: lookup }))
       }
+      if (lookup) {
+        const resolved = await api.blockchain.domain.resolve({ name: lookup })
+        if (resolved !== address) {
+          setDoubleLinked(false)
+        } else {
+          setDoubleLinked(true)
+        }
+      }
     }
     f()
-  }, [])
+  }, [address])
 
   const onPurchaseDomain = () => {
     const oneAddress = util.safeOneAddress(wallet.address)
@@ -52,7 +62,10 @@ const WalletTitle = ({ address, onQrCodeClick, onScanClick }) => {
           />
           {wallet.majorVersion >= 9 && (
             hasDomainName
-              ? <Text type='secondary' style={{ paddingLeft: 16 }}>{domain}</Text>
+              ? <Text type='secondary' style={{ paddingLeft: 16 }}>
+                {domain} {doubleLinked === null && <Tooltip title='Verifying domain...'><Spin /></Tooltip>}
+                {doubleLinked === false && <Tooltip title="This domain does not resolve back to the wallet's address, even though the wallet's address maps to the domain"> <WarningTwoTone twoToneColor='#ffcc00' /></Tooltip>}
+                </Text>
               : (
                 <Button type='link' shape='round' onClick={onPurchaseDomain}>
                   (get a domain?)
