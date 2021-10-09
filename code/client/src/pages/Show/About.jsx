@@ -22,7 +22,7 @@ const About = ({ address }) => {
   const { spendingLimit, spendingInterval } = wallet
   const price = useSelector(state => state.wallet.price)
   const { formatted: spendingLimitFormatted, fiatFormatted: spendingLimitFiatFormatted } = util.computeBalance(spendingLimit, price)
-  const [selectedBacklink, setSelectedBacklink] = useState()
+  const [selectedLink, setSelectedLink] = useState()
   const [inspecting, setInspecting] = useState()
 
   const onDeleteWallet = async () => {
@@ -49,9 +49,9 @@ const About = ({ address }) => {
   }
 
   useEffect(() => {
-    if (inspecting && selectedBacklink && wallets[selectedBacklink]) {
-      location.href = Paths.showAddress(selectedBacklink)
-      // history.push()
+    if (inspecting && selectedLink && wallets[selectedLink]) {
+      // location.href = Paths.showAddress(selectedLink)
+      history.push(Paths.showAddress(selectedLink, 'coins'))
     }
   }, [wallets, inspecting, setInspecting])
 
@@ -107,11 +107,11 @@ const About = ({ address }) => {
 
             </Col>
             <Col>
-              <WalletAddress address={backlink} shorten addressStyle={{ padding: 0 }} onClick={(t) => setSelectedBacklink(t && backlink)} />
+              <WalletAddress address={backlink} shorten addressStyle={{ padding: 0 }} onClick={(t) => setSelectedLink(t && backlink)} />
             </Col>
             <Col span={isMobile ? 24 : 12} />
             <Col>
-              {selectedBacklink === backlink &&
+              {selectedLink === backlink &&
                 <Row style={{ marginTop: 8 }}>
                   <Button shape='round' style={{ marginRight: 8 }} onClick={() => inspect(backlink)}>Inspect</Button>
                   <Button shape='round' onClick={() => reclaim(backlink)}>Reclaim</Button>
@@ -120,7 +120,7 @@ const About = ({ address }) => {
           </TallRow>)}
       </>
       {!util.isEmptyAddress(wallet.forwardAddress) &&
-        <TallRow align='middle'>
+        <TallRow style={{ alignItems: 'baseline' }}>
           <Col span={isMobile ? 24 : 12}>
             <Space>
               <Title level={3}>
@@ -132,7 +132,14 @@ const About = ({ address }) => {
             </Space>
           </Col>
           <Col>
-            <WalletAddress address={wallet.forwardAddress} shorten addressStyle={{ padding: 0 }} />
+            <WalletAddress address={wallet.forwardAddress} shorten addressStyle={{ padding: 0 }} onClick={(t) => setSelectedLink(t && wallet.forwardAddress)} />
+          </Col>
+          <Col span={isMobile ? 24 : 12} />
+          <Col>
+            {wallet.forwardAddress && selectedLink === wallet.forwardAddress &&
+              <Row style={{ marginTop: 8 }}>
+                <Button shape='round' style={{ marginRight: 8 }} onClick={() => history.push(Paths.showAddress(wallet.forwardAddress))}>Go To</Button>
+              </Row>}
           </Col>
         </TallRow>}
       <Row style={{ marginTop: 24 }}>
