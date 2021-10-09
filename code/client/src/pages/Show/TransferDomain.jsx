@@ -32,6 +32,9 @@ const TransferDomain = ({ address, onClose, show }) => {
   const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
 
   const doTransferDomain = async () => {
+    if (stage >= 0) {
+      return
+    }
     const subdomain = domain.slice(0, domain.length - ONEConstants.Domain.DEFAULT_TLD.length - ONEConstants.Domain.DEFAULT_PARENT_LABEL.length - 2)
     const { otp, otp2, invalidOtp2, invalidOtp, dest } = prepareValidation({
       state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp, transferTo },
@@ -92,18 +95,12 @@ const TransferDomain = ({ address, onClose, show }) => {
             currentWallet={wallet}
           />
         </Space>
-        <OtpStack walletName={wallet.name} otpState={otpState} doubleOtp={wallet.doubleOtp} onComplete={doTransferDomain} />
+        <OtpStack walletName={wallet.name} otpState={otpState} doubleOtp={wallet.doubleOtp} onComplete={doTransferDomain} action='confirm' />
       </Space>
       {!domain &&
         <Row justify='center' style={{ margin: 12 }}>
           <Warning>This wallet is not bound to a domain</Warning>
         </Row>}
-      <Row justify='end' style={{ marginTop: 24 }}>
-        <Space>
-          {stage >= 0 && stage < 3 && <LoadingOutlined />}
-          <Button type='primary' size='large' shape='round' disabled={!domain || stage >= 0} onClick={doTransferDomain}>Confirm Transfer</Button>
-        </Space>
-      </Row>
 
       <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
     </AnimatedSection>

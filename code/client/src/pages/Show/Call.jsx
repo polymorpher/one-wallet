@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Button, Row, Space, Typography, message, Input, Col } from 'antd'
 import { CheckCircleOutlined, CloseOutlined, LoadingOutlined } from '@ant-design/icons'
 import { Hint, InputBox, Label, Warning } from '../../components/Text'
-import { AverageRow } from '../../components/Grid'
+import { AverageRow, TallRow } from '../../components/Grid'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
@@ -211,17 +211,13 @@ const Call = ({
             doubleOtp={doubleOtp}
             otpState={otpState}
             onComplete={doCall}
+            action='confirm'
           />
         </Col>
       </Row>
-      <Row justify='space-between' style={{ marginTop: 24 }}>
+      <TallRow justify='start' style={{ marginTop: 24 }}>
         <Button size='large' type='text' onClick={onClose} danger>Cancel</Button>
-        <Space>
-          {stage >= 0 && stage < 3 && <LoadingOutlined />}
-          {stage === 3 && <CheckCircleOutlined />}
-          <Button type='primary' size='large' shape='round' disabled={stage >= 0} onClick={doCall}>Confirm</Button>
-        </Space>
-      </Row>
+      </TallRow>
       <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
     </AnimatedSection>
   )

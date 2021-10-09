@@ -650,18 +650,11 @@ const Swap = ({ address }) => {
         </TallRow>}
 
       <TallRow>
-        <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={tokenApproved ? confirmSwap : approveToken} />
+        <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={tokenApproved ? confirmSwap : approveToken} action={tokenApproved ? 'approve' : 'confirm'} />
       </TallRow>
-      <TallRow justify='space-between' align='baseline'>
+      <TallRow justify='start' align='baseline'>
         <Space size='large' align='top'>
           <Button type='link' size='large' style={{ padding: 0 }} onClick={() => setEditingSetting(!editingSetting)}>{editingSetting ? 'Close' : 'Advanced Settings'}</Button>
-        </Space>
-        <Space>
-          {stage >= 0 && stage < 3 && <LoadingOutlined />}
-          {stage === 3 && <CheckCircleOutlined />}
-          {tokenApproved
-            ? <Button type='primary' size='large' shape='round' disabled={!swapAllowed || stage >= 0 || insufficientLiquidity} onClick={confirmSwap}>Confirm</Button>
-            : <Button type='primary' size='large' shape='round' onClick={approveToken}>Approve</Button>}
         </Space>
       </TallRow>
       {

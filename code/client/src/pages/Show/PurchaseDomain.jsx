@@ -118,6 +118,9 @@ const PurchaseDomain = ({ show, address, onClose }) => {
   const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
 
   const doPurchase = async () => {
+    if (stage >= 0) {
+      return
+    }
     const { otp, otp2, invalidOtp2, invalidOtp } = prepareValidation({ state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp }, checkAmount: false, checkDest: false }) || {}
     if (invalidOtp || invalidOtp2) return
     const data = ONE.encodeBuyDomainData({ subdomain: validatedSubdomain })
@@ -190,7 +193,7 @@ const PurchaseDomain = ({ show, address, onClose }) => {
   return (
     <AnimatedSection
       style={{ maxWidth: 720 }}
-      show={show} title={<Title level={2}>Get Domain</Title>} extra={[
+      show={show} title={<Title level={2}>Buy Domain</Title>} extra={[
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
       ]}
     >
@@ -226,14 +229,7 @@ const PurchaseDomain = ({ show, address, onClose }) => {
           validatedDomain={validatedSubdomain}
         />
       </Row>
-      {available && <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={doPurchase} />}
-      <Row justify='end' style={{ marginTop: 24 }}>
-        <Space>
-          {stage >= 0 && stage < 3 && <LoadingOutlined />}
-          {stage === 3 && <CheckCircleOutlined />}
-          <Button type='primary' size='large' shape='round' disabled={!available || stage >= 0} onClick={doPurchase}>Buy Now</Button>
-        </Space>
-      </Row>
+      {available && <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={doPurchase} action='buy now' />}
       <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
     </AnimatedSection>
   )

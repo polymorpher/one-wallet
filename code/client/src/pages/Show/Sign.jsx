@@ -50,6 +50,9 @@ const Sign = ({
   const { prepareValidation, onRevealSuccess, ...handlers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker, onSuccess })
 
   const doSign = () => {
+    if (stage >= 0) {
+      return
+    }
     const { otp, otp2, invalidOtp2, invalidOtp } = prepareValidation({
       state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp }, checkAmount: false, checkDest: false
     }) || {}
@@ -150,15 +153,10 @@ const Sign = ({
             />
             <Hint>{humanizeDuration(duration, { largest: 2, round: true })}</Hint>
           </Space>}
-        <OtpStack wideLabel walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={doSign}/>
+        <OtpStack wideLabel walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={doSign} action='confirm' />
       </Space>
-      <Row justify='space-between' style={{ marginTop: 24 }}>
+      <Row justify='start' style={{ marginTop: 24 }}>
         <Button size='large' type='text' onClick={onClose} danger>Cancel</Button>
-        <Space>
-          {stage >= 0 && stage < 3 && <LoadingOutlined />}
-          {stage === 3 && <CheckCircleOutlined />}
-          <Button type='primary' size='large' shape='round' disabled={stage >= 0} onClick={doSign}>Confirm</Button>
-        </Space>
       </Row>
       <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
     </AnimatedSection>

@@ -81,6 +81,9 @@ const Reclaim = ({
   const { prepareValidation, ...handlers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker, onSuccess })
 
   const doReclaim = async () => {
+    if (stage >= 0) {
+      return
+    }
     const { otp, otp2, invalidOtp2, invalidOtp, dest } = prepareValidation({
       state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp, transferTo: from }, checkAmount: false, checkDest: true,
     }) || {}
@@ -211,17 +214,10 @@ const Reclaim = ({
             doubleOtp={doubleOtp}
             otpState={otpState}
             onComplete={doReclaim}
+            action={'confirm'}
           />
         </Col>
       </AverageRow>
-      <TallRow justify='space-between' style={{ marginTop: 24 }}>
-        <Button size='large' type='text' onClick={onClose} danger>Cancel</Button>
-        <Space>
-          {stage >= 0 && stage < 3 && <LoadingOutlined />}
-          {stage === 3 && <CheckCircleOutlined />}
-          <Button type='primary' size='large' shape='round' disabled={stage >= 0} onClick={doReclaim}>Confirm</Button>
-        </Space>
-      </TallRow>
       <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
     </AnimatedSection>
   )
