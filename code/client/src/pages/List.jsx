@@ -95,8 +95,10 @@ const List = () => {
     if (address) {
       dispatch(walletActions.deleteWallet(address))
     }
-    if (root) {
-      storage.removeItem(root)
+    if (root && wallets) {
+      if (Object.keys(wallets).map(k => wallets[k]).filter(w => w.root === root).length === 0) {
+        storage.removeItem(root)
+      }
     }
   }
   useEffect(() => {
