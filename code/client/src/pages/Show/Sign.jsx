@@ -150,7 +150,7 @@ const Sign = ({
             />
             <Hint>{humanizeDuration(duration, { largest: 2, round: true })}</Hint>
           </Space>}
-        <OtpStack wideLabel walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} />
+        <OtpStack wideLabel walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={doSign}/>
       </Space>
       <Row justify='space-between' style={{ marginTop: 24 }}>
         <Button size='large' type='text' onClick={onClose} danger>Cancel</Button>

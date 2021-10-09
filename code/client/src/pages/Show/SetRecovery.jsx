@@ -88,7 +88,7 @@ const SetRecovery = ({ address, onClose, show }) => {
             currentWallet={wallet}
           />
         </Space>
-        <OtpStack walletName={wallet.name} otpState={otpState} doubleOtp={wallet.doubleOtp} />
+        <OtpStack walletName={wallet.name} otpState={otpState} doubleOtp={wallet.doubleOtp} onComplete={doSetRecoveryAddress} />
       </Space>
       <Row justify='end' style={{ marginTop: 24 }}>
         <Space>

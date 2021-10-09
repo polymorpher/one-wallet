@@ -210,6 +210,7 @@ const Reclaim = ({
             walletName={wallet.name}
             doubleOtp={doubleOtp}
             otpState={otpState}
+            onComplete={doReclaim}
           />
         </Col>
       </AverageRow>

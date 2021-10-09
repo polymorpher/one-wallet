@@ -226,7 +226,7 @@ const PurchaseDomain = ({ show, address, onClose }) => {
           validatedDomain={validatedSubdomain}
         />
       </Row>
-      {available && <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} />}
+      {available && <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={doPurchase} />}
       <Row justify='end' style={{ marginTop: 24 }}>
         <Space>
           {stage >= 0 && stage < 3 && <LoadingOutlined />}

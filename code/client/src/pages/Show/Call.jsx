@@ -210,6 +210,7 @@ const Call = ({
             walletName={wallet.name}
             doubleOtp={doubleOtp}
             otpState={otpState}
+            onComplete={doCall}
           />
         </Col>
       </Row>

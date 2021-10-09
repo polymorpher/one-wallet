@@ -159,7 +159,7 @@ const Upgrade = ({ address, onClose }) => {
           </>}
         {confirmUpgradeVisible &&
           <>
-            <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} />
+            <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={doUpgrade} />
             <Button disabled={stage >= 0} type='primary' shape='round' size='large' onClick={doUpgrade}>Confirm Upgrade</Button>
             <Text type='secondary'>
               How it works:

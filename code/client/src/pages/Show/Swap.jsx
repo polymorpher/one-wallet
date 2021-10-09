@@ -650,7 +650,7 @@ const Swap = ({ address }) => {
         </TallRow>}
 
       <TallRow>
-        <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} />
+        <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={tokenApproved ? confirmSwap : approveToken} />
       </TallRow>
       <TallRow justify='space-between' align='baseline'>
         <Space size='large' align='top'>

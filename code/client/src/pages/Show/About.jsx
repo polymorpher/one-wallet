@@ -104,7 +104,6 @@ const About = ({ address }) => {
                   <QuestionCircleOutlined />
                 </Tooltip>
               </Space>
-
             </Col>
             <Col>
               <WalletAddress address={backlink} shorten addressStyle={{ padding: 0 }} onClick={(t) => setSelectedLink(t && backlink)} />
@@ -118,6 +117,13 @@ const About = ({ address }) => {
                 </Row>}
             </Col>
           </TallRow>)}
+        {backlinks.length > 0 &&
+          <TallRow>
+            <Col span={isMobile ? 24 : 12}> </Col>
+            <Col style={{ flex: 1 }}>
+              <Text>(click wallet to take control actions)</Text>
+            </Col>
+          </TallRow>}
       </>
       {!util.isEmptyAddress(wallet.forwardAddress) &&
         <TallRow style={{ alignItems: 'baseline' }}>

@@ -18,7 +18,7 @@ export const useOtpState = () => {
   return { state: { otpRef, otp2Ref, otpInput, otp2Input, setOtpInput, setOtp2Input, resetOtp } }
 }
 
-export const OtpStack = ({ wideLabel, walletName, otpState, doubleOtp }) => {
+export const OtpStack = ({ wideLabel, walletName, otpState, doubleOtp, onComplete }) => {
   const location = useLocation()
   const { otpRef, otp2Ref, otpInput, otp2Input, setOtpInput, setOtp2Input, resetOtp } = otpState || useOtpState()
 
@@ -28,8 +28,16 @@ export const OtpStack = ({ wideLabel, walletName, otpState, doubleOtp }) => {
       // For some reason if the OTP input never been focused or touched by user before, it cannot be focused to index 0 programmatically, however focus to index 1 is fine. So as a workaround we focus on next input first then focus to index 0 box. Adding setTimeout 0 to make focus on index 0 run asynchronously, which gives browser just enough time to react the previous focus before we set the focus on index 0.
       otp2Ref?.current?.focusNextInput()
       setTimeout(() => otp2Ref?.current?.focusInput(0), 0)
+    } else if (otpInput.length === 6 && onComplete) {
+      onComplete()
     }
   }, [otpInput])
+
+  useEffect(() => {
+    if (otpInput.length === 6 && doubleOtp && otp2Input.length === 6 && onComplete) {
+      onComplete()
+    }
+  }, [otp2Input])
 
   useEffect(() => {
     resetOtp && resetOtp() // Reset TOP input boxes on location change to make sure the input boxes are cleared.

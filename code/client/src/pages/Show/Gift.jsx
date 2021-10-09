@@ -400,7 +400,7 @@ const Gift = ({
           {redPacketAddress &&
             <>
               <TallRow>
-                <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} />
+                <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={createRedPacket} />
               </TallRow>
               <Row justify='end' align='baseline'>
                 <Space>

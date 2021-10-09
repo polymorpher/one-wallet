@@ -222,6 +222,7 @@ const Send = ({
             walletName={wallet.name}
             doubleOtp={doubleOtp}
             otpState={otpState}
+            onComplete={doSend}
           />
         </Col>
       </Row>

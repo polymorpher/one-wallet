@@ -92,7 +92,7 @@ const TransferDomain = ({ address, onClose, show }) => {
             currentWallet={wallet}
           />
         </Space>
-        <OtpStack walletName={wallet.name} otpState={otpState} doubleOtp={wallet.doubleOtp} />
+        <OtpStack walletName={wallet.name} otpState={otpState} doubleOtp={wallet.doubleOtp} onComplete={doTransferDomain} />
       </Space>
       {!domain &&
         <Row justify='center' style={{ margin: 12 }}>
