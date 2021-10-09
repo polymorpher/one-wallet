@@ -56,7 +56,7 @@ const About = ({ address }) => {
   }, [wallets, inspecting, setInspecting])
 
   const reclaim = async (backlink) => {
-
+    history.push(Paths.showAddress(address, 'reclaim') + `?from=${backlink}`)
   }
 
   return (
@@ -94,13 +94,13 @@ const About = ({ address }) => {
         </TallRow>}
       <>
         {backlinks.map((backlink, i) =>
-          <TallRow align='middle' key={`backlink-${i}}`}>
+          <TallRow style={{ alignItems: 'baseline' }} key={`backlink-${i}}`}>
             <Col span={isMobile ? 24 : 12}>
               <Space style={{ display: i > 0 && 'none' }}>
                 <Title level={3}>
                   Upgraded From
                 </Title>
-                <Tooltip title='These 1wallet addresses are controlled by this wallet. They will forward all funds and tokens received to this wallet.'>
+                <Tooltip title='These 1wallets are controlled by your wallet. They forward all assets to your wallet.'>
                   <QuestionCircleOutlined />
                 </Tooltip>
               </Space>
@@ -108,9 +108,12 @@ const About = ({ address }) => {
             </Col>
             <Col>
               <WalletAddress address={backlink} shorten addressStyle={{ padding: 0 }} onClick={(t) => setSelectedBacklink(t && backlink)} />
+            </Col>
+            <Col span={isMobile ? 24 : 12} />
+            <Col>
               {selectedBacklink === backlink &&
-                <Row>
-                  <Button shape='round' onClick={() => inspect(backlink)}>Inspect</Button>
+                <Row style={{ marginTop: 8 }}>
+                  <Button shape='round' style={{ marginRight: 8 }} onClick={() => inspect(backlink)}>Inspect</Button>
                   <Button shape='round' onClick={() => reclaim(backlink)}>Reclaim</Button>
                 </Row>}
             </Col>
