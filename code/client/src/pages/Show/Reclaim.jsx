@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Row, Space, Typography, message, Col } from 'antd'
+import { Button, Space, Typography, message, Col } from 'antd'
 import { CheckCircleOutlined, CloseOutlined, LoadingOutlined } from '@ant-design/icons'
-import { Hint, Label, Warning } from '../../components/Text'
-import { AverageRow } from '../../components/Grid'
+import { Warning, LabeledRow } from '../../components/Text'
+import { TallRow, AverageRow } from '../../components/Grid'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
@@ -20,21 +20,6 @@ import querystring from 'query-string'
 import { useLocation } from 'react-router'
 const { Title, Text } = Typography
 
-const LabeledRow = ({ label, ultrawide = false, isMobile, wide = !isMobile, children, labelSpan = 4, align = 'baseline' }) => {
-  return (
-    <AverageRow align={align}>
-      <Col xs={labelSpan}>
-        <Label ultrawide={ultrawide} wide={wide} style={{ fontSize: isMobile ? '12px' : undefined }}>
-          <Hint>{label}</Hint>
-        </Label>
-      </Col>
-      <Col xs={24 - labelSpan}>
-        {children}
-      </Col>
-    </AverageRow>
-  )
-}
-
 const Reclaim = ({
   address,
   show,
@@ -43,7 +28,7 @@ const Reclaim = ({
   prefillFrom,
 }) => {
   const location = useLocation()
-  const qs = querystring.parse(location.search)
+
   const { isMobile } = useWindowDimensions()
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
@@ -59,28 +44,45 @@ const Reclaim = ({
 
   const { resetWorker, recoverRandomness } = useRandomWorker()
 
-  const [from, setFrom] = useState({ value: prefillFrom || qs.from || '', label: '' })
+  const [from, setFrom] = useState({ value: prefillFrom || '', label: prefillFrom ? util.safeOneAddress(prefillFrom) : '' })
   const [trackedTokens, setTrackedTokens] = useState([])
   const [fromWallet, setFromWallet] = useState({})
   const [domain, setDomain] = useState()
+  const [pending, setPending] = useState(true)
+  const [addressInputDisabled, setAddressInputDisabled] = useState(!!prefillFrom)
 
   useEffect(() => {
     async function f () {
-      const tts = await api.blockchain.getTrackedTokens({ address: from })
+      if (!from.value) {
+        return
+      }
+      setPending(true)
+      const [tts, fromWallet, lookup] = await Promise.all([
+        api.blockchain.getTrackedTokens({ address: from.value }),
+        api.blockchain.getWallet({ address: from.value }),
+        api.blockchain.domain.reverseLookup({ address: from.value })
+      ])
       setTrackedTokens(tts)
-      const fromWallet = await api.blockchain.getWallet({ address: from })
       setFromWallet(fromWallet)
-      const lookup = await api.blockchain.domain.reverseLookup({ address: from })
       setDomain(lookup)
+      setPending(false)
     }
     f()
   }, [from])
+
+  useEffect(() => {
+    const qs = querystring.parse(location.search)
+    if (qs.from && !prefillFrom) {
+      setFrom({ value: qs.from, label: util.safeOneAddress(qs.from) })
+      setAddressInputDisabled(true)
+    }
+  }, [location])
 
   const { prepareValidation, ...handlers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker, onSuccess })
 
   const doReclaim = async () => {
     const { otp, otp2, invalidOtp2, invalidOtp, dest } = prepareValidation({
-      state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp, transferTo: { value: from } }, checkAmount: false, checkDest: true,
+      state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp, transferTo: from }, checkAmount: false, checkDest: true,
     }) || {}
 
     if (invalidOtp || !dest || invalidOtp2) return
@@ -169,34 +171,34 @@ const Reclaim = ({
   return (
     <AnimatedSection
       style={{ maxWidth: 720 }}
-      show={show} title={<Title level={2}>ReclaimAssets</Title>} extra={[
+      show={show} title={<Title level={2}>Reclaim Assets</Title>} extra={[
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
       ]}
     >
       <Space direction='vertical' size='large' style={{ width: '100%' }}>
         <Text>Reclaim domain, tokens, and collectibles accidentally left behind in an old wallet during an upgrade</Text>
-        <LabeledRow isMobile={isMobile} label='From'>
+        <LabeledRow isMobile={isMobile} label='Claim From'>
           <AddressInput
             addressValue={from}
             setAddressCallback={setFrom}
             currentWallet={wallet}
-            disabled={!!prefillFrom}
+            disabled={addressInputDisabled}
           />
         </LabeledRow>
-        <LabeledRow isMobile={isMobile} label='Coins'>
+        <LabeledRow isMobile={isMobile} label='Coins' pending={pending}>
           <Text>{trackedTokens.filter(e => e.tokenType === ONEConstants.TokenType.ERC20).length} types tracked</Text>
         </LabeledRow>
-        <LabeledRow isMobile={isMobile} label='Collectibles'>
+        <LabeledRow isMobile={isMobile} label='Collectibles' pending={pending}>
           <Text>{trackedTokens.filter(e => util.isNFT(e)).length} types tracked</Text>
         </LabeledRow>
-        <LabeledRow isMobile={isMobile} label='Domain'>
+        <LabeledRow isMobile={isMobile} label='Domain' pending={pending}>
           <Text>{domain || 'None'}</Text>
         </LabeledRow>
-        <LabeledRow isMobile={isMobile} label='Version'>
+        <LabeledRow isMobile={isMobile} label='Version' pending={pending}>
           <Text>{ONEUtil.getVersion(fromWallet)}</Text>
         </LabeledRow>
       </Space>
-      <Row align='middle'>
+      <AverageRow align='middle'>
         <Col span={24}>
           <OtpStack
             walletName={wallet.name}
@@ -204,15 +206,15 @@ const Reclaim = ({
             otpState={otpState}
           />
         </Col>
-      </Row>
-      <Row justify='space-between' style={{ marginTop: 24 }}>
+      </AverageRow>
+      <TallRow justify='space-between' style={{ marginTop: 24 }}>
         <Button size='large' type='text' onClick={onClose} danger>Cancel</Button>
         <Space>
           {stage >= 0 && stage < 3 && <LoadingOutlined />}
           {stage === 3 && <CheckCircleOutlined />}
           <Button type='primary' size='large' shape='round' disabled={stage >= 0} onClick={doReclaim}>Confirm</Button>
         </Space>
-      </Row>
+      </TallRow>
       <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
     </AnimatedSection>
   )
