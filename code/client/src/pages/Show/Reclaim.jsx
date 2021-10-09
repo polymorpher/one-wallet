@@ -120,7 +120,7 @@ const Reclaim = ({
         // cause old contract to transfer token
         const indices = []
         trackedTokens.forEach((t, i) => indices.push(i))
-        const indicesEncodedHex = ONEUtil.abi.encodeParameters(['uint32[]'], indices)
+        const indicesEncodedHex = ONEUtil.abi.encodeParameters(['uint32[]'], [indices])
         const call = {
           method,
           dest,
