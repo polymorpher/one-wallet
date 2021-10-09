@@ -109,6 +109,12 @@ const Reclaim = ({
           ]
         }
         calls.push(call)
+        const call2 = {
+          method: 'setName(string)',
+          dest: ONEConstants.Domain.DEFAULT_REVERSE_REGISTRAR,
+          values: [domain]
+        }
+        calls.push(call2)
       }
       if (trackedTokens.length > 0) {
         // cause old contract to transfer token
