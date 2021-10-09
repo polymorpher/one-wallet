@@ -74,7 +74,7 @@ const Show = () => {
     const handler = setInterval(() => fetch(), WalletConstants.fetchBalanceFrequency)
     dispatch(walletActions.fetchWallet({ address }))
     return () => { clearInterval(handler) }
-  }, [])
+  }, [address])
 
   useEffect(() => {
     if (forwardAddress && forwardAddress !== ONEConstants.EmptyAddress && !temp) {
