@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { walletActions } from '../state/modules/wallet'
 import { QrcodeOutlined, ScanOutlined, WarningTwoTone } from '@ant-design/icons'
 import { Warning } from './Text'
+import BN from 'bn.js'
 const { Title, Text } = Typography
 const WalletTitle = ({ address, onQrCodeClick, onScanClick, noWarning }) => {
   const dispatch = useDispatch()
@@ -19,7 +20,8 @@ const WalletTitle = ({ address, onQrCodeClick, onScanClick, noWarning }) => {
   const [domain, setDomain] = useState(wallet.domain)
   const [doubleLinked, setDoubleLinked] = useState(null)
   const hasDomainName = domain && domain !== ''
-
+  const balances = useSelector(state => state.wallet.balances)
+  const balance = new BN(balances[address] || 0)
   useEffect(() => {
     const f = async () => {
       setDoubleLinked(null)
@@ -46,38 +48,40 @@ const WalletTitle = ({ address, onQrCodeClick, onScanClick, noWarning }) => {
   }
 
   return (
-    <Row justify='space-between' align='top' style={{ marginBottom: isMobile ? 0 : 16 }}>
-      <Space size='small' align='baseline' direction='vertical'>
-        <Space align='center' size='large'>
-          <Title level={isMobile ? 4 : 2} style={{ marginBottom: 0 }}>{wallet.name}</Title>
-          <Button style={{ padding: 0, border: 'none' }} size='large' onClick={onQrCodeClick}><QrcodeOutlined style={{ fontSize: 32 }} /></Button>
+    <Space direction='vertical' style={{ width: '100%' }}>
+      <Row justify='space-between' align='top' style={{ marginBottom: isMobile ? 0 : 16 }}>
+        <Space size='small' align='baseline' direction='vertical'>
+          <Space align='center' size='large'>
+            <Title level={isMobile ? 4 : 2} style={{ marginBottom: 0 }}>{wallet.name}</Title>
+            <Button style={{ padding: 0, border: 'none' }} size='large' onClick={onQrCodeClick}><QrcodeOutlined style={{ fontSize: 32 }} /></Button>
+          </Space>
         </Space>
-
-        <Space direction='horizontal' size='small' align='start' style={{ marginLeft: -16 }}>
-          <WalletAddress
-            address={wallet.address}
-            shorten={util.shouldShortenAddress({
-              label: wallet.name,
-              isMobile
-            })}
-          />
-          {wallet.majorVersion >= 9 && (
-            hasDomainName
-              ? <Text type='secondary' style={{ paddingLeft: 16 }}> {domain} {doubleLinked === null && <Tooltip title='Verifying domain...'><Spin /></Tooltip>} {doubleLinked === false && <Tooltip title="This domain does not resolve back to the wallet's address, even though the wallet's address maps to the domain"> <WarningTwoTone twoToneColor='#ffcc00' /></Tooltip>}</Text>
-              : (
-                <Button type='link' shape='round' onClick={onPurchaseDomain}>
-                  (get a domain?)
-                </Button>
-                )
-          )}
+        <Space>
+          <Button style={{ padding: 0, border: 'none' }} size='large' onClick={onScanClick}><ScanOutlined style={{ fontSize: 32 }} /></Button>
         </Space>
-        {wallet.temp && !noWarning && <Warning>You are inspecting an old wallet. It won't show in your wallets.</Warning>}
+      </Row>
+      <Space direction={isMobile ? 'vertical' : 'horizontal'} size='small' align='start' style={{ marginLeft: -16 }}>
+        <WalletAddress
+          address={wallet.address}
+          shorten={util.shouldShortenAddress({
+            label: wallet.name,
+            isMobile
+          })}
+          alwaysShowOptions={isMobile}
+          itemStyle={isMobile ? { fontSize: 24 } : {}}
+        />
+        {wallet.majorVersion >= 9 && (
+          hasDomainName
+            ? <Text type='secondary' style={{ paddingLeft: 16 }}> {domain} {doubleLinked === null && <Tooltip title='Verifying domain...'><Spin /></Tooltip>} {doubleLinked === false && <Tooltip title="This domain does not resolve back to the wallet's address, even though the wallet's address maps to the domain"> <WarningTwoTone twoToneColor='#ffcc00' /></Tooltip>}</Text>
+            : (balance.gtn(0) &&
+              <Button type='link' shape='round' onClick={onPurchaseDomain}>
+                (get a domain?)
+              </Button>
+              )
+        )}
       </Space>
-      <Space>
-        <Button style={{ padding: 0, border: 'none' }} size='large' onClick={onScanClick}><ScanOutlined style={{ fontSize: 32 }} /></Button>
-      </Space>
-
-    </Row>
+      {wallet.temp && !noWarning && <Warning>You are inspecting an old wallet. It won't show in your wallets.</Warning>}
+    </Space>
   )
 }
 export default WalletTitle

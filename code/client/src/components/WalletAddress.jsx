@@ -23,18 +23,18 @@ const displayAddress = ({ address, shorten }) => {
  * - Go to wallet explorer
  * - Switch address style, one address or normal
  */
-const WalletAddressOptions = ({ displayAddress, address, network, onAddressStyleSwitch }) => {
+const WalletAddressOptions = ({ displayAddress, address, network, onAddressStyleSwitch, itemStyle }) => {
   return (
     <Space size='middle' align='baseline'>
-      <Text copyable={{ text: displayAddress }} />
+      <Text copyable={{ text: displayAddress }} style={itemStyle} />
       <Tooltip title='Block Explorer'>
         <Link target='_blank' href={util.getNetworkExplorerUrl(address, network)} rel='noreferrer'>
-          <DeploymentUnitOutlined />
+          <DeploymentUnitOutlined style={itemStyle} />
         </Link>
       </Tooltip>
       <Tooltip title='Switch Address Format'>
         <Link onClick={onAddressStyleSwitch}>
-          <FieldBinaryOutlined />
+          <FieldBinaryOutlined style={itemStyle} />
         </Link>
       </Tooltip>
     </Space>
@@ -47,7 +47,7 @@ const MOUSE_HOVER_DETECTION_DELAY = 1000
  * Renders the provided wallet's address in either ONE style or normal.
  * Provides the ability to copy the address and link to wallet explorer.
  */
-const WalletAddress = ({ showLabel, labelOverride, address, shorten, onToggle, addressStyle, alwaysShowOptions, onClick }) => {
+const WalletAddress = ({ showLabel, labelOverride, address, shorten, onToggle, addressStyle, alwaysShowOptions, onClick, itemStyle }) => {
   const network = useSelector(state => state.wallet.network)
   const knownAddresses = useSelector(state => state.wallet.knownAddresses)
   const [showAddressOptions, setShowAddressOptions] = useState(false)
@@ -88,7 +88,7 @@ const WalletAddress = ({ showLabel, labelOverride, address, shorten, onToggle, a
   }
 
   return (
-    <Space size='small' align='baseline' style={{ flexWrap: 'wrap' }}>
+    <Space size='small' align='center' style={{ flexWrap: 'wrap' }}>
       <Tooltip title={addressTooltipText}>
         <Button
           type='text'
@@ -120,6 +120,7 @@ const WalletAddress = ({ showLabel, labelOverride, address, shorten, onToggle, a
               address={address}
               displayAddress={currentDisplayAddress}
               network={network}
+              itemStyle={itemStyle}
             />
           : <></>}
       </Space>
