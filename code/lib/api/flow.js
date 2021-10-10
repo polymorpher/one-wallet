@@ -63,7 +63,7 @@ const Flows = {
     beforeCommit, afterCommit, onCommitError, onCommitFailure,
     revealAPI, revealArgs, onRevealFailure, onRevealSuccess, onRevealError, onRevealAttemptFailed,
     beforeReveal, index,
-    maxTransferAttempts = 3, checkCommitInterval = 2500,
+    maxTransferAttempts = 3, checkCommitInterval = 4000,
     message = messager,
   }) => {
     const { effectiveTime, root, address, randomness, hseed, hasher } = wallet
