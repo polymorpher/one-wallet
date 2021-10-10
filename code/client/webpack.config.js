@@ -123,6 +123,7 @@ module.exports = {
       inject: true,
       filename: 'index.html',
       template: 'assets/index.html',
+      favicon: 'assets/1wallet.png',
       environment: process.env.NODE_ENV,
       hash: true
     }),
