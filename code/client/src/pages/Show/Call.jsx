@@ -23,6 +23,7 @@ const { TextArea } = Input
 const Call = ({
   address,
   show,
+  minimal, // optional
   onClose, // optional
   onSuccess, // optional
   prefillHex, // optional
@@ -140,70 +141,74 @@ const Call = ({
   return (
     <AnimatedSection
       style={{ maxWidth: 720 }}
-      show={show} title={<Title level={2}>Call Contract Function</Title>} extra={[
+      show={show} title={!minimal && <Title level={2}>Call Contract Function</Title>} extra={!minimal && [
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
       ]}
     >
-      <Space direction='vertical' size='large' style={{ width: '100%' }}>
-        <AverageRow align='baseline'>
-          <Col xs={4}>
-            <Label wide={!isMobile} style={{ fontSize: isMobile ? '12px' : undefined }}>
-              <Hint>To</Hint>
-            </Label>
-          </Col>
-          <Col xs={20}>
-            <AddressInput
-              addressValue={transferTo}
-              setAddressCallback={setTransferTo}
-              currentWallet={wallet}
-              disabled={!!prefillDest}
-            />
-          </Col>
-        </AverageRow>
-        <AverageRow align='middle' gutter={8} style={{ flexWrap: 'nowrap' }}>
-          <Col xs={4}>
-            <Label wide={!isMobile}>
-              <Hint>{isMobile ? '' : 'Amount'}</Hint>
-            </Label>
-          </Col>
-          <Col sm={16} flex={1}>
-            <InputBox
-              margin='auto'
-              width='100%'
-              value={inputAmount}
-              onChange={({ target: { value } }) => setInputAmount(value)}
-              disabled={!!prefillAmount}
-            />
-          </Col>
-          <Col sm={2}><Hint>ONE</Hint></Col>
-          <Col>
-            <Button type='secondary' shape='round' onClick={useMaxAmount} disabled={!!prefillAmount}>max</Button>
-          </Col>
-        </AverageRow>
+      {!minimal &&
+        <Space direction='vertical' size='large' style={{ width: '100%' }}>
+          <AverageRow align='baseline'>
+            <Col xs={4}>
+              <Label wide={!isMobile} style={{ fontSize: isMobile ? '12px' : undefined }}>
+                <Hint>To</Hint>
+              </Label>
+            </Col>
+            <Col xs={20}>
+              <AddressInput
+                addressValue={transferTo}
+                setAddressCallback={setTransferTo}
+                currentWallet={wallet}
+                disabled={!!prefillDest}
+              />
+            </Col>
+          </AverageRow>
+          <AverageRow align='middle' gutter={8} style={{ flexWrap: 'nowrap' }}>
+            <Col xs={4}>
+              <Label wide={!isMobile}>
+                <Hint>{isMobile ? '' : 'Amount'}</Hint>
+              </Label>
+            </Col>
+            <Col sm={16} flex={1}>
+              <InputBox
+                margin='auto'
+                width='100%'
+                value={inputAmount}
+                onChange={({ target: { value } }) => setInputAmount(value)}
+                disabled={!!prefillAmount}
+              />
+            </Col>
+            <Col sm={2}><Hint>ONE</Hint></Col>
+            <Col>
+              <Button type='secondary' shape='round' onClick={useMaxAmount} disabled={!!prefillAmount}>max</Button>
+            </Col>
+          </AverageRow>
 
-        <Space align='end' size='large'>
-          <Label><Hint /></Label>
-          <Title
-            level={4}
-            style={{ width: 200, textAlign: 'right', marginBottom: 0 }}
-          >≈ ${transferFiatAmountFormatted}
-          </Title>
-          <Hint>USD</Hint>
-        </Space>
-        <AverageRow align='baseline' size='large' style={{ width: '100%' }}>
-          <Label><Hint>Method</Hint></Label>
-          <InputBox margin='auto' width='auto' style={{ flex: 1 }} value={method} onChange={({ target: { value } }) => setMethod(value)} disabled={!!(prefillMethod || prefillHex)} />
-        </AverageRow>
-        <AverageRow align='start' size='large' style={{ width: '100%' }}>
-          <Label><Hint>Args</Hint></Label>
-          <TextArea
-            style={{ border: '1px dashed black', margin: 'auto', flex: 1 }}
-            autoSize
-            value={dataInput}
-            onChange={({ target: { value } }) => setDataInput(value)} disabled={!!(prefillData || prefillHex)}
-          />
-        </AverageRow>
-      </Space>
+          <Space align='end' size='large'>
+            <Label><Hint /></Label>
+            <Title
+              level={4}
+              style={{ width: 200, textAlign: 'right', marginBottom: 0 }}
+            >≈ ${transferFiatAmountFormatted}
+            </Title>
+            <Hint>USD</Hint>
+          </Space>
+          <AverageRow align='baseline' size='large' style={{ width: '100%' }}>
+            <Label><Hint>Method</Hint></Label>
+            <InputBox
+              margin='auto' width='auto' style={{ flex: 1 }} value={method}
+              onChange={({ target: { value } }) => setMethod(value)} disabled={!!(prefillMethod || prefillHex)}
+            />
+          </AverageRow>
+          <AverageRow align='start' size='large' style={{ width: '100%' }}>
+            <Label><Hint>Args</Hint></Label>
+            <TextArea
+              style={{ border: '1px dashed black', margin: 'auto', flex: 1 }}
+              autoSize
+              value={dataInput}
+              onChange={({ target: { value } }) => setDataInput(value)} disabled={!!(prefillData || prefillHex)}
+            />
+          </AverageRow>
+        </Space>}
       <Row align='middle'>
         <Col span={24}>
           <OtpStack

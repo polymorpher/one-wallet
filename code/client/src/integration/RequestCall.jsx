@@ -5,18 +5,18 @@ import { AverageRow } from '../components/Grid'
 import { Hint, Li, Ul, Warning } from '../components/Text'
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import util from '../util'
+import util, { useWindowDimensions } from '../util'
 import WalletAddress from '../components/WalletAddress'
 import { handleAddressError } from '../handler'
 import Call from '../pages/Show/Call'
 import { decodeKnownCall } from './knownCalls'
 import { WALLET_OUTDATED_DISABLED_TEXT, WalletSelector } from './Common'
 const { Title, Paragraph } = Typography
-const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amount, from }) => {
+const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amount, from, verbose }) => {
   dest = util.safeNormalizedAddress(dest)
   const balances = useSelector(state => state.wallet.balances)
   const price = useSelector(state => state.wallet.price)
-
+  const { isMobile } = useWindowDimensions()
   const [selectedAddress, setSelectedAddress] = useState({})
   const { formatted: amountFormatted, fiatFormatted: amountFiatFormatted } = util.computeBalance(amount || 0, price)
   const isNonZeroAmount = !(new BN(amount).isZero())
@@ -27,6 +27,7 @@ const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amo
   const [calldata, setCalldata] = useState({})
   const [showCall, setShowCall] = useState(false)
   const [callbackVerified, setCallbackVerified] = useState(false)
+  const [showDetails, setShowDetails] = useState(verbose)
 
   useEffect(() => {
     if (selectedAddress.value && (calldata.hex || calldata.method)) {
@@ -102,7 +103,7 @@ const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amo
         show
         style={{ minHeight: 320, maxWidth: 720 }}
       >
-        <AverageRow>
+        <AverageRow style={{ margin: 0 }}>
           <Space direction='vertical' style={{ maxWidth: '100%' }}>
             <Title level={3}>"{caller}" wants your 1wallet to do something </Title>
             {calldata.comment && <Paragraph>Reason: {calldata.comment} </Paragraph>}
@@ -115,15 +116,16 @@ const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amo
                   <Paragraph>To: <WalletAddress showLabel address={dest} /> </Paragraph>
                 </Space>
               </AverageRow>}
-            <Divider />
-            <Title level={3}>Technical details</Title>
-            <Paragraph>Call address: <WalletAddress showLabel address={dest} /></Paragraph>
-            {calldata.hex && !calldata.decodedHex &&
+            <Divider style={{ marginTop: isMobile ? 8 : 24, marginBottom: isMobile ? 8 : 24 }} />
+            <Title level={3}>Technical details <Button type='link' style={{ marginLeft: 16 }} onClick={() => setShowDetails(!showDetails)}>{showDetails ? 'Hide' : 'Expand...'}</Button></Title>
+            {!showDetails && calldata.hex && (calldata.decodedHex && callbackVerified ? <Paragraph>✅ Verified Call</Paragraph> : <Paragraph>❌ Cannot verify safety</Paragraph>)}
+            {showDetails && <Paragraph>Call address: <WalletAddress showLabel address={dest} addressStyle={{ padding: 0 }} /></Paragraph>}
+            {calldata.hex && !calldata.decodedHex && showDetails &&
               <>
                 <Warning>The app is making an unrecognizable call using binary data, without disclosing method name or parameter values. Malicious apps may steal your NFTs or tokens using specific binary data. Please be cautious and double check the data and the safety of the app. If your tokens are stolen this way, 1wallet cannot help you recover your asset. Use it at your own risk. Please ask the app developer to provide call method name and parameter values. </Warning>
                 <Paragraph>Hex Data: {calldata.hex}</Paragraph>
               </>}
-            {!(calldata.hex && !calldata.decodedHex) &&
+            {!(calldata.hex && !calldata.decodedHex) && showDetails &&
               <>
                 {calldata.decodedHex && <Paragraph>✅ Decoded and verified from binary call data</Paragraph>}
                 {calldata.decodedHex && <Paragraph>✅ Contract: {calldata.name}</Paragraph>}
@@ -138,7 +140,7 @@ const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amo
               </>}
           </Space>
         </AverageRow>
-        <Divider />
+        <Divider style={{ marginTop: isMobile ? 8 : 24, marginBottom: isMobile ? 8 : 24 }} />
         <WalletSelector from={from} onAddressSelected={setSelectedAddress} filter={e => e.majorVersion >= 10} disabledText={WALLET_OUTDATED_DISABLED_TEXT} />
         {!showCall &&
           <AverageRow justify='space-between'>
@@ -153,6 +155,7 @@ const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amo
       </AnimatedSection>
       {showCall &&
         <Call
+          minimal={!showDetails}
           address={selectedAddress.value} show={showCall} onClose={onCallClose} onSuccess={onSuccess}
           prefillHex={calldata.hex}
           prefillAmount={amountFormatted} prefillDest={dest} prefillData={(calldata.parameters || []).map(e => e.value)} prefillMethod={calldata.method}

@@ -68,7 +68,7 @@ const AnimatedSection = ({ show = true, children, style, ...params }) => {
             renderTabBar: mobileTabBar
           }}
           style={{
-            padding: isMobile ? 24 : 32,
+            padding: isMobile ? 16 : 32,
             ...defaultStyle,
             ...transitionStyles[state],
             ...style
