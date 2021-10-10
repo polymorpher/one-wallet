@@ -442,7 +442,6 @@ const Create = ({ expertMode, showRecovery }) => {
             <Hint>Copy the 6-digit code from authenticator</Hint>
             <Hint style={{ fontSize: isMobile ? 12 : undefined }}>Code for <b>Harmony ({getSecondCodeName(name)})</b></Hint>
             <OtpBox
-              shouldAutoFocus={!isMobile}
               ref={otpRef}
               value={otp}
               onChange={setOtp}
