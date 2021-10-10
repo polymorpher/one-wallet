@@ -4,12 +4,14 @@ import WalletAddress from '../components/WalletAddress'
 import { SearchOutlined } from '@ant-design/icons'
 import util from '../util'
 import React, { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import walletActions from '../state/modules/wallet/actions'
 const { Text, Paragraph } = Typography
 
 export const WALLET_OUTDATED_DISABLED_TEXT = 'This wallet cannot be used for this purpose. It might be too old. Please upgrade or use a wallet with a newer version'
 
 export const WalletSelector = ({ from, onAddressSelected, filter = e => e, disabledText }) => {
+  const dispatch = useDispatch()
   const network = useSelector(state => state.wallet.network)
   const wallets = useSelector(state => state.wallet.wallets)
   const walletList = Object.keys(wallets).map(e => wallets[e]).filter(e => e.network === network && !e.temp)
@@ -21,6 +23,19 @@ export const WalletSelector = ({ from, onAddressSelected, filter = e => e, disab
   useEffect(() => {
     onAddressSelected && onAddressSelected(selectedAddress)
   }, [selectedAddress])
+  useEffect(() => {
+    if (!wallets[from]) {
+      const upgradedWallet = Object.keys(wallets).map(e => wallets[e]).find(w => w && w.backlinks?.includes[from] && !w.forwardAddress && !w.temp)
+      if (upgradedWallet) {
+        const tempWallet = {
+          ...upgradedWallet,
+          address: from,
+          temp: upgradedWallet.effectiveTime + upgradedWallet.duration,
+        }
+        dispatch(walletActions.updateWallet(tempWallet))
+      }
+    }
+  }, [from])
 
   return (
     <>
@@ -35,7 +50,7 @@ export const WalletSelector = ({ from, onAddressSelected, filter = e => e, disab
       {from && selectedWallet &&
         <AverageRow>
           <Space direction='vertical'>
-            <Paragraph>Using</Paragraph>
+            <Paragraph>Using {selectedWallet.temp && 'a pre-upgrade, old wallet address'} </Paragraph>
             <Paragraph><WalletAddress showLabel address={from} /></Paragraph>
           </Space>
         </AverageRow>}
