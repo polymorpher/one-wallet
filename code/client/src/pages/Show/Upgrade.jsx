@@ -121,8 +121,14 @@ const Upgrade = ({ address, onClose }) => {
           backlinks,
           _merge: true
         }
+        const oldWallet = {
+          ...wallet,
+          temp: wallet.effectiveTime + wallet.duration,
+          forwardAddress: newAddress,
+          _merge: true
+        }
         dispatch(walletActions.updateWallet(newWallet))
-        dispatch(walletActions.deleteWallet(address))
+        dispatch(walletActions.updateWallet(oldWallet))
         dispatch(walletActions.fetchWallet({ address: newAddress }))
         setTimeout(() => history.push(Paths.showAddress(util.safeOneAddress(newAddress))), 1000)
         message.success('Upgrade completed!')
