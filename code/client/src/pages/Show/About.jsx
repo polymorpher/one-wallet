@@ -42,7 +42,7 @@ const About = ({ address }) => {
     const tempWallet = {
       ...wallet,
       address: backlink,
-      temp: Date.now()
+      temp: wallet.effectiveTime + wallet.duration,
     }
     setInspecting(true)
     dispatch(walletActions.updateWallet(tempWallet))
