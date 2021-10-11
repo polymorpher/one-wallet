@@ -31,6 +31,7 @@ const Call = ({
   prefillDest, // contract address, string, hex format
   prefillMethod, // function signature, (abi selector) https://docs.soliditylang.org/en/develop/abi-spec.html#function-selector
   prefillData, // array of values corresponding to parameters in function signature
+  shouldAutoFocus,
 }) => {
   const { isMobile } = useWindowDimensions()
   const wallets = useSelector(state => state.wallet.wallets)
@@ -216,6 +217,7 @@ const Call = ({
             doubleOtp={doubleOtp}
             otpState={otpState}
             onComplete={doCall}
+            shouldAutoFocus={shouldAutoFocus}
             action='confirm'
           />
         </Col>

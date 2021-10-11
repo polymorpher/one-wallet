@@ -167,7 +167,7 @@ const BuyDaVinci = ({ address, onSuccess, onClose }) => {
               </Space>
             </Col>
           </Row>
-          <OtpStack walletName={wallet.name} doubleOtp={wallet.doubleOtp} otpState={otpState} onComplete={doBuy} action={'buy now'} />
+          <OtpStack shouldAutoFocus walletName={wallet.name} doubleOtp={wallet.doubleOtp} otpState={otpState} onComplete={doBuy} action='buy now' />
           <TallRow justify='space-between' style={{ marginTop: 24 }}>
             <Button size='large' type='text' onClick={reset} danger>Cancel</Button>
           </TallRow>

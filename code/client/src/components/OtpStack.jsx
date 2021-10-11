@@ -18,7 +18,7 @@ export const useOtpState = () => {
   return { state: { otpRef, otp2Ref, otpInput, otp2Input, setOtpInput, setOtp2Input, resetOtp } }
 }
 
-export const OtpStack = ({ autoFocus, wideLabel, walletName, otpState, doubleOtp, onComplete, action }) => {
+export const OtpStack = ({ shouldAutoFocus, wideLabel, walletName, otpState, doubleOtp, onComplete, action }) => {
   const location = useLocation()
   const { otpRef, otp2Ref, otpInput, otp2Input, setOtpInput, setOtp2Input, resetOtp } = otpState || useOtpState()
 
@@ -53,6 +53,7 @@ export const OtpStack = ({ autoFocus, wideLabel, walletName, otpState, doubleOtp
           ref={otpRef}
           value={otpInput}
           onChange={setOtpInput}
+          shouldAutoFocus={shouldAutoFocus}
         />
         <Tooltip title={`from your Google Authenticator, i.e. ${walletName}`}>
           <QuestionCircleOutlined />
@@ -67,7 +68,6 @@ export const OtpStack = ({ autoFocus, wideLabel, walletName, otpState, doubleOtp
             ref={otp2Ref}
             value={otp2Input}
             onChange={setOtp2Input}
-            shouldAutoFocus={autoFocus}
           />
           <Tooltip title={`from your Google Authenticator, i.e. ${walletName} (2nd)`}>
             <QuestionCircleOutlined />

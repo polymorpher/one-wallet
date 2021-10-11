@@ -96,6 +96,7 @@ const RequestSignature = ({ caller, callback, messageB64Encoded, raw, duration, 
           prefillMessageInput={message}
           prefillUseRawMessage={raw}
           prefillDuration={duration}
+          shouldAutoFocus
         />}
     </>
   )

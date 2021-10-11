@@ -26,6 +26,7 @@ const Sign = ({
   prefillMessageInput, // optional string, the message itself
   prefillUseRawMessage, // optional boolean, whether or not eth signing header should be attached. True means not to attach header
   prefillDuration, // optional string that can be parsed into an integer, the number of milliseconds of the validity of the signature
+  shouldAutoFocus,
 }) => {
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
@@ -153,7 +154,7 @@ const Sign = ({
             />
             <Hint>{humanizeDuration(duration, { largest: 2, round: true })}</Hint>
           </Space>}
-        <OtpStack wideLabel walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={doSign} action='confirm' />
+        <OtpStack shouldAutoFocus={shouldAutoFocus} wideLabel walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={doSign} action='confirm' />
       </Space>
       <Row justify='start' style={{ marginTop: 24 }}>
         <Button size='large' type='text' onClick={onClose} danger>Cancel</Button>

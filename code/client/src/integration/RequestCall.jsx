@@ -155,6 +155,7 @@ const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amo
       </AnimatedSection>
       {showCall &&
         <Call
+          shouldAutoFocus
           minimal={!showDetails}
           address={selectedAddress.value} show={showCall} onClose={onCallClose} onSuccess={onSuccess}
           prefillHex={calldata.hex}

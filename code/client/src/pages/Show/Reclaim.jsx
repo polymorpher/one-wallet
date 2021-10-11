@@ -210,11 +210,12 @@ const Reclaim = ({
       <AverageRow align='middle'>
         <Col span={24}>
           <OtpStack
+            shouldAutoFocus
             walletName={wallet.name}
             doubleOtp={doubleOtp}
             otpState={otpState}
             onComplete={doReclaim}
-            action={'confirm'}
+            action='confirm'
           />
         </Col>
       </AverageRow>

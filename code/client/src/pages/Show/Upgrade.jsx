@@ -168,7 +168,7 @@ const Upgrade = ({ address, onClose }) => {
           </>}
         {confirmUpgradeVisible &&
           <>
-            <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={doUpgrade} action='confirm upgrade' />
+            <OtpStack shouldAutoFocus walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={doUpgrade} action='confirm upgrade' />
 
             <Text type='secondary'>
               How it works:
