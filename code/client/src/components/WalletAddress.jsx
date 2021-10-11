@@ -23,10 +23,12 @@ const displayAddress = ({ address, shorten }) => {
  * - Go to wallet explorer
  * - Switch address style, one address or normal
  */
-const WalletAddressOptions = ({ displayAddress, address, network, onAddressStyleSwitch, itemStyle }) => {
+const WalletAddressOptions = ({ copyText, address, network, onAddressStyleSwitch, itemStyle }) => {
   return (
     <Space size='middle' align='baseline'>
-      <Text copyable={{ text: displayAddress }} style={itemStyle} />
+      <Tooltip title='Copy Hex Address and Label'>
+        <Text copyable={{ text: copyText }} style={itemStyle} />
+      </Tooltip>
       <Tooltip title='Block Explorer'>
         <Link target='_blank' href={util.getNetworkExplorerUrl(address, network)} rel='noreferrer'>
           <DeploymentUnitOutlined style={itemStyle} />
@@ -116,9 +118,12 @@ const WalletAddress = ({ showLabel, labelOverride, address, shorten, onToggle, a
       >
         {showAddressOptions
           ? <WalletAddressOptions
-              onAddressStyleSwitch={() => setShowOneAddress(!showOneAddress)}
+              onAddressStyleSwitch={() => {
+                setShowOneAddress(!showOneAddress)
+                navigator.clipboard.writeText(`${!showOneAddress ? util.safeOneAddress(address) : util.safeNormalizedAddress(address)} (${getLabel(address)})`)
+              }}
               address={address}
-              displayAddress={currentDisplayAddress}
+              copyText={currentDisplayAddress}
               network={network}
               itemStyle={itemStyle}
             />
