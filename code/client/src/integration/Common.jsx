@@ -15,6 +15,7 @@ export const WalletSelector = ({ from, onAddressSelected, filter = e => e, disab
   const network = useSelector(state => state.wallet.network)
   const wallets = useSelector(state => state.wallet.wallets)
   const walletList = Object.keys(wallets).map(e => wallets[e]).filter(e => e.network === network && !e.temp)
+  from = util.safeNormalizedAddress(from)
   const selectedWallet = from && wallets[from]
   const buildAddressObject = wallet => wallet && wallet.address && ({ value: wallet.address, label: `(${wallet.name}) ${util.ellipsisAddress(util.safeOneAddress(wallet.address))}` })
   const firstEligibleWallet = walletList.find(filter)

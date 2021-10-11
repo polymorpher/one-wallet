@@ -7,7 +7,7 @@ import { AddressError } from './constants/errors'
 import BN from 'bn.js'
 import config from './config'
 
-export default {
+const util = {
   // TODO: rewrite using BN to achieve 100% precision
   formatNumber: (number, maxPrecision) => {
     maxPrecision = maxPrecision || 4
@@ -254,6 +254,7 @@ export default {
     return { amount, operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: dest, tokenId: 0, dest: ONEConstants.EmptyAddress }
   }
 }
+export default util
 
 export const updateQRCodeState = (newValue, state) => {
   if (!newValue || (newValue === state.last && (Date.now() - state.lastTime) < 5000)) {
@@ -346,4 +347,9 @@ export const useWaitExecution = (func, runCondition, wait, dependencies) => {
       clearTimeout(timeout)
     }
   }, dependencies)
+}
+
+if (window) {
+  window.ONEWallet = window.ONEWallet || {}
+  window.ONEWallet.util = util
 }
