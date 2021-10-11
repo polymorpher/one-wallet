@@ -16,6 +16,7 @@ export const knownContracts = {
 export const knownCodeHashes = {
   '0x26fd76db23f874f91bf08a2c32a5d046d0a41b9fe39b8585cfa4fc23c2283a7f': {
     name: 'Gnosis Safe Instance',
+    verifiedDomains: [/https:\/\/multisig\.harmony\.one.+/],
     methods: {
       '0x6a761202': {
         name: 'execTransaction',
