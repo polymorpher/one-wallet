@@ -261,6 +261,23 @@ const utils = {
 
   ethMessage: (message) => {
     return '\x19Ethereum Signed Message:\n' + message.length.toString() + message
+  },
+
+  decodeMethodParameters: (signature, bytes, headerless = false) => {
+    const m = signature.match(/.+\((.*)\)/)
+    if (!m) {
+      return null
+    }
+    if (!headerless) {
+      bytes = bytes.slice(10)
+    }
+    const params = m[1] ? m[1].split(',') : []
+    const decoded = abi.decodeParameters(params, bytes)
+    const r = []
+    for (let i = 0; i < params.length; i++) {
+      r.push({ name: params[i], value: decoded[i] })
+    }
+    return r
   }
 }
 module.exports = utils

@@ -21,16 +21,36 @@ export const knownCodeHashes = {
       '0x6a761202': {
         name: 'execTransaction',
         params: ['address', 'uint256', 'bytes', 'uint8', 'uint256', 'uint256', 'uint256', 'address', 'address', 'bytes']
+      },
+      '0xd4d9bdcd': {
+        name: 'approveHash',
+        params: ['bytes32']
       }
     }
   }
 }
 
-export const decodeContractCall = ({ callee, bytes }) => {
+export const decodeContractCall = async ({ callee, bytes }) => {
   const c = callee
   const method = bytes.slice(0, 10)
   const m = c.methods[method]
   if (!m) {
+    const candidates = await api.explorer.decodeMethod(bytes)
+    for (const candidate of candidates) {
+      let r
+      try {
+        if (!candidate.signature) {
+          continue
+        }
+        r = ONEUtil.decodeMethodParameters(candidate.signature, bytes)
+      } catch (ex) {
+        console.error(ex)
+        continue
+      }
+      if (r) {
+        return { name: c.name, method: m.name, parameters: r, verifiedDomains: c.verifiedDomains }
+      }
+    }
     return { name: c.name, verifiedDomains: c.verifiedDomains }
   }
   try {

@@ -730,6 +730,12 @@ const api = {
         isOriginal
       }
     }
+  },
+  explorer: {
+    decodeMethod: (hash) => {
+      const { data } = axios.get(`https://explorer-v2-api.hmny.io/v0/signature/hash/${hash.slice(10)}`)
+      return data || []
+    }
   }
 }
 
