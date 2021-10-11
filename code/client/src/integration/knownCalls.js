@@ -52,10 +52,10 @@ export const decodeKnownCall = async ({ address, bytes }) => {
     return decodeContractCall({ callee: c, bytes })
   }
   const code = await api.blockchain.getCode({ address })
-  if (code === '0x') {
+  if (code === '0x' || !code) {
     return { error: 'Address has no code' }
   }
-  const h = knownCodeHashes[code]
+  const h = knownCodeHashes[ONEUtil.hexString(ONEUtil.keccak(code))]
   if (h) {
     return decodeContractCall({ callee: h, bytes })
   }
