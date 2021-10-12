@@ -147,7 +147,7 @@ const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amo
             <Button size='large' type='text' onClick={cancel} danger>Cancel</Button>
             <Button
               type='primary' size='large' shape='round' onClick={next}
-              disabled={!(selectedAddress.value)}
+              disabled={!(selectedAddress?.value)}
             >Next
             </Button>
           </AverageRow>}

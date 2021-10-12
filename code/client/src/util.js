@@ -117,6 +117,14 @@ const util = {
     return !exports.default.isEmptyAddress(address) && address !== ONEConstants.TreasuryAddress
   },
 
+  isValidWallet: w => {
+    return w && w.root && w.address
+  },
+
+  isUpgradedFrom: (w, from) => {
+    return w && w.address && (!from || w.backlinks?.includes[from]) && util.isEmptyAddress(w.forwardAddress) && !w.temp
+  },
+
   safeExec: (f, args, handler) => {
     if (typeof f !== 'function') {
       return f

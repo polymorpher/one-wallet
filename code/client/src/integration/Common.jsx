@@ -17,7 +17,8 @@ export const WalletSelector = ({ from, onAddressSelected, filter = e => e, disab
   const walletList = Object.keys(wallets).map(e => wallets[e]).filter(e => e.network === network && !e.temp)
   from = util.safeNormalizedAddress(from)
   const selectedWallet = from && wallets[from]
-  const buildAddressObject = wallet => wallet && wallet.address && ({ value: wallet.address, label: `(${wallet.name}) ${util.ellipsisAddress(util.safeOneAddress(wallet.address))}` })
+  console.log('selectedWallet', from, selectedWallet)
+  const buildAddressObject = wallet => wallet && wallet.address ? ({ value: wallet.address, label: `(${wallet.name}) ${util.ellipsisAddress(util.safeOneAddress(wallet.address))}` }) : {}
   const firstEligibleWallet = walletList.find(filter)
   const defaultUserAddress = firstEligibleWallet ? buildAddressObject(firstEligibleWallet) : {}
   const [selectedAddress, setSelectedAddress] = useState(selectedWallet ? buildAddressObject(selectedWallet) : defaultUserAddress)
@@ -25,8 +26,8 @@ export const WalletSelector = ({ from, onAddressSelected, filter = e => e, disab
     onAddressSelected && onAddressSelected(selectedAddress)
   }, [selectedAddress])
   useEffect(() => {
-    if (!wallets[from]) {
-      const upgradedWallet = Object.keys(wallets).map(e => wallets[e]).find(w => w && w.backlinks?.includes[from] && !w.forwardAddress && !w.temp)
+    if (!util.isValidWallet(wallets[from])) {
+      const upgradedWallet = Object.keys(wallets).map(e => wallets[e]).find(w => util.isUpgradedFrom(w, from))
       if (upgradedWallet) {
         const tempWallet = {
           ...upgradedWallet,
@@ -51,7 +52,7 @@ export const WalletSelector = ({ from, onAddressSelected, filter = e => e, disab
       {from && selectedWallet &&
         <AverageRow>
           <Space direction='vertical'>
-            <Paragraph>Using {selectedWallet.temp && 'a pre-upgrade, old wallet address'} </Paragraph>
+            <Paragraph>Using {selectedWallet.temp && 'an older address (which you previously upgraded from)'} </Paragraph>
             <Paragraph><WalletAddress showLabel address={from} /></Paragraph>
           </Space>
         </AverageRow>}
