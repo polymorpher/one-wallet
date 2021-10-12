@@ -10,6 +10,7 @@ import CreatePage from './pages/Create'
 import ListPage from './pages/List'
 import RestorePage from './pages/Restore'
 import ShowPage from './pages/Show'
+import ToolsPage from './pages/Tools'
 import WalletAuth from './integration/WalletAuth'
 import { walletActions } from './state/modules/wallet'
 import config from './config'
@@ -55,6 +56,7 @@ const LocalRoutes = () => {
             <Route path={Paths.wallets} component={ListPage} />
             <Route path={Paths.restore} component={RestorePage} />
             <Route path={Paths.show} component={ShowPage} />
+            <Route path={Paths.tools} component={ToolsPage} />
             <Route path={Paths.unwrap} component={Unwrap} />
             <Route
               exact
