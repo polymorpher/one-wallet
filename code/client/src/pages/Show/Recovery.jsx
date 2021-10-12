@@ -1,4 +1,4 @@
-import { TallRow } from '../../components/Grid'
+import { TallRow, AverageRow } from '../../components/Grid'
 import { Button, Col, Row, Typography } from 'antd'
 import util, { useWindowDimensions } from '../../util'
 import WalletAddress from '../../components/WalletAddress'
@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux'
 import Paths from '../../constants/paths'
 import { useHistory } from 'react-router'
 import WalletConstants from '../../constants/wallet'
-const { Title } = Typography
+const { Text } = Typography
 
 const Recovery = ({ address }) => {
   const history = useHistory()
@@ -25,8 +25,8 @@ const Recovery = ({ address }) => {
   return (
     <>
       <TallRow align='middle'>
-        <Col span={isMobile ? 24 : 8}> <Title level={3}>Recovery Address</Title></Col>
-        {lastResortAddress && !util.isEmptyAddress(lastResortAddress) && lastResortAddress !== WalletConstants.oneWalletTreasury.address &&
+        <Col span={isMobile ? 24 : 6}> <Text>Recovery Address</Text></Col>
+        {lastResortAddress && !util.isEmptyAddress(lastResortAddress) &&
           <Col>
             <WalletAddress
               showLabel
@@ -36,15 +36,16 @@ const Recovery = ({ address }) => {
           </Col>}
       </TallRow>
       <Row align='middle'>
-        <Col span={isMobile ? 24 : 8}><span /></Col>
+        <Col span={isMobile ? 24 : 6}><span /></Col>
         {!util.isRecoveryAddressSet(lastResortAddress) &&
           <Col>
             <Button type='primary' size='large' shape='round' onClick={showSetRecoveryAddress}> Change </Button>
           </Col>}
       </Row>
-      <Row style={{ marginTop: 48 }}>
-        <Button type='primary' size='large' shape='round' onClick={showRecovery} icon={<WarningOutlined />}>Recover funds</Button>
-      </Row>
+      {lastResortAddress && !util.isEmptyAddress(lastResortAddress) && lastResortAddress !== WalletConstants.oneWalletTreasury.address &&
+        <AverageRow justify='end'>
+          <Button type='primary' size='large' shape='round' onClick={showRecovery} icon={<WarningOutlined />}>Recover funds</Button>
+        </AverageRow>}
     </>
   )
 }
