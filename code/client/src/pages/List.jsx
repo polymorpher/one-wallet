@@ -88,7 +88,7 @@ const List = () => {
   const purge = (wallet) => {
     const { root, address } = wallet || {}
     Sentry.withScope(scope => {
-      scope.setContext(omit(wallet, ['hseed']))
+      scope.setContext('wallet', omit(wallet, ['hseed']))
       Sentry.captureMessage('purge1')
     })
 

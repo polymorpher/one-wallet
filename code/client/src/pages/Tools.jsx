@@ -42,9 +42,7 @@ const Tools = () => {
       }
     }
   }
-  const openMultiSig = () => {
 
-  }
   return (
     <AnimatedSection show style={{ minHeight: 320, maxWidth: 720 }}>
       <Space direction='vertical' style={{ width: '100%' }}>
