@@ -23,6 +23,7 @@ export const InputBox = styled(Input).attrs((props) => ({ size: props.size || 'l
   margin-bottom: ${props => props.margin || '32px'};
   border: none;
   border-bottom: 1px dashed black;
+  font-size: 16px;
   &:hover{
     border-bottom: 1px dashed black;
   }
