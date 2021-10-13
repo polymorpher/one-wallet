@@ -121,9 +121,9 @@ const init = () => {
     const key = config.networks[k].key
     const account = new Account(key)
     // console.log(k, account.address, account.bech32Address)
-    c.defaults({ from: account.address })
-    c5.defaults({ from: account.address })
-    c6.defaults({ from: account.address })
+    c.defaults({ from: account.address, gas: config.gasLimit, gasPrice: config.gasPrice })
+    c5.defaults({ from: account.address, gas: config.gasLimit, gasPrice: config.gasPrice })
+    c6.defaults({ from: account.address, gas: config.gasLimit, gasPrice: config.gasPrice })
     contracts[k] = c
     contractsV5[k] = c5
     contractsV6[k] = c6
