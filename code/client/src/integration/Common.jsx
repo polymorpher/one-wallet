@@ -60,15 +60,15 @@ export const WalletSelector = ({ from, onAddressSelected, filter = e => e, disab
         <AverageRow>
           <Space direction='vertical'>
             <Paragraph>The app wants you to use your 1wallet at this address:</Paragraph>
-            <Paragraph> <WalletAddress useHex={useHex} showLabel address={from} /></Paragraph>
+            <Paragraph> <WalletAddress addressStyle={{ padding: 0 }} useHex={useHex} showLabel address={from} /></Paragraph>
             <Paragraph>However, you do not have that 1wallet address in this device. Please go back to the app, and choose an 1wallet address that you own. If you do own that 1wallet address but it is not appearing in your wallets, you need restore the wallet first using "Restore" feature with your Google Authenticator.</Paragraph>
           </Space>
         </AverageRow>}
       {from && selectedWallet &&
         <AverageRow>
           <Space direction='vertical'>
-            <Paragraph>Using {selectedWallet.temp && 'an older address (which you previously upgraded from)'} </Paragraph>
-            <Paragraph><WalletAddress useHex={useHex} showLabel address={from} /></Paragraph>
+            <Paragraph>Using {selectedWallet.temp && 'an old wallet address'} </Paragraph>
+            <Paragraph><WalletAddress addressStyle={{ padding: 0 }} useHex={useHex} showLabel address={from} /></Paragraph>
           </Space>
         </AverageRow>}
       {!from &&
