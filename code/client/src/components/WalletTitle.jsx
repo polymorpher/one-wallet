@@ -67,7 +67,7 @@ const WalletTitle = ({ address, onQrCodeClick, onScanClick, noWarning }) => {
             label: wallet.name,
             isMobile
           })}
-          alwaysShowOptions={isMobile}
+          alwaysShowOptions
           itemStyle={isMobile ? { fontSize: 24 } : {}}
         />
         {wallet.majorVersion >= 9 && (
