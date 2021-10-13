@@ -107,7 +107,6 @@ const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amo
           <Space direction='vertical' style={{ maxWidth: '100%' }}>
             <Title level={3}>"{caller}" wants your 1wallet to do something </Title>
             {calldata.comment && <Paragraph>Reason: {calldata.comment} </Paragraph>}
-            {!calldata.comment && <Paragraph>The app did not provide any explanation </Paragraph>}
             {isNonZeroAmount &&
               <AverageRow>
                 <Space direction='vertical'>
