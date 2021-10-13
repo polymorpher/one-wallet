@@ -3,7 +3,7 @@ import { Col, Typography, Select, Image, Button, message, Row, Tooltip, Input, S
 import React, { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import ONEConstants from '../../../../lib/constants'
-import util from '../../util'
+import util, { useWindowDimensions } from '../../util'
 import { DefaultTrackedERC20, HarmonyONE, withKeys } from '../../components/TokenAssets'
 import api from '../../api'
 import { Hint, InputBox, Warning } from '../../components/Text'
@@ -57,13 +57,14 @@ const maxButtonStyle = {
 }
 
 const tokenSelectorStyle = {
-  minWidth: '160px', border: 'none', borderBottom: '1px solid lightgrey',
+  minWidth: '160px', border: 'none', borderBottom: '1px solid lightgrey', width: '100%', fontSize: 16
 }
 
 const amountInputStyle = {
   margin: 0,
   flex: 1,
-  borderBottom: '1px solid lightgrey'
+  borderBottom: '1px solid lightgrey',
+  width: '100%'
 }
 
 /**
@@ -142,6 +143,7 @@ const isTrivialSwap = (tokenFrom, tokenTo) => {
  * Renders swap coins from ONE wallet or tracked token to another token tab.
  */
 const Swap = ({ address }) => {
+  const { isMobile } = useWindowDimensions()
   const wallets = useSelector(state => state.wallet.wallets)
   const network = useSelector(state => state.wallet.network)
   const wallet = wallets[address] || {}
@@ -579,59 +581,55 @@ const Swap = ({ address }) => {
   return (
     <>
       <TallRow>
-        <Row align='middle' style={{ width: '100%' }} gutter={32}>
-          <Col span={8}>
-            <Text style={textStyle} type='secondary'>From</Text>
+        <Row align='middle' style={{ width: '100%' }} gutter={[32, 32]}>
+          <Col span={isMobile ? 24 : 8}>
+            <Space direction='vertical' style={{ width: '100%' }}>
+              <Text style={textStyle} type='secondary'>From</Text>
+              <Select
+                showSearch
+                bordered={false}
+                labelInValue
+                style={tokenSelectorStyle}
+                value={tokenFrom}
+                onSearch={(value) => { setTokenFrom({ value }) }}
+              >
+                {buildSwapOptions(fromTokens, onSelectTokenSwapFrom)}
+              </Select>
+            </Space>
           </Col>
-          <Col span={16}>
-            <Text style={textStyle} type='secondary'>Amount (Balance: {tokenBalanceFormatted})</Text>
-          </Col>
-        </Row>
-        <Row align='middle' style={{ width: '100%' }} gutter={32}>
-          <Col span={8}>
-            <Select
-              showSearch
-              bordered={false}
-              labelInValue
-              style={tokenSelectorStyle}
-              value={tokenFrom}
-              onSearch={(value) => { setTokenFrom({ value }) }}
-            >
-              {buildSwapOptions(fromTokens, onSelectTokenSwapFrom)}
-            </Select>
-          </Col>
-          <Col span={16}>
-            <Row>
-              <InputBox size='default' style={amountInputStyle} placeholder='0.00' value={fromAmountFormatted} onChange={onAmountChange(true)} />
-              <Button style={maxButtonStyle} shape='round' onClick={setMaxSwapAmount}>Max</Button>
-            </Row>
+          <Col span={isMobile ? 24 : 16}>
+            <Space direction='vertical' style={{ width: '100%' }}>
+              <Text style={textStyle} type='secondary'>Amount (Balance: {tokenBalanceFormatted})</Text>
+              <Row>
+                <InputBox size='default' style={amountInputStyle} placeholder='0.00' value={fromAmountFormatted} onChange={onAmountChange(true)} />
+                <Button style={maxButtonStyle} shape='round' onClick={setMaxSwapAmount}>Max</Button>
+              </Row>
+            </Space>
           </Col>
         </Row>
       </TallRow>
       <TallRow>
-        <Row align='middle' style={{ width: '100%' }}>
-          <Col span={8}>
-            <Text style={textStyle} type='secondary'>To</Text>
+        <Row align='middle' style={{ width: '100%' }} gutter={[32, 32]}>
+          <Col span={isMobile ? 24 : 8}>
+            <Space direction='vertical' style={{ width: '100%' }}>
+              <Text style={textStyle} type='secondary'>To</Text>
+              <Select
+                showSearch
+                bordered={false}
+                labelInValue
+                style={tokenSelectorStyle}
+                value={tokenTo}
+                onSearch={(value) => { setTokenTo({ value }) }}
+              >
+                {buildSwapOptions(toTokens, onSelectTokenSwapTo)}
+              </Select>
+            </Space>
           </Col>
-          <Col span={16}>
-            <Text style={textStyle} type='secondary'>Expected Amount</Text>
-          </Col>
-        </Row>
-        <Row align='middle' style={{ width: '100%' }}>
-          <Col span={8}>
-            <Select
-              showSearch
-              bordered={false}
-              labelInValue
-              style={tokenSelectorStyle}
-              value={tokenTo}
-              onSearch={(value) => { setTokenTo({ value }) }}
-            >
-              {buildSwapOptions(toTokens, onSelectTokenSwapTo)}
-            </Select>
-          </Col>
-          <Col span={16}>
-            <InputBox size='default' style={{ ...amountInputStyle, width: '100%' }} placeholder='0.00' value={toAmountFormatted} onChange={onAmountChange(false)} />
+          <Col span={isMobile ? 24 : 16}>
+            <Space direction='vertical' style={{ width: '100%' }}>
+              <Text style={textStyle} type='secondary'>Expected Amount</Text>
+              <InputBox size='default' style={{ ...amountInputStyle, width: '100%' }} placeholder='0.00' value={toAmountFormatted} onChange={onAmountChange(false)} />
+            </Space>
           </Col>
         </Row>
       </TallRow>
