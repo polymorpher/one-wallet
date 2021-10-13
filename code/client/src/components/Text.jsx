@@ -74,7 +74,7 @@ export const Ul = styled.ul`
   list-style: none!important;
   margin-left: 0;
   padding-left: 1em;
-  text-indent: -1em;
+  //text-indent: -1em;
 `
 export const Li = styled(Paragraph)`
   word-break: break-word;

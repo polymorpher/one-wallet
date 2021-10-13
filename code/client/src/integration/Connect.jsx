@@ -6,7 +6,9 @@ import React, { useState } from 'react'
 import { WALLET_OUTDATED_DISABLED_TEXT, WalletSelector } from './Common'
 const { Title, Text, Paragraph } = Typography
 const ConnectWallet = ({ caller, callback }) => {
+  const [useHex, setUseHex] = useState(false)
   const [selectedAddress, setSelectedAddress] = useState({})
+  const [showOlderVersions, setShowOlderVersions] = useState(false)
   const connect = () => {
     if (!selectedAddress.value) {
       return message.error('No address is selected')
@@ -36,7 +38,12 @@ const ConnectWallet = ({ caller, callback }) => {
           </Text>
         </Space>
       </AverageRow>
-      <WalletSelector onAddressSelected={setSelectedAddress} filter={e => e.majorVersion >= 10} disabledText={WALLET_OUTDATED_DISABLED_TEXT} />
+      <WalletSelector onAddressSelected={setSelectedAddress} filter={e => e.majorVersion >= 10} disabledText={WALLET_OUTDATED_DISABLED_TEXT} showOlderVersions={showOlderVersions} useHex={useHex} />
+      <Space direction='vertical'>
+        <Text>Looking for older addresses? <Button type='link' style={{ padding: 0 }} onClick={() => setShowOlderVersions(!showOlderVersions)}>{!showOlderVersions ? 'Show all addresses' : 'Hide old addresses'}</Button>  </Text>
+        {showOlderVersions && <Text>If you still can't find the old address you are looking for, try first going to "About" tab in the latest version of the wallet, then "Inspect" the old address in the list.</Text>}
+        <Text><Button style={{ padding: 0 }} type='link' onClick={() => setUseHex(!useHex)}>{!useHex ? 'Show Addresses in Hex Format' : 'Show Addresses in ONE format'}</Button> </Text>
+      </Space>
       <AverageRow justify='space-between'>
         <Button size='large' type='text' onClick={cancel} danger>Cancel</Button>
         <Button type='primary' size='large' shape='round' onClick={connect} disabled={!selectedAddress.value}>Connect</Button>
