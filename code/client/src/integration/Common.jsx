@@ -17,7 +17,7 @@ export const WalletSelector = ({ from, onAddressSelected, filter = e => e, disab
   const walletList = Object.keys(wallets).map(e => wallets[e]).filter(e => e.network === network && !e.temp)
   from = util.safeNormalizedAddress(from)
   const selectedWallet = from && wallets[from]
-  console.log('selectedWallet', from, selectedWallet)
+  // console.log('selectedWallet', from, selectedWallet)
   const buildAddressObject = wallet => wallet && wallet.address ? ({ value: wallet.address, label: `(${wallet.name}) ${util.ellipsisAddress(util.safeOneAddress(wallet.address))}` }) : {}
   const firstEligibleWallet = walletList.find(filter)
   const defaultUserAddress = firstEligibleWallet ? buildAddressObject(firstEligibleWallet) : {}
@@ -39,6 +39,7 @@ export const WalletSelector = ({ from, onAddressSelected, filter = e => e, disab
           address: from,
           temp: upgradedWallet.effectiveTime + upgradedWallet.duration,
         }
+        setSelectedAddress(buildAddressObject(tempWallet))
         dispatch(walletActions.updateWallet(tempWallet))
       }
     }
