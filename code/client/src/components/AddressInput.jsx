@@ -341,6 +341,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
           style={{
             width: isMobile ? '100%' : 500,
             borderBottom: '1px dashed black',
+            fontSize: 16,
             ...style
           }}
           notFoundContent={searchingAddress ? <Spin size='small' /> : <Text type='secondary'>No address found</Text>}
