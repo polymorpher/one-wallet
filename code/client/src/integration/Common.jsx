@@ -26,8 +26,11 @@ export const WalletSelector = ({ from, onAddressSelected, filter = e => e, disab
     onAddressSelected && onAddressSelected(selectedAddress)
   }, [selectedAddress])
   useEffect(() => {
+    console.log(`Checking ${from}`, wallets[from])
     if (!util.isValidWallet(wallets[from])) {
-      const upgradedWallet = Object.keys(wallets).map(e => wallets[e]).find(w => util.isUpgradedFrom(w, from))
+      console.log(`${from} is not a valid wallet. Looking for upgraded version`)
+      const upgradedWallet = Object.keys(wallets).map(e => wallets[e]).find(w => util.isUpgradedFrom(w, from) && w.network === network)
+      console.log('Found upgraded wallet', upgradedWallet)
       if (upgradedWallet) {
         const tempWallet = {
           ...upgradedWallet,
@@ -37,7 +40,7 @@ export const WalletSelector = ({ from, onAddressSelected, filter = e => e, disab
         dispatch(walletActions.updateWallet(tempWallet))
       }
     }
-  }, [from])
+  }, [from, wallets, network])
 
   return (
     <>

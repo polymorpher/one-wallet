@@ -122,7 +122,7 @@ const util = {
   },
 
   isUpgradedFrom: (w, from) => {
-    return w && w.address && (!from || w.backlinks?.includes[from]) && util.isEmptyAddress(w.forwardAddress) && !w.temp
+    return w && w.address && (!from || w.backlinks?.includes(from)) && util.isEmptyAddress(w.forwardAddress) && !w.temp
   },
 
   safeExec: (f, args, handler) => {
