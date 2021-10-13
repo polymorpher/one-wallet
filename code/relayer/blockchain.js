@@ -15,6 +15,7 @@ const ONEWalletV6 = require('../build/contracts/ONEWalletV6.json')
 const HDWalletProvider = require('@truffle/hdwallet-provider')
 const fs = require('fs/promises')
 const path = require('path')
+const { pick } = require('lodash')
 
 const providers = {}
 const contracts = {}
@@ -129,7 +130,7 @@ const init = () => {
   })
   console.log('init complete:', {
     networks,
-    providers: Object.keys(providers).map(k => providers[k].toString()),
+    providers: Object.keys(providers).map(k => pick(providers[k], ['gasLimit', 'gasPrice', 'addresses'])),
     contracts: Object.keys(contracts).map(k => contracts[k].toString()),
     contractsV5: Object.keys(contractsV5).map(k => contracts[k].toString()),
     contractsV6: Object.keys(contractsV6).map(k => contracts[k].toString()),
