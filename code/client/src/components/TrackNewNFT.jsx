@@ -10,7 +10,7 @@ import ONE from '../../../lib/onewallet'
 import walletActions from '../state/modules/wallet/actions'
 import { api } from '../../../lib/api'
 import { TallRow } from './Grid'
-import { Heading, Hint, InputBox, Label } from './Text'
+import { Heading, Hint, InputBox, Label, LabeledRow } from './Text'
 
 const TrackNewNFT = ({ onClose, onTracked, address }) => {
   const dispatch = useDispatch()
@@ -81,30 +81,21 @@ const TrackNewNFT = ({ onClose, onTracked, address }) => {
   }
 
   return (
-    <TallRow>
-      <Space direction='vertical' size='large'>
+    <TallRow style={{ width: '100%' }}>
+      <Space direction='vertical' size='large' style={{ width: '100%' }}>
         <Heading>Track Another Collectible</Heading>
-        <Space align='baseline' size='large'>
-          <Label ultraWide><Hint>Contract Address</Hint></Label>
-          <Space direction={isMobile ? 'vertical' : 'horizontal'} align='end'>
-            <InputBox margin='auto' width={440} value={newContractAddress} onChange={({ target: { value } }) => setNewContractAddress(value)} placeholder='one1...' />
-          </Space>
-        </Space>
-        <Space align='baseline' size='large'>
-          <Label ultraWide><Hint>Collectible ID</Hint></Label>
-          <Space direction={isMobile ? 'vertical' : 'horizontal'} align='end'>
-            <InputBox margin='auto' width={200} value={tokenIdInput} onChange={({ target: { value } }) => setTokenIdInput(value)} placeholder='0x... or 123...' />
-          </Space>
-        </Space>
-        <Space align='baseline' size='large'>
-          <Label ultraWide><Hint>Collectible Type</Hint></Label>
-          <Space direction={isMobile ? 'vertical' : 'horizontal'} align='end'>
-            <Select value={tokenTypeInput} labelInValue onChange={v => setTokenTypeInput(v)}>
-              <Select.Option value={ONEConstants.TokenType.ERC1155}>{ONEConstants.TokenType[ONEConstants.TokenType.ERC1155]}</Select.Option>
-              <Select.Option value={ONEConstants.TokenType.ERC721}>{ONEConstants.TokenType[ONEConstants.TokenType.ERC721]}</Select.Option>
-            </Select>
-          </Space>
-        </Space>
+        <LabeledRow isMobile={isMobile} label='Contract' align='middle'>
+          <InputBox margin='auto' width='100%' value={newContractAddress} onChange={({ target: { value } }) => setNewContractAddress(value)} placeholder='one1...' />
+        </LabeledRow>
+        <LabeledRow isMobile={isMobile} label='ID' align='middle'>
+          <InputBox margin='auto' width='100%' value={tokenIdInput} onChange={({ target: { value } }) => setTokenIdInput(value)} placeholder='0x... or 123...' />
+        </LabeledRow>
+        <LabeledRow isMobile={isMobile} label='Type' align='middle'>
+          <Select value={tokenTypeInput} labelInValue onChange={v => setTokenTypeInput(v)}>
+            <Select.Option value={ONEConstants.TokenType.ERC1155}>{ONEConstants.TokenType[ONEConstants.TokenType.ERC1155]}</Select.Option>
+            <Select.Option value={ONEConstants.TokenType.ERC721}>{ONEConstants.TokenType[ONEConstants.TokenType.ERC721]}</Select.Option>
+          </Select>
+        </LabeledRow>
         <TallRow justify='space-between'>
           <Button size='large' type='text' onClick={() => onClose(null)} danger>Cancel</Button>
           <Button type='primary' size='large' shape='round' disabled={!newContractAddress || !tokenTypeInput || !tokenIdInput} onClick={addToken}>Confirm</Button>

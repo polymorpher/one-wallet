@@ -82,15 +82,15 @@ export const Li = styled(Paragraph)`
   text-overflow: ellipsis;
 `
 
-export const LabeledRow = ({ label, ultrawide = false, isMobile, wide = !isMobile, children, labelSpan = 4, align = 'baseline', pending = false }) => {
+export const LabeledRow = ({ label, doubleRow = false, ultrawide = false, isMobile, wide = !isMobile, children, labelSpan = 4, align = 'baseline', pending = false }) => {
   return (
     <AverageRow align={align}>
-      <Col xs={labelSpan}>
+      <Col xs={isMobile && doubleRow ? 24 : labelSpan}>
         <Label ultrawide={ultrawide} wide={wide} style={{ fontSize: isMobile ? '12px' : undefined }}>
           <Hint>{label}</Hint>
         </Label>
       </Col>
-      <Col xs={24 - labelSpan}>
+      <Col xs={isMobile && doubleRow ? 24 : 24 - labelSpan}>
         {pending ? <Spin /> : children}
       </Col>
     </AverageRow>
