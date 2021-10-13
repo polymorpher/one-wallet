@@ -33,7 +33,7 @@ const ScanButton = ({ isMobile, showQrCodeScanner, setShowQrCodeScanner }) => {
  * Renders address input that provides type ahead search for any known addresses.
  * Known addresses are addresses that have been entered by user for at least once.
  */
-const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSelectOptions, disableManualInput, disabled, style, allowTemp }) => {
+const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSelectOptions, disableManualInput, disabled, style, allowTemp, useHex }) => {
   const dispatch = useDispatch()
   const state = useRef({ last: undefined, lastTime: Date.now() }).current
   const [searchingAddress, setSearchingAddress] = useState(false)
@@ -78,7 +78,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
       const domainName = await api.blockchain.domain.reverseLookup({ address: validAddress })
 
       onSelectAddress({
-        label: domainName || oneAddress,
+        label: domainName || (useHex ? validAddress : oneAddress),
         value: validAddress
       })
 
@@ -211,7 +211,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
           }
         : {
             value: addressObject.value,
-            label: util.safeOneAddress(addressObject.value),
+            label: useHex ? addressObject.value : util.safeOneAddress(addressObject.value),
             domainName: addressObject.domainName,
             selected: true
           })
@@ -279,13 +279,13 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
     filterValue
   }) => {
     const oneAddress = util.safeOneAddress(address)
-    const addressDisplay = util.shouldShortenAddress({ label, isMobile }) ? util.ellipsisAddress(oneAddress) : oneAddress
+    const addressDisplay = util.shouldShortenAddress({ label, isMobile }) ? util.ellipsisAddress(useHex ? address : oneAddress) : (useHex ? address : oneAddress)
     const displayLabel = `${label ? `(${label})` : ''} ${addressDisplay}`
     return (
       <Select.Option key={addressDisplay} value={filterValue} style={{ padding: 0 }}>
         <Row align='left'>
           <Col span={!displayDeleteButton ? 24 : 20}>
-            <Tooltip title={oneAddress}>
+            <Tooltip title={useHex ? address : oneAddress}>
               <Button
                 block
                 type='text'
@@ -336,7 +336,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
       <Space direction='vertical' style={{ width: '100%' }}>
         <Select
           suffixIcon={<ScanButton isMobile={isMobile} setShowQrCodeScanner={setShowQrCodeScanner} showQrCodeScanner={showQrCodeScanner} />}
-          placeholder='one1......'
+          placeholder={useHex ? '0x...' : 'one1......'}
           labelInValue
           style={{
             width: isMobile ? '100%' : 500,
@@ -376,7 +376,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
                 displayDeleteButton,
                 label: addressLabel,
                 domainName: knownAddress.domain?.name,
-                filterValue: `${knownAddress.address} ${oneAddress} ${knownAddress.domain?.name}`
+                filterValue: `${knownAddress.address} ${useHex ? knownAddress.address : oneAddress} ${knownAddress.domain?.name}`
               })
             })
         }
