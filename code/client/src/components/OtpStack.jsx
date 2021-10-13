@@ -1,7 +1,7 @@
-import { Space, Tooltip } from 'antd'
+import { Button, Space, Tooltip } from 'antd'
 import { Hint, Label } from './Text'
 import OtpBox from './OtpBox'
-import { QuestionCircleOutlined } from '@ant-design/icons'
+import { QuestionCircleOutlined, SnippetsOutlined } from '@ant-design/icons'
 import React, { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router'
 import { useWindowDimensions } from '../util'
@@ -47,7 +47,7 @@ export const OtpStack = ({ shouldAutoFocus, wideLabel, walletName, otpState, dou
 
   return (
     <Space direction='vertical'>
-      <Space align='baseline' size='large' style={{ marginTop: 16 }}>
+      <Space align='center' size='large' style={{ marginTop: 16 }}>
         <Label wide={wideLabel}>
           <Hint>Code {doubleOtp ? '1' : ''}</Hint>
         </Label>
@@ -58,9 +58,12 @@ export const OtpStack = ({ shouldAutoFocus, wideLabel, walletName, otpState, dou
           shouldAutoFocus={shouldAutoFocus}
           containerStyle={{ maxWidth: isMobile ? 176 : '100%' }}
         />
-        <Tooltip title={`from your Google Authenticator, i.e. ${walletName}`}>
-          <QuestionCircleOutlined />
-        </Tooltip>
+        <Space direction='vertical' align='center'>
+          <Tooltip title={`from your Google Authenticator, i.e. ${walletName}`}>
+            <QuestionCircleOutlined />
+          </Tooltip>
+          {isMobile && <Button type='default' shape='round' icon={<SnippetsOutlined />} onClick={() => { navigator.clipboard.readText().then(t => setOtpInput(t)) }} />}
+        </Space>
       </Space>
       {doubleOtp &&
         <Space align='baseline' size='large' style={{ marginTop: 16 }}>
@@ -71,10 +74,14 @@ export const OtpStack = ({ shouldAutoFocus, wideLabel, walletName, otpState, dou
             ref={otp2Ref}
             value={otp2Input}
             onChange={setOtp2Input}
+            containerStyle={{ maxWidth: isMobile ? 176 : '100%' }}
           />
-          <Tooltip title={`from your Google Authenticator, i.e. ${walletName} (2nd)`}>
-            <QuestionCircleOutlined />
-          </Tooltip>
+          <Space direction='vertical' align='center'>
+            <Tooltip title={`from your Google Authenticator, i.e. ${walletName} (2nd)`}>
+              <QuestionCircleOutlined />
+            </Tooltip>
+            {isMobile && <Button type='default' shape='round' icon={<SnippetsOutlined />} onClick={() => { navigator.clipboard.readText().then(t => setOtp2Input(t)) }} />}
+          </Space>
         </Space>}
       {action && <Space align='baseline'><Label wide={wideLabel} /><Hint style={{ marginLeft: 16 }}>({action})</Hint></Space>}
     </Space>
