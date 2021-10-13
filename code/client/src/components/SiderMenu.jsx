@@ -9,6 +9,7 @@ import Paths from '../constants/paths'
 import styled from 'styled-components'
 import { useWindowDimensions } from '../util'
 import api from '../api'
+import abbr from '../abbr'
 import * as Sentry from '@sentry/browser'
 
 const { Link } = Typography
@@ -102,7 +103,7 @@ const SiderMenu = ({ ...args }) => {
                     </Row>
                     <Row>
                       <Tag color='dimgray' style={{ margin: 0, width: 64, borderRadius: 0, textAlign: 'center' }}>balance</Tag>
-                      <Tag color='steelblue' style={{ width: 80, borderRadius: 0, textAlign: 'center' }}>{stats.totalAmount.toLocaleString()} ONE</Tag>
+                      <Tag color='steelblue' style={{ width: 80, borderRadius: 0, textAlign: 'center' }}>{abbr(stats.totalAmount, 0)} ONE</Tag>
                     </Row>
                   </Row>)
                 : (
