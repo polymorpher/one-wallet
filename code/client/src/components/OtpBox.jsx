@@ -2,7 +2,7 @@ import OtpInput from 'react-otp-input'
 import React, { forwardRef } from 'react'
 import { useWindowDimensions } from '../util'
 
-const OtpBox = ({ onChange, value, inputStyle, ...params }, ref) => {
+const OtpBox = ({ onChange, value, inputStyle, containerStyle, ...params }, ref) => {
   const { isMobile } = useWindowDimensions()
   return (
     <OtpInput
@@ -13,7 +13,8 @@ const OtpBox = ({ onChange, value, inputStyle, ...params }, ref) => {
       numInputs={6}
       containerStyle={{
         flexWrap: 'wrap',
-        gap: '5px'
+        gap: '5px',
+        ...containerStyle
       }}
       inputStyle={{
         width: isMobile ? 40 : 32,

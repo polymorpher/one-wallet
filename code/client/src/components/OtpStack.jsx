@@ -4,6 +4,7 @@ import OtpBox from './OtpBox'
 import { QuestionCircleOutlined } from '@ant-design/icons'
 import React, { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router'
+import { useWindowDimensions } from '../util'
 
 export const useOtpState = () => {
   const [otpInput, setOtpInput] = useState('')
@@ -19,6 +20,7 @@ export const useOtpState = () => {
 }
 
 export const OtpStack = ({ shouldAutoFocus, wideLabel, walletName, otpState, doubleOtp, onComplete, action }) => {
+  const { isMobile } = useWindowDimensions()
   const location = useLocation()
   const { otpRef, otp2Ref, otpInput, otp2Input, setOtpInput, setOtp2Input, resetOtp } = otpState || useOtpState()
 
@@ -54,6 +56,7 @@ export const OtpStack = ({ shouldAutoFocus, wideLabel, walletName, otpState, dou
           value={otpInput}
           onChange={setOtpInput}
           shouldAutoFocus={shouldAutoFocus}
+          containerStyle={{ maxWidth: isMobile ? 176 : '100%' }}
         />
         <Tooltip title={`from your Google Authenticator, i.e. ${walletName}`}>
           <QuestionCircleOutlined />
