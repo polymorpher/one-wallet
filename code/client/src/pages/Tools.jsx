@@ -256,10 +256,10 @@ const Tools = () => {
           <Text>This tool helps you quickly setup MetaMask for Harmony. Follow the instructions on MetaMask extension to complete the setup</Text>
           <Divider />
           <Text>You should see something like this. Verify the information and click "Approve" to proceed.</Text>
-          <Row justify='center'><Image src={MetaMaskAdd} style={{ maxHeight: 600 }} /></Row>
+          <Row justify='center'><Image src={MetaMaskAdd} style={{ objectFit: 'contain', maxHeight: 600 }} /></Row>
           <Divider />
           <Text>If you already had Harmony on MetaMask, it will help you switch to Harmony network instead.</Text>
-          <Row justify='center'><Image src={MetaMaskSwitch} style={{ maxHeight: 600 }} /></Row>
+          <Row justify='center'><Image src={MetaMaskSwitch} style={{ objectFit: 'contain', maxHeight: 600 }} /></Row>
           <TallRow justify='space-between'>
             <Button type='text' danger onClick={() => openTool()}>Cancel</Button>
             <Button type='primary' shape='round' onClick={addHarmonyNetwork}>Retry</Button>
