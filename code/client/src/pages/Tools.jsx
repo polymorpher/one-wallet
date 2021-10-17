@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import AnimatedSection from '../components/AnimatedSection'
-import { Typography, Divider, Button, Space, message } from 'antd'
+import { Typography, Divider, Button, Space, message, Image, Row } from 'antd'
 import { useSelector } from 'react-redux'
 import { Hint, InputBox, LabeledRow } from '../components/Text'
 import WalletAddress from '../components/WalletAddress'
@@ -12,12 +12,25 @@ import { KnownERC20 } from '../components/TokenAssets'
 import ONEUtil from '../../../lib/util'
 import ONEConstants from '../../../lib/constants'
 import { TallRow } from '../components/Grid'
+import { matchPath, useHistory, useLocation, useRouteMatch } from 'react-router'
+import Paths from '../constants/paths'
+import MetaMaskAdd from '../../assets/metamask-add.png'
+import MetaMaskSwitch from '../../assets/metamask-switch.png'
+import walletActions from '../state/modules/wallet/actions'
 const { Text, Link, Title, Paragraph } = Typography
 
 const Sections = {
-  SushiEncoder: 'sushi',
+  SushiEncoder: 'safe-sushi',
+  MetamaskAdd: 'metamask-add',
   Home: '',
 }
+
+const ToolMap = {
+  'safe-sushi': true,
+  '': true,
+  'metamask-add': true,
+}
+
 const SectionConfig = {
   style: { minHeight: 320, maxWidth: 720 }
 }
@@ -35,6 +48,7 @@ const SushiSwapEncoder = ({ onClose }) => {
   const [isInputAmountFocused, setIsInputAmountFocused] = useState()
   const [deadline, setDeadline] = useState()
   const [slippage] = useState(50)
+
   useEffect(() => {
     async function f () {
       let input
@@ -85,6 +99,7 @@ const SushiSwapEncoder = ({ onClose }) => {
       message.error('Unable to compute the encoding. Error: ' + ex.toString())
     }
   }, [input, output, transferTo])
+
   return (
     <>
       <Text>This tool helps you produce the hex data required to swap ONE for 1USDT using a Harmony Safe transaction</Text>
@@ -132,48 +147,74 @@ const SushiSwapEncoder = ({ onClose }) => {
   )
 }
 
-const Tools = () => {
-  const dev = useSelector(state => state.wallet.dev)
-  const wallets = useSelector(state => state.wallet.wallets)
-  const [section, setSection] = useState(Sections.Home)
-  const addHarmonyNetwork = async () => {
-    if (!window.ethereum || !window.ethereum.isMetaMask) {
-      message.error('MetaMask not found')
+const addHarmonyNetwork = async () => {
+  if (!window.ethereum || !window.ethereum.isMetaMask) {
+    message.error('MetaMask not found')
+    return
+  }
+  try {
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: '0x63564C40' }],
+    })
+    message.success('Switched to Harmony Network on MetaMask')
+  } catch (ex) {
+    console.error(ex)
+    if (ex.code !== 4902) {
+      message.error('Failed to switch to Harmony network:' + ex.message)
       return
     }
     try {
       await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: '0x63564C40' }],
+        method: 'wallet_addEthereumChain',
+        params: [{
+          chainId: '0x63564C40', // A 0x-prefixed hexadecimal string
+          chainName: 'Harmony Mainnet Shard 0',
+          nativeCurrency: {
+            name: 'ONE',
+            symbol: 'ONE',
+            decimals: 18
+          },
+          rpcUrls: ['https://api.harmony.one'],
+          blockExplorerUrls: ['https://www.harmony.one/']
+        }]
       })
-      message.success('Switched to Harmony Network on MetaMask')
-    } catch (ex) {
-      console.error(ex)
-      if (ex.code !== 4902) {
-        message.error('Failed to switch to Harmony network:' + ex.toString())
-        return
-      }
-      try {
-        await window.ethereum.request({
-          method: 'wallet_addEthereumChain',
-          params: [{
-            chainId: '0x63564C40', // A 0x-prefixed hexadecimal string
-            chainName: 'Harmony Mainnet Shard 0',
-            nativeCurrency: {
-              name: 'ONE',
-              symbol: 'ONE',
-              decimals: 18
-            },
-            rpcUrls: ['https://api.harmony.one'],
-            blockExplorerUrls: ['https://www.harmony.one/']
-          }]
-        })
-        message.success('Added Harmony Network on MetaMask')
-      } catch (ex2) {
-        message.error('Failed to add Harmony network:' + ex.toString())
-      }
+      message.success('Added Harmony Network on MetaMask')
+    } catch (ex2) {
+      // message.error('Failed to add Harmony network:' + ex.toString())
+      message.error('Failed to add Harmony network:' + ex.message)
     }
   }
+}
+
+const Tools = () => {
+  const dev = useSelector(state => state.wallet.dev)
+  const wallets = useSelector(state => state.wallet.wallets)
+  const [section, setSection] = useState(Sections.Home)
+
+  const history = useHistory()
+  const location = useLocation()
+  const match = useRouteMatch(Paths.toolLink)
+  const { tool } = match ? match.params : {}
+
+  useEffect(() => {
+    const m = matchPath(location.pathname, { path: Paths.toolLink })
+    const { tool } = m ? m.params : {}
+
+    if (ToolMap[tool] === true) {
+      setSection(tool)
+      return
+    }
+    setSection(Sections.Home)
+  }, [location])
+
+  useEffect(() => {
+    if (section === Sections.MetamaskAdd) {
+      addHarmonyNetwork()
+    }
+  }, [section])
+
+  const openTool = (tool) => { history.push(Paths.toolOpen(tool)) }
 
   const dumpState = () => {
     const url = window.URL.createObjectURL(new Blob([JSON.stringify(wallets)], { type: 'application/json' }))
@@ -192,12 +233,12 @@ const Tools = () => {
       <AnimatedSection show={section === Sections.Home} {...SectionConfig}>
         <Space direction='vertical' style={{ width: '100%' }}>
           <Title level={3}>MetaMask</Title>
-          <Button type='primary' shape='round' onClick={addHarmonyNetwork}>Switch to Harmony Network</Button>
+          <Button type='primary' shape='round' onClick={() => openTool(Sections.MetamaskAdd)}>Switch to Harmony Network</Button>
           <Divider />
           <Title level={3}>Harmony Safe</Title>
           <Space wrap>
             <Button type='primary' shape='round' href='http://multisig.harmony.one' target='_blank'>Open Harmony MultiSig</Button>
-            <Button type='primary' shape='round' onClick={() => setSection(Sections.SushiEncoder)}>SushiSwap Transaction Encoder</Button>
+            <Button type='primary' shape='round' onClick={() => openTool(Sections.SushiEncoder)}>SushiSwap Transaction Encoder</Button>
           </Space>
           {dev &&
             <>
@@ -208,7 +249,22 @@ const Tools = () => {
         </Space>
       </AnimatedSection>
       <AnimatedSection show={section === Sections.SushiEncoder} title='Harmony Safe | SushiSwap Encoder' {...SectionConfig}>
-        <SushiSwapEncoder onClose={() => setSection(Sections.Home)} />
+        <SushiSwapEncoder onClose={() => openTool()} />
+      </AnimatedSection>
+      <AnimatedSection show={section === Sections.MetamaskAdd} title='Switch to Harmony Network' {...SectionConfig}>
+        <Space direction='vertical' style={{ width: '100%' }}>
+          <Text>This tool helps you quickly setup MetaMask for Harmony. Follow the instructions on MetaMask extension to complete the setup</Text>
+          <Divider />
+          <Text>You should see something like this. Verify the information and click "Approve" to proceed.</Text>
+          <Row justify='center'><Image src={MetaMaskAdd} style={{ maxHeight: 600 }} /></Row>
+          <Divider />
+          <Text>If you already had Harmony on MetaMask, it will help you switch to Harmony network instead.</Text>
+          <Row justify='center'><Image src={MetaMaskSwitch} style={{ maxHeight: 600 }} /></Row>
+          <TallRow justify='space-between'>
+            <Button type='text' danger onClick={() => openTool()}>Cancel</Button>
+            <Button type='primary' shape='round' onClick={addHarmonyNetwork}>Retry</Button>
+          </TallRow>
+        </Space>
       </AnimatedSection>
     </>
   )
