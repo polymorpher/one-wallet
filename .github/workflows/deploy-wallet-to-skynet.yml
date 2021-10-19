@@ -1,0 +1,34 @@
+name: Deploy wallet to Skynet
+
+on:
+  pull_request:
+    paths:
+      - code/client/**
+      - scripts/hdnode.js
+  push:
+    branches:
+      - master
+    paths:
+      - code/client/**
+      - scripts/hdnode.js
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+
+      - run: scripts/setup.sh
+      - run: yarn build
+        working-directory: code/client
+
+      - name: Deploy to Skynet
+        uses: skynetlabs/deploy-to-skynet-action@v2
+        with:
+          upload-dir: code/client/dist
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          registry-seed: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && secrets.SKYNET_WALLET_REGISTRY_SEED || '' }}
