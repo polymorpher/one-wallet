@@ -4,12 +4,14 @@ on:
   pull_request:
     paths:
       - code/client/**
+      - code/yarn.lock
       - scripts/hdnode.js
   push:
     branches:
       - master
     paths:
       - code/client/**
+      - code/yarn.lock
       - scripts/hdnode.js
 
 jobs:
