@@ -15,10 +15,10 @@ import {
   Typography,
   Slider,
   Image,
-  message,
   Checkbox,
   Tooltip
 } from 'antd'
+import message from '../message'
 import { RedoOutlined, LoadingOutlined, QuestionCircleOutlined, SnippetsOutlined } from '@ant-design/icons'
 import humanizeDuration from 'humanize-duration'
 import AnimatedSection from '../components/AnimatedSection'

@@ -1,6 +1,6 @@
 import walletActions from '../state/modules/wallet/actions'
 import storage from './index'
-import { message } from 'antd'
+import message from '../message'
 import Paths from '../constants/paths'
 
 export const deleteWalletLocally = async ({ wallet, wallets, dispatch, history, silent }) => {

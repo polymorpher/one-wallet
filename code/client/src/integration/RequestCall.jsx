@@ -1,4 +1,5 @@
-import { Button, message, Space, Typography, Divider } from 'antd'
+import { Button, Space, Typography, Divider } from 'antd'
+import message from '../message'
 import BN from 'bn.js'
 import AnimatedSection from '../components/AnimatedSection'
 import { AverageRow } from '../components/Grid'

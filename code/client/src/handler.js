@@ -1,4 +1,4 @@
-import { message } from 'antd'
+import message from './message'
 import * as Sentry from '@sentry/browser'
 
 // For UI Error handling

@@ -1,5 +1,6 @@
 import { TallRow } from '../../components/Grid'
-import { Col, Typography, Select, Image, Button, message, Row, Tooltip, Input, Space } from 'antd'
+import { Col, Typography, Select, Image, Button, Row, Tooltip, Input, Space } from 'antd'
+import message from '../../message'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import ONEConstants from '../../../../lib/constants'

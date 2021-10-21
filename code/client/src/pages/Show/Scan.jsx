@@ -1,6 +1,7 @@
 import React, { useRef } from 'react'
 import config from '../../config'
-import { message, Row, Space, Typography } from 'antd'
+import { Row, Space, Typography } from 'antd'
+import message from '../../message'
 import util, { updateQRCodeState } from '../../util'
 import QrCodeScanner from '../../components/QrCodeScanner'
 import WalletConstants from '../../constants/wallet'

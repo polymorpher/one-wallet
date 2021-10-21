@@ -1,5 +1,6 @@
 import { CloseOutlined, ScanOutlined } from '@ant-design/icons'
-import { Select, Button, Tooltip, Row, Col, Spin, Typography, Space, message } from 'antd'
+import { Select, Button, Tooltip, Row, Col, Spin, Typography, Space } from 'antd'
+import message from '../message'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'

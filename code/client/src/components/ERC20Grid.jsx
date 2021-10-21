@@ -1,4 +1,4 @@
-import { Card, Image, Row, Space, Typography, Col, Divider, Button, message } from 'antd'
+import { Card, Image, Row, Space, Typography, Col, Divider, Button } from 'antd'
 import { unionWith, isNull, isUndefined } from 'lodash'
 import walletActions from '../state/modules/wallet/actions'
 
@@ -15,6 +15,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import abbr from '../abbr'
 import { handleAddressError } from '../handler'
 import ONEConstants from '../../../lib/constants'
+import message from '../message'
 const { Text, Link } = Typography
 
 export const handleTrackNewToken = async ({ newContractAddress, currentTrackedTokens, dispatch, address, hideWarning }) => {

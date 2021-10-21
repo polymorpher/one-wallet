@@ -278,12 +278,16 @@ export const generateOtpSeed = () => {
   return window.crypto.getRandomValues(otpSeedBuffer)
 }
 
-function getWindowDimensions () {
+export function getWindowDimensions () {
   const { innerWidth: width, innerHeight: height } = window
   return {
     width,
     height
   }
+}
+
+export function isMobile () {
+  return !(getWindowDimensions().width >= 992)
 }
 
 export const OSType = {

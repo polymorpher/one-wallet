@@ -1,14 +1,12 @@
 import { useSelector } from 'react-redux'
 import React, { useEffect, useState } from 'react'
-import { Button, Row, Space, Typography, message, Select, Image, Tooltip, Input } from 'antd'
+import { Button, Row, Space, Typography, Select, Image, Tooltip} from 'antd'
 import {
-  CheckCircleOutlined,
   CloseOutlined,
   CloseCircleOutlined,
-  LoadingOutlined,
-  PlusCircleOutlined, QuestionCircleOutlined, PercentageOutlined,
+  PlusCircleOutlined, QuestionCircleOutlined,
 } from '@ant-design/icons'
-import { Hint, InputBox, Label, UltraWideLabel } from '../../components/Text'
+import { Hint, InputBox, Label} from '../../components/Text'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
 import util, { generateOtpSeed, useWindowDimensions } from '../../util'

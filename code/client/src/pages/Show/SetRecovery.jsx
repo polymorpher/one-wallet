@@ -1,5 +1,6 @@
-import { Button, message, Row, Space, Typography } from 'antd'
-import { CloseOutlined, LoadingOutlined } from '@ant-design/icons'
+import { Button, Space, Typography } from 'antd'
+import message from '../../message'
+import { CloseOutlined } from '@ant-design/icons'
 import { Hint, Label } from '../../components/Text'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'

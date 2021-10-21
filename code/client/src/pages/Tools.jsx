@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import AnimatedSection from '../components/AnimatedSection'
-import { Typography, Divider, Button, Space, message, Image, Row } from 'antd'
+import { Typography, Divider, Button, Space, Image, Row } from 'antd'
+import message from '../message'
 import { useSelector } from 'react-redux'
 import { Hint, InputBox, LabeledRow } from '../components/Text'
 import WalletAddress from '../components/WalletAddress'

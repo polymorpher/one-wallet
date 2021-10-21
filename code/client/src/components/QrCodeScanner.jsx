@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Button, message, Row, Select, Upload } from 'antd'
+import { Button, Row, Select, Upload } from 'antd'
+import message from '../message'
 import QrReader from 'react-qr-reader'
 import { useWindowDimensions } from '../util'
 import { LoadingOutlined, UploadOutlined } from '@ant-design/icons'

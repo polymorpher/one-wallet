@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/browser'
-import { message, Typography } from 'antd'
+import { Typography } from 'antd'
+import message from '../../message'
 import config from '../../config'
 import util from '../../util'
 import React from 'react'
@@ -119,4 +120,3 @@ export default {
     return { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed, restart }
   }
 }
-

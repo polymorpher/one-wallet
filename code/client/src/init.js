@@ -1,5 +1,5 @@
 import config from './config'
-import { message } from 'antd'
+import message from './message'
 import storage from './storage'
 import { setMessage } from '../../lib/api/message'
 import { setStorage } from '../../lib/api/storage'

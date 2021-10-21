@@ -1,26 +1,18 @@
 import { useDispatch, useSelector } from 'react-redux'
 import React, { useEffect, useState } from 'react'
 import ONEConstants from '../../../../lib/constants'
-import ONEUtil from '../../../../lib/util'
 import util, { useWindowDimensions } from '../../util'
-import config from '../../config'
-import BN from 'bn.js'
-import { Button, Card, Typography, Space, message, Row, Steps, Spin, Popconfirm } from 'antd'
-import { OtpStack, useOtpState } from '../../components/OtpStack'
-import { useRandomWorker } from './randomWorker'
-import ShowUtils from './show-util'
-import { SmartFlows } from '../../../../lib/api/flow'
-import ONE from '../../../../lib/onewallet'
+import { Button, Card, Typography, Space, Row, Spin, Popconfirm } from 'antd'
+import message from '../../message'
 import { api } from '../../../../lib/api'
 import { walletActions } from '../../state/modules/wallet'
 import { useHistory } from 'react-router'
 import Paths from '../../constants/paths'
 import WalletAddress from '../../components/WalletAddress'
 import { DeleteOutlined } from '@ant-design/icons'
-import storage from '../../storage'
 import { deleteWalletLocally } from '../../storage/util'
-const { Title, Text, Link } = Typography
-const { Step } = Steps
+const { Title, Text } = Typography
+
 const CardStyle = {
   backgroundColor: 'rgba(0,0,0,0.15)',
   position: 'absolute',
