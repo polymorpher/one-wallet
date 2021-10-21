@@ -140,7 +140,7 @@ const Upgrade = ({ address, onClose }) => {
     setSkipUpdate(true)
     onClose && onClose()
   }
-  if (!requireUpdate || skipUpdate || !canUpgrade || temp || forwardAddress) {
+  if (!requireUpdate || skipUpdate || !canUpgrade || temp || !util.isEmptyAddress(forwardAddress)) {
     return <></>
   }
 
