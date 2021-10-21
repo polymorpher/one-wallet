@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Button, Col, Row, Space, Typography } from 'antd'
 import { CheckCircleOutlined, CloseOutlined, LoadingOutlined } from '@ant-design/icons'
-import { Hint, InputBox, Label } from '../../components/Text'
+import { Hint, InputBox, Label, Warning } from '../../components/Text'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
@@ -18,7 +18,8 @@ import { intersection } from 'lodash'
 import ONEConstants from '../../../../lib/constants'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
-const { Title } = Typography
+import { AverageRow } from '../../components/Grid'
+const { Title, Link } = Typography
 
 const Send = ({
   address,
@@ -231,6 +232,11 @@ const Send = ({
         </Col>
       </Row>
       <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
+      <AverageRow>
+        <Warning>
+          Please do not send funds to exchange-owned addresses such as Binance and crypto.com (custody wallet). Their automated system cannot detect deposits from smart contracts at the moment. They are still <Link href='https://github.com/polymorpher/one-wallet/issues/93' target='_blank' rel='noreferrer'>working on it</Link>.
+        </Warning>
+      </AverageRow>
     </AnimatedSection>
   )
 }
