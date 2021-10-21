@@ -37,7 +37,7 @@ const Upgrade = ({ address, onClose }) => {
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
   const [skipUpdate, setSkipUpdate] = useState(false)
-  const { majorVersion, minorVersion, lastResortAddress, doubleOtp } = wallet
+  const { majorVersion, minorVersion, lastResortAddress, doubleOtp, forwardAddress, temp } = wallet
   const requireUpdate = majorVersion && (!(parseInt(majorVersion) >= ONEConstants.MajorVersion) || parseInt(minorVersion) === 0)
   const canUpgrade = majorVersion >= config.minUpgradableVersion
   const latestVersion = { majorVersion: ONEConstants.MajorVersion, minorVersion: ONEConstants.MinorVersion }
@@ -140,7 +140,7 @@ const Upgrade = ({ address, onClose }) => {
     setSkipUpdate(true)
     onClose && onClose()
   }
-  if (!requireUpdate || skipUpdate || !canUpgrade || wallet.temp) {
+  if (!requireUpdate || skipUpdate || !canUpgrade || temp || forwardAddress) {
     return <></>
   }
 
