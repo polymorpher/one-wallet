@@ -8,9 +8,9 @@ import { useHistory, useLocation } from 'react-router'
 import Paths from '../constants/paths'
 import BN from 'bn.js'
 import { getAddress } from '@harmony-js/crypto'
-import storage from '../storage'
 import ONEConstants from '../../../lib/constants'
 import * as Sentry from '@sentry/browser'
+import { deleteWalletLocally } from '../storage/util'
 const { Text, Title } = Typography
 
 const walletShortName = (fullName) => {
@@ -26,7 +26,7 @@ const WalletCard = ({ wallet }) => {
   const { isMobile } = useWindowDimensions()
   const history = useHistory()
   const location = useLocation()
-  const { address, name, forwardAddress, temp } = wallet
+  const { address, name } = wallet
   const oneAddress = getAddress(address).bech32
   const dispatch = useDispatch()
   const balance = useSelector(state => state.wallet.balances[address])
@@ -65,6 +65,12 @@ const WalletCard = ({ wallet }) => {
               needs attention
             </Tag>
         }
+        {
+          wallet.recoveryTime &&
+            <Tag color='error' style={{ position: 'absolute', bottom: isMobile ? 32 : 16, right: 16 }}>
+              deprecated
+            </Tag>
+        }
       </Space>
     </Card>
   )
@@ -86,20 +92,11 @@ const List = () => {
   const [purged, setPurged] = useState(false)
 
   const purge = (wallet) => {
-    const { root, address } = wallet || {}
     Sentry.withScope(scope => {
       scope.setContext('wallet', omit(wallet, ['hseed']))
       Sentry.captureMessage('purge1')
     })
-
-    if (address) {
-      dispatch(walletActions.deleteWallet(address))
-    }
-    if (root && wallets) {
-      if (Object.keys(wallets).map(k => wallets[k]).filter(w => w.root === root).length === 0) {
-        storage.removeItem(root)
-      }
-    }
+    deleteWalletLocally({ wallet, wallets, dispatch, silent: true })
   }
   useEffect(() => {
     if (purged || !wallets || wallets.length === 0) {

@@ -1,15 +1,16 @@
-import { TallRow, AverageRow } from '../../components/Grid'
-import { Button, Col, message, Popconfirm, Row, Space, Tooltip, Typography } from 'antd'
+import { TallRow } from '../../components/Grid'
+import { Button, Col, Popconfirm, Row, Space, Tooltip, Typography } from 'antd'
 import humanizeDuration from 'humanize-duration'
 import { DeleteOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import util, { useWindowDimensions } from '../../util'
 import walletActions from '../../state/modules/wallet/actions'
-import storage from '../../storage'
 import Paths from '../../constants/paths'
 import { useHistory } from 'react-router'
 import WalletAddress from '../../components/WalletAddress'
+import { deleteWalletLocally } from '../../storage/util'
+
 const { Title, Text } = Typography
 
 const About = ({ address }) => {
@@ -24,19 +25,6 @@ const About = ({ address }) => {
   const { formatted: spendingLimitFormatted, fiatFormatted: spendingLimitFiatFormatted } = util.computeBalance(spendingLimit, price)
   const [selectedLink, setSelectedLink] = useState()
   const [inspecting, setInspecting] = useState()
-
-  const onDeleteWallet = async () => {
-    const { root, name } = wallet
-    dispatch(walletActions.deleteWallet(address))
-    try {
-      await storage.removeItem(root)
-      message.success(`Wallet ${name} is deleted`)
-      history.push(Paths.wallets)
-    } catch (ex) {
-      console.error(ex)
-      message.error(`Failed to delete wallet proofs. Error: ${ex}`)
-    }
-  }
 
   const inspect = async (backlink) => {
     const tempWallet = {
@@ -149,7 +137,7 @@ const About = ({ address }) => {
           </Col>
         </TallRow>}
       <Row style={{ marginTop: 24 }}>
-        <Popconfirm title='Are you sure？' onConfirm={onDeleteWallet}>
+        <Popconfirm title='Are you sure？' onConfirm={() => deleteWalletLocally({ wallet, wallets, dispatch, history })}>
           <Button type='primary' shape='round' danger size='large' icon={<DeleteOutlined />}>Delete locally</Button>
         </Popconfirm>
       </Row>
