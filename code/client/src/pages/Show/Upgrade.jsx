@@ -152,14 +152,14 @@ const Upgrade = ({ address, onClose }) => {
         size='large'
         style={{
           height: '100%',
-          justifyContent: isMobile ? 'start' : 'center',
-          paddingTop: isMobile && 32,
+          justifyContent: 'start',
+          paddingTop: isMobile ? 32 : 192,
           display: 'flex'
         }}
       >
         {!confirmUpgradeVisible &&
           <>
-            <Title level={isMobile ? 4 : 2}>An upgrade is available.</Title>
+            <Title level={isMobile ? 4 : 2}>An upgrade is available</Title>
             <Text>Your wallet: v{ONEUtil.getVersion(wallet)}</Text>
             <Text>Latest version: v{ONEUtil.getVersion(latestVersion)}</Text>
             <Button type='primary' shape='round' size='large' onClick={() => setConfirmUpgradeVisible(true)}>Upgrade Now</Button>
