@@ -80,7 +80,8 @@ const WalletTitle = ({ address, onQrCodeClick, onScanClick, noWarning }) => {
               )
         )}
       </Space>
-      {wallet.temp && !noWarning && <Warning>You are inspecting an old wallet. It won't show in your wallets.</Warning>}
+      {wallet.temp && !noWarning && <Warning>You are inspecting an old wallet.</Warning>}
+      {wallet.recoveryTime && !noWarning && <Warning bodyStyle={{ width: '100%', whiteSpace: 'pre-wrap' }}>You are inspecting a deprecated wallet. Recovery is already performed on this wallet. It is forwarding all assets received to another wallet</Warning>}
     </Space>
   )
 }
