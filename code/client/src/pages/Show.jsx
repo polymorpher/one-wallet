@@ -11,13 +11,13 @@ import About from './Show/About'
 import Recovery from './Show/Recovery'
 import DoRecover from './Show/DoRecover'
 import Call from './Show/Call'
+import CheckForwardState from './Show/CheckForwardState'
 import Warnings from './Show/Warnings'
 
 import AnimatedSection from '../components/AnimatedSection'
 
 import { ERC20Grid } from '../components/ERC20Grid'
 import { HarmonyONE } from '../components/TokenAssets'
-import { NFTGrid } from '../components/NFTGrid'
 import Send from './Show/Send'
 import SetRecovery from './Show/SetRecovery'
 import Balance from './Show/Balance'
@@ -28,7 +28,6 @@ import TransferDomain from './Show/TransferDomain'
 import Sign from './Show/Sign'
 import Swap from './Show/Swap'
 import Gift from './Show/Gift'
-import { message } from 'antd'
 import QRCode from './Show/QRCode'
 import Scan from './Show/Scan'
 import NFTDashboard from './Show/NFTDashboard'
@@ -60,7 +59,6 @@ const Show = () => {
   const [section, setSection] = useState(action)
   const network = useSelector(state => state.wallet.network)
   const [activeTab, setActiveTab] = useState('coins')
-  const { temp, forwardAddress } = wallet
 
   useEffect(() => {
     if (!wallet) {
@@ -75,15 +73,6 @@ const Show = () => {
     dispatch(walletActions.fetchWallet({ address }))
     return () => { clearInterval(handler) }
   }, [address])
-
-  useEffect(() => {
-    if (forwardAddress && forwardAddress !== ONEConstants.EmptyAddress && !temp) {
-      dispatch(walletActions.updateWallet({ ...wallet, address: forwardAddress, forwardAddress: ONEConstants.EmptyAddress }))
-      dispatch(walletActions.deleteWallet(address))
-      message.success('Detected upgraded version of this wallet. Redirecting there...')
-      setTimeout(() => history.push(Paths.showAddress(forwardAddress)), 500)
-    }
-  }, [temp, forwardAddress])
 
   const selectedToken = wallet?.selectedToken || HarmonyONE
 
@@ -135,6 +124,7 @@ const Show = () => {
         {activeTab === 'qr' && <QRCode address={address} name={wallet.name} />}
         {activeTab === 'scan' && <Scan address={address} />}
         <Upgrade address={address} />
+        <CheckForwardState address={address} onClose={() => history.push(Paths.wallets)} />
       </AnimatedSection>
 
       <Send address={address} show={section === 'transfer'} onClose={showStartScreen} />
