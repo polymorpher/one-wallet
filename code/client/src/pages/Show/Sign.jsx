@@ -27,6 +27,7 @@ const Sign = ({
   prefillUseRawMessage, // optional boolean, whether or not eth signing header should be attached. True means not to attach header
   prefillDuration, // optional string that can be parsed into an integer, the number of milliseconds of the validity of the signature
   shouldAutoFocus,
+  headless,
 }) => {
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
@@ -114,13 +115,8 @@ const Sign = ({
       </AnimatedSection>
     )
   }
-  return (
-    <AnimatedSection
-      style={{ maxWidth: 720 }}
-      show={show} title={<Title level={2}>Sign Message</Title>} extra={[
-        <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-      ]}
-    >
+  const inner = (
+    <>
       <Space direction='vertical' size='large'>
         <Space align='baseline' size='large'>
           <Label wide><Hint>Message</Hint></Label>
@@ -160,6 +156,19 @@ const Sign = ({
         <Button size='large' type='text' onClick={onClose} danger>Cancel</Button>
       </Row>
       <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
+    </>
+  )
+  if (headless) {
+    return inner
+  }
+  return (
+    <AnimatedSection
+      style={{ maxWidth: 720 }}
+      show={show} title={<Title level={2}>Sign Message</Title>} extra={[
+        <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
+      ]}
+    >
+      {inner}
     </AnimatedSection>
   )
 }

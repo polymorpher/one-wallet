@@ -40,6 +40,8 @@ const tabList = [
   { key: 'help', tab: 'Recover' },
   { key: 'swap', tab: 'Swap' },
   { key: 'gift', tab: 'Gift' },
+  { key: 'call', tab: 'Call', dev: true, expert: true },
+  { key: 'sign', tab: 'Sign', dev: true, expert: true },
   { key: 'qr' },
   { key: 'scan' }
 ]
@@ -48,7 +50,7 @@ const Show = () => {
   const history = useHistory()
   const location = useLocation()
   const dispatch = useDispatch()
-  const dev = useSelector(state => state.wallet.dev)
+
   const wallets = useSelector(state => state.wallet.wallets)
   const match = useRouteMatch(Paths.show)
   const { address: routeAddress, action } = match ? match.params : {}
@@ -59,6 +61,8 @@ const Show = () => {
   const [section, setSection] = useState(action)
   const network = useSelector(state => state.wallet.network)
   const [activeTab, setActiveTab] = useState('coins')
+  const { expert } = wallet
+  const dev = useSelector(state => state.wallet.dev)
 
   useEffect(() => {
     if (!wallet) {
@@ -98,10 +102,7 @@ const Show = () => {
     return <Redirect to={Paths.wallets} />
   }
 
-  let displayTabList = tabList.filter(e => e.tab)
-  if (dev) {
-    displayTabList = displayTabList.filter(e => !e.dev)
-  }
+  const displayTabList = tabList.filter(e => e.tab && ((!e.expert || expert) || (!e.dev || dev)))
 
   return (
     <>
@@ -123,6 +124,8 @@ const Show = () => {
         {activeTab === 'gift' && <Gift address={address} />}
         {activeTab === 'qr' && <QRCode address={address} name={wallet.name} />}
         {activeTab === 'scan' && <Scan address={address} />}
+        {activeTab === 'call' && <Call address={address} headless />}
+        {activeTab === 'sign' && <Sign address={address} headless />}
         <Upgrade address={address} />
         <CheckForwardState address={address} onClose={() => history.push(Paths.wallets)} />
       </AnimatedSection>
@@ -145,8 +148,6 @@ const Show = () => {
         address={address}
         onClose={showStartScreen}
       />
-      {dev && <Call address={address} show={section === 'call'} onClose={showStartScreen} />}
-      {dev && <Sign address={address} show={section === 'sign'} onClose={showStartScreen} />}
     </>
   )
 }

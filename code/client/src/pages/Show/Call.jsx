@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Button, Row, Space, Typography, Input, Col } from 'antd'
 import message from '../../message'
-import { CloseOutlined} from '@ant-design/icons'
+import { CloseOutlined } from '@ant-design/icons'
 import { Hint, InputBox, Label, Warning } from '../../components/Text'
 import { AverageRow, TallRow } from '../../components/Grid'
 import AddressInput from '../../components/AddressInput'
@@ -33,6 +33,7 @@ const Call = ({
   prefillMethod, // function signature, (abi selector) https://docs.soliditylang.org/en/develop/abi-spec.html#function-selector
   prefillData, // array of values corresponding to parameters in function signature
   shouldAutoFocus,
+  headless,
 }) => {
   const { isMobile } = useWindowDimensions()
   const wallets = useSelector(state => state.wallet.wallets)
@@ -140,13 +141,8 @@ const Call = ({
     )
   }
 
-  return (
-    <AnimatedSection
-      style={{ maxWidth: 720 }}
-      show={show} title={!minimal && <Title level={2}>Call Contract Function</Title>} extra={!minimal && [
-        <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-      ]}
-    >
+  const inner = (
+    <>
       {!minimal &&
         <Space direction='vertical' size='large' style={{ width: '100%' }}>
           <AverageRow align='baseline'>
@@ -195,14 +191,14 @@ const Call = ({
             <Hint>USD</Hint>
           </Space>
           <AverageRow align='baseline' size='large' style={{ width: '100%' }}>
-            <Label><Hint>Method</Hint></Label>
+            <Label wide={!isMobile}><Hint>Method</Hint></Label>
             <InputBox
               margin='auto' width='auto' style={{ flex: 1 }} value={method}
               onChange={({ target: { value } }) => setMethod(value)} disabled={!!(prefillMethod || prefillHex)}
             />
           </AverageRow>
           <AverageRow align='start' size='large' style={{ width: '100%' }}>
-            <Label><Hint>Args</Hint></Label>
+            <Label wide={!isMobile}><Hint>Args</Hint></Label>
             <TextArea
               style={{ border: '1px dashed black', margin: 'auto', flex: 1 }}
               autoSize
@@ -211,7 +207,7 @@ const Call = ({
             />
           </AverageRow>
         </Space>}
-      <Row align='middle'>
+      <AverageRow align='middle'>
         <Col span={24}>
           <OtpStack
             walletName={wallet.name}
@@ -222,11 +218,25 @@ const Call = ({
             action='confirm'
           />
         </Col>
-      </Row>
+      </AverageRow>
       <TallRow justify='start' style={{ marginTop: 24 }}>
         <Button size='large' type='text' onClick={onClose} danger>Cancel</Button>
       </TallRow>
       <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
+    </>
+  )
+
+  if (headless) {
+    return inner
+  }
+  return (
+    <AnimatedSection
+      style={{ maxWidth: 720 }}
+      show={show} title={!minimal && <Title level={2}>Call Contract Function</Title>} extra={!minimal && [
+        <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
+      ]}
+    >
+      {inner}
     </AnimatedSection>
   )
 }
