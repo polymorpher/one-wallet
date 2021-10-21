@@ -3,12 +3,13 @@ import { CloseOutlined } from '@ant-design/icons'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
 import React, { useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import ONE from '../../../../lib/onewallet'
 import ONEUtil from '../../../../lib/util'
 import { EotpBuilders, SmartFlows } from '../../../../lib/api/flow'
 import { api } from '../../../../lib/api'
 import ShowUtils from './show-util'
+import { walletActions } from '../../state/modules/wallet'
 const { Title, Text } = Typography
 const DoRecover = ({ address, show, onClose }) => {
   const wallets = useSelector(state => state.wallet.wallets)
@@ -16,8 +17,16 @@ const DoRecover = ({ address, show, onClose }) => {
   const { lastResortAddress } = wallet
   const [stage, setStage] = useState(-1)
   const network = useSelector(state => state.wallet.network)
+  const dispatch = useDispatch()
 
-  const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess } = ShowUtils.buildHelpers({ setStage, network })
+  const helpers = ShowUtils.buildHelpers({
+    setStage,
+    network,
+    onSuccess: () => {
+      dispatch(walletActions.updateWallet({ ...wallet, recoveryTime: Date.now() }))
+      onClose && onClose()
+    }
+  })
 
   const doRecovery = async () => {
     let { hash, bytes } = ONE.computeRecoveryHash({ hseed: ONEUtil.hexToBytes(wallet.hseed) })
@@ -32,17 +41,13 @@ const DoRecover = ({ address, show, onClose }) => {
       wallet,
       eotpBuilder,
       index: -1,
+      prepareProof: () => setStage(0),
       commitHashGenerator: () => ({ hash, bytes: new Uint8Array(0) }), // Only legacy committer uses `bytes`. It mingles them with other parameters to produce hash. legacy recover has no parameters, therefore `bytes` should be empty byte array
       beforeCommit: () => setStage(1),
       afterCommit: () => setStage(2),
-      onCommitError,
-      onCommitFailure,
       revealAPI: api.relayer.revealRecovery,
       revealArgs: { data },
-      onRevealFailure,
-      onRevealError,
-      onRevealAttemptFailed,
-      onRevealSuccess
+      ...helpers
     })
   }
   return (
