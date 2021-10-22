@@ -13,7 +13,19 @@ const config = merge({}, baseConfig, {
     // gateway: process.env.IPFS_GATEWAY || 'https://gateway.pinata.cloud/ipfs/{{hash}}'
     // gateway: process.env.IPFS_GATEWAY || 'https://1wallet.mypinata.cloud/ipfs/{{hash}}'
   },
-  rootUrl: process.env.ROOT_URL || 'https://1wallet.crazy.one'
+  rootUrl: process.env.ROOT_URL || 'https://1wallet.crazy.one',
+  transak:{
+    staging: {
+      apiKey: '50f1c430-7807-4760-a337-57583de69f73',
+      defaultCurrency: 'AUD',
+      environment: 'STAGING'
+    },
+    production: {
+      apiKey: '28c4ba82-b701-4d05-a44c-1466fbb99265',
+      defaultCurrency: 'AUD',
+      environment: 'PRODUCTION'
+    }
+  }
 })
 
 export default config

@@ -26,6 +26,7 @@ module.exports = {
       name: 'Harmony Mainnet',
       url: 'https://api.s0.t.hmny.io',
       explorer: 'https://explorer.harmony.one/tx/{{txId}}',
+      production: true,
       chainId: 1,
     },
     'harmony-testnet': {
