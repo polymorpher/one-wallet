@@ -1,14 +1,10 @@
-import { useDispatch, useSelector } from 'react-redux'
-import React, { useCallback, useEffect, useState } from 'react'
-import ONEConstants from '../../../lib/constants'
+import { useSelector } from 'react-redux'
+import React, { useCallback } from 'react'
 import util, { useWindowDimensions } from '../util'
-import { Button, Card, Typography, Space, Row, Spin, Popconfirm } from 'antd'
+import { Button, Typography } from 'antd'
 import message from '../message'
 import TransakSDK from '@transak/transak-sdk'
-import { useHistory } from 'react-router'
 import config from '../config'
-import { HarmonyONE } from './TokenAssets'
-const { Title, Text } = Typography
 
 export const useBuyCrypto = ({ address }) => {
   const { isMobile } = useWindowDimensions()
