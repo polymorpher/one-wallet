@@ -15,7 +15,8 @@ export const initialState = {
   loading: false,
   error: undefined,
   knownAddresses: {},
-  dev: false
+  dev: false,
+  global: {}
 }
 
 const reducer = handleActions(
@@ -204,6 +205,11 @@ const reducer = handleActions(
     [walletActions.setDev]: (state, action) => ({
       ...state,
       dev: action.payload
+    }),
+
+    [walletActions.updateGlobalStats]: (state, action) => ({
+      ...state,
+      global: { ...state.global, stats: action.payload }
     }),
   },
   {

@@ -11,7 +11,9 @@ import { useWindowDimensions } from '../util'
 import api from '../api'
 import abbr from '../abbr'
 import * as Sentry from '@sentry/browser'
-
+import { useDispatch, useSelector } from 'react-redux'
+import WalletConstants from '../constants/wallet'
+import { walletActions } from '../state/modules/wallet'
 const { Link } = Typography
 
 const SiderLink = styled(Link).attrs((e) => ({
@@ -46,19 +48,28 @@ const SiderMenu = ({ ...args }) => {
   const nav = ({ key }) => {
     history.push(Paths[key])
   }
+  const statsCached = useSelector(state => state.wallet.global?.stats)
   const [stats, setStats] = useState(null)
+  const dispatch = useDispatch()
 
   useEffect(() => {
-    async function getStats () {
+    const { timeUpdated } = statsCached || {}
+
+    async function refreshStats () {
       try {
         const statsData = await api.walletStats.getStats()
         setStats(statsData)
+        dispatch(walletActions.updateGlobalStats({ ...statsData, timeUpdated: Date.now() }))
       } catch (ex) {
         Sentry.captureException(ex)
         console.error(ex)
       }
     }
-    getStats()
+    if (!timeUpdated || (Date.now() - timeUpdated > WalletConstants.globalStatsCacheDuration)) {
+      refreshStats()
+    } else {
+      setStats(statsCached)
+    }
   }, [])
 
   return (
