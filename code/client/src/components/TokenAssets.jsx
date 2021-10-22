@@ -108,6 +108,9 @@ export const HarmonyPunk = {
 
 export const MetadataURITransformer = (url) => {
   const IPFSIO = /https:\/\/ipfs\.io\/ipfs\/(.+)/
+  if (!url) {
+    return url
+  }
   const m = url.match(IPFSIO)
   if (m) {
     const hash = m[1]
