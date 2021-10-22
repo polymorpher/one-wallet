@@ -27,7 +27,7 @@ export const useBuyCrypto = ({ address }) => {
         // countryCode: 'AU', // USD is not supported at this time
         // redirectURL: c.redirectURL || window.location.href,
         hostURL: c.hostURL || window.location.origin,
-        widgetHeight: '650px',
+        widgetHeight: '600px',
         widgetWidth: isMobile ? '100%' : '450px',
         hideMenu: true,
       })
