@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.4;
+import "./Enums.sol";
 
 /// we will slowly move commit-reveal related stuff from ONEWallet to here
 library CommitManager {
@@ -212,4 +213,5 @@ library CommitManager {
         }
         cs.nonceTracker = reducedArray;
     }
+
 }

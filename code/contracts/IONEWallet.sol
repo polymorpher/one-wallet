@@ -36,10 +36,9 @@ interface IONEWallet {
 
     function retire() external returns (bool);
 
-    // Should deprecate soon. Use public fields instead
     function getInfo() external view returns (bytes32, uint8, uint8, uint32, uint32, uint8, address, uint256);
 
-    function oldCores() external view returns (CoreSetting[] memory);
+    function getOldCores() external view returns (CoreSetting[] memory);
 
     function getVersion() external pure returns (uint32, uint32);
 

@@ -6,6 +6,7 @@ import "./CommitManager.sol";
 import "./TokenManager.sol";
 import "./DomainManager.sol";
 import "./SignatureManager.sol";
+import "./Reveal.sol";
 import "./WalletGraph.sol";
 import "./Enums.sol";
 import "./IONEWallet.sol";
@@ -16,10 +17,10 @@ contract ONEWallet is TokenManager, IONEWallet {
     using SignatureManager for SignatureManager.SignatureTracker;
     using SpendingManager for SpendingManager.SpendingState;
     using CommitManager for CommitManager.CommitState;
+    using Reveal for CoreSetting;
 
     CoreSetting core;
-    CoreSetting[] public oldCores;
-    uint32 _numLeaves; // 2 ** (height - 1)
+    CoreSetting[] oldCores;
 
     /// global mutable variables
     address payable recoveryAddress; // where money will be sent during a recovery process (or when the wallet is beyond its lifespan)
@@ -56,7 +57,6 @@ contract ONEWallet is TokenManager, IONEWallet {
         spendingState.spendingInterval = spendingState_.spendingInterval;
 
         recoveryAddress = recoveryAddress_;
-        _numLeaves = uint32(2 ** (core_.height - 1));
         backlinkAddresses = backlinkAddresses_;
     }
 
@@ -123,6 +123,10 @@ contract ONEWallet is TokenManager, IONEWallet {
 
     function getInfo() external override view returns (bytes32, uint8, uint8, uint32, uint32, uint8, address, uint256){
         return (core.root, core.height, core.interval, core.t0, core.lifespan, core.maxOperationsPerInterval, recoveryAddress, 0);
+    }
+
+    function getOldCores() external override view returns (CoreSetting[] memory){
+        return oldCores;
     }
 
     function getVersion() external override pure returns (uint32, uint32){
@@ -261,52 +265,18 @@ contract ONEWallet is TokenManager, IONEWallet {
         emit RecoveryAddressUpdated(recoveryAddress);
     }
 
-    /// Provides commitHash, paramsHash, and verificationHash given the parameters
-    function _getRevealHash(bytes32 neighbor, uint32 indexWithNonce, bytes32 eotp,
-        OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount, bytes calldata data) pure internal returns (bytes32, bytes32) {
-        bytes32 hash = keccak256(bytes.concat(neighbor, bytes32(bytes4(indexWithNonce)), eotp));
-        bytes32 paramsHash = bytes32(0);
-        if (operationType == OperationType.TRANSFER) {
-            paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(dest))), bytes32(amount)));
-        } else if (operationType == OperationType.RECOVER) {
-            paramsHash = keccak256(data);
-        } else if (operationType == OperationType.SET_RECOVERY_ADDRESS) {
-            paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(dest)))));
-        } else if (operationType == OperationType.FORWARD) {
-            paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(dest)))));
-        } else if (operationType == OperationType.BACKLINK_ADD || operationType == OperationType.BACKLINK_DELETE || operationType == OperationType.BACKLINK_OVERRIDE) {
-            paramsHash = keccak256(data);
-        } else if (operationType == OperationType.REPLACE) {
-            paramsHash = keccak256(data);
-        } else if (operationType == OperationType.RECOVER_SELECTED_TOKENS) {
-            paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(dest))), data));
-        } else {
-            // TRACK, UNTRACK, TRANSFER_TOKEN, OVERRIDE_TRACK, BUY_DOMAIN, RENEW_DOMAIN, TRANSFER_DOMAIN, COMMAND
-            paramsHash = keccak256(bytes.concat(
-                    bytes32(uint256(operationType)),
-                    bytes32(uint256(tokenType)),
-                    bytes32(bytes20(contractAddress)),
-                    bytes32(tokenId),
-                    bytes32(bytes20(dest)),
-                    bytes32(amount),
-                    data
-                ));
-        }
-        return (hash, paramsHash);
-    }
-
 
     function reveal(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp,
         OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address payable dest, uint256 amount, bytes calldata data)
     external override {
         if (msg.sender != forwardAddress) {
             if (operationType == OperationType.RECOVER) {
-                _isCorrectRecoveryProof(neighbors, indexWithNonce, eotp);
+                core.isCorrectRecoveryProof(oldCores, neighbors, indexWithNonce, eotp);
             } else {
-                _isNonRecoveryLeaf(indexWithNonce);
-                _isCorrectProof(neighbors, indexWithNonce, eotp);
+                core.isNonRecoveryLeaf(oldCores, indexWithNonce);
+                core.isCorrectProof(neighbors, indexWithNonce, eotp);
             }
-            (bytes32 commitHash, bytes32 paramsHash) = _getRevealHash(neighbors[0], indexWithNonce, eotp,
+            (bytes32 commitHash, bytes32 paramsHash) = Reveal.getRevealHash(neighbors[0], indexWithNonce, eotp,
                 operationType, tokenType, contractAddress, tokenId, dest, amount, data);
             uint32 commitIndex = _verifyReveal(commitHash, indexWithNonce, paramsHash, eotp, operationType);
             _completeReveal(commitHash, commitIndex, operationType);
@@ -370,61 +340,6 @@ contract ONEWallet is TokenManager, IONEWallet {
             _replaceCoreBytes(data);
         }
     }
-
-    /// This is just a wrapper around a modifier previously called `isCorrectProof`, to avoid "Stack too deep" error. Duh.
-    function _isCorrectProof(bytes32[] calldata neighbors, uint32 position, bytes32 eotp) view internal {
-        require(neighbors.length == core.height - 1, "Bad neighbors");
-        bytes32 h = sha256(bytes.concat(eotp));
-        for (uint8 i = 0; i < core.height - 1; i++) {
-            if ((position & 0x01) == 0x01) {
-                h = sha256(bytes.concat(neighbors[i], h));
-            } else {
-                h = sha256(bytes.concat(h, neighbors[i]));
-            }
-            position >>= 1;
-        }
-        require(core.root == h, "Proof is incorrect");
-        return;
-    }
-
-    /// check the current position is not used by *any* core as a recovery slot
-    function _isNonRecoveryLeaf(uint32 position) view internal {
-        require(position != _numLeaves - 1, "reserved");
-        require(position < _numLeaves - 1, "out of bound");
-        for (uint8 i = 0; i < oldCores.length; i++) {
-            uint32 recoveryPosition = oldCores[i].t0 + uint32(2 ** (oldCores[i].height - 1)) - 1;
-            require(core.t0 + position != recoveryPosition, "reserved before");
-        }
-    }
-
-    /// WARNING: Clients should not use eotps that *may* be used for recovery. The time slots should be manually excluded for use.
-    function _isCorrectRecoveryProof(bytes32[] calldata neighbors, uint32 position, bytes32 eotp) view internal {
-        bytes32 h = eotp;
-        for (uint8 i = 0; i < neighbors.length; i++) {
-            if ((position & 0x01) == 0x01) {
-                h = sha256(bytes.concat(neighbors[i], h));
-            } else {
-                h = sha256(bytes.concat(h, neighbors[i]));
-            }
-            position >>= 1;
-        }
-        if (core.root == h) {
-            require(neighbors.length == core.height - 1, "Bad neighbors size");
-            require(position == _numLeaves - 1, "Must use last leaf");
-            return;
-        }
-        // check old cores
-        for (uint8 i = 0; i < oldCores.length; i++) {
-            if (oldCores[i].root == h) {
-                require(neighbors.length == oldCores[i].height - 1, "Mismatched neighbors size");
-                require(position == uint32(2 ** (oldCores[i].height - 1)) - 1, "Must use last leaf in old tree");
-                return;
-            }
-        }
-        revert("Recovery proof is incorrect");
-    }
-
-
 
     /// This function verifies that the first valid entry with respect to the given `eotp` in `commitState.commitLocker[hash]` matches the provided `paramsHash` and `verificationHash`. An entry is valid with respect to `eotp` iff `h3(entry.paramsHash . eotp)` equals `entry.verificationHash`. It returns the index of first valid entry in the array of commits, with respect to the commit hash
     function _verifyReveal(bytes32 hash, uint32 indexWithNonce, bytes32 paramsHash, bytes32 eotp, OperationType operationType) view internal returns (uint32)
@@ -539,22 +454,7 @@ contract ONEWallet is TokenManager, IONEWallet {
     }
 
     function isValidSignature(bytes32 hash, bytes calldata signatureBytes) override public view returns (bytes4){
-        if (signatureBytes.length < 32) {
-            return 0xffffffff;
-        }
-        if (signatureBytes.length > 32) {
-            for (uint32 i = 32; i < signatureBytes.length; i++) {
-                if (signatureBytes[i] != 0x00) {
-                    return 0xffffffff;
-                }
-            }
-        }
-        (bytes32 signature) = abi.decode(signatureBytes[0 : 32], (bytes32));
-        if (!signatures.validate(hash, signature)) {
-            return 0xffffffff;
-        }
-        // magic value for valid signature, eip-1271
-        return 0x1626ba7e;
+        return signatures.isValidSignature(hash, signatureBytes);
     }
 
     function listSignatures(uint32 start, uint32 end) external override view returns (bytes32[] memory, bytes32[] memory, uint32[] memory, uint32[] memory){
@@ -566,8 +466,8 @@ contract ONEWallet is TokenManager, IONEWallet {
     }
 
     function _replaceCoreBytes(bytes memory data) internal {
-        CoreSetting memory core = abi.decode(data, (CoreSetting));
-        _replaceCore(core);
+        CoreSetting memory newCore = abi.decode(data, (CoreSetting));
+        _replaceCore(newCore);
     }
 
     function _replaceCore(CoreSetting memory newCore) internal {

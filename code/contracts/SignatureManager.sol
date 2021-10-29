@@ -158,5 +158,23 @@ library SignatureManager {
         return (st.hashes, signatures, timestamps, expiries);
     }
 
+    function isValidSignature(SignatureTracker storage st, bytes32 hash, bytes calldata signatureBytes) public view returns (bytes4){
+        if (signatureBytes.length < 32) {
+            return 0xffffffff;
+        }
+        if (signatureBytes.length > 32) {
+            for (uint32 i = 32; i < signatureBytes.length; i++) {
+                if (signatureBytes[i] != 0x00) {
+                    return 0xffffffff;
+                }
+            }
+        }
+        (bytes32 signature) = abi.decode(signatureBytes[0 : 32], (bytes32));
+        if (!validate(st, hash, signature)) {
+            return 0xffffffff;
+        }
+        // magic value for valid signature, eip-1271
+        return 0x1626ba7e;
+    }
 
 }
