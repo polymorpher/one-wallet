@@ -18,6 +18,7 @@ contract ONEWallet is TokenManager, IONEWallet {
     using CommitManager for CommitManager.CommitState;
 
     CoreSetting core;
+    CoreSetting[] public oldCores;
     uint32 _numLeaves; // 2 ** (height - 1)
 
     /// global mutable variables
@@ -35,7 +36,7 @@ contract ONEWallet is TokenManager, IONEWallet {
     uint256 constant AUTO_RECOVERY_MANDATORY_WAIT_TIME = 14 days;
     address constant ONE_WALLET_TREASURY = 0x02F2cF45DD4bAcbA091D78502Dba3B2F431a54D3;
 
-    uint32 constant majorVersion = 0xd; // a change would require client to migrate
+    uint32 constant majorVersion = 0xe; // a change would require client to migrate
     uint32 constant minorVersion = 0x1; // a change would not require the client to migrate
 
     /// commit management
@@ -137,7 +138,7 @@ contract ONEWallet is TokenManager, IONEWallet {
     }
 
     function getNonce() external override view returns (uint8){
-        return commitState.getNonce(core.interval, core.t0);
+        return commitState.getNonce(core.interval);
     }
 
     function getTrackedTokens() external override view returns (TokenType[] memory, address[] memory, uint256[] memory){
@@ -178,6 +179,12 @@ contract ONEWallet is TokenManager, IONEWallet {
         if (address(forwardAddress) == address(this)) {
             emit ForwardAddressInvalid(dest);
             return;
+        }
+        if (forwardAddress != address(0)) {
+            if (!_isRecoveryAddressSet() || dest != recoveryAddress) {
+                emit ForwardAddressAlreadySet(dest);
+                return;
+            }
         }
         forwardAddress = dest;
         emit ForwardAddressUpdated(dest);
@@ -293,9 +300,11 @@ contract ONEWallet is TokenManager, IONEWallet {
         OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address payable dest, uint256 amount, bytes calldata data)
     external override {
         if (msg.sender != forwardAddress) {
-            _isCorrectProof(neighbors, indexWithNonce, eotp);
-            if (indexWithNonce == _numLeaves - 1) {
-                require(operationType == OperationType.RECOVER, "Reserved");
+            if (operationType == OperationType.RECOVER) {
+                _isCorrectRecoveryProof(neighbors, indexWithNonce, eotp);
+            } else {
+                _isNonRecoveryLeaf(indexWithNonce);
+                _isCorrectProof(neighbors, indexWithNonce, eotp);
             }
             (bytes32 commitHash, bytes32 paramsHash) = _getRevealHash(neighbors[0], indexWithNonce, eotp,
                 operationType, tokenType, contractAddress, tokenId, dest, amount, data);
@@ -357,6 +366,8 @@ contract ONEWallet is TokenManager, IONEWallet {
             } else {
                 _multiCall(data);
             }
+        } else if (operationType == OperationType.REPLACE) {
+            _replaceCoreBytes(data);
         }
     }
 
@@ -364,10 +375,6 @@ contract ONEWallet is TokenManager, IONEWallet {
     function _isCorrectProof(bytes32[] calldata neighbors, uint32 position, bytes32 eotp) view internal {
         require(neighbors.length == core.height - 1, "Bad neighbors");
         bytes32 h = sha256(bytes.concat(eotp));
-        if (position == _numLeaves - 1) {
-            // special case: recover only
-            h = eotp;
-        }
         for (uint8 i = 0; i < core.height - 1; i++) {
             if ((position & 0x01) == 0x01) {
                 h = sha256(bytes.concat(neighbors[i], h));
@@ -380,9 +387,46 @@ contract ONEWallet is TokenManager, IONEWallet {
         return;
     }
 
+    /// check the current position is not used by *any* core as a recovery slot
+    function _isNonRecoveryLeaf(uint32 position) view internal {
+        require(position != _numLeaves - 1, "reserved");
+        require(position < _numLeaves - 1, "out of bound");
+        for (uint8 i = 0; i < oldCores.length; i++) {
+            uint32 recoveryPosition = oldCores[i].t0 + uint32(2 ** (oldCores[i].height - 1)) - 1;
+            require(core.t0 + position != recoveryPosition, "reserved before");
+        }
+    }
+
+    /// WARNING: Clients should not use eotps that *may* be used for recovery. The time slots should be manually excluded for use.
+    function _isCorrectRecoveryProof(bytes32[] calldata neighbors, uint32 position, bytes32 eotp) view internal {
+        bytes32 h = eotp;
+        for (uint8 i = 0; i < neighbors.length; i++) {
+            if ((position & 0x01) == 0x01) {
+                h = sha256(bytes.concat(neighbors[i], h));
+            } else {
+                h = sha256(bytes.concat(h, neighbors[i]));
+            }
+            position >>= 1;
+        }
+        if (core.root == h) {
+            require(neighbors.length == core.height - 1, "Bad neighbors size");
+            require(position == _numLeaves - 1, "Must use last leaf");
+            return;
+        }
+        // check old cores
+        for (uint8 i = 0; i < oldCores.length; i++) {
+            if (oldCores[i].root == h) {
+                require(neighbors.length == oldCores[i].height - 1, "Mismatched neighbors size");
+                require(position == uint32(2 ** (oldCores[i].height - 1)) - 1, "Must use last leaf in old tree");
+                return;
+            }
+        }
+        revert("Recovery proof is incorrect");
+    }
 
 
-    /// This function verifies that the first valid entry with respect to the given `eotp` in `commitState.commitLocker[hash]` matches the provided `paramsHash` and `verificationHash`. An entry is valid with respect to `eotp` iff `h3(entry.paramsHash . eotp)` equals `entry.verificationHash`
+
+    /// This function verifies that the first valid entry with respect to the given `eotp` in `commitState.commitLocker[hash]` matches the provided `paramsHash` and `verificationHash`. An entry is valid with respect to `eotp` iff `h3(entry.paramsHash . eotp)` equals `entry.verificationHash`. It returns the index of first valid entry in the array of commits, with respect to the commit hash
     function _verifyReveal(bytes32 hash, uint32 indexWithNonce, bytes32 paramsHash, bytes32 eotp, OperationType operationType) view internal returns (uint32)
     {
         uint32 index = indexWithNonce / core.maxOperationsPerInterval;
@@ -398,8 +442,9 @@ contract ONEWallet is TokenManager, IONEWallet {
             }
             require(c.paramsHash == paramsHash, "Param mismatch");
             if (operationType != OperationType.RECOVER) {
-                uint32 counter = c.timestamp / core.interval - core.t0;
-                require(counter == index || counter - 1 == index, "Time mismatch");
+                uint32 counter = c.timestamp / core.interval;
+                uint32 t = counter - core.t0;
+                require(t == index || t - 1 == index, "Time mismatch");
                 uint8 expectedNonce = commitState.nonces[counter];
                 require(nonce >= expectedNonce, "Nonce too low");
             }
@@ -418,9 +463,9 @@ contract ONEWallet is TokenManager, IONEWallet {
         CommitManager.Commit storage c = cc[commitIndex];
         assert(c.timestamp > 0);
         if (operationType != OperationType.RECOVER) {
-            uint32 index = uint32(c.timestamp) / core.interval - core.t0;
+            uint32 index = uint32(c.timestamp) / core.interval;
             commitState.incrementNonce(index);
-            commitState.cleanupNonces(core.interval, core.t0);
+            commitState.cleanupNonces(core.interval);
         }
         c.completed = true;
         lastOperationTime = block.timestamp;
@@ -518,5 +563,25 @@ contract ONEWallet is TokenManager, IONEWallet {
 
     function lookupSignature(bytes32 hash) external override view returns (bytes32, uint32, uint32){
         return signatures.lookup(hash);
+    }
+
+    function _replaceCoreBytes(bytes memory data) internal {
+        CoreSetting memory core = abi.decode(data, (CoreSetting));
+        _replaceCore(core);
+    }
+
+    function _replaceCore(CoreSetting memory newCore) internal {
+        // if recovery is already performed on this wallet, or the wallet is already upgrade to a new version, or set to forward to another address (hence is controlled by that address), its lifespan should not be extended
+        require(forwardAddress == address(0));
+        // we should not require the recovery address to approve this operation, since the ability of recovery address initiating an auto-triggered recovery (via sending 1.0 ONE) is unaffected after the root is replaced.
+        CoreSetting memory oldCore = core;
+        oldCores.push(oldCore);
+        core.root = newCore.root;
+        core.t0 = newCore.t0;
+        core.height = newCore.height;
+        core.interval = newCore.interval;
+        core.lifespan = newCore.lifespan;
+        core.maxOperationsPerInterval = newCore.maxOperationsPerInterval;
+        emit CoreReplaced(oldCore, core);
     }
 }
