@@ -281,7 +281,7 @@ const SecureFlowsV7 = {
 const SmartFlows = {
   commitReveal: async ({ wallet, message = messager, ...args }) => {
     if (!wallet.majorVersion || !(wallet.majorVersion >= config.minWalletVersion)) {
-      message.warning('You are using an outdated wallet, which is less secure than the current version. Please move your funds to a new wallet.', 15)
+      message.warning('You are using a terribly outdated version of 1wallet. Please create a new one and move your assets.', 15)
     }
     if (wallet.majorVersion >= 7) {
       return SecureFlowsV7.commitReveal({ ...args, wallet })
