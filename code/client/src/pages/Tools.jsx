@@ -107,7 +107,7 @@ const SushiSwapEncoder = ({ onClose }) => {
       <LabeledRow isMobile={isMobile} label='Paying' align='middle'>
         <Space>
           <InputBox
-            $num
+            $decimal
             margin='auto'
             width='100%'
             value={inputAmount}

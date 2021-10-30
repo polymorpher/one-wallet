@@ -602,7 +602,7 @@ const Swap = ({ address }) => {
             <Space direction='vertical' style={{ width: '100%' }}>
               <Text style={textStyle} type='secondary'>Amount (Balance: {tokenBalanceFormatted})</Text>
               <Row>
-                <InputBox $num size='default' style={amountInputStyle} placeholder='0.00' value={fromAmountFormatted} onChange={onAmountChange(true)} />
+                <InputBox $decimal size='default' style={amountInputStyle} placeholder='0.00' value={fromAmountFormatted} onChange={onAmountChange(true)} />
                 <Button style={maxButtonStyle} shape='round' onClick={setMaxSwapAmount}>Max</Button>
               </Row>
             </Space>
@@ -629,7 +629,7 @@ const Swap = ({ address }) => {
           <Col span={isMobile ? 24 : 16}>
             <Space direction='vertical' style={{ width: '100%' }}>
               <Text style={textStyle} type='secondary'>Expected Amount</Text>
-              <InputBox $num size='default' style={{ ...amountInputStyle, width: '100%' }} placeholder='0.00' value={toAmountFormatted} onChange={onAmountChange(false)} />
+              <InputBox $decimal size='default' style={{ ...amountInputStyle, width: '100%' }} placeholder='0.00' value={toAmountFormatted} onChange={onAmountChange(false)} />
             </Space>
           </Col>
         </Row>

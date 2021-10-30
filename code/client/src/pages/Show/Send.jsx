@@ -191,7 +191,7 @@ const Send = ({
         </Col>
         <Col sm={!isNFT ? 16 : 18} flex={1}>
           <InputBox
-            $num
+            $decimal
             margin='auto'
             width='100%'
             value={inputAmount}
