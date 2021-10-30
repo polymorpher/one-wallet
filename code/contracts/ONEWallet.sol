@@ -272,15 +272,23 @@ contract ONEWallet is TokenManager, IONEWallet {
         emit RecoveryAddressUpdated(recoveryAddress);
     }
 
+    function _batch(bytes memory data) internal {
+        OperationParams[] memory batchParams = abi.decode(data, (OperationParams[]));
+        uint8 len = uint8(batchParams.length);
+        for (uint32 i = 0; i < len; i++) {
+            _doReveal(batchParams[i]);
+        }
+    }
+
     function reveal(AuthParams calldata auth, OperationParams calldata op) external override {
         if (msg.sender != forwardAddress) {
             core.authenticate(oldCores, commitState, auth, op);
             lastOperationTime = block.timestamp;
         }
-        _doReveal(auth, op);
+        _doReveal(op);
     }
 
-    function _doReveal(AuthParams calldata auth, OperationParams calldata op) internal {
+    function _doReveal(OperationParams memory op) internal {
         // No revert should occur below this point
         if (op.operationType == Enums.OperationType.TRACK) {
             if (op.data.length > 0) {
@@ -338,6 +346,8 @@ contract ONEWallet is TokenManager, IONEWallet {
             }
         } else if (op.operationType == Enums.OperationType.REPLACE) {
             _replaceCoreByBytes(op.data);
+        } else if (op.operationType == Enums.OperationType.BATCH) {
+            _batch(op.data);
         }
     }
 
@@ -390,7 +400,7 @@ contract ONEWallet is TokenManager, IONEWallet {
         }
     }
 
-    function _multiCall(bytes calldata data) internal {
+    function _multiCall(bytes memory data) internal {
         (address[] memory dest, uint256[] memory amounts, bytes[] memory encoded) = abi.decode(data, (address[], uint256[], bytes[]));
         uint256 totalAmount = 0;
         for (uint32 i = 0; i < amounts.length; i++) {
@@ -408,7 +418,7 @@ contract ONEWallet is TokenManager, IONEWallet {
         return interfaceId == this.isValidSignature.selector || TokenManager.supportsInterface(interfaceId);
     }
 
-    function isValidSignature(bytes32 hash, bytes calldata signatureBytes) override public view returns (bytes4){
+    function isValidSignature(bytes32 hash, bytes memory signatureBytes) override public view returns (bytes4){
         return signatures.isValidSignature(hash, signatureBytes);
     }
 

@@ -18,7 +18,8 @@ library Enums {
         RECLAIM_DOMAIN_FROM_BACKLINK,
         SIGN, // produce signature verifiable by eip-1271
         REVOKE, // revoke a signature
-        CALL // call arbitrary external contract function and optionally send funds to that function, or making multiple calls in one go
+        CALL, // call arbitrary external contract function and optionally send funds to that function, or making multiple calls in one go
+        BATCH
     }
     enum TokenType{
         ERC20, ERC721, ERC1155, NONE

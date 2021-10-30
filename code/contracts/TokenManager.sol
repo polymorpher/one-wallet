@@ -165,7 +165,7 @@ abstract contract TokenManager is IERC721Receiver, IERC1155Receiver, Forwardable
         }
     }
 
-    function _recoverSelectedTokensEncoded(address dest, bytes calldata data) internal {
+    function _recoverSelectedTokensEncoded(address dest, bytes memory data) internal {
         uint32[] memory indices = abi.decode(data, (uint32[]));
         for (uint32 i = 0; i < indices.length; i++) {
             _recoverToken(dest, tokenTrackerState.trackedTokens[indices[i]]);
