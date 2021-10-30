@@ -19,7 +19,7 @@ export const useOtpState = () => {
   return { state: { otpRef, otp2Ref, otpInput, otp2Input, setOtpInput, setOtp2Input, resetOtp } }
 }
 
-export const OtpStack = ({ shouldAutoFocus, wideLabel, walletName, otpState, doubleOtp = otpState?.doubleOtp, onComplete, action }) => {
+export const OtpStack = ({ isDisabled, shouldAutoFocus, wideLabel, walletName, otpState, doubleOtp = otpState?.doubleOtp, onComplete, action }) => {
   const { isMobile } = useWindowDimensions()
   const location = useLocation()
   const { otpRef, otp2Ref, otpInput, otp2Input, setOtpInput, setOtp2Input, resetOtp } = otpState || useOtpState()
@@ -57,6 +57,7 @@ export const OtpStack = ({ shouldAutoFocus, wideLabel, walletName, otpState, dou
           onChange={setOtpInput}
           shouldAutoFocus={shouldAutoFocus}
           containerStyle={{ maxWidth: isMobile ? 176 : '100%' }}
+          isDisabled={isDisabled}
         />
         <Space direction='vertical' align='center'>
           <Tooltip title={`from your Google Authenticator, i.e. ${walletName}`}>
@@ -75,6 +76,7 @@ export const OtpStack = ({ shouldAutoFocus, wideLabel, walletName, otpState, dou
             value={otp2Input}
             onChange={setOtp2Input}
             containerStyle={{ maxWidth: isMobile ? 176 : '100%' }}
+            isDisabled={isDisabled}
           />
           <Space direction='vertical' align='center'>
             <Tooltip title={`from your Google Authenticator, i.e. ${walletName} (2nd)`}>
