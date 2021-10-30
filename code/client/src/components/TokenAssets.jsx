@@ -12,6 +12,7 @@ import ONEConstants from '../../../lib/constants'
 import ONEUtil from '../../../lib/util'
 import ONE from '../../../lib/onewallet'
 import util from '../util'
+
 export const KnownERC20 = {
   '1ETH': {
     icon: IconETH,
@@ -19,9 +20,9 @@ export const KnownERC20 = {
     name: 'Ethereum ETH',
     contractAddress: '0x6983D1E6DEf3690C4d616b13597A09e6193EA013'
   },
-  '1BTC': {
+  '1WBTC': {
     icon: IconBTC,
-    symbol: '1BTC',
+    symbol: '1WBTC',
     name: 'Wrapped BTC',
     contractAddress: '0x3095c7557bCb296ccc6e363DE01b760bA031F2d9'
   },
@@ -67,6 +68,12 @@ export const KnownERC20 = {
     symbol: '1AAVE',
     name: 'Aave Token',
     contractAddress: '0xcF323Aad9E522B93F11c352CaA519Ad0E14eB40F'
+  },
+  bscUSDT: {
+    icon: IconUSDT,
+    symbol: 'bscUSDT',
+    name: 'Binance USDT',
+    contractAddress: '0x9a89d0e1b051640c6704dde4df881f73adfef39a'
   },
 }
 
