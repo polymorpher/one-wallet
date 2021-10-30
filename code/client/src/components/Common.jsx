@@ -12,7 +12,7 @@ export const useOps = ({ address }) => {
   const [stage, setStage] = useState(-1)
   const { resetWorker, recoverRandomness } = useRandomWorker()
   const { state: otpState } = useOtpState()
-  const { isMobile } = useWindowDimensions()
+  const { isMobile, os } = useWindowDimensions()
   return {
     dispatch,
     wallets,
@@ -24,5 +24,6 @@ export const useOps = ({ address }) => {
     recoverRandomness,
     otpState: { doubleOtp: wallet.doubleOtp, ...otpState },
     isMobile,
+    os
   }
 }
