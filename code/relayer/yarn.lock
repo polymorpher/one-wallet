@@ -3006,6 +3006,11 @@ expand-brackets@^2.1.4:
     snapdragon "^0.8.1"
     to-regex "^3.0.1"
 
+exponential-backoff@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/exponential-backoff/-/exponential-backoff-3.1.0.tgz#9409c7e579131f8bd4b32d7d8094a911040f2e68"
+  integrity sha512-oBuz5SYz5zzyuHINoe9ooePwSu0xApKWgeNzok4hZ5YKXFh9zrQBEM15CXqoZkJJPuI2ArvqjPQd8UKJA753XA==
+
 express-fingerprint@^1.2.2:
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/express-fingerprint/-/express-fingerprint-1.2.2.tgz#bd641a233b6b45096f9c393cf0ad8ae7db7d79a1"

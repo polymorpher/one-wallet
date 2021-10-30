@@ -16,6 +16,7 @@ const HDWalletProvider = require('@truffle/hdwallet-provider')
 const fs = require('fs/promises')
 const path = require('path')
 const { pick } = require('lodash')
+const { backOff } = require('exponential-backoff')
 
 const providers = {}
 const contracts = {}
@@ -67,9 +68,22 @@ const initCachedLibraries = async () => {
           await c.link(libraries[network][dep.contractName])
         }
       }
-      const instance = await c.new()
-      libraries[network][lib.contractName] = instance
-      await fs.writeFile(fp, instance.address, { encoding: 'utf-8' })
+      try {
+        await backOff(async () => {
+          const instance = await c.new()
+          libraries[network][lib.contractName] = instance
+          await fs.writeFile(fp, instance.address, { encoding: 'utf-8' })
+        }, {
+          retry: (ex, n) => {
+            console.error(`[${network}] Failed to deploy ${lib.contractName} (attempted ${n}/10)`)
+            console.error(ex)
+            return true
+          }
+        })
+      } catch (ex) {
+        console.error(`Failed to deploy ${lib.contractName} after all attempts. Exiting`)
+        process.exit(1)
+      }
     }
   }
 }
@@ -140,7 +154,16 @@ const init = () => {
     for (let network in libraries) {
       for (let libraryName in libraries[network]) {
         const n = await contracts[network].detectNetwork()
-        await contracts[network].link(libraries[network][libraryName])
+        try {
+          await backOff(() => contracts[network].link(libraries[network][libraryName]), {
+            retry: (ex, n) => {
+              console.error(`[${network}] Failed to link ${libraryName} (attempted ${n}/10)`)
+            }
+          })
+        } catch (ex) {
+          console.error(`Failed to link ${libraryName} after all attempts. Exiting`)
+          process.exit(2)
+        }
 
         console.log(`Linked ${network} (${JSON.stringify(n)}) ${libraryName} with ${libraries[network][libraryName].address}`)
       }
