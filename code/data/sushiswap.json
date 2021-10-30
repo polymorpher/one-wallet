@@ -1,6 +1,11 @@
 {
   "pairs": [
     {
+      "t0": "0x9a89d0e1b051640c6704dde4df881f73adfef39a",
+      "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
+      "pair": "0x965C4C0613568dd9017d4504bE4c30370a2122Cc"
+    },
+    {
       "t0": "0x985458E523dB3d53125813eD68c274899e9DfAb4",
       "t1": "0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a",
       "pair": "0xBf255d8c30DbaB84eA42110EA7DC870F01c0013A"
@@ -1275,6 +1280,13 @@
       "name": "Amethyst",
       "decimal": "18",
       "supply": "122113543592086749159624"
+    },
+    "0x9a89d0e1b051640c6704dde4df881f73adfef39a": {
+      "symbol": "bscUSDT",
+      "name": "Binance USDT",
+      "decimal": 18,
+      "priority": 94,
+      "iconSymbol": "usdt"
     }
   }
 }
