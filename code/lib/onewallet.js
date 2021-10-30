@@ -6,7 +6,7 @@ const AES = require('aes-js')
 const abi = require('web3-eth-abi')
 
 const computeMerkleTree = async ({
-  otpSeed,
+  otpSeed, // Uint8Array or b32 encoded string
   otpSeed2, // can be null
   effectiveTime = Date.now(),
   duration = 3600 * 1000 * 24 * 365,
