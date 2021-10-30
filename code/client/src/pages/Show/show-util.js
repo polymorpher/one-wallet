@@ -9,7 +9,8 @@ import BN from 'bn.js'
 const { Text, Link } = Typography
 
 export default {
-  buildHelpers: ({ setStage, network, resetOtp, resetWorker, onSuccess }) => {
+  buildHelpers: ({ setStage, network, resetOtp, otpState, resetWorker, onSuccess }) => {
+    resetOtp = resetOtp || otpState?.resetOtp
     const restart = () => {
       setStage(-1)
       resetOtp && resetOtp()
