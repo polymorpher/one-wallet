@@ -14,6 +14,22 @@ interface IONEWallet {
         uint8  maxOperationsPerInterval; // number of transactions permitted per OTP interval. Each transaction shall have a unique nonce. The nonce is auto-incremented within each interval
     }
 
+    struct AuthParams{
+        bytes32[] neighbors;
+        uint32 indexWithNonce;
+        bytes32 eotp;
+    }
+
+    struct OperationParams{
+        Enums.OperationType operationType;
+        Enums.TokenType tokenType;
+        address contractAddress;
+        uint256 tokenId;
+        address payable dest;
+        uint256 amount;
+        bytes data;
+    }
+
     event TransferError(address dest, bytes error);
     event LastResortAddressNotSet();
     event RecoveryAddressUpdated(address dest);
@@ -36,9 +52,13 @@ interface IONEWallet {
 
     function retire() external returns (bool);
 
+    // To be deprecated. Use public fields.
     function getInfo() external view returns (bytes32, uint8, uint8, uint32, uint32, uint8, address, uint256);
 
-    function getOldCores() external view returns (CoreSetting[] memory);
+    function getOldInfos() external view returns (CoreSetting[] memory);
+
+    // returns the first root assigned to this contract
+    function getRootKey() external view returns (bytes32);
 
     function getVersion() external pure returns (uint32, uint32);
 
@@ -62,11 +82,14 @@ interface IONEWallet {
 
     function commit(bytes32 hash, bytes32 paramsHash, bytes32 verificationHash) external;
 
-    function reveal(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp, OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address payable dest, uint256 amount, bytes calldata data) external;
+    // deprecated since v14
+    //    function reveal(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp, Enums.OperationType operationType, Enums.TokenType tokenType, address contractAddress, uint256 tokenId, address payable dest, uint256 amount, bytes calldata data) external;
 
-    function getTrackedTokens() external view returns (TokenType[] memory, address[] memory, uint256[] memory);
+    function reveal(AuthParams calldata auth, OperationParams calldata op) external;
 
-    function getBalance(TokenType tokenType, address contractAddress, uint256 tokenId) external view returns (uint256);
+    function getTrackedTokens() external view returns (Enums.TokenType[] memory, address[] memory, uint256[] memory);
+
+    function getBalance(Enums.TokenType tokenType, address contractAddress, uint256 tokenId) external view returns (uint256);
 
     function getBacklinks() external view returns (IONEWallet[] memory);
 
