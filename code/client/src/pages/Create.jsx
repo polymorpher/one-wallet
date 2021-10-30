@@ -36,6 +36,8 @@ import AddressInput from '../components/AddressInput'
 import WalletCreateProgress from '../components/WalletCreateProgress'
 import { TallRow } from '../components/Grid'
 import { FlashyButton } from '../components/Buttons'
+import { buildQRCodeComponent, getQRCodeUri, getSecondCodeName, OTPUriMode } from '../components/OtpTools'
+import { OtpSetup, TwoCodeOption } from '../components/OtpSetup'
 const { Text, Link } = Typography
 
 // const genName = () => uniqueNamesGenerator({
@@ -53,75 +55,12 @@ const genName = (existingNames) => {
   return name
 }
 
-const OTPUriMode = {
-  STANDARD: 0,
-  MIGRATION: 1,
-  TOTP: 2, // seems deprecated, should not use unless it is for testing
-}
-
-const getQRCodeUri = (otpSeed, otpDisplayName, mode = OTPUriMode.STANDARD) => {
-  if (mode === OTPUriMode.STANDARD) {
-    // otpauth://TYPE/LABEL?PARAMETERS
-    return `otpauth://totp/${otpDisplayName}?secret=${b32.encode(otpSeed)}&issuer=Harmony`
-  }
-  if (mode === OTPUriMode.MIGRATION) {
-    const payload = MigrationPayload.create({
-      otpParameters: [{
-        issuer: 'Harmony',
-        secret: otpSeed,
-        name: otpDisplayName,
-        algorithm: MigrationPayload.Algorithm.ALGORITHM_SHA1,
-        digits: MigrationPayload.DigitCount.DIGIT_COUNT_SIX,
-        type: MigrationPayload.OtpType.OTP_TYPE_TOTP,
-      }],
-      version: 1,
-      batchIndex: 0,
-      batchSize: 1,
-    })
-    const bytes = MigrationPayload.encode(payload).finish()
-    const b64 = Buffer.from(bytes).toString('base64')
-    // console.log({ payload, bytes, b64 })
-    return `otpauth-migration://offline?data=${encodeURIComponent(b64)}`
-  }
-  return null
-}
-
 const getGoogleAuthenticatorAppLink = (os) => {
   let link = 'https://apps.apple.com/us/app/google-authenticator/id388497605'
   if (os === OSType.Android) {
     link = 'https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2'
   }
   return <Link href={link} target='_blank' rel='noreferrer'>Google Authenticator</Link>
-}
-
-const getSecondCodeName = (name) => `${name} - 2nd`
-
-// not constructing qrCodeData on the fly (from seed) because generating a PNG takes noticeable amount of time. Caller needs to make sure qrCodeData is consistent with seed
-const buildQRCodeComponent = ({ seed, name, os, isMobile, qrCodeData }) => {
-  const image = (url) =>
-    <Image
-      src={qrCodeData}
-      preview={false}
-      width={isMobile ? 192 : 256}
-      style={isMobile && { border: '1px solid lightgrey', borderRadius: 8, boxShadow: '0px 0px 10px lightgrey' }}
-      onClick={url && (() => window.open(url, '_self').focus())}
-    />
-  let href
-  if (os === OSType.iOS) {
-    href = getQRCodeUri(seed, name, OTPUriMode.MIGRATION)
-  } else if (os === OSType.Android) {
-    href = getQRCodeUri(seed, name, OTPUriMode.STANDARD)
-  } else if (isMobile) {
-    // To test in more devices
-    href = getQRCodeUri(seed, name, OTPUriMode.MIGRATION)
-  }
-
-  return (
-    <Row justify='center'>
-      {isMobile && qrCodeData && image(href)}
-      {!isMobile && qrCodeData && image()}
-    </Row>
-  )
 }
 
 const sectionViews = {
@@ -414,34 +353,9 @@ const Create = ({ expertMode, showRecovery }) => {
         </Row>
         <Row style={{ marginTop: 16 }}>
           <Space direction='vertical' size='large' align='center' style={{ width: '100%' }}>
-            <Hint>Copy the 6-digit code from authenticator</Hint>
-            <Hint style={{ fontSize: isMobile ? 12 : undefined }}>
-              Code for <b>Harmony ({name})</b>
-            </Hint>
-            <OtpBox
-              shouldAutoFocus={!isMobile}
-              ref={otpRef}
-              value={otp}
-              onChange={setOtp}
-              numOnly={isMobile}
-            />
-            {isMobile && <Button type='default' shape='round' icon={<SnippetsOutlined />} onClick={() => { navigator.clipboard.readText().then(t => setOtp(t)) }}>Paste from Clipboard</Button>}
-            {expertMode &&
-              <Checkbox onChange={() => setDoubleOtp(!doubleOtp)}>
-                <Space>
-                  <Hint style={{ fontSize: isMobile ? 12 : undefined }}>
-                    Use two codes to enhance security
-                  </Hint>
-                  <Tooltip title={<div>You will need to scan another QR-code on the next page. Each time you make a transaction, you will need to type in two 6-digit codes, which are shown simultaneously next to each other on your Google Authenticator.<br /><br />This is advisable if you intend to make larger transactions with this wallet</div>}>
-                    <QuestionCircleOutlined />
-                  </Tooltip>
-                </Space>
-              </Checkbox>}
-            <Space direction='vertical' size='small' align='center' style={{ width: '100%' }}>
-              {expertMode && <Hint>You can adjust spending limit in the next step</Hint>}
-
-            </Space>
-
+            <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={name} />
+            {expertMode && <TwoCodeOption isMobile={isMobile} setDoubleOtp={setDoubleOtp} doubleOtp={doubleOtp} />}
+            {expertMode && <Hint>You can adjust spending limit in the next step</Hint>}
           </Space>
         </Row>
       </AnimatedSection>
@@ -454,16 +368,7 @@ const Create = ({ expertMode, showRecovery }) => {
           </Space>
         </Row>
         <Row>
-          <Space direction='vertical' size='large' align='center' style={{ width: '100%' }}>
-            <Hint>Copy the 6-digit code from authenticator</Hint>
-            <Hint style={{ fontSize: isMobile ? 12 : undefined }}>Code for <b>Harmony ({getSecondCodeName(name)})</b></Hint>
-            <OtpBox
-              ref={otpRef}
-              value={otp}
-              onChange={setOtp}
-            />
-            {isMobile && <Button type='default' shape='round' icon={<SnippetsOutlined />} onClick={() => { navigator.clipboard.readText().then(t => setOtp(t)) }}>Paste from Clipboard</Button>}
-          </Space>
+          <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={getSecondCodeName(name)} />
         </Row>
       </AnimatedSection>
       <AnimatedSection show={section === sectionViews.prepareWallet} style={{ maxWidth: 640 }}>
