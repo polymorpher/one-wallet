@@ -427,9 +427,20 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
 
     function _replaceCore(CoreSetting memory newCore) internal {
         // if recovery is already performed on this wallet, or the wallet is already upgrade to a new version, or set to forward to another address (hence is controlled by that address), its lifespan should not be extended
-        require(forwardAddress == address(0));
+        if (forwardAddress != address(0)) {
+            emit CoreReplacementFailed(newCore, "Wallet deprecated");
+            return;
+        }
         // we should not require the recovery address to approve this operation, since the ability of recovery address initiating an auto-triggered recovery (via sending 1.0 ONE) is unaffected after the root is replaced.
         CoreSetting memory oldCore = core;
+        if (newCore.t0 + newCore.lifespan <= oldCore.t0 + oldCore.lifespan || newCore.t0 <= oldCore.t0) {
+            emit CoreReplacementFailed(newCore, "Must have newer time range");
+            return;
+        }
+        if (newCore.root == oldCore.root) {
+            emit CoreReplacementFailed(newCore, "Must have different root");
+            return;
+        }
         oldCores.push(oldCore);
         core.root = newCore.root;
         core.t0 = newCore.t0;

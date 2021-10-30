@@ -47,6 +47,7 @@ interface IONEWallet {
     event ExternalCallCompleted(address contractAddress, uint256 amount, bytes data, bytes ret);
     event ExternalCallFailed(address contractAddress, uint256 amount, bytes data, bytes ret);
     event CoreReplaced(CoreSetting oldCore, CoreSetting newCore);
+    event CoreReplacementFailed(CoreSetting newCore, string reason);
 
     function getForwardAddress() external view returns (address payable);
 
