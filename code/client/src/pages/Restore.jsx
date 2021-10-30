@@ -17,7 +17,7 @@ import * as Sentry from '@sentry/browser'
 import AddressInput from '../components/AddressInput'
 import QrCodeScanner from '../components/QrCodeScanner'
 import ScanGASteps from '../components/ScanGASteps'
-import { parseOAuthOTP, parseMigrationPayload } from '../components/OtpParser'
+import { parseOAuthOTP, parseMigrationPayload } from '../components/OtpTools'
 
 const Restore = () => {
   const history = useHistory()
