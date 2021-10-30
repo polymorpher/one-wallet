@@ -30,7 +30,17 @@ const SetRecovery = ({ address, onClose, show }) => {
   const { otpInput, otp2Input } = otpState
   const resetOtp = otpState.resetOtp
 
-  const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
+  const helpers = ShowUtils.buildHelpers({
+    setStage,
+    resetOtp,
+    network,
+    resetWorker,
+    onSuccess: () => {
+      message.success('Recovery address set')
+      dispatch(walletActions.fetchWallet({ address }))
+      onClose()
+    }
+  })
 
   const doSetRecoveryAddress = async () => {
     if (stage >= 0) {
@@ -48,23 +58,13 @@ const SetRecovery = ({ address, onClose, show }) => {
       otp2,
       commitHashGenerator: ONE.computeSetRecoveryAddressHash,
       commitHashArgs: { address: dest },
+      prepareProof: () => setStage(0),
       beforeCommit: () => setStage(1),
       afterCommit: () => setStage(2),
-      onCommitError,
-      onCommitFailure,
       revealAPI: api.relayer.revealSetRecoveryAddress,
       revealArgs: { lastResortAddress: dest },
-      prepareProofFailed,
       recoverRandomness,
-      onRevealFailure,
-      onRevealError,
-      onRevealAttemptFailed,
-      onRevealSuccess: (txId) => {
-        onRevealSuccess(txId)
-        message.success(`Recovery address is set to ${dest}`)
-        dispatch(walletActions.fetchWallet({ address }))
-        onClose()
-      }
+      ...helpers,
     })
   }
 
