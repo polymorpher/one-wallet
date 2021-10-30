@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react'
-import { Button, Row, Space, Typography, Input, Col, Radio } from 'antd'
+import React, { useEffect, useState, useRef } from 'react'
+import { Button, Row, Space, Typography, Input, Col, Radio, Checkbox, Tooltip } from 'antd'
 import message from '../../message'
-import { CloseOutlined } from '@ant-design/icons'
+import { CloseOutlined, QuestionCircleOutlined, SnippetsOutlined } from '@ant-design/icons'
 import { Hint, InputBox, Label, Warning } from '../../components/Text'
 import { AverageRow, TallRow } from '../../components/Grid'
 import AddressInput from '../../components/AddressInput'
@@ -20,13 +20,22 @@ import { OtpStack } from '../../components/OtpStack'
 import { useOps } from '../../components/Common'
 import QrCodeScanner from '../../components/QrCodeScanner'
 import ScanGASteps from '../../components/ScanGASteps'
-import { parseMigrationPayload, parseOAuthOTP } from '../../components/OtpTools'
+import {
+  buildQRCodeComponent,
+  getQRCodeUri, getSecondCodeName,
+  OTPUriMode,
+  parseMigrationPayload,
+  parseOAuthOTP
+} from '../../components/OtpTools'
 import * as Sentry from '@sentry/browser'
 import storage from '../../storage'
 import walletActions from '../../state/modules/wallet/actions'
 import Paths from '../../constants/paths'
 import WalletConstants from '../../constants/wallet'
 import WalletCreateProgress from '../../components/WalletCreateProgress'
+import qrcode from 'qrcode'
+import OtpBox from '../../components/OtpBox'
+import { OtpSetup, TwoCodeOption } from '../../components/OtpSetup'
 const { Title, Text } = Typography
 const { TextArea } = Input
 
@@ -38,9 +47,10 @@ const Extend = ({
 }) => {
   const {
     dispatch, wallets, wallet, network, stage, setStage,
-    resetWorker, recoverRandomness, otpState, isMobile,
+    resetWorker, recoverRandomness, otpState, isMobile, os
   } = useOps(address)
-  const { majorVersion } = wallet
+  const dev = useSelector(state => state.wallet.dev)
+  const { majorVersion, name, expert } = wallet
   const [method, setMethod] = useState()
   const [seed, setSeed] = useState()
   const [seed2, setSeed2] = useState()
@@ -56,6 +66,35 @@ const Extend = ({
   const [progressStage, setProgressStage] = useState(0)
   const securityParameters = ONEUtil.securityParameters(wallet)
   const [computeInProgress, setComputeInProgress] = useState(false)
+
+  const [qrCodeData, setQRCodeData] = useState()
+  const [secondOtpQrCodeData, setSecondOtpQrCodeData] = useState()
+
+  const [validationOtp, setValidationOtp] = useState()
+  const validationOtpRef = useRef()
+  const [showSecondCode, setShowSecondCode] = useState()
+  const [qrCodeValidationComplete, setQrCodeValidationComplete] = useState()
+
+  useEffect(() => {
+    if (!seed || method !== 'new') {
+      return
+    }
+    (async function () {
+      const otpUri = getQRCodeUri(seed, name, OTPUriMode.MIGRATION)
+      const otpQrCodeData = await qrcode.toDataURL(otpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
+      setQRCodeData(otpQrCodeData)
+    })()
+  }, [name, method, seed])
+  useEffect(() => {
+    if (!doubleOtp || !seed2 || method !== 'new') {
+      return
+    }
+    (async function () {
+      const secondOtpUri = getQRCodeUri(seed2, getSecondCodeName(name), OTPUriMode.MIGRATION)
+      const secondOtpQrCodeData = await qrcode.toDataURL(secondOtpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
+      setSecondOtpQrCodeData(secondOtpQrCodeData)
+    })()
+  }, [name, method, seed2, doubleOtp])
 
   const { prepareValidation, ...handlers } = ShowUtils.buildHelpers({
     setStage,
@@ -112,6 +151,26 @@ const Extend = ({
     //   ...handlers
     // })
   }
+
+  useEffect(() => {
+    if (validationOtp.length !== 6) {
+      return
+    }
+    const currentSeed = showSecondCode ? seed2 : seed
+    const expected = ONEUtil.genOTP({ seed: currentSeed })
+    const code = new DataView(expected.buffer).getUint32(0, false).toString()
+    setValidationOtp('')
+    if (code.padStart(6, '0') !== validationOtp.padStart(6, '0')) {
+      message.error('Code is incorrect. Please try again.')
+      validationOtpRef?.current?.focusInput(0)
+    } else if (doubleOtp && !showSecondCode) {
+      setShowSecondCode(true)
+      validationOtpRef?.current?.focusInput(0)
+    } else {
+      setQrCodeValidationComplete(true)
+    }
+  }, [validationOtp])
+
   useEffect(() => {
     if (!seed) {
       return
@@ -183,8 +242,11 @@ const Extend = ({
           return
         }
         const { secret2, secret } = parsed
-        setSeed2(secret2)
         setSeed(secret)
+        if (secret2) {
+          setSeed2(secret2)
+          setDoubleOtp(true)
+        }
       } catch (ex) {
         Sentry.captureException(ex)
         console.error(ex)
@@ -207,29 +269,42 @@ const Extend = ({
               <Radio value='new'>Set up a new Google Authenticator entry</Radio>
             </Space>
           </Radio.Group>
-          {method === 'scan' &&
+          {method === 'scan' && !qrCodeValidationComplete &&
             <>
               <ScanGASteps />
               <QrCodeScanner shouldInit={method === 'scan'} onScan={onScan} />
             </>}
           {
-            method === 'new' &&
+            method === 'new' && !qrCodeValidationComplete &&
               <>
-
+                <Text>Your old authenticator entry will become obsolete after you complete extending the expiry time of the wallet. </Text>
+                <Text style={{ color: 'red' }}>Make sure the new ones work before deleting the old one. </Text>
+                {!showSecondCode &&
+                  <>
+                    {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData })}
+                    <OtpSetup isMobile={isMobile} otpRef={validationOtpRef} otpValue={validationOtp} setOtpValue={setValidationOtp} name={name} />
+                    {(dev || expert) && <TwoCodeOption isMobile={isMobile} setDoubleOtp={setDoubleOtp} doubleOtp={doubleOtp} />}
+                  </>}
+                {showSecondCode &&
+                  <>
+                    {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData: secondOtpQrCodeData })}
+                    <OtpSetup isMobile={isMobile} otpRef={validationOtpRef} otpValue={validationOtp} setOtpValue={setValidationOtp} name={name} />
+                  </>}
               </>
           }
 
         </Space>
-        {method && !root && <WalletCreateProgress title='Computing security parameters...' progress={progress} isMobile={isMobile} progressStage={progressStage} />}
+        {method && qrCodeValidationComplete && !root && <WalletCreateProgress title='Computing security parameters...' progress={progress} isMobile={isMobile} progressStage={progressStage} />}
         {method && (
           <>
             <AverageRow align='middle'>
               <Col span={24}>
                 <OtpStack
+                  isDisabled={!root}
                   walletName={wallet.name}
                   otpState={otpState}
                   onComplete={doReplace}
-                  action='confirm'
+                  action={`confirm ${method === 'new' && '(with old authenticator code)'}`}
                 />
               </Col>
             </AverageRow>
