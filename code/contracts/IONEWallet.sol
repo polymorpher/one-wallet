@@ -4,23 +4,23 @@ pragma solidity ^0.8.4;
 import "./Enums.sol";
 
 interface IONEWallet {
-    struct CoreSetting{
+    struct CoreSetting {
         /// Some variables can be immutable, but doing so would increase contract size. We are at threshold at the moment (~24KiB) so until we separate the contracts, we will do everything to minimize contract size
         bytes32 root; // Note: @ivan brought up a good point in reducing this to 16-bytes so hash of two consecutive nodes can be done in a single word (to save gas and reduce blockchain clutter). Let's not worry about that for now and re-evalaute this later.
         uint8 height; // including the root. e.g. for a tree with 4 leaves, the height is 3.
         uint8 interval; // otp interval in seconds, default is 30
         uint32 t0; // starting time block (effectiveTime (in ms) / interval)
         uint32 lifespan;  // in number of block (e.g. 1 block per [interval] seconds)
-        uint8  maxOperationsPerInterval; // number of transactions permitted per OTP interval. Each transaction shall have a unique nonce. The nonce is auto-incremented within each interval
+        uint8 maxOperationsPerInterval; // number of transactions permitted per OTP interval. Each transaction shall have a unique nonce. The nonce is auto-incremented within each interval
     }
 
-    struct AuthParams{
+    struct AuthParams {
         bytes32[] neighbors;
         uint32 indexWithNonce;
         bytes32 eotp;
     }
 
-    struct OperationParams{
+    struct OperationParams {
         Enums.OperationType operationType;
         Enums.TokenType tokenType;
         address contractAddress;
@@ -76,6 +76,7 @@ interface IONEWallet {
 
     function getAllCommits() external view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory);
 
+    /// DEPRECATED
     function findCommit(bytes32 /*hash*/) external pure returns (bytes32, bytes32, uint32, bool);
 
     function lookupCommit(bytes32 hash) external view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory);
@@ -83,7 +84,7 @@ interface IONEWallet {
     function commit(bytes32 hash, bytes32 paramsHash, bytes32 verificationHash) external;
 
     // deprecated since v14
-    //    function reveal(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp, Enums.OperationType operationType, Enums.TokenType tokenType, address contractAddress, uint256 tokenId, address payable dest, uint256 amount, bytes calldata data) external;
+    function reveal(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp, Enums.OperationType operationType, Enums.TokenType tokenType, address contractAddress, uint256 tokenId, address payable dest, uint256 amount, bytes calldata data) external;
 
     function reveal(AuthParams calldata auth, OperationParams calldata op) external;
 

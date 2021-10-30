@@ -10,8 +10,9 @@ import "./Reveal.sol";
 import "./WalletGraph.sol";
 import "./Enums.sol";
 import "./IONEWallet.sol";
+import "./AbstractONEWallet.sol";
 
-contract ONEWallet is TokenManager, IONEWallet {
+contract ONEWallet is TokenManager, AbstractONEWallet {
     using TokenTracker for TokenTracker.TokenTrackerState;
     using WalletGraph for IONEWallet[];
     using SignatureManager for SignatureManager.SignatureTracker;
@@ -140,10 +141,6 @@ contract ONEWallet is TokenManager, IONEWallet {
         return (majorVersion, minorVersion);
     }
 
-    function getCurrentSpending() external override pure returns (uint256, uint256){
-        revert();
-    }
-
     function getCurrentSpendingState() external override view returns (uint256, uint256, uint32, uint32){
         return spendingState.getState();
     }
@@ -162,17 +159,10 @@ contract ONEWallet is TokenManager, IONEWallet {
         return balance;
     }
 
-    function getCommits() external override pure returns (bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
-        revert();
-    }
-
     function getAllCommits() external override view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
         return commitState.getAllCommits();
     }
 
-    function findCommit(bytes32 /*hash*/) external override pure returns (bytes32, bytes32, uint32, bool){
-        revert();
-    }
 
     function lookupCommit(bytes32 hash) external override view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
         return commitState.lookupCommit(hash);
