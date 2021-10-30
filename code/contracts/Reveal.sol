@@ -55,14 +55,14 @@ library Reveal {
         }
         if (core.root == h) {
             require(auth.neighbors.length == core.height - 1, "Bad neighbors size");
-            require(position == (uint32(2 ** (core.height - 1))) - 1, "Need recovery leaf");
+            require(auth.indexWithNonce == (uint32(2 ** (core.height - 1))) - 1, "Need recovery leaf");
             return;
         }
         // check old cores
         for (uint8 i = 0; i < oldCores.length; i++) {
             if (oldCores[i].root == h) {
                 require(auth.neighbors.length == oldCores[i].height - 1, "Bad old neighbors size");
-                require(position == uint32(2 ** (oldCores[i].height - 1)) - 1, "Need old recovery leaf");
+                require(auth.indexWithNonce == uint32(2 ** (oldCores[i].height - 1)) - 1, "Need old recovery leaf");
                 return;
             }
         }
