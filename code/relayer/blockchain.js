@@ -1,5 +1,6 @@
 const config = require('./config')
 const ONEConfig = require('../lib/config/common')
+const ONEUtil = require('../lib/util')
 const contract = require('@truffle/contract')
 const { TruffleProvider } = require('@harmony-js/core')
 const { Account } = require('@harmony-js/account')
@@ -49,21 +50,25 @@ const initCachedLibraries = async () => {
       const c = contract(lib)
       c.setProvider(providers[network])
       c.defaults({ from: account.address })
+      const expectedHash = ONEUtil.hexString(ONEUtil.keccak(ONEUtil.hexToBytes(lib.bytecode)))
       try {
         await fs.access(fp)
-        const address = await fs.readFile(fp, { encoding: 'utf-8' })
-        if (address) {
+        const content = await fs.readFile(fp, { encoding: 'utf-8' })
+        const [address, hash] = content.split(',')
+        if (hash === expectedHash) {
           console.log(`[${network}][${lib.contractName}] Found existing deployed library at address ${address}`)
           libraries[network][lib.contractName] = await c.at(address)
           continue
+        } else {
+          console.log(`[${network}][${lib.contractName}] Library code is changed. Redeploying`)
         }
       } catch {}
-      console.log(`[${network}] Library ${lib.contractName} address is not cached. Deploying new instance`)
+      console.log(`[${network}][${lib.contractName}] Library address is not cached or is outdated. Deploying new instance`)
       if (libraryDeps[lib.contractName]) {
         for (let dep of libraryDeps[lib.contractName]) {
-          console.log(`[${network}] Library ${lib.contractName} depends on ${dep.contractName}. Linking...`)
+          console.log(`[${network}][${lib.contractName}] Library depends on ${dep.contractName}. Linking...`)
           if (!libraries[network][dep.contractName]) {
-            throw new Error(`[${network}] ${dep.contractName} is not deployed yet`)
+            throw new Error(`[${network}][${dep.contractName}] Library is not deployed yet`)
           }
           await c.detectNetwork()
           await c.link(libraries[network][dep.contractName])
@@ -73,7 +78,7 @@ const initCachedLibraries = async () => {
         await backOff(async () => {
           const instance = await c.new()
           libraries[network][lib.contractName] = instance
-          await fs.writeFile(fp, instance.address, { encoding: 'utf-8' })
+          await fs.writeFile(fp, `${instance.address},${expectedHash}`, { encoding: 'utf-8' })
         }, {
           retry: (ex, n) => {
             console.error(`[${network}] Failed to deploy ${lib.contractName} (attempted ${n}/10)`)
