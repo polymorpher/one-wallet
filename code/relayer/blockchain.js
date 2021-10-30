@@ -9,6 +9,7 @@ const SignatureManager = require('../build/contracts/SignatureManager.json')
 const TokenTracker = require('../build/contracts/TokenTracker.json')
 const DomainManager = require('../build/contracts/DomainManager.json')
 const SpendingManager = require('../build/contracts/SpendingManager.json')
+const Reveal = require('../build/contracts/Reveal.json')
 const ONEWallet = require('../build/contracts/ONEWallet.json')
 const ONEWalletV5 = require('../build/contracts/ONEWalletV5.json')
 const ONEWalletV6 = require('../build/contracts/ONEWalletV6.json')
@@ -23,8 +24,8 @@ const contracts = {}
 const contractsV5 = {}
 const contractsV6 = {}
 const networks = []
-const libraryList = [DomainManager, TokenTracker, WalletGraph, CommitManager, SignatureManager, SpendingManager]
-const libraryDeps = { WalletGraph: [DomainManager] }
+const libraryList = [DomainManager, TokenTracker, WalletGraph, CommitManager, SignatureManager, SpendingManager, Reveal]
+const libraryDeps = { WalletGraph: [DomainManager], Reveal: [CommitManager] }
 const libraries = {}
 
 const ensureDir = async (p) => {
