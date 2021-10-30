@@ -248,21 +248,31 @@ const Create = ({ expertMode, showRecovery }) => {
     }
   }, [section, worker, doubleOtp])
 
+  const enableExpertMode = (refresh) => {
+    if (refresh) {
+      window.location.href = Paths.create2
+      return
+    }
+    history.push(Paths.create2)
+    message.success('Expert mode unlocked')
+    setOtp('')
+  }
+  const disableExpertMode = () => {
+    history.push(Paths.create)
+    message.success('Expert mode disabled')
+    setOtp('')
+  }
   useEffect(() => {
     const settingUpSecondOtp = section === sectionViews.setupSecondOtp
     if (otp.length !== 6) {
       return
     }
     if (otp.toLowerCase() === '0x1337' || otp.toLowerCase() === 'expert') {
-      history.push(Paths.create2)
-      message.success('Expert mode unlocked')
-      setOtp('')
+      enableExpertMode()
       return
     }
     if (expertMode && (otp === '0x0000' || otp === 'normal')) {
-      history.push(Paths.create)
-      message.success('Expert mode disabled')
-      setOtp('')
+      disableExpertMode()
       return
     }
     const currentSeed = settingUpSecondOtp ? seed2 : seed
@@ -397,8 +407,8 @@ const Create = ({ expertMode, showRecovery }) => {
           <Space direction='vertical'>
             {/* <Heading>Now, scan the QR code with your Google Authenticator</Heading> */}
             <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
-            {!isMobile && <Hint>Scan the QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use, copy, or restore the wallet </Hint>}
-            {isMobile && <Hint>Tap QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use, copy, or restore the wallet</Hint>}
+            {!isMobile && <Hint>Scan the QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use the wallet </Hint>}
+            {isMobile && <Hint>Tap QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use the wallet</Hint>}
             {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData })}
           </Space>
         </Row>
@@ -413,6 +423,7 @@ const Create = ({ expertMode, showRecovery }) => {
               ref={otpRef}
               value={otp}
               onChange={setOtp}
+              numOnly={isMobile}
             />
             {isMobile && <Button type='default' shape='round' icon={<SnippetsOutlined />} onClick={() => { navigator.clipboard.readText().then(t => setOtp(t)) }}>Paste from Clipboard</Button>}
             {expertMode &&
@@ -426,6 +437,11 @@ const Create = ({ expertMode, showRecovery }) => {
                   </Tooltip>
                 </Space>
               </Checkbox>}
+            <Space direction='vertical' size='small' align='center' style={{ width: '100%' }}>
+              {expertMode && <Hint>You can adjust spending limit in the next step</Hint>}
+
+            </Space>
+
           </Space>
         </Row>
       </AnimatedSection>
@@ -527,14 +543,16 @@ const Create = ({ expertMode, showRecovery }) => {
                 {(deploying || !root) && <Space><Text>Working on your 1wallet...</Text><LoadingOutlined /></Space>}
                 {(!deploying && root) && <Text>Your 1wallet is ready!</Text>}
               </TallRow>}
+            {!expertMode && <Hint>In beta, you can only spend {WalletConstants.defaultSpendingLimit} ONE per day</Hint>}
+            {!expertMode && <Button type='link' onClick={() => enableExpertMode(true)} style={{ padding: 0 }}>I want to create a higher limit wallet instead</Button>}
             {!root && <WalletCreateProgress progress={progress} isMobile={isMobile} progressStage={progressStage} />}
           </Space>
         </Row>
         <Row>
           <Space direction='vertical'>
-            <Hint>No private key. No mnemonic. Simple and Secure. </Hint>
+            <Hint>No private key. No mnemonic.</Hint>
+            <Hint>Simple and Secure.</Hint>
             <Hint>To learn more, visit <Link href='https://github.com/polymorpher/one-wallet/wiki'>1wallet Wiki</Link></Hint>
-            <Hint>In Beta, your wallet is subject to a daily spending limit of {WalletConstants.defaultSpendingLimit} ONE</Hint>
           </Space>
         </Row>
       </AnimatedSection>
