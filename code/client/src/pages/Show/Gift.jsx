@@ -72,7 +72,7 @@ const SimpleNFTRow = ({ isMobile, nft, amount, balance, onClick, onAmountChange,
   return (
     <Space onClick={onClick} style={{ width: '100%', flexWrap: 'wrap' }}>
       {!onAmountChange && amount !== undefined && <Hint>{amount} × </Hint>}
-      {onAmountChange && <><InputBox margin='auto' style={{ borderBottom: '1px solid black' }} width={64} value={amount} onChange={({ target: { value } }) => onAmountChange(value)} /> <Hint> × </Hint> </>}
+      {onAmountChange && <><InputBox $num margin='auto' style={{ borderBottom: '1px solid black' }} width={64} value={amount} onChange={({ target: { value } }) => onAmountChange(value)} /> <Hint> × </Hint> </>}
       <Text>{displayName}</Text>
       {onDelete && <CloseCircleOutlined style={{ marginLeft: 32 }} onClick={onDelete} />}
       {amount !== undefined && balance !== undefined && !(balance.gte(new BN(amount))) && <Text type='danger'>Insufficient Balance</Text>}
@@ -282,6 +282,7 @@ const Gift = ({
             <Label ultraWide><Hint>Total Amount</Hint></Label>
             <Space direction={isMobile ? 'vertical' : 'horizontal'} align='end'>
               <InputBox
+                $num
                 margin='auto' width={200} value={totalAmountInput}
                 onChange={({ target: { value } }) => setTotalAmountInput(value)}
                 disabled={!!prefilledTotalAmount} suffix='ONE'
@@ -292,6 +293,7 @@ const Gift = ({
           <Space align='baseline' size='large'>
             <Label ultraWide><Hint>Per Claim Limit</Hint></Label>
             <InputBox
+              $num
               margin='auto' width={200} value={claimLimitInput}
               onChange={({ target: { value } }) => setClaimLimitInput(value)} disabled={!!prefilledClaimLimit}
               suffix='ONE'
@@ -301,6 +303,7 @@ const Gift = ({
             <Space align='baseline' size='large'>
               <Label ultraWide><Hint>Claim Interval</Hint></Label>
               <InputBox
+                $num
                 margin='auto' width={200} value={claimInterval}
                 onChange={({ target: { value } }) => setClaimInterval(parseInt(value || 0))}
                 disabled={!!prefilledClaimLimit} suffix='seconds'
@@ -382,7 +385,7 @@ const Gift = ({
                   <Tooltip title='Recipients may claim a random amount of ONE between (per claim limit / random factor) and (per claim limit)  '>
                     <QuestionCircleOutlined />
                   </Tooltip>
-                  <InputBox margin='auto' value={randomFactor} onChange={({ target: { value } }) => setRandomFactor(parseFloat(value || 0))} />
+                  <InputBox $num margin='auto' value={randomFactor} onChange={({ target: { value } }) => setRandomFactor(parseFloat(value || 0))} />
                 </Space>
                 <Space>
                   <Label ultraWide>

@@ -17,7 +17,7 @@ export const Hint = styled(Text).attrs(() => ({ type: 'secondary' }))`
   color: #888888;
 `
 
-export const InputBox = styled(Input).attrs((props) => ({ size: props.size || 'large' }))`
+export const InputBox = styled(Input).attrs(({ $num, ...props }) => ({ size: props.size || 'large', ...($num && { inputMode: 'numeric', type: 'number' }) }))`
   width: ${props => typeof props.width === 'number' ? `${props.width || 400}px` : (props.width || 'auto')};
   margin-top: ${props => props.margin || '32px'};
   margin-bottom: ${props => props.margin || '32px'};

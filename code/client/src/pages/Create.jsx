@@ -478,12 +478,14 @@ const Create = ({ expertMode, showRecovery }) => {
               <Hint>Set up a spending limit:</Hint>
               <Space align='baseline' direction={isMobile ? 'vertical' : 'horizontal'}>
                 <InputBox
+                  $num
                   margin={16} width={160} value={spendingLimit}
                   onChange={({ target: { value } }) => setSpendingLimit(parseInt(value || 0))} suffix='ONE'
                 />
                 <Space align='baseline'>
                   <Hint>per</Hint>
                   <InputBox
+                    $num
                     margin={16} width={128} value={spendingInterval}
                     onChange={({ target: { value } }) => setSpendingInterval(parseInt(value || 0))}
                   />
