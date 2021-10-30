@@ -19,7 +19,7 @@ export const useOtpState = () => {
   return { state: { otpRef, otp2Ref, otpInput, otp2Input, setOtpInput, setOtp2Input, resetOtp } }
 }
 
-export const OtpStack = ({ shouldAutoFocus, wideLabel, walletName, otpState, doubleOtp, onComplete, action }) => {
+export const OtpStack = ({ shouldAutoFocus, wideLabel, walletName, otpState, doubleOtp = otpState?.doubleOtp, onComplete, action }) => {
   const { isMobile } = useWindowDimensions()
   const location = useLocation()
   const { otpRef, otp2Ref, otpInput, otp2Input, setOtpInput, setOtp2Input, resetOtp } = otpState || useOtpState()
