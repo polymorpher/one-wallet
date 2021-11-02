@@ -89,18 +89,13 @@ const Create = ({ expertMode, showRecovery }) => {
   const [showRecoveryDetail, setShowRecoveryDetail] = useState(false)
 
   // Used for Recovery address setup. Only used when user does not choose a Recovery address.
-  const oneWalletTreasurySelectOption = {
-    value: WalletConstants.oneWalletTreasury.address,
-    label: `(${WalletConstants.oneWalletTreasury.label}) ${util.safeOneAddress(WalletConstants.oneWalletTreasury.address)}`
-  }
-
   // A valid wallet of user's wallets in the network can be used as default recovery wallet.
   // const defaultRecoveryWallet = Object.keys(wallets)
   //   .map((address) => ({ ...wallets[address], oneAddress: util.safeOneAddress(wallets[address].address) }))
   //   .find((wallet) => util.safeOneAddress(wallet.address) && wallet.network === network && !wallet.temp)
 
   // const defaultRecoveryAddress = defaultRecoveryWallet ? { value: defaultRecoveryWallet.oneAddress, label: `(${defaultRecoveryWallet.name}) ${defaultRecoveryWallet.oneAddress}` } : oneWalletTreasurySelectOption
-  const defaultRecoveryAddress = oneWalletTreasurySelectOption
+  const defaultRecoveryAddress = { value: ONEConstants.TreasuryAddress, label: WalletConstants.defaultRecoveryAddressLabel }
 
   const [lastResortAddress, setLastResortAddress] = useState(defaultRecoveryAddress)
   const [spendingLimit, setSpendingLimit] = useState(WalletConstants.defaultSpendingLimit) // ONEs, number
@@ -420,17 +415,17 @@ const Create = ({ expertMode, showRecovery }) => {
                   addressValue={lastResortAddress}
                   setAddressCallback={setLastResortAddress}
                   extraSelectOptions={[{
-                    address: WalletConstants.oneWalletTreasury.address,
-                    label: WalletConstants.oneWalletTreasury.label
+                    address: ONEConstants.TreasuryAddress,
+                    label: WalletConstants.defaultRecoveryAddressLabel
                   }]}
                 />
                 <Hint>
-                  {lastResortAddress.value !== WalletConstants.oneWalletTreasury.address && <span style={{ color: 'red' }}>This is permanent. </span>}
+                  {!util.isDefaultRecoveryAddress(lastResortAddress.value) && <span style={{ color: 'red' }}>This is permanent. </span>}
                   If you lost access, you can still send your assets there or use <Link href='https://github.com/polymorpher/one-wallet/releases/tag/v0.2' target='_blank' rel='noreferrer'>auto-recovery</Link>
                 </Hint>
-                {lastResortAddress.value === WalletConstants.oneWalletTreasury.address &&
+                {util.isDefaultRecoveryAddress(lastResortAddress.value) &&
                   <Warning style={{ marginTop: 24 }}>
-                    Please use your own address if you can. 1wallet DAO is controlled by Harmony team. They may help you recover funds as the last resort.
+                    1wallet DAO can be a last resort to recover your assets. You can also use your own address.
                   </Warning>}
               </Space>}
           </Row>}

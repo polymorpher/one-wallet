@@ -113,8 +113,12 @@ const util = {
     return !address || address === ONEConstants.EmptyAddress || address === ONEConstants.EmptyBech32Address
   },
 
+  isDefaultRecoveryAddress: address => {
+    return address === ONEConstants.TreasuryAddress || ONEConstants.OldTreasuryAddresses.includes(address)
+  },
+
   isRecoveryAddressSet: address => {
-    return !exports.default.isEmptyAddress(address) && address !== ONEConstants.TreasuryAddress
+    return !exports.default.isEmptyAddress(address) && !exports.default.isDefaultRecoveryAddress(address)
   },
 
   isValidWallet: w => {

@@ -10,10 +10,7 @@ export default {
   checkCommitInterval: 5000,
   fetchBalanceFrequency: 15000,
   fetchDelaysAfterTransfer: [0, 2000, 5000],
-  oneWalletTreasury: {
-    label: '1wallet DAO',
-    address: ONEConstants.TreasuryAddress
-  },
+  defaultRecoveryAddressLabel: '1wallet DAO',
   redPacketDuration: 3600 * 1000 * 24 * 5,
   qrcodePattern: /\/to\/([a-zA-Z0-9]{42})/,
   unwrapPattern: /\/unwrap\?data=[a-zA-Z0-9]+/,

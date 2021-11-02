@@ -362,7 +362,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
               knownAddress.network === network &&
               notCurrentWallet(knownAddress.address) &&
               (!walletsMap?.[knownAddress.address]?.temp || allowTemp) && // not a temporary wallet
-              knownAddress.address !== WalletConstants.oneWalletTreasury.address)
+              !util.isDefaultRecoveryAddress(knownAddress.address))
             .sort((knownAddress) => knownAddress.label ? -1 : 0)
             .map((knownAddress, index) => {
               const oneAddress = util.safeOneAddress(knownAddress.address)
