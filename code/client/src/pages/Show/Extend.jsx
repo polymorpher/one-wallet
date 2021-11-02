@@ -138,6 +138,7 @@ const Extend = ({
     resetWorker,
     onSuccess: () => {
       storage.setItem(root, layers)
+      // TODO: validate tx receipt log events and remove old root/layers from storage
       const wallet = {
         _merge: true,
         address,
@@ -155,12 +156,11 @@ const Extend = ({
     }
   })
 
-  const doReplace = () => {
+  const doReplace = async () => {
     const { otp, otp2, invalidOtp2, invalidOtp } = prepareValidation({
       state: { ...otpState }, checkAmount: false, checkDest: false,
     }) || {}
 
-    // eslint-disable-next-line no-useless-return
     if (invalidOtp || invalidOtp2) return
 
     if (!root) {
@@ -168,23 +168,35 @@ const Extend = ({
       return
     }
 
-    console.log('TODO')
+    // struct CoreSetting {
+    //   /// Some variables can be immutable, but doing so would increase contract size. We are at threshold at the moment (~24KiB) so until we separate the contracts, we will do everything to minimize contract size
+    //   bytes32 root;
+    //   uint8 height; // including the root. e.g. for a tree with 4 leaves, the height is 3.
+    //   uint8 interval; // otp interval in seconds, default is 30
+    //   uint32 t0; // starting time block (effectiveTime (in ms) / interval)
+    //   uint32 lifespan;  // in number of block (e.g. 1 block per [interval] seconds)
+    //   uint8 maxOperationsPerInterval; // number of transactions permitted per OTP interval. Each transaction shall have a unique nonce. The nonce is auto-incremented within each interval
+    // }
 
-    // const args = { amount, operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: dest, tokenId: 0, dest: ONEConstants.EmptyAddress }
-    // SmartFlows.commitReveal({
-    //   wallet,
-    //   otp,
-    //   otp2,
-    //   recoverRandomness,
-    //   commitHashGenerator: ONE.computeGeneralOperationHash,
-    //   commitHashArgs: { ...args, data: ONEUtil.hexStringToBytes(encodedData) },
-    //   prepareProof: () => setStage(0),
-    //   beforeCommit: () => setStage(1),
-    //   afterCommit: () => setStage(2),
-    //   revealAPI: api.relayer.reveal,
-    //   revealArgs: { ...args, data: encodedData },
-    //   ...handlers
-    // })
+    const encodedData = ONEUtil.abi.encodeParameters(['tuple(bytes32,uint8,uint8,uint32,uint32,uint8)'], [[
+      root, layers.length, WalletConstants.interval / 1000, Math.floor(effectiveTime / WalletConstants.interval), Math.floor(duration / WalletConstants.interval), slotSize
+    ]])
+
+    const args = { ...ONEConstants.NullOperationParams, data: encodedData, operationType: ONEConstants.OperationType.REPLACE }
+    await SmartFlows.commitReveal({
+      wallet,
+      otp,
+      otp2,
+      recoverRandomness,
+      commitHashGenerator: ONE.computeDataHash,
+      commitHashArgs: { ...args, data: ONEUtil.hexStringToBytes(encodedData) },
+      prepareProof: () => setStage(0),
+      beforeCommit: () => setStage(1),
+      afterCommit: () => setStage(2),
+      revealAPI: api.relayer.reveal,
+      revealArgs: { ...args, data: encodedData },
+      ...handlers
+    })
   }
 
   useEffect(() => {

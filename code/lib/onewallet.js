@@ -282,6 +282,12 @@ const computeGeneralOperationHash = ({ operationType, tokenType, contractAddress
   return { hash: keccak(input), bytes: input }
 }
 
+const computeDataHash = ({ data }) => {
+  const input = new Uint8Array(data.length)
+  input.set(data)
+  return { hash: keccak(input), bytes: input }
+}
+
 // address, hex string
 const computeVerificationHash = ({ paramsHash, eotp }) => {
   const input = new Uint8Array(64)
@@ -350,6 +356,7 @@ module.exports = {
   bruteforceEOTP,
   computeTokenKey,
   computeGeneralOperationHash,
+  computeDataHash,
   computeVerificationHash,
   recoverRandomness,
   encodeBuyDomainData,

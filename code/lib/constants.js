@@ -83,6 +83,9 @@ module.exports = {
   NullProof: {
     address: '0x0000000000000000000000000000000000000000', neighbors: [], index: 0, eotp: '0x0000000000000000000000000000000000000000000000000000000000000000',
   },
+  get NullOperationParams () {
+    return { operationType: this.OperationType.TRANSFER, tokenType: this.TokenType.NONE, contractAddress: this.EmptyAddress, tokenId: 0, dest: this.EmptyAddress, amount: 0 }
+  },
   Sushi: {
     ROUTER: '0x1b02da8cb0d097eb8d57a175b88c7d8b47997506',
     FACTORY: '0xc35DADB65012eC5796536bD9864eD8773aBc74C4',
