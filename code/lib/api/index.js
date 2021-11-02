@@ -193,7 +193,6 @@ const api = {
       const res = await c.getOldInfos()
       const ret = []
       for (let info of res) {
-        console.log(info)
         const [root, height, interval, t0, lifespan, maxOperationsPerInterval] = range(6).map(k => info[k])
         const intervalMs = new BN(interval).toNumber() * 1000
         ret.push(raw ? {

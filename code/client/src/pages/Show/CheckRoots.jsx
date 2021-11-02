@@ -25,6 +25,7 @@ const CheckRoots = ({ address, onClose }) => {
         return
       }
       const layers = await storage.getItem(root)
+      // console.log(root, layers, address)
       if (!layers) {
         setRootMissing(true)
       }
@@ -70,7 +71,7 @@ const CheckRoots = ({ address, onClose }) => {
     )
   }
   const deleteAndRestore = async () => {
-    await deleteWalletLocally({ wallet, wallets, history, dispatch })
+    await deleteWalletLocally({ wallet, wallets, dispatch })
     history.push(Paths.restore)
   }
   const custom = (
