@@ -1,14 +1,11 @@
-import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react'
-import { Button, Row, Space, Typography, Input, Col, Radio, Checkbox, Tooltip } from 'antd'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
+import { Button, Row, Space, Typography, Col} from 'antd'
 import message from '../../message'
-import { CloseOutlined, QuestionCircleOutlined, SnippetsOutlined } from '@ant-design/icons'
-import { Hint, InputBox, Label, Warning } from '../../components/Text'
-import { AverageRow, TallRow } from '../../components/Grid'
-import AddressInput from '../../components/AddressInput'
+import { Hint, Warning } from '../../components/Text'
+import { AverageRow} from '../../components/Grid'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
-import util, { generateOtpSeed, useWindowDimensions } from '../../util'
-import BN from 'bn.js'
+import { generateOtpSeed} from '../../util'
 import ShowUtils from './show-util'
 import { useSelector } from 'react-redux'
 import { SmartFlows } from '../../../../lib/api/flow'
@@ -34,12 +31,10 @@ import Paths from '../../constants/paths'
 import WalletConstants from '../../constants/wallet'
 import WalletCreateProgress from '../../components/WalletCreateProgress'
 import qrcode from 'qrcode'
-import OtpBox from '../../components/OtpBox'
 import { OtpSetup, TwoCodeOption } from '../../components/OtpSetup'
 import WalletAddress from '../../components/WalletAddress'
 import { useHistory } from 'react-router'
 const { Title, Text } = Typography
-const { TextArea } = Input
 
 const Subsections = {
   init: 'init', // choose method,
