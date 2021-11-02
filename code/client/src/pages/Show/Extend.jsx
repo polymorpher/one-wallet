@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react'
 import { Button, Row, Space, Typography, Input, Col, Radio, Checkbox, Tooltip } from 'antd'
 import message from '../../message'
 import { CloseOutlined, QuestionCircleOutlined, SnippetsOutlined } from '@ant-design/icons'
@@ -36,36 +36,45 @@ import WalletCreateProgress from '../../components/WalletCreateProgress'
 import qrcode from 'qrcode'
 import OtpBox from '../../components/OtpBox'
 import { OtpSetup, TwoCodeOption } from '../../components/OtpSetup'
+import WalletAddress from '../../components/WalletAddress'
 const { Title, Text } = Typography
 const { TextArea } = Input
 
+const Subsections = {
+  init: 'init', // choose method,
+  scan: 'scan', // scan an exported QR code from authenticator
+  new: 'new', // use a new authenticator code
+  confirm: 'confirm' // authorize with old authenticator code, confirm, finalize; show progress circle
+}
+
 const Extend = ({
   address,
-  onClose,
+  onClose: onCloseOuter,
   show,
-  headless
 }) => {
   const {
-    dispatch, wallets, wallet, network, stage, setStage,
+    dispatch, wallet, network, stage, setStage,
     resetWorker, recoverRandomness, otpState, isMobile, os
-  } = useOps(address)
+  } = useOps({ address })
   const dev = useSelector(state => state.wallet.dev)
   const { majorVersion, name, expert } = wallet
   const [method, setMethod] = useState()
   const [seed, setSeed] = useState()
   const [seed2, setSeed2] = useState()
 
+  const [section, setSection] = useState(Subsections.init)
+
   const [root, setRoot] = useState()
   const [effectiveTime, setEffectiveTime] = useState()
-  const [duration, setDuration] = useState(WalletConstants.defaultDuration)
   const [hseed, setHseed] = useState()
   const [layers, setLayers] = useState()
-  const [slotSize, setSlotSize] = useState(1)
   const [doubleOtp, setDoubleOtp] = useState(false)
   const [progress, setProgress] = useState(0)
   const [progressStage, setProgressStage] = useState(0)
   const securityParameters = ONEUtil.securityParameters(wallet)
   const [computeInProgress, setComputeInProgress] = useState(false)
+
+  const [confirmName, setConfirmName] = useState()
 
   const [qrCodeData, setQRCodeData] = useState()
   const [secondOtpQrCodeData, setSecondOtpQrCodeData] = useState()
@@ -73,27 +82,53 @@ const Extend = ({
   const [validationOtp, setValidationOtp] = useState()
   const validationOtpRef = useRef()
   const [showSecondCode, setShowSecondCode] = useState()
-  const [qrCodeValidationComplete, setQrCodeValidationComplete] = useState()
+  const duration = WalletConstants.defaultDuration
+  const slotSize = wallet.slotSize
+
+  const reset = () => {
+    setHseed(null)
+    setRoot(null)
+    setLayers(null)
+    setEffectiveTime(0)
+    setProgressStage(0)
+    setProgress(0)
+  }
+  const onClose = () => {
+    reset()
+    setSection(Subsections.init)
+    setSeed(null)
+    setSeed2(null)
+    setQRCodeData(null)
+    setShowSecondCode(null)
+    setSecondOtpQrCodeData(null)
+    setConfirmName(null)
+    setValidationOtp(null)
+    setDoubleOtp(false)
+    setMethod(null)
+    onCloseOuter()
+  }
 
   useEffect(() => {
     if (!seed || method !== 'new') {
       return
     }
-    (async function () {
+    const f = async function () {
       const otpUri = getQRCodeUri(seed, name, OTPUriMode.MIGRATION)
       const otpQrCodeData = await qrcode.toDataURL(otpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       setQRCodeData(otpQrCodeData)
-    })()
+    }
+    f()
   }, [name, method, seed])
   useEffect(() => {
     if (!doubleOtp || !seed2 || method !== 'new') {
       return
     }
-    (async function () {
+    const f = async function () {
       const secondOtpUri = getQRCodeUri(seed2, getSecondCodeName(name), OTPUriMode.MIGRATION)
       const secondOtpQrCodeData = await qrcode.toDataURL(secondOtpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       setSecondOtpQrCodeData(secondOtpQrCodeData)
-    })()
+    }
+    f()
   }, [name, method, seed2, doubleOtp])
 
   const { prepareValidation, ...handlers } = ShowUtils.buildHelpers({
@@ -153,7 +188,7 @@ const Extend = ({
   }
 
   useEffect(() => {
-    if (validationOtp.length !== 6) {
+    if (validationOtp?.length !== 6) {
       return
     }
     const currentSeed = showSecondCode ? seed2 : seed
@@ -167,7 +202,7 @@ const Extend = ({
       setShowSecondCode(true)
       validationOtpRef?.current?.focusInput(0)
     } else {
-      setQrCodeValidationComplete(true)
+      setSection(Subsections.confirm)
     }
   }, [validationOtp])
 
@@ -177,8 +212,6 @@ const Extend = ({
     }
     const worker = new Worker('/ONEWalletWorker.js')
     const effectiveTime = Date.now()
-    const duration = WalletConstants.defaultDuration
-    const slotSize = wallet.slotSize
     const salt = ONEUtil.hexView(generateOtpSeed())
     worker.onmessage = (event) => {
       const { status, current, total, stage, result, salt: workerSalt } = event.data
@@ -215,17 +248,15 @@ const Extend = ({
   }, [seed, method, doubleOtp])
 
   useEffect(() => {
-    setHseed(null)
-    setRoot(null)
-    setLayers(null)
-    setDoubleOtp(null)
-    setEffectiveTime(0)
+    reset()
     if (method === 'new') {
       setSeed(generateOtpSeed())
       setSeed2(generateOtpSeed())
+      setSection(Subsections.new)
     } else if (method === 'scan') {
       setSeed(null)
       setSeed2(null)
+      setSection(Subsections.scan)
     }
   }, [method])
 
@@ -238,15 +269,22 @@ const Extend = ({
         } else {
           parsed = parseMigrationPayload(e)
         }
+
         if (!parsed) {
           return
         }
-        const { secret2, secret } = parsed
+        console.log(parsed)
+        const { secret2, secret, name } = parsed
         setSeed(secret)
         if (secret2) {
           setSeed2(secret2)
           setDoubleOtp(true)
         }
+        if (name !== wallet.name) {
+          setConfirmName(name)
+          return
+        }
+        setSection(Subsections.confirm)
       } catch (ex) {
         Sentry.captureException(ex)
         console.error(ex)
@@ -254,81 +292,130 @@ const Extend = ({
       }
     }
   }
+  const confirmUseName = () => {
+    setSection(Subsections.confirm)
+  }
+  const cancelUseName = () => {
+    setConfirmName(null)
+    setSeed(null)
+    setSeed2(null)
+  }
 
-  let inner
+  const Subsection = useCallback(({ show, children }) => {
+    return (
+      <AnimatedSection
+        show={show} title={
+          <Space direction='vertical'>
+            <Title level={3}>Extend Wallet Life</Title>
+            <WalletAddress showLabel alwaysShowOptions address={address} addressStyle={{ padding: 0 }} />
+          </Space>
+}
+      >
+        {children}
+        <Row justify='start' style={{ marginTop: 48 }}>
+          <Button size='large' type='link' onClick={onClose} danger style={{ padding: 0 }}>Cancel</Button>
+        </Row>
+      </AnimatedSection>
+    )
+  }, [address])
+
+  if (!show) {
+    return <></>
+  }
+
   if (majorVersion < 14) {
-    inner = <Warning>Your wallet is too old. Please use a wallet that is at least version 14.1</Warning>
-  } else {
-    inner = (
-      <>
-        <Space direction='vertical' style={{ width: '100%' }}>
-          <Text>You can extend the expiry time of your wallet by:</Text>
-          <Radio.Group value={method} onChange={({ target: { value } }) => setMethod(value)} disabled={!!computeInProgress}>
-            <Space direction='vertical'>
-              <Radio value='scan'>Scan exported Google Authenticator QR Code</Radio>
-              <Radio value='new'>Set up a new Google Authenticator entry</Radio>
-            </Space>
-          </Radio.Group>
-          {method === 'scan' && !qrCodeValidationComplete &&
-            <>
-              <ScanGASteps />
-              <QrCodeScanner shouldInit={method === 'scan'} onScan={onScan} />
-            </>}
-          {
-            method === 'new' && !qrCodeValidationComplete &&
-              <>
-                <Text>Your old authenticator entry will become obsolete after you complete extending the expiry time of the wallet. </Text>
-                <Text style={{ color: 'red' }}>Make sure the new ones work before deleting the old one. </Text>
-                {!showSecondCode &&
-                  <>
-                    {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData })}
-                    <OtpSetup isMobile={isMobile} otpRef={validationOtpRef} otpValue={validationOtp} setOtpValue={setValidationOtp} name={name} />
-                    {(dev || expert) && <TwoCodeOption isMobile={isMobile} setDoubleOtp={setDoubleOtp} doubleOtp={doubleOtp} />}
-                  </>}
-                {showSecondCode &&
-                  <>
-                    {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData: secondOtpQrCodeData })}
-                    <OtpSetup isMobile={isMobile} otpRef={validationOtpRef} otpValue={validationOtp} setOtpValue={setValidationOtp} name={name} />
-                  </>}
-              </>
-          }
-
-        </Space>
-        {method && qrCodeValidationComplete && !root && <WalletCreateProgress title='Computing security parameters...' progress={progress} isMobile={isMobile} progressStage={progressStage} />}
-        {method && (
-          <>
-            <AverageRow align='middle'>
-              <Col span={24}>
-                <OtpStack
-                  isDisabled={!root}
-                  walletName={wallet.name}
-                  otpState={otpState}
-                  onComplete={doReplace}
-                  action={`confirm ${method === 'new' && '(with old authenticator code)'}`}
-                />
-              </Col>
-            </AverageRow>
-          </>)}
-        <TallRow justify='start' style={{ marginTop: 24 }}>
-          <Button size='large' type='text' onClick={onClose} danger>Cancel</Button>
-        </TallRow>
-        <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
-      </>
+    console.log(majorVersion, name)
+    return (
+      <Subsection show onClose={onClose}>
+        <Warning>Your wallet is too old. Please use a wallet that is at least version 14.1</Warning>
+      </Subsection>
     )
   }
 
-  if (headless) {
-    return inner
-  }
   return (
-    <AnimatedSection
-      style={{ maxWidth: 720 }}
-      show={show} title={<Title level={2}>Extend Wallet Life</Title>} extra={[
-        <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-      ]}
-    >
-      {inner}
-    </AnimatedSection>
+    <>
+      <Subsection onClose={onClose} show={section === Subsections.init}>
+        <AverageRow>
+          <Title level={3}>Set up a new authenticator code?</Title>
+        </AverageRow>
+        <AverageRow gutter={24}>
+          <Col span={isMobile ? 24 : 12}>
+            <Space direction='vertical' size='large' style={{ width: '100%' }} align='center'>
+              <Button shape='round' type='primary' onClick={() => setMethod('scan')}>Use the same</Button>
+              <Hint>You will need to export the Google Authenticator QR Code and scan it using a camera</Hint>
+            </Space>
+          </Col>
+          <Col span={isMobile ? 24 : 12}>
+            <Space direction='vertical' size='large' style={{ width: '100%' }} align='center'>
+              <Button shape='round' type='primary' onClick={() => setMethod('new')}>Setup a new one</Button>
+              <Hint>You will scan a new QR code for your authenticator. Your old authenticator code will no longer work.</Hint>
+            </Space>
+          </Col>
+        </AverageRow>
+      </Subsection>
+      <Subsection onClose={onClose} show={section === Subsections.scan}>
+        {!confirmName &&
+          <Space direction='vertical'>
+            <ScanGASteps />
+            <QrCodeScanner shouldInit={section === Subsections.scan} onScan={onScan} />
+          </Space>}
+        {confirmName &&
+          <Space direction='vertical'>
+            <AverageRow>
+              <Text>You scanned a code for wallet <b>{confirmName}</b>, but your wallet's name is <b>{wallet.name}</b>. This means you might have scanned the wrong code.</Text>
+            </AverageRow>
+            <AverageRow>
+              <Text style={{ color: 'red' }}> Are you sure to use this code from now on for this wallet?</Text>
+            </AverageRow>
+            <AverageRow justify='space-between'>
+              <Button shape='round' onClick={cancelUseName}>Scan again</Button>
+              <Button shape='round' type='primary' onClick={confirmUseName}>Yes, I understand</Button>
+            </AverageRow>
+          </Space>}
+
+      </Subsection>
+      <Subsection onClose={onClose} show={section === Subsections.new}>
+        <Space direction='vertical' align='center' style={{ width: '100%' }}>
+          <Hint>Scan or tap the QR code to setup a new authenticator code</Hint>
+          {!showSecondCode &&
+            <>
+              {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData })}
+              <OtpSetup isMobile={isMobile} otpRef={validationOtpRef} otpValue={validationOtp} setOtpValue={setValidationOtp} name={name} />
+              {(dev || expert) && <TwoCodeOption isMobile={isMobile} setDoubleOtp={setDoubleOtp} doubleOtp={doubleOtp} />}
+            </>}
+          {showSecondCode &&
+            <>
+              {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData: secondOtpQrCodeData })}
+              <OtpSetup isMobile={isMobile} otpRef={validationOtpRef} otpValue={validationOtp} setOtpValue={setValidationOtp} name={getSecondCodeName(name)} />
+            </>}
+        </Space>
+      </Subsection>
+      <Subsection onClose={onClose} show={section === Subsections.confirm}>
+        <AverageRow>
+          <Hint>If you have this wallet on other devices, they will no longer work. To continue using the wallet there, open the wallet on those devices, follow the instructions, delete and "Restore" the wallet there. </Hint>
+        </AverageRow>
+        <AverageRow>
+          {method === 'new' &&
+            <Text style={{ color: 'red' }}>
+              Confirm that you want to replace your authenticator code (using your old code). After this is completed, remember to test and make sure the new code works before deleting the old code!
+            </Text>}
+        </AverageRow>
+        {!root && <WalletCreateProgress title='Computing security parameters...' progress={progress} isMobile={isMobile} progressStage={progressStage} />}
+        <AverageRow align='middle'>
+          <Col span={24}>
+            <OtpStack
+              isDisabled={!root}
+              walletName={wallet.name}
+              otpState={otpState}
+              onComplete={doReplace}
+              action={`confirm ${method === 'new' ? '(using old authenticator code)' : ''}`}
+            />
+          </Col>
+        </AverageRow>
+        <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
+      </Subsection>
+    </>
+
   )
 }
 
