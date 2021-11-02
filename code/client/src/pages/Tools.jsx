@@ -232,7 +232,7 @@ const Tools = () => {
 
   return (
     <>
-      <AnimatedSection show={section === Sections.Home} {...SectionConfig}>
+      <AnimatedSection show={section === Sections.Home} wide>
         <Space direction='vertical' style={{ width: '100%' }}>
           <Title level={3}>MetaMask</Title>
           <Button type='primary' shape='round' onClick={() => openTool(Sections.MetamaskAdd)}>Switch to Harmony Network</Button>
@@ -250,10 +250,10 @@ const Tools = () => {
             </>}
         </Space>
       </AnimatedSection>
-      <AnimatedSection show={section === Sections.SushiEncoder} title='Harmony Safe | SushiSwap Encoder' {...SectionConfig}>
+      <AnimatedSection show={section === Sections.SushiEncoder} title='Harmony Safe | SushiSwap Encoder' wide>
         <SushiSwapEncoder onClose={() => openTool()} />
       </AnimatedSection>
-      <AnimatedSection show={section === Sections.MetamaskAdd} title='Switch to Harmony Network' {...SectionConfig}>
+      <AnimatedSection show={section === Sections.MetamaskAdd} title='Switch to Harmony Network' wide>
         <Space direction='vertical' style={{ width: '100%' }}>
           <Text>This tool helps you quickly setup MetaMask for Harmony. Follow the instructions on MetaMask extension to complete the setup</Text>
           <Divider />

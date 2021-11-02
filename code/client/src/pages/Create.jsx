@@ -309,7 +309,7 @@ const Create = ({ expertMode, showRecovery }) => {
 
   return (
     <>
-      <AnimatedSection show={section === sectionViews.setupWalletDetails} style={{ maxWidth: 640 }}>
+      <AnimatedSection show={section === sectionViews.setupWalletDetails}>
         <Heading>What do you want to call your wallet?</Heading>
         <Hint>This is only stored on your computer to distinguish your wallets.</Hint>
         <Row align='middle' style={{ marginBottom: 32, marginTop: 16 }}>
@@ -336,7 +336,7 @@ const Create = ({ expertMode, showRecovery }) => {
             </Space>}
         </Space>
       </AnimatedSection>
-      <AnimatedSection show={section === sectionViews.setupOtp} style={{ maxWidth: 640 }}>
+      <AnimatedSection show={section === sectionViews.setupOtp}>
         <Row>
           <Space direction='vertical'>
             {/* <Heading>Now, scan the QR code with your Google Authenticator</Heading> */}
@@ -354,7 +354,7 @@ const Create = ({ expertMode, showRecovery }) => {
           </Space>
         </Row>
       </AnimatedSection>
-      <AnimatedSection show={section === sectionViews.setupSecondOtp} style={{ maxWidth: 640 }}>
+      <AnimatedSection show={section === sectionViews.setupSecondOtp}>
         <Row>
           <Space direction='vertical'>
             <Heading>Create Your 1wallet (second code)</Heading>
@@ -366,7 +366,7 @@ const Create = ({ expertMode, showRecovery }) => {
           <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={getSecondCodeName(name)} />
         </Row>
       </AnimatedSection>
-      <AnimatedSection show={section === sectionViews.prepareWallet} style={{ maxWidth: 640 }}>
+      <AnimatedSection show={section === sectionViews.prepareWallet}>
         <Row>
           <Space direction='vertical'>
             <Heading>Prepare Your 1wallet</Heading>

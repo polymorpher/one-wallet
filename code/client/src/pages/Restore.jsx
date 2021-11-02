@@ -223,7 +223,7 @@ const Restore = () => {
 
   return (
     <>
-      <AnimatedSection show={section === 1} style={{ maxWidth: 640 }}>
+      <AnimatedSection show={section === 1}>
         <Space direction='vertical' size='large'>
           <Heading>What is the address of the wallet?</Heading>
           <AddressInput
@@ -233,7 +233,7 @@ const Restore = () => {
           <Hint>Next, we will ask for your permission to use your computer's camera. We need that to scan the QR code exported from your Google Authenticator.</Hint>
         </Space>
       </AnimatedSection>
-      <AnimatedSection show={section === 2} style={{ maxWidth: 640 }}>
+      <AnimatedSection show={section === 2}>
         <Space direction='vertical' size='large'>
           <Heading>Restore your wallet from Google Authenticator</Heading>
           {!secret &&

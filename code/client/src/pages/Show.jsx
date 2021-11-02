@@ -109,10 +109,10 @@ const Show = () => {
       <AnimatedSection
         show={!section}
         title={<WalletTitle address={address} onQrCodeClick={() => showTab('qr')} onScanClick={() => showTab('scan')} />}
-        style={{ minHeight: 320, maxWidth: 720 }}
         tabList={displayTabList}
         activeTabKey={activeTab}
         onTabChange={key => showTab(key)}
+        wide
       >
         <Warnings address={address} />
         {activeTab === 'about' && <About address={address} />}

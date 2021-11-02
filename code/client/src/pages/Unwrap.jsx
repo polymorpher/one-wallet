@@ -383,14 +383,14 @@ const Unwrap = () => {
 
   if (error) {
     return (
-      <AnimatedSection show style={{ maxWidth: 640 }}>
+      <AnimatedSection show>
         <Text style={{ marginTop: 32 }}>{error}</Text>
       </AnimatedSection>
     )
   }
   if (!wallet) {
     return (
-      <AnimatedSection show style={{ maxWidth: 640 }}>
+      <AnimatedSection show>
         <Row style={{ marginTop: 16 }} justify='center'>
           <Space direction='vertical'>
             <Space><Spin /><Text style={{ marginTop: 32 }}>Loading Red Packet....</Text></Space>
@@ -416,7 +416,7 @@ const Unwrap = () => {
   const expired = wallet.effectiveTime + wallet.duration < now
 
   return (
-    <AnimatedSection show style={{ maxWidth: 640 }} title={<RedPacketTitle isMobile={isMobile} address={address} />}>
+    <AnimatedSection show title={<RedPacketTitle isMobile={isMobile} address={address} />}>
       <Row style={{ marginTop: isMobile && 16, width: '100%' }}>
         <Space direction='vertical' style={{ width: '100%' }} size='large'>
           <Space size='small'><Text>Packed by</Text> <WalletAddress address={wallet?.lastResortAddress} showLabel shorten /></Space>
