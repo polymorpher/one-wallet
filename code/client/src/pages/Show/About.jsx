@@ -59,7 +59,7 @@ const About = ({ address }) => {
         <Col>
           <Space>
             <Text>{humanizeDuration(wallet.duration + wallet.effectiveTime - Date.now(), { units: ['y', 'mo', 'd'], round: true })}</Text>
-            {util.isExpiringSoon(wallet) && <Button shape='round' onClick={() => history.push(Paths.showAddress(address, 'extend'))}>Extend</Button>}
+            {util.isExpiringSoon(wallet) && <Button shape='round' onClick={() => history.push(Paths.showAddress(address, 'extend'))}>Renew</Button>}
           </Space>
         </Col>
       </TallRow>

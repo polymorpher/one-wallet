@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react'
-import { Button, Row, Space, Typography, Col} from 'antd'
+import { Button, Row, Space, Typography, Col } from 'antd'
 import message from '../../message'
 import { Hint, Warning } from '../../components/Text'
-import { AverageRow} from '../../components/Grid'
+import { AverageRow } from '../../components/Grid'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
-import { generateOtpSeed} from '../../util'
+import { generateOtpSeed } from '../../util'
 import ShowUtils from './show-util'
 import { useSelector } from 'react-redux'
 import { SmartFlows } from '../../../../lib/api/flow'
@@ -148,7 +148,7 @@ const Extend = ({
         ...securityParameters,
       }
       dispatch(walletActions.updateWallet(newWallet))
-      message.success(`Wallet ${wallet.name} (${address}) expiry date is extended to ${new Date(effectiveTime + duration).toLocaleDateString()}`)
+      message.success(`Wallet ${wallet.name} (${address}) expiry date is renewed to ${new Date(effectiveTime + duration).toLocaleDateString()}`)
       setTimeout(() => history.push(Paths.showAddress(address)), 1500)
     }
   })
@@ -314,7 +314,7 @@ const Extend = ({
       <AnimatedSection
         show={show} title={
           <Space direction='vertical'>
-            <Title level={3}>Extend Wallet Life</Title>
+            <Title level={3}>Renew Wallet</Title>
             <WalletAddress showLabel alwaysShowOptions address={address} addressStyle={{ padding: 0 }} />
           </Space>
 }
