@@ -36,7 +36,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
     uint256 constant AUTO_RECOVERY_TRIGGER_AMOUNT = 1 ether;
     uint32 constant MAX_COMMIT_SIZE = 120;
     uint256 constant AUTO_RECOVERY_MANDATORY_WAIT_TIME = 14 days;
-    address constant ONE_WALLET_TREASURY = 0x02F2cF45DD4bAcbA091D78502Dba3B2F431a54D3;
+    address constant ONE_WALLET_TREASURY = 0x7534978F9fa903150eD429C486D1f42B7fDB7a61;
 
     uint32 constant majorVersion = 0xe; // a change would require client to migrate
     uint32 constant minorVersion = 0x1; // a change would not require the client to migrate
