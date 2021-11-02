@@ -55,7 +55,12 @@ const About = ({ address }) => {
       </TallRow>
       <TallRow align='middle'>
         <Col span={isMobile ? 24 : 12}> <Title level={3}>Expires In</Title></Col>
-        <Col> <Text>{humanizeDuration(wallet.duration + wallet.effectiveTime - Date.now(), { units: ['y', 'mo', 'd'], round: true })}</Text> </Col>
+        <Col>
+          <Space>
+            <Text>{humanizeDuration(wallet.duration + wallet.effectiveTime - Date.now(), { units: ['y', 'mo', 'd'], round: true })}</Text>
+            <Button shape='round' onClick={() => history.push(Paths.showAddress(address, 'extend'))}>Extend</Button>
+          </Space>
+        </Col>
       </TallRow>
       <TallRow align='baseline'>
         <Col span={isMobile ? 24 : 12}> <Title level={3}>Spend Limit</Title></Col>

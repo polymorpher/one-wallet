@@ -32,6 +32,7 @@ import QRCode from './Show/QRCode'
 import Scan from './Show/Scan'
 import NFTDashboard from './Show/NFTDashboard'
 import Reclaim from './Show/Reclaim'
+import Extend from './Show/Extend'
 
 const tabList = [
   { key: 'coins', tab: 'Coins' },
@@ -133,21 +134,10 @@ const Show = () => {
       <Send address={address} show={section === 'transfer'} onClose={showStartScreen} />
       <DoRecover address={address} show={section === 'recover'} onClose={showStartScreen} />
       <SetRecovery show={section === 'setRecoveryAddress'} address={address} onClose={showStartScreen} />
-      <PurchaseDomain
-        show={section === 'domain'}
-        address={address}
-        onClose={showStartScreen}
-      />
-      <TransferDomain
-        show={section === 'domainTransfer'}
-        address={address}
-        onClose={showStartScreen}
-      />
-      <Reclaim
-        show={section === 'reclaim'}
-        address={address}
-        onClose={showStartScreen}
-      />
+      <PurchaseDomain show={section === 'domain'} address={address} onClose={showStartScreen} />
+      <TransferDomain show={section === 'domainTransfer'} address={address} onClose={showStartScreen} />
+      <Reclaim show={section === 'reclaim'} address={address} onClose={showStartScreen} />
+      <Extend show={section === 'extend'} address={address} onClose={showStartScreen} />
     </>
   )
 }
