@@ -36,6 +36,7 @@ module.exports = {
     SIGN: 19,
     REVOKE: 20,
     CALL: 21,
+    BATCH: 22,
 
     0: 'TRACK',
     1: 'UNTRACK',
@@ -58,7 +59,8 @@ module.exports = {
     18: 'RECLAIM_DOMAIN_FROM_BACKLINK',
     19: 'SIGN',
     20: 'REVOKE',
-    21: 'CALL'
+    21: 'CALL',
+    22: 'BATCH'
   },
   EmptyAddress: '0x0000000000000000000000000000000000000000',
   EmptyBech32Address: 'one1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqquzw7vz',
