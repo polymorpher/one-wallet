@@ -42,9 +42,9 @@ export const AutoResizeInputBox = ({ extraWidth = 0, value, style, onChange, ...
   return <InputBox width={(width + extraWidth) || 'auto'} ref={ref} style={style} value={value} onChange={onChange} {...args} />
 }
 
-export const Warning = ({ children, info, style, bodyStyle, ...props }) =>
+export const Warning = ({ children, custom, info, style, bodyStyle, ...props }) =>
   <Card style={{ borderRadius: 8, backgroundColor: info ? '#fffbe6' : '#f3cbcb', fontSize: 16, ...style }} bodyStyle={{ padding: 16, paddingLeft: 24, paddingRight: 24, ...bodyStyle }}>
-    <Text>{children}</Text>
+    {custom || <Text>{children}</Text>}
   </Card>
 
 export const NormalLabel = styled.div`
