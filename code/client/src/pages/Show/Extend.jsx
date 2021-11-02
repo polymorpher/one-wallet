@@ -177,10 +177,13 @@ const Extend = ({
     //   uint32 lifespan;  // in number of block (e.g. 1 block per [interval] seconds)
     //   uint8 maxOperationsPerInterval; // number of transactions permitted per OTP interval. Each transaction shall have a unique nonce. The nonce is auto-incremented within each interval
     // }
+    const tuple = [
+      ONEUtil.hexString(root), layers.length, WalletConstants.interval / 1000, Math.floor(effectiveTime / WalletConstants.interval), Math.floor(duration / WalletConstants.interval), slotSize
+    ]
+    console.log(tuple)
+    const encodedData = ONEUtil.abi.encodeParameters(['tuple(bytes32,uint8,uint8,uint32,uint32,uint8)'], [tuple])
 
-    const encodedData = ONEUtil.abi.encodeParameters(['tuple(bytes32,uint8,uint8,uint32,uint32,uint8)'], [[
-      root, layers.length, WalletConstants.interval / 1000, Math.floor(effectiveTime / WalletConstants.interval), Math.floor(duration / WalletConstants.interval), slotSize
-    ]])
+    console.log(encodedData)
 
     const args = { ...ONEConstants.NullOperationParams, data: encodedData, operationType: ONEConstants.OperationType.REPLACE }
     await SmartFlows.commitReveal({
@@ -285,7 +288,7 @@ const Extend = ({
         if (!parsed) {
           return
         }
-        console.log(parsed)
+        // console.log(parsed)
         const { secret2, secret, name } = parsed
         setSeed(secret)
         if (secret2) {
