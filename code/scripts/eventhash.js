@@ -19,7 +19,7 @@ async function main () {
       const hash = ONEUtil.hexString(ONEUtil.keccak(sig))
       hashMap[hash] = sig
     }
-    const paramTypes = args.split(', ').map(e => e.trim().split(' ')[0])
+    const paramTypes = args.split(', ').map(e => e.trim().split(' ')[0].replace('tuple', ''))
     console.log(method, paramTypes)
     const sig = `${method}(${paramTypes.join(',')})`
     const hash = ONEUtil.hexString(ONEUtil.keccak(sig))
