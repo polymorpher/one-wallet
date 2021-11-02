@@ -37,6 +37,7 @@ import qrcode from 'qrcode'
 import OtpBox from '../../components/OtpBox'
 import { OtpSetup, TwoCodeOption } from '../../components/OtpSetup'
 import WalletAddress from '../../components/WalletAddress'
+import { useHistory } from 'react-router'
 const { Title, Text } = Typography
 const { TextArea } = Input
 
@@ -52,6 +53,7 @@ const Extend = ({
   onClose: onCloseOuter,
   show,
 }) => {
+  const history = useHistory()
   const {
     dispatch, wallet, network, stage, setStage,
     resetWorker, recoverRandomness, otpState, isMobile, os
@@ -139,7 +141,7 @@ const Extend = ({
     onSuccess: () => {
       storage.setItem(root, layers)
       // TODO: validate tx receipt log events and remove old root/layers from storage
-      const wallet = {
+      const newWallet = {
         _merge: true,
         address,
         root,
@@ -150,7 +152,7 @@ const Extend = ({
         network,
         ...securityParameters,
       }
-      dispatch(walletActions.updateWallet(wallet))
+      dispatch(walletActions.updateWallet(newWallet))
       message.success(`Wallet ${wallet.name} (${address}) expiry date is extended to ${new Date(effectiveTime + duration).toLocaleDateString()}`)
       setTimeout(() => history.push(Paths.showAddress(address)), 1500)
     }
@@ -180,11 +182,7 @@ const Extend = ({
     const tuple = [
       ONEUtil.hexString(root), layers.length, WalletConstants.interval / 1000, Math.floor(effectiveTime / WalletConstants.interval), Math.floor(duration / WalletConstants.interval), slotSize
     ]
-    console.log(tuple)
     const encodedData = ONEUtil.abi.encodeParameters(['tuple(bytes32,uint8,uint8,uint32,uint32,uint8)'], [tuple])
-
-    console.log(encodedData)
-
     const args = { ...ONEConstants.NullOperationParams, data: encodedData, operationType: ONEConstants.OperationType.REPLACE }
     await SmartFlows.commitReveal({
       wallet,
