@@ -79,7 +79,10 @@ const Upgrade = ({ address, onClose }) => {
       spendingInterval
     } = await api.blockchain.getWallet({ address, raw: true })
     const backlinks = await api.blockchain.getBacklinks({ address })
-    const oldCores = await api.blockchain.getOldInfos({ address, raw: true })
+    let oldCores = []
+    if (majorVersion >= 14) {
+      oldCores = await api.blockchain.getOldInfos({ address, raw: true })
+    }
     const transformedLastResortAddress = util.isDefaultRecoveryAddress(lastResortAddress) ? ONEConstants.TreasuryAddress : lastResortAddress
     const { address: newAddress } = await api.relayer.create({
       root,
