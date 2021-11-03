@@ -122,7 +122,7 @@ const util = {
     return !exports.default.isEmptyAddress(address) && !exports.default.isDefaultRecoveryAddress(address)
   },
 
-  isExpiringSoon: ({ effectiveTime, duration }) => {
+  canRenew: ({ effectiveTime, duration }) => {
     // return duration + effectiveTime - Date.now() < WalletConstants.expiringSoonThreshold
     // return Date.now() - effectiveTime > 3600 * 24 * 1000 * 14 // for testing
     return Date.now() - effectiveTime > 5 * 60 * 1000 // for testing
