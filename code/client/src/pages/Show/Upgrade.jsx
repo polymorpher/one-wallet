@@ -79,7 +79,7 @@ const Upgrade = ({ address, onClose }) => {
       spendingInterval
     } = await api.blockchain.getWallet({ address, raw: true })
     const backlinks = await api.blockchain.getBacklinks({ address })
-
+    const oldCores = await api.blockchain.getOldInfos({ address, raw: true })
     const { address: newAddress } = await api.relayer.create({
       root,
       height,
@@ -90,7 +90,8 @@ const Upgrade = ({ address, onClose }) => {
       lastResortAddress,
       spendingLimit: spendingLimit.toString(),
       spendingInterval: spendingInterval.toString(),
-      backlinks: [...backlinks, address]
+      backlinks: [...backlinks, address],
+      oldCores
     })
     const { otp, otp2, invalidOtp2, invalidOtp } = prepareValidation({ state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp }, checkAmount: false, checkDest: false }) || {}
     if (invalidOtp || invalidOtp2) return
