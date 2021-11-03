@@ -157,7 +157,13 @@ library Reveal {
             coreIndex = isCorrectRecoveryProof(core, oldCores, auth);
         } else {
             coreIndex = isCorrectProof(core, oldCores, auth);
-            isNonRecoveryLeaf(core, oldCores, auth.indexWithNonce, coreIndex);
+            // isNonRecoveryLeaf is not necessary, since
+            // - normal operations would occupy a different commitHash slot (eotp is used instead of leaf)
+            // - nonce is not incremented by recovery operation
+            // - the last slot's leaf is used in recovery, but the same leaf is not used for an operation at the last slot, instead its neighbor's leaf is used
+            // - doesn't help much with security anyway, since the data is already expoed even if the transaction is reverted
+            // isNonRecoveryLeaf(core, oldCores, auth.indexWithNonce, coreIndex);
+            // TODO: use a separate hash to authenticate recovery operations, instead of relying on last leaf of the tree
         }
         IONEWallet.CoreSetting storage coreUsed = coreIndex == 0 ? core : oldCores[coreIndex - 1];
         (bytes32 commitHash, bytes32 paramsHash) = getRevealHash(auth, op);
