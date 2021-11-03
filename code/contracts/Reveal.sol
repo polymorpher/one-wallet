@@ -42,7 +42,7 @@ library Reveal {
     }
 
     /// WARNING: Clients should not use eotps that *may* be used for recovery. The time slots should be manually excluded for use.
-    function isCorrectRecoveryProof(IONEWallet.CoreSetting storage core, IONEWallet.CoreSetting[] storage oldCores, IONEWallet.AuthParams memory auth) view public {
+    function isCorrectRecoveryProof(IONEWallet.CoreSetting storage core, IONEWallet.CoreSetting[] storage oldCores, IONEWallet.AuthParams memory auth) view public returns (uint32) {
         bytes32 h = auth.eotp;
         uint32 position = auth.indexWithNonce;
         for (uint8 i = 0; i < auth.neighbors.length; i++) {
@@ -56,14 +56,14 @@ library Reveal {
         if (core.root == h) {
             require(auth.neighbors.length == core.height - 1, "Bad neighbors size");
             require(auth.indexWithNonce == (uint32(2 ** (core.height - 1))) - 1, "Need recovery leaf");
-            return;
+            return 0;
         }
         // check old cores
         for (uint32 i = 0; i < oldCores.length; i++) {
             if (oldCores[i].root == h) {
                 require(auth.neighbors.length == oldCores[i].height - 1, "Bad old neighbors size");
                 require(auth.indexWithNonce == uint32(2 ** (oldCores[i].height - 1)) - 1, "Need old recovery leaf");
-                return;
+                return i + 1;
             }
         }
         revert("Bad recovery proof");
@@ -79,7 +79,7 @@ library Reveal {
     }
 
     /// This is just a wrapper around a modifier previously called `isCorrectProof`, to avoid "Stack too deep" error. Duh.
-    function isCorrectProof(IONEWallet.CoreSetting storage core, IONEWallet.CoreSetting[] storage oldCores, IONEWallet.AuthParams memory auth) view public {
+    function isCorrectProof(IONEWallet.CoreSetting storage core, IONEWallet.CoreSetting[] storage oldCores, IONEWallet.AuthParams memory auth) view public returns (uint32) {
         uint32 position = auth.indexWithNonce;
         bytes32 h = sha256(bytes.concat(auth.eotp));
         for (uint8 i = 0; i < auth.neighbors.length; i++) {
@@ -92,12 +92,12 @@ library Reveal {
         }
         if (core.root == h) {
             require(auth.neighbors.length == core.height - 1, "Bad neighbors size");
-            return;
+            return 0;
         }
         for (uint32 i = 0; i < oldCores.length; i++) {
             if (oldCores[i].root == h) {
                 require(auth.neighbors.length == oldCores[i].height - 1, "Bad old neighbors size");
-                return;
+                return i + 1;
             }
         }
         revert("Proof is incorrect");
@@ -141,8 +141,8 @@ library Reveal {
         CommitManager.Commit storage c = cc[commitIndex];
         assert(c.timestamp > 0);
         if (operationType != Enums.OperationType.RECOVER) {
-            uint32 index = uint32(c.timestamp) / core.interval;
-            commitState.incrementNonce(index);
+            uint32 absoluteIndex = uint32(c.timestamp) / core.interval;
+            commitState.incrementNonce(absoluteIndex);
             commitState.cleanupNonces(core.interval);
         }
         c.completed = true;
@@ -150,14 +150,16 @@ library Reveal {
 
     /// Validate `auth` is correct based on settings in `core` (plus `oldCores`, for reocvery operations) and the given operation `op`. Revert if `auth` is not correct. Modify wallet's commit state based on `auth` (increment nonce, mark commit as completed, etc.) if `auth` is correct.
     function authenticate(IONEWallet.CoreSetting storage core, IONEWallet.CoreSetting[] storage oldCores, CommitManager.CommitState storage commitState, IONEWallet.AuthParams memory auth, IONEWallet.OperationParams memory op) public {
+        uint32 coreIndex = 0;
         if (op.operationType == Enums.OperationType.RECOVER) {
-            isCorrectRecoveryProof(core, oldCores, auth);
+            coreIndex = isCorrectRecoveryProof(core, oldCores, auth);
         } else {
             isNonRecoveryLeaf(core, oldCores, auth.indexWithNonce);
-            isCorrectProof(core, oldCores, auth);
+            coreIndex = isCorrectProof(core, oldCores, auth);
         }
+        IONEWallet.CoreSetting storage coreUsed = coreIndex == 0 ? core : oldCores[coreIndex - 1];
         (bytes32 commitHash, bytes32 paramsHash) = getRevealHash(auth, op);
-        uint32 commitIndex = verifyReveal(core, commitState, commitHash, auth.indexWithNonce, paramsHash, auth.eotp, op.operationType);
-        completeReveal(core, commitState, commitHash, commitIndex, op.operationType);
+        uint32 commitIndex = verifyReveal(coreUsed, commitState, commitHash, auth.indexWithNonce, paramsHash, auth.eotp, op.operationType);
+        completeReveal(coreUsed, commitState, commitHash, commitIndex, op.operationType);
     }
 }
