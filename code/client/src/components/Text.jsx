@@ -17,7 +17,11 @@ export const Hint = styled(Text).attrs(() => ({ type: 'secondary' }))`
   color: #888888;
 `
 
-export const InputBox = styled(Input).attrs((props) => ({ size: props.size || 'large' }))`
+export const InputBox = styled(Input).attrs(({ $num, $decimal, ...props }) => ({
+  size: props.size || 'large',
+  ...($num && { inputMode: 'numeric', type: 'number' }),
+  ...($decimal && { inputMode: 'decimal', type: 'number' })
+}))`
   width: ${props => typeof props.width === 'number' ? `${props.width || 400}px` : (props.width || 'auto')};
   margin-top: ${props => props.margin || '32px'};
   margin-bottom: ${props => props.margin || '32px'};
@@ -38,9 +42,9 @@ export const AutoResizeInputBox = ({ extraWidth = 0, value, style, onChange, ...
   return <InputBox width={(width + extraWidth) || 'auto'} ref={ref} style={style} value={value} onChange={onChange} {...args} />
 }
 
-export const Warning = ({ children, info, style, bodyStyle, ...props }) =>
+export const Warning = ({ children, custom, info, style, bodyStyle, ...props }) =>
   <Card style={{ borderRadius: 8, backgroundColor: info ? '#fffbe6' : '#f3cbcb', fontSize: 16, ...style }} bodyStyle={{ padding: 16, paddingLeft: 24, paddingRight: 24, ...bodyStyle }}>
-    <Text>{children}</Text>
+    {custom || <Text>{children}</Text>}
   </Card>
 
 export const NormalLabel = styled.div`

@@ -6,19 +6,22 @@ import "./CommitManager.sol";
 import "./TokenManager.sol";
 import "./DomainManager.sol";
 import "./SignatureManager.sol";
+import "./Reveal.sol";
 import "./WalletGraph.sol";
 import "./Enums.sol";
 import "./IONEWallet.sol";
+import "./AbstractONEWallet.sol";
 
-contract ONEWallet is TokenManager, IONEWallet {
+contract ONEWallet is TokenManager, AbstractONEWallet {
     using TokenTracker for TokenTracker.TokenTrackerState;
     using WalletGraph for IONEWallet[];
     using SignatureManager for SignatureManager.SignatureTracker;
     using SpendingManager for SpendingManager.SpendingState;
     using CommitManager for CommitManager.CommitState;
+    using Reveal for CoreSetting;
 
     CoreSetting core;
-    uint32 _numLeaves; // 2 ** (height - 1)
+    CoreSetting[] oldCores;
 
     /// global mutable variables
     address payable recoveryAddress; // where money will be sent during a recovery process (or when the wallet is beyond its lifespan)
@@ -33,17 +36,20 @@ contract ONEWallet is TokenManager, IONEWallet {
     uint256 constant AUTO_RECOVERY_TRIGGER_AMOUNT = 1 ether;
     uint32 constant MAX_COMMIT_SIZE = 120;
     uint256 constant AUTO_RECOVERY_MANDATORY_WAIT_TIME = 14 days;
-    address constant ONE_WALLET_TREASURY = 0x02F2cF45DD4bAcbA091D78502Dba3B2F431a54D3;
+    address constant ONE_WALLET_TREASURY = 0x7534978F9fa903150eD429C486D1f42B7fDB7a61;
 
-    uint32 constant majorVersion = 0xd; // a change would require client to migrate
+    uint32 constant majorVersion = 0xe; // a change would require client to migrate
     uint32 constant minorVersion = 0x1; // a change would not require the client to migrate
 
     /// commit management
     CommitManager.CommitState commitState;
     SignatureManager.SignatureTracker signatures;
 
-    constructor(CoreSetting memory core_, SpendingManager.SpendingState memory spendingState_, address payable recoveryAddress_, IONEWallet[] memory backlinkAddresses_)
+    constructor(CoreSetting memory core_, SpendingManager.SpendingState memory spendingState_, address payable recoveryAddress_, IONEWallet[] memory backlinkAddresses_, CoreSetting[] memory oldCores_)
     {
+        for (uint32 i = 0; i < oldCores_.length; i++) {
+            oldCores.push(oldCores_[i]);
+        }
         core.root = core_.root;
         core.height = core_.height;
         core.interval = core_.interval;
@@ -55,7 +61,6 @@ contract ONEWallet is TokenManager, IONEWallet {
         spendingState.spendingInterval = spendingState_.spendingInterval;
 
         recoveryAddress = recoveryAddress_;
-        _numLeaves = uint32(2 ** (core_.height - 1));
         backlinkAddresses = backlinkAddresses_;
     }
 
@@ -124,12 +129,19 @@ contract ONEWallet is TokenManager, IONEWallet {
         return (core.root, core.height, core.interval, core.t0, core.lifespan, core.maxOperationsPerInterval, recoveryAddress, 0);
     }
 
-    function getVersion() external override pure returns (uint32, uint32){
-        return (majorVersion, minorVersion);
+    function getOldInfos() external override view returns (CoreSetting[] memory){
+        return oldCores;
     }
 
-    function getCurrentSpending() external override pure returns (uint256, uint256){
-        revert();
+    function getRootKey() external override view returns (bytes32){
+        if (oldCores.length > 0) {
+            return oldCores[0].root;
+        }
+        return core.root;
+    }
+
+    function getVersion() external override pure returns (uint32, uint32){
+        return (majorVersion, minorVersion);
     }
 
     function getCurrentSpendingState() external override view returns (uint256, uint256, uint32, uint32){
@@ -137,30 +149,23 @@ contract ONEWallet is TokenManager, IONEWallet {
     }
 
     function getNonce() external override view returns (uint8){
-        return commitState.getNonce(core.interval, core.t0);
+        return commitState.getNonce(core.interval);
     }
 
-    function getTrackedTokens() external override view returns (TokenType[] memory, address[] memory, uint256[] memory){
+    function getTrackedTokens() external override view returns (Enums.TokenType[] memory, address[] memory, uint256[] memory){
         return TokenManager._getTrackedTokens();
     }
 
-    function getBalance(TokenType tokenType, address contractAddress, uint256 tokenId) external override view returns (uint256){
+    function getBalance(Enums.TokenType tokenType, address contractAddress, uint256 tokenId) external override view returns (uint256){
         (uint256 balance, bool success, string memory reason) = TokenManager._getBalance(tokenType, contractAddress, tokenId);
         require(success, reason);
         return balance;
-    }
-
-    function getCommits() external override pure returns (bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
-        revert();
     }
 
     function getAllCommits() external override view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
         return commitState.getAllCommits();
     }
 
-    function findCommit(bytes32 /*hash*/) external override pure returns (bytes32, bytes32, uint32, bool){
-        revert();
-    }
 
     function lookupCommit(bytes32 hash) external override view returns (bytes32[] memory, bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){
         return commitState.lookupCommit(hash);
@@ -175,10 +180,17 @@ contract ONEWallet is TokenManager, IONEWallet {
     }
 
     function _forward(address payable dest) internal {
-        if (address(forwardAddress) == address(this)) {
+        if (address(forwardAddress) == address(this) || dest == address(0)) {
             emit ForwardAddressInvalid(dest);
             return;
         }
+        // TODO: in the next version, add a flag in the parameter indicating whether the operation is from the forwardAddress. If the flag is set, skip the check below
+        //        if (forwardAddress != address(0)) {
+        //            if (!_isRecoveryAddressSet() || dest != recoveryAddress) {
+        //                emit ForwardAddressAlreadySet(dest);
+        //                return;
+        //            }
+        //        }
         forwardAddress = dest;
         emit ForwardAddressUpdated(dest);
         if (!_isRecoveryAddressSet()) {
@@ -188,7 +200,7 @@ contract ONEWallet is TokenManager, IONEWallet {
         _transfer(forwardAddress, budget);
         TokenManager._recoverAllTokens(dest);
         for (uint32 i = 0; i < backlinkAddresses.length; i++) {
-            try backlinkAddresses[i].reveal(new bytes32[](0), 0, bytes32(0), OperationType.FORWARD, TokenType.NONE, address(0), 0, dest, 0, bytes("")){
+            try backlinkAddresses[i].reveal(AuthParams(new bytes32[](0), 0, bytes32(0)), OperationParams(Enums.OperationType.FORWARD, Enums.TokenType.NONE, address(0), 0, dest, 0, bytes(""))){
                 emit BackLinkUpdated(dest, address(backlinkAddresses[i]));
             } catch Error(string memory reason){
                 emit BackLinkUpdateError(dest, address(backlinkAddresses[i]), reason);
@@ -254,176 +266,83 @@ contract ONEWallet is TokenManager, IONEWallet {
         emit RecoveryAddressUpdated(recoveryAddress);
     }
 
-    /// Provides commitHash, paramsHash, and verificationHash given the parameters
-    function _getRevealHash(bytes32 neighbor, uint32 indexWithNonce, bytes32 eotp,
-        OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address dest, uint256 amount, bytes calldata data) pure internal returns (bytes32, bytes32) {
-        bytes32 hash = keccak256(bytes.concat(neighbor, bytes32(bytes4(indexWithNonce)), eotp));
-        bytes32 paramsHash = bytes32(0);
-        if (operationType == OperationType.TRANSFER) {
-            paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(dest))), bytes32(amount)));
-        } else if (operationType == OperationType.RECOVER) {
-            paramsHash = keccak256(data);
-        } else if (operationType == OperationType.SET_RECOVERY_ADDRESS) {
-            paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(dest)))));
-        } else if (operationType == OperationType.FORWARD) {
-            paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(dest)))));
-        } else if (operationType == OperationType.BACKLINK_ADD || operationType == OperationType.BACKLINK_DELETE || operationType == OperationType.BACKLINK_OVERRIDE) {
-            paramsHash = keccak256(data);
-        } else if (operationType == OperationType.REPLACE) {
-            paramsHash = keccak256(data);
-        } else if (operationType == OperationType.RECOVER_SELECTED_TOKENS) {
-            paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(dest))), data));
-        } else {
-            // TRACK, UNTRACK, TRANSFER_TOKEN, OVERRIDE_TRACK, BUY_DOMAIN, RENEW_DOMAIN, TRANSFER_DOMAIN, COMMAND
-            paramsHash = keccak256(bytes.concat(
-                    bytes32(uint256(operationType)),
-                    bytes32(uint256(tokenType)),
-                    bytes32(bytes20(contractAddress)),
-                    bytes32(tokenId),
-                    bytes32(bytes20(dest)),
-                    bytes32(amount),
-                    data
-                ));
+    function _batch(bytes memory data) internal {
+        OperationParams[] memory batchParams = abi.decode(data, (OperationParams[]));
+        uint8 len = uint8(batchParams.length);
+        for (uint32 i = 0; i < len; i++) {
+            _doReveal(batchParams[i]);
         }
-        return (hash, paramsHash);
     }
 
-
-    function reveal(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp,
-        OperationType operationType, TokenType tokenType, address contractAddress, uint256 tokenId, address payable dest, uint256 amount, bytes calldata data)
-    external override {
+    function reveal(AuthParams calldata auth, OperationParams calldata op) external override {
         if (msg.sender != forwardAddress) {
-            _isCorrectProof(neighbors, indexWithNonce, eotp);
-            if (indexWithNonce == _numLeaves - 1) {
-                require(operationType == OperationType.RECOVER, "Reserved");
-            }
-            (bytes32 commitHash, bytes32 paramsHash) = _getRevealHash(neighbors[0], indexWithNonce, eotp,
-                operationType, tokenType, contractAddress, tokenId, dest, amount, data);
-            uint32 commitIndex = _verifyReveal(commitHash, indexWithNonce, paramsHash, eotp, operationType);
-            _completeReveal(commitHash, commitIndex, operationType);
+            core.authenticate(oldCores, commitState, auth, op);
+            lastOperationTime = block.timestamp;
         }
+        _doReveal(op);
+    }
+
+    function _doReveal(OperationParams memory op) internal {
         // No revert should occur below this point
-        if (operationType == OperationType.TRACK) {
-            if (data.length > 0) {
-                TokenManager.tokenTrackerState.multiTrack(data);
+        if (op.operationType == Enums.OperationType.TRACK) {
+            if (op.data.length > 0) {
+                TokenManager.tokenTrackerState.multiTrack(op.data);
             } else {
-                TokenManager.tokenTrackerState.trackToken(tokenType, contractAddress, tokenId);
+                TokenManager.tokenTrackerState.trackToken(op.tokenType, op.contractAddress, op.tokenId);
             }
-        } else if (operationType == OperationType.UNTRACK) {
-            if (data.length > 0) {
-                TokenManager.tokenTrackerState.untrackToken(tokenType, contractAddress, tokenId);
+        } else if (op.operationType == Enums.OperationType.UNTRACK) {
+            if (op.data.length > 0) {
+                TokenManager.tokenTrackerState.untrackToken(op.tokenType, op.contractAddress, op.tokenId);
             } else {
-                TokenManager.tokenTrackerState.multiUntrack(data);
+                TokenManager.tokenTrackerState.multiUntrack(op.data);
             }
-        } else if (operationType == OperationType.TRANSFER_TOKEN) {
-            TokenManager._transferToken(tokenType, contractAddress, tokenId, dest, amount, data);
-        } else if (operationType == OperationType.OVERRIDE_TRACK) {
-            TokenManager.tokenTrackerState.overrideTrackWithBytes(data);
-        } else if (operationType == OperationType.TRANSFER) {
-            _transfer(dest, amount);
-        } else if (operationType == OperationType.RECOVER) {
+        } else if (op.operationType == Enums.OperationType.TRANSFER_TOKEN) {
+            TokenManager._transferToken(op.tokenType, op.contractAddress, op.tokenId, op.dest, op.amount, op.data);
+        } else if (op.operationType == Enums.OperationType.OVERRIDE_TRACK) {
+            TokenManager.tokenTrackerState.overrideTrackWithBytes(op.data);
+        } else if (op.operationType == Enums.OperationType.TRANSFER) {
+            _transfer(op.dest, op.amount);
+        } else if (op.operationType == Enums.OperationType.RECOVER) {
             _recover();
-        } else if (operationType == OperationType.SET_RECOVERY_ADDRESS) {
-            _setRecoveryAddress(dest);
-        } else if (operationType == OperationType.BUY_DOMAIN) {
-            DomainManager.buyDomainEncoded(data, amount, uint8(tokenId), contractAddress, dest);
-        } else if (operationType == OperationType.TRANSFER_DOMAIN) {
-            _transferDomain(IRegistrar(contractAddress), address(bytes20(bytes32(tokenId))), bytes32(amount), dest);
-        } else if (operationType == OperationType.RENEW_DOMAIN) {
-            DomainManager.renewDomain(IRegistrar(contractAddress), bytes32(tokenId), string(data), amount);
-        } else if (operationType == OperationType.RECLAIM_REVERSE_DOMAIN) {
-            DomainManager.reclaimReverseDomain(contractAddress, string(data));
-        } else if (operationType == OperationType.RECLAIM_DOMAIN_FROM_BACKLINK) {
-            backlinkAddresses.reclaimDomainFromBacklink(uint32(amount), IRegistrar(contractAddress), IReverseRegistrar(dest), data);
-        } else if (operationType == OperationType.RECOVER_SELECTED_TOKENS) {
-            TokenManager._recoverSelectedTokensEncoded(dest, data);
-        } else if (operationType == OperationType.FORWARD) {
-            _forward(dest);
-        } else if (operationType == OperationType.COMMAND) {
-            backlinkAddresses.command(tokenType, contractAddress, tokenId, dest, amount, data);
-        } else if (operationType == OperationType.BACKLINK_ADD) {
-            _backlinkAdd(data);
-        } else if (operationType == OperationType.BACKLINK_DELETE) {
-            _backlinkDelete(data);
-        } else if (operationType == OperationType.BACKLINK_OVERRIDE) {
-            _backlinkOverride(data);
-        } else if (operationType == OperationType.SIGN) {
-            signatures.authorizeHandler(contractAddress, tokenId, dest, amount);
-        } else if (operationType == OperationType.REVOKE) {
-            signatures.revokeHandler(contractAddress, tokenId, dest, amount);
-        } else if (operationType == OperationType.CALL) {
-            if (tokenId == 0) {
-                _callContract(contractAddress, amount, data);
+        } else if (op.operationType == Enums.OperationType.SET_RECOVERY_ADDRESS) {
+            _setRecoveryAddress(op.dest);
+        } else if (op.operationType == Enums.OperationType.BUY_DOMAIN) {
+            DomainManager.buyDomainEncoded(op.data, op.amount, uint8(op.tokenId), op.contractAddress, op.dest);
+        } else if (op.operationType == Enums.OperationType.TRANSFER_DOMAIN) {
+            _transferDomain(IRegistrar(op.contractAddress), address(bytes20(bytes32(op.tokenId))), bytes32(op.amount), op.dest);
+        } else if (op.operationType == Enums.OperationType.RENEW_DOMAIN) {
+            DomainManager.renewDomain(IRegistrar(op.contractAddress), bytes32(op.tokenId), string(op.data), op.amount);
+        } else if (op.operationType == Enums.OperationType.RECLAIM_REVERSE_DOMAIN) {
+            DomainManager.reclaimReverseDomain(op.contractAddress, string(op.data));
+        } else if (op.operationType == Enums.OperationType.RECLAIM_DOMAIN_FROM_BACKLINK) {
+            backlinkAddresses.reclaimDomainFromBacklink(uint32(op.amount), IRegistrar(op.contractAddress), IReverseRegistrar(op.dest), op.data);
+        } else if (op.operationType == Enums.OperationType.RECOVER_SELECTED_TOKENS) {
+            TokenManager._recoverSelectedTokensEncoded(op.dest, op.data);
+        } else if (op.operationType == Enums.OperationType.FORWARD) {
+            _forward(op.dest);
+        } else if (op.operationType == Enums.OperationType.COMMAND) {
+            backlinkAddresses.command(op.tokenType, op.contractAddress, op.tokenId, op.dest, op.amount, op.data);
+        } else if (op.operationType == Enums.OperationType.BACKLINK_ADD) {
+            _backlinkAdd(op.data);
+        } else if (op.operationType == Enums.OperationType.BACKLINK_DELETE) {
+            _backlinkDelete(op.data);
+        } else if (op.operationType == Enums.OperationType.BACKLINK_OVERRIDE) {
+            _backlinkOverride(op.data);
+        } else if (op.operationType == Enums.OperationType.SIGN) {
+            signatures.authorizeHandler(op.contractAddress, op.tokenId, op.dest, op.amount);
+        } else if (op.operationType == Enums.OperationType.REVOKE) {
+            signatures.revokeHandler(op.contractAddress, op.tokenId, op.dest, op.amount);
+        } else if (op.operationType == Enums.OperationType.CALL) {
+            if (op.tokenId == 0) {
+                _callContract(op.contractAddress, op.amount, op.data);
             } else {
-                _multiCall(data);
+                _multiCall(op.data);
             }
+        } else if (op.operationType == Enums.OperationType.DISPLACE) {
+            _displaceCoreWithValidationByBytes(op.data);
+        } else if (op.operationType == Enums.OperationType.BATCH) {
+            _batch(op.data);
         }
-    }
-
-    /// This is just a wrapper around a modifier previously called `isCorrectProof`, to avoid "Stack too deep" error. Duh.
-    function _isCorrectProof(bytes32[] calldata neighbors, uint32 position, bytes32 eotp) view internal {
-        require(neighbors.length == core.height - 1, "Bad neighbors");
-        bytes32 h = sha256(bytes.concat(eotp));
-        if (position == _numLeaves - 1) {
-            // special case: recover only
-            h = eotp;
-        }
-        for (uint8 i = 0; i < core.height - 1; i++) {
-            if ((position & 0x01) == 0x01) {
-                h = sha256(bytes.concat(neighbors[i], h));
-            } else {
-                h = sha256(bytes.concat(h, neighbors[i]));
-            }
-            position >>= 1;
-        }
-        require(core.root == h, "Proof is incorrect");
-        return;
-    }
-
-
-
-    /// This function verifies that the first valid entry with respect to the given `eotp` in `commitState.commitLocker[hash]` matches the provided `paramsHash` and `verificationHash`. An entry is valid with respect to `eotp` iff `h3(entry.paramsHash . eotp)` equals `entry.verificationHash`
-    function _verifyReveal(bytes32 hash, uint32 indexWithNonce, bytes32 paramsHash, bytes32 eotp, OperationType operationType) view internal returns (uint32)
-    {
-        uint32 index = indexWithNonce / core.maxOperationsPerInterval;
-        uint8 nonce = uint8(indexWithNonce % core.maxOperationsPerInterval);
-        CommitManager.Commit[] storage cc = commitState.commitLocker[hash];
-        require(cc.length > 0, "No commit found");
-        for (uint32 i = 0; i < cc.length; i++) {
-            CommitManager.Commit storage c = cc[i];
-            bytes32 expectedVerificationHash = keccak256(bytes.concat(c.paramsHash, eotp));
-            if (c.verificationHash != expectedVerificationHash) {
-                // Invalid entry. Ignore
-                continue;
-            }
-            require(c.paramsHash == paramsHash, "Param mismatch");
-            if (operationType != OperationType.RECOVER) {
-                uint32 counter = c.timestamp / core.interval - core.t0;
-                require(counter == index || counter - 1 == index, "Time mismatch");
-                uint8 expectedNonce = commitState.nonces[counter];
-                require(nonce >= expectedNonce, "Nonce too low");
-            }
-            require(!c.completed, "Commit already done");
-            // This normally should not happen, but when the network is congested (regardless of whether due to an attacker's malicious acts or not), the legitimate reveal may become untimely. This may happen before the old commit is cleaned up by another fresh commit. We enforce this restriction so that the attacker would not have a lot of time to reverse-engineer a single EOTP or leaf using an old commit.
-            require(uint32(block.timestamp) - c.timestamp < CommitManager.REVEAL_MAX_DELAY, "Too late");
-            return i;
-        }
-        revert("No commit");
-    }
-
-    function _completeReveal(bytes32 commitHash, uint32 commitIndex, OperationType operationType) internal {
-        CommitManager.Commit[] storage cc = commitState.commitLocker[commitHash];
-        assert(cc.length > 0);
-        assert(cc.length > commitIndex);
-        CommitManager.Commit storage c = cc[commitIndex];
-        assert(c.timestamp > 0);
-        if (operationType != OperationType.RECOVER) {
-            uint32 index = uint32(c.timestamp) / core.interval - core.t0;
-            commitState.incrementNonce(index);
-            commitState.cleanupNonces(core.interval, core.t0);
-        }
-        c.completed = true;
-        lastOperationTime = block.timestamp;
     }
 
     function _isRecoveryAddressSet() internal view returns (bool) {
@@ -475,7 +394,7 @@ contract ONEWallet is TokenManager, IONEWallet {
         }
     }
 
-    function _multiCall(bytes calldata data) internal {
+    function _multiCall(bytes memory data) internal {
         (address[] memory dest, uint256[] memory amounts, bytes[] memory encoded) = abi.decode(data, (address[], uint256[], bytes[]));
         uint256 totalAmount = 0;
         for (uint32 i = 0; i < amounts.length; i++) {
@@ -493,23 +412,8 @@ contract ONEWallet is TokenManager, IONEWallet {
         return interfaceId == this.isValidSignature.selector || TokenManager.supportsInterface(interfaceId);
     }
 
-    function isValidSignature(bytes32 hash, bytes calldata signatureBytes) override public view returns (bytes4){
-        if (signatureBytes.length < 32) {
-            return 0xffffffff;
-        }
-        if (signatureBytes.length > 32) {
-            for (uint32 i = 32; i < signatureBytes.length; i++) {
-                if (signatureBytes[i] != 0x00) {
-                    return 0xffffffff;
-                }
-            }
-        }
-        (bytes32 signature) = abi.decode(signatureBytes[0 : 32], (bytes32));
-        if (!signatures.validate(hash, signature)) {
-            return 0xffffffff;
-        }
-        // magic value for valid signature, eip-1271
-        return 0x1626ba7e;
+    function isValidSignature(bytes32 hash, bytes memory signatureBytes) override public view returns (bytes4){
+        return signatures.isValidSignature(hash, signatureBytes);
     }
 
     function listSignatures(uint32 start, uint32 end) external override view returns (bytes32[] memory, bytes32[] memory, uint32[] memory, uint32[] memory){
@@ -518,5 +422,40 @@ contract ONEWallet is TokenManager, IONEWallet {
 
     function lookupSignature(bytes32 hash) external override view returns (bytes32, uint32, uint32){
         return signatures.lookup(hash);
+    }
+
+    function _displaceCoreWithValidationByBytes(bytes memory data) internal {
+        CoreSetting memory newCore = abi.decode(data, (CoreSetting));
+        _displaceCoreWithValidation(newCore);
+    }
+
+    function _displaceCoreWithValidation(CoreSetting memory newCore) internal {
+        // if recovery is already performed on this wallet, or the wallet is already upgrade to a new version, or set to forward to another address (hence is controlled by that address), its lifespan should not be extended
+        if (forwardAddress != address(0)) {
+            emit CoreDisplacementFailed(newCore, "Wallet deprecated");
+            return;
+        }
+        // we should not require the recovery address to approve this operation, since the ability of recovery address initiating an auto-triggered recovery (via sending 1.0 ONE) is unaffected after the root is displaced.
+        _displaceCore(newCore);
+    }
+
+    function _displaceCore(CoreSetting memory newCore) internal {
+        CoreSetting memory oldCore = core;
+        if (newCore.t0 + newCore.lifespan <= oldCore.t0 + oldCore.lifespan || newCore.t0 <= oldCore.t0) {
+            emit CoreDisplacementFailed(newCore, "Must have newer time range");
+            return;
+        }
+        if (newCore.root == oldCore.root) {
+            emit CoreDisplacementFailed(newCore, "Must have different root");
+            return;
+        }
+        oldCores.push(oldCore);
+        core.root = newCore.root;
+        core.t0 = newCore.t0;
+        core.height = newCore.height;
+        core.interval = newCore.interval;
+        core.lifespan = newCore.lifespan;
+        core.maxOperationsPerInterval = newCore.maxOperationsPerInterval;
+        emit CoreDisplaced(oldCore, core);
     }
 }

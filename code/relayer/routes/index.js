@@ -31,7 +31,7 @@ router.use((req, res, next) => {
   req.network = network
   req.majorVersion = parseInt(majorVersion || 0)
   req.minorVersion = parseInt(minorVersion || 0)
-  console.log(`Address: ${req.body.address}; majorVersion: ${req.majorVersion}; minorVersion: ${req.minorVersion}`)
+  console.log(`Address: ${req.body.address}; network: ${req.network}; majorVersion: ${req.majorVersion}; minorVersion: ${req.minorVersion}`)
   // TODO: differentiate <v5 and >=v6 contracts
   if (!(req.majorVersion >= 6)) {
     req.contract = blockchain.getContractV5(network)
@@ -47,7 +47,7 @@ router.use((req, res, next) => {
 // TODO: rate limiting + fingerprinting + delay with backoff
 
 router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), globalLimiter({ max: 250 }), async (req, res) => {
-  let { root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, backlinks, spendingInterval } = req.body
+  let { root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, backlinks, spendingInterval, oldCores } = req.body
   // root is hex string, 32 bytes
   height = parseInt(height)
   interval = parseInt(interval)
@@ -57,22 +57,38 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
   spendingInterval = parseInt(spendingInterval)
   backlinks = backlinks || []
   lastResortAddress = lastResortAddress || config.nullAddress
+  oldCores = oldCores || []
   // lastResortAddress is hex string, 20 bytes
   // dailyLimit is a BN in string form
   if (config.debug || config.verbose) {
-    console.log(`[/new] `, { core: { root, height, interval, t0, lifespan, slotSize }, spending: { spendingLimit, spendingInterval }, lastResortAddress, backlinks })
+    console.log(`[/new] `, { core: { root, height, interval, t0, lifespan, slotSize }, spending: { spendingLimit, spendingInterval }, lastResortAddress, backlinks, oldCores })
   }
-  if (!checkParams({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, spendingInterval, backlinks }, res)) {
+
+  if (!checkParams({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, spendingInterval, backlinks, oldCores }, res)) {
     return
   }
   if (spendingLimit === 0) {
     // since we renamed dailyLimit to spendingLimit we must make sure client is not using the old name / format
     return res.status(StatusCodes.BAD_REQUEST).json({ error: 'spendingLimit cannot be 0' })
   }
-
+  const oldCoreTransformed = []
+  for (let oldCore of oldCores) {
+    const { root: oldRoot, height: oldHeight, interval: oldInterval, t0: oldT0, lifespan: oldLifespan, slotSize: oldSlotSize } = oldCore
+    oldCoreTransformed.push([oldRoot, oldHeight, oldInterval, oldT0, oldLifespan, oldSlotSize])
+    if (!oldRoot) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: `old core has empty root: ${JSON.stringify(oldCore)}` })
+    }
+  }
   // TODO parameter verification
   try {
-    const wallet = await blockchain.getContract(req.network).new([root, height, interval, t0, lifespan, slotSize], [new BN(spendingLimit, 10), 0, 0, new BN(spendingInterval, 10) ], lastResortAddress, backlinks)
+    const wallet = await blockchain.getContract(req.network).new(
+      [root, height, interval, t0, lifespan, slotSize],
+      [ new BN(spendingLimit, 10), 0, 0, new BN(spendingInterval, 10) ],
+      lastResortAddress,
+      backlinks,
+      oldCoreTransformed
+    )
+    console.log('/new', wallet?.address)
     return res.json({ success: true, address: wallet.address })
   } catch (ex) {
     console.error(ex)
@@ -112,7 +128,9 @@ router.post('/commit', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
     } else {
       tx = await wallet.commit(hash)
     }
-    return res.json(parseTx(tx))
+    const parsedTx = parseTx(tx)
+    console.log('/commit', parsedTx)
+    return res.json(parsedTx)
   } catch (ex) {
     console.error(ex)
     const { code, error, success } = parseError(ex)
@@ -147,49 +165,20 @@ router.post('/reveal', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
   try {
     const wallet = await req.contract.at(address)
     // console.log({ neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
-    const tx = await wallet.reveal(neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data)
-    return res.json(parseTx(tx))
+    let tx = null
+    if (!(req.majorVersion >= 14)) {
+      tx = await wallet.reveal(neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data)
+    } else {
+      tx = await wallet.reveal([neighbors, index, eotp], [operationType, tokenType, contractAddress, tokenId, dest, amount, data])
+    }
+    const parsedTx = parseTx(tx)
+    console.log('/reveal', parsedTx)
+    return res.json(parsedTx)
   } catch (ex) {
     console.error(ex)
     const { code, error, success } = parseError(ex)
     return res.status(code).json({ error, success })
   }
-})
-
-// TODO: deprecate in the next version
-router.post('/reveal/transfer', generalLimiter({ max: 120 }), walletAddressLimiter({ max: 120 }), async (req, res) => {
-  let { neighbors, index, eotp, dest, amount, address } = req.body
-  if (!checkParams({ neighbors, index, eotp, dest, amount, address }, res)) {
-    return
-  }
-  transfer({ req, res, address, neighbors, index, eotp, dest, amount })
-})
-
-// TODO: deprecate in the next version
-router.post('/reveal/recovery', generalLimiter({ max: 120 }), walletAddressLimiter({ max: 120 }), async (req, res) => {
-  let { neighbors, index, eotp, address } = req.body
-  if (!checkParams({ neighbors, index, eotp, address }, res)) {
-    return
-  }
-  recover({ req, res, address, neighbors, index, eotp })
-})
-
-// TODO: deprecate in the next version
-router.post('/reveal/set-recovery-address', generalLimiter({ max: 120 }), walletAddressLimiter({ max: 120 }), async (req, res) => {
-  let { neighbors, index, eotp, address, lastResortAddress } = req.body
-  if (!checkParams({ neighbors, index, eotp, address, lastResortAddress }, res)) {
-    return
-  }
-  setRecoveryAddress({ req, res, address, neighbors, index, eotp, lastResortAddress })
-})
-
-// TODO: deprecate in the next version
-router.post('/reveal/token', generalLimiter({ max: 120 }), walletAddressLimiter({ max: 120 }), async (req, res) => {
-  let { neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data } = req.body
-  if (!checkParams({ neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data }, res)) {
-    return
-  }
-  tokenOperation({ req, res, address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
 })
 
 router.post('/retire', generalLimiter({ max: 6 }), walletAddressLimiter({ max: 6 }), async (req, res) => {

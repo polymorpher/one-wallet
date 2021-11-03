@@ -18,6 +18,7 @@ const About = ({ address }) => {
   const history = useHistory()
   const { isMobile } = useWindowDimensions()
   const wallets = useSelector(state => state.wallet.wallets)
+  const dev = useSelector(state => state.wallet.dev)
   const wallet = wallets[address] || {}
   const backlinks = wallet.backlinks || []
   const { spendingLimit, spendingInterval } = wallet
@@ -25,6 +26,7 @@ const About = ({ address }) => {
   const { formatted: spendingLimitFormatted, fiatFormatted: spendingLimitFiatFormatted } = util.computeBalance(spendingLimit, price)
   const [selectedLink, setSelectedLink] = useState()
   const [inspecting, setInspecting] = useState()
+  const oldInfos = wallet.oldInfos || []
 
   const inspect = async (backlink) => {
     const tempWallet = {
@@ -50,12 +52,17 @@ const About = ({ address }) => {
   return (
     <>
       <TallRow align='middle'>
-        <Col span={isMobile ? 24 : 12}> <Title level={3}>Created On</Title></Col>
+        <Col span={isMobile ? 24 : 12}> <Title level={3}>{oldInfos.length > 0 ? 'Renewed on' : 'Created On'}</Title></Col>
         <Col> <Text>{new Date(wallet.effectiveTime).toLocaleString()}</Text> </Col>
       </TallRow>
       <TallRow align='middle'>
         <Col span={isMobile ? 24 : 12}> <Title level={3}>Expires In</Title></Col>
-        <Col> <Text>{humanizeDuration(wallet.duration + wallet.effectiveTime - Date.now(), { units: ['y', 'mo', 'd'], round: true })}</Text> </Col>
+        <Col>
+          <Space>
+            <Text>{humanizeDuration(wallet.duration + wallet.effectiveTime - Date.now(), { units: ['y', 'mo', 'd'], round: true })}</Text>
+            {(dev || util.canRenew(wallet)) && <Button shape='round' onClick={() => history.push(Paths.showAddress(address, 'extend'))}>Renew</Button>}
+          </Space>
+        </Col>
       </TallRow>
       <TallRow align='baseline'>
         <Col span={isMobile ? 24 : 12}> <Title level={3}>Spend Limit</Title></Col>

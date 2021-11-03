@@ -3,9 +3,9 @@ const DEBUG = process.env.DEBUG
 module.exports = {
   appId: 'ONEWallet',
   appName: '1wallet',
-  version: 'v0.13.2',
-  lastLibraryUpdateVersion: 'v0.13.1',
-  minWalletVersion: parseInt(process.env.MIN_WALLET_VERSION || 3),
+  version: 'v0.14.1',
+  lastLibraryUpdateVersion: 'v0.14.1',
+  minWalletVersion: parseInt(process.env.MIN_WALLET_VERSION || 9),
   minUpgradableVersion: parseInt(process.env.MIN_UPGRADABLE_WALLET_VERSION || 9),
   defaults: {
     relayer: process.env.RELAYER || (DEBUG ? 'dev' : 'hiddenstate'),

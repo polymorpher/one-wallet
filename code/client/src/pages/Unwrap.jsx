@@ -14,7 +14,7 @@ import AnimatedSection from '../components/AnimatedSection'
 import AddressInput from '../components/AddressInput'
 import { Hint } from '../components/Text'
 import BN from 'bn.js'
-import ShowUtils from './Show/show-util'
+import ShowUtils, { doRetire } from './Show/show-util'
 import WalletAddress from '../components/WalletAddress'
 import { GridItem, useMetadata, useNFTs, useTokenBalanceTracker } from '../components/NFTGrid'
 import ReactPlayer from 'react-player'
@@ -370,27 +370,17 @@ const Unwrap = () => {
       }
     })
   }
-  const doRetire = async () => {
-    try {
-      const { txId } = await api.relayer.retire({ address })
-      const link = config.networks[network].explorer.replace(/{{txId}}/, txId)
-      message.success(<Text>Done! View transaction <Link href={link} target='_blank' rel='noreferrer'>{util.ellipsisAddress(txId)}</Link></Text>, 10)
-    } catch (ex) {
-      console.error(ex)
-      message.error(`Failed to return assets to creator. Error: ${ex.toString()}`)
-    }
-  }
 
   if (error) {
     return (
-      <AnimatedSection show style={{ maxWidth: 640 }}>
+      <AnimatedSection show>
         <Text style={{ marginTop: 32 }}>{error}</Text>
       </AnimatedSection>
     )
   }
   if (!wallet) {
     return (
-      <AnimatedSection show style={{ maxWidth: 640 }}>
+      <AnimatedSection show>
         <Row style={{ marginTop: 16 }} justify='center'>
           <Space direction='vertical'>
             <Space><Spin /><Text style={{ marginTop: 32 }}>Loading Red Packet....</Text></Space>
@@ -416,7 +406,7 @@ const Unwrap = () => {
   const expired = wallet.effectiveTime + wallet.duration < now
 
   return (
-    <AnimatedSection show style={{ maxWidth: 640 }} title={<RedPacketTitle isMobile={isMobile} address={address} />}>
+    <AnimatedSection show title={<RedPacketTitle isMobile={isMobile} address={address} />}>
       <Row style={{ marginTop: isMobile && 16, width: '100%' }}>
         <Space direction='vertical' style={{ width: '100%' }} size='large'>
           <Space size='small'><Text>Packed by</Text> <WalletAddress address={wallet?.lastResortAddress} showLabel shorten /></Space>
@@ -433,7 +423,7 @@ const Unwrap = () => {
               <Space direction='vertical' size='small'>
                 <Title level={3}>Expired!</Title>
                 <Text>Expired on {new Date(wallet.effectiveTime + wallet.duration).toLocaleString()} :(</Text>
-                {(new BN(balance).gtn(0)) && <Button shape='round' onClick={doRetire}>Return Assets</Button>}
+                {(new BN(balance).gtn(0)) && <Button shape='round' onClick={() => doRetire({ address, network })}>Return Assets</Button>}
               </Space>}
             {!expired && <Text type='secondary'>Expires in {shortHumanizeDuration(wallet.effectiveTime + wallet.duration - now, { round: true, delimiter: ' ', spacer: '' })}</Text>}
 

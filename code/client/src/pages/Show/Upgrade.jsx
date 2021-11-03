@@ -79,7 +79,8 @@ const Upgrade = ({ address, onClose }) => {
       spendingInterval
     } = await api.blockchain.getWallet({ address, raw: true })
     const backlinks = await api.blockchain.getBacklinks({ address })
-
+    const oldCores = await api.blockchain.getOldInfos({ address, raw: true })
+    const transformedLastResortAddress = util.isDefaultRecoveryAddress(lastResortAddress) ? ONEConstants.TreasuryAddress : lastResortAddress
     const { address: newAddress } = await api.relayer.create({
       root,
       height,
@@ -87,10 +88,11 @@ const Upgrade = ({ address, onClose }) => {
       t0,
       lifespan,
       slotSize: maxOperationsPerInterval,
-      lastResortAddress,
+      lastResortAddress: transformedLastResortAddress,
       spendingLimit: spendingLimit.toString(),
       spendingInterval: spendingInterval.toString(),
-      backlinks: [...backlinks, address]
+      backlinks: [...backlinks, address],
+      oldCores
     })
     const { otp, otp2, invalidOtp2, invalidOtp } = prepareValidation({ state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp }, checkAmount: false, checkDest: false }) || {}
     if (invalidOtp || invalidOtp2) return

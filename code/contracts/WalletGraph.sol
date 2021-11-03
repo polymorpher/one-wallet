@@ -70,8 +70,8 @@ library WalletGraph {
         }
         (address resolver, bytes32 subnode, string memory fqdn) = abi.decode(data, (address, bytes32, string));
         // transfer the domain to this wallet
-        bytes memory commandData = abi.encode(OperationType.TRANSFER_DOMAIN, TokenType.NONE, address(reg), uint256(bytes32(bytes20(resolver))), payable(address(this)), uint256(subnode), "");
-        try backlinkAddresses[backlinkIndex].reveal(new bytes32[](0), 0, bytes32(0), OperationType.TRANSFER_DOMAIN, TokenType.NONE, address(reg), uint256(bytes32(bytes20(resolver))), payable(address(this)), uint256(subnode), ""){
+        bytes memory commandData = abi.encode(Enums.OperationType.TRANSFER_DOMAIN, Enums.TokenType.NONE, address(reg), uint256(bytes32(bytes20(resolver))), payable(address(this)), uint256(subnode), "");
+        try backlinkAddresses[backlinkIndex].reveal(IONEWallet.AuthParams(new bytes32[](0), 0, bytes32(0)),  IONEWallet.OperationParams(Enums.OperationType.TRANSFER_DOMAIN, Enums.TokenType.NONE, address(reg), uint256(bytes32(bytes20(resolver))), payable(address(this)), uint256(subnode), "")){
             emit CommandDispatched(address(backlinkAddresses[backlinkIndex]), commandData);
         } catch Error(string memory reason){
             emit CommandFailed(address(backlinkAddresses[backlinkIndex]), reason, commandData);
@@ -82,13 +82,13 @@ library WalletGraph {
         DomainManager.reclaimReverseDomain(address(rev), fqdn);
     }
 
-    function command(IONEWallet[] storage backlinkAddresses, TokenType tokenType, address contractAddress, uint256 tokenId, address payable dest, uint256 amount, bytes calldata data) public {
+    function command(IONEWallet[] storage backlinkAddresses, Enums.TokenType tokenType, address contractAddress, uint256 tokenId, address payable dest, uint256 amount, bytes calldata data) public {
         (address backlink, uint16 operationType, bytes memory commandData) = abi.decode(data, (address, uint16, bytes));
         if (findBacklink(backlinkAddresses, backlink) == backlinkAddresses.length) {
             emit CommandFailed(backlink, "Not linked", commandData);
             return;
         }
-        try IONEWallet(backlink).reveal(new bytes32[](0), 0, bytes32(0), OperationType(operationType), tokenType, contractAddress, tokenId, dest, amount, commandData){
+        try IONEWallet(backlink).reveal(IONEWallet.AuthParams(new bytes32[](0), 0, bytes32(0)), IONEWallet.OperationParams(Enums.OperationType(operationType), tokenType, contractAddress, tokenId, dest, amount, commandData)){
             emit CommandDispatched(backlink, commandData);
         }catch Error(string memory reason){
             emit CommandFailed(backlink, reason, commandData);

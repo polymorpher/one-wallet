@@ -42,7 +42,7 @@ const Recovery = ({ address }) => {
             <Button type='primary' size='large' shape='round' onClick={showSetRecoveryAddress}> Change </Button>
           </Col>}
       </Row>
-      {lastResortAddress && !util.isEmptyAddress(lastResortAddress) && lastResortAddress !== WalletConstants.oneWalletTreasury.address &&
+      {util.isRecoveryAddressSet(lastResortAddress) &&
         <AverageRow justify='end'>
           <Button type='primary' size='large' shape='round' onClick={showRecovery} icon={<WarningOutlined />}>Recover funds</Button>
         </AverageRow>}

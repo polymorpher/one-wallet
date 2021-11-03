@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.4;
+import "./Enums.sol";
 
 /// we will slowly move commit-reveal related stuff from ONEWallet to here
 library CommitManager {
@@ -16,7 +17,7 @@ library CommitManager {
         mapping(bytes32 => Commit[]) commitLocker;
         bytes32[] commits;  // self-clean on commit (auto delete commits that are beyond REVEAL_MAX_DELAY), so it's bounded by the number of commits an attacker can spam within REVEAL_MAX_DELAY time in the worst case, which is not too bad.
         /// nonce tracking
-        mapping(uint32 => uint8) nonces; // keys: otp index (=timestamp in seconds / interval - t0); values: the expected nonce for that otp interval. An reveal with a nonce less than the expected value will be rejected
+        mapping(uint32 => uint8) nonces; // keys: otp index (=timestamp in seconds / interval); values: the expected nonce for that otp interval. An reveal with a nonce less than the expected value will be rejected
         uint32[] nonceTracker; // list of nonces keys that have a non-zero value. keys cannot possibly result a successful reveal (indices beyond REVEAL_MAX_DELAY old) are auto-deleted during a clean up procedure that is called every time the nonces are incremented for some key. For each deleted key, the corresponding key in nonces will also be deleted. So the size of nonceTracker and nonces are both bounded.
     }
 
@@ -174,8 +175,8 @@ library CommitManager {
         // TODO (@polymorpher): upgrade the above code after solidity implements proper support for struct-array memory-storage copy operation.
     }
 
-    function getNonce(CommitState storage cs, uint8 interval, uint32 t0) external view returns (uint8){
-        return cs.nonces[uint32(block.timestamp) / uint32(interval) - t0];
+    function getNonce(CommitState storage cs, uint8 interval) external view returns (uint8){
+        return cs.nonces[uint32(block.timestamp) / uint32(interval)];
     }
 
     function incrementNonce(CommitState storage cs, uint32 index) external {
@@ -189,13 +190,9 @@ library CommitManager {
     }
 
     /// This function removes all tracked nonce values correspond to interval blocks that are older than block.timestamp - REVEAL_MAX_DELAY. In doing so, extraneous data in the blockchain is removed, and both nonces and nonceTracker are bounded in size.
-    function cleanupNonces(CommitState storage cs, uint8 interval, uint32 t0) external {
+    function cleanupNonces(CommitState storage cs, uint8 interval) external {
         uint32 tMin = uint32(block.timestamp) - REVEAL_MAX_DELAY;
-        uint32 indexMinUnadjusted = tMin / interval;
-        uint32 indexMin = 0;
-        if (indexMinUnadjusted > t0) {
-            indexMin = indexMinUnadjusted - t0;
-        }
+        uint32 indexMin = tMin / interval;
         uint32[] memory nonZeroNonces = new uint32[](cs.nonceTracker.length);
         uint32 numValidIndices = 0;
         for (uint8 i = 0; i < cs.nonceTracker.length; i++) {
@@ -216,4 +213,5 @@ library CommitManager {
         }
         cs.nonceTracker = reducedArray;
     }
+
 }
