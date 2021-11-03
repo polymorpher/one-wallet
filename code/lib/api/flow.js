@@ -114,7 +114,7 @@ const Flows = {
       }
       // console.log({ rand })
       if (rand === null) {
-        message.error('Failed to decrypt proof. Code might be incorrect')
+        message.error('Validation error. Code might be incorrect')
         prepareProofFailed && prepareProofFailed()
         return
       }
