@@ -334,8 +334,8 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
             } else {
                 _multiCall(op.data);
             }
-        } else if (op.operationType == Enums.OperationType.REPLACE) {
-            _replaceCoreByBytes(op.data);
+        } else if (op.operationType == Enums.OperationType.DISPLACE) {
+            _displaceCoreWithValidationByBytes(op.data);
         } else if (op.operationType == Enums.OperationType.BATCH) {
             _batch(op.data);
         }
@@ -420,25 +420,29 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
         return signatures.lookup(hash);
     }
 
-    function _replaceCoreByBytes(bytes memory data) internal {
+    function _displaceCoreWithValidationByBytes(bytes memory data) internal {
         CoreSetting memory newCore = abi.decode(data, (CoreSetting));
-        _replaceCore(newCore);
+        _displaceCoreWithValidation(newCore);
     }
 
-    function _replaceCore(CoreSetting memory newCore) internal {
+    function _displaceCoreWithValidation(CoreSetting memory newCore) internal {
         // if recovery is already performed on this wallet, or the wallet is already upgrade to a new version, or set to forward to another address (hence is controlled by that address), its lifespan should not be extended
         if (forwardAddress != address(0)) {
-            emit CoreReplacementFailed(newCore, "Wallet deprecated");
+            emit CoreDisplacementFailed(newCore, "Wallet deprecated");
             return;
         }
-        // we should not require the recovery address to approve this operation, since the ability of recovery address initiating an auto-triggered recovery (via sending 1.0 ONE) is unaffected after the root is replaced.
+        // we should not require the recovery address to approve this operation, since the ability of recovery address initiating an auto-triggered recovery (via sending 1.0 ONE) is unaffected after the root is displaced.
+        _displaceCore(newCore);
+    }
+
+    function _displaceCore(CoreSetting memory newCore, bytes32[] neighbors, uint32 position) internal {
         CoreSetting memory oldCore = core;
         if (newCore.t0 + newCore.lifespan <= oldCore.t0 + oldCore.lifespan || newCore.t0 <= oldCore.t0) {
-            emit CoreReplacementFailed(newCore, "Must have newer time range");
+            emit CoreDisplacementFailed(newCore, "Must have newer time range");
             return;
         }
         if (newCore.root == oldCore.root) {
-            emit CoreReplacementFailed(newCore, "Must have different root");
+            emit CoreDisplacementFailed(newCore, "Must have different root");
             return;
         }
         oldCores.push(oldCore);
@@ -448,6 +452,6 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
         core.interval = newCore.interval;
         core.lifespan = newCore.lifespan;
         core.maxOperationsPerInterval = newCore.maxOperationsPerInterval;
-        emit CoreReplaced(oldCore, core);
+        emit CoreDisplaced(oldCore, core);
     }
 }

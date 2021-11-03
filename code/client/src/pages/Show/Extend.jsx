@@ -178,7 +178,7 @@ const Extend = ({
       ONEUtil.hexString(root), layers.length, WalletConstants.interval / 1000, Math.floor(effectiveTime / WalletConstants.interval), Math.floor(duration / WalletConstants.interval), slotSize
     ]
     const encodedData = ONEUtil.abi.encodeParameters(['tuple(bytes32,uint8,uint8,uint32,uint32,uint8)'], [tuple])
-    const args = { ...ONEConstants.NullOperationParams, data: encodedData, operationType: ONEConstants.OperationType.REPLACE }
+    const args = { ...ONEConstants.NullOperationParams, data: encodedData, operationType: ONEConstants.OperationType.DISPLACE }
     await SmartFlows.commitReveal({
       wallet,
       otp,

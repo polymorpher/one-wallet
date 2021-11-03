@@ -22,7 +22,7 @@ library Reveal {
             paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(op.dest)))));
         } else if (op.operationType == Enums.OperationType.BACKLINK_ADD || op.operationType == Enums.OperationType.BACKLINK_DELETE || op.operationType == Enums.OperationType.BACKLINK_OVERRIDE) {
             paramsHash = keccak256(op.data);
-        } else if (op.operationType == Enums.OperationType.REPLACE) {
+        } else if (op.operationType == Enums.OperationType.DISPLACE) {
             paramsHash = keccak256(op.data);
         } else if (op.operationType == Enums.OperationType.RECOVER_SELECTED_TOKENS) {
             paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(op.dest))), op.data));
@@ -59,7 +59,7 @@ library Reveal {
             return;
         }
         // check old cores
-        for (uint8 i = 0; i < oldCores.length; i++) {
+        for (uint32 i = 0; i < oldCores.length; i++) {
             if (oldCores[i].root == h) {
                 require(auth.neighbors.length == oldCores[i].height - 1, "Bad old neighbors size");
                 require(auth.indexWithNonce == uint32(2 ** (oldCores[i].height - 1)) - 1, "Need old recovery leaf");
@@ -72,18 +72,17 @@ library Reveal {
     /// check the current position is not used by *any* core as a recovery slot
     function isNonRecoveryLeaf(IONEWallet.CoreSetting storage core, IONEWallet.CoreSetting[] storage oldCores, uint32 position) view public {
         require(position != (uint32(2 ** (core.height - 1))) - 1, "reserved");
-        for (uint8 i = 0; i < oldCores.length; i++) {
+        for (uint32 i = 0; i < oldCores.length; i++) {
             uint32 recoveryPosition = oldCores[i].t0 + uint32(2 ** (oldCores[i].height - 1)) - 1;
             require(core.t0 + position != recoveryPosition, "Reserved before");
         }
     }
 
     /// This is just a wrapper around a modifier previously called `isCorrectProof`, to avoid "Stack too deep" error. Duh.
-    function isCorrectProof(IONEWallet.CoreSetting storage core, IONEWallet.AuthParams memory auth) view public {
-        require(auth.neighbors.length == core.height - 1, "Bad neighbors");
+    function isCorrectProof(IONEWallet.CoreSetting storage core, IONEWallet.CoreSetting[] storage oldCores, IONEWallet.AuthParams memory auth) view public {
         uint32 position = auth.indexWithNonce;
         bytes32 h = sha256(bytes.concat(auth.eotp));
-        for (uint8 i = 0; i < core.height - 1; i++) {
+        for (uint8 i = 0; i < auth.neighbors.length; i++) {
             if ((position & 0x01) == 0x01) {
                 h = sha256(bytes.concat(auth.neighbors[i], h));
             } else {
@@ -91,8 +90,17 @@ library Reveal {
             }
             position >>= 1;
         }
-        require(core.root == h, "Proof is incorrect");
-        return;
+        if (core.root == h) {
+            require(auth.neighbors.length == core.height - 1, "Bad neighbors size");
+            return;
+        }
+        for (uint32 i = 0; i < oldCores.length; i++) {
+            if (oldCores[i].root == h) {
+                require(auth.neighbors.length == oldCores[i].height - 1, "Bad old neighbors size");
+                return;
+            }
+        }
+        revert("Proof is incorrect");
     }
 
 

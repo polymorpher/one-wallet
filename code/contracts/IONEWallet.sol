@@ -46,8 +46,8 @@ interface IONEWallet {
     event BackLinkUpdateError(address dest, address backlink, string error);
     event ExternalCallCompleted(address contractAddress, uint256 amount, bytes data, bytes ret);
     event ExternalCallFailed(address contractAddress, uint256 amount, bytes data, bytes ret);
-    event CoreReplaced(CoreSetting oldCore, CoreSetting newCore);
-    event CoreReplacementFailed(CoreSetting newCore, string reason);
+    event CoreDisplaced(CoreSetting oldCore, CoreSetting newCore);
+    event CoreDisplacementFailed(CoreSetting newCore, string reason);
 
     function getForwardAddress() external view returns (address payable);
 

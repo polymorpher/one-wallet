@@ -9,13 +9,14 @@ import { deleteWalletLocally } from '../../storage/util'
 import { useWallet } from '../../components/Common'
 import { AverageRow } from '../../components/Grid'
 import { FloatContainer } from '../../components/Layout'
+import { walletActions } from '../../state/modules/wallet'
 const { Title, Text } = Typography
 
 const CheckRoots = ({ address, onClose }) => {
   const { isMobile } = useWindowDimensions()
   const history = useHistory()
   const { dispatch, wallets, wallet } = useWallet({ address })
-  const { oldInfos, root, lastResortAddress } = wallet
+  const { oldInfos, root, lastResortAddress, acknowledgedRoot } = wallet
   const [rootMissing, setRootMissing] = useState(false)
   const [oldRootExist, setOldRootExist] = useState(false)
   const [skip, setSkip] = useState(false)
@@ -45,26 +46,28 @@ const CheckRoots = ({ address, onClose }) => {
     f()
   }, [wallet?.root, wallet?.oldInfos])
 
+  const onAcknowledgeRoot = () => {
+    dispatch(walletActions.userAcknowledgedNewRoot({ address, root }))
+    setSkip(true)
+  }
   if (skip || !rootMissing) {
     return <></>
   }
 
   if (oldRootExist) {
+    if (acknowledgedRoot === root) {
+      return <></>
+    }
     return (
       <FloatContainer>
         <AverageRow justify='center'>
           <Title level={isMobile ? 4 : 2}>Wallet renewed elsewhere</Title>
           <Text>This wallet has been renewed on other devices.</Text>
-          {util.isRecoveryAddressSet(lastResortAddress) && <Text>You may still use "Recovery" feature here (if you previously set a recovery address).</Text>}
-          <Text>To use the wallet, please delete and restore this wallet.</Text>
+          <Text style={{ color: 'red' }}>If you didn't do this, this means someone else may registered another authenticator code with this wallet, and they may use the wallet. Please recover or transfer assets as soon as possible.</Text>
         </AverageRow>
         <AverageRow justify='center'>
           <Space direction='vertical' size='large' align='center'>
-            <Button type='primary' shape='round' onClick={onClose}>Exit</Button>
-            {util.isRecoveryAddressSet(lastResortAddress) && <Button type='default' shape='round' onClick={() => setSkip(true)}>Inspect Wallet</Button>}
-            <Popconfirm title='Are you sure？' onConfirm={() => deleteWalletLocally({ wallet, wallets, history, dispatch })}>
-              <Button type='text' shape='round' danger size='large' icon={<DeleteOutlined />}>Delete Locally</Button>
-            </Popconfirm>
+            <Button type='primary' shape='round' onClick={onAcknowledgeRoot}>I understand</Button>
           </Space>
         </AverageRow>
       </FloatContainer>
