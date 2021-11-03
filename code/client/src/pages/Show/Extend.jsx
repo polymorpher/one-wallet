@@ -61,7 +61,7 @@ const Extend = ({
 
   const [section, setSection] = useState(Subsections.init)
 
-  const [root, setRoot] = useState()
+  const [root, setRoot] = useState() // Uint8Array
   const [effectiveTime, setEffectiveTime] = useState()
   const [hseed, setHseed] = useState()
   const [layers, setLayers] = useState()
@@ -135,18 +135,19 @@ const Extend = ({
     network,
     resetWorker,
     onSuccess: () => {
-      storage.setItem(root, layers)
+      const rootHexView = ONEUtil.hexView(root)
+      storage.setItem(rootHexView, layers)
       // TODO: validate tx receipt log events and remove old root/layers from storage
       const newWallet = {
         _merge: true,
         address,
-        root,
+        root: rootHexView,
         duration,
         effectiveTime,
         hseed: ONEUtil.hexView(hseed),
         doubleOtp,
         network,
-        acknowledgedNewRoot: root,
+        acknowledgedNewRoot: rootHexView,
         ...securityParameters,
       }
       dispatch(walletActions.updateWallet(newWallet))
