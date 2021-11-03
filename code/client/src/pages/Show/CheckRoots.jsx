@@ -57,7 +57,7 @@ const CheckRoots = ({ address, onClose }) => {
       }
     }
     f()
-  }, [wallet?.root, wallet?.oldInfos])
+  }, [root, oldInfos])
   const deleteAndRestore = async () => {
     await deleteWalletLocally({ wallet, wallets, dispatch })
     history.push(Paths.restore)
@@ -98,6 +98,17 @@ const CheckRoots = ({ address, onClose }) => {
             <Button type='primary' shape='round' onClick={() => doRetire({ address, network })}>Confirm</Button>
             <Button shape='round' onClick={() => setSkip(true)}>Inspect Wallet</Button>
             <Button shape='round' onClick={onClose}>Exit</Button>
+          </Space>
+        </FloatContainer>
+      )
+    } else if (timeToExpire < WalletConstants.expiringSoonThreshold) {
+      return (
+        <FloatContainer>
+          <Text>This wallet is expiring in {humanizeDuration(timeToExpire, { units: ['y', 'mo', 'd'], round: true })}. After it is expired, it can only transfer remaining assets to the recovery address</Text>
+          <Text>Renew it?</Text>
+          <Space direction='vertical' size='large' align='center' style={{ width: '100%' }}>
+            <Button type='primary' shape='round' onClick={() => history.push(Paths.showAddress(address, 'extend'))}>Yes</Button>
+            <Button shape='round' onClick={() => setSkip(true)}>Later</Button>
           </Space>
         </FloatContainer>
       )
