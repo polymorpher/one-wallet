@@ -18,6 +18,7 @@ const About = ({ address }) => {
   const history = useHistory()
   const { isMobile } = useWindowDimensions()
   const wallets = useSelector(state => state.wallet.wallets)
+  const dev = useSelector(state => state.wallet.dev)
   const wallet = wallets[address] || {}
   const backlinks = wallet.backlinks || []
   const { spendingLimit, spendingInterval } = wallet
@@ -59,7 +60,7 @@ const About = ({ address }) => {
         <Col>
           <Space>
             <Text>{humanizeDuration(wallet.duration + wallet.effectiveTime - Date.now(), { units: ['y', 'mo', 'd'], round: true })}</Text>
-            {util.canRenew(wallet) && <Button shape='round' onClick={() => history.push(Paths.showAddress(address, 'extend'))}>Renew</Button>}
+            {(dev || util.canRenew(wallet)) && <Button shape='round' onClick={() => history.push(Paths.showAddress(address, 'extend'))}>Renew</Button>}
           </Space>
         </Col>
       </TallRow>
