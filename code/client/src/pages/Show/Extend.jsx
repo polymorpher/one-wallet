@@ -146,6 +146,7 @@ const Extend = ({
         hseed: ONEUtil.hexView(hseed),
         doubleOtp,
         network,
+        acknowledgedNewRoot: root,
         ...securityParameters,
       }
       dispatch(walletActions.updateWallet(newWallet))
