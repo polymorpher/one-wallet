@@ -45,8 +45,11 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
     CommitManager.CommitState commitState;
     SignatureManager.SignatureTracker signatures;
 
-    constructor(CoreSetting memory core_, SpendingManager.SpendingState memory spendingState_, address payable recoveryAddress_, IONEWallet[] memory backlinkAddresses_)
+    constructor(CoreSetting memory core_, SpendingManager.SpendingState memory spendingState_, address payable recoveryAddress_, IONEWallet[] memory backlinkAddresses_, CoreSetting[] memory oldCores_)
     {
+        for (uint32 i = 0; i < oldCores_.length; i++) {
+            oldCores.push(oldCores_[i]);
+        }
         core.root = core_.root;
         core.height = core_.height;
         core.interval = core_.interval;
