@@ -64,6 +64,22 @@ const CheckRoots = ({ address, onClose }) => {
     dispatch(walletActions.userAcknowledgedNewRoot({ address, root }))
   }
 
+  const DeleteAndRestore = useCallback(({ title, options }) => {
+    return (
+      <FloatContainer>
+        <Space direction='vertical'>
+          <Text>{title}</Text>
+          <AverageRow justify='center'>
+            {options}
+            <Popconfirm title='Are you sure？' onConfirm={() => deleteAndRestore()}>
+              <Button type='text' shape='round' danger size='large' icon={<DeleteOutlined />}>Delete And Restore</Button>
+            </Popconfirm>
+          </AverageRow>
+        </Space>
+      </FloatContainer>
+    )
+  }, [])
+
   if (skip) {
     return <></>
   }
@@ -82,22 +98,6 @@ const CheckRoots = ({ address, onClose }) => {
       )
     }
   }
-
-  const DeleteAndRestore = useCallback(({ title, options }) => {
-    return (
-      <FloatContainer>
-        <Space direction='vertical'>
-          <Text>{title}</Text>
-          <AverageRow justify='center'>
-            {options}
-            <Popconfirm title='Are you sure？' onConfirm={() => deleteAndRestore()}>
-              <Button type='text' shape='round' danger size='large' icon={<DeleteOutlined />}>Delete And Restore</Button>
-            </Popconfirm>
-          </AverageRow>
-        </Space>
-      </FloatContainer>
-    )
-  }, [])
 
   if (oldRootExist) {
     if (acknowledgedRoot === root) {

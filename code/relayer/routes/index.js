@@ -88,7 +88,7 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
       backlinks,
       oldCoreTransformed
     )
-    console.log('/new', wallet)
+    console.log('/new', wallet?.address)
     return res.json({ success: true, address: wallet.address })
   } catch (ex) {
     console.error(ex)
