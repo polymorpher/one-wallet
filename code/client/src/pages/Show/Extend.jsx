@@ -69,6 +69,7 @@ const Extend = ({
   const [progress, setProgress] = useState(0)
   const [progressStage, setProgressStage] = useState(0)
   const securityParameters = ONEUtil.securityParameters(wallet)
+  // eslint-disable-next-line no-unused-vars
   const [computeInProgress, setComputeInProgress] = useState(false)
 
   const [confirmName, setConfirmName] = useState()
@@ -335,7 +336,7 @@ const Extend = ({
     console.log(majorVersion, name)
     return (
       <Subsection show onClose={onClose}>
-        <Warning>Your wallet is too old. Please use a wallet that is at least version 14.1</Warning>
+        <Warning>Your wallet is too old to use this feature. Please use a wallet that is at least version 14.1</Warning>
       </Subsection>
     )
   }
@@ -356,7 +357,7 @@ const Extend = ({
           <Col span={isMobile ? 24 : 12}>
             <Space direction='vertical' size='large' style={{ width: '100%' }} align='center'>
               <Button shape='round' type='primary' onClick={() => setMethod('new')}>Setup a new one</Button>
-              <Hint>You will scan a new QR code for your authenticator. Your old authenticator code will no longer work.</Hint>
+              <Hint>You will setup a new authenticator code. Both your new and old authenticator code work simultaneously.</Hint>
             </Space>
           </Col>
         </AverageRow>
@@ -373,7 +374,7 @@ const Extend = ({
               <Text>You scanned a code for wallet <b>{confirmName}</b>, but your wallet's name is <b>{wallet.name}</b>. This means you might have scanned the wrong code.</Text>
             </AverageRow>
             <AverageRow>
-              <Text style={{ color: 'red' }}> Are you sure to use this code from now on for this wallet?</Text>
+              <Text style={{ color: 'red' }}> Are you sure to allow using this code from now on for this wallet?</Text>
             </AverageRow>
             <AverageRow justify='space-between'>
               <Button shape='round' onClick={cancelUseName}>Scan again</Button>
@@ -400,12 +401,12 @@ const Extend = ({
       </Subsection>
       <Subsection onClose={onClose} show={section === Subsections.confirm}>
         <AverageRow>
-          <Hint>If you have this wallet on other devices, they will no longer work. To continue using the wallet there, open the wallet on those devices, follow the instructions, delete and "Restore" the wallet there. </Hint>
+          <Hint>If you have this wallet on other devices, the wallet can only be used up until its original expiry time on those devices. To fix that, open the wallet on those devices, follow the instructions, delete and "Restore" the wallet there. </Hint>
         </AverageRow>
         <AverageRow>
           {method === 'new' &&
             <Text style={{ color: 'red' }}>
-              Confirm that you want to replace your authenticator code (using your old code). After this is completed, remember to test and make sure the new code works before deleting the old code!
+              Both your new and old authenticator codes will work for this wallet from now on. Use your old authenticator code to confirm this operation.
             </Text>}
         </AverageRow>
         {!root && <WalletCreateProgress title='Computing security parameters...' progress={progress} isMobile={isMobile} progressStage={progressStage} />}
@@ -416,7 +417,7 @@ const Extend = ({
               walletName={wallet.name}
               otpState={otpState}
               onComplete={doReplace}
-              action={`confirm ${method === 'new' ? '(using old authenticator code)' : ''}`}
+              action={`confirm ${method === 'new' ? '[using old authenticator code]' : ''}`}
             />
           </Col>
         </AverageRow>
