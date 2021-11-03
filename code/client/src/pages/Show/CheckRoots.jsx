@@ -23,9 +23,9 @@ const CheckRoots = ({ address, onClose }) => {
   const { isMobile } = useWindowDimensions()
   const history = useHistory()
   const { dispatch, wallets, wallet } = useWallet({ address })
-  const { oldInfos, root, acknowledgedRoot, effectiveTime, duration, lastResortAddress, network } = wallet
+  const { oldInfos, root, acknowledgedNewRoot, effectiveTime, duration, lastResortAddress, network } = wallet
   const [rootMissing, setRootMissing] = useState(false)
-  const [oldRootExist, setOldRootExist] = useState(false)
+  const [oldRootExist, setOldRootExist] = useState(null)
   const [oldRootExpiry, setOldRootExpiry] = useState(WalletConstants.defaultDuration)
   const [skip, setSkip] = useState(false)
   useEffect(() => {
@@ -50,7 +50,9 @@ const CheckRoots = ({ address, onClose }) => {
             const oldExpiry = info.effectiveTime + info.duration
             const timeToExpiry = oldExpiry - Date.now()
             setOldRootExpiry(timeToExpiry)
+            return
           }
+          setOldRootExist(false)
         }
       }
     }
@@ -83,7 +85,7 @@ const CheckRoots = ({ address, onClose }) => {
   if (skip) {
     return <></>
   }
-
+  console.log(rootMissing)
   if (!rootMissing) {
     const timeToExpire = (effectiveTime + duration) - Date.now()
     if (timeToExpire <= 0) {
@@ -103,8 +105,12 @@ const CheckRoots = ({ address, onClose }) => {
     return <></>
   }
 
+  if (oldRootExist === null) {
+    // do not block ui while we are checking stuff
+    return <></>
+  }
   if (oldRootExist) {
-    if (acknowledgedRoot === root) {
+    if (acknowledgedNewRoot === root) {
       if (oldRootExpiry < 0) {
         return (<DeleteAndRestore title='This wallet cannot be used on this device. It is renewed elsewhere and its local data is expired. To use it on this device, please delete the wallet, then restore it' />)
       }
@@ -115,11 +121,11 @@ const CheckRoots = ({ address, onClose }) => {
     }
     return (
       <FloatContainer>
-        <AverageRow justify='center'>
+        <Space direction='vertical'>
           <Title level={isMobile ? 4 : 2}>Wallet renewed elsewhere</Title>
           <Text>This wallet has been renewed on other devices.</Text>
           <Text style={{ color: 'red' }}>If you didn't do this, this means someone else may registered another authenticator code with this wallet, and they may use the wallet. Please recover or transfer assets as soon as possible.</Text>
-        </AverageRow>
+        </Space>
         <AverageRow justify='center'>
           <Space direction='vertical' size='large' align='center'>
             <Button type='primary' shape='round' onClick={onAcknowledgeRoot}>I understand</Button>
