@@ -22,7 +22,7 @@ abstract contract AbstractONEWallet is IONEWallet {
     }
 
     // Deprecated since v14
-    function reveal(bytes32[] calldata neighbors, uint32 indexWithNonce, bytes32 eotp, Enums.OperationType operationType, Enums.TokenType tokenType, address contractAddress, uint256 tokenId, address payable dest, uint256 amount, bytes calldata data) external pure override {
+    function reveal(bytes32[] calldata /*neighbors*/, uint32 /*indexWithNonce*/, bytes32 /*eotp*/, Enums.OperationType /*operationType*/, Enums.TokenType /*tokenType*/, address /*contractAddress*/, uint256 /*tokenId*/, address payable /*dest*/, uint256 /*amount*/, bytes calldata /*data*/) external pure override {
         revert();
     }
 }

@@ -85,18 +85,22 @@ const CheckRoots = ({ address, onClose }) => {
   }
 
   if (!rootMissing) {
-    if (effectiveTime + duration > Date.now()) {
+    const timeToExpire = (effectiveTime + duration) - Date.now()
+    if (timeToExpire <= 0) {
       return (
         <FloatContainer>
-          <Text>This wallet cannot be used because it is expired</Text>
+          <Text>This wallet cannot be used because it expired {humanizeDuration(-timeToExpire, { units: ['y', 'mo', 'd'], round: true })} ago </Text>
           <Text>You may transfer all its assets to its recovery address:</Text>
           <WalletAddress showLabel address={lastResortAddress} alwaysShowOptions />
-          <Button type='primary' shape='round' onClick={() => doRetire({ address, network })}>Confirm</Button>
-          <Button shape='round' onClick={() => setSkip(true)}>Inspect Wallet</Button>
-          <Button shape='round' onClick={onClose}>Exit</Button>
+          <Space direction='vertical' size='large' align='center' style={{ width: '100%' }}>
+            <Button type='primary' shape='round' onClick={() => doRetire({ address, network })}>Confirm</Button>
+            <Button shape='round' onClick={() => setSkip(true)}>Inspect Wallet</Button>
+            <Button shape='round' onClick={onClose}>Exit</Button>
+          </Space>
         </FloatContainer>
       )
     }
+    return <></>
   }
 
   if (oldRootExist) {
