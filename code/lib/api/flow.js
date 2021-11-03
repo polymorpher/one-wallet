@@ -66,12 +66,26 @@ const Flows = {
     maxTransferAttempts = 3, checkCommitInterval = 4000,
     message = messager,
   }) => {
-    const { effectiveTime, root, address, randomness, hseed, hasher } = wallet
+    const { oldInfos, address, randomness, hseed, hasher } = wallet
+    let { effectiveTime, root } = wallet
     if (!layers) {
       layers = await storage.getItem(root)
       if (!layers) {
-        message.error('Cannot find pre-computed proofs for this wallet. Storage might be corrupted. Please restore the wallet from Google Authenticator.')
-        return
+        // look for old roots
+        for (let info of oldInfos) {
+          if (info.root && (info.effectiveTime + info.duration > Date.now())) {
+            layers = await storage.getItem(info.root)
+            effectiveTime = info.effectiveTime
+            root = info.root
+            if (layers) {
+              break
+            }
+          }
+        }
+        if (!layers) {
+          message.error('Cannot find pre-computed proofs for this wallet. Storage might be corrupted. Please restore the wallet from Google Authenticator.')
+          return
+        }
       }
     }
     prepareProof && prepareProof()
