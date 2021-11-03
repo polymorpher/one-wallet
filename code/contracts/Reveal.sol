@@ -70,11 +70,13 @@ library Reveal {
     }
 
     /// check the current position is not used by *any* core as a recovery slot
-    function isNonRecoveryLeaf(IONEWallet.CoreSetting storage core, IONEWallet.CoreSetting[] storage oldCores, uint32 position) view public {
-        require(position != (uint32(2 ** (core.height - 1))) - 1, "reserved");
+    function isNonRecoveryLeaf(IONEWallet.CoreSetting storage latestCore, IONEWallet.CoreSetting[] storage oldCores, uint32 position, uint32 coreIndex) view public {
+        IONEWallet.CoreSetting storage coreUsed = coreIndex == 0 ? latestCore : oldCores[coreIndex - 1];
+        uint32 absolutePosition = coreUsed.t0 + position;
+        require(absolutePosition != (latestCore.t0 + (uint32(2 ** (latestCore.height - 1))) - 1), "reserved");
         for (uint32 i = 0; i < oldCores.length; i++) {
-            uint32 recoveryPosition = oldCores[i].t0 + uint32(2 ** (oldCores[i].height - 1)) - 1;
-            require(core.t0 + position != recoveryPosition, "Reserved before");
+            uint32 absoluteRecoveryPosition = oldCores[i].t0 + uint32(2 ** (oldCores[i].height - 1)) - 1;
+            require(absolutePosition != absoluteRecoveryPosition, "Reserved before");
         }
     }
 
@@ -154,8 +156,8 @@ library Reveal {
         if (op.operationType == Enums.OperationType.RECOVER) {
             coreIndex = isCorrectRecoveryProof(core, oldCores, auth);
         } else {
-            isNonRecoveryLeaf(core, oldCores, auth.indexWithNonce);
             coreIndex = isCorrectProof(core, oldCores, auth);
+            isNonRecoveryLeaf(core, oldCores, auth.indexWithNonce, coreIndex);
         }
         IONEWallet.CoreSetting storage coreUsed = coreIndex == 0 ? core : oldCores[coreIndex - 1];
         (bytes32 commitHash, bytes32 paramsHash) = getRevealHash(auth, op);
