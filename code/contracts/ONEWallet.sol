@@ -435,7 +435,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
         _displaceCore(newCore);
     }
 
-    function _displaceCore(CoreSetting memory newCore, bytes32[] neighbors, uint32 position) internal {
+    function _displaceCore(CoreSetting memory newCore) internal {
         CoreSetting memory oldCore = core;
         if (newCore.t0 + newCore.lifespan <= oldCore.t0 + oldCore.lifespan || newCore.t0 <= oldCore.t0) {
             emit CoreDisplacementFailed(newCore, "Must have newer time range");

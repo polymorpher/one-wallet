@@ -58,7 +58,7 @@ const initCachedLibraries = async () => {
         if (hash === expectedHash) {
           console.log(`[${network}][${lib.contractName}] Found existing deployed library at address ${address}`)
           libraries[network][lib.contractName] = await c.at(address)
-          console.log(`[${network}][${lib.contractName}] Intialized contract at ${address}`)
+          console.log(`[${network}][${lib.contractName}] Initialized contract at ${address}`)
           continue
         } else {
           console.log(`[${network}][${lib.contractName}] Library code is changed. Redeploying`)

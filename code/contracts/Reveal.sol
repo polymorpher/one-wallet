@@ -154,7 +154,7 @@ library Reveal {
             isCorrectRecoveryProof(core, oldCores, auth);
         } else {
             isNonRecoveryLeaf(core, oldCores, auth.indexWithNonce);
-            isCorrectProof(core, auth);
+            isCorrectProof(core, oldCores, auth);
         }
         (bytes32 commitHash, bytes32 paramsHash) = getRevealHash(auth, op);
         uint32 commitIndex = verifyReveal(core, commitState, commitHash, auth.indexWithNonce, paramsHash, auth.eotp, op.operationType);
