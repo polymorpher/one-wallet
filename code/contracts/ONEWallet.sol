@@ -180,16 +180,17 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
     }
 
     function _forward(address payable dest) internal {
-        if (address(forwardAddress) == address(this)) {
+        if (address(forwardAddress) == address(this) || dest == address(0)) {
             emit ForwardAddressInvalid(dest);
             return;
         }
-        if (forwardAddress != address(0)) {
-            if (!_isRecoveryAddressSet() || dest != recoveryAddress) {
-                emit ForwardAddressAlreadySet(dest);
-                return;
-            }
-        }
+        // TODO: in the next version, add a flag in the parameter indicating whether the operation is from the forwardAddress. If the flag is set, skip the check below
+        //        if (forwardAddress != address(0)) {
+        //            if (!_isRecoveryAddressSet() || dest != recoveryAddress) {
+        //                emit ForwardAddressAlreadySet(dest);
+        //                return;
+        //            }
+        //        }
         forwardAddress = dest;
         emit ForwardAddressUpdated(dest);
         if (!_isRecoveryAddressSet()) {
