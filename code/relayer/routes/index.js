@@ -31,7 +31,7 @@ router.use((req, res, next) => {
   req.network = network
   req.majorVersion = parseInt(majorVersion || 0)
   req.minorVersion = parseInt(minorVersion || 0)
-  console.log(`Address: ${req.body.address}; majorVersion: ${req.majorVersion}; minorVersion: ${req.minorVersion}`)
+  console.log(`Address: ${req.body.address}; network: ${req.network}; majorVersion: ${req.majorVersion}; minorVersion: ${req.minorVersion}`)
   // TODO: differentiate <v5 and >=v6 contracts
   if (!(req.majorVersion >= 6)) {
     req.contract = blockchain.getContractV5(network)
