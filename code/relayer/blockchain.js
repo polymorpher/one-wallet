@@ -111,11 +111,11 @@ const HarmonyProvider = ({ key, url, chainId, gasLimit, gasPrice }) => {
 const init = () => {
   Object.keys(config.networks).forEach(k => {
     const n = config.networks[k]
-    console.log(n)
+    // console.log(n)
     if (n.key) {
       try {
         if (k.startsWith('eth')) {
-          providers[k] = new HDWalletProvider({ privateKeys: [n.key], providerOrUrl: n.url })
+          providers[k] = new HDWalletProvider({ mnemonic: n.mnemonic, privateKeys: !n.mnemonic && [n.key], providerOrUrl: n.url, sharedNonce: false })
         } else {
           providers[k] = HarmonyProvider({ key: n.key,
             url: n.url,
@@ -142,9 +142,10 @@ const init = () => {
     const key = config.networks[k].key
     const account = new Account(key)
     // console.log(k, account.address, account.bech32Address)
-    c.defaults({ from: account.address, gas: config.gasLimit, gasPrice: config.gasPrice })
-    c5.defaults({ from: account.address, gas: config.gasLimit, gasPrice: config.gasPrice })
-    c6.defaults({ from: account.address, gas: config.gasLimit, gasPrice: config.gasPrice })
+    const params = k.startsWith('eth') ? { from: account.address } : { from: account.address, gas: config.gasLimit, gasPrice: config.gasPrice }
+    c.defaults(params)
+    c5.defaults(params)
+    c6.defaults(params)
     contracts[k] = c
     contractsV5[k] = c5
     contractsV6[k] = c6

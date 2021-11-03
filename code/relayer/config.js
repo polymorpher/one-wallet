@@ -29,6 +29,8 @@ const config = {
     'eth-ganache': {
       url: process.env.ETH_GANACHE_URL || 'http://127.0.0.1:7545',
       key: process.env.ETH_GANACHE_KEY,
+      mnemonic: process.env.ETH_GANACHE_MNEMONIC,
+      chainId: 5777,
     },
   },
   gasLimit: parseInt(process.env.GAS_LIMIT || '210000'),
