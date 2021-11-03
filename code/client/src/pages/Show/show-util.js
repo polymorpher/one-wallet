@@ -6,6 +6,7 @@ import util from '../../util'
 import React from 'react'
 import { handleAddressError } from '../../handler'
 import BN from 'bn.js'
+import { api } from '../../../../lib/api'
 const { Text, Link } = Typography
 
 export default {
@@ -119,5 +120,16 @@ export default {
     }
 
     return { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed, restart }
+  }
+}
+
+export const doRetire = async ({ address, network, error }) => {
+  try {
+    const { txId } = await api.relayer.retire({ address })
+    const link = config.networks[network].explorer.replace(/{{txId}}/, txId)
+    message.success(<Text>Done! View transaction <Link href={link} target='_blank' rel='noreferrer'>{util.ellipsisAddress(txId)}</Link></Text>, 10)
+  } catch (ex) {
+    console.error(ex)
+    message.error(error || `Failed to transfer assets to recovery address. Error: ${ex.toString()}`)
   }
 }
