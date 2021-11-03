@@ -85,7 +85,7 @@ const CheckRoots = ({ address, onClose }) => {
   if (skip) {
     return <></>
   }
-  console.log(rootMissing)
+  // console.log(rootMissing, oldRootExist)
   if (!rootMissing) {
     const timeToExpire = (effectiveTime + duration) - Date.now()
     if (timeToExpire <= 0) {
