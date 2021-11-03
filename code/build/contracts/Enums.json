@@ -1,15 +1,15 @@
 {
   "contractName": "Enums",
   "abi": [],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.4+commit.c7e474f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/Enums.sol\":\"Enums\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/Enums.sol\":{\"keccak256\":\"0xc86a440c331e7336e275a0fcf76253ad3b4e059434a95e58f67f9f6a467bf2ba\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://8e05731ebfc4b8f4ae231558fadf444ab4a0e8f0739f69ca12e2e59d36469cc6\",\"dweb:/ipfs/QmZhiiY5JRJHwV9XvSsVAMVRNHVGJubn5mSk61TKgNk7yG\"]}},\"version\":1}",
-  "bytecode": "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122019d80d553a296e87a6d89462dbd19d4e2aa91b2ed7674d897dba51bf2fce93fe64736f6c63430008040033",
-  "deployedBytecode": "0x73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122019d80d553a296e87a6d89462dbd19d4e2aa91b2ed7674d897dba51bf2fce93fe64736f6c63430008040033",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.4+commit.c7e474f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/Enums.sol\":\"Enums\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/Enums.sol\":{\"keccak256\":\"0x125c10a6e370122e16db551d2240e88e09315ed7d34f8024fe82452205de4b37\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://70030513b14d0301a7ab354405aa0a43a7e79b4736e9360bb7e81d8a397e4fc3\",\"dweb:/ipfs/QmVqSPSpyLWWwBEmnMKmJFe51gef5Xxx2DCv8vNK3yjpjP\"]}},\"version\":1}",
+  "bytecode": "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212209e78fa7d56c1b4b33378d132df78589a8a603ae2c233ba1fbc7a45c6e77a4c3d64736f6c63430008040033",
+  "deployedBytecode": "0x73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212209e78fa7d56c1b4b33378d132df78589a8a603ae2c233ba1fbc7a45c6e77a4c3d64736f6c63430008040033",
   "immutableReferences": {},
   "generatedSources": [],
   "deployedGeneratedSources": [],
-  "sourceMap": "64:1162:13:-:0;;;;;;;;;;;;;;;-1:-1:-1;;;64:1162:13;;;;;;;;;;;;;;;;;",
-  "deployedSourceMap": "64:1162:13:-:0;;;;;;;;",
-  "source": "// SPDX-License-Identifier: Apache-2.0\npragma solidity ^0.8.4;\n\nlibrary Enums {\n    enum OperationType {\n        TRACK, UNTRACK, TRANSFER_TOKEN, OVERRIDE_TRACK, TRANSFER, SET_RECOVERY_ADDRESS, RECOVER,\n        REPLACE, // reserved, not implemented yet. This is for replacing the root and set up new parameters (t0, lifespan)\n        FORWARD, // This is for forwarding this contract to another contract and submitting all control to that control (daily limit would still be in effect)\n        RECOVER_SELECTED_TOKENS,\n        BUY_DOMAIN,\n        COMMAND, // command a backlinked wallet to perform an operation\n        BACKLINK_ADD, // backlink a 1wallet\n        BACKLINK_DELETE, // remove backlink of a backlinked 1wallet\n        BACKLINK_OVERRIDE, // override the list of backlinked 1wallet\n        RENEW_DOMAIN,\n        TRANSFER_DOMAIN,\n        RECLAIM_REVERSE_DOMAIN,\n        RECLAIM_DOMAIN_FROM_BACKLINK,\n        SIGN, // produce signature verifiable by eip-1271\n        REVOKE, // revoke a signature\n        CALL, // call arbitrary external contract function and optionally send funds to that function, or making multiple calls in one go\n        BATCH\n    }\n    enum TokenType{\n        ERC20, ERC721, ERC1155, NONE\n    }\n}\n\n",
+  "sourceMap": "64:1163:13:-:0;;;;;;;;;;;;;;;-1:-1:-1;;;64:1163:13;;;;;;;;;;;;;;;;;",
+  "deployedSourceMap": "64:1163:13:-:0;;;;;;;;",
+  "source": "// SPDX-License-Identifier: Apache-2.0\npragma solidity ^0.8.4;\n\nlibrary Enums {\n    enum OperationType {\n        TRACK, UNTRACK, TRANSFER_TOKEN, OVERRIDE_TRACK, TRANSFER, SET_RECOVERY_ADDRESS, RECOVER,\n        DISPLACE, // reserved, not implemented yet. This is for replacing the root and set up new parameters (t0, lifespan)\n        FORWARD, // This is for forwarding this contract to another contract and submitting all control to that control (daily limit would still be in effect)\n        RECOVER_SELECTED_TOKENS,\n        BUY_DOMAIN,\n        COMMAND, // command a backlinked wallet to perform an operation\n        BACKLINK_ADD, // backlink a 1wallet\n        BACKLINK_DELETE, // remove backlink of a backlinked 1wallet\n        BACKLINK_OVERRIDE, // override the list of backlinked 1wallet\n        RENEW_DOMAIN,\n        TRANSFER_DOMAIN,\n        RECLAIM_REVERSE_DOMAIN,\n        RECLAIM_DOMAIN_FROM_BACKLINK,\n        SIGN, // produce signature verifiable by eip-1271\n        REVOKE, // revoke a signature\n        CALL, // call arbitrary external contract function and optionally send funds to that function, or making multiple calls in one go\n        BATCH\n    }\n    enum TokenType{\n        ERC20, ERC721, ERC1155, NONE\n    }\n}\n\n",
   "sourcePath": "/Users/polymorpher/git/one-wallet/code/contracts/Enums.sol",
   "ast": {
     "absolutePath": "project:/contracts/Enums.sol",
@@ -102,121 +102,121 @@
               },
               {
                 "id": 2462,
-                "name": "REPLACE",
-                "nameLocation": "210:7:13",
+                "name": "DISPLACE",
+                "nameLocation": "210:8:13",
                 "nodeType": "EnumValue",
-                "src": "210:7:13"
+                "src": "210:8:13"
               },
               {
                 "id": 2463,
                 "name": "FORWARD",
-                "nameLocation": "333:7:13",
+                "nameLocation": "334:7:13",
                 "nodeType": "EnumValue",
-                "src": "333:7:13"
+                "src": "334:7:13"
               },
               {
                 "id": 2464,
                 "name": "RECOVER_SELECTED_TOKENS",
-                "nameLocation": "492:23:13",
+                "nameLocation": "493:23:13",
                 "nodeType": "EnumValue",
-                "src": "492:23:13"
+                "src": "493:23:13"
               },
               {
                 "id": 2465,
                 "name": "BUY_DOMAIN",
-                "nameLocation": "525:10:13",
+                "nameLocation": "526:10:13",
                 "nodeType": "EnumValue",
-                "src": "525:10:13"
+                "src": "526:10:13"
               },
               {
                 "id": 2466,
                 "name": "COMMAND",
-                "nameLocation": "545:7:13",
+                "nameLocation": "546:7:13",
                 "nodeType": "EnumValue",
-                "src": "545:7:13"
+                "src": "546:7:13"
               },
               {
                 "id": 2467,
                 "name": "BACKLINK_ADD",
-                "nameLocation": "617:12:13",
+                "nameLocation": "618:12:13",
                 "nodeType": "EnumValue",
-                "src": "617:12:13"
+                "src": "618:12:13"
               },
               {
                 "id": 2468,
                 "name": "BACKLINK_DELETE",
-                "nameLocation": "661:15:13",
+                "nameLocation": "662:15:13",
                 "nodeType": "EnumValue",
-                "src": "661:15:13"
+                "src": "662:15:13"
               },
               {
                 "id": 2469,
                 "name": "BACKLINK_OVERRIDE",
-                "nameLocation": "729:17:13",
+                "nameLocation": "730:17:13",
                 "nodeType": "EnumValue",
-                "src": "729:17:13"
+                "src": "730:17:13"
               },
               {
                 "id": 2470,
                 "name": "RENEW_DOMAIN",
-                "nameLocation": "799:12:13",
+                "nameLocation": "800:12:13",
                 "nodeType": "EnumValue",
-                "src": "799:12:13"
+                "src": "800:12:13"
               },
               {
                 "id": 2471,
                 "name": "TRANSFER_DOMAIN",
-                "nameLocation": "821:15:13",
+                "nameLocation": "822:15:13",
                 "nodeType": "EnumValue",
-                "src": "821:15:13"
+                "src": "822:15:13"
               },
               {
                 "id": 2472,
                 "name": "RECLAIM_REVERSE_DOMAIN",
-                "nameLocation": "846:22:13",
+                "nameLocation": "847:22:13",
                 "nodeType": "EnumValue",
-                "src": "846:22:13"
+                "src": "847:22:13"
               },
               {
                 "id": 2473,
                 "name": "RECLAIM_DOMAIN_FROM_BACKLINK",
-                "nameLocation": "878:28:13",
+                "nameLocation": "879:28:13",
                 "nodeType": "EnumValue",
-                "src": "878:28:13"
+                "src": "879:28:13"
               },
               {
                 "id": 2474,
                 "name": "SIGN",
-                "nameLocation": "916:4:13",
+                "nameLocation": "917:4:13",
                 "nodeType": "EnumValue",
-                "src": "916:4:13"
+                "src": "917:4:13"
               },
               {
                 "id": 2475,
                 "name": "REVOKE",
-                "nameLocation": "974:6:13",
+                "nameLocation": "975:6:13",
                 "nodeType": "EnumValue",
-                "src": "974:6:13"
+                "src": "975:6:13"
               },
               {
                 "id": 2476,
                 "name": "CALL",
-                "nameLocation": "1012:4:13",
+                "nameLocation": "1013:4:13",
                 "nodeType": "EnumValue",
-                "src": "1012:4:13"
+                "src": "1013:4:13"
               },
               {
                 "id": 2477,
                 "name": "BATCH",
-                "nameLocation": "1150:5:13",
+                "nameLocation": "1151:5:13",
                 "nodeType": "EnumValue",
-                "src": "1150:5:13"
+                "src": "1151:5:13"
               }
             ],
             "name": "OperationType",
             "nameLocation": "89:13:13",
             "nodeType": "EnumDefinition",
-            "src": "84:1077:13"
+            "src": "84:1078:13"
           },
           {
             "canonicalName": "Enums.TokenType",
@@ -225,44 +225,44 @@
               {
                 "id": 2479,
                 "name": "ERC20",
-                "nameLocation": "1190:5:13",
+                "nameLocation": "1191:5:13",
                 "nodeType": "EnumValue",
-                "src": "1190:5:13"
+                "src": "1191:5:13"
               },
               {
                 "id": 2480,
                 "name": "ERC721",
-                "nameLocation": "1197:6:13",
+                "nameLocation": "1198:6:13",
                 "nodeType": "EnumValue",
-                "src": "1197:6:13"
+                "src": "1198:6:13"
               },
               {
                 "id": 2481,
                 "name": "ERC1155",
-                "nameLocation": "1205:7:13",
+                "nameLocation": "1206:7:13",
                 "nodeType": "EnumValue",
-                "src": "1205:7:13"
+                "src": "1206:7:13"
               },
               {
                 "id": 2482,
                 "name": "NONE",
-                "nameLocation": "1214:4:13",
+                "nameLocation": "1215:4:13",
                 "nodeType": "EnumValue",
-                "src": "1214:4:13"
+                "src": "1215:4:13"
               }
             ],
             "name": "TokenType",
-            "nameLocation": "1171:9:13",
+            "nameLocation": "1172:9:13",
             "nodeType": "EnumDefinition",
-            "src": "1166:58:13"
+            "src": "1167:58:13"
           }
         ],
         "scope": 2485,
-        "src": "64:1162:13",
+        "src": "64:1163:13",
         "usedErrors": []
       }
     ],
-    "src": "39:1189:13"
+    "src": "39:1190:13"
   },
   "legacyAST": {
     "absolutePath": "project:/contracts/Enums.sol",
@@ -355,121 +355,121 @@
               },
               {
                 "id": 2462,
-                "name": "REPLACE",
-                "nameLocation": "210:7:13",
+                "name": "DISPLACE",
+                "nameLocation": "210:8:13",
                 "nodeType": "EnumValue",
-                "src": "210:7:13"
+                "src": "210:8:13"
               },
               {
                 "id": 2463,
                 "name": "FORWARD",
-                "nameLocation": "333:7:13",
+                "nameLocation": "334:7:13",
                 "nodeType": "EnumValue",
-                "src": "333:7:13"
+                "src": "334:7:13"
               },
               {
                 "id": 2464,
                 "name": "RECOVER_SELECTED_TOKENS",
-                "nameLocation": "492:23:13",
+                "nameLocation": "493:23:13",
                 "nodeType": "EnumValue",
-                "src": "492:23:13"
+                "src": "493:23:13"
               },
               {
                 "id": 2465,
                 "name": "BUY_DOMAIN",
-                "nameLocation": "525:10:13",
+                "nameLocation": "526:10:13",
                 "nodeType": "EnumValue",
-                "src": "525:10:13"
+                "src": "526:10:13"
               },
               {
                 "id": 2466,
                 "name": "COMMAND",
-                "nameLocation": "545:7:13",
+                "nameLocation": "546:7:13",
                 "nodeType": "EnumValue",
-                "src": "545:7:13"
+                "src": "546:7:13"
               },
               {
                 "id": 2467,
                 "name": "BACKLINK_ADD",
-                "nameLocation": "617:12:13",
+                "nameLocation": "618:12:13",
                 "nodeType": "EnumValue",
-                "src": "617:12:13"
+                "src": "618:12:13"
               },
               {
                 "id": 2468,
                 "name": "BACKLINK_DELETE",
-                "nameLocation": "661:15:13",
+                "nameLocation": "662:15:13",
                 "nodeType": "EnumValue",
-                "src": "661:15:13"
+                "src": "662:15:13"
               },
               {
                 "id": 2469,
                 "name": "BACKLINK_OVERRIDE",
-                "nameLocation": "729:17:13",
+                "nameLocation": "730:17:13",
                 "nodeType": "EnumValue",
-                "src": "729:17:13"
+                "src": "730:17:13"
               },
               {
                 "id": 2470,
                 "name": "RENEW_DOMAIN",
-                "nameLocation": "799:12:13",
+                "nameLocation": "800:12:13",
                 "nodeType": "EnumValue",
-                "src": "799:12:13"
+                "src": "800:12:13"
               },
               {
                 "id": 2471,
                 "name": "TRANSFER_DOMAIN",
-                "nameLocation": "821:15:13",
+                "nameLocation": "822:15:13",
                 "nodeType": "EnumValue",
-                "src": "821:15:13"
+                "src": "822:15:13"
               },
               {
                 "id": 2472,
                 "name": "RECLAIM_REVERSE_DOMAIN",
-                "nameLocation": "846:22:13",
+                "nameLocation": "847:22:13",
                 "nodeType": "EnumValue",
-                "src": "846:22:13"
+                "src": "847:22:13"
               },
               {
                 "id": 2473,
                 "name": "RECLAIM_DOMAIN_FROM_BACKLINK",
-                "nameLocation": "878:28:13",
+                "nameLocation": "879:28:13",
                 "nodeType": "EnumValue",
-                "src": "878:28:13"
+                "src": "879:28:13"
               },
               {
                 "id": 2474,
                 "name": "SIGN",
-                "nameLocation": "916:4:13",
+                "nameLocation": "917:4:13",
                 "nodeType": "EnumValue",
-                "src": "916:4:13"
+                "src": "917:4:13"
               },
               {
                 "id": 2475,
                 "name": "REVOKE",
-                "nameLocation": "974:6:13",
+                "nameLocation": "975:6:13",
                 "nodeType": "EnumValue",
-                "src": "974:6:13"
+                "src": "975:6:13"
               },
               {
                 "id": 2476,
                 "name": "CALL",
-                "nameLocation": "1012:4:13",
+                "nameLocation": "1013:4:13",
                 "nodeType": "EnumValue",
-                "src": "1012:4:13"
+                "src": "1013:4:13"
               },
               {
                 "id": 2477,
                 "name": "BATCH",
-                "nameLocation": "1150:5:13",
+                "nameLocation": "1151:5:13",
                 "nodeType": "EnumValue",
-                "src": "1150:5:13"
+                "src": "1151:5:13"
               }
             ],
             "name": "OperationType",
             "nameLocation": "89:13:13",
             "nodeType": "EnumDefinition",
-            "src": "84:1077:13"
+            "src": "84:1078:13"
           },
           {
             "canonicalName": "Enums.TokenType",
@@ -478,44 +478,44 @@
               {
                 "id": 2479,
                 "name": "ERC20",
-                "nameLocation": "1190:5:13",
+                "nameLocation": "1191:5:13",
                 "nodeType": "EnumValue",
-                "src": "1190:5:13"
+                "src": "1191:5:13"
               },
               {
                 "id": 2480,
                 "name": "ERC721",
-                "nameLocation": "1197:6:13",
+                "nameLocation": "1198:6:13",
                 "nodeType": "EnumValue",
-                "src": "1197:6:13"
+                "src": "1198:6:13"
               },
               {
                 "id": 2481,
                 "name": "ERC1155",
-                "nameLocation": "1205:7:13",
+                "nameLocation": "1206:7:13",
                 "nodeType": "EnumValue",
-                "src": "1205:7:13"
+                "src": "1206:7:13"
               },
               {
                 "id": 2482,
                 "name": "NONE",
-                "nameLocation": "1214:4:13",
+                "nameLocation": "1215:4:13",
                 "nodeType": "EnumValue",
-                "src": "1214:4:13"
+                "src": "1215:4:13"
               }
             ],
             "name": "TokenType",
-            "nameLocation": "1171:9:13",
+            "nameLocation": "1172:9:13",
             "nodeType": "EnumDefinition",
-            "src": "1166:58:13"
+            "src": "1167:58:13"
           }
         ],
         "scope": 2485,
-        "src": "64:1162:13",
+        "src": "64:1163:13",
         "usedErrors": []
       }
     ],
-    "src": "39:1189:13"
+    "src": "39:1190:13"
   },
   "compiler": {
     "name": "solc",
@@ -523,7 +523,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.2",
-  "updatedAt": "2021-11-02T01:45:28.995Z",
+  "updatedAt": "2021-11-03T04:41:24.549Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
