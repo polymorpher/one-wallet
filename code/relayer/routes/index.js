@@ -63,6 +63,7 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
   if (config.debug || config.verbose) {
     console.log(`[/new] `, { core: { root, height, interval, t0, lifespan, slotSize }, spending: { spendingLimit, spendingInterval }, lastResortAddress, backlinks, oldCores })
   }
+
   if (!checkParams({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, spendingInterval, backlinks, oldCores }, res)) {
     return
   }
@@ -70,7 +71,12 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
     // since we renamed dailyLimit to spendingLimit we must make sure client is not using the old name / format
     return res.status(StatusCodes.BAD_REQUEST).json({ error: 'spendingLimit cannot be 0' })
   }
-
+  const oldCoreTransformed = []
+  for (let oldCore of oldCores) {
+    const { root: oldRoot, height: oldHeight, interval: oldInterval, t0: oldT0, lifespan: oldLifespan, slotSize: oldSlotSize } = oldCore
+    oldCoreTransformed.push([oldRoot, oldHeight, oldInterval, oldT0, oldLifespan, oldSlotSize])
+    // if(!root)
+  }
   // TODO parameter verification
   try {
     const wallet = await blockchain.getContract(req.network).new(
@@ -78,7 +84,7 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
       [ new BN(spendingLimit, 10), 0, 0, new BN(spendingInterval, 10) ],
       lastResortAddress,
       backlinks,
-      oldCores
+      oldCoreTransformed
     )
     console.log('/new', wallet)
     return res.json({ success: true, address: wallet.address })
