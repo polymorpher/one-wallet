@@ -116,7 +116,6 @@ const Show = () => {
         onTabChange={key => showTab(key)}
         wide
       >
-        <CheckRoots address={address} onClose={() => history.push(Paths.wallets)} />
         <Warnings address={address} />
         {activeTab === 'about' && <About address={address} />}
         {activeTab === 'coins' && <Balance address={address} />}
@@ -131,7 +130,7 @@ const Show = () => {
         {activeTab === 'sign' && <Sign address={address} headless />}
         <Upgrade address={address} />
         <CheckForwardState address={address} onClose={() => history.push(Paths.wallets)} />
-
+        <CheckRoots address={address} onClose={() => history.push(Paths.wallets)} />
       </AnimatedSection>
 
       <Send address={address} show={section === 'transfer'} onClose={showStartScreen} />
