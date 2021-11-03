@@ -202,6 +202,17 @@ const reducer = handleActions(
       }
     }),
 
+    [walletActions.userAcknowledgedNewRoot]: (state, action) => ({
+      ...state,
+      wallets: {
+        ...state.wallets,
+        [action.payload.address]: {
+          ...state.wallets[action.payload.address],
+          acknowledgedNewRoot: action.payload.root
+        }
+      }
+    }),
+
     [walletActions.setDev]: (state, action) => ({
       ...state,
       dev: action.payload

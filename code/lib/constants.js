@@ -21,7 +21,7 @@ module.exports = {
     TRANSFER: 4,
     SET_RECOVERY_ADDRESS: 5,
     RECOVER: 6,
-    REPLACE: 7,
+    DISPLACE: 7,
     FORWARD: 8,
     RECOVER_SELECTED_TOKENS: 9,
     BUY_DOMAIN: 10,
@@ -36,6 +36,7 @@ module.exports = {
     SIGN: 19,
     REVOKE: 20,
     CALL: 21,
+    BATCH: 22,
 
     0: 'TRACK',
     1: 'UNTRACK',
@@ -44,7 +45,7 @@ module.exports = {
     4: 'TRANSFER',
     5: 'SET_RECOVERY_ADDRESS',
     6: 'RECOVER',
-    7: 'REPLACE',
+    7: 'DISPLACE',
     8: 'UPGRADE',
     9: 'RECOVER_SELECTED_TOKENS',
     10: 'BUY_DOMAIN',
@@ -58,12 +59,14 @@ module.exports = {
     18: 'RECLAIM_DOMAIN_FROM_BACKLINK',
     19: 'SIGN',
     20: 'REVOKE',
-    21: 'CALL'
+    21: 'CALL',
+    22: 'BATCH'
   },
   EmptyAddress: '0x0000000000000000000000000000000000000000',
   EmptyBech32Address: 'one1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqquzw7vz',
-  TreasuryAddress: '0x02F2cF45DD4bAcbA091D78502Dba3B2F431a54D3',
-  MajorVersion: 13,
+  TreasuryAddress: '0x7534978F9fa903150eD429C486D1f42B7fDB7a61',
+  OldTreasuryAddresses: ['0x02F2cF45DD4bAcbA091D78502Dba3B2F431a54D3'],
+  MajorVersion: 14,
   MinorVersion: 1,
   DefaultSpendingInterval: 86400, // 3600 * 24
   Domain: {
@@ -79,6 +82,9 @@ module.exports = {
   },
   NullProof: {
     address: '0x0000000000000000000000000000000000000000', neighbors: [], index: 0, eotp: '0x0000000000000000000000000000000000000000000000000000000000000000',
+  },
+  get NullOperationParams () {
+    return { operationType: this.OperationType.TRANSFER, tokenType: this.TokenType.NONE, contractAddress: this.EmptyAddress, tokenId: 0, dest: this.EmptyAddress, amount: 0 }
   },
   Sushi: {
     ROUTER: '0x1b02da8cb0d097eb8d57a175b88c7d8b47997506',

@@ -4,6 +4,7 @@ import { isInteger, values } from 'lodash'
 import ONEUtil from '../../lib/util'
 import ONEConstants from '../../lib/constants'
 import { AddressError } from './constants/errors'
+import WalletConstants from './constants/wallet'
 import BN from 'bn.js'
 import config from './config'
 
@@ -113,8 +114,18 @@ const util = {
     return !address || address === ONEConstants.EmptyAddress || address === ONEConstants.EmptyBech32Address
   },
 
+  isDefaultRecoveryAddress: address => {
+    return address === ONEConstants.TreasuryAddress || ONEConstants.OldTreasuryAddresses.includes(address)
+  },
+
   isRecoveryAddressSet: address => {
-    return !exports.default.isEmptyAddress(address) && address !== ONEConstants.TreasuryAddress
+    return !exports.default.isEmptyAddress(address) && !exports.default.isDefaultRecoveryAddress(address)
+  },
+
+  canRenew: ({ effectiveTime, duration }) => {
+    // return duration + effectiveTime - Date.now() < WalletConstants.expiringSoonThreshold
+    return Date.now() - effectiveTime > 3600 * 24 * 1000 * 14 // for testing
+    // return Date.now() - effectiveTime > 5 * 60 * 1000 // for testing
   },
 
   isValidWallet: w => {

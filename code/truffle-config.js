@@ -19,10 +19,8 @@ const HarmonyProvider = ({ key, url, chainId, gasLimit, gasPrice }) => {
 const BuildProvider = (conf, useTruffle) => {
   if (useTruffle) {
     return new HDWalletProvider({
-      privateKeys: [conf.key],
-      providerOrUrl: conf.url,
-      shareNonce: true,
-      derivationPath: "m/44'/1'/0'/0/" })
+      mnemonic: conf.mnemonic, privateKeys: !conf.mnemonic && [conf.key], providerOrUrl: conf.url, sharedNonce: false
+    })
   } else {
     return HarmonyProvider({ key: conf.key,
       url: conf.url,
@@ -38,7 +36,9 @@ module.exports = {
   // contracts_directory: '@ensdomains/subdomain-registrar-core/contracts/interfaces/IRegistrar.sol',
   networks: {
     dev: {
-      network_id: '*',
+      // host: '127.0.0.1',
+      // port: 7545,
+      // network_id: '*',
       gas: config.gasLimit,
       gasPrice: config.gasPrice,
       provider: () => config.eth.ganache && BuildProvider(config.eth.ganache, true)

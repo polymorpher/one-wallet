@@ -63,7 +63,7 @@ const WalletCard = ({ wallet }) => {
         {
           (walletOutdated || util.isEmptyAddress(wallet.lastResortAddress)) &&
             <Tag color='warning' style={{ position: 'absolute', bottom: isMobile ? 32 : 16, right: 16 }}>
-              needs attention
+              outdated
             </Tag>
         }
         {

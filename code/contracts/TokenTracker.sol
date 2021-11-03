@@ -4,7 +4,7 @@ import "./Enums.sol";
 
 library TokenTracker {
     struct TrackedToken {
-        TokenType tokenType;
+        Enums.TokenType tokenType;
         address contractAddress;
         uint256 tokenId; // only valid for ERC721 and ERC1155
     }
@@ -13,11 +13,11 @@ library TokenTracker {
         TrackedToken[] trackedTokens;
         mapping(bytes32 => uint256[]) trackedTokenPositions;
     }
-    event TokenTracked(TokenType tokenType, address contractAddress, uint256 tokenId);
-    event TokenUntracked(TokenType tokenType, address contractAddress, uint256 tokenId);
-    event TokenNotFound(TokenType tokenType, address contractAddress, uint256 tokenId);
+    event TokenTracked(Enums.TokenType tokenType, address contractAddress, uint256 tokenId);
+    event TokenUntracked(Enums.TokenType tokenType, address contractAddress, uint256 tokenId);
+    event TokenNotFound(Enums.TokenType tokenType, address contractAddress, uint256 tokenId);
 
-    function trackToken(TokenTrackerState storage state, TokenType tokenType, address contractAddress, uint256 tokenId) public {
+    function trackToken(TokenTrackerState storage state, Enums.TokenType tokenType, address contractAddress, uint256 tokenId) public {
         bytes32 key = keccak256(bytes.concat(bytes32(uint256(tokenType)), bytes32(bytes20(contractAddress)), bytes32(tokenId)));
         if (state.trackedTokenPositions[key].length > 0) {
             for (uint32 i = 0; i < state.trackedTokenPositions[key].length; i++) {
@@ -34,7 +34,7 @@ library TokenTracker {
         emit TokenTracked(tokenType, contractAddress, tokenId);
     }
 
-    function untrackToken(TokenTrackerState storage state, TokenType tokenType, address contractAddress, uint256 tokenId) public {
+    function untrackToken(TokenTrackerState storage state, Enums.TokenType tokenType, address contractAddress, uint256 tokenId) public {
         bytes32 key = keccak256(bytes.concat(bytes32(uint256(tokenType)), bytes32(bytes20(contractAddress)), bytes32(tokenId)));
         if (state.trackedTokenPositions[key].length == 0) {
             return;
@@ -64,7 +64,7 @@ library TokenTracker {
 
     function overrideTrack(TokenTrackerState storage state, TrackedToken[] memory newTrackedTokens) public {
         for (uint32 i = 0; i < state.trackedTokens.length; i++) {
-            TokenType tokenType = state.trackedTokens[i].tokenType;
+            Enums.TokenType tokenType = state.trackedTokens[i].tokenType;
             address contractAddress = state.trackedTokens[i].contractAddress;
             uint256 tokenId = state.trackedTokens[i].tokenId;
             bytes32 key = keccak256(bytes.concat(bytes32(uint256(tokenType)), bytes32(bytes20(contractAddress)), bytes32(tokenId)));
@@ -72,7 +72,7 @@ library TokenTracker {
         }
         delete state.trackedTokens;
         for (uint32 i = 0; i < newTrackedTokens.length; i++) {
-            TokenType tokenType = newTrackedTokens[i].tokenType;
+            Enums.TokenType tokenType = newTrackedTokens[i].tokenType;
             address contractAddress = newTrackedTokens[i].contractAddress;
             uint256 tokenId = newTrackedTokens[i].tokenId;
             bytes32 key = keccak256(bytes.concat(bytes32(uint256(tokenType)), bytes32(bytes20(contractAddress)), bytes32(tokenId)));
@@ -85,7 +85,7 @@ library TokenTracker {
         (uint256[] memory tokenTypes, address[] memory contractAddresses, uint256[] memory tokenIds) = abi.decode(data, (uint256[], address[], uint256[]));
         TrackedToken[] memory newTrackedTokens = new TrackedToken[](tokenTypes.length);
         for (uint32 i = 0; i < tokenTypes.length; i++) {
-            newTrackedTokens[i] = TrackedToken(TokenType(tokenTypes[i]), contractAddresses[i], tokenIds[i]);
+            newTrackedTokens[i] = TrackedToken(Enums.TokenType(tokenTypes[i]), contractAddresses[i], tokenIds[i]);
         }
         overrideTrack(state, newTrackedTokens);
     }
@@ -93,14 +93,14 @@ library TokenTracker {
     function multiTrack(TokenTrackerState storage state, bytes calldata data) public {
         (uint256[] memory tokenTypes, address[] memory contractAddresses, uint256[] memory tokenIds) = abi.decode(data, (uint256[], address[], uint256[]));
         for (uint32 i = 0; i < tokenTypes.length; i++) {
-            trackToken(state, TokenType(tokenTypes[i]), contractAddresses[i], tokenIds[i]);
+            trackToken(state, Enums.TokenType(tokenTypes[i]), contractAddresses[i], tokenIds[i]);
         }
     }
 
     function multiUntrack(TokenTrackerState storage state, bytes calldata data) public {
         (uint256[] memory tokenTypes, address[] memory contractAddresses, uint256[] memory tokenIds) = abi.decode(data, (uint256[], address[], uint256[]));
         for (uint32 i = 0; i < tokenTypes.length; i++) {
-            untrackToken(state, TokenType(tokenTypes[i]), contractAddresses[i], tokenIds[i]);
+            untrackToken(state, Enums.TokenType(tokenTypes[i]), contractAddresses[i], tokenIds[i]);
         }
     }
 }

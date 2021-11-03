@@ -1,6 +1,6 @@
 {
   "name": "one-wallet-relayer",
-  "version": "0.13.1",
+  "version": "0.14.1",
   "private": true,
   "main": "app.js",
   "scripts": {
@@ -10,13 +10,14 @@
   "dependencies": {
     "@harmony-js/core": "^0.1.57",
     "@truffle/contract": "4.3.30",
-    "@truffle/hdwallet-provider": "^1.4.0",
+    "@truffle/hdwallet-provider": "^1.5.1",
     "axios": "^0.21.1",
     "bn.js": "^5.2.0",
     "body-parser": "^1.19.0",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.5",
     "dotenv": "^10.0.0",
+    "exponential-backoff": "^3.1.0",
     "express": "^4.17.1",
     "express-fingerprint": "^1.2.2",
     "express-rate-limit": "^5.3.0",

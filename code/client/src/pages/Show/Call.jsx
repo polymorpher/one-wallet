@@ -168,6 +168,7 @@ const Call = ({
             </Col>
             <Col sm={16} flex={1}>
               <InputBox
+                $decimal
                 margin='auto'
                 width='100%'
                 value={inputAmount}

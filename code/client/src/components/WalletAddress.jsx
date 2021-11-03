@@ -64,8 +64,8 @@ const WalletAddress = ({ showLabel, labelOverride, address, shorten, onToggle, a
 
   const getLabel = (address) => {
     const normalized = util.safeNormalizedAddress(address)
-    if (normalized === WalletConstants.oneWalletTreasury.address) {
-      return WalletConstants.oneWalletTreasury.label
+    if (util.isDefaultRecoveryAddress(normalized)) {
+      return WalletConstants.defaultRecoveryAddressLabel
     }
     return knownAddresses[normalized]?.label
   }

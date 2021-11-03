@@ -47,3 +47,5 @@ event BalanceRetrievalError(TokenType tokenType, address contractAddress, uint25
 event TokenTracked(TokenType tokenType, address contractAddress, uint256 tokenId);
 event TokenUntracked(TokenType tokenType, address contractAddress, uint256 tokenId);
 event TokenNotFound(TokenType tokenType, address contractAddress, uint256 tokenId);
+event CoreDisplaced(tuple(bytes32,uint8,uint8,uint32,uint32,uint8) oldCore, tuple(bytes32,uint8,uint8,uint32,uint32,uint8) newCore);
+event CoreDisplacementFailed(tuple(bytes32,uint8,uint8,uint32,uint32,uint8) newCore, string reason);

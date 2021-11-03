@@ -1,6 +1,6 @@
 const axios = require('axios')
 const config = require('../config/provider').getConfig()
-const { isEqual } = require('lodash')
+const { isEqual, range } = require('lodash')
 const contract = require('@truffle/contract')
 const { TruffleProvider } = require('@harmony-js/core')
 const Web3 = require('web3')
@@ -188,6 +188,29 @@ const api = {
     }
   },
   blockchain: {
+    getOldInfos: async ({ address, raw }) => {
+      const c = await one.at(address)
+      const res = await c.getOldInfos()
+      const ret = []
+      for (let info of res) {
+        const [root, height, interval, t0, lifespan, maxOperationsPerInterval] = range(6).map(k => info[k])
+        const intervalMs = new BN(interval).toNumber() * 1000
+        ret.push(raw ? {
+          root,
+          height: new BN(height).toNumber(),
+          interval: new BN(interval).toNumber(),
+          t0: new BN(t0).toNumber(),
+          lifespan: new BN(lifespan).toNumber(),
+          maxOperationsPerInterval: new BN(maxOperationsPerInterval).toNumber(),
+        } : {
+          root: root.slice(2),
+          effectiveTime: new BN(t0).toNumber() * intervalMs,
+          duration: new BN(lifespan).toNumber() * intervalMs,
+          slotSize: new BN(maxOperationsPerInterval).toNumber(),
+        })
+      }
+      return ret
+    },
     getLastOperationTime: async ({ address }) => {
       const c = await one.at(address)
       const t = await c.lastOperationTime() // BN but convertible to uint32
@@ -511,8 +534,8 @@ const api = {
   },
 
   relayer: {
-    create: async ({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, spendingInterval, backlinks = [] }) => {
-      const { data } = await base.post('/new', { root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, spendingInterval, backlinks })
+    create: async ({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, spendingInterval, backlinks = [], oldCores = [] }) => {
+      const { data } = await base.post('/new', { root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, spendingInterval, backlinks, oldCores })
       return data
     },
     commit: async ({ address, hash, paramsHash, verificationHash }) => {

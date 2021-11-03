@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { useHistory } from 'react-router'
 import { Heading, Hint } from '../components/Text'
 import AnimatedSection from '../components/AnimatedSection'
-import { Space, Steps, Progress, Timeline } from 'antd'
+import { Space, Progress, Timeline } from 'antd'
 import message from '../message'
-import { MigrationPayload } from '../proto/oauthMigration'
 import api from '../api'
 import ONEUtil from '../../../lib/util'
 import WalletConstants from '../constants/wallet'
@@ -17,55 +16,8 @@ import Paths from '../constants/paths'
 import * as Sentry from '@sentry/browser'
 import AddressInput from '../components/AddressInput'
 import QrCodeScanner from '../components/QrCodeScanner'
-
-const { Step } = Steps
-
-const OAUTH_OTP_PATTERN = /otpauth:\/\/totp\/(.+)(%3A|:)(.+)\?.+/
-const parseOAuthOTP = (url) => {
-  const m = url.match(OAUTH_OTP_PATTERN)
-  if (!m) {
-    message.error('Invalid account transfer QR code')
-    return null
-  }
-  try {
-    const parsedUrl = new URL(url)
-    const secret = parsedUrl.searchParams.get('secret')
-    const issuer2 = parsedUrl.searchParams.get('issuer')
-    const issuer = m[1] || issuer2
-    if (issuer !== 'ONE Wallet' && issuer !== 'Harmony') {
-      message.error('Invalid issuer of the recovery QR code. Must be either `ONE Wallet` or `Harmony`')
-      return null
-    }
-    return { name: decodeURIComponent(m[3]), secret }
-  } catch (ex) {
-    message.error('Unable to parse URL contained in QR code')
-    console.error(ex)
-    return null
-  }
-}
-const parseMigrationPayload = url => {
-  const data = new URL(url).searchParams.get('data')
-  const decoded = MigrationPayload.decode(Buffer.from(data, 'base64'))
-  // console.log(decoded)
-  const params = decoded.otpParameters
-  const filteredParams = params.filter(e => e.issuer === 'ONE Wallet' || e.issuer === 'Harmony')
-  if (filteredParams.length > 2) {
-    message.error('You selected more than one authenticator entry to export. Please reselect on Google Authenticator')
-    return null
-  }
-  let secret2
-  if (filteredParams.length === 2) {
-    const names = filteredParams.map(e => e.name.split('-')[0].trim()).map(e => e.split('(')[0].trim())
-    if (names[0] !== names[1]) {
-      message.error('You selected two wallets with different names. If you want to select two entries belonging to the same wallet, make sure they have the same name and the second one has "- 2nd" in the end')
-      return undefined
-    }
-    secret2 = filteredParams[1]?.secret
-  }
-  const secret = filteredParams[0]?.secret
-  const name = filteredParams[0]?.name
-  return { secret, secret2, name }
-}
+import ScanGASteps from '../components/ScanGASteps'
+import { parseOAuthOTP, parseMigrationPayload } from '../components/OtpTools'
 
 const Restore = () => {
   const history = useHistory()
@@ -271,7 +223,7 @@ const Restore = () => {
 
   return (
     <>
-      <AnimatedSection show={section === 1} style={{ maxWidth: 640 }}>
+      <AnimatedSection show={section === 1}>
         <Space direction='vertical' size='large'>
           <Heading>What is the address of the wallet?</Heading>
           <AddressInput
@@ -281,16 +233,12 @@ const Restore = () => {
           <Hint>Next, we will ask for your permission to use your computer's camera. We need that to scan the QR code exported from your Google Authenticator.</Hint>
         </Space>
       </AnimatedSection>
-      <AnimatedSection show={section === 2} style={{ maxWidth: 640 }}>
+      <AnimatedSection show={section === 2}>
         <Space direction='vertical' size='large'>
           <Heading>Restore your wallet from Google Authenticator</Heading>
           {!secret &&
             <>
-              <Steps current={0} direction='vertical'>
-                <Step title='Open Google Authenticator' description='Go to Google Authenticator, tap ... -> Export accounts on the top right corner' />
-                <Step title='Select Your Wallet' description='Make sure your wallet is selected. Unselect other accounts.' />
-                <Step title='Scan the QR code' description='Scan the exported QR code on your Google Authenticator app' />
-              </Steps>
+              <ScanGASteps />
               <QrCodeScanner shouldInit={section === 2} onScan={onScan} />
             </>}
           {secret &&

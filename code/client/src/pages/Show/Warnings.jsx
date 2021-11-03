@@ -39,7 +39,7 @@ const Warnings = ({ address }) => {
             <br />
           </Warning>
       }
-      {walletOutdated && <Warning>Your wallet is too outdated. Please create a new wallet and move your friends.</Warning>}
+      {walletOutdated && <Warning>Your 1wallet is terribly outdated. Please create a new wallet and move your assets.</Warning>}
       {util.isEmptyAddress(wallet.lastResortAddress) && <Warning>You haven't set your recovery address. Please do it as soon as possible.</Warning>}
       {ONEUtil.getVersion(wallet) === '8.0' && !wallet.doubleOtp &&
         <Warning>

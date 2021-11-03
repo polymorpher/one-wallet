@@ -49,7 +49,7 @@ const mobileTabBar = (props) => {
   )
 }
 
-const AnimatedSection = ({ show = true, children, style, ...params }) => {
+const AnimatedSection = ({ show = true, wide, children, style, ...params }) => {
   const { isMobile } = useWindowDimensions()
   return (
     <Transition in={show} timeout={300}>
@@ -69,6 +69,8 @@ const AnimatedSection = ({ show = true, children, style, ...params }) => {
           }}
           style={{
             padding: isMobile ? 16 : 32,
+            maxWidth: wide ? 720 : 640,
+            minHeight: wide ? 320 : undefined,
             ...defaultStyle,
             ...transitionStyles[state],
             ...style

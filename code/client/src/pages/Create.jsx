@@ -36,6 +36,8 @@ import AddressInput from '../components/AddressInput'
 import WalletCreateProgress from '../components/WalletCreateProgress'
 import { TallRow } from '../components/Grid'
 import { FlashyButton } from '../components/Buttons'
+import { buildQRCodeComponent, getQRCodeUri, getSecondCodeName, OTPUriMode } from '../components/OtpTools'
+import { OtpSetup, TwoCodeOption } from '../components/OtpSetup'
 const { Text, Link } = Typography
 
 // const genName = () => uniqueNamesGenerator({
@@ -53,75 +55,12 @@ const genName = (existingNames) => {
   return name
 }
 
-const OTPUriMode = {
-  STANDARD: 0,
-  MIGRATION: 1,
-  TOTP: 2, // seems deprecated, should not use unless it is for testing
-}
-
-const getQRCodeUri = (otpSeed, otpDisplayName, mode = OTPUriMode.STANDARD) => {
-  if (mode === OTPUriMode.STANDARD) {
-    // otpauth://TYPE/LABEL?PARAMETERS
-    return `otpauth://totp/${otpDisplayName}?secret=${b32.encode(otpSeed)}&issuer=Harmony`
-  }
-  if (mode === OTPUriMode.MIGRATION) {
-    const payload = MigrationPayload.create({
-      otpParameters: [{
-        issuer: 'Harmony',
-        secret: otpSeed,
-        name: otpDisplayName,
-        algorithm: MigrationPayload.Algorithm.ALGORITHM_SHA1,
-        digits: MigrationPayload.DigitCount.DIGIT_COUNT_SIX,
-        type: MigrationPayload.OtpType.OTP_TYPE_TOTP,
-      }],
-      version: 1,
-      batchIndex: 0,
-      batchSize: 1,
-    })
-    const bytes = MigrationPayload.encode(payload).finish()
-    const b64 = Buffer.from(bytes).toString('base64')
-    // console.log({ payload, bytes, b64 })
-    return `otpauth-migration://offline?data=${encodeURIComponent(b64)}`
-  }
-  return null
-}
-
 const getGoogleAuthenticatorAppLink = (os) => {
   let link = 'https://apps.apple.com/us/app/google-authenticator/id388497605'
   if (os === OSType.Android) {
     link = 'https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2'
   }
   return <Link href={link} target='_blank' rel='noreferrer'>Google Authenticator</Link>
-}
-
-const getSecondCodeName = (name) => `${name} - 2nd`
-
-// not constructing qrCodeData on the fly (from seed) because generating a PNG takes noticeable amount of time. Caller needs to make sure qrCodeData is consistent with seed
-const buildQRCodeComponent = ({ seed, name, os, isMobile, qrCodeData }) => {
-  const image = (url) =>
-    <Image
-      src={qrCodeData}
-      preview={false}
-      width={isMobile ? 192 : 256}
-      style={isMobile && { border: '1px solid lightgrey', borderRadius: 8, boxShadow: '0px 0px 10px lightgrey' }}
-      onClick={url && (() => window.open(url, '_self').focus())}
-    />
-  let href
-  if (os === OSType.iOS) {
-    href = getQRCodeUri(seed, name, OTPUriMode.MIGRATION)
-  } else if (os === OSType.Android) {
-    href = getQRCodeUri(seed, name, OTPUriMode.STANDARD)
-  } else if (isMobile) {
-    // To test in more devices
-    href = getQRCodeUri(seed, name, OTPUriMode.MIGRATION)
-  }
-
-  return (
-    <Row justify='center'>
-      {isMobile && qrCodeData && image(href)}
-      {!isMobile && qrCodeData && image()}
-    </Row>
-  )
 }
 
 const sectionViews = {
@@ -150,18 +89,13 @@ const Create = ({ expertMode, showRecovery }) => {
   const [showRecoveryDetail, setShowRecoveryDetail] = useState(false)
 
   // Used for Recovery address setup. Only used when user does not choose a Recovery address.
-  const oneWalletTreasurySelectOption = {
-    value: WalletConstants.oneWalletTreasury.address,
-    label: `(${WalletConstants.oneWalletTreasury.label}) ${util.safeOneAddress(WalletConstants.oneWalletTreasury.address)}`
-  }
-
   // A valid wallet of user's wallets in the network can be used as default recovery wallet.
   // const defaultRecoveryWallet = Object.keys(wallets)
   //   .map((address) => ({ ...wallets[address], oneAddress: util.safeOneAddress(wallets[address].address) }))
   //   .find((wallet) => util.safeOneAddress(wallet.address) && wallet.network === network && !wallet.temp)
 
   // const defaultRecoveryAddress = defaultRecoveryWallet ? { value: defaultRecoveryWallet.oneAddress, label: `(${defaultRecoveryWallet.name}) ${defaultRecoveryWallet.oneAddress}` } : oneWalletTreasurySelectOption
-  const defaultRecoveryAddress = oneWalletTreasurySelectOption
+  const defaultRecoveryAddress = { value: ONEConstants.TreasuryAddress, label: WalletConstants.defaultRecoveryAddressLabel }
 
   const [lastResortAddress, setLastResortAddress] = useState(defaultRecoveryAddress)
   const [spendingLimit, setSpendingLimit] = useState(WalletConstants.defaultSpendingLimit) // ONEs, number
@@ -248,21 +182,31 @@ const Create = ({ expertMode, showRecovery }) => {
     }
   }, [section, worker, doubleOtp])
 
+  const enableExpertMode = (refresh) => {
+    if (refresh) {
+      window.location.href = Paths.create2
+      return
+    }
+    history.push(Paths.create2)
+    message.success('Expert mode unlocked')
+    setOtp('')
+  }
+  const disableExpertMode = () => {
+    history.push(Paths.create)
+    message.success('Expert mode disabled')
+    setOtp('')
+  }
   useEffect(() => {
     const settingUpSecondOtp = section === sectionViews.setupSecondOtp
     if (otp.length !== 6) {
       return
     }
     if (otp.toLowerCase() === '0x1337' || otp.toLowerCase() === 'expert') {
-      history.push(Paths.create2)
-      message.success('Expert mode unlocked')
-      setOtp('')
+      enableExpertMode()
       return
     }
     if (expertMode && (otp === '0x0000' || otp === 'normal')) {
-      history.push(Paths.create)
-      message.success('Expert mode disabled')
-      setOtp('')
+      disableExpertMode()
       return
     }
     const currentSeed = settingUpSecondOtp ? seed2 : seed
@@ -365,7 +309,7 @@ const Create = ({ expertMode, showRecovery }) => {
 
   return (
     <>
-      <AnimatedSection show={section === sectionViews.setupWalletDetails} style={{ maxWidth: 640 }}>
+      <AnimatedSection show={section === sectionViews.setupWalletDetails}>
         <Heading>What do you want to call your wallet?</Heading>
         <Hint>This is only stored on your computer to distinguish your wallets.</Hint>
         <Row align='middle' style={{ marginBottom: 32, marginTop: 16 }}>
@@ -392,44 +336,25 @@ const Create = ({ expertMode, showRecovery }) => {
             </Space>}
         </Space>
       </AnimatedSection>
-      <AnimatedSection show={section === sectionViews.setupOtp} style={{ maxWidth: 640 }}>
+      <AnimatedSection show={section === sectionViews.setupOtp}>
         <Row>
           <Space direction='vertical'>
             {/* <Heading>Now, scan the QR code with your Google Authenticator</Heading> */}
             <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
-            {!isMobile && <Hint>Scan the QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use, copy, or restore the wallet </Hint>}
-            {isMobile && <Hint>Tap QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use, copy, or restore the wallet</Hint>}
+            {!isMobile && <Hint>Scan the QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use the wallet </Hint>}
+            {isMobile && <Hint>Tap QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use the wallet</Hint>}
             {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData })}
           </Space>
         </Row>
         <Row style={{ marginTop: 16 }}>
           <Space direction='vertical' size='large' align='center' style={{ width: '100%' }}>
-            <Hint>Copy the 6-digit code from authenticator</Hint>
-            <Hint style={{ fontSize: isMobile ? 12 : undefined }}>
-              Code for <b>Harmony ({name})</b>
-            </Hint>
-            <OtpBox
-              shouldAutoFocus={!isMobile}
-              ref={otpRef}
-              value={otp}
-              onChange={setOtp}
-            />
-            {isMobile && <Button type='default' shape='round' icon={<SnippetsOutlined />} onClick={() => { navigator.clipboard.readText().then(t => setOtp(t)) }}>Paste from Clipboard</Button>}
-            {expertMode &&
-              <Checkbox onChange={() => setDoubleOtp(!doubleOtp)}>
-                <Space>
-                  <Hint style={{ fontSize: isMobile ? 12 : undefined }}>
-                    Use two codes to enhance security
-                  </Hint>
-                  <Tooltip title={<div>You will need to scan another QR-code on the next page. Each time you make a transaction, you will need to type in two 6-digit codes, which are shown simultaneously next to each other on your Google Authenticator.<br /><br />This is advisable if you intend to make larger transactions with this wallet</div>}>
-                    <QuestionCircleOutlined />
-                  </Tooltip>
-                </Space>
-              </Checkbox>}
+            <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={name} />
+            {expertMode && <TwoCodeOption isMobile={isMobile} setDoubleOtp={setDoubleOtp} doubleOtp={doubleOtp} />}
+            {expertMode && <Hint>You can adjust spending limit in the next step</Hint>}
           </Space>
         </Row>
       </AnimatedSection>
-      <AnimatedSection show={section === sectionViews.setupSecondOtp} style={{ maxWidth: 640 }}>
+      <AnimatedSection show={section === sectionViews.setupSecondOtp}>
         <Row>
           <Space direction='vertical'>
             <Heading>Create Your 1wallet (second code)</Heading>
@@ -438,19 +363,10 @@ const Create = ({ expertMode, showRecovery }) => {
           </Space>
         </Row>
         <Row>
-          <Space direction='vertical' size='large' align='center' style={{ width: '100%' }}>
-            <Hint>Copy the 6-digit code from authenticator</Hint>
-            <Hint style={{ fontSize: isMobile ? 12 : undefined }}>Code for <b>Harmony ({getSecondCodeName(name)})</b></Hint>
-            <OtpBox
-              ref={otpRef}
-              value={otp}
-              onChange={setOtp}
-            />
-            {isMobile && <Button type='default' shape='round' icon={<SnippetsOutlined />} onClick={() => { navigator.clipboard.readText().then(t => setOtp(t)) }}>Paste from Clipboard</Button>}
-          </Space>
+          <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={getSecondCodeName(name)} />
         </Row>
       </AnimatedSection>
-      <AnimatedSection show={section === sectionViews.prepareWallet} style={{ maxWidth: 640 }}>
+      <AnimatedSection show={section === sectionViews.prepareWallet}>
         <Row>
           <Space direction='vertical'>
             <Heading>Prepare Your 1wallet</Heading>
@@ -462,12 +378,14 @@ const Create = ({ expertMode, showRecovery }) => {
               <Hint>Set up a spending limit:</Hint>
               <Space align='baseline' direction={isMobile ? 'vertical' : 'horizontal'}>
                 <InputBox
+                  $num
                   margin={16} width={160} value={spendingLimit}
                   onChange={({ target: { value } }) => setSpendingLimit(parseInt(value || 0))} suffix='ONE'
                 />
                 <Space align='baseline'>
                   <Hint>per</Hint>
                   <InputBox
+                    $num
                     margin={16} width={128} value={spendingInterval}
                     onChange={({ target: { value } }) => setSpendingInterval(parseInt(value || 0))}
                   />
@@ -497,17 +415,17 @@ const Create = ({ expertMode, showRecovery }) => {
                   addressValue={lastResortAddress}
                   setAddressCallback={setLastResortAddress}
                   extraSelectOptions={[{
-                    address: WalletConstants.oneWalletTreasury.address,
-                    label: WalletConstants.oneWalletTreasury.label
+                    address: ONEConstants.TreasuryAddress,
+                    label: WalletConstants.defaultRecoveryAddressLabel
                   }]}
                 />
                 <Hint>
-                  {lastResortAddress.value !== WalletConstants.oneWalletTreasury.address && <span style={{ color: 'red' }}>This is permanent. </span>}
+                  {!util.isDefaultRecoveryAddress(lastResortAddress.value) && <span style={{ color: 'red' }}>This is permanent. </span>}
                   If you lost access, you can still send your assets there or use <Link href='https://github.com/polymorpher/one-wallet/releases/tag/v0.2' target='_blank' rel='noreferrer'>auto-recovery</Link>
                 </Hint>
-                {lastResortAddress.value === WalletConstants.oneWalletTreasury.address &&
+                {util.isDefaultRecoveryAddress(lastResortAddress.value) &&
                   <Warning style={{ marginTop: 24 }}>
-                    Please use your own address if you can. 1wallet DAO is controlled by Harmony team. They may help you recover funds as the last resort.
+                    1wallet DAO can be a last resort to recover your assets. You can also use your own address.
                   </Warning>}
               </Space>}
           </Row>}
@@ -527,14 +445,16 @@ const Create = ({ expertMode, showRecovery }) => {
                 {(deploying || !root) && <Space><Text>Working on your 1wallet...</Text><LoadingOutlined /></Space>}
                 {(!deploying && root) && <Text>Your 1wallet is ready!</Text>}
               </TallRow>}
+            {!expertMode && <Hint>In beta, you can only spend {WalletConstants.defaultSpendingLimit} ONE per day</Hint>}
+            {!expertMode && <Button type='link' onClick={() => enableExpertMode(true)} style={{ padding: 0 }}>I want to create a higher limit wallet instead</Button>}
             {!root && <WalletCreateProgress progress={progress} isMobile={isMobile} progressStage={progressStage} />}
           </Space>
         </Row>
         <Row>
           <Space direction='vertical'>
-            <Hint>No private key. No mnemonic. Simple and Secure. </Hint>
+            <Hint>No private key. No mnemonic.</Hint>
+            <Hint>Simple and Secure.</Hint>
             <Hint>To learn more, visit <Link href='https://github.com/polymorpher/one-wallet/wiki'>1wallet Wiki</Link></Hint>
-            <Hint>In Beta, your wallet is subject to a daily spending limit of {WalletConstants.defaultSpendingLimit} ONE</Hint>
           </Space>
         </Row>
       </AnimatedSection>
