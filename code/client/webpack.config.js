@@ -3,7 +3,7 @@ const path = require('path')
 const webpack = require('webpack')
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-// const CopyWebpackPlugin = require('copy-webpack-plugin')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 module.exports = {
   devServer: {
@@ -126,6 +126,12 @@ module.exports = {
       favicon: 'assets/1wallet.png',
       environment: process.env.NODE_ENV,
       hash: true
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'assets/flags', to: 'flags' }
+      ],
+      options: { concurrency: 50 },
     }),
     new webpack.ProvidePlugin({
       process: 'process/browser',
