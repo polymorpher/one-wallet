@@ -213,6 +213,17 @@ const reducer = handleActions(
       }
     }),
 
+    [walletActions.userSkipVersion]: (state, action) => ({
+      ...state,
+      wallets: {
+        ...state.wallets,
+        [action.payload.address]: {
+          ...state.wallets[action.payload.address],
+          skipVersion: action.payload.version
+        }
+      }
+    }),
+
     [walletActions.setDev]: (state, action) => ({
       ...state,
       dev: action.payload
