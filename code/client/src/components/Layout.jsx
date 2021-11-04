@@ -17,24 +17,30 @@ const CardStyle = {
   WebkitBackdropFilter: 'blur(10px)'
 }
 
+export const SpaceCapped = ({ isMobile, children }) => {
+  return (
+    <Space
+      direction='vertical'
+      size='large'
+      style={{
+        height: '100%',
+        width: '100%',
+        maxWidth: 400,
+        justifyContent: 'start',
+        paddingTop: isMobile ? 32 : 192,
+        display: 'flex'
+      }}
+    >
+      {children}
+    </Space>
+  )
+}
+
 export const FloatContainer = ({ isMobile, children }) => {
   return (
     <Card style={CardStyle} bodyStyle={{ height: '100%' }}>
       <Row justify='center'>
-        <Space
-          direction='vertical'
-          size='large'
-          style={{
-            height: '100%',
-            width: '100%',
-            maxWidth: 400,
-            justifyContent: 'start',
-            paddingTop: isMobile ? 32 : 192,
-            display: 'flex'
-          }}
-        >
-          {children}
-        </Space>
+        <SpaceCapped isMobile={isMobile}>{children}</SpaceCapped>
       </Row>
     </Card>
   )

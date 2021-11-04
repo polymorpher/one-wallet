@@ -30,7 +30,7 @@ const SetRecovery = ({ address, onClose, show }) => {
   const { otpInput, otp2Input } = otpState
   const resetOtp = otpState.resetOtp
 
-  const helpers = ShowUtils.buildHelpers({
+  const { prepareValidation, ...helpers } = ShowUtils.buildHelpers({
     setStage,
     resetOtp,
     network,
