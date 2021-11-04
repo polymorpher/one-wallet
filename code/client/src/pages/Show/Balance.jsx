@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux'
 import { HarmonyONE } from '../../components/TokenAssets'
 import Paths from '../../constants/paths'
 import { useHistory } from 'react-router'
+import BuyButton from '../../components/BuyButton'
 const { Title, Text } = Typography
 
 const Balance = ({ address }) => {
@@ -61,7 +62,10 @@ const Balance = ({ address }) => {
       <Row style={{ marginTop: 16, textAlign: isMobile ? 'center' : undefined }}>
         <Col span={isMobile ? 24 : 12} />
         <Col span={isMobile ? 24 : undefined}>
-          <Button type='primary' size='large' shape='round' onClick={showTransfer} disabled={!util.isNonZeroBalance(selectedTokenBalance)}> Send </Button>
+          <Space>
+            <Button type='primary' size='large' shape='round' onClick={showTransfer} disabled={!util.isNonZeroBalance(selectedTokenBalance)}> Send </Button>
+            {selectedToken.key === 'one' && <BuyButton address={address} token={selectedToken} />}
+          </Space>
         </Col>
       </Row>
     </>
