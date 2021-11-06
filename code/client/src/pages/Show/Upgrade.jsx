@@ -144,7 +144,7 @@ const Upgrade = ({ address, onClose }) => {
     dispatch(walletActions.userSkipVersion({ address, version: ONEUtil.getVersion(latestVersion) }))
     skip()
   }
-  if (!requireUpdate || skipUpdate || !canUpgrade || temp || !util.isEmptyAddress(forwardAddress)) {
+  if (!requireUpdate || skipUpdate || !canUpgrade || temp || !util.isEmptyAddress(forwardAddress) || wallet.skipVersion === ONEUtil.getVersion(latestVersion)) {
     return <></>
   }
 
