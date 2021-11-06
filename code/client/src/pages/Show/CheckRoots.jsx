@@ -72,10 +72,12 @@ const CheckRoots = ({ address, onClose }) => {
         <Space direction='vertical'>
           <Text>{title}</Text>
           <AverageRow justify='center'>
-            {options}
-            <Popconfirm title='Are you sure？' onConfirm={() => deleteAndRestore()}>
-              <Button type='text' shape='round' danger size='large' icon={<DeleteOutlined />}>Delete And Restore</Button>
-            </Popconfirm>
+            <Space direction='vertical' align='center'>
+              {options}
+              <Popconfirm title='Are you sure？' onConfirm={() => deleteAndRestore()}>
+                <Button type='text' shape='round' danger size='large' icon={<DeleteOutlined />}>Delete And Restore</Button>
+              </Popconfirm>
+            </Space>
           </AverageRow>
         </Space>
       </FloatContainer>
@@ -126,7 +128,7 @@ const CheckRoots = ({ address, onClose }) => {
         return (<DeleteAndRestore title='This wallet cannot be used on this device. It is renewed elsewhere and its local data is expired. To use it on this device, please delete the wallet, then restore it' />)
       }
       if (oldRootExpiry < 3600 * 1000 * 24 * 30) {
-        return (<DeleteAndRestore title={`This wallet was renewed elsewhere. It is expiring in ${humanizeDuration(oldRootExpiry, { units: ['y', 'mo', 'd'], round: true })} on this device. To continue using it on this device, please delete the wallet, then restore it`} options={<Button type='primary' shape='round' onClick={() => setSkip(true)}>Remind me next time</Button>} />)
+        return (<DeleteAndRestore title={`This wallet was renewed elsewhere. It is expiring in ${humanizeDuration(oldRootExpiry, { units: ['y', 'mo', 'd'], round: true })} on this device. To continue using it on this device, please delete the wallet, then restore it`} options={[(<Button key='remind' type='primary' shape='round' onClick={() => setSkip(true)}>Remind me next time</Button>)]} />)
       }
       return <></>
     }
