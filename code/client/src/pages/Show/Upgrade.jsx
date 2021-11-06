@@ -43,10 +43,10 @@ const Upgrade = ({ address, onClose }) => {
   const requireUpdate = majorVersion && (!(parseInt(majorVersion) >= ONEConstants.MajorVersion) || parseInt(minorVersion) === 0)
   const canUpgrade = majorVersion >= config.minUpgradableVersion
   const latestVersion = { majorVersion: ONEConstants.MajorVersion, minorVersion: ONEConstants.MinorVersion }
-  const maxSpend = util.getMaxSpending(wallet)
-  const { formatted: maxSpendFormatted } = util.computeBalance(maxSpend.toString())
   const balances = useSelector(state => state.wallet.balances)
   const { balance } = util.computeBalance(balances[address])
+  const maxSpend = BN.min(util.getMaxSpending(wallet), new BN(balance))
+  const { formatted: maxSpendFormatted } = util.computeBalance(maxSpend.toString())
   const balanceGreaterThanLimit = new BN(balance).gt(new BN(maxSpend))
   const needSetRecoveryAddressFirst = balanceGreaterThanLimit && util.isDefaultRecoveryAddress(lastResortAddress)
   const needSpecialSteps = balanceGreaterThanLimit && !util.isDefaultRecoveryAddress(lastResortAddress)
