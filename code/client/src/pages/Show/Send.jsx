@@ -61,8 +61,8 @@ const Send = ({
   const { metadata } = selectedToken
   const titleSuffix = isNFT ? 'Collectible' : `${selectedToken.name} (${selectedToken.symbol})`
 
-  const maxSpending = util.getMaxSpending(wallet)
-  const { formatted: spendingLimitFormatted } = util.computeBalance(maxSpending, price)
+  const maxSpending = selectedToken.key === 'one' ? BN.min(new BN(selectedTokenBalance), util.getMaxSpending(wallet)) : new BN(selectedTokenBalance)
+  const { formatted: spendingLimitFormatted } = util.computeBalance(maxSpending.toString(), price)
 
   const {
     balance: transferAmount,
