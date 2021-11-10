@@ -39,7 +39,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
     address constant ONE_WALLET_TREASURY = 0x7534978F9fa903150eD429C486D1f42B7fDB7a61;
 
     uint32 constant majorVersion = 0xe; // a change would require client to migrate
-    uint32 constant minorVersion = 0x1; // a change would not require the client to migrate
+    uint32 constant minorVersion = 0x0; // a change would not require the client to migrate
 
     /// commit management
     CommitManager.CommitState commitState;
@@ -197,7 +197,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
             _setRecoveryAddress(forwardAddress);
         }
         uint256 budget = spendingState.getRemainingAllowance();
-        _transfer(forwardAddress, budget);
+        _transfer(forwardAddress, budget, false);
         TokenManager._recoverAllTokens(dest);
         for (uint32 i = 0; i < backlinkAddresses.length; i++) {
             try backlinkAddresses[i].reveal(AuthParams(new bytes32[](0), 0, bytes32(0)), OperationParams(Enums.OperationType.FORWARD, Enums.TokenType.NONE, address(0), 0, dest, 0, bytes(""))){
@@ -221,18 +221,27 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
         return success;
     }
 
-    function _transfer(address payable dest, uint256 amount) internal returns (bool) {
+    function _transfer(address payable dest, uint256 amount, bool useTransfer) internal returns (bool) {
         bool canSpend = spendingState.canSpend(dest, amount);
         if (!canSpend) {
             return false;
         }
         spendingState.accountSpending(amount);
-        (bool success, bytes memory ret) = dest.call{value : amount}("");
-        // we do not want to revert the whole transaction if this operation fails, since EOTP is already revealed
-        if (!success) {
-            spendingState.spentAmount -= amount;
-            emit TransferError(dest, ret);
-            return false;
+        if (useTransfer) {
+            bool success = dest.send(amount);
+            if (!success) {
+                spendingState.spentAmount -= amount;
+                emit TransferError(dest, "");
+                return false;
+            }
+        } else {
+            (bool success, bytes memory ret) = dest.call{value : amount}("");
+            // we do not want to revert the whole transaction if this operation fails, since EOTP is already revealed
+            if (!success) {
+                spendingState.spentAmount -= amount;
+                emit TransferError(dest, ret);
+                return false;
+            }
         }
         emit PaymentSent(amount, dest);
         return true;
@@ -301,7 +310,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
         } else if (op.operationType == Enums.OperationType.OVERRIDE_TRACK) {
             TokenManager.tokenTrackerState.overrideTrackWithBytes(op.data);
         } else if (op.operationType == Enums.OperationType.TRANSFER) {
-            _transfer(op.dest, op.amount);
+            _transfer(op.dest, op.amount, op.tokenId > 0);
         } else if (op.operationType == Enums.OperationType.RECOVER) {
             _recover();
         } else if (op.operationType == Enums.OperationType.SET_RECOVERY_ADDRESS) {

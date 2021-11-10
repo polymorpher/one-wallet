@@ -553,7 +553,7 @@ const api = {
         operationType: ONEConstants.OperationType.TRANSFER,
         tokenType: ONEConstants.TokenType.NONE,
         contractAddress: ONEConstants.EmptyAddress,
-        tokenId: 0
+        tokenId: 1
       })
     },
 
