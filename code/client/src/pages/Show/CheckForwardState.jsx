@@ -45,21 +45,26 @@ const CheckForwardState = ({ address, onClose }) => {
         return
       }
       if (forwardAddress && !util.isEmptyAddress(forwardAddress) && !temp) {
+        let backlinks = []
         try {
-          const backlinks = await api.blockchain.getBacklinks({ address: forwardAddress })
-          if (backlinks && backlinks.includes(address)) {
-            dispatch(walletActions.updateWallet({ ...wallet, address: forwardAddress, forwardAddress: ONEConstants.EmptyAddress }))
-            dispatch(walletActions.deleteWallet(address))
-            message.success('Detected upgraded version of this wallet. Redirecting there...')
-            setTimeout(() => history.push(Paths.showAddress(forwardAddress)), 500)
-          } else {
-            setIsPostRecovery(true)
-            dispatch(walletActions.updateWallet({ ...wallet, recoveryTime: Date.now() }))
-          }
+          backlinks = await api.blockchain.getBacklinks({ address: forwardAddress })
         } catch (ex) {
           console.error(ex)
-          setCheckedForwardStateError(ex.toString())
+          // const errorMessage = ex.toString()
+          // if (!(errorMessage.includes('no code at address') || errorMessage.includes('Returned values aren\'t valid'))) {
+          //   setCheckedForwardStateError(ex.toString())
+          // }
         }
+        if (backlinks && backlinks.includes(address)) {
+          dispatch(walletActions.updateWallet({ ...wallet, address: forwardAddress, forwardAddress: ONEConstants.EmptyAddress }))
+          dispatch(walletActions.deleteWallet(address))
+          message.success('Detected upgraded version of this wallet. Redirecting there...')
+          setTimeout(() => history.push(Paths.showAddress(forwardAddress)), 500)
+        } else {
+          setIsPostRecovery(true)
+          dispatch(walletActions.updateWallet({ ...wallet, recoveryTime: Date.now() }))
+        }
+
         setCheckedForwardState(true)
       }
     }
