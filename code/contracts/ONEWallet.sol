@@ -12,6 +12,7 @@ import "./Enums.sol";
 import "./IONEWallet.sol";
 import "./AbstractONEWallet.sol";
 import "./CoreManager.sol";
+import "./Executor.sol";
 
 contract ONEWallet is TokenManager, AbstractONEWallet {
     using TokenTracker for TokenTracker.TokenTrackerState;
@@ -160,7 +161,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
     }
 
     function getBalance(Enums.TokenType tokenType, address contractAddress, uint256 tokenId) external override view returns (uint256){
-        (uint256 balance, bool success, string memory reason) = TokenManager._getBalance(tokenType, contractAddress, tokenId);
+        (uint256 balance, bool success, string memory reason) = TokenTracker.getBalance(tokenType, contractAddress, tokenId);
         require(success, reason);
         return balance;
     }
@@ -202,7 +203,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
         } else {
             uint256 budget = spendingState.getRemainingAllowance();
             _transfer(forwardAddress, budget);
-            TokenManager._recoverAllTokens(dest);
+            tokenTrackerState.recoverAllTokens(dest);
         }
         for (uint32 i = 0; i < backlinkAddresses.length; i++) {
             try backlinkAddresses[i].reveal(AuthParams(new bytes32[](0), 0, bytes32(0)), OperationParams(Enums.OperationType.FORWARD, Enums.TokenType.NONE, address(0), 0, dest, 0, bytes(""))){
@@ -221,7 +222,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
         (bool success,) = recoveryAddress.call{value : address(this).balance}("");
         if (success) {
             forwardAddress = recoveryAddress;
-            TokenManager._recoverAllTokens(recoveryAddress);
+            tokenTrackerState.recoverAllTokens(recoveryAddress);
         }
         return success;
     }
@@ -294,54 +295,14 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
 
     function _doReveal(OperationParams memory op) internal {
         // No revert should occur below this point
-        if (op.operationType == Enums.OperationType.TRACK) {
-            if (op.data.length > 0) {
-                TokenManager.tokenTrackerState.multiTrack(op.data);
-            } else {
-                TokenManager.tokenTrackerState.trackToken(op.tokenType, op.contractAddress, op.tokenId);
-            }
-        } else if (op.operationType == Enums.OperationType.UNTRACK) {
-            if (op.data.length > 0) {
-                TokenManager.tokenTrackerState.untrackToken(op.tokenType, op.contractAddress, op.tokenId);
-            } else {
-                TokenManager.tokenTrackerState.multiUntrack(op.data);
-            }
-        } else if (op.operationType == Enums.OperationType.TRANSFER_TOKEN) {
-            TokenManager._transferToken(op.tokenType, op.contractAddress, op.tokenId, op.dest, op.amount, op.data);
-        } else if (op.operationType == Enums.OperationType.OVERRIDE_TRACK) {
-            TokenManager.tokenTrackerState.overrideTrackWithBytes(op.data);
-        } else if (op.operationType == Enums.OperationType.TRANSFER) {
+        if (op.operationType == Enums.OperationType.TRANSFER) {
             _transfer(op.dest, op.amount);
         } else if (op.operationType == Enums.OperationType.RECOVER) {
             _recover();
         } else if (op.operationType == Enums.OperationType.SET_RECOVERY_ADDRESS) {
             _setRecoveryAddress(op.dest);
-        } else if (op.operationType == Enums.OperationType.BUY_DOMAIN) {
-            DomainManager.buyDomainEncoded(op.data, op.amount, uint8(op.tokenId), op.contractAddress, op.dest);
-        } else if (op.operationType == Enums.OperationType.TRANSFER_DOMAIN) {
-            _transferDomain(IRegistrar(op.contractAddress), address(bytes20(bytes32(op.tokenId))), bytes32(op.amount), op.dest);
-        } else if (op.operationType == Enums.OperationType.RENEW_DOMAIN) {
-            DomainManager.renewDomain(IRegistrar(op.contractAddress), bytes32(op.tokenId), string(op.data), op.amount);
-        } else if (op.operationType == Enums.OperationType.RECLAIM_REVERSE_DOMAIN) {
-            DomainManager.reclaimReverseDomain(op.contractAddress, string(op.data));
-        } else if (op.operationType == Enums.OperationType.RECLAIM_DOMAIN_FROM_BACKLINK) {
-            backlinkAddresses.reclaimDomainFromBacklink(uint32(op.amount), IRegistrar(op.contractAddress), IReverseRegistrar(op.dest), op.data);
-        } else if (op.operationType == Enums.OperationType.RECOVER_SELECTED_TOKENS) {
-            TokenManager._recoverSelectedTokensEncoded(op.dest, op.data);
         } else if (op.operationType == Enums.OperationType.FORWARD) {
             _forward(op.dest);
-        } else if (op.operationType == Enums.OperationType.COMMAND) {
-            backlinkAddresses.command(op.tokenType, op.contractAddress, op.tokenId, op.dest, op.amount, op.data);
-        } else if (op.operationType == Enums.OperationType.BACKLINK_ADD) {
-            _backlinkAdd(op.data);
-        } else if (op.operationType == Enums.OperationType.BACKLINK_DELETE) {
-            _backlinkDelete(op.data);
-        } else if (op.operationType == Enums.OperationType.BACKLINK_OVERRIDE) {
-            _backlinkOverride(op.data);
-        } else if (op.operationType == Enums.OperationType.SIGN) {
-            signatures.authorizeHandler(op.contractAddress, op.tokenId, op.dest, op.amount);
-        } else if (op.operationType == Enums.OperationType.REVOKE) {
-            signatures.revokeHandler(op.contractAddress, op.tokenId, op.dest, op.amount);
         } else if (op.operationType == Enums.OperationType.CALL) {
             if (op.tokenId == 0) {
                 _callContract(op.contractAddress, op.amount, op.data);
@@ -352,6 +313,8 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
             CoreManager.displaceCoreWithValidationByBytes(oldCores, core, op.data, forwardAddress);
         } else if (op.operationType == Enums.OperationType.BATCH) {
             _batch(op.data);
+        } else {
+            Executor.reveal(op, tokenTrackerState, backlinkAddresses, signatures);
         }
     }
 
@@ -359,33 +322,8 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
         return address(recoveryAddress) != address(0) && address(recoveryAddress) != ONE_WALLET_TREASURY;
     }
 
-    function _backlinkAdd(bytes memory data) internal {
-        address[] memory addresses = abi.decode(data, (address[]));
-        backlinkAddresses.backlinkAdd(addresses);
-    }
-
-    function _backlinkDelete(bytes memory data) internal {
-        address[] memory addresses = abi.decode(data, (address[]));
-        backlinkAddresses.backlinkDelete(addresses);
-    }
-
-    function _backlinkOverride(bytes memory data) internal {
-        address[] memory addresses = abi.decode(data, (address[]));
-        backlinkAddresses.backlinkOverride(addresses);
-    }
-
     function getBacklinks() external override view returns (IONEWallet[] memory){
         return backlinkAddresses;
-    }
-
-    function _transferDomain(IRegistrar reg, address resolver, bytes32 subnode, address payable dest) internal {
-        try DomainManager.transferDomain(reg, resolver, subnode, dest){
-
-        } catch Error(string memory reason){
-            emit DomainManager.DomainTransferFailed(reason);
-        } catch {
-            emit DomainManager.DomainTransferFailed("");
-        }
     }
 
     function _callContract(address contractAddress, uint256 amount, bytes memory encodedWithSignature) internal {
