@@ -14,7 +14,7 @@ library Executor {
     using WalletGraph for IONEWallet[];
     using TokenTracker for TokenTracker.TokenTrackerState;
     using SignatureManager for SignatureManager.SignatureTracker;
-    function reveal(IONEWallet.OperationParams memory op, TokenTracker.TokenTrackerState storage tokenTrackerState, IONEWallet[] storage backlinkAddresses, SignatureManager.SignatureTracker storage signatures) public {
+    function execute(IONEWallet.OperationParams memory op, TokenTracker.TokenTrackerState storage tokenTrackerState, IONEWallet[] storage backlinkAddresses, SignatureManager.SignatureTracker storage signatures) public {
         // No revert should occur below this point
         if (op.operationType == Enums.OperationType.TRACK) {
             if (op.data.length > 0) {

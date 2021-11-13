@@ -280,7 +280,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
         OperationParams[] memory batchParams = abi.decode(data, (OperationParams[]));
         uint8 len = uint8(batchParams.length);
         for (uint32 i = 0; i < len; i++) {
-            _doReveal(batchParams[i]);
+            _execute(batchParams[i]);
         }
     }
 
@@ -290,10 +290,10 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
             core.authenticate(oldCores, commitState, auth, op);
             lastOperationTime = block.timestamp;
         }
-        _doReveal(op);
+        _execute(op);
     }
 
-    function _doReveal(OperationParams memory op) internal {
+    function _execute(OperationParams memory op) internal {
         // No revert should occur below this point
         if (op.operationType == Enums.OperationType.TRANSFER) {
             _transfer(op.dest, op.amount);
@@ -314,7 +314,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
         } else if (op.operationType == Enums.OperationType.BATCH) {
             _batch(op.data);
         } else {
-            Executor.reveal(op, tokenTrackerState, backlinkAddresses, signatures);
+            Executor.execute(op, tokenTrackerState, backlinkAddresses, signatures);
         }
     }
 
