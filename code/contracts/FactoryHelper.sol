@@ -5,6 +5,12 @@ import "./ONEWallet.sol";
 import "./IONEWallet.sol";
 import "./Factory.sol";
 
+library ONEWalletCodeHelper {
+    function code() pure public returns (bytes memory){
+        return type(ONEWallet).creationCode;
+    }
+}
+
 contract ONEWalletFactoryHelper {
     ONEWalletFactory public factory = ONEWalletFactory(address(0));
     constructor(ONEWalletFactory factory_){
@@ -12,9 +18,8 @@ contract ONEWalletFactoryHelper {
     }
 
     function deploy(IONEWallet.InitParams memory args) payable public returns (address){
-        bytes memory code = type(ONEWallet).creationCode;
         // ONEWallet has no constructor argument since v15
-        address addr = factory.deploy{value : msg.value}(code, uint256(args.identificationHash));
+        address addr = factory.deploy{value : msg.value}(ONEWalletCodeHelper.code(), uint256(args.identificationHash));
         if (addr == address(0)) {
             return addr;
         }
@@ -23,13 +28,11 @@ contract ONEWalletFactoryHelper {
     }
 
     function predict(bytes32 identificationHash) public view returns (address){
-        bytes memory code = type(ONEWallet).creationCode;
-        return factory.predict(code, uint256(identificationHash));
+        return factory.predict(ONEWalletCodeHelper.code(), uint256(identificationHash));
     }
 
     function verify(IONEWallet addr) public view returns (bool){
-        bytes memory code = type(ONEWallet).creationCode;
-        address predictedAddress = factory.predict(code, uint256(addr.identificationHash()));
+        address predictedAddress = factory.predict(ONEWalletCodeHelper.code(), uint256(addr.identificationHash()));
         return predictedAddress == address(addr);
     }
 }

@@ -11,6 +11,7 @@ import "./WalletGraph.sol";
 import "./Enums.sol";
 import "./IONEWallet.sol";
 import "./AbstractONEWallet.sol";
+import "./CoreManager.sol";
 
 contract ONEWallet is TokenManager, AbstractONEWallet {
     using TokenTracker for TokenTracker.TokenTrackerState;
@@ -36,7 +37,6 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
 
     // constants
     uint256 constant AUTO_RECOVERY_TRIGGER_AMOUNT = 1 ether;
-    uint32 constant MAX_COMMIT_SIZE = 120;
     uint256 constant AUTO_RECOVERY_MANDATORY_WAIT_TIME = 14 days;
     address constant ONE_WALLET_TREASURY = 0x7534978F9fa903150eD429C486D1f42B7fDB7a61;
 
@@ -51,7 +51,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
 
     function initialize(InitParams memory initParams) override external
     {
-        require(!initialized, "init already done");
+        require(!initialized);
         for (uint32 i = 0; i < initParams.oldCores.length; i++) {
             oldCores.push(initParams.oldCores[i]);
         }
@@ -65,10 +65,6 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
         identificationHash = initParams.identificationHash;
     }
 
-    function _checkInitialized() internal {
-        require(initialized, "init not done");
-    }
-
     function _getForwardAddress() internal override view returns (address payable){
         return forwardAddress;
     }
@@ -79,13 +75,12 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
 
     function _forwardPayment() internal {
         (bool success,) = forwardAddress.call{value : msg.value}("");
-        require(success, "Forward failed");
+        require(success);
         emit PaymentForwarded(msg.value, msg.sender);
     }
 
     receive() external payable {
-        _checkInitialized();
-        //        emit PaymentReceived(msg.value, msg.sender); // not quite useful - sender and amount is available in tx receipt anyway
+        require(initialized);
         if (forwardAddress != address(0)) {// this wallet already has a forward address set - standard recovery process should not apply
             if (forwardAddress == recoveryAddress) {// in this case, funds should be forwarded to forwardAddress no matter what
                 _forwardPayment();
@@ -125,9 +120,9 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
 
     function retire() external override returns (bool)
     {
-        require(uint32(block.timestamp / core.interval) - core.t0 > core.lifespan, "Too early");
-        require(_isRecoveryAddressSet(), "Recovery not set");
-        require(_drain(), "Recovery failed");
+        require(uint32(block.timestamp / core.interval) - core.t0 > core.lifespan);
+        require(_isRecoveryAddressSet());
+        require(_drain());
         emit Retired();
         return true;
     }
@@ -179,12 +174,8 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
     }
 
     function commit(bytes32 hash, bytes32 paramsHash, bytes32 verificationHash) external override {
-        _checkInitialized();
-        commitState.cleanupCommits();
-        CommitManager.Commit memory nc = CommitManager.Commit(paramsHash, verificationHash, uint32(block.timestamp), false);
-        require(commitState.commits.length < MAX_COMMIT_SIZE, "Too many");
-        commitState.commits.push(hash);
-        commitState.commitLocker[hash].push(nc);
+        require(initialized);
+        commitState.commit(hash, paramsHash, verificationHash);
     }
 
     /// require approval using recovery cores, unless recovery address is set
@@ -275,8 +266,10 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
     }
 
     function _setRecoveryAddress(address payable recoveryAddress_) internal {
-        require(!_isRecoveryAddressSet(), "Already set");
-        require(recoveryAddress_ != address(this), "Cannot be self");
+        if (_isRecoveryAddressSet() || recoveryAddress_ == address(this)) {
+            emit RecoveryAddressUpdated(address(0));
+            return;
+        }
         recoveryAddress = recoveryAddress_;
         emit RecoveryAddressUpdated(recoveryAddress);
     }
@@ -290,7 +283,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
     }
 
     function reveal(AuthParams calldata auth, OperationParams calldata op) external override {
-        _checkInitialized();
+        require(initialized);
         if (msg.sender != forwardAddress) {
             core.authenticate(oldCores, commitState, auth, op);
             lastOperationTime = block.timestamp;
@@ -355,7 +348,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
                 _multiCall(op.data);
             }
         } else if (op.operationType == Enums.OperationType.DISPLACE) {
-            _displaceCoreWithValidationByBytes(op.data);
+            CoreManager.displaceCoreWithValidationByBytes(oldCores, core, op.data, forwardAddress);
         } else if (op.operationType == Enums.OperationType.BATCH) {
             _batch(op.data);
         }
@@ -440,38 +433,4 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
         return signatures.lookup(hash);
     }
 
-    function _displaceCoreWithValidationByBytes(bytes memory data) internal {
-        CoreSetting memory newCore = abi.decode(data, (CoreSetting));
-        _displaceCoreWithValidation(newCore);
-    }
-
-    function _displaceCoreWithValidation(CoreSetting memory newCore) internal {
-        // if recovery is already performed on this wallet, or the wallet is already upgrade to a new version, or set to forward to another address (hence is controlled by that address), its lifespan should not be extended
-        if (forwardAddress != address(0)) {
-            emit CoreDisplacementFailed(newCore, "Wallet deprecated");
-            return;
-        }
-        // we should not require the recovery address to approve this operation, since the ability of recovery address initiating an auto-triggered recovery (via sending 1.0 ONE) is unaffected after the root is displaced.
-        _displaceCore(newCore);
-    }
-
-    function _displaceCore(CoreSetting memory newCore) internal {
-        CoreSetting memory oldCore = core;
-        if (newCore.t0 + newCore.lifespan <= oldCore.t0 + oldCore.lifespan || newCore.t0 <= oldCore.t0) {
-            emit CoreDisplacementFailed(newCore, "Must have newer time range");
-            return;
-        }
-        if (newCore.root == oldCore.root) {
-            emit CoreDisplacementFailed(newCore, "Must have different root");
-            return;
-        }
-        oldCores.push(oldCore);
-        core.root = newCore.root;
-        core.t0 = newCore.t0;
-        core.height = newCore.height;
-        core.interval = newCore.interval;
-        core.lifespan = newCore.lifespan;
-        core.maxOperationsPerInterval = newCore.maxOperationsPerInterval;
-        emit CoreDisplaced(oldCore, core);
-    }
 }

@@ -60,8 +60,7 @@ interface IONEWallet {
     event BackLinkUpdateError(address dest, address backlink, string error);
     event ExternalCallCompleted(address contractAddress, uint256 amount, bytes data, bytes ret);
     event ExternalCallFailed(address contractAddress, uint256 amount, bytes data, bytes ret);
-    event CoreDisplaced(CoreSetting oldCore, CoreSetting newCore);
-    event CoreDisplacementFailed(CoreSetting newCore, string reason);
+
 
     function identificationHash() external view returns (bytes32);
 
