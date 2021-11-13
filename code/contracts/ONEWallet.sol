@@ -63,6 +63,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
         recoveryAddress = initParams.recoveryAddress;
         backlinkAddresses = initParams.backlinkAddresses;
         identificationHash = initParams.identificationHash;
+        initialized = true;
     }
 
     function _getForwardAddress() internal override view returns (address payable){
