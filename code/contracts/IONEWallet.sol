@@ -56,8 +56,6 @@ interface IONEWallet {
     event ForwardAddressUpdated(address dest);
     event ForwardAddressAlreadySet(address dest);
     event ForwardAddressInvalid(address dest);
-    event BackLinkUpdated(address dest, address backlink);
-    event BackLinkUpdateError(address dest, address backlink, string error);
     event ExternalCallCompleted(address contractAddress, uint256 amount, bytes data, bytes ret);
     event ExternalCallFailed(address contractAddress, uint256 amount, bytes data, bytes ret);
 

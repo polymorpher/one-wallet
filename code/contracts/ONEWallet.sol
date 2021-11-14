@@ -205,15 +205,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
             _transfer(forwardAddress, budget);
             tokenTrackerState.recoverAllTokens(dest);
         }
-        for (uint32 i = 0; i < backlinkAddresses.length; i++) {
-            try backlinkAddresses[i].reveal(AuthParams(new bytes32[](0), 0, bytes32(0)), OperationParams(Enums.OperationType.FORWARD, Enums.TokenType.NONE, address(0), 0, dest, 0, bytes(""))){
-                emit BackLinkUpdated(dest, address(backlinkAddresses[i]));
-            } catch Error(string memory reason){
-                emit BackLinkUpdateError(dest, address(backlinkAddresses[i]), reason);
-            } catch {
-                emit BackLinkUpdateError(dest, address(backlinkAddresses[i]), "");
-            }
-        }
+        backlinkAddresses.batchUpdateForwardAddress(dest);
     }
 
     /// This function sends all remaining funds and tokens in the wallet to `recoveryAddress`. The caller should verify that `recoveryAddress` is not null.
