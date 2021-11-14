@@ -297,7 +297,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
                 _multiCall(op.data);
             }
         } else if (op.operationType == Enums.OperationType.DISPLACE) {
-            CoreManager.displaceCoreWithValidationByBytes(oldCores, core, op.data, forwardAddress);
+            CoreManager.displace(oldCores, innerCores, core, op.data, forwardAddress);
         } else if (op.operationType == Enums.OperationType.BATCH) {
             _batch(op.data);
         } else {

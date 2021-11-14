@@ -1180,13 +1180,13 @@
         867
       ],
       "Enums": [
-        2766
+        2824
       ],
       "IONEWallet": [
-        4056
+        4114
       ],
       "SpendingManager": [
-        7950
+        8009
       ]
     },
     "id": 868,
@@ -1211,7 +1211,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 868,
-        "sourceUnit": 2767,
+        "sourceUnit": 2825,
         "src": "64:21:10",
         "symbolAliases": [],
         "unitAlias": ""
@@ -1223,7 +1223,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 868,
-        "sourceUnit": 4057,
+        "sourceUnit": 4115,
         "src": "86:26:10",
         "symbolAliases": [],
         "unitAlias": ""
@@ -1236,7 +1236,7 @@
               "id": 766,
               "name": "IONEWallet",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 4056,
+              "referencedDeclaration": 4114,
               "src": "303:10:10"
             },
             "id": 767,
@@ -1256,7 +1256,7 @@
         "id": 867,
         "linearizedBaseContracts": [
           867,
-          4056
+          4114
         ],
         "name": "AbstractONEWallet",
         "nameLocation": "282:17:10",
@@ -1264,7 +1264,7 @@
         "nodes": [
           {
             "baseFunctions": [
-              3844
+              3902
             ],
             "body": {
               "id": 778,
@@ -1400,7 +1400,7 @@
           },
           {
             "baseFunctions": [
-              3887
+              3945
             ],
             "body": {
               "id": 799,
@@ -1632,7 +1632,7 @@
           },
           {
             "baseFunctions": [
-              3919
+              3977
             ],
             "body": {
               "id": 818,
@@ -1856,7 +1856,7 @@
           },
           {
             "baseFunctions": [
-              3974
+              4032
             ],
             "body": {
               "id": 849,
@@ -2023,7 +2023,7 @@
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_enum$_OperationType_$2760",
+                    "typeIdentifier": "t_enum$_OperationType_$2818",
                     "typeString": "enum Enums.OperationType"
                   },
                   "typeName": {
@@ -2033,13 +2033,13 @@
                       "id": 827,
                       "name": "Enums.OperationType",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 2760,
+                      "referencedDeclaration": 2818,
                       "src": "893:19:10"
                     },
-                    "referencedDeclaration": 2760,
+                    "referencedDeclaration": 2818,
                     "src": "893:19:10",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_enum$_OperationType_$2760",
+                      "typeIdentifier": "t_enum$_OperationType_$2818",
                       "typeString": "enum Enums.OperationType"
                     }
                   },
@@ -2057,7 +2057,7 @@
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_enum$_TokenType_$2765",
+                    "typeIdentifier": "t_enum$_TokenType_$2823",
                     "typeString": "enum Enums.TokenType"
                   },
                   "typeName": {
@@ -2067,13 +2067,13 @@
                       "id": 830,
                       "name": "Enums.TokenType",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 2765,
+                      "referencedDeclaration": 2823,
                       "src": "932:15:10"
                     },
-                    "referencedDeclaration": 2765,
+                    "referencedDeclaration": 2823,
                     "src": "932:15:10",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_enum$_TokenType_$2765",
+                      "typeIdentifier": "t_enum$_TokenType_$2823",
                       "typeString": "enum Enums.TokenType"
                     }
                   },
@@ -2233,7 +2233,7 @@
           },
           {
             "baseFunctions": [
-              3855
+              3913
             ],
             "body": {
               "id": 865,
@@ -2436,13 +2436,13 @@
         867
       ],
       "Enums": [
-        2766
+        2824
       ],
       "IONEWallet": [
-        4056
+        4114
       ],
       "SpendingManager": [
-        7950
+        8009
       ]
     },
     "id": 868,
@@ -2467,7 +2467,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 868,
-        "sourceUnit": 2767,
+        "sourceUnit": 2825,
         "src": "64:21:10",
         "symbolAliases": [],
         "unitAlias": ""
@@ -2479,7 +2479,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 868,
-        "sourceUnit": 4057,
+        "sourceUnit": 4115,
         "src": "86:26:10",
         "symbolAliases": [],
         "unitAlias": ""
@@ -2492,7 +2492,7 @@
               "id": 766,
               "name": "IONEWallet",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 4056,
+              "referencedDeclaration": 4114,
               "src": "303:10:10"
             },
             "id": 767,
@@ -2512,7 +2512,7 @@
         "id": 867,
         "linearizedBaseContracts": [
           867,
-          4056
+          4114
         ],
         "name": "AbstractONEWallet",
         "nameLocation": "282:17:10",
@@ -2520,7 +2520,7 @@
         "nodes": [
           {
             "baseFunctions": [
-              3844
+              3902
             ],
             "body": {
               "id": 778,
@@ -2656,7 +2656,7 @@
           },
           {
             "baseFunctions": [
-              3887
+              3945
             ],
             "body": {
               "id": 799,
@@ -2888,7 +2888,7 @@
           },
           {
             "baseFunctions": [
-              3919
+              3977
             ],
             "body": {
               "id": 818,
@@ -3112,7 +3112,7 @@
           },
           {
             "baseFunctions": [
-              3974
+              4032
             ],
             "body": {
               "id": 849,
@@ -3279,7 +3279,7 @@
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_enum$_OperationType_$2760",
+                    "typeIdentifier": "t_enum$_OperationType_$2818",
                     "typeString": "enum Enums.OperationType"
                   },
                   "typeName": {
@@ -3289,13 +3289,13 @@
                       "id": 827,
                       "name": "Enums.OperationType",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 2760,
+                      "referencedDeclaration": 2818,
                       "src": "893:19:10"
                     },
-                    "referencedDeclaration": 2760,
+                    "referencedDeclaration": 2818,
                     "src": "893:19:10",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_enum$_OperationType_$2760",
+                      "typeIdentifier": "t_enum$_OperationType_$2818",
                       "typeString": "enum Enums.OperationType"
                     }
                   },
@@ -3313,7 +3313,7 @@
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_enum$_TokenType_$2765",
+                    "typeIdentifier": "t_enum$_TokenType_$2823",
                     "typeString": "enum Enums.TokenType"
                   },
                   "typeName": {
@@ -3323,13 +3323,13 @@
                       "id": 830,
                       "name": "Enums.TokenType",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 2765,
+                      "referencedDeclaration": 2823,
                       "src": "932:15:10"
                     },
-                    "referencedDeclaration": 2765,
+                    "referencedDeclaration": 2823,
                     "src": "932:15:10",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_enum$_TokenType_$2765",
+                      "typeIdentifier": "t_enum$_TokenType_$2823",
                       "typeString": "enum Enums.TokenType"
                     }
                   },
@@ -3489,7 +3489,7 @@
           },
           {
             "baseFunctions": [
-              3855
+              3913
             ],
             "body": {
               "id": 865,
@@ -3691,7 +3691,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.2",
-  "updatedAt": "2021-11-14T13:43:49.377Z",
+  "updatedAt": "2021-11-14T14:05:23.215Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
