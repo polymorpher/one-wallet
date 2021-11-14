@@ -360,34 +360,6 @@
     },
     {
       "inputs": [],
-      "name": "getCurrentSpendingState",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint32",
-          "name": "",
-          "type": "uint32"
-        },
-        {
-          "internalType": "uint32",
-          "name": "",
-          "type": "uint32"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
       "name": "getForwardAddress",
       "outputs": [
         {
@@ -520,6 +492,56 @@
     },
     {
       "inputs": [],
+      "name": "getSpendingState",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "spendingLimit",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "spentAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint32",
+              "name": "lastSpendingInterval",
+              "type": "uint32"
+            },
+            {
+              "internalType": "uint32",
+              "name": "spendingInterval",
+              "type": "uint32"
+            },
+            {
+              "internalType": "uint32",
+              "name": "lastLimitAdjustmentTime",
+              "type": "uint32"
+            },
+            {
+              "internalType": "uint256",
+              "name": "initialSpendingLimit",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "highestSpendingLimit",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct SpendingManager.SpendingState",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "getTrackedTokens",
       "outputs": [
         {
@@ -634,6 +656,21 @@
                   "internalType": "uint32",
                   "name": "spendingInterval",
                   "type": "uint32"
+                },
+                {
+                  "internalType": "uint32",
+                  "name": "lastLimitAdjustmentTime",
+                  "type": "uint32"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "initialSpendingLimit",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "highestSpendingLimit",
+                  "type": "uint256"
                 }
               ],
               "internalType": "struct SpendingManager.SpendingState",
@@ -726,7 +763,7 @@
                 }
               ],
               "internalType": "struct IONEWallet.CoreSetting[]",
-              "name": "recoveryCores",
+              "name": "innerCores",
               "type": "tuple[]"
             }
           ],
@@ -1106,9 +1143,37 @@
       "outputs": [],
       "stateMutability": "pure",
       "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getCurrentSpendingState",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint32",
+          "name": "",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint32",
+          "name": "",
+          "type": "uint32"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.4+commit.c7e474f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"}],\"name\":\"AutoRecoveryTriggered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"requiredTime\",\"type\":\"uint256\"}],\"name\":\"AutoRecoveryTriggeredPrematurely\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"ret\",\"type\":\"bytes\"}],\"name\":\"ExternalCallCompleted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"ret\",\"type\":\"bytes\"}],\"name\":\"ExternalCallFailed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"ForwardAddressAlreadySet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"ForwardAddressInvalid\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"ForwardAddressUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"success\",\"type\":\"bool\"}],\"name\":\"ForwardedBalance\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[],\"name\":\"LastResortAddressNotSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"PaymentForwarded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"}],\"name\":\"PaymentReceived\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"PaymentSent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"RecoveryAddressUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[],\"name\":\"RecoveryFailure\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[],\"name\":\"RecoveryTriggered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[],\"name\":\"Retired\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"error\",\"type\":\"bytes\"}],\"name\":\"TransferError\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"hash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"paramsHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"verificationHash\",\"type\":\"bytes32\"}],\"name\":\"commit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"findCommit\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAllCommits\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint32[]\",\"name\":\"\",\"type\":\"uint32[]\"},{\"internalType\":\"bool[]\",\"name\":\"\",\"type\":\"bool[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getBacklinks\",\"outputs\":[{\"internalType\":\"contract IONEWallet[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"enum Enums.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getBalance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getCommits\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint32[]\",\"name\":\"\",\"type\":\"uint32[]\"},{\"internalType\":\"bool[]\",\"name\":\"\",\"type\":\"bool[]\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getCurrentSpending\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getCurrentSpendingState\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getForwardAddress\",\"outputs\":[{\"internalType\":\"address payable\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInfo\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getNonce\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getOldInfos\",\"outputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"root\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"height\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"interval\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"t0\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"lifespan\",\"type\":\"uint32\"},{\"internalType\":\"uint8\",\"name\":\"maxOperationsPerInterval\",\"type\":\"uint8\"}],\"internalType\":\"struct IONEWallet.CoreSetting[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRootKey\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getTrackedTokens\",\"outputs\":[{\"internalType\":\"enum Enums.TokenType[]\",\"name\":\"\",\"type\":\"uint8[]\"},{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getVersion\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"identificationHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"root\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"height\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"interval\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"t0\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"lifespan\",\"type\":\"uint32\"},{\"internalType\":\"uint8\",\"name\":\"maxOperationsPerInterval\",\"type\":\"uint8\"}],\"internalType\":\"struct IONEWallet.CoreSetting\",\"name\":\"core\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"spendingLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"spentAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"lastSpendingInterval\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"spendingInterval\",\"type\":\"uint32\"}],\"internalType\":\"struct SpendingManager.SpendingState\",\"name\":\"spendingState\",\"type\":\"tuple\"},{\"internalType\":\"address payable\",\"name\":\"recoveryAddress\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"identificationHash\",\"type\":\"bytes32\"},{\"internalType\":\"contract IONEWallet[]\",\"name\":\"backlinkAddresses\",\"type\":\"address[]\"},{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"root\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"height\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"interval\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"t0\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"lifespan\",\"type\":\"uint32\"},{\"internalType\":\"uint8\",\"name\":\"maxOperationsPerInterval\",\"type\":\"uint8\"}],\"internalType\":\"struct IONEWallet.CoreSetting[]\",\"name\":\"oldCores\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"root\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"height\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"interval\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"t0\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"lifespan\",\"type\":\"uint32\"},{\"internalType\":\"uint8\",\"name\":\"maxOperationsPerInterval\",\"type\":\"uint8\"}],\"internalType\":\"struct IONEWallet.CoreSetting[]\",\"name\":\"recoveryCores\",\"type\":\"tuple[]\"}],\"internalType\":\"struct IONEWallet.InitParams\",\"name\":\"initParams\",\"type\":\"tuple\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"hash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"isValidSignature\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"lastOperationTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"start\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"end\",\"type\":\"uint32\"}],\"name\":\"listSignatures\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint32[]\",\"name\":\"\",\"type\":\"uint32[]\"},{\"internalType\":\"uint32[]\",\"name\":\"\",\"type\":\"uint32[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"hash\",\"type\":\"bytes32\"}],\"name\":\"lookupCommit\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint32[]\",\"name\":\"\",\"type\":\"uint32[]\"},{\"internalType\":\"bool[]\",\"name\":\"\",\"type\":\"bool[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"hash\",\"type\":\"bytes32\"}],\"name\":\"lookupSignature\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"retire\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"bytes32[]\",\"name\":\"neighbors\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint32\",\"name\":\"indexWithNonce\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"eotp\",\"type\":\"bytes32\"}],\"internalType\":\"struct IONEWallet.AuthParams\",\"name\":\"auth\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"enum Enums.OperationType\",\"name\":\"operationType\",\"type\":\"uint8\"},{\"internalType\":\"enum Enums.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address payable\",\"name\":\"dest\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"internalType\":\"struct IONEWallet.OperationParams\",\"name\":\"op\",\"type\":\"tuple\"}],\"name\":\"reveal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"enum Enums.OperationType\",\"name\":\"\",\"type\":\"uint8\"},{\"internalType\":\"enum Enums.TokenType\",\"name\":\"\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address payable\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"reveal\",\"outputs\":[],\"stateMutability\":\"pure\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"findCommit(bytes32)\":{\"notice\":\"DEPRECATED\"},\"getCommits()\":{\"notice\":\"DEPRECATED\"},\"isValidSignature(bytes32,bytes)\":{\"notice\":\"https://eips.ethereum.org/EIPS/eip-1271\"}},\"notice\":\"For now, this is just a place to put all the deprecated stuff. In the future we can put some state variables here, along with some simple getters\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/AbstractONEWallet.sol\":\"AbstractONEWallet\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/AbstractONEWallet.sol\":{\"keccak256\":\"0x07ab973a24ed7152fce7b46e37ceef4b9e1e6ca2deb0c5bf3926501f78f992f0\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://2db09401e12420a284ab0a61176bebb4693d54a5fa409dacb8528a0fbbb77930\",\"dweb:/ipfs/QmdoFMpQCWFtANDLmoUcx2SBjmqXu73CovH53my7A1XPhJ\"]},\"project:/contracts/Enums.sol\":{\"keccak256\":\"0x5fff9735385f8b6a5cc975d7f70fca7f41a1fec8f882602b1c3c5363b9bd5314\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://ea72185453eb25f489496cf50baeb063ca80967472b3a7bd6a08d3e774afe241\",\"dweb:/ipfs/QmR6hPCrDEPbHAYWUgUeYGX3a5xXkV5jizFG3oZV7Mrx37\"]},\"project:/contracts/IONEWallet.sol\":{\"keccak256\":\"0x70c72c82200c0deead1122b56aad989ad31bd65214474a2ff79afa0b0e71491a\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://c9bcb26e845443cb4413c38b66c641b3738ecbf4074e2f93dc2a181180b76ab2\",\"dweb:/ipfs/QmR6V9NCjr5t3XveV1VLA1ZojsCFrr4QB7mQKKkVpAuoUd\"]},\"project:/contracts/SpendingManager.sol\":{\"keccak256\":\"0x16d35e1ae9de8419f1e642b855ff910fc3da37cb60e4c5ce59f7bdbe3765d904\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://d363953e4d88e318b30d3a3dc6e9c5726fa0d7b1083639d9746baf08209165d2\",\"dweb:/ipfs/QmS3J3gKS2jcfTzb336sy7haijyXSpUZyiYLwGQAgYvhx4\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.4+commit.c7e474f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"}],\"name\":\"AutoRecoveryTriggered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"requiredTime\",\"type\":\"uint256\"}],\"name\":\"AutoRecoveryTriggeredPrematurely\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"ret\",\"type\":\"bytes\"}],\"name\":\"ExternalCallCompleted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"ret\",\"type\":\"bytes\"}],\"name\":\"ExternalCallFailed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"ForwardAddressAlreadySet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"ForwardAddressInvalid\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"ForwardAddressUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"success\",\"type\":\"bool\"}],\"name\":\"ForwardedBalance\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[],\"name\":\"LastResortAddressNotSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"PaymentForwarded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"}],\"name\":\"PaymentReceived\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"PaymentSent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"RecoveryAddressUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[],\"name\":\"RecoveryFailure\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[],\"name\":\"RecoveryTriggered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[],\"name\":\"Retired\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"error\",\"type\":\"bytes\"}],\"name\":\"TransferError\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"hash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"paramsHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"verificationHash\",\"type\":\"bytes32\"}],\"name\":\"commit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"findCommit\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAllCommits\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint32[]\",\"name\":\"\",\"type\":\"uint32[]\"},{\"internalType\":\"bool[]\",\"name\":\"\",\"type\":\"bool[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getBacklinks\",\"outputs\":[{\"internalType\":\"contract IONEWallet[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"enum Enums.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getBalance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getCommits\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint32[]\",\"name\":\"\",\"type\":\"uint32[]\"},{\"internalType\":\"bool[]\",\"name\":\"\",\"type\":\"bool[]\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getCurrentSpending\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getCurrentSpendingState\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getForwardAddress\",\"outputs\":[{\"internalType\":\"address payable\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInfo\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getNonce\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getOldInfos\",\"outputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"root\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"height\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"interval\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"t0\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"lifespan\",\"type\":\"uint32\"},{\"internalType\":\"uint8\",\"name\":\"maxOperationsPerInterval\",\"type\":\"uint8\"}],\"internalType\":\"struct IONEWallet.CoreSetting[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRootKey\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getSpendingState\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"spendingLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"spentAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"lastSpendingInterval\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"spendingInterval\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"lastLimitAdjustmentTime\",\"type\":\"uint32\"},{\"internalType\":\"uint256\",\"name\":\"initialSpendingLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"highestSpendingLimit\",\"type\":\"uint256\"}],\"internalType\":\"struct SpendingManager.SpendingState\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getTrackedTokens\",\"outputs\":[{\"internalType\":\"enum Enums.TokenType[]\",\"name\":\"\",\"type\":\"uint8[]\"},{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getVersion\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"identificationHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"root\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"height\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"interval\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"t0\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"lifespan\",\"type\":\"uint32\"},{\"internalType\":\"uint8\",\"name\":\"maxOperationsPerInterval\",\"type\":\"uint8\"}],\"internalType\":\"struct IONEWallet.CoreSetting\",\"name\":\"core\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"spendingLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"spentAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"lastSpendingInterval\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"spendingInterval\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"lastLimitAdjustmentTime\",\"type\":\"uint32\"},{\"internalType\":\"uint256\",\"name\":\"initialSpendingLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"highestSpendingLimit\",\"type\":\"uint256\"}],\"internalType\":\"struct SpendingManager.SpendingState\",\"name\":\"spendingState\",\"type\":\"tuple\"},{\"internalType\":\"address payable\",\"name\":\"recoveryAddress\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"identificationHash\",\"type\":\"bytes32\"},{\"internalType\":\"contract IONEWallet[]\",\"name\":\"backlinkAddresses\",\"type\":\"address[]\"},{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"root\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"height\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"interval\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"t0\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"lifespan\",\"type\":\"uint32\"},{\"internalType\":\"uint8\",\"name\":\"maxOperationsPerInterval\",\"type\":\"uint8\"}],\"internalType\":\"struct IONEWallet.CoreSetting[]\",\"name\":\"oldCores\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"root\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"height\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"interval\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"t0\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"lifespan\",\"type\":\"uint32\"},{\"internalType\":\"uint8\",\"name\":\"maxOperationsPerInterval\",\"type\":\"uint8\"}],\"internalType\":\"struct IONEWallet.CoreSetting[]\",\"name\":\"innerCores\",\"type\":\"tuple[]\"}],\"internalType\":\"struct IONEWallet.InitParams\",\"name\":\"initParams\",\"type\":\"tuple\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"hash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"isValidSignature\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"lastOperationTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"start\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"end\",\"type\":\"uint32\"}],\"name\":\"listSignatures\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint32[]\",\"name\":\"\",\"type\":\"uint32[]\"},{\"internalType\":\"uint32[]\",\"name\":\"\",\"type\":\"uint32[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"hash\",\"type\":\"bytes32\"}],\"name\":\"lookupCommit\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint32[]\",\"name\":\"\",\"type\":\"uint32[]\"},{\"internalType\":\"bool[]\",\"name\":\"\",\"type\":\"bool[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"hash\",\"type\":\"bytes32\"}],\"name\":\"lookupSignature\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"retire\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"bytes32[]\",\"name\":\"neighbors\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint32\",\"name\":\"indexWithNonce\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"eotp\",\"type\":\"bytes32\"}],\"internalType\":\"struct IONEWallet.AuthParams\",\"name\":\"auth\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"enum Enums.OperationType\",\"name\":\"operationType\",\"type\":\"uint8\"},{\"internalType\":\"enum Enums.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address payable\",\"name\":\"dest\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"internalType\":\"struct IONEWallet.OperationParams\",\"name\":\"op\",\"type\":\"tuple\"}],\"name\":\"reveal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"enum Enums.OperationType\",\"name\":\"\",\"type\":\"uint8\"},{\"internalType\":\"enum Enums.TokenType\",\"name\":\"\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address payable\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"reveal\",\"outputs\":[],\"stateMutability\":\"pure\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"findCommit(bytes32)\":{\"notice\":\"DEPRECATED\"},\"getCommits()\":{\"notice\":\"DEPRECATED\"},\"isValidSignature(bytes32,bytes)\":{\"notice\":\"https://eips.ethereum.org/EIPS/eip-1271\"}},\"notice\":\"For now, this is just a place to put all the deprecated stuff. In the future we can put some state variables here, along with some simple getters\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/AbstractONEWallet.sol\":\"AbstractONEWallet\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/AbstractONEWallet.sol\":{\"keccak256\":\"0xa7d6641f4d52a108ec510bc8a4f0150ed3d9d59cbeedce497c1ac273e4426a12\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://e3fb55fd8f0dbd3f9a08050e689bde7a493455ea575387b4ea01126ea1754315\",\"dweb:/ipfs/QmWL8SBT3wpmRRjqijmAB1KWsz7GyXZEgngUvE9PCD4QK1\"]},\"project:/contracts/Enums.sol\":{\"keccak256\":\"0x965c9c2718886c3251ea4ace644a179aa16333628ec3a50f356249d4879d5ab2\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://d835c7a7d5aef2a8b7689c28e69b25360ccc46541321034412b73b31fbcb2ed8\",\"dweb:/ipfs/QmerS3UiqudhUJr8nAej7NnKHbExLWfnB4T96Sghh3Q3K8\"]},\"project:/contracts/IONEWallet.sol\":{\"keccak256\":\"0xc2461a63ee040311f86d580a8c187bb2e520a6e2333644aeb2a5d24599ad4f71\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://580f1871bdd8de0b00a70f2d699575f7385ee5b0bb9b826877492c93bc1c59ed\",\"dweb:/ipfs/QmTCRGWfM7Ce9sYWpycofm9ATikvJnAJtzLLxqxKoMwAb3\"]},\"project:/contracts/SpendingManager.sol\":{\"keccak256\":\"0x623679bdc2d6f49948ecf99eb727978508d72f8d58762fddc3333aefff450460\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://0ffa30ef8a410e00acf265d85babd3e1205bfe733652d40dd8ece3a6733d6653\",\"dweb:/ipfs/QmPHpLxNBqD15p5w3PzbXjM6xeMQhcYa1JmHLAtJAKDetf\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -1116,25 +1181,25 @@
   "deployedGeneratedSources": [],
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "// SPDX-License-Identifier: Apache-2.0\npragma solidity ^0.8.4;\n\nimport \"./Enums.sol\";\nimport \"./IONEWallet.sol\";\n\n/// For now, this is just a place to put all the deprecated stuff. In the future we can put some state variables here, along with some simple getters\nabstract contract AbstractONEWallet is IONEWallet {\n    // DEPRECATED\n    function getCurrentSpending() external pure override returns (uint256, uint256){\n        revert();\n    }\n\n    /// DEPRECATED\n    function getCommits() external pure override returns (bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){\n        revert();\n    }\n\n    /// DEPRECATED\n    function findCommit(bytes32 /*hash*/) external pure override returns (bytes32, bytes32, uint32, bool){\n        revert();\n    }\n\n    // Deprecated since v14\n    function reveal(bytes32[] calldata /*neighbors*/, uint32 /*indexWithNonce*/, bytes32 /*eotp*/, Enums.OperationType /*operationType*/, Enums.TokenType /*tokenType*/, address /*contractAddress*/, uint256 /*tokenId*/, address payable /*dest*/, uint256 /*amount*/, bytes calldata /*data*/) external pure override {\n        revert();\n    }\n}\n",
+  "source": "// SPDX-License-Identifier: Apache-2.0\npragma solidity ^0.8.4;\n\nimport \"./Enums.sol\";\nimport \"./IONEWallet.sol\";\n\n/// For now, this is just a place to put all the deprecated stuff. In the future we can put some state variables here, along with some simple getters\nabstract contract AbstractONEWallet is IONEWallet {\n    // DEPRECATED\n    function getCurrentSpending() external pure override returns (uint256, uint256){\n        revert();\n    }\n\n    /// DEPRECATED\n    function getCommits() external pure override returns (bytes32[] memory, bytes32[] memory, uint32[] memory, bool[] memory){\n        revert();\n    }\n\n    /// DEPRECATED\n    function findCommit(bytes32 /*hash*/) external pure override returns (bytes32, bytes32, uint32, bool){\n        revert();\n    }\n\n    // Deprecated since v14\n    function reveal(bytes32[] calldata /*neighbors*/, uint32 /*indexWithNonce*/, bytes32 /*eotp*/, Enums.OperationType /*operationType*/, Enums.TokenType /*tokenType*/, address /*contractAddress*/, uint256 /*tokenId*/, address payable /*dest*/, uint256 /*amount*/, bytes calldata /*data*/) external pure override {\n        revert();\n    }\n\n    // Deprecated since v15\n    function getCurrentSpendingState() external override pure returns (uint256, uint256, uint32, uint32){\n        revert();\n    }\n}\n",
   "sourcePath": "/Users/polymorpher/git/one-wallet/code/contracts/AbstractONEWallet.sol",
   "ast": {
     "absolutePath": "project:/contracts/AbstractONEWallet.sol",
     "exportedSymbols": {
       "AbstractONEWallet": [
-        851
+        867
       ],
       "Enums": [
-        2747
+        2766
       ],
       "IONEWallet": [
-        3993
+        4056
       ],
       "SpendingManager": [
-        7664
+        7948
       ]
     },
-    "id": 852,
+    "id": 868,
     "license": "Apache-2.0",
     "nodeType": "SourceUnit",
     "nodes": [
@@ -1155,8 +1220,8 @@
         "id": 763,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 852,
-        "sourceUnit": 2748,
+        "scope": 868,
+        "sourceUnit": 2767,
         "src": "64:21:10",
         "symbolAliases": [],
         "unitAlias": ""
@@ -1167,8 +1232,8 @@
         "id": 764,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 852,
-        "sourceUnit": 3994,
+        "scope": 868,
+        "sourceUnit": 4057,
         "src": "86:26:10",
         "symbolAliases": [],
         "unitAlias": ""
@@ -1181,7 +1246,7 @@
               "id": 766,
               "name": "IONEWallet",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 3993,
+              "referencedDeclaration": 4056,
               "src": "303:10:10"
             },
             "id": 767,
@@ -1198,10 +1263,10 @@
           "text": "For now, this is just a place to put all the deprecated stuff. In the future we can put some state variables here, along with some simple getters"
         },
         "fullyImplemented": false,
-        "id": 851,
+        "id": 867,
         "linearizedBaseContracts": [
-          851,
-          3993
+          867,
+          4056
         ],
         "name": "AbstractONEWallet",
         "nameLocation": "282:17:10",
@@ -1209,7 +1274,7 @@
         "nodes": [
           {
             "baseFunctions": [
-              3787
+              3844
             ],
             "body": {
               "id": 778,
@@ -1337,7 +1402,7 @@
               ],
               "src": "399:18:10"
             },
-            "scope": 851,
+            "scope": 867,
             "src": "338:104:10",
             "stateMutability": "pure",
             "virtual": false,
@@ -1345,7 +1410,7 @@
           },
           {
             "baseFunctions": [
-              3824
+              3887
             ],
             "body": {
               "id": 799,
@@ -1569,7 +1634,7 @@
               ],
               "src": "520:68:10"
             },
-            "scope": 851,
+            "scope": 867,
             "src": "467:146:10",
             "stateMutability": "pure",
             "virtual": false,
@@ -1577,7 +1642,7 @@
           },
           {
             "baseFunctions": [
-              3856
+              3919
             ],
             "body": {
               "id": 818,
@@ -1793,7 +1858,7 @@
               ],
               "src": "707:32:10"
             },
-            "scope": 851,
+            "scope": 867,
             "src": "638:126:10",
             "stateMutability": "pure",
             "virtual": false,
@@ -1801,7 +1866,7 @@
           },
           {
             "baseFunctions": [
-              3911
+              3974
             ],
             "body": {
               "id": 849,
@@ -1968,7 +2033,7 @@
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_enum$_OperationType_$2741",
+                    "typeIdentifier": "t_enum$_OperationType_$2760",
                     "typeString": "enum Enums.OperationType"
                   },
                   "typeName": {
@@ -1978,13 +2043,13 @@
                       "id": 827,
                       "name": "Enums.OperationType",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 2741,
+                      "referencedDeclaration": 2760,
                       "src": "893:19:10"
                     },
-                    "referencedDeclaration": 2741,
+                    "referencedDeclaration": 2760,
                     "src": "893:19:10",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_enum$_OperationType_$2741",
+                      "typeIdentifier": "t_enum$_OperationType_$2760",
                       "typeString": "enum Enums.OperationType"
                     }
                   },
@@ -2002,7 +2067,7 @@
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_enum$_TokenType_$2746",
+                    "typeIdentifier": "t_enum$_TokenType_$2765",
                     "typeString": "enum Enums.TokenType"
                   },
                   "typeName": {
@@ -2012,13 +2077,13 @@
                       "id": 830,
                       "name": "Enums.TokenType",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 2746,
+                      "referencedDeclaration": 2765,
                       "src": "932:15:10"
                     },
-                    "referencedDeclaration": 2746,
+                    "referencedDeclaration": 2765,
                     "src": "932:15:10",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_enum$_TokenType_$2746",
+                      "typeIdentifier": "t_enum$_TokenType_$2765",
                       "typeString": "enum Enums.TokenType"
                     }
                   },
@@ -2170,37 +2235,227 @@
               "parameters": [],
               "src": "1107:0:10"
             },
-            "scope": 851,
+            "scope": 867,
             "src": "798:334:10",
+            "stateMutability": "pure",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "baseFunctions": [
+              3855
+            ],
+            "body": {
+              "id": 865,
+              "nodeType": "Block",
+              "src": "1266:25:10",
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "id": 862,
+                      "name": "revert",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        4294967277,
+                        4294967277
+                      ],
+                      "referencedDeclaration": 4294967277,
+                      "src": "1276:6:10",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_revert_pure$__$returns$__$",
+                        "typeString": "function () pure"
+                      }
+                    },
+                    "id": 863,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1276:8:10",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 864,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1276:8:10"
+                }
+              ]
+            },
+            "functionSelector": "396ec5f4",
+            "id": 866,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getCurrentSpendingState",
+            "nameLocation": "1175:23:10",
+            "nodeType": "FunctionDefinition",
+            "overrides": {
+              "id": 852,
+              "nodeType": "OverrideSpecifier",
+              "overrides": [],
+              "src": "1210:8:10"
+            },
+            "parameters": {
+              "id": 851,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1198:2:10"
+            },
+            "returnParameters": {
+              "id": 861,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 854,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 866,
+                  "src": "1233:7:10",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 853,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1233:7:10",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 856,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 866,
+                  "src": "1242:7:10",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 855,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1242:7:10",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 858,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 866,
+                  "src": "1251:6:10",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint32",
+                    "typeString": "uint32"
+                  },
+                  "typeName": {
+                    "id": 857,
+                    "name": "uint32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1251:6:10",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint32",
+                      "typeString": "uint32"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 860,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 866,
+                  "src": "1259:6:10",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint32",
+                    "typeString": "uint32"
+                  },
+                  "typeName": {
+                    "id": 859,
+                    "name": "uint32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1259:6:10",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint32",
+                      "typeString": "uint32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1232:34:10"
+            },
+            "scope": 867,
+            "src": "1166:125:10",
             "stateMutability": "pure",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 852,
-        "src": "264:870:10",
+        "scope": 868,
+        "src": "264:1029:10",
         "usedErrors": []
       }
     ],
-    "src": "39:1096:10"
+    "src": "39:1255:10"
   },
   "legacyAST": {
     "absolutePath": "project:/contracts/AbstractONEWallet.sol",
     "exportedSymbols": {
       "AbstractONEWallet": [
-        851
+        867
       ],
       "Enums": [
-        2747
+        2766
       ],
       "IONEWallet": [
-        3993
+        4056
       ],
       "SpendingManager": [
-        7664
+        7948
       ]
     },
-    "id": 852,
+    "id": 868,
     "license": "Apache-2.0",
     "nodeType": "SourceUnit",
     "nodes": [
@@ -2221,8 +2476,8 @@
         "id": 763,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 852,
-        "sourceUnit": 2748,
+        "scope": 868,
+        "sourceUnit": 2767,
         "src": "64:21:10",
         "symbolAliases": [],
         "unitAlias": ""
@@ -2233,8 +2488,8 @@
         "id": 764,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 852,
-        "sourceUnit": 3994,
+        "scope": 868,
+        "sourceUnit": 4057,
         "src": "86:26:10",
         "symbolAliases": [],
         "unitAlias": ""
@@ -2247,7 +2502,7 @@
               "id": 766,
               "name": "IONEWallet",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 3993,
+              "referencedDeclaration": 4056,
               "src": "303:10:10"
             },
             "id": 767,
@@ -2264,10 +2519,10 @@
           "text": "For now, this is just a place to put all the deprecated stuff. In the future we can put some state variables here, along with some simple getters"
         },
         "fullyImplemented": false,
-        "id": 851,
+        "id": 867,
         "linearizedBaseContracts": [
-          851,
-          3993
+          867,
+          4056
         ],
         "name": "AbstractONEWallet",
         "nameLocation": "282:17:10",
@@ -2275,7 +2530,7 @@
         "nodes": [
           {
             "baseFunctions": [
-              3787
+              3844
             ],
             "body": {
               "id": 778,
@@ -2403,7 +2658,7 @@
               ],
               "src": "399:18:10"
             },
-            "scope": 851,
+            "scope": 867,
             "src": "338:104:10",
             "stateMutability": "pure",
             "virtual": false,
@@ -2411,7 +2666,7 @@
           },
           {
             "baseFunctions": [
-              3824
+              3887
             ],
             "body": {
               "id": 799,
@@ -2635,7 +2890,7 @@
               ],
               "src": "520:68:10"
             },
-            "scope": 851,
+            "scope": 867,
             "src": "467:146:10",
             "stateMutability": "pure",
             "virtual": false,
@@ -2643,7 +2898,7 @@
           },
           {
             "baseFunctions": [
-              3856
+              3919
             ],
             "body": {
               "id": 818,
@@ -2859,7 +3114,7 @@
               ],
               "src": "707:32:10"
             },
-            "scope": 851,
+            "scope": 867,
             "src": "638:126:10",
             "stateMutability": "pure",
             "virtual": false,
@@ -2867,7 +3122,7 @@
           },
           {
             "baseFunctions": [
-              3911
+              3974
             ],
             "body": {
               "id": 849,
@@ -3034,7 +3289,7 @@
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_enum$_OperationType_$2741",
+                    "typeIdentifier": "t_enum$_OperationType_$2760",
                     "typeString": "enum Enums.OperationType"
                   },
                   "typeName": {
@@ -3044,13 +3299,13 @@
                       "id": 827,
                       "name": "Enums.OperationType",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 2741,
+                      "referencedDeclaration": 2760,
                       "src": "893:19:10"
                     },
-                    "referencedDeclaration": 2741,
+                    "referencedDeclaration": 2760,
                     "src": "893:19:10",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_enum$_OperationType_$2741",
+                      "typeIdentifier": "t_enum$_OperationType_$2760",
                       "typeString": "enum Enums.OperationType"
                     }
                   },
@@ -3068,7 +3323,7 @@
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_enum$_TokenType_$2746",
+                    "typeIdentifier": "t_enum$_TokenType_$2765",
                     "typeString": "enum Enums.TokenType"
                   },
                   "typeName": {
@@ -3078,13 +3333,13 @@
                       "id": 830,
                       "name": "Enums.TokenType",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 2746,
+                      "referencedDeclaration": 2765,
                       "src": "932:15:10"
                     },
-                    "referencedDeclaration": 2746,
+                    "referencedDeclaration": 2765,
                     "src": "932:15:10",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_enum$_TokenType_$2746",
+                      "typeIdentifier": "t_enum$_TokenType_$2765",
                       "typeString": "enum Enums.TokenType"
                     }
                   },
@@ -3236,19 +3491,209 @@
               "parameters": [],
               "src": "1107:0:10"
             },
-            "scope": 851,
+            "scope": 867,
             "src": "798:334:10",
+            "stateMutability": "pure",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "baseFunctions": [
+              3855
+            ],
+            "body": {
+              "id": 865,
+              "nodeType": "Block",
+              "src": "1266:25:10",
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "id": 862,
+                      "name": "revert",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        4294967277,
+                        4294967277
+                      ],
+                      "referencedDeclaration": 4294967277,
+                      "src": "1276:6:10",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_revert_pure$__$returns$__$",
+                        "typeString": "function () pure"
+                      }
+                    },
+                    "id": 863,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1276:8:10",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 864,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1276:8:10"
+                }
+              ]
+            },
+            "functionSelector": "396ec5f4",
+            "id": 866,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getCurrentSpendingState",
+            "nameLocation": "1175:23:10",
+            "nodeType": "FunctionDefinition",
+            "overrides": {
+              "id": 852,
+              "nodeType": "OverrideSpecifier",
+              "overrides": [],
+              "src": "1210:8:10"
+            },
+            "parameters": {
+              "id": 851,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1198:2:10"
+            },
+            "returnParameters": {
+              "id": 861,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 854,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 866,
+                  "src": "1233:7:10",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 853,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1233:7:10",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 856,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 866,
+                  "src": "1242:7:10",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 855,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1242:7:10",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 858,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 866,
+                  "src": "1251:6:10",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint32",
+                    "typeString": "uint32"
+                  },
+                  "typeName": {
+                    "id": 857,
+                    "name": "uint32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1251:6:10",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint32",
+                      "typeString": "uint32"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 860,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 866,
+                  "src": "1259:6:10",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint32",
+                    "typeString": "uint32"
+                  },
+                  "typeName": {
+                    "id": 859,
+                    "name": "uint32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1259:6:10",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint32",
+                      "typeString": "uint32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1232:34:10"
+            },
+            "scope": 867,
+            "src": "1166:125:10",
             "stateMutability": "pure",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 852,
-        "src": "264:870:10",
+        "scope": 868,
+        "src": "264:1029:10",
         "usedErrors": []
       }
     ],
-    "src": "39:1096:10"
+    "src": "39:1255:10"
   },
   "compiler": {
     "name": "solc",
@@ -3256,7 +3701,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.2",
-  "updatedAt": "2021-11-14T03:21:26.624Z",
+  "updatedAt": "2021-11-14T13:20:53.809Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

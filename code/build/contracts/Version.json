@@ -1,29 +1,29 @@
 {
   "contractName": "Version",
   "abi": [],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.4+commit.c7e474f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/Version.sol\":\"Version\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/Version.sol\":{\"keccak256\":\"0xa8cd6926eac751af8f3fa7e0691129e98b6e82bc2045a93bfab5d60ecc6253aa\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://e4ead00f659e588d4cca68e0469a02a73e0a66c25e098aa2f3a5512df5e81fe7\",\"dweb:/ipfs/QmPxGwE9XZoTMmmBE5j7hxRegeRe35ieeYjHwkcfTni4Qw\"]}},\"version\":1}",
-  "bytecode": "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122041d5046cab5f87eedd0b38bec63a7672f91dea6242e017a01488e3580a272bca64736f6c63430008040033",
-  "deployedBytecode": "0x73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122041d5046cab5f87eedd0b38bec63a7672f91dea6242e017a01488e3580a272bca64736f6c63430008040033",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.4+commit.c7e474f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/Version.sol\":\"Version\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/Version.sol\":{\"keccak256\":\"0x219ccbca424f54153322d3ef7a74d08707e6fc20ff26a85dfeca5683464f0cc0\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://da653eb5e464d09b712804b421d372c01fe62e67b269c490f1baef649069e183\",\"dweb:/ipfs/QmZMyzCRsJM5RSuDbNKNo6XpqmJ1Mq9cJq8VvkJLCQ6rZd\"]}},\"version\":1}",
+  "bytecode": "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212206d0a093795fdf6e79bda303d7fb4b162e52fa8b2b44c6cb6e0a33aed2f96721464736f6c63430008040033",
+  "deployedBytecode": "0x73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212206d0a093795fdf6e79bda303d7fb4b162e52fa8b2b44c6cb6e0a33aed2f96721464736f6c63430008040033",
   "immutableReferences": {},
   "generatedSources": [],
   "deployedGeneratedSources": [],
-  "sourceMap": "64:194:27:-:0;;;;;;;;;;;;;;;-1:-1:-1;;;64:194:27;;;;;;;;;;;;;;;;;",
-  "deployedSourceMap": "64:194:27:-:0;;;;;;;;",
-  "source": "// SPDX-License-Identifier: Apache-2.0\npragma solidity ^0.8.4;\n\nlibrary Version{\n    uint32 constant majorVersion = 0xf; // a change would require client to migrate\n    uint32 constant minorVersion = 0x1; // a change would not require the client to migrate\n}\n",
+  "sourceMap": "96:194:27:-:0;;;;;;;;;;;;;;;-1:-1:-1;;;96:194:27;;;;;;;;;;;;;;;;;",
+  "deployedSourceMap": "96:194:27:-:0;;;;;;;;",
+  "source": "// SPDX-License-Identifier: Apache-2.0\npragma solidity ^0.8.4;\n\n// does not need to be deployed\nlibrary Version{\n    uint32 constant majorVersion = 0xf; // a change would require client to migrate\n    uint32 constant minorVersion = 0x1; // a change would not require the client to migrate\n}\n",
   "sourcePath": "/Users/polymorpher/git/one-wallet/code/contracts/Version.sol",
   "ast": {
     "absolutePath": "project:/contracts/Version.sol",
     "exportedSymbols": {
       "Version": [
-        9472
+        9756
       ]
     },
-    "id": 9473,
+    "id": 9757,
     "license": "Apache-2.0",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 9465,
+        "id": 9749,
         "literals": [
           "solidity",
           "^",
@@ -39,23 +39,23 @@
         "contractDependencies": [],
         "contractKind": "library",
         "fullyImplemented": true,
-        "id": 9472,
+        "id": 9756,
         "linearizedBaseContracts": [
-          9472
+          9756
         ],
         "name": "Version",
-        "nameLocation": "72:7:27",
+        "nameLocation": "104:7:27",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": true,
-            "id": 9468,
+            "id": 9752,
             "mutability": "constant",
             "name": "majorVersion",
-            "nameLocation": "101:12:27",
+            "nameLocation": "133:12:27",
             "nodeType": "VariableDeclaration",
-            "scope": 9472,
-            "src": "85:34:27",
+            "scope": 9756,
+            "src": "117:34:27",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -63,10 +63,10 @@
               "typeString": "uint32"
             },
             "typeName": {
-              "id": 9466,
+              "id": 9750,
               "name": "uint32",
               "nodeType": "ElementaryTypeName",
-              "src": "85:6:27",
+              "src": "117:6:27",
               "typeDescriptions": {
                 "typeIdentifier": "t_uint32",
                 "typeString": "uint32"
@@ -74,14 +74,14 @@
             },
             "value": {
               "hexValue": "307866",
-              "id": 9467,
+              "id": 9751,
               "isConstant": false,
               "isLValue": false,
               "isPure": true,
               "kind": "number",
               "lValueRequested": false,
               "nodeType": "Literal",
-              "src": "116:3:27",
+              "src": "148:3:27",
               "typeDescriptions": {
                 "typeIdentifier": "t_rational_15_by_1",
                 "typeString": "int_const 15"
@@ -92,13 +92,13 @@
           },
           {
             "constant": true,
-            "id": 9471,
+            "id": 9755,
             "mutability": "constant",
             "name": "minorVersion",
-            "nameLocation": "185:12:27",
+            "nameLocation": "217:12:27",
             "nodeType": "VariableDeclaration",
-            "scope": 9472,
-            "src": "169:34:27",
+            "scope": 9756,
+            "src": "201:34:27",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -106,10 +106,10 @@
               "typeString": "uint32"
             },
             "typeName": {
-              "id": 9469,
+              "id": 9753,
               "name": "uint32",
               "nodeType": "ElementaryTypeName",
-              "src": "169:6:27",
+              "src": "201:6:27",
               "typeDescriptions": {
                 "typeIdentifier": "t_uint32",
                 "typeString": "uint32"
@@ -117,14 +117,14 @@
             },
             "value": {
               "hexValue": "307831",
-              "id": 9470,
+              "id": 9754,
               "isConstant": false,
               "isLValue": false,
               "isPure": true,
               "kind": "number",
               "lValueRequested": false,
               "nodeType": "Literal",
-              "src": "200:3:27",
+              "src": "232:3:27",
               "typeDescriptions": {
                 "typeIdentifier": "t_rational_1_by_1",
                 "typeString": "int_const 1"
@@ -134,26 +134,26 @@
             "visibility": "internal"
           }
         ],
-        "scope": 9473,
-        "src": "64:194:27",
+        "scope": 9757,
+        "src": "96:194:27",
         "usedErrors": []
       }
     ],
-    "src": "39:220:27"
+    "src": "39:252:27"
   },
   "legacyAST": {
     "absolutePath": "project:/contracts/Version.sol",
     "exportedSymbols": {
       "Version": [
-        9472
+        9756
       ]
     },
-    "id": 9473,
+    "id": 9757,
     "license": "Apache-2.0",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 9465,
+        "id": 9749,
         "literals": [
           "solidity",
           "^",
@@ -169,23 +169,23 @@
         "contractDependencies": [],
         "contractKind": "library",
         "fullyImplemented": true,
-        "id": 9472,
+        "id": 9756,
         "linearizedBaseContracts": [
-          9472
+          9756
         ],
         "name": "Version",
-        "nameLocation": "72:7:27",
+        "nameLocation": "104:7:27",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": true,
-            "id": 9468,
+            "id": 9752,
             "mutability": "constant",
             "name": "majorVersion",
-            "nameLocation": "101:12:27",
+            "nameLocation": "133:12:27",
             "nodeType": "VariableDeclaration",
-            "scope": 9472,
-            "src": "85:34:27",
+            "scope": 9756,
+            "src": "117:34:27",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -193,10 +193,10 @@
               "typeString": "uint32"
             },
             "typeName": {
-              "id": 9466,
+              "id": 9750,
               "name": "uint32",
               "nodeType": "ElementaryTypeName",
-              "src": "85:6:27",
+              "src": "117:6:27",
               "typeDescriptions": {
                 "typeIdentifier": "t_uint32",
                 "typeString": "uint32"
@@ -204,14 +204,14 @@
             },
             "value": {
               "hexValue": "307866",
-              "id": 9467,
+              "id": 9751,
               "isConstant": false,
               "isLValue": false,
               "isPure": true,
               "kind": "number",
               "lValueRequested": false,
               "nodeType": "Literal",
-              "src": "116:3:27",
+              "src": "148:3:27",
               "typeDescriptions": {
                 "typeIdentifier": "t_rational_15_by_1",
                 "typeString": "int_const 15"
@@ -222,13 +222,13 @@
           },
           {
             "constant": true,
-            "id": 9471,
+            "id": 9755,
             "mutability": "constant",
             "name": "minorVersion",
-            "nameLocation": "185:12:27",
+            "nameLocation": "217:12:27",
             "nodeType": "VariableDeclaration",
-            "scope": 9472,
-            "src": "169:34:27",
+            "scope": 9756,
+            "src": "201:34:27",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -236,10 +236,10 @@
               "typeString": "uint32"
             },
             "typeName": {
-              "id": 9469,
+              "id": 9753,
               "name": "uint32",
               "nodeType": "ElementaryTypeName",
-              "src": "169:6:27",
+              "src": "201:6:27",
               "typeDescriptions": {
                 "typeIdentifier": "t_uint32",
                 "typeString": "uint32"
@@ -247,14 +247,14 @@
             },
             "value": {
               "hexValue": "307831",
-              "id": 9470,
+              "id": 9754,
               "isConstant": false,
               "isLValue": false,
               "isPure": true,
               "kind": "number",
               "lValueRequested": false,
               "nodeType": "Literal",
-              "src": "200:3:27",
+              "src": "232:3:27",
               "typeDescriptions": {
                 "typeIdentifier": "t_rational_1_by_1",
                 "typeString": "int_const 1"
@@ -264,12 +264,12 @@
             "visibility": "internal"
           }
         ],
-        "scope": 9473,
-        "src": "64:194:27",
+        "scope": 9757,
+        "src": "96:194:27",
         "usedErrors": []
       }
     ],
-    "src": "39:220:27"
+    "src": "39:252:27"
   },
   "compiler": {
     "name": "solc",
@@ -277,7 +277,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.2",
-  "updatedAt": "2021-11-14T03:21:26.999Z",
+  "updatedAt": "2021-11-14T13:19:56.876Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

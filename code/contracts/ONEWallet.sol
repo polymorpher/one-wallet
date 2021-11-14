@@ -26,7 +26,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
 
     CoreSetting core;
     CoreSetting[] oldCores;
-    CoreSetting[] recoveryCores;
+    CoreSetting[] innerCores;
 
     /// global mutable variables
     address payable recoveryAddress; // where money will be sent during a recovery process (or when the wallet is beyond its lifespan)
@@ -50,8 +50,8 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
         for (uint32 i = 0; i < initParams.oldCores.length; i++) {
             oldCores.push(initParams.oldCores[i]);
         }
-        for (uint32 i = 0; i < initParams.recoveryCores.length; i++) {
-            recoveryCores.push(initParams.recoveryCores[i]);
+        for (uint32 i = 0; i < initParams.innerCores.length; i++) {
+            innerCores.push(initParams.innerCores[i]);
         }
         core = initParams.core;
         spendingState = initParams.spendingState;
@@ -142,8 +142,8 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
         return (Version.majorVersion, Version.minorVersion);
     }
 
-    function getCurrentSpendingState() external override view returns (uint256, uint256, uint32, uint32){
-        return spendingState.getState();
+    function getSpendingState() external override view returns (SpendingManager.SpendingState memory){
+        return spendingState;
     }
 
     function getNonce() external override view returns (uint8){
@@ -274,7 +274,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
     function reveal(AuthParams calldata auth, OperationParams calldata op) external override {
         require(initialized);
         if (msg.sender != forwardAddress) {
-            core.authenticate(oldCores, recoveryCores, recoveryAddress, commitState, auth, op);
+            core.authenticate(oldCores, innerCores, recoveryAddress, commitState, auth, op);
             lastOperationTime = block.timestamp;
         }
         _execute(op);
@@ -301,7 +301,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
         } else if (op.operationType == Enums.OperationType.BATCH) {
             _batch(op.data);
         } else {
-            Executor.execute(op, tokenTrackerState, backlinkAddresses, signatures);
+            Executor.execute(op, tokenTrackerState, backlinkAddresses, signatures, spendingState);
         }
     }
 

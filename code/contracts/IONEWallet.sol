@@ -38,7 +38,7 @@ interface IONEWallet {
         bytes32 identificationHash; // = keccak256(leaf_0 . leaf_1); Since identificationHash can be computed instantly as soon as we have the seed, we know the wallet address instantly and we can store the full address in the Google Authenticator entry. Contracts can also use identificationHash to verify the integrity of the code on the contract, therefore identifying whether a contract is legit ONEWallet or not. Since identificationHash equals the the first parent node in the OTP Merkle Tree, it does not leak any secret either.
         IONEWallet[] backlinkAddresses;
         CoreSetting[] oldCores; // for cores used previously to validate EOTPs. They are inserted by "displaceCore" method. In this method, a new core is assigned to `core`, and the old core is inserted here in `oldCores`. Each core in `oldCore` provides the same level of authorization compared to the current core. Essentially, each oldCore can be considered as authorizing a new authenticator account (where it could be the same compared to an old authenticator account, and the differences in root hash only arises from differences in start time and duration of the OTP Merkle Tree).
-        CoreSetting[] recoveryCores; // for validating an EOTP constructed from N-consecutive OTPs against recovery roots. Since there are N possible offsets, for N consecutive OTPs, we need N roots as well
+        CoreSetting[] innerCores; // for validating an EOTP constructed from N-consecutive OTPs against recovery roots. Since there are N possible offsets, for N consecutive OTPs, we need N roots as well. Therefore, the interval of each innerCore is N times the interval of core or oldCores (assuming they have the same interval, which is 30 seconds by default)
     }
 
     event TransferError(address dest, bytes error);
@@ -81,7 +81,10 @@ interface IONEWallet {
     // DEPRECATED
     function getCurrentSpending() external view returns (uint256, uint256);
 
+    // DEPRECATED
     function getCurrentSpendingState() external view returns (uint256, uint256, uint32, uint32);
+
+    function getSpendingState() external view returns (SpendingManager.SpendingState memory);
 
     function getNonce() external view returns (uint8);
 

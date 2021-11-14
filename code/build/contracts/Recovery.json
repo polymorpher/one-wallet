@@ -28,9 +28,9 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.4+commit.c7e474f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"AUTO_RECOVERY_MANDATORY_WAIT_TIME\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"AUTO_RECOVERY_TRIGGER_AMOUNT\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/Recovery.sol\":\"Recovery\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/Recovery.sol\":{\"keccak256\":\"0x77603b55fed5ecb6a06fdae3600344e5a787be0456ce0e4bbc1f12515c28bd0a\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://10dabb76acae80ce4d7e6b1aca358fa62f9cc8c0f7fb47eac98664d51f04228c\",\"dweb:/ipfs/QmPE48WTKpuowiHRcNQv8i63XDAecnbP4y911Lry4ziYVv\"]}},\"version\":1}",
-  "bytecode": "0x60a1610038600b82828239805160001a607314602b57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe7300000000000000000000000000000000000000003014608060405260043610603d5760003560e01c80634210ca30146042578063f5ab9ff314605d575b600080fd5b604b6212750081565b60405190815260200160405180910390f35b604b670de0b6b3a76400008156fea26469706673582212206cfeb0bac66617db07b0ae5cfaaad8b5f3502f44b73f8c5f43af36ff246afccb64736f6c63430008040033",
-  "deployedBytecode": "0x7300000000000000000000000000000000000000003014608060405260043610603d5760003560e01c80634210ca30146042578063f5ab9ff314605d575b600080fd5b604b6212750081565b60405190815260200160405180910390f35b604b670de0b6b3a76400008156fea26469706673582212206cfeb0bac66617db07b0ae5cfaaad8b5f3502f44b73f8c5f43af36ff246afccb64736f6c63430008040033",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.4+commit.c7e474f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"AUTO_RECOVERY_MANDATORY_WAIT_TIME\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"AUTO_RECOVERY_TRIGGER_AMOUNT\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/Recovery.sol\":\"Recovery\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/Recovery.sol\":{\"keccak256\":\"0xdd810b7613098d49874209bc35d8ad76ea756160441838c1c7429d0db2dfec87\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://751310c557eab27e37635877ad56d3de4b2402bb34fb00e8fd3056e21b68bef4\",\"dweb:/ipfs/QmXhR8UCDYE8n7rLmTa8dBW9Mxk1xZKNgRsUKQe6bMjkfL\"]}},\"version\":1}",
+  "bytecode": "0x60a1610038600b82828239805160001a607314602b57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe7300000000000000000000000000000000000000003014608060405260043610603d5760003560e01c80634210ca30146042578063f5ab9ff314605d575b600080fd5b604b6212750081565b60405190815260200160405180910390f35b604b670de0b6b3a76400008156fea2646970667358221220a138044eddc33f0ea9df25d829f69fa5778c76273ee823a461ed3afb1e390ea864736f6c63430008040033",
+  "deployedBytecode": "0x7300000000000000000000000000000000000000003014608060405260043610603d5760003560e01c80634210ca30146042578063f5ab9ff314605d575b600080fd5b604b6212750081565b60405190815260200160405180910390f35b604b670de0b6b3a76400008156fea2646970667358221220a138044eddc33f0ea9df25d829f69fa5778c76273ee823a461ed3afb1e390ea864736f6c63430008040033",
   "immutableReferences": {},
   "generatedSources": [],
   "deployedGeneratedSources": [
@@ -144,23 +144,23 @@
       "name": "#utility.yul"
     }
   ],
-  "sourceMap": "64:433:21:-:0;;;;;;;;;;;;;;;-1:-1:-1;;;64:433:21;;;;;;;;;;;;;;;;;",
-  "deployedSourceMap": "64:433:21:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;242:67;;302:7;242:67;;;;;168:25:29;;;156:2;141:18;242:67:21;;;;;;;174:62;;229:7;174:62;",
-  "source": "// SPDX-License-Identifier: Apache-2.0\npragma solidity ^0.8.4;\n\nlibrary Recovery {\n    address constant ONE_WALLET_TREASURY = 0x7534978F9fa903150eD429C486D1f42B7fDB7a61;\n    uint256 public constant AUTO_RECOVERY_TRIGGER_AMOUNT = 1 ether;\n    uint256 public constant AUTO_RECOVERY_MANDATORY_WAIT_TIME = 14 days;\n\n    function isRecoveryAddressSet(address recoveryAddress) internal pure returns (bool) {\n        return recoveryAddress != address(0) && recoveryAddress != ONE_WALLET_TREASURY;\n    }\n}\n",
+  "sourceMap": "96:433:21:-:0;;;;;;;;;;;;;;;-1:-1:-1;;;96:433:21;;;;;;;;;;;;;;;;;",
+  "deployedSourceMap": "96:433:21:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;274:67;;334:7;274:67;;;;;168:25:29;;;156:2;141:18;274:67:21;;;;;;;206:62;;261:7;206:62;",
+  "source": "// SPDX-License-Identifier: Apache-2.0\npragma solidity ^0.8.4;\n\n// does not need to be deployed\nlibrary Recovery {\n    address constant ONE_WALLET_TREASURY = 0x7534978F9fa903150eD429C486D1f42B7fDB7a61;\n    uint256 public constant AUTO_RECOVERY_TRIGGER_AMOUNT = 1 ether;\n    uint256 public constant AUTO_RECOVERY_MANDATORY_WAIT_TIME = 14 days;\n\n    function isRecoveryAddressSet(address recoveryAddress) internal pure returns (bool) {\n        return recoveryAddress != address(0) && recoveryAddress != ONE_WALLET_TREASURY;\n    }\n}\n",
   "sourcePath": "/Users/polymorpher/git/one-wallet/code/contracts/Recovery.sol",
   "ast": {
     "absolutePath": "project:/contracts/Recovery.sol",
     "exportedSymbols": {
       "Recovery": [
-        5377
+        5434
       ]
     },
-    "id": 5378,
+    "id": 5435,
     "license": "Apache-2.0",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 5348,
+        "id": 5405,
         "literals": [
           "solidity",
           "^",
@@ -176,23 +176,23 @@
         "contractDependencies": [],
         "contractKind": "library",
         "fullyImplemented": true,
-        "id": 5377,
+        "id": 5434,
         "linearizedBaseContracts": [
-          5377
+          5434
         ],
         "name": "Recovery",
-        "nameLocation": "72:8:21",
+        "nameLocation": "104:8:21",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": true,
-            "id": 5351,
+            "id": 5408,
             "mutability": "constant",
             "name": "ONE_WALLET_TREASURY",
-            "nameLocation": "104:19:21",
+            "nameLocation": "136:19:21",
             "nodeType": "VariableDeclaration",
-            "scope": 5377,
-            "src": "87:81:21",
+            "scope": 5434,
+            "src": "119:81:21",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -200,10 +200,10 @@
               "typeString": "address"
             },
             "typeName": {
-              "id": 5349,
+              "id": 5406,
               "name": "address",
               "nodeType": "ElementaryTypeName",
-              "src": "87:7:21",
+              "src": "119:7:21",
               "stateMutability": "nonpayable",
               "typeDescriptions": {
                 "typeIdentifier": "t_address",
@@ -212,14 +212,14 @@
             },
             "value": {
               "hexValue": "307837353334393738463966613930333135306544343239433438364431663432423766444237613631",
-              "id": 5350,
+              "id": 5407,
               "isConstant": false,
               "isLValue": false,
               "isPure": true,
               "kind": "number",
               "lValueRequested": false,
               "nodeType": "Literal",
-              "src": "126:42:21",
+              "src": "158:42:21",
               "typeDescriptions": {
                 "typeIdentifier": "t_address",
                 "typeString": "address"
@@ -231,13 +231,13 @@
           {
             "constant": true,
             "functionSelector": "f5ab9ff3",
-            "id": 5354,
+            "id": 5411,
             "mutability": "constant",
             "name": "AUTO_RECOVERY_TRIGGER_AMOUNT",
-            "nameLocation": "198:28:21",
+            "nameLocation": "230:28:21",
             "nodeType": "VariableDeclaration",
-            "scope": 5377,
-            "src": "174:62:21",
+            "scope": 5434,
+            "src": "206:62:21",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -245,10 +245,10 @@
               "typeString": "uint256"
             },
             "typeName": {
-              "id": 5352,
+              "id": 5409,
               "name": "uint256",
               "nodeType": "ElementaryTypeName",
-              "src": "174:7:21",
+              "src": "206:7:21",
               "typeDescriptions": {
                 "typeIdentifier": "t_uint256",
                 "typeString": "uint256"
@@ -256,14 +256,14 @@
             },
             "value": {
               "hexValue": "31",
-              "id": 5353,
+              "id": 5410,
               "isConstant": false,
               "isLValue": false,
               "isPure": true,
               "kind": "number",
               "lValueRequested": false,
               "nodeType": "Literal",
-              "src": "229:7:21",
+              "src": "261:7:21",
               "subdenomination": "ether",
               "typeDescriptions": {
                 "typeIdentifier": "t_rational_1000000000000000000_by_1",
@@ -276,13 +276,13 @@
           {
             "constant": true,
             "functionSelector": "4210ca30",
-            "id": 5357,
+            "id": 5414,
             "mutability": "constant",
             "name": "AUTO_RECOVERY_MANDATORY_WAIT_TIME",
-            "nameLocation": "266:33:21",
+            "nameLocation": "298:33:21",
             "nodeType": "VariableDeclaration",
-            "scope": 5377,
-            "src": "242:67:21",
+            "scope": 5434,
+            "src": "274:67:21",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -290,10 +290,10 @@
               "typeString": "uint256"
             },
             "typeName": {
-              "id": 5355,
+              "id": 5412,
               "name": "uint256",
               "nodeType": "ElementaryTypeName",
-              "src": "242:7:21",
+              "src": "274:7:21",
               "typeDescriptions": {
                 "typeIdentifier": "t_uint256",
                 "typeString": "uint256"
@@ -301,14 +301,14 @@
             },
             "value": {
               "hexValue": "3134",
-              "id": 5356,
+              "id": 5413,
               "isConstant": false,
               "isLValue": false,
               "isPure": true,
               "kind": "number",
               "lValueRequested": false,
               "nodeType": "Literal",
-              "src": "302:7:21",
+              "src": "334:7:21",
               "subdenomination": "days",
               "typeDescriptions": {
                 "typeIdentifier": "t_rational_1209600_by_1",
@@ -320,9 +320,9 @@
           },
           {
             "body": {
-              "id": 5375,
+              "id": 5432,
               "nodeType": "Block",
-              "src": "400:95:21",
+              "src": "432:95:21",
               "statements": [
                 {
                   "expression": {
@@ -330,7 +330,7 @@
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
                     },
-                    "id": 5373,
+                    "id": 5430,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -340,18 +340,18 @@
                         "typeIdentifier": "t_address",
                         "typeString": "address"
                       },
-                      "id": 5369,
+                      "id": 5426,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
-                        "id": 5364,
+                        "id": 5421,
                         "name": "recoveryAddress",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 5359,
-                        "src": "417:15:21",
+                        "referencedDeclaration": 5416,
+                        "src": "449:15:21",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
                           "typeString": "address"
@@ -363,14 +363,14 @@
                         "arguments": [
                           {
                             "hexValue": "30",
-                            "id": 5367,
+                            "id": 5424,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": true,
                             "kind": "number",
                             "lValueRequested": false,
                             "nodeType": "Literal",
-                            "src": "444:1:21",
+                            "src": "476:1:21",
                             "typeDescriptions": {
                               "typeIdentifier": "t_rational_0_by_1",
                               "typeString": "int_const 0"
@@ -385,26 +385,26 @@
                               "typeString": "int_const 0"
                             }
                           ],
-                          "id": 5366,
+                          "id": 5423,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": true,
                           "lValueRequested": false,
                           "nodeType": "ElementaryTypeNameExpression",
-                          "src": "436:7:21",
+                          "src": "468:7:21",
                           "typeDescriptions": {
                             "typeIdentifier": "t_type$_t_address_$",
                             "typeString": "type(address)"
                           },
                           "typeName": {
-                            "id": 5365,
+                            "id": 5422,
                             "name": "address",
                             "nodeType": "ElementaryTypeName",
-                            "src": "436:7:21",
+                            "src": "468:7:21",
                             "typeDescriptions": {}
                           }
                         },
-                        "id": 5368,
+                        "id": 5425,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": true,
@@ -412,14 +412,14 @@
                         "lValueRequested": false,
                         "names": [],
                         "nodeType": "FunctionCall",
-                        "src": "436:10:21",
+                        "src": "468:10:21",
                         "tryCall": false,
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
                           "typeString": "address"
                         }
                       },
-                      "src": "417:29:21",
+                      "src": "449:29:21",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
                         "typeString": "bool"
@@ -432,18 +432,18 @@
                         "typeIdentifier": "t_address",
                         "typeString": "address"
                       },
-                      "id": 5372,
+                      "id": 5429,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
-                        "id": 5370,
+                        "id": 5427,
                         "name": "recoveryAddress",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 5359,
-                        "src": "450:15:21",
+                        "referencedDeclaration": 5416,
+                        "src": "482:15:21",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
                           "typeString": "address"
@@ -452,56 +452,56 @@
                       "nodeType": "BinaryOperation",
                       "operator": "!=",
                       "rightExpression": {
-                        "id": 5371,
+                        "id": 5428,
                         "name": "ONE_WALLET_TREASURY",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 5351,
-                        "src": "469:19:21",
+                        "referencedDeclaration": 5408,
+                        "src": "501:19:21",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
                           "typeString": "address"
                         }
                       },
-                      "src": "450:38:21",
+                      "src": "482:38:21",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
                         "typeString": "bool"
                       }
                     },
-                    "src": "417:71:21",
+                    "src": "449:71:21",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
                     }
                   },
-                  "functionReturnParameters": 5363,
-                  "id": 5374,
+                  "functionReturnParameters": 5420,
+                  "id": 5431,
                   "nodeType": "Return",
-                  "src": "410:78:21"
+                  "src": "442:78:21"
                 }
               ]
             },
-            "id": 5376,
+            "id": 5433,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
             "name": "isRecoveryAddressSet",
-            "nameLocation": "325:20:21",
+            "nameLocation": "357:20:21",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5360,
+              "id": 5417,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5359,
+                  "id": 5416,
                   "mutability": "mutable",
                   "name": "recoveryAddress",
-                  "nameLocation": "354:15:21",
+                  "nameLocation": "386:15:21",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5376,
-                  "src": "346:23:21",
+                  "scope": 5433,
+                  "src": "378:23:21",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -509,10 +509,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 5358,
+                    "id": 5415,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "346:7:21",
+                    "src": "378:7:21",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -522,21 +522,21 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "345:25:21"
+              "src": "377:25:21"
             },
             "returnParameters": {
-              "id": 5363,
+              "id": 5420,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5362,
+                  "id": 5419,
                   "mutability": "mutable",
                   "name": "",
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5376,
-                  "src": "394:4:21",
+                  "scope": 5433,
+                  "src": "426:4:21",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -544,10 +544,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 5361,
+                    "id": 5418,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "394:4:21",
+                    "src": "426:4:21",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -556,35 +556,35 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "393:6:21"
+              "src": "425:6:21"
             },
-            "scope": 5377,
-            "src": "316:179:21",
+            "scope": 5434,
+            "src": "348:179:21",
             "stateMutability": "pure",
             "virtual": false,
             "visibility": "internal"
           }
         ],
-        "scope": 5378,
-        "src": "64:433:21",
+        "scope": 5435,
+        "src": "96:433:21",
         "usedErrors": []
       }
     ],
-    "src": "39:459:21"
+    "src": "39:491:21"
   },
   "legacyAST": {
     "absolutePath": "project:/contracts/Recovery.sol",
     "exportedSymbols": {
       "Recovery": [
-        5377
+        5434
       ]
     },
-    "id": 5378,
+    "id": 5435,
     "license": "Apache-2.0",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 5348,
+        "id": 5405,
         "literals": [
           "solidity",
           "^",
@@ -600,23 +600,23 @@
         "contractDependencies": [],
         "contractKind": "library",
         "fullyImplemented": true,
-        "id": 5377,
+        "id": 5434,
         "linearizedBaseContracts": [
-          5377
+          5434
         ],
         "name": "Recovery",
-        "nameLocation": "72:8:21",
+        "nameLocation": "104:8:21",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": true,
-            "id": 5351,
+            "id": 5408,
             "mutability": "constant",
             "name": "ONE_WALLET_TREASURY",
-            "nameLocation": "104:19:21",
+            "nameLocation": "136:19:21",
             "nodeType": "VariableDeclaration",
-            "scope": 5377,
-            "src": "87:81:21",
+            "scope": 5434,
+            "src": "119:81:21",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -624,10 +624,10 @@
               "typeString": "address"
             },
             "typeName": {
-              "id": 5349,
+              "id": 5406,
               "name": "address",
               "nodeType": "ElementaryTypeName",
-              "src": "87:7:21",
+              "src": "119:7:21",
               "stateMutability": "nonpayable",
               "typeDescriptions": {
                 "typeIdentifier": "t_address",
@@ -636,14 +636,14 @@
             },
             "value": {
               "hexValue": "307837353334393738463966613930333135306544343239433438364431663432423766444237613631",
-              "id": 5350,
+              "id": 5407,
               "isConstant": false,
               "isLValue": false,
               "isPure": true,
               "kind": "number",
               "lValueRequested": false,
               "nodeType": "Literal",
-              "src": "126:42:21",
+              "src": "158:42:21",
               "typeDescriptions": {
                 "typeIdentifier": "t_address",
                 "typeString": "address"
@@ -655,13 +655,13 @@
           {
             "constant": true,
             "functionSelector": "f5ab9ff3",
-            "id": 5354,
+            "id": 5411,
             "mutability": "constant",
             "name": "AUTO_RECOVERY_TRIGGER_AMOUNT",
-            "nameLocation": "198:28:21",
+            "nameLocation": "230:28:21",
             "nodeType": "VariableDeclaration",
-            "scope": 5377,
-            "src": "174:62:21",
+            "scope": 5434,
+            "src": "206:62:21",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -669,10 +669,10 @@
               "typeString": "uint256"
             },
             "typeName": {
-              "id": 5352,
+              "id": 5409,
               "name": "uint256",
               "nodeType": "ElementaryTypeName",
-              "src": "174:7:21",
+              "src": "206:7:21",
               "typeDescriptions": {
                 "typeIdentifier": "t_uint256",
                 "typeString": "uint256"
@@ -680,14 +680,14 @@
             },
             "value": {
               "hexValue": "31",
-              "id": 5353,
+              "id": 5410,
               "isConstant": false,
               "isLValue": false,
               "isPure": true,
               "kind": "number",
               "lValueRequested": false,
               "nodeType": "Literal",
-              "src": "229:7:21",
+              "src": "261:7:21",
               "subdenomination": "ether",
               "typeDescriptions": {
                 "typeIdentifier": "t_rational_1000000000000000000_by_1",
@@ -700,13 +700,13 @@
           {
             "constant": true,
             "functionSelector": "4210ca30",
-            "id": 5357,
+            "id": 5414,
             "mutability": "constant",
             "name": "AUTO_RECOVERY_MANDATORY_WAIT_TIME",
-            "nameLocation": "266:33:21",
+            "nameLocation": "298:33:21",
             "nodeType": "VariableDeclaration",
-            "scope": 5377,
-            "src": "242:67:21",
+            "scope": 5434,
+            "src": "274:67:21",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -714,10 +714,10 @@
               "typeString": "uint256"
             },
             "typeName": {
-              "id": 5355,
+              "id": 5412,
               "name": "uint256",
               "nodeType": "ElementaryTypeName",
-              "src": "242:7:21",
+              "src": "274:7:21",
               "typeDescriptions": {
                 "typeIdentifier": "t_uint256",
                 "typeString": "uint256"
@@ -725,14 +725,14 @@
             },
             "value": {
               "hexValue": "3134",
-              "id": 5356,
+              "id": 5413,
               "isConstant": false,
               "isLValue": false,
               "isPure": true,
               "kind": "number",
               "lValueRequested": false,
               "nodeType": "Literal",
-              "src": "302:7:21",
+              "src": "334:7:21",
               "subdenomination": "days",
               "typeDescriptions": {
                 "typeIdentifier": "t_rational_1209600_by_1",
@@ -744,9 +744,9 @@
           },
           {
             "body": {
-              "id": 5375,
+              "id": 5432,
               "nodeType": "Block",
-              "src": "400:95:21",
+              "src": "432:95:21",
               "statements": [
                 {
                   "expression": {
@@ -754,7 +754,7 @@
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
                     },
-                    "id": 5373,
+                    "id": 5430,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -764,18 +764,18 @@
                         "typeIdentifier": "t_address",
                         "typeString": "address"
                       },
-                      "id": 5369,
+                      "id": 5426,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
-                        "id": 5364,
+                        "id": 5421,
                         "name": "recoveryAddress",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 5359,
-                        "src": "417:15:21",
+                        "referencedDeclaration": 5416,
+                        "src": "449:15:21",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
                           "typeString": "address"
@@ -787,14 +787,14 @@
                         "arguments": [
                           {
                             "hexValue": "30",
-                            "id": 5367,
+                            "id": 5424,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": true,
                             "kind": "number",
                             "lValueRequested": false,
                             "nodeType": "Literal",
-                            "src": "444:1:21",
+                            "src": "476:1:21",
                             "typeDescriptions": {
                               "typeIdentifier": "t_rational_0_by_1",
                               "typeString": "int_const 0"
@@ -809,26 +809,26 @@
                               "typeString": "int_const 0"
                             }
                           ],
-                          "id": 5366,
+                          "id": 5423,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": true,
                           "lValueRequested": false,
                           "nodeType": "ElementaryTypeNameExpression",
-                          "src": "436:7:21",
+                          "src": "468:7:21",
                           "typeDescriptions": {
                             "typeIdentifier": "t_type$_t_address_$",
                             "typeString": "type(address)"
                           },
                           "typeName": {
-                            "id": 5365,
+                            "id": 5422,
                             "name": "address",
                             "nodeType": "ElementaryTypeName",
-                            "src": "436:7:21",
+                            "src": "468:7:21",
                             "typeDescriptions": {}
                           }
                         },
-                        "id": 5368,
+                        "id": 5425,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": true,
@@ -836,14 +836,14 @@
                         "lValueRequested": false,
                         "names": [],
                         "nodeType": "FunctionCall",
-                        "src": "436:10:21",
+                        "src": "468:10:21",
                         "tryCall": false,
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
                           "typeString": "address"
                         }
                       },
-                      "src": "417:29:21",
+                      "src": "449:29:21",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
                         "typeString": "bool"
@@ -856,18 +856,18 @@
                         "typeIdentifier": "t_address",
                         "typeString": "address"
                       },
-                      "id": 5372,
+                      "id": 5429,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
-                        "id": 5370,
+                        "id": 5427,
                         "name": "recoveryAddress",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 5359,
-                        "src": "450:15:21",
+                        "referencedDeclaration": 5416,
+                        "src": "482:15:21",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
                           "typeString": "address"
@@ -876,56 +876,56 @@
                       "nodeType": "BinaryOperation",
                       "operator": "!=",
                       "rightExpression": {
-                        "id": 5371,
+                        "id": 5428,
                         "name": "ONE_WALLET_TREASURY",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 5351,
-                        "src": "469:19:21",
+                        "referencedDeclaration": 5408,
+                        "src": "501:19:21",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
                           "typeString": "address"
                         }
                       },
-                      "src": "450:38:21",
+                      "src": "482:38:21",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
                         "typeString": "bool"
                       }
                     },
-                    "src": "417:71:21",
+                    "src": "449:71:21",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
                     }
                   },
-                  "functionReturnParameters": 5363,
-                  "id": 5374,
+                  "functionReturnParameters": 5420,
+                  "id": 5431,
                   "nodeType": "Return",
-                  "src": "410:78:21"
+                  "src": "442:78:21"
                 }
               ]
             },
-            "id": 5376,
+            "id": 5433,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
             "name": "isRecoveryAddressSet",
-            "nameLocation": "325:20:21",
+            "nameLocation": "357:20:21",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5360,
+              "id": 5417,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5359,
+                  "id": 5416,
                   "mutability": "mutable",
                   "name": "recoveryAddress",
-                  "nameLocation": "354:15:21",
+                  "nameLocation": "386:15:21",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5376,
-                  "src": "346:23:21",
+                  "scope": 5433,
+                  "src": "378:23:21",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -933,10 +933,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 5358,
+                    "id": 5415,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "346:7:21",
+                    "src": "378:7:21",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -946,21 +946,21 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "345:25:21"
+              "src": "377:25:21"
             },
             "returnParameters": {
-              "id": 5363,
+              "id": 5420,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5362,
+                  "id": 5419,
                   "mutability": "mutable",
                   "name": "",
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5376,
-                  "src": "394:4:21",
+                  "scope": 5433,
+                  "src": "426:4:21",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -968,10 +968,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 5361,
+                    "id": 5418,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "394:4:21",
+                    "src": "426:4:21",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -980,21 +980,21 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "393:6:21"
+              "src": "425:6:21"
             },
-            "scope": 5377,
-            "src": "316:179:21",
+            "scope": 5434,
+            "src": "348:179:21",
             "stateMutability": "pure",
             "virtual": false,
             "visibility": "internal"
           }
         ],
-        "scope": 5378,
-        "src": "64:433:21",
+        "scope": 5435,
+        "src": "96:433:21",
         "usedErrors": []
       }
     ],
-    "src": "39:459:21"
+    "src": "39:491:21"
   },
   "compiler": {
     "name": "solc",
@@ -1002,7 +1002,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.2",
-  "updatedAt": "2021-11-14T03:27:03.073Z",
+  "updatedAt": "2021-11-14T13:19:56.774Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

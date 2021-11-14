@@ -9,12 +9,14 @@ import "./DomainManager.sol";
 import "./WalletGraph.sol";
 import "./SignatureManager.sol";
 import "./TokenTracker.sol";
+import "./SpendingManager.sol";
 
 library Executor {
     using WalletGraph for IONEWallet[];
     using TokenTracker for TokenTracker.TokenTrackerState;
     using SignatureManager for SignatureManager.SignatureTracker;
-    function execute(IONEWallet.OperationParams memory op, TokenTracker.TokenTrackerState storage tokenTrackerState, IONEWallet[] storage backlinkAddresses, SignatureManager.SignatureTracker storage signatures) public {
+    using SpendingManager for SpendingManager.SpendingState;
+    function execute(IONEWallet.OperationParams memory op, TokenTracker.TokenTrackerState storage tokenTrackerState, IONEWallet[] storage backlinkAddresses, SignatureManager.SignatureTracker storage signatures, SpendingManager.SpendingState storage spendingState) public {
         // No revert should occur below this point
         if (op.operationType == Enums.OperationType.TRACK) {
             if (op.data.length > 0) {
@@ -56,6 +58,10 @@ library Executor {
             signatures.authorizeHandler(op.contractAddress, op.tokenId, op.dest, op.amount);
         } else if (op.operationType == Enums.OperationType.REVOKE) {
             signatures.revokeHandler(op.contractAddress, op.tokenId, op.dest, op.amount);
+        } else if (op.operationType == Enums.OperationType.CHANGE_SPENDING_LIMIT) {
+            spendingState.changeSpendLimit(op.amount);
+        } else if (op.operationType == Enums.OperationType.JUMP_SPENDING_LIMIT) {
+            spendingState.jumpSpendLimit(op.amount);
         }
     }
 

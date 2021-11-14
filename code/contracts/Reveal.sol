@@ -4,6 +4,7 @@ pragma solidity ^0.8.4;
 import "./Enums.sol";
 import "./IONEWallet.sol";
 import "./CommitManager.sol";
+import "./Recovery.sol";
 
 library Reveal {
     using CommitManager for CommitManager.CommitState;
@@ -107,24 +108,27 @@ library Reveal {
 
 
     /// This function verifies that the first valid entry with respect to the given `eotp` in `commitState.commitLocker[hash]` matches the provided `paramsHash` and `verificationHash`. An entry is valid with respect to `eotp` iff `h3(entry.paramsHash . eotp)` equals `entry.verificationHash`. It returns the index of first valid entry in the array of commits, with respect to the commit hash
-    function verifyReveal(IONEWallet.CoreSetting storage core, CommitManager.CommitState storage commitState, bytes32 hash, uint32 indexWithNonce, bytes32 paramsHash, bytes32 eotp, Enums.OperationType operationType) view public returns (uint32)
+    function verifyReveal(IONEWallet.CoreSetting storage core, CommitManager.CommitState storage commitState, bytes32 hash, uint32 indexWithNonce, bytes32 paramsHash, bytes32 eotp,
+        bool skipIndexVerification, bool skipNonceVerification) view public returns (uint32)
     {
-        uint32 index = indexWithNonce / core.maxOperationsPerInterval;
-        uint8 nonce = uint8(indexWithNonce % core.maxOperationsPerInterval);
         CommitManager.Commit[] storage cc = commitState.commitLocker[hash];
         require(cc.length > 0, "No commit found");
         for (uint32 i = 0; i < cc.length; i++) {
             CommitManager.Commit storage c = cc[i];
-            bytes32 expectedVerificationHash = keccak256(bytes.concat(c.paramsHash, eotp));
-            if (c.verificationHash != expectedVerificationHash) {
+            if (c.verificationHash != keccak256(bytes.concat(c.paramsHash, eotp))) {
                 // Invalid entry. Ignore
                 continue;
             }
             require(c.paramsHash == paramsHash, "Param mismatch");
-            if (operationType != Enums.OperationType.RECOVER) {
-                uint32 counter = c.timestamp / core.interval;
+            uint32 counter = 0;
+            if (!skipIndexVerification) {
+                uint32 index = indexWithNonce / core.maxOperationsPerInterval;
+                counter = c.timestamp / core.interval;
                 uint32 t = counter - core.t0;
                 require(t == index || t - 1 == index, "Time mismatch");
+            }
+            if (!skipNonceVerification) {
+                uint8 nonce = uint8(indexWithNonce % core.maxOperationsPerInterval);
                 uint8 expectedNonce = commitState.nonces[counter];
                 require(nonce >= expectedNonce, "Nonce too low");
             }
@@ -136,13 +140,13 @@ library Reveal {
         revert("No commit");
     }
 
-    function completeReveal(IONEWallet.CoreSetting storage core, CommitManager.CommitState storage commitState, bytes32 commitHash, uint32 commitIndex, Enums.OperationType operationType) public {
+    function completeReveal(IONEWallet.CoreSetting storage core, CommitManager.CommitState storage commitState, bytes32 commitHash, uint32 commitIndex, bool skipNonceVerification) public {
         CommitManager.Commit[] storage cc = commitState.commitLocker[commitHash];
         assert(cc.length > 0);
         assert(cc.length > commitIndex);
         CommitManager.Commit storage c = cc[commitIndex];
         assert(c.timestamp > 0);
-        if (operationType != Enums.OperationType.RECOVER) {
+        if (!skipNonceVerification) {
             uint32 absoluteIndex = uint32(c.timestamp) / core.interval;
             commitState.incrementNonce(absoluteIndex);
             commitState.cleanupNonces(core.interval);
@@ -150,20 +154,44 @@ library Reveal {
         c.completed = true;
     }
 
-    /// Validate `auth` is correct based on settings in `core` (plus `oldCores`, for reocvery operations) and the given operation `op`. Revert if `auth` is not correct. Modify wallet's commit state based on `auth` (increment nonce, mark commit as completed, etc.) if `auth` is correct.
     function authenticate(
         IONEWallet.CoreSetting storage core,
         IONEWallet.CoreSetting[] storage oldCores,
-        IONEWallet.CoreSetting[] storage recoveryCores,
+        IONEWallet.CoreSetting[] storage innerCores,
         address payable recoveryAddress,
         CommitManager.CommitState storage commitState,
         IONEWallet.AuthParams memory auth,
         IONEWallet.OperationParams memory op
     ) public {
-        uint32 coreIndex = 0;
-        if (op.operationType == Enums.OperationType.FORWARD){
-
+        // first, we check whether the operation requires high-security
+        if (op.operationType == Enums.OperationType.FORWARD) {
+            if (!Recovery.isRecoveryAddressSet(recoveryAddress)) {
+                authenticateCores(innerCores[0], innerCores, commitState, auth, op, false, true);
+            } else {
+                authenticateCores(core, oldCores, commitState, auth, op, false, false);
+            }
+        } else if (op.operationType == Enums.OperationType.DISPLACE) {
+            authenticateCores(innerCores[0], innerCores, commitState, auth, op, false, true);
+        } else if (op.operationType == Enums.OperationType.RECOVER) {
+            authenticateCores(core, oldCores, commitState, auth, op, false, false);
+        } else if (op.operationType == Enums.OperationType.JUMP_SPENDING_LIMIT) {
+            authenticateCores(innerCores[0], innerCores, commitState, auth, op, false, true);
+        } else {
+            authenticateCores(core, oldCores, commitState, auth, op, false, false);
         }
+    }
+
+    /// Validate `auth` is correct based on settings in `core` (plus `oldCores`, for reocvery operations) and the given operation `op`. Revert if `auth` is not correct. Modify wallet's commit state based on `auth` (increment nonce, mark commit as completed, etc.) if `auth` is correct.
+    function authenticateCores(
+        IONEWallet.CoreSetting storage core,
+        IONEWallet.CoreSetting[] storage oldCores,
+        CommitManager.CommitState storage commitState,
+        IONEWallet.AuthParams memory auth,
+        IONEWallet.OperationParams memory op,
+        bool skipIndexVerification,
+        bool skipNonceVerification
+    ) public {
+        uint32 coreIndex = 0;
         if (op.operationType == Enums.OperationType.RECOVER) {
             coreIndex = isCorrectRecoveryProof(core, oldCores, auth);
         } else {
@@ -179,7 +207,7 @@ library Reveal {
         }
         IONEWallet.CoreSetting storage coreUsed = coreIndex == 0 ? core : oldCores[coreIndex - 1];
         (bytes32 commitHash, bytes32 paramsHash) = getRevealHash(auth, op);
-        uint32 commitIndex = verifyReveal(coreUsed, commitState, commitHash, auth.indexWithNonce, paramsHash, auth.eotp, op.operationType);
-        completeReveal(coreUsed, commitState, commitHash, commitIndex, op.operationType);
+        uint32 commitIndex = verifyReveal(coreUsed, commitState, commitHash, auth.indexWithNonce, paramsHash, auth.eotp, skipIndexVerification, skipNonceVerification);
+        completeReveal(coreUsed, commitState, commitHash, commitIndex, skipNonceVerification);
     }
 }
