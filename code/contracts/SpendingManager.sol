@@ -16,8 +16,7 @@ library SpendingManager {
         uint32 lastSpendingInterval; // last time interval when spending of ONE occurred (block.timestamp / spendingInterval)
         uint32 spendingInterval; // number of seconds per interval of spending, e.g. when this equals 86400, the spending limit represents a daily spending limit
         uint32 lastLimitAdjustmentTime; // last time when spend limit was adjusted
-        uint256 initialSpendingLimit; // the initial spending limit (equals spendingLimit initially, but it should be set by client)
-        uint256 highestSpendingLimit; // the highest spending limit the user ever got
+        uint256 highestSpendingLimit; // the highest spending limit the wallet ever got. Should be set to equal `spendingLimit` initially (by the client)
     }
 
     function getRemainingAllowance(SpendingState storage ss) view public returns (uint256) {
@@ -69,14 +68,15 @@ library SpendingManager {
     }
 
     function changeSpendLimit(SpendingState storage ss, uint256 newLimit) external {
-        if (ss.lastLimitAdjustmentTime + ss.spendingInterval > block.timestamp) {
+        if (ss.lastLimitAdjustmentTime + ss.spendingInterval > block.timestamp && newLimit > ss.spendingLimit) {
             emit SpendingLimitChangeFailed(newLimit, "Too early");
             return;
         }
-        if (newLimit > (ss.spendingLimit + 1 ether) * 2) {
+        if (newLimit > (ss.spendingLimit) * 2 + (1 ether)) {
             emit SpendingLimitChangeFailed(newLimit, "Too much");
             return;
         }
+        ss.lastLimitAdjustmentTime = uint32(block.timestamp);
         ss.spendingLimit = newLimit;
         emit SpendingLimitChanged(newLimit);
         if (newLimit > ss.highestSpendingLimit) {
@@ -86,8 +86,7 @@ library SpendingManager {
     }
 
     function jumpSpendLimit(SpendingState storage ss, uint256 newLimit) external {
-        uint256 bestLimit = ss.highestSpendingLimit > ss.initialSpendingLimit ? ss.highestSpendingLimit : ss.initialSpendingLimit;
-        if (newLimit > bestLimit) {
+        if (newLimit > ss.highestSpendingLimit) {
             emit SpendingLimitChangeFailed(newLimit, "Too high");
             return;
         }
