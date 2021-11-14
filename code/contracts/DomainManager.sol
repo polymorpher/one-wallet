@@ -2,7 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "@ensdomains/subdomain-registrar-core/contracts/Resolver.sol";
-import "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
+import "@ensdomains/subdomain-registrar-core/contracts/interfaces/ENS.sol";
 import "@ensdomains/subdomain-registrar-core/contracts/interfaces/IRegistrar.sol";
 import "@ensdomains/subdomain-registrar-core/contracts/interfaces/IReverseRegistrar.sol";
 

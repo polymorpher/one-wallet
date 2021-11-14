@@ -151,8 +151,19 @@ library Reveal {
     }
 
     /// Validate `auth` is correct based on settings in `core` (plus `oldCores`, for reocvery operations) and the given operation `op`. Revert if `auth` is not correct. Modify wallet's commit state based on `auth` (increment nonce, mark commit as completed, etc.) if `auth` is correct.
-    function authenticate(IONEWallet.CoreSetting storage core, IONEWallet.CoreSetting[] storage oldCores, CommitManager.CommitState storage commitState, IONEWallet.AuthParams memory auth, IONEWallet.OperationParams memory op) public {
+    function authenticate(
+        IONEWallet.CoreSetting storage core,
+        IONEWallet.CoreSetting[] storage oldCores,
+        IONEWallet.CoreSetting[] storage recoveryCores,
+        address payable recoveryAddress,
+        CommitManager.CommitState storage commitState,
+        IONEWallet.AuthParams memory auth,
+        IONEWallet.OperationParams memory op
+    ) public {
         uint32 coreIndex = 0;
+        if (op.operationType == Enums.OperationType.FORWARD){
+
+        }
         if (op.operationType == Enums.OperationType.RECOVER) {
             coreIndex = isCorrectRecoveryProof(core, oldCores, auth);
         } else {
@@ -163,7 +174,8 @@ library Reveal {
             // - the last slot's leaf is used in recovery, but the same leaf is not used for an operation at the last slot, instead its neighbor's leaf is used
             // - doesn't help much with security anyway, since the data is already expoed even if the transaction is reverted
             // isNonRecoveryLeaf(core, oldCores, auth.indexWithNonce, coreIndex);
-            // TODO: use a separate hash to authenticate recovery operations, instead of relying on last leaf of the tree
+            // TODO: use a separate hash to authenticate recovery operations, instead of relying on last leaf of the tree.
+            // v15 note: On a second thought, using leaf is not a bad idea since it makes implementation much simpler and more unified (making everything go through `authenticate`). But instead of last leaf, the first leaf seems a better choice. I added comments under `function _recover()` in `ONEWallet.sol`
         }
         IONEWallet.CoreSetting storage coreUsed = coreIndex == 0 ? core : oldCores[coreIndex - 1];
         (bytes32 commitHash, bytes32 paramsHash) = getRevealHash(auth, op);

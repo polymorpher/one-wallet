@@ -4,6 +4,7 @@ pragma solidity ^0.8.4;
 import "./ONEWallet.sol";
 import "./IONEWallet.sol";
 import "./Factory.sol";
+import "./Version.sol";
 
 library ONEWalletCodeHelper {
     function code() pure public returns (bytes memory){
@@ -16,7 +17,9 @@ contract ONEWalletFactoryHelper {
     constructor(ONEWalletFactory factory_){
         factory = factory_;
     }
-
+    function getVersion() public pure returns (uint32, uint32){
+        return (Version.majorVersion, Version.minorVersion);
+    }
     function deploy(IONEWallet.InitParams memory args) payable public returns (address){
         // ONEWallet has no constructor argument since v15
         address addr = factory.deploy{value : msg.value}(ONEWalletCodeHelper.code(), uint256(args.identificationHash));

@@ -13,6 +13,8 @@ import "./IONEWallet.sol";
 import "./AbstractONEWallet.sol";
 import "./CoreManager.sol";
 import "./Executor.sol";
+import "./Recovery.sol";
+import "./Version.sol";
 
 contract ONEWallet is TokenManager, AbstractONEWallet {
     using TokenTracker for TokenTracker.TokenTrackerState;
@@ -35,14 +37,6 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
     uint256 public override lastOperationTime; // in seconds; record the time for the last successful reveal
     address payable forwardAddress; // a non-empty forward address assumes full control of this contract. A forward address can only be set upon a successful recovery or upgrade operation.
     IONEWallet[] backlinkAddresses; // to be set in next version - these are addresses forwarding funds and tokens to this contract AND must have their forwardAddress updated if this contract's forwardAddress is set or updated. One example of such an address is a previous version of the wallet "upgrading" to a new version. See more at https://github.com/polymorpher/one-wallet/issues/78
-
-    // constants
-    uint256 constant AUTO_RECOVERY_TRIGGER_AMOUNT = 1 ether;
-    uint256 constant AUTO_RECOVERY_MANDATORY_WAIT_TIME = 14 days;
-    address constant ONE_WALLET_TREASURY = 0x7534978F9fa903150eD429C486D1f42B7fDB7a61;
-
-    uint32 constant majorVersion = 0xf; // a change would require client to migrate
-    uint32 constant minorVersion = 0x1; // a change would not require the client to migrate
 
     /// commit management
     CommitManager.CommitState commitState;
@@ -89,7 +83,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
                 return;
             }
             if (msg.sender == recoveryAddress) {// this case requires special handling
-                if (msg.value == AUTO_RECOVERY_TRIGGER_AMOUNT) {// in this case, send funds to recovery address and reclaim forwardAddress to recovery address
+                if (msg.value == Recovery.AUTO_RECOVERY_TRIGGER_AMOUNT) {// in this case, send funds to recovery address and reclaim forwardAddress to recovery address
                     _forward(recoveryAddress);
                     _recover();
                     return;
@@ -103,7 +97,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
             _forwardPayment();
             return;
         }
-        if (msg.value != AUTO_RECOVERY_TRIGGER_AMOUNT) {
+        if (msg.value != Recovery.AUTO_RECOVERY_TRIGGER_AMOUNT) {
             return;
         }
         if (msg.sender != recoveryAddress) {
@@ -112,8 +106,8 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
         if (msg.sender == address(this)) {
             return;
         }
-        if (block.timestamp < lastOperationTime + AUTO_RECOVERY_MANDATORY_WAIT_TIME) {
-            emit AutoRecoveryTriggeredPrematurely(msg.sender, lastOperationTime + AUTO_RECOVERY_MANDATORY_WAIT_TIME);
+        if (block.timestamp < lastOperationTime + Recovery.AUTO_RECOVERY_MANDATORY_WAIT_TIME) {
+            emit AutoRecoveryTriggeredPrematurely(msg.sender, lastOperationTime + Recovery.AUTO_RECOVERY_MANDATORY_WAIT_TIME);
             return;
         }
         emit AutoRecoveryTriggered(msg.sender);
@@ -123,7 +117,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
     function retire() external override returns (bool)
     {
         require(uint32(block.timestamp / core.interval) - core.t0 > core.lifespan);
-        require(_isRecoveryAddressSet());
+        require(Recovery.isRecoveryAddressSet(recoveryAddress));
         require(_drain());
         emit Retired();
         return true;
@@ -145,7 +139,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
     }
 
     function getVersion() external override pure returns (uint32, uint32){
-        return (majorVersion, minorVersion);
+        return (Version.majorVersion, Version.minorVersion);
     }
 
     function getCurrentSpendingState() external override view returns (uint256, uint256, uint32, uint32){
@@ -195,12 +189,13 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
         //        }
         forwardAddress = dest;
         emit ForwardAddressUpdated(dest);
-        if (!_isRecoveryAddressSet()) {
-            // since approval is gained from recovery cores, we can transfer all assets without violating the principal that no operation should spend more than what is specified in spend limit
+        if (!Recovery.isRecoveryAddressSet(recoveryAddress)) {
+            // Under this condition, the authentication would be done through recovery cores. Therefore, we can transfer all assets without violating the principal that no operation should spend more than what is specified in spend limit
             _setRecoveryAddress(forwardAddress);
             bool drainSuccess = _drain();
             emit ForwardedBalance(drainSuccess);
         } else {
+            // Under this condition, the authentication is done through regular cores (oldCores + core). Only assets within spend limit should be transferred. Transfer of the rest should be approved by recovery address (sending 0.1 ONE)
             uint256 budget = spendingState.getRemainingAllowance();
             _transfer(forwardAddress, budget);
             tokenTrackerState.recoverAllTokens(dest);
@@ -238,7 +233,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
 
     /// To initiate recovery, client should submit leaf_{-1} as eotp, where leaf_{-1} is the last leaf in OTP Merkle Tree. Note that leaf_0 = hasher(hseed . nonce . OTP . randomness) where hasher is either sha256 or argon2, depending on client's security parameters. The definition of leaf_{-1} ensures attackers cannot use widespread miners to brute-force for seed or hseed, even if keccak256(leaf_{i}) for any i is known. It has been considered that leaf_0 should be used instead of leaf_{-1}, because leaf_0 is extremely unlikely to be used for any wallet operation. It is only used if the user performs any operation within the first 60 seconds of seed generation (when QR code is displayed). Regardless of which leaf is used to trigger recovery, this mechanism ensures hseed remains secret at the client. Even when the leaf becomes public (on blockchain), it is no longer useful because the wallet would already be deprecated (all assets transferred out). It can be used to repeatedly trigger recovery on this deprecated wallet, but that would cause no harm.
     function _recover() internal returns (bool){
-        if (!_isRecoveryAddressSet()) {
+        if (!Recovery.isRecoveryAddressSet(recoveryAddress)) {
             emit LastResortAddressNotSet();
             return false;
         }
@@ -260,7 +255,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
     }
 
     function _setRecoveryAddress(address payable recoveryAddress_) internal {
-        if (_isRecoveryAddressSet() || recoveryAddress_ == address(this)) {
+        if (Recovery.isRecoveryAddressSet(recoveryAddress) || recoveryAddress_ == address(this)) {
             emit RecoveryAddressUpdated(address(0));
             return;
         }
@@ -279,7 +274,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
     function reveal(AuthParams calldata auth, OperationParams calldata op) external override {
         require(initialized);
         if (msg.sender != forwardAddress) {
-            core.authenticate(oldCores, commitState, auth, op);
+            core.authenticate(oldCores, recoveryCores, recoveryAddress, commitState, auth, op);
             lastOperationTime = block.timestamp;
         }
         _execute(op);
@@ -308,10 +303,6 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
         } else {
             Executor.execute(op, tokenTrackerState, backlinkAddresses, signatures);
         }
-    }
-
-    function _isRecoveryAddressSet() internal view returns (bool) {
-        return address(recoveryAddress) != address(0) && address(recoveryAddress) != ONE_WALLET_TREASURY;
     }
 
     function getBacklinks() external override view returns (IONEWallet[] memory){
