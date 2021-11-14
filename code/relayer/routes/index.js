@@ -156,7 +156,8 @@ router.post('/commit', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
     }
   }
   try {
-    const wallet = await req.contract.at(address)
+    // eslint-disable-next-line new-cap
+    const wallet = new req.contract(address)
     let tx
     if (req.majorVersion >= 7) {
       tx = await wallet.commit(hash, paramsHash, verificationHash)
@@ -200,7 +201,8 @@ router.post('/reveal', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
   }
   // TODO parameter verification
   try {
-    const wallet = await req.contract.at(address)
+    // eslint-disable-next-line new-cap
+    const wallet = new req.contract(address)
     // console.log({ neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
     let tx = null
     if (!(req.majorVersion >= 14)) {
