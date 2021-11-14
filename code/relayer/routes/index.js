@@ -47,7 +47,8 @@ router.use((req, res, next) => {
 // TODO: rate limiting + fingerprinting + delay with backoff
 
 router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), globalLimiter({ max: 250 }), async (req, res) => {
-  let { root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, backlinks, spendingInterval, oldCores } = req.body
+  let { root, height, interval, t0, lifespan, slotSize, lastResortAddress,
+    spendingLimit, spentAmount, lastSpendingInterval, spendingInterval, lastLimitAdjustmentTime, highestSpendingLimit, backlinks, oldCores, innerCores, identificationHash } = req.body
   // root is hex string, 32 bytes
   height = parseInt(height)
   interval = parseInt(interval)
@@ -61,10 +62,35 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
   // lastResortAddress is hex string, 20 bytes
   // dailyLimit is a BN in string form
   if (config.debug || config.verbose) {
-    console.log(`[/new] `, { core: { root, height, interval, t0, lifespan, slotSize }, spending: { spendingLimit, spendingInterval }, lastResortAddress, backlinks, oldCores })
+    console.log(`[/new] `, { core: { root, height, interval, t0, lifespan, slotSize },
+      spending: { spendingLimit, spentAmount, lastSpendingInterval, spendingInterval, lastLimitAdjustmentTime, highestSpendingLimit },
+      lastResortAddress,
+      identificationHash,
+      backlinks,
+      oldCores,
+      innerCores,
+    })
   }
 
-  if (!checkParams({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, spendingInterval, backlinks, oldCores }, res)) {
+  if (!checkParams({
+    root,
+    height,
+    interval,
+    t0,
+    lifespan,
+    slotSize,
+    lastResortAddress,
+    spendingLimit,
+    spentAmount,
+    lastSpendingInterval,
+    spendingInterval,
+    lastLimitAdjustmentTime,
+    highestSpendingLimit,
+    identificationHash,
+    backlinks,
+    oldCores,
+    innerCores
+  }, res)) {
     return
   }
   if (spendingLimit === 0) {
@@ -79,16 +105,27 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
       return res.status(StatusCodes.BAD_REQUEST).json({ error: `old core has empty root: ${JSON.stringify(oldCore)}` })
     }
   }
+  const innerCoreTransformed = []
+  for (let innerCore of innerCores) {
+    const { root: innerRoot, height: innerHeight, interval: innerInterval, t0: innerT0, lifespan: innertLifespan, slotSize: innerSlotSize } = innerCore
+    innerCoreTransformed.push([innerRoot, innerHeight, innerInterval, innerT0, innertLifespan, innerSlotSize])
+    if (!innerRoot) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: `inner core has empty root: ${JSON.stringify(innerCore)}` })
+    }
+  }
   // TODO parameter verification
   try {
-    const wallet = await blockchain.getContract(req.network).new(
-      [root, height, interval, t0, lifespan, slotSize],
-      [ new BN(spendingLimit, 10), 0, 0, new BN(spendingInterval, 10) ],
-      lastResortAddress,
-      backlinks,
-      oldCoreTransformed
-    )
+    const wallet = await blockchain.getContract(req.network).new()
     console.log('/new', wallet?.address)
+    await wallet.initialize([
+      [root, height, interval, t0, lifespan, slotSize],
+      [ new BN(spendingLimit), new BN(spentAmount), new BN(lastSpendingInterval), new BN(spendingInterval), new BN(lastLimitAdjustmentTime), new BN(highestSpendingLimit) ],
+      lastResortAddress,
+      identificationHash,
+      backlinks,
+      oldCoreTransformed,
+      innerCoreTransformed
+    ])
     return res.json({ success: true, address: wallet.address })
   } catch (ex) {
     console.error(ex)
