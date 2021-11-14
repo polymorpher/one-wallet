@@ -206,4 +206,16 @@ library TokenTracker {
             recoverToken(state, dest, state.trackedTokens[i]);
         }
     }
+
+    function getTrackedTokens(TokenTrackerState storage state) public view returns (Enums.TokenType[] memory, address[] memory, uint256[] memory){
+        Enums.TokenType[] memory tokenTypes = new Enums.TokenType[](state.trackedTokens.length);
+        address[] memory contractAddresses = new address[](state.trackedTokens.length);
+        uint256[] memory tokenIds = new uint256[](state.trackedTokens.length);
+        for (uint32 i = 0; i < state.trackedTokens.length; i++) {
+            tokenTypes[i] = state.trackedTokens[i].tokenType;
+            contractAddresses[i] = state.trackedTokens[i].contractAddress;
+            tokenIds[i] = state.trackedTokens[i].tokenId;
+        }
+        return (tokenTypes, contractAddresses, tokenIds);
+    }
 }

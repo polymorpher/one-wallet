@@ -69,17 +69,4 @@ abstract contract TokenManager is IERC721Receiver, IERC1155Receiver, Forwardable
         tokenTrackerState.trackToken(Enums.TokenType.ERC721, msg.sender, tokenId);
         return this.onERC721Received.selector;
     }
-
-    function _getTrackedTokens() internal view returns (Enums.TokenType[] memory, address[] memory, uint256[] memory){
-        Enums.TokenType[] memory tokenTypes = new Enums.TokenType[](tokenTrackerState.trackedTokens.length);
-        address[] memory contractAddresses = new address[](tokenTrackerState.trackedTokens.length);
-        uint256[] memory tokenIds = new uint256[](tokenTrackerState.trackedTokens.length);
-        for (uint32 i = 0; i < tokenTrackerState.trackedTokens.length; i++) {
-            tokenTypes[i] = tokenTrackerState.trackedTokens[i].tokenType;
-            contractAddresses[i] = tokenTrackerState.trackedTokens[i].contractAddress;
-            tokenIds[i] = tokenTrackerState.trackedTokens[i].tokenId;
-        }
-        return (tokenTypes, contractAddresses, tokenIds);
-    }
-
 }

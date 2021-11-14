@@ -231,7 +231,7 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.4+commit.c7e474f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"enum Enums.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"tokenContract\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"ForwardedToken\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"enum Enums.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"tokenContract\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"ReceivedToken\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"uint256[]\",\"name\":\"ids\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"values\",\"type\":\"uint256[]\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"onERC1155BatchReceived\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"onERC1155Received\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"onERC721Received\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceID\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)\":{\"details\":\"Handles the receipt of a multiple ERC1155 token types. This function is called at the end of a `safeBatchTransferFrom` after the balances have been updated. To accept the transfer(s), this must return `bytes4(keccak256(\\\"onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)\\\"))` (i.e. 0xbc197c81, or its own function selector).\",\"params\":{\"data\":\"Additional data with no specified format\",\"from\":\"The address which previously owned the token\",\"ids\":\"An array containing ids of each token being transferred (order and length must match values array)\",\"operator\":\"The address which initiated the batch transfer (i.e. msg.sender)\",\"values\":\"An array containing amounts of each token being transferred (order and length must match ids array)\"},\"returns\":{\"_0\":\"`bytes4(keccak256(\\\"onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)\\\"))` if transfer is allowed\"}},\"onERC1155Received(address,address,uint256,uint256,bytes)\":{\"details\":\"Handles the receipt of a single ERC1155 token type. This function is called at the end of a `safeTransferFrom` after the balance has been updated. To accept the transfer, this must return `bytes4(keccak256(\\\"onERC1155Received(address,address,uint256,uint256,bytes)\\\"))` (i.e. 0xf23a6e61, or its own function selector).\",\"params\":{\"data\":\"Additional data with no specified format\",\"from\":\"The address which previously owned the token\",\"id\":\"The ID of the token being transferred\",\"operator\":\"The address which initiated the transfer (i.e. msg.sender)\",\"value\":\"The amount of tokens being transferred\"},\"returns\":{\"_0\":\"`bytes4(keccak256(\\\"onERC1155Received(address,address,uint256,uint256,bytes)\\\"))` if transfer is allowed\"}},\"onERC721Received(address,address,uint256,bytes)\":{\"details\":\"Whenever an {IERC721} `tokenId` token is transferred to this contract via {IERC721-safeTransferFrom} by `operator` from `from`, this function is called. It must return its Solidity selector to confirm the token transfer. If any other value is returned or the interface is not implemented by the recipient, the transfer will be reverted. The selector can be obtained in Solidity with `IERC721.onERC721Received.selector`.\"}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/TokenManager.sol\":\"TokenManager\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"@openzeppelin/contracts/token/ERC1155/IERC1155.sol\":{\"keccak256\":\"0xfce1eb6398eae0e2b50251140866a70a3106193f101972c878bba1dbf44929ec\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://4f0709c3f462b28b400f57db181254ad970967c3b49a8948ef5e05929b106ffe\",\"dweb:/ipfs/QmNe3sRmPKw1T7q7m733tk7tFKpi3jo9PCisDPMbjeg3kJ\"]},\"@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol\":{\"keccak256\":\"0x7de6e64d4a8075e803a972cc77c4c91463e0c3777e4110eacfb5d4a71759b2fa\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://b83b3b09ef36374c1c104ee896797dadf2e81466d2143b481d3f1ddc7d9f3873\",\"dweb:/ipfs/QmSWtqs28RHDezRWBbmEfqiPYwsGTKj44NRbuxvZ96cqMU\"]},\"@openzeppelin/contracts/token/ERC20/IERC20.sol\":{\"keccak256\":\"0x027b891937d20ccf213fdb9c31531574256de774bda99d3a70ecef6e1913ed2a\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://087318b21c528119f649899f5b5580566dd8d7b0303d4904bd0e8580c3545f14\",\"dweb:/ipfs/Qmbn5Mj7aUn8hJuQ8VrQjjEXRsXyJKykgnjR9p4C3nfLtL\"]},\"@openzeppelin/contracts/token/ERC721/IERC721.sol\":{\"keccak256\":\"0xf101e8720213560fab41104d53b3cc7ba0456ef3a98455aa7f022391783144a0\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://3e7820bcf567e6892d937c3cb10db263a4042e446799bca602535868d822384e\",\"dweb:/ipfs/QmPG2oeDjKncqsEeyYGjAN7CwAJmMgHterXGGnpzhha4z7\"]},\"@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol\":{\"keccak256\":\"0xd9517254724276e2e8de3769183c1f738f445f0095c26fd9b86d3c6687e887b9\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://0e604bcdcd5e5b2fb299ad09769cde6db19d5aa1929d1b5e939234a0f10d7eb8\",\"dweb:/ipfs/Qmd8hXE3GZfBHuWx3RNiYgFW2ci7KvHtib8DiwzJ2dgo9V\"]},\"@openzeppelin/contracts/utils/introspection/IERC165.sol\":{\"keccak256\":\"0xa28007762d9da9db878dd421960c8cb9a10471f47ab5c1b3309bfe48e9e79ff4\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://796ab6e88af7bf0e78def0f059310c903af6a312b565344e0ff524a0f26e81c6\",\"dweb:/ipfs/QmcsVgLgzWdor3UnAztUkXKNGcysm1MPneWksF72AvnwBx\"]},\"project:/contracts/Enums.sol\":{\"keccak256\":\"0x125c10a6e370122e16db551d2240e88e09315ed7d34f8024fe82452205de4b37\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://70030513b14d0301a7ab354405aa0a43a7e79b4736e9360bb7e81d8a397e4fc3\",\"dweb:/ipfs/QmVqSPSpyLWWwBEmnMKmJFe51gef5Xxx2DCv8vNK3yjpjP\"]},\"project:/contracts/Forwardable.sol\":{\"keccak256\":\"0xa52098b342e3d6269ad2e37ed48c8eb569fb5afd141946c45434882f3deab5cb\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://8595c43e2f5c4207824aad3f245f2c17a94537ec0fa2af99fb699f610cc38569\",\"dweb:/ipfs/QmZmv5wivRzB29Ne4h7gazNaCJumRx13hv3UwkcbxBZ4rG\"]},\"project:/contracts/TokenManager.sol\":{\"keccak256\":\"0x3a65442a00f2d8847be7576d9f948b1459ec1847ac3f74680e7e0953fffc377c\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://8a133adb3233fa6544983265896c64daece9cde5574a288dfa75d992d121c76c\",\"dweb:/ipfs/QmdhbHCFYNyrsRCpf8r5dnaUKzPz3qhpmui7UaD1GEhCMb\"]},\"project:/contracts/TokenTracker.sol\":{\"keccak256\":\"0x3613db51c5394363ba7ad07cc10c4e0eb30450755ff144e99a3a7761f6aee929\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://02a32a4a92941eedc48faba8f38f0a0a187505211b312d31f1dcc6b1ffd99676\",\"dweb:/ipfs/QmZe3RagPDfU57cdjEEDHVHfntrNkg3dw8JJ5L1YReecYb\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.4+commit.c7e474f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"enum Enums.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"tokenContract\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"ForwardedToken\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"enum Enums.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"tokenContract\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"ReceivedToken\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"uint256[]\",\"name\":\"ids\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"values\",\"type\":\"uint256[]\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"onERC1155BatchReceived\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"onERC1155Received\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"onERC721Received\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceID\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)\":{\"details\":\"Handles the receipt of a multiple ERC1155 token types. This function is called at the end of a `safeBatchTransferFrom` after the balances have been updated. To accept the transfer(s), this must return `bytes4(keccak256(\\\"onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)\\\"))` (i.e. 0xbc197c81, or its own function selector).\",\"params\":{\"data\":\"Additional data with no specified format\",\"from\":\"The address which previously owned the token\",\"ids\":\"An array containing ids of each token being transferred (order and length must match values array)\",\"operator\":\"The address which initiated the batch transfer (i.e. msg.sender)\",\"values\":\"An array containing amounts of each token being transferred (order and length must match ids array)\"},\"returns\":{\"_0\":\"`bytes4(keccak256(\\\"onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)\\\"))` if transfer is allowed\"}},\"onERC1155Received(address,address,uint256,uint256,bytes)\":{\"details\":\"Handles the receipt of a single ERC1155 token type. This function is called at the end of a `safeTransferFrom` after the balance has been updated. To accept the transfer, this must return `bytes4(keccak256(\\\"onERC1155Received(address,address,uint256,uint256,bytes)\\\"))` (i.e. 0xf23a6e61, or its own function selector).\",\"params\":{\"data\":\"Additional data with no specified format\",\"from\":\"The address which previously owned the token\",\"id\":\"The ID of the token being transferred\",\"operator\":\"The address which initiated the transfer (i.e. msg.sender)\",\"value\":\"The amount of tokens being transferred\"},\"returns\":{\"_0\":\"`bytes4(keccak256(\\\"onERC1155Received(address,address,uint256,uint256,bytes)\\\"))` if transfer is allowed\"}},\"onERC721Received(address,address,uint256,bytes)\":{\"details\":\"Whenever an {IERC721} `tokenId` token is transferred to this contract via {IERC721-safeTransferFrom} by `operator` from `from`, this function is called. It must return its Solidity selector to confirm the token transfer. If any other value is returned or the interface is not implemented by the recipient, the transfer will be reverted. The selector can be obtained in Solidity with `IERC721.onERC721Received.selector`.\"}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/TokenManager.sol\":\"TokenManager\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"@openzeppelin/contracts/token/ERC1155/IERC1155.sol\":{\"keccak256\":\"0xfce1eb6398eae0e2b50251140866a70a3106193f101972c878bba1dbf44929ec\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://4f0709c3f462b28b400f57db181254ad970967c3b49a8948ef5e05929b106ffe\",\"dweb:/ipfs/QmNe3sRmPKw1T7q7m733tk7tFKpi3jo9PCisDPMbjeg3kJ\"]},\"@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol\":{\"keccak256\":\"0x7de6e64d4a8075e803a972cc77c4c91463e0c3777e4110eacfb5d4a71759b2fa\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://b83b3b09ef36374c1c104ee896797dadf2e81466d2143b481d3f1ddc7d9f3873\",\"dweb:/ipfs/QmSWtqs28RHDezRWBbmEfqiPYwsGTKj44NRbuxvZ96cqMU\"]},\"@openzeppelin/contracts/token/ERC20/IERC20.sol\":{\"keccak256\":\"0x027b891937d20ccf213fdb9c31531574256de774bda99d3a70ecef6e1913ed2a\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://087318b21c528119f649899f5b5580566dd8d7b0303d4904bd0e8580c3545f14\",\"dweb:/ipfs/Qmbn5Mj7aUn8hJuQ8VrQjjEXRsXyJKykgnjR9p4C3nfLtL\"]},\"@openzeppelin/contracts/token/ERC721/IERC721.sol\":{\"keccak256\":\"0xf101e8720213560fab41104d53b3cc7ba0456ef3a98455aa7f022391783144a0\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://3e7820bcf567e6892d937c3cb10db263a4042e446799bca602535868d822384e\",\"dweb:/ipfs/QmPG2oeDjKncqsEeyYGjAN7CwAJmMgHterXGGnpzhha4z7\"]},\"@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol\":{\"keccak256\":\"0xd9517254724276e2e8de3769183c1f738f445f0095c26fd9b86d3c6687e887b9\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://0e604bcdcd5e5b2fb299ad09769cde6db19d5aa1929d1b5e939234a0f10d7eb8\",\"dweb:/ipfs/Qmd8hXE3GZfBHuWx3RNiYgFW2ci7KvHtib8DiwzJ2dgo9V\"]},\"@openzeppelin/contracts/utils/introspection/IERC165.sol\":{\"keccak256\":\"0xa28007762d9da9db878dd421960c8cb9a10471f47ab5c1b3309bfe48e9e79ff4\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://796ab6e88af7bf0e78def0f059310c903af6a312b565344e0ff524a0f26e81c6\",\"dweb:/ipfs/QmcsVgLgzWdor3UnAztUkXKNGcysm1MPneWksF72AvnwBx\"]},\"project:/contracts/Enums.sol\":{\"keccak256\":\"0x125c10a6e370122e16db551d2240e88e09315ed7d34f8024fe82452205de4b37\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://70030513b14d0301a7ab354405aa0a43a7e79b4736e9360bb7e81d8a397e4fc3\",\"dweb:/ipfs/QmVqSPSpyLWWwBEmnMKmJFe51gef5Xxx2DCv8vNK3yjpjP\"]},\"project:/contracts/Forwardable.sol\":{\"keccak256\":\"0xa52098b342e3d6269ad2e37ed48c8eb569fb5afd141946c45434882f3deab5cb\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://8595c43e2f5c4207824aad3f245f2c17a94537ec0fa2af99fb699f610cc38569\",\"dweb:/ipfs/QmZmv5wivRzB29Ne4h7gazNaCJumRx13hv3UwkcbxBZ4rG\"]},\"project:/contracts/TokenManager.sol\":{\"keccak256\":\"0x5aec20d8237c78a4d30914477ee5f11d27a7fd483c8702d662fdc2c14c11691a\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://6d1ab32f34533b0b044301cb50ba5902d0ee79c8ec3df8735324b10470f2ef1a\",\"dweb:/ipfs/QmU5ED54e7qmcDUA8Gt5Aq3AaT3ptXkMTwEBLWiVmctz99\"]},\"project:/contracts/TokenTracker.sol\":{\"keccak256\":\"0x14562a22f5bf5dc1cb21b5a9798c50dfb3af77661473178a2a797c80b37e16d5\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://0af079e2f2b15721a5c13048cfa0c577cb2222a57f52ef9133e556f17822f109\",\"dweb:/ipfs/QmV1gZeLVmTxK4CgwJMnp2HsMP7JmaudMJgNN4CDiJsuRR\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -239,7 +239,7 @@
   "deployedGeneratedSources": [],
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "// SPDX-License-Identifier: Apache-2.0\npragma solidity ^0.8.4;\n\nimport \"./Forwardable.sol\";\nimport \"@openzeppelin/contracts/token/ERC20/IERC20.sol\";\nimport \"@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol\";\nimport \"@openzeppelin/contracts/token/ERC721/IERC721.sol\";\nimport \"@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol\";\nimport \"@openzeppelin/contracts/token/ERC1155/IERC1155.sol\";\nimport \"./Enums.sol\";\nimport \"./TokenTracker.sol\";\n\nabstract contract TokenManager is IERC721Receiver, IERC1155Receiver, Forwardable {\n    event ReceivedToken(Enums.TokenType tokenType, uint256 amount, address from, address tokenContract, address operator, uint256 tokenId, bytes data);\n    event ForwardedToken(Enums.TokenType tokenType, uint256 amount, address from, address tokenContract, address operator, uint256 tokenId, bytes data);\n\n\n    // We track tokens in the contract instead of at the client so users can immediately get a record of what tokens they own when they restore their wallet at a new client\n    // The tracking of ERC721 and ERC1155 are automatically established upon a token is transferred to this wallet. The tracking of ERC20 needs to be manually established by the client.\n    // The gas cost of tracking and untracking operations are of constant complexity. The gas cost is paid by the transferer in the case of automatically established tracking, and paid by the user in the case of manual tracking.\n\n    TokenTracker.TokenTrackerState tokenTrackerState;\n\n    using TokenTracker for TokenTracker.TokenTrackerState;\n\n    function onERC1155Received(\n        address operator,\n        address from,\n        uint256 id,\n        uint256 value,\n        bytes calldata data\n    ) external override returns (bytes4){\n        emit ReceivedToken(Enums.TokenType.ERC1155, value, from, msg.sender, operator, id, data);\n        address payable forwardAddress = _getForwardAddress();\n        if (forwardAddress != address(0)) {\n            tokenTrackerState.transferToken(Enums.TokenType.ERC1155, msg.sender, id, forwardAddress, value, data);\n            return this.onERC1155Received.selector;\n        }\n        tokenTrackerState.trackToken(Enums.TokenType.ERC1155, msg.sender, id);\n        return this.onERC1155Received.selector;\n    }\n\n    function onERC1155BatchReceived(address operator, address from, uint256[] calldata ids, uint256[] calldata values, bytes calldata data) external override returns (bytes4){\n        for (uint32 i = 0; i < ids.length; i++) {\n            this.onERC1155Received(operator, from, ids[i], values[i], data);\n        }\n        return this.onERC1155BatchReceived.selector;\n    }\n\n    function supportsInterface(bytes4 interfaceID) public override virtual pure returns (bool) {\n        return interfaceID == this.supportsInterface.selector ||\n        interfaceID == this.onERC1155Received.selector ||\n        interfaceID == this.onERC721Received.selector;\n    }\n\n    // identical to ERC1155, except tracked only on ERC721 related data structures\n    function onERC721Received(\n        address operator,\n        address from,\n        uint256 tokenId,\n        bytes calldata data\n    ) external override returns (bytes4){\n        emit ReceivedToken(Enums.TokenType.ERC721, 1, from, msg.sender, operator, tokenId, data);\n        address payable forwardAddress = _getForwardAddress();\n        if (forwardAddress != address(0)) {\n            tokenTrackerState.transferToken(Enums.TokenType.ERC721, msg.sender, tokenId, forwardAddress, 1, data);\n            return this.onERC721Received.selector;\n        }\n        tokenTrackerState.trackToken(Enums.TokenType.ERC721, msg.sender, tokenId);\n        return this.onERC721Received.selector;\n    }\n\n    function _getTrackedTokens() internal view returns (Enums.TokenType[] memory, address[] memory, uint256[] memory){\n        Enums.TokenType[] memory tokenTypes = new Enums.TokenType[](tokenTrackerState.trackedTokens.length);\n        address[] memory contractAddresses = new address[](tokenTrackerState.trackedTokens.length);\n        uint256[] memory tokenIds = new uint256[](tokenTrackerState.trackedTokens.length);\n        for (uint32 i = 0; i < tokenTrackerState.trackedTokens.length; i++) {\n            tokenTypes[i] = tokenTrackerState.trackedTokens[i].tokenType;\n            contractAddresses[i] = tokenTrackerState.trackedTokens[i].contractAddress;\n            tokenIds[i] = tokenTrackerState.trackedTokens[i].tokenId;\n        }\n        return (tokenTypes, contractAddresses, tokenIds);\n    }\n\n}\n",
+  "source": "// SPDX-License-Identifier: Apache-2.0\npragma solidity ^0.8.4;\n\nimport \"./Forwardable.sol\";\nimport \"@openzeppelin/contracts/token/ERC20/IERC20.sol\";\nimport \"@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol\";\nimport \"@openzeppelin/contracts/token/ERC721/IERC721.sol\";\nimport \"@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol\";\nimport \"@openzeppelin/contracts/token/ERC1155/IERC1155.sol\";\nimport \"./Enums.sol\";\nimport \"./TokenTracker.sol\";\n\nabstract contract TokenManager is IERC721Receiver, IERC1155Receiver, Forwardable {\n    event ReceivedToken(Enums.TokenType tokenType, uint256 amount, address from, address tokenContract, address operator, uint256 tokenId, bytes data);\n    event ForwardedToken(Enums.TokenType tokenType, uint256 amount, address from, address tokenContract, address operator, uint256 tokenId, bytes data);\n\n\n    // We track tokens in the contract instead of at the client so users can immediately get a record of what tokens they own when they restore their wallet at a new client\n    // The tracking of ERC721 and ERC1155 are automatically established upon a token is transferred to this wallet. The tracking of ERC20 needs to be manually established by the client.\n    // The gas cost of tracking and untracking operations are of constant complexity. The gas cost is paid by the transferer in the case of automatically established tracking, and paid by the user in the case of manual tracking.\n\n    TokenTracker.TokenTrackerState tokenTrackerState;\n\n    using TokenTracker for TokenTracker.TokenTrackerState;\n\n    function onERC1155Received(\n        address operator,\n        address from,\n        uint256 id,\n        uint256 value,\n        bytes calldata data\n    ) external override returns (bytes4){\n        emit ReceivedToken(Enums.TokenType.ERC1155, value, from, msg.sender, operator, id, data);\n        address payable forwardAddress = _getForwardAddress();\n        if (forwardAddress != address(0)) {\n            tokenTrackerState.transferToken(Enums.TokenType.ERC1155, msg.sender, id, forwardAddress, value, data);\n            return this.onERC1155Received.selector;\n        }\n        tokenTrackerState.trackToken(Enums.TokenType.ERC1155, msg.sender, id);\n        return this.onERC1155Received.selector;\n    }\n\n    function onERC1155BatchReceived(address operator, address from, uint256[] calldata ids, uint256[] calldata values, bytes calldata data) external override returns (bytes4){\n        for (uint32 i = 0; i < ids.length; i++) {\n            this.onERC1155Received(operator, from, ids[i], values[i], data);\n        }\n        return this.onERC1155BatchReceived.selector;\n    }\n\n    function supportsInterface(bytes4 interfaceID) public override virtual pure returns (bool) {\n        return interfaceID == this.supportsInterface.selector ||\n        interfaceID == this.onERC1155Received.selector ||\n        interfaceID == this.onERC721Received.selector;\n    }\n\n    // identical to ERC1155, except tracked only on ERC721 related data structures\n    function onERC721Received(\n        address operator,\n        address from,\n        uint256 tokenId,\n        bytes calldata data\n    ) external override returns (bytes4){\n        emit ReceivedToken(Enums.TokenType.ERC721, 1, from, msg.sender, operator, tokenId, data);\n        address payable forwardAddress = _getForwardAddress();\n        if (forwardAddress != address(0)) {\n            tokenTrackerState.transferToken(Enums.TokenType.ERC721, msg.sender, tokenId, forwardAddress, 1, data);\n            return this.onERC721Received.selector;\n        }\n        tokenTrackerState.trackToken(Enums.TokenType.ERC721, msg.sender, tokenId);\n        return this.onERC721Received.selector;\n    }\n}\n",
   "sourcePath": "/Users/polymorpher/git/one-wallet/code/contracts/TokenManager.sol",
   "ast": {
     "absolutePath": "project:/contracts/TokenManager.sol",
@@ -269,13 +269,13 @@
         748
       ],
       "TokenManager": [
-        8112
+        8008
       ],
       "TokenTracker": [
-        9519
+        9522
       ]
     },
-    "id": 8113,
+    "id": 8009,
     "license": "Apache-2.0",
     "nodeType": "SourceUnit",
     "nodes": [
@@ -296,7 +296,7 @@
         "id": 7726,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 8113,
+        "scope": 8009,
         "sourceUnit": 3559,
         "src": "64:27:24",
         "symbolAliases": [],
@@ -308,7 +308,7 @@
         "id": 7727,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 8113,
+        "scope": 8009,
         "sourceUnit": 615,
         "src": "92:56:24",
         "symbolAliases": [],
@@ -320,7 +320,7 @@
         "id": 7728,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 8113,
+        "scope": 8009,
         "sourceUnit": 749,
         "src": "149:66:24",
         "symbolAliases": [],
@@ -332,7 +332,7 @@
         "id": 7729,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 8113,
+        "scope": 8009,
         "sourceUnit": 731,
         "src": "216:58:24",
         "symbolAliases": [],
@@ -344,7 +344,7 @@
         "id": 7730,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 8113,
+        "scope": 8009,
         "sourceUnit": 537,
         "src": "275:68:24",
         "symbolAliases": [],
@@ -356,7 +356,7 @@
         "id": 7731,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 8113,
+        "scope": 8009,
         "sourceUnit": 496,
         "src": "344:60:24",
         "symbolAliases": [],
@@ -368,7 +368,7 @@
         "id": 7732,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 8113,
+        "scope": 8009,
         "sourceUnit": 2748,
         "src": "405:21:24",
         "symbolAliases": [],
@@ -380,8 +380,8 @@
         "id": 7733,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 8113,
-        "sourceUnit": 9520,
+        "scope": 8009,
+        "sourceUnit": 9523,
         "src": "427:28:24",
         "symbolAliases": [],
         "unitAlias": ""
@@ -429,9 +429,9 @@
         "contractDependencies": [],
         "contractKind": "contract",
         "fullyImplemented": true,
-        "id": 8112,
+        "id": 8008,
         "linearizedBaseContracts": [
-          8112,
+          8008,
           3558,
           536,
           760,
@@ -890,12 +890,12 @@
             "name": "tokenTrackerState",
             "nameLocation": "1471:17:24",
             "nodeType": "VariableDeclaration",
-            "scope": 8112,
+            "scope": 8008,
             "src": "1440:48:24",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage",
+              "typeIdentifier": "t_struct$_TokenTrackerState_$8095_storage",
               "typeString": "struct TokenTracker.TokenTrackerState"
             },
             "typeName": {
@@ -905,13 +905,13 @@
                 "id": 7774,
                 "name": "TokenTracker.TokenTrackerState",
                 "nodeType": "IdentifierPath",
-                "referencedDeclaration": 8199,
+                "referencedDeclaration": 8095,
                 "src": "1440:30:24"
               },
-              "referencedDeclaration": 8199,
+              "referencedDeclaration": 8095,
               "src": "1440:30:24",
               "typeDescriptions": {
-                "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage_ptr",
+                "typeIdentifier": "t_struct$_TokenTrackerState_$8095_storage_ptr",
                 "typeString": "struct TokenTracker.TokenTrackerState"
               }
             },
@@ -923,7 +923,7 @@
               "id": 7777,
               "name": "TokenTracker",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 9519,
+              "referencedDeclaration": 9522,
               "src": "1501:12:24"
             },
             "nodeType": "UsingForDirective",
@@ -935,13 +935,13 @@
                 "id": 7778,
                 "name": "TokenTracker.TokenTrackerState",
                 "nodeType": "IdentifierPath",
-                "referencedDeclaration": 8199,
+                "referencedDeclaration": 8095,
                 "src": "1518:30:24"
               },
-              "referencedDeclaration": 8199,
+              "referencedDeclaration": 8095,
               "src": "1518:30:24",
               "typeDescriptions": {
-                "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage_ptr",
+                "typeIdentifier": "t_struct$_TokenTrackerState_$8095_storage_ptr",
                 "typeString": "struct TokenTracker.TokenTrackerState"
               }
             }
@@ -1470,7 +1470,7 @@
                               "referencedDeclaration": 7776,
                               "src": "1961:17:24",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage",
+                                "typeIdentifier": "t_struct$_TokenTrackerState_$8095_storage",
                                 "typeString": "struct TokenTracker.TokenTrackerState storage ref"
                               }
                             },
@@ -1481,10 +1481,10 @@
                             "lValueRequested": false,
                             "memberName": "transferToken",
                             "nodeType": "MemberAccess",
-                            "referencedDeclaration": 9194,
+                            "referencedDeclaration": 9090,
                             "src": "1961:31:24",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8199_storage_ptr_$_t_enum$_TokenType_$2746_$_t_address_$_t_uint256_$_t_address_$_t_uint256_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8199_storage_ptr_$",
+                              "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8095_storage_ptr_$_t_enum$_TokenType_$2746_$_t_address_$_t_uint256_$_t_address_$_t_uint256_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8095_storage_ptr_$",
                               "typeString": "function (struct TokenTracker.TokenTrackerState storage pointer,enum Enums.TokenType,address,uint256,address,uint256,bytes memory)"
                             }
                           },
@@ -1518,7 +1518,7 @@
                               "referencedDeclaration": 4294967268,
                               "src": "2083:4:24",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_TokenManager_$8112",
+                                "typeIdentifier": "t_contract$_TokenManager_$8008",
                                 "typeString": "contract TokenManager"
                               }
                             },
@@ -1664,7 +1664,7 @@
                         "referencedDeclaration": 7776,
                         "src": "2134:17:24",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage",
+                          "typeIdentifier": "t_struct$_TokenTrackerState_$8095_storage",
                           "typeString": "struct TokenTracker.TokenTrackerState storage ref"
                         }
                       },
@@ -1675,10 +1675,10 @@
                       "lValueRequested": false,
                       "memberName": "trackToken",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 8358,
+                      "referencedDeclaration": 8254,
                       "src": "2134:28:24",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8199_storage_ptr_$_t_enum$_TokenType_$2746_$_t_address_$_t_uint256_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8199_storage_ptr_$",
+                        "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8095_storage_ptr_$_t_enum$_TokenType_$2746_$_t_address_$_t_uint256_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8095_storage_ptr_$",
                         "typeString": "function (struct TokenTracker.TokenTrackerState storage pointer,enum Enums.TokenType,address,uint256)"
                       }
                     },
@@ -1712,7 +1712,7 @@
                         "referencedDeclaration": 4294967268,
                         "src": "2220:4:24",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_TokenManager_$8112",
+                          "typeIdentifier": "t_contract$_TokenManager_$8008",
                           "typeString": "contract TokenManager"
                         }
                       },
@@ -1942,7 +1942,7 @@
               ],
               "src": "1734:8:24"
             },
-            "scope": 8112,
+            "scope": 8008,
             "src": "1555:703:24",
             "stateMutability": "nonpayable",
             "virtual": false,
@@ -2108,7 +2108,7 @@
                               "referencedDeclaration": 4294967268,
                               "src": "2498:4:24",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_TokenManager_$8112",
+                                "typeIdentifier": "t_contract$_TokenManager_$8008",
                                 "typeString": "contract TokenManager"
                               }
                             },
@@ -2303,7 +2303,7 @@
                         "referencedDeclaration": 4294967268,
                         "src": "2588:4:24",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_TokenManager_$8112",
+                          "typeIdentifier": "t_contract$_TokenManager_$8008",
                           "typeString": "contract TokenManager"
                         }
                       },
@@ -2551,7 +2551,7 @@
               ],
               "src": "2426:8:24"
             },
-            "scope": 8112,
+            "scope": 8008,
             "src": "2264:367:24",
             "stateMutability": "nonpayable",
             "virtual": false,
@@ -2621,7 +2621,7 @@
                               "referencedDeclaration": 4294967268,
                               "src": "2760:4:24",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_TokenManager_$8112",
+                                "typeIdentifier": "t_contract$_TokenManager_$8008",
                                 "typeString": "contract TokenManager"
                               }
                             },
@@ -2694,7 +2694,7 @@
                               "referencedDeclaration": 4294967268,
                               "src": "2818:4:24",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_TokenManager_$8112",
+                                "typeIdentifier": "t_contract$_TokenManager_$8008",
                                 "typeString": "contract TokenManager"
                               }
                             },
@@ -2773,7 +2773,7 @@
                             "referencedDeclaration": 4294967268,
                             "src": "2876:4:24",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_TokenManager_$8112",
+                              "typeIdentifier": "t_contract$_TokenManager_$8008",
                               "typeString": "contract TokenManager"
                             }
                           },
@@ -2905,7 +2905,7 @@
               ],
               "src": "2721:6:24"
             },
-            "scope": 8112,
+            "scope": 8008,
             "src": "2637:276:24",
             "stateMutability": "pure",
             "virtual": true,
@@ -3443,7 +3443,7 @@
                               "referencedDeclaration": 7776,
                               "src": "3389:17:24",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage",
+                                "typeIdentifier": "t_struct$_TokenTrackerState_$8095_storage",
                                 "typeString": "struct TokenTracker.TokenTrackerState storage ref"
                               }
                             },
@@ -3454,10 +3454,10 @@
                             "lValueRequested": false,
                             "memberName": "transferToken",
                             "nodeType": "MemberAccess",
-                            "referencedDeclaration": 9194,
+                            "referencedDeclaration": 9090,
                             "src": "3389:31:24",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8199_storage_ptr_$_t_enum$_TokenType_$2746_$_t_address_$_t_uint256_$_t_address_$_t_uint256_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8199_storage_ptr_$",
+                              "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8095_storage_ptr_$_t_enum$_TokenType_$2746_$_t_address_$_t_uint256_$_t_address_$_t_uint256_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8095_storage_ptr_$",
                               "typeString": "function (struct TokenTracker.TokenTrackerState storage pointer,enum Enums.TokenType,address,uint256,address,uint256,bytes memory)"
                             }
                           },
@@ -3491,7 +3491,7 @@
                               "referencedDeclaration": 4294967268,
                               "src": "3511:4:24",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_TokenManager_$8112",
+                                "typeIdentifier": "t_contract$_TokenManager_$8008",
                                 "typeString": "contract TokenManager"
                               }
                             },
@@ -3637,7 +3637,7 @@
                         "referencedDeclaration": 7776,
                         "src": "3561:17:24",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage",
+                          "typeIdentifier": "t_struct$_TokenTrackerState_$8095_storage",
                           "typeString": "struct TokenTracker.TokenTrackerState storage ref"
                         }
                       },
@@ -3648,10 +3648,10 @@
                       "lValueRequested": false,
                       "memberName": "trackToken",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 8358,
+                      "referencedDeclaration": 8254,
                       "src": "3561:28:24",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8199_storage_ptr_$_t_enum$_TokenType_$2746_$_t_address_$_t_uint256_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8199_storage_ptr_$",
+                        "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8095_storage_ptr_$_t_enum$_TokenType_$2746_$_t_address_$_t_uint256_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8095_storage_ptr_$",
                         "typeString": "function (struct TokenTracker.TokenTrackerState storage pointer,enum Enums.TokenType,address,uint256)"
                       }
                     },
@@ -3685,7 +3685,7 @@
                         "referencedDeclaration": 4294967268,
                         "src": "3651:4:24",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_TokenManager_$8112",
+                          "typeIdentifier": "t_contract$_TokenManager_$8008",
                           "typeString": "contract TokenManager"
                         }
                       },
@@ -3888,1208 +3888,19 @@
               ],
               "src": "3162:8:24"
             },
-            "scope": 8112,
+            "scope": 8008,
             "src": "3002:686:24",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
-          },
-          {
-            "body": {
-              "id": 8110,
-              "nodeType": "Block",
-              "src": "3807:684:24",
-              "statements": [
-                {
-                  "assignments": [
-                    8025
-                  ],
-                  "declarations": [
-                    {
-                      "constant": false,
-                      "id": 8025,
-                      "mutability": "mutable",
-                      "name": "tokenTypes",
-                      "nameLocation": "3842:10:24",
-                      "nodeType": "VariableDeclaration",
-                      "scope": 8110,
-                      "src": "3817:35:24",
-                      "stateVariable": false,
-                      "storageLocation": "memory",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_array$_t_enum$_TokenType_$2746_$dyn_memory_ptr",
-                        "typeString": "enum Enums.TokenType[]"
-                      },
-                      "typeName": {
-                        "baseType": {
-                          "id": 8023,
-                          "nodeType": "UserDefinedTypeName",
-                          "pathNode": {
-                            "id": 8022,
-                            "name": "Enums.TokenType",
-                            "nodeType": "IdentifierPath",
-                            "referencedDeclaration": 2746,
-                            "src": "3817:15:24"
-                          },
-                          "referencedDeclaration": 2746,
-                          "src": "3817:15:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_enum$_TokenType_$2746",
-                            "typeString": "enum Enums.TokenType"
-                          }
-                        },
-                        "id": 8024,
-                        "nodeType": "ArrayTypeName",
-                        "src": "3817:17:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_enum$_TokenType_$2746_$dyn_storage_ptr",
-                          "typeString": "enum Enums.TokenType[]"
-                        }
-                      },
-                      "visibility": "internal"
-                    }
-                  ],
-                  "id": 8034,
-                  "initialValue": {
-                    "arguments": [
-                      {
-                        "expression": {
-                          "expression": {
-                            "id": 8030,
-                            "name": "tokenTrackerState",
-                            "nodeType": "Identifier",
-                            "overloadedDeclarations": [],
-                            "referencedDeclaration": 7776,
-                            "src": "3877:17:24",
-                            "typeDescriptions": {
-                              "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage",
-                              "typeString": "struct TokenTracker.TokenTrackerState storage ref"
-                            }
-                          },
-                          "id": 8031,
-                          "isConstant": false,
-                          "isLValue": true,
-                          "isPure": false,
-                          "lValueRequested": false,
-                          "memberName": "trackedTokens",
-                          "nodeType": "MemberAccess",
-                          "referencedDeclaration": 8193,
-                          "src": "3877:31:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_array$_t_struct$_TrackedToken_$8189_storage_$dyn_storage",
-                            "typeString": "struct TokenTracker.TrackedToken storage ref[] storage ref"
-                          }
-                        },
-                        "id": 8032,
-                        "isConstant": false,
-                        "isLValue": false,
-                        "isPure": false,
-                        "lValueRequested": false,
-                        "memberName": "length",
-                        "nodeType": "MemberAccess",
-                        "src": "3877:38:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_uint256",
-                          "typeString": "uint256"
-                        }
-                      }
-                    ],
-                    "expression": {
-                      "argumentTypes": [
-                        {
-                          "typeIdentifier": "t_uint256",
-                          "typeString": "uint256"
-                        }
-                      ],
-                      "id": 8029,
-                      "isConstant": false,
-                      "isLValue": false,
-                      "isPure": true,
-                      "lValueRequested": false,
-                      "nodeType": "NewExpression",
-                      "src": "3855:21:24",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_function_objectcreation_pure$_t_uint256_$returns$_t_array$_t_enum$_TokenType_$2746_$dyn_memory_ptr_$",
-                        "typeString": "function (uint256) pure returns (enum Enums.TokenType[] memory)"
-                      },
-                      "typeName": {
-                        "baseType": {
-                          "id": 8027,
-                          "nodeType": "UserDefinedTypeName",
-                          "pathNode": {
-                            "id": 8026,
-                            "name": "Enums.TokenType",
-                            "nodeType": "IdentifierPath",
-                            "referencedDeclaration": 2746,
-                            "src": "3859:15:24"
-                          },
-                          "referencedDeclaration": 2746,
-                          "src": "3859:15:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_enum$_TokenType_$2746",
-                            "typeString": "enum Enums.TokenType"
-                          }
-                        },
-                        "id": 8028,
-                        "nodeType": "ArrayTypeName",
-                        "src": "3859:17:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_enum$_TokenType_$2746_$dyn_storage_ptr",
-                          "typeString": "enum Enums.TokenType[]"
-                        }
-                      }
-                    },
-                    "id": 8033,
-                    "isConstant": false,
-                    "isLValue": false,
-                    "isPure": false,
-                    "kind": "functionCall",
-                    "lValueRequested": false,
-                    "names": [],
-                    "nodeType": "FunctionCall",
-                    "src": "3855:61:24",
-                    "tryCall": false,
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_array$_t_enum$_TokenType_$2746_$dyn_memory_ptr",
-                      "typeString": "enum Enums.TokenType[] memory"
-                    }
-                  },
-                  "nodeType": "VariableDeclarationStatement",
-                  "src": "3817:99:24"
-                },
-                {
-                  "assignments": [
-                    8039
-                  ],
-                  "declarations": [
-                    {
-                      "constant": false,
-                      "id": 8039,
-                      "mutability": "mutable",
-                      "name": "contractAddresses",
-                      "nameLocation": "3943:17:24",
-                      "nodeType": "VariableDeclaration",
-                      "scope": 8110,
-                      "src": "3926:34:24",
-                      "stateVariable": false,
-                      "storageLocation": "memory",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_array$_t_address_$dyn_memory_ptr",
-                        "typeString": "address[]"
-                      },
-                      "typeName": {
-                        "baseType": {
-                          "id": 8037,
-                          "name": "address",
-                          "nodeType": "ElementaryTypeName",
-                          "src": "3926:7:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_address",
-                            "typeString": "address"
-                          }
-                        },
-                        "id": 8038,
-                        "nodeType": "ArrayTypeName",
-                        "src": "3926:9:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
-                          "typeString": "address[]"
-                        }
-                      },
-                      "visibility": "internal"
-                    }
-                  ],
-                  "id": 8047,
-                  "initialValue": {
-                    "arguments": [
-                      {
-                        "expression": {
-                          "expression": {
-                            "id": 8043,
-                            "name": "tokenTrackerState",
-                            "nodeType": "Identifier",
-                            "overloadedDeclarations": [],
-                            "referencedDeclaration": 7776,
-                            "src": "3977:17:24",
-                            "typeDescriptions": {
-                              "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage",
-                              "typeString": "struct TokenTracker.TokenTrackerState storage ref"
-                            }
-                          },
-                          "id": 8044,
-                          "isConstant": false,
-                          "isLValue": true,
-                          "isPure": false,
-                          "lValueRequested": false,
-                          "memberName": "trackedTokens",
-                          "nodeType": "MemberAccess",
-                          "referencedDeclaration": 8193,
-                          "src": "3977:31:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_array$_t_struct$_TrackedToken_$8189_storage_$dyn_storage",
-                            "typeString": "struct TokenTracker.TrackedToken storage ref[] storage ref"
-                          }
-                        },
-                        "id": 8045,
-                        "isConstant": false,
-                        "isLValue": false,
-                        "isPure": false,
-                        "lValueRequested": false,
-                        "memberName": "length",
-                        "nodeType": "MemberAccess",
-                        "src": "3977:38:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_uint256",
-                          "typeString": "uint256"
-                        }
-                      }
-                    ],
-                    "expression": {
-                      "argumentTypes": [
-                        {
-                          "typeIdentifier": "t_uint256",
-                          "typeString": "uint256"
-                        }
-                      ],
-                      "id": 8042,
-                      "isConstant": false,
-                      "isLValue": false,
-                      "isPure": true,
-                      "lValueRequested": false,
-                      "nodeType": "NewExpression",
-                      "src": "3963:13:24",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_function_objectcreation_pure$_t_uint256_$returns$_t_array$_t_address_$dyn_memory_ptr_$",
-                        "typeString": "function (uint256) pure returns (address[] memory)"
-                      },
-                      "typeName": {
-                        "baseType": {
-                          "id": 8040,
-                          "name": "address",
-                          "nodeType": "ElementaryTypeName",
-                          "src": "3967:7:24",
-                          "stateMutability": "nonpayable",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_address",
-                            "typeString": "address"
-                          }
-                        },
-                        "id": 8041,
-                        "nodeType": "ArrayTypeName",
-                        "src": "3967:9:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
-                          "typeString": "address[]"
-                        }
-                      }
-                    },
-                    "id": 8046,
-                    "isConstant": false,
-                    "isLValue": false,
-                    "isPure": false,
-                    "kind": "functionCall",
-                    "lValueRequested": false,
-                    "names": [],
-                    "nodeType": "FunctionCall",
-                    "src": "3963:53:24",
-                    "tryCall": false,
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_array$_t_address_$dyn_memory_ptr",
-                      "typeString": "address[] memory"
-                    }
-                  },
-                  "nodeType": "VariableDeclarationStatement",
-                  "src": "3926:90:24"
-                },
-                {
-                  "assignments": [
-                    8052
-                  ],
-                  "declarations": [
-                    {
-                      "constant": false,
-                      "id": 8052,
-                      "mutability": "mutable",
-                      "name": "tokenIds",
-                      "nameLocation": "4043:8:24",
-                      "nodeType": "VariableDeclaration",
-                      "scope": 8110,
-                      "src": "4026:25:24",
-                      "stateVariable": false,
-                      "storageLocation": "memory",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_array$_t_uint256_$dyn_memory_ptr",
-                        "typeString": "uint256[]"
-                      },
-                      "typeName": {
-                        "baseType": {
-                          "id": 8050,
-                          "name": "uint256",
-                          "nodeType": "ElementaryTypeName",
-                          "src": "4026:7:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_uint256",
-                            "typeString": "uint256"
-                          }
-                        },
-                        "id": 8051,
-                        "nodeType": "ArrayTypeName",
-                        "src": "4026:9:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
-                          "typeString": "uint256[]"
-                        }
-                      },
-                      "visibility": "internal"
-                    }
-                  ],
-                  "id": 8060,
-                  "initialValue": {
-                    "arguments": [
-                      {
-                        "expression": {
-                          "expression": {
-                            "id": 8056,
-                            "name": "tokenTrackerState",
-                            "nodeType": "Identifier",
-                            "overloadedDeclarations": [],
-                            "referencedDeclaration": 7776,
-                            "src": "4068:17:24",
-                            "typeDescriptions": {
-                              "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage",
-                              "typeString": "struct TokenTracker.TokenTrackerState storage ref"
-                            }
-                          },
-                          "id": 8057,
-                          "isConstant": false,
-                          "isLValue": true,
-                          "isPure": false,
-                          "lValueRequested": false,
-                          "memberName": "trackedTokens",
-                          "nodeType": "MemberAccess",
-                          "referencedDeclaration": 8193,
-                          "src": "4068:31:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_array$_t_struct$_TrackedToken_$8189_storage_$dyn_storage",
-                            "typeString": "struct TokenTracker.TrackedToken storage ref[] storage ref"
-                          }
-                        },
-                        "id": 8058,
-                        "isConstant": false,
-                        "isLValue": false,
-                        "isPure": false,
-                        "lValueRequested": false,
-                        "memberName": "length",
-                        "nodeType": "MemberAccess",
-                        "src": "4068:38:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_uint256",
-                          "typeString": "uint256"
-                        }
-                      }
-                    ],
-                    "expression": {
-                      "argumentTypes": [
-                        {
-                          "typeIdentifier": "t_uint256",
-                          "typeString": "uint256"
-                        }
-                      ],
-                      "id": 8055,
-                      "isConstant": false,
-                      "isLValue": false,
-                      "isPure": true,
-                      "lValueRequested": false,
-                      "nodeType": "NewExpression",
-                      "src": "4054:13:24",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_function_objectcreation_pure$_t_uint256_$returns$_t_array$_t_uint256_$dyn_memory_ptr_$",
-                        "typeString": "function (uint256) pure returns (uint256[] memory)"
-                      },
-                      "typeName": {
-                        "baseType": {
-                          "id": 8053,
-                          "name": "uint256",
-                          "nodeType": "ElementaryTypeName",
-                          "src": "4058:7:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_uint256",
-                            "typeString": "uint256"
-                          }
-                        },
-                        "id": 8054,
-                        "nodeType": "ArrayTypeName",
-                        "src": "4058:9:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
-                          "typeString": "uint256[]"
-                        }
-                      }
-                    },
-                    "id": 8059,
-                    "isConstant": false,
-                    "isLValue": false,
-                    "isPure": false,
-                    "kind": "functionCall",
-                    "lValueRequested": false,
-                    "names": [],
-                    "nodeType": "FunctionCall",
-                    "src": "4054:53:24",
-                    "tryCall": false,
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_array$_t_uint256_$dyn_memory_ptr",
-                      "typeString": "uint256[] memory"
-                    }
-                  },
-                  "nodeType": "VariableDeclarationStatement",
-                  "src": "4026:81:24"
-                },
-                {
-                  "body": {
-                    "id": 8103,
-                    "nodeType": "Block",
-                    "src": "4185:242:24",
-                    "statements": [
-                      {
-                        "expression": {
-                          "id": 8081,
-                          "isConstant": false,
-                          "isLValue": false,
-                          "isPure": false,
-                          "lValueRequested": false,
-                          "leftHandSide": {
-                            "baseExpression": {
-                              "id": 8073,
-                              "name": "tokenTypes",
-                              "nodeType": "Identifier",
-                              "overloadedDeclarations": [],
-                              "referencedDeclaration": 8025,
-                              "src": "4199:10:24",
-                              "typeDescriptions": {
-                                "typeIdentifier": "t_array$_t_enum$_TokenType_$2746_$dyn_memory_ptr",
-                                "typeString": "enum Enums.TokenType[] memory"
-                              }
-                            },
-                            "id": 8075,
-                            "indexExpression": {
-                              "id": 8074,
-                              "name": "i",
-                              "nodeType": "Identifier",
-                              "overloadedDeclarations": [],
-                              "referencedDeclaration": 8062,
-                              "src": "4210:1:24",
-                              "typeDescriptions": {
-                                "typeIdentifier": "t_uint32",
-                                "typeString": "uint32"
-                              }
-                            },
-                            "isConstant": false,
-                            "isLValue": true,
-                            "isPure": false,
-                            "lValueRequested": true,
-                            "nodeType": "IndexAccess",
-                            "src": "4199:13:24",
-                            "typeDescriptions": {
-                              "typeIdentifier": "t_enum$_TokenType_$2746",
-                              "typeString": "enum Enums.TokenType"
-                            }
-                          },
-                          "nodeType": "Assignment",
-                          "operator": "=",
-                          "rightHandSide": {
-                            "expression": {
-                              "baseExpression": {
-                                "expression": {
-                                  "id": 8076,
-                                  "name": "tokenTrackerState",
-                                  "nodeType": "Identifier",
-                                  "overloadedDeclarations": [],
-                                  "referencedDeclaration": 7776,
-                                  "src": "4215:17:24",
-                                  "typeDescriptions": {
-                                    "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage",
-                                    "typeString": "struct TokenTracker.TokenTrackerState storage ref"
-                                  }
-                                },
-                                "id": 8077,
-                                "isConstant": false,
-                                "isLValue": true,
-                                "isPure": false,
-                                "lValueRequested": false,
-                                "memberName": "trackedTokens",
-                                "nodeType": "MemberAccess",
-                                "referencedDeclaration": 8193,
-                                "src": "4215:31:24",
-                                "typeDescriptions": {
-                                  "typeIdentifier": "t_array$_t_struct$_TrackedToken_$8189_storage_$dyn_storage",
-                                  "typeString": "struct TokenTracker.TrackedToken storage ref[] storage ref"
-                                }
-                              },
-                              "id": 8079,
-                              "indexExpression": {
-                                "id": 8078,
-                                "name": "i",
-                                "nodeType": "Identifier",
-                                "overloadedDeclarations": [],
-                                "referencedDeclaration": 8062,
-                                "src": "4247:1:24",
-                                "typeDescriptions": {
-                                  "typeIdentifier": "t_uint32",
-                                  "typeString": "uint32"
-                                }
-                              },
-                              "isConstant": false,
-                              "isLValue": true,
-                              "isPure": false,
-                              "lValueRequested": false,
-                              "nodeType": "IndexAccess",
-                              "src": "4215:34:24",
-                              "typeDescriptions": {
-                                "typeIdentifier": "t_struct$_TrackedToken_$8189_storage",
-                                "typeString": "struct TokenTracker.TrackedToken storage ref"
-                              }
-                            },
-                            "id": 8080,
-                            "isConstant": false,
-                            "isLValue": true,
-                            "isPure": false,
-                            "lValueRequested": false,
-                            "memberName": "tokenType",
-                            "nodeType": "MemberAccess",
-                            "referencedDeclaration": 8184,
-                            "src": "4215:44:24",
-                            "typeDescriptions": {
-                              "typeIdentifier": "t_enum$_TokenType_$2746",
-                              "typeString": "enum Enums.TokenType"
-                            }
-                          },
-                          "src": "4199:60:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_enum$_TokenType_$2746",
-                            "typeString": "enum Enums.TokenType"
-                          }
-                        },
-                        "id": 8082,
-                        "nodeType": "ExpressionStatement",
-                        "src": "4199:60:24"
-                      },
-                      {
-                        "expression": {
-                          "id": 8091,
-                          "isConstant": false,
-                          "isLValue": false,
-                          "isPure": false,
-                          "lValueRequested": false,
-                          "leftHandSide": {
-                            "baseExpression": {
-                              "id": 8083,
-                              "name": "contractAddresses",
-                              "nodeType": "Identifier",
-                              "overloadedDeclarations": [],
-                              "referencedDeclaration": 8039,
-                              "src": "4273:17:24",
-                              "typeDescriptions": {
-                                "typeIdentifier": "t_array$_t_address_$dyn_memory_ptr",
-                                "typeString": "address[] memory"
-                              }
-                            },
-                            "id": 8085,
-                            "indexExpression": {
-                              "id": 8084,
-                              "name": "i",
-                              "nodeType": "Identifier",
-                              "overloadedDeclarations": [],
-                              "referencedDeclaration": 8062,
-                              "src": "4291:1:24",
-                              "typeDescriptions": {
-                                "typeIdentifier": "t_uint32",
-                                "typeString": "uint32"
-                              }
-                            },
-                            "isConstant": false,
-                            "isLValue": true,
-                            "isPure": false,
-                            "lValueRequested": true,
-                            "nodeType": "IndexAccess",
-                            "src": "4273:20:24",
-                            "typeDescriptions": {
-                              "typeIdentifier": "t_address",
-                              "typeString": "address"
-                            }
-                          },
-                          "nodeType": "Assignment",
-                          "operator": "=",
-                          "rightHandSide": {
-                            "expression": {
-                              "baseExpression": {
-                                "expression": {
-                                  "id": 8086,
-                                  "name": "tokenTrackerState",
-                                  "nodeType": "Identifier",
-                                  "overloadedDeclarations": [],
-                                  "referencedDeclaration": 7776,
-                                  "src": "4296:17:24",
-                                  "typeDescriptions": {
-                                    "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage",
-                                    "typeString": "struct TokenTracker.TokenTrackerState storage ref"
-                                  }
-                                },
-                                "id": 8087,
-                                "isConstant": false,
-                                "isLValue": true,
-                                "isPure": false,
-                                "lValueRequested": false,
-                                "memberName": "trackedTokens",
-                                "nodeType": "MemberAccess",
-                                "referencedDeclaration": 8193,
-                                "src": "4296:31:24",
-                                "typeDescriptions": {
-                                  "typeIdentifier": "t_array$_t_struct$_TrackedToken_$8189_storage_$dyn_storage",
-                                  "typeString": "struct TokenTracker.TrackedToken storage ref[] storage ref"
-                                }
-                              },
-                              "id": 8089,
-                              "indexExpression": {
-                                "id": 8088,
-                                "name": "i",
-                                "nodeType": "Identifier",
-                                "overloadedDeclarations": [],
-                                "referencedDeclaration": 8062,
-                                "src": "4328:1:24",
-                                "typeDescriptions": {
-                                  "typeIdentifier": "t_uint32",
-                                  "typeString": "uint32"
-                                }
-                              },
-                              "isConstant": false,
-                              "isLValue": true,
-                              "isPure": false,
-                              "lValueRequested": false,
-                              "nodeType": "IndexAccess",
-                              "src": "4296:34:24",
-                              "typeDescriptions": {
-                                "typeIdentifier": "t_struct$_TrackedToken_$8189_storage",
-                                "typeString": "struct TokenTracker.TrackedToken storage ref"
-                              }
-                            },
-                            "id": 8090,
-                            "isConstant": false,
-                            "isLValue": true,
-                            "isPure": false,
-                            "lValueRequested": false,
-                            "memberName": "contractAddress",
-                            "nodeType": "MemberAccess",
-                            "referencedDeclaration": 8186,
-                            "src": "4296:50:24",
-                            "typeDescriptions": {
-                              "typeIdentifier": "t_address",
-                              "typeString": "address"
-                            }
-                          },
-                          "src": "4273:73:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_address",
-                            "typeString": "address"
-                          }
-                        },
-                        "id": 8092,
-                        "nodeType": "ExpressionStatement",
-                        "src": "4273:73:24"
-                      },
-                      {
-                        "expression": {
-                          "id": 8101,
-                          "isConstant": false,
-                          "isLValue": false,
-                          "isPure": false,
-                          "lValueRequested": false,
-                          "leftHandSide": {
-                            "baseExpression": {
-                              "id": 8093,
-                              "name": "tokenIds",
-                              "nodeType": "Identifier",
-                              "overloadedDeclarations": [],
-                              "referencedDeclaration": 8052,
-                              "src": "4360:8:24",
-                              "typeDescriptions": {
-                                "typeIdentifier": "t_array$_t_uint256_$dyn_memory_ptr",
-                                "typeString": "uint256[] memory"
-                              }
-                            },
-                            "id": 8095,
-                            "indexExpression": {
-                              "id": 8094,
-                              "name": "i",
-                              "nodeType": "Identifier",
-                              "overloadedDeclarations": [],
-                              "referencedDeclaration": 8062,
-                              "src": "4369:1:24",
-                              "typeDescriptions": {
-                                "typeIdentifier": "t_uint32",
-                                "typeString": "uint32"
-                              }
-                            },
-                            "isConstant": false,
-                            "isLValue": true,
-                            "isPure": false,
-                            "lValueRequested": true,
-                            "nodeType": "IndexAccess",
-                            "src": "4360:11:24",
-                            "typeDescriptions": {
-                              "typeIdentifier": "t_uint256",
-                              "typeString": "uint256"
-                            }
-                          },
-                          "nodeType": "Assignment",
-                          "operator": "=",
-                          "rightHandSide": {
-                            "expression": {
-                              "baseExpression": {
-                                "expression": {
-                                  "id": 8096,
-                                  "name": "tokenTrackerState",
-                                  "nodeType": "Identifier",
-                                  "overloadedDeclarations": [],
-                                  "referencedDeclaration": 7776,
-                                  "src": "4374:17:24",
-                                  "typeDescriptions": {
-                                    "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage",
-                                    "typeString": "struct TokenTracker.TokenTrackerState storage ref"
-                                  }
-                                },
-                                "id": 8097,
-                                "isConstant": false,
-                                "isLValue": true,
-                                "isPure": false,
-                                "lValueRequested": false,
-                                "memberName": "trackedTokens",
-                                "nodeType": "MemberAccess",
-                                "referencedDeclaration": 8193,
-                                "src": "4374:31:24",
-                                "typeDescriptions": {
-                                  "typeIdentifier": "t_array$_t_struct$_TrackedToken_$8189_storage_$dyn_storage",
-                                  "typeString": "struct TokenTracker.TrackedToken storage ref[] storage ref"
-                                }
-                              },
-                              "id": 8099,
-                              "indexExpression": {
-                                "id": 8098,
-                                "name": "i",
-                                "nodeType": "Identifier",
-                                "overloadedDeclarations": [],
-                                "referencedDeclaration": 8062,
-                                "src": "4406:1:24",
-                                "typeDescriptions": {
-                                  "typeIdentifier": "t_uint32",
-                                  "typeString": "uint32"
-                                }
-                              },
-                              "isConstant": false,
-                              "isLValue": true,
-                              "isPure": false,
-                              "lValueRequested": false,
-                              "nodeType": "IndexAccess",
-                              "src": "4374:34:24",
-                              "typeDescriptions": {
-                                "typeIdentifier": "t_struct$_TrackedToken_$8189_storage",
-                                "typeString": "struct TokenTracker.TrackedToken storage ref"
-                              }
-                            },
-                            "id": 8100,
-                            "isConstant": false,
-                            "isLValue": true,
-                            "isPure": false,
-                            "lValueRequested": false,
-                            "memberName": "tokenId",
-                            "nodeType": "MemberAccess",
-                            "referencedDeclaration": 8188,
-                            "src": "4374:42:24",
-                            "typeDescriptions": {
-                              "typeIdentifier": "t_uint256",
-                              "typeString": "uint256"
-                            }
-                          },
-                          "src": "4360:56:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_uint256",
-                            "typeString": "uint256"
-                          }
-                        },
-                        "id": 8102,
-                        "nodeType": "ExpressionStatement",
-                        "src": "4360:56:24"
-                      }
-                    ]
-                  },
-                  "condition": {
-                    "commonType": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
-                    },
-                    "id": 8069,
-                    "isConstant": false,
-                    "isLValue": false,
-                    "isPure": false,
-                    "lValueRequested": false,
-                    "leftExpression": {
-                      "id": 8065,
-                      "name": "i",
-                      "nodeType": "Identifier",
-                      "overloadedDeclarations": [],
-                      "referencedDeclaration": 8062,
-                      "src": "4136:1:24",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_uint32",
-                        "typeString": "uint32"
-                      }
-                    },
-                    "nodeType": "BinaryOperation",
-                    "operator": "<",
-                    "rightExpression": {
-                      "expression": {
-                        "expression": {
-                          "id": 8066,
-                          "name": "tokenTrackerState",
-                          "nodeType": "Identifier",
-                          "overloadedDeclarations": [],
-                          "referencedDeclaration": 7776,
-                          "src": "4140:17:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage",
-                            "typeString": "struct TokenTracker.TokenTrackerState storage ref"
-                          }
-                        },
-                        "id": 8067,
-                        "isConstant": false,
-                        "isLValue": true,
-                        "isPure": false,
-                        "lValueRequested": false,
-                        "memberName": "trackedTokens",
-                        "nodeType": "MemberAccess",
-                        "referencedDeclaration": 8193,
-                        "src": "4140:31:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_struct$_TrackedToken_$8189_storage_$dyn_storage",
-                          "typeString": "struct TokenTracker.TrackedToken storage ref[] storage ref"
-                        }
-                      },
-                      "id": 8068,
-                      "isConstant": false,
-                      "isLValue": false,
-                      "isPure": false,
-                      "lValueRequested": false,
-                      "memberName": "length",
-                      "nodeType": "MemberAccess",
-                      "src": "4140:38:24",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_uint256",
-                        "typeString": "uint256"
-                      }
-                    },
-                    "src": "4136:42:24",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_bool",
-                      "typeString": "bool"
-                    }
-                  },
-                  "id": 8104,
-                  "initializationExpression": {
-                    "assignments": [
-                      8062
-                    ],
-                    "declarations": [
-                      {
-                        "constant": false,
-                        "id": 8062,
-                        "mutability": "mutable",
-                        "name": "i",
-                        "nameLocation": "4129:1:24",
-                        "nodeType": "VariableDeclaration",
-                        "scope": 8104,
-                        "src": "4122:8:24",
-                        "stateVariable": false,
-                        "storageLocation": "default",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_uint32",
-                          "typeString": "uint32"
-                        },
-                        "typeName": {
-                          "id": 8061,
-                          "name": "uint32",
-                          "nodeType": "ElementaryTypeName",
-                          "src": "4122:6:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_uint32",
-                            "typeString": "uint32"
-                          }
-                        },
-                        "visibility": "internal"
-                      }
-                    ],
-                    "id": 8064,
-                    "initialValue": {
-                      "hexValue": "30",
-                      "id": 8063,
-                      "isConstant": false,
-                      "isLValue": false,
-                      "isPure": true,
-                      "kind": "number",
-                      "lValueRequested": false,
-                      "nodeType": "Literal",
-                      "src": "4133:1:24",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_rational_0_by_1",
-                        "typeString": "int_const 0"
-                      },
-                      "value": "0"
-                    },
-                    "nodeType": "VariableDeclarationStatement",
-                    "src": "4122:12:24"
-                  },
-                  "loopExpression": {
-                    "expression": {
-                      "id": 8071,
-                      "isConstant": false,
-                      "isLValue": false,
-                      "isPure": false,
-                      "lValueRequested": false,
-                      "nodeType": "UnaryOperation",
-                      "operator": "++",
-                      "prefix": false,
-                      "src": "4180:3:24",
-                      "subExpression": {
-                        "id": 8070,
-                        "name": "i",
-                        "nodeType": "Identifier",
-                        "overloadedDeclarations": [],
-                        "referencedDeclaration": 8062,
-                        "src": "4180:1:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_uint32",
-                          "typeString": "uint32"
-                        }
-                      },
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_uint32",
-                        "typeString": "uint32"
-                      }
-                    },
-                    "id": 8072,
-                    "nodeType": "ExpressionStatement",
-                    "src": "4180:3:24"
-                  },
-                  "nodeType": "ForStatement",
-                  "src": "4117:310:24"
-                },
-                {
-                  "expression": {
-                    "components": [
-                      {
-                        "id": 8105,
-                        "name": "tokenTypes",
-                        "nodeType": "Identifier",
-                        "overloadedDeclarations": [],
-                        "referencedDeclaration": 8025,
-                        "src": "4444:10:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_enum$_TokenType_$2746_$dyn_memory_ptr",
-                          "typeString": "enum Enums.TokenType[] memory"
-                        }
-                      },
-                      {
-                        "id": 8106,
-                        "name": "contractAddresses",
-                        "nodeType": "Identifier",
-                        "overloadedDeclarations": [],
-                        "referencedDeclaration": 8039,
-                        "src": "4456:17:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_address_$dyn_memory_ptr",
-                          "typeString": "address[] memory"
-                        }
-                      },
-                      {
-                        "id": 8107,
-                        "name": "tokenIds",
-                        "nodeType": "Identifier",
-                        "overloadedDeclarations": [],
-                        "referencedDeclaration": 8052,
-                        "src": "4475:8:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_uint256_$dyn_memory_ptr",
-                          "typeString": "uint256[] memory"
-                        }
-                      }
-                    ],
-                    "id": 8108,
-                    "isConstant": false,
-                    "isInlineArray": false,
-                    "isLValue": false,
-                    "isPure": false,
-                    "lValueRequested": false,
-                    "nodeType": "TupleExpression",
-                    "src": "4443:41:24",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_tuple$_t_array$_t_enum$_TokenType_$2746_$dyn_memory_ptr_$_t_array$_t_address_$dyn_memory_ptr_$_t_array$_t_uint256_$dyn_memory_ptr_$",
-                      "typeString": "tuple(enum Enums.TokenType[] memory,address[] memory,uint256[] memory)"
-                    }
-                  },
-                  "functionReturnParameters": 8019,
-                  "id": 8109,
-                  "nodeType": "Return",
-                  "src": "4436:48:24"
-                }
-              ]
-            },
-            "id": 8111,
-            "implemented": true,
-            "kind": "function",
-            "modifiers": [],
-            "name": "_getTrackedTokens",
-            "nameLocation": "3703:17:24",
-            "nodeType": "FunctionDefinition",
-            "parameters": {
-              "id": 8008,
-              "nodeType": "ParameterList",
-              "parameters": [],
-              "src": "3720:2:24"
-            },
-            "returnParameters": {
-              "id": 8019,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 8012,
-                  "mutability": "mutable",
-                  "name": "",
-                  "nameLocation": "-1:-1:-1",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 8111,
-                  "src": "3746:24:24",
-                  "stateVariable": false,
-                  "storageLocation": "memory",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_array$_t_enum$_TokenType_$2746_$dyn_memory_ptr",
-                    "typeString": "enum Enums.TokenType[]"
-                  },
-                  "typeName": {
-                    "baseType": {
-                      "id": 8010,
-                      "nodeType": "UserDefinedTypeName",
-                      "pathNode": {
-                        "id": 8009,
-                        "name": "Enums.TokenType",
-                        "nodeType": "IdentifierPath",
-                        "referencedDeclaration": 2746,
-                        "src": "3746:15:24"
-                      },
-                      "referencedDeclaration": 2746,
-                      "src": "3746:15:24",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_enum$_TokenType_$2746",
-                        "typeString": "enum Enums.TokenType"
-                      }
-                    },
-                    "id": 8011,
-                    "nodeType": "ArrayTypeName",
-                    "src": "3746:17:24",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_array$_t_enum$_TokenType_$2746_$dyn_storage_ptr",
-                      "typeString": "enum Enums.TokenType[]"
-                    }
-                  },
-                  "visibility": "internal"
-                },
-                {
-                  "constant": false,
-                  "id": 8015,
-                  "mutability": "mutable",
-                  "name": "",
-                  "nameLocation": "-1:-1:-1",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 8111,
-                  "src": "3772:16:24",
-                  "stateVariable": false,
-                  "storageLocation": "memory",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_array$_t_address_$dyn_memory_ptr",
-                    "typeString": "address[]"
-                  },
-                  "typeName": {
-                    "baseType": {
-                      "id": 8013,
-                      "name": "address",
-                      "nodeType": "ElementaryTypeName",
-                      "src": "3772:7:24",
-                      "stateMutability": "nonpayable",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_address",
-                        "typeString": "address"
-                      }
-                    },
-                    "id": 8014,
-                    "nodeType": "ArrayTypeName",
-                    "src": "3772:9:24",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
-                      "typeString": "address[]"
-                    }
-                  },
-                  "visibility": "internal"
-                },
-                {
-                  "constant": false,
-                  "id": 8018,
-                  "mutability": "mutable",
-                  "name": "",
-                  "nameLocation": "-1:-1:-1",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 8111,
-                  "src": "3790:16:24",
-                  "stateVariable": false,
-                  "storageLocation": "memory",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_array$_t_uint256_$dyn_memory_ptr",
-                    "typeString": "uint256[]"
-                  },
-                  "typeName": {
-                    "baseType": {
-                      "id": 8016,
-                      "name": "uint256",
-                      "nodeType": "ElementaryTypeName",
-                      "src": "3790:7:24",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_uint256",
-                        "typeString": "uint256"
-                      }
-                    },
-                    "id": 8017,
-                    "nodeType": "ArrayTypeName",
-                    "src": "3790:9:24",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
-                      "typeString": "uint256[]"
-                    }
-                  },
-                  "visibility": "internal"
-                }
-              ],
-              "src": "3745:62:24"
-            },
-            "scope": 8112,
-            "src": "3694:797:24",
-            "stateMutability": "view",
-            "virtual": false,
-            "visibility": "internal"
           }
         ],
-        "scope": 8113,
-        "src": "457:4037:24",
+        "scope": 8009,
+        "src": "457:3233:24",
         "usedErrors": []
       }
     ],
-    "src": "39:4456:24"
+    "src": "39:3652:24"
   },
   "legacyAST": {
     "absolutePath": "project:/contracts/TokenManager.sol",
@@ -5119,13 +3930,13 @@
         748
       ],
       "TokenManager": [
-        8112
+        8008
       ],
       "TokenTracker": [
-        9519
+        9522
       ]
     },
-    "id": 8113,
+    "id": 8009,
     "license": "Apache-2.0",
     "nodeType": "SourceUnit",
     "nodes": [
@@ -5146,7 +3957,7 @@
         "id": 7726,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 8113,
+        "scope": 8009,
         "sourceUnit": 3559,
         "src": "64:27:24",
         "symbolAliases": [],
@@ -5158,7 +3969,7 @@
         "id": 7727,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 8113,
+        "scope": 8009,
         "sourceUnit": 615,
         "src": "92:56:24",
         "symbolAliases": [],
@@ -5170,7 +3981,7 @@
         "id": 7728,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 8113,
+        "scope": 8009,
         "sourceUnit": 749,
         "src": "149:66:24",
         "symbolAliases": [],
@@ -5182,7 +3993,7 @@
         "id": 7729,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 8113,
+        "scope": 8009,
         "sourceUnit": 731,
         "src": "216:58:24",
         "symbolAliases": [],
@@ -5194,7 +4005,7 @@
         "id": 7730,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 8113,
+        "scope": 8009,
         "sourceUnit": 537,
         "src": "275:68:24",
         "symbolAliases": [],
@@ -5206,7 +4017,7 @@
         "id": 7731,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 8113,
+        "scope": 8009,
         "sourceUnit": 496,
         "src": "344:60:24",
         "symbolAliases": [],
@@ -5218,7 +4029,7 @@
         "id": 7732,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 8113,
+        "scope": 8009,
         "sourceUnit": 2748,
         "src": "405:21:24",
         "symbolAliases": [],
@@ -5230,8 +4041,8 @@
         "id": 7733,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 8113,
-        "sourceUnit": 9520,
+        "scope": 8009,
+        "sourceUnit": 9523,
         "src": "427:28:24",
         "symbolAliases": [],
         "unitAlias": ""
@@ -5279,9 +4090,9 @@
         "contractDependencies": [],
         "contractKind": "contract",
         "fullyImplemented": true,
-        "id": 8112,
+        "id": 8008,
         "linearizedBaseContracts": [
-          8112,
+          8008,
           3558,
           536,
           760,
@@ -5740,12 +4551,12 @@
             "name": "tokenTrackerState",
             "nameLocation": "1471:17:24",
             "nodeType": "VariableDeclaration",
-            "scope": 8112,
+            "scope": 8008,
             "src": "1440:48:24",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage",
+              "typeIdentifier": "t_struct$_TokenTrackerState_$8095_storage",
               "typeString": "struct TokenTracker.TokenTrackerState"
             },
             "typeName": {
@@ -5755,13 +4566,13 @@
                 "id": 7774,
                 "name": "TokenTracker.TokenTrackerState",
                 "nodeType": "IdentifierPath",
-                "referencedDeclaration": 8199,
+                "referencedDeclaration": 8095,
                 "src": "1440:30:24"
               },
-              "referencedDeclaration": 8199,
+              "referencedDeclaration": 8095,
               "src": "1440:30:24",
               "typeDescriptions": {
-                "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage_ptr",
+                "typeIdentifier": "t_struct$_TokenTrackerState_$8095_storage_ptr",
                 "typeString": "struct TokenTracker.TokenTrackerState"
               }
             },
@@ -5773,7 +4584,7 @@
               "id": 7777,
               "name": "TokenTracker",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 9519,
+              "referencedDeclaration": 9522,
               "src": "1501:12:24"
             },
             "nodeType": "UsingForDirective",
@@ -5785,13 +4596,13 @@
                 "id": 7778,
                 "name": "TokenTracker.TokenTrackerState",
                 "nodeType": "IdentifierPath",
-                "referencedDeclaration": 8199,
+                "referencedDeclaration": 8095,
                 "src": "1518:30:24"
               },
-              "referencedDeclaration": 8199,
+              "referencedDeclaration": 8095,
               "src": "1518:30:24",
               "typeDescriptions": {
-                "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage_ptr",
+                "typeIdentifier": "t_struct$_TokenTrackerState_$8095_storage_ptr",
                 "typeString": "struct TokenTracker.TokenTrackerState"
               }
             }
@@ -6320,7 +5131,7 @@
                               "referencedDeclaration": 7776,
                               "src": "1961:17:24",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage",
+                                "typeIdentifier": "t_struct$_TokenTrackerState_$8095_storage",
                                 "typeString": "struct TokenTracker.TokenTrackerState storage ref"
                               }
                             },
@@ -6331,10 +5142,10 @@
                             "lValueRequested": false,
                             "memberName": "transferToken",
                             "nodeType": "MemberAccess",
-                            "referencedDeclaration": 9194,
+                            "referencedDeclaration": 9090,
                             "src": "1961:31:24",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8199_storage_ptr_$_t_enum$_TokenType_$2746_$_t_address_$_t_uint256_$_t_address_$_t_uint256_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8199_storage_ptr_$",
+                              "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8095_storage_ptr_$_t_enum$_TokenType_$2746_$_t_address_$_t_uint256_$_t_address_$_t_uint256_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8095_storage_ptr_$",
                               "typeString": "function (struct TokenTracker.TokenTrackerState storage pointer,enum Enums.TokenType,address,uint256,address,uint256,bytes memory)"
                             }
                           },
@@ -6368,7 +5179,7 @@
                               "referencedDeclaration": 4294967268,
                               "src": "2083:4:24",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_TokenManager_$8112",
+                                "typeIdentifier": "t_contract$_TokenManager_$8008",
                                 "typeString": "contract TokenManager"
                               }
                             },
@@ -6514,7 +5325,7 @@
                         "referencedDeclaration": 7776,
                         "src": "2134:17:24",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage",
+                          "typeIdentifier": "t_struct$_TokenTrackerState_$8095_storage",
                           "typeString": "struct TokenTracker.TokenTrackerState storage ref"
                         }
                       },
@@ -6525,10 +5336,10 @@
                       "lValueRequested": false,
                       "memberName": "trackToken",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 8358,
+                      "referencedDeclaration": 8254,
                       "src": "2134:28:24",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8199_storage_ptr_$_t_enum$_TokenType_$2746_$_t_address_$_t_uint256_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8199_storage_ptr_$",
+                        "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8095_storage_ptr_$_t_enum$_TokenType_$2746_$_t_address_$_t_uint256_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8095_storage_ptr_$",
                         "typeString": "function (struct TokenTracker.TokenTrackerState storage pointer,enum Enums.TokenType,address,uint256)"
                       }
                     },
@@ -6562,7 +5373,7 @@
                         "referencedDeclaration": 4294967268,
                         "src": "2220:4:24",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_TokenManager_$8112",
+                          "typeIdentifier": "t_contract$_TokenManager_$8008",
                           "typeString": "contract TokenManager"
                         }
                       },
@@ -6792,7 +5603,7 @@
               ],
               "src": "1734:8:24"
             },
-            "scope": 8112,
+            "scope": 8008,
             "src": "1555:703:24",
             "stateMutability": "nonpayable",
             "virtual": false,
@@ -6958,7 +5769,7 @@
                               "referencedDeclaration": 4294967268,
                               "src": "2498:4:24",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_TokenManager_$8112",
+                                "typeIdentifier": "t_contract$_TokenManager_$8008",
                                 "typeString": "contract TokenManager"
                               }
                             },
@@ -7153,7 +5964,7 @@
                         "referencedDeclaration": 4294967268,
                         "src": "2588:4:24",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_TokenManager_$8112",
+                          "typeIdentifier": "t_contract$_TokenManager_$8008",
                           "typeString": "contract TokenManager"
                         }
                       },
@@ -7401,7 +6212,7 @@
               ],
               "src": "2426:8:24"
             },
-            "scope": 8112,
+            "scope": 8008,
             "src": "2264:367:24",
             "stateMutability": "nonpayable",
             "virtual": false,
@@ -7471,7 +6282,7 @@
                               "referencedDeclaration": 4294967268,
                               "src": "2760:4:24",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_TokenManager_$8112",
+                                "typeIdentifier": "t_contract$_TokenManager_$8008",
                                 "typeString": "contract TokenManager"
                               }
                             },
@@ -7544,7 +6355,7 @@
                               "referencedDeclaration": 4294967268,
                               "src": "2818:4:24",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_TokenManager_$8112",
+                                "typeIdentifier": "t_contract$_TokenManager_$8008",
                                 "typeString": "contract TokenManager"
                               }
                             },
@@ -7623,7 +6434,7 @@
                             "referencedDeclaration": 4294967268,
                             "src": "2876:4:24",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_TokenManager_$8112",
+                              "typeIdentifier": "t_contract$_TokenManager_$8008",
                               "typeString": "contract TokenManager"
                             }
                           },
@@ -7755,7 +6566,7 @@
               ],
               "src": "2721:6:24"
             },
-            "scope": 8112,
+            "scope": 8008,
             "src": "2637:276:24",
             "stateMutability": "pure",
             "virtual": true,
@@ -8293,7 +7104,7 @@
                               "referencedDeclaration": 7776,
                               "src": "3389:17:24",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage",
+                                "typeIdentifier": "t_struct$_TokenTrackerState_$8095_storage",
                                 "typeString": "struct TokenTracker.TokenTrackerState storage ref"
                               }
                             },
@@ -8304,10 +7115,10 @@
                             "lValueRequested": false,
                             "memberName": "transferToken",
                             "nodeType": "MemberAccess",
-                            "referencedDeclaration": 9194,
+                            "referencedDeclaration": 9090,
                             "src": "3389:31:24",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8199_storage_ptr_$_t_enum$_TokenType_$2746_$_t_address_$_t_uint256_$_t_address_$_t_uint256_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8199_storage_ptr_$",
+                              "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8095_storage_ptr_$_t_enum$_TokenType_$2746_$_t_address_$_t_uint256_$_t_address_$_t_uint256_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8095_storage_ptr_$",
                               "typeString": "function (struct TokenTracker.TokenTrackerState storage pointer,enum Enums.TokenType,address,uint256,address,uint256,bytes memory)"
                             }
                           },
@@ -8341,7 +7152,7 @@
                               "referencedDeclaration": 4294967268,
                               "src": "3511:4:24",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_TokenManager_$8112",
+                                "typeIdentifier": "t_contract$_TokenManager_$8008",
                                 "typeString": "contract TokenManager"
                               }
                             },
@@ -8487,7 +7298,7 @@
                         "referencedDeclaration": 7776,
                         "src": "3561:17:24",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage",
+                          "typeIdentifier": "t_struct$_TokenTrackerState_$8095_storage",
                           "typeString": "struct TokenTracker.TokenTrackerState storage ref"
                         }
                       },
@@ -8498,10 +7309,10 @@
                       "lValueRequested": false,
                       "memberName": "trackToken",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 8358,
+                      "referencedDeclaration": 8254,
                       "src": "3561:28:24",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8199_storage_ptr_$_t_enum$_TokenType_$2746_$_t_address_$_t_uint256_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8199_storage_ptr_$",
+                        "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8095_storage_ptr_$_t_enum$_TokenType_$2746_$_t_address_$_t_uint256_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8095_storage_ptr_$",
                         "typeString": "function (struct TokenTracker.TokenTrackerState storage pointer,enum Enums.TokenType,address,uint256)"
                       }
                     },
@@ -8535,7 +7346,7 @@
                         "referencedDeclaration": 4294967268,
                         "src": "3651:4:24",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_TokenManager_$8112",
+                          "typeIdentifier": "t_contract$_TokenManager_$8008",
                           "typeString": "contract TokenManager"
                         }
                       },
@@ -8738,1208 +7549,19 @@
               ],
               "src": "3162:8:24"
             },
-            "scope": 8112,
+            "scope": 8008,
             "src": "3002:686:24",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
-          },
-          {
-            "body": {
-              "id": 8110,
-              "nodeType": "Block",
-              "src": "3807:684:24",
-              "statements": [
-                {
-                  "assignments": [
-                    8025
-                  ],
-                  "declarations": [
-                    {
-                      "constant": false,
-                      "id": 8025,
-                      "mutability": "mutable",
-                      "name": "tokenTypes",
-                      "nameLocation": "3842:10:24",
-                      "nodeType": "VariableDeclaration",
-                      "scope": 8110,
-                      "src": "3817:35:24",
-                      "stateVariable": false,
-                      "storageLocation": "memory",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_array$_t_enum$_TokenType_$2746_$dyn_memory_ptr",
-                        "typeString": "enum Enums.TokenType[]"
-                      },
-                      "typeName": {
-                        "baseType": {
-                          "id": 8023,
-                          "nodeType": "UserDefinedTypeName",
-                          "pathNode": {
-                            "id": 8022,
-                            "name": "Enums.TokenType",
-                            "nodeType": "IdentifierPath",
-                            "referencedDeclaration": 2746,
-                            "src": "3817:15:24"
-                          },
-                          "referencedDeclaration": 2746,
-                          "src": "3817:15:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_enum$_TokenType_$2746",
-                            "typeString": "enum Enums.TokenType"
-                          }
-                        },
-                        "id": 8024,
-                        "nodeType": "ArrayTypeName",
-                        "src": "3817:17:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_enum$_TokenType_$2746_$dyn_storage_ptr",
-                          "typeString": "enum Enums.TokenType[]"
-                        }
-                      },
-                      "visibility": "internal"
-                    }
-                  ],
-                  "id": 8034,
-                  "initialValue": {
-                    "arguments": [
-                      {
-                        "expression": {
-                          "expression": {
-                            "id": 8030,
-                            "name": "tokenTrackerState",
-                            "nodeType": "Identifier",
-                            "overloadedDeclarations": [],
-                            "referencedDeclaration": 7776,
-                            "src": "3877:17:24",
-                            "typeDescriptions": {
-                              "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage",
-                              "typeString": "struct TokenTracker.TokenTrackerState storage ref"
-                            }
-                          },
-                          "id": 8031,
-                          "isConstant": false,
-                          "isLValue": true,
-                          "isPure": false,
-                          "lValueRequested": false,
-                          "memberName": "trackedTokens",
-                          "nodeType": "MemberAccess",
-                          "referencedDeclaration": 8193,
-                          "src": "3877:31:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_array$_t_struct$_TrackedToken_$8189_storage_$dyn_storage",
-                            "typeString": "struct TokenTracker.TrackedToken storage ref[] storage ref"
-                          }
-                        },
-                        "id": 8032,
-                        "isConstant": false,
-                        "isLValue": false,
-                        "isPure": false,
-                        "lValueRequested": false,
-                        "memberName": "length",
-                        "nodeType": "MemberAccess",
-                        "src": "3877:38:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_uint256",
-                          "typeString": "uint256"
-                        }
-                      }
-                    ],
-                    "expression": {
-                      "argumentTypes": [
-                        {
-                          "typeIdentifier": "t_uint256",
-                          "typeString": "uint256"
-                        }
-                      ],
-                      "id": 8029,
-                      "isConstant": false,
-                      "isLValue": false,
-                      "isPure": true,
-                      "lValueRequested": false,
-                      "nodeType": "NewExpression",
-                      "src": "3855:21:24",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_function_objectcreation_pure$_t_uint256_$returns$_t_array$_t_enum$_TokenType_$2746_$dyn_memory_ptr_$",
-                        "typeString": "function (uint256) pure returns (enum Enums.TokenType[] memory)"
-                      },
-                      "typeName": {
-                        "baseType": {
-                          "id": 8027,
-                          "nodeType": "UserDefinedTypeName",
-                          "pathNode": {
-                            "id": 8026,
-                            "name": "Enums.TokenType",
-                            "nodeType": "IdentifierPath",
-                            "referencedDeclaration": 2746,
-                            "src": "3859:15:24"
-                          },
-                          "referencedDeclaration": 2746,
-                          "src": "3859:15:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_enum$_TokenType_$2746",
-                            "typeString": "enum Enums.TokenType"
-                          }
-                        },
-                        "id": 8028,
-                        "nodeType": "ArrayTypeName",
-                        "src": "3859:17:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_enum$_TokenType_$2746_$dyn_storage_ptr",
-                          "typeString": "enum Enums.TokenType[]"
-                        }
-                      }
-                    },
-                    "id": 8033,
-                    "isConstant": false,
-                    "isLValue": false,
-                    "isPure": false,
-                    "kind": "functionCall",
-                    "lValueRequested": false,
-                    "names": [],
-                    "nodeType": "FunctionCall",
-                    "src": "3855:61:24",
-                    "tryCall": false,
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_array$_t_enum$_TokenType_$2746_$dyn_memory_ptr",
-                      "typeString": "enum Enums.TokenType[] memory"
-                    }
-                  },
-                  "nodeType": "VariableDeclarationStatement",
-                  "src": "3817:99:24"
-                },
-                {
-                  "assignments": [
-                    8039
-                  ],
-                  "declarations": [
-                    {
-                      "constant": false,
-                      "id": 8039,
-                      "mutability": "mutable",
-                      "name": "contractAddresses",
-                      "nameLocation": "3943:17:24",
-                      "nodeType": "VariableDeclaration",
-                      "scope": 8110,
-                      "src": "3926:34:24",
-                      "stateVariable": false,
-                      "storageLocation": "memory",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_array$_t_address_$dyn_memory_ptr",
-                        "typeString": "address[]"
-                      },
-                      "typeName": {
-                        "baseType": {
-                          "id": 8037,
-                          "name": "address",
-                          "nodeType": "ElementaryTypeName",
-                          "src": "3926:7:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_address",
-                            "typeString": "address"
-                          }
-                        },
-                        "id": 8038,
-                        "nodeType": "ArrayTypeName",
-                        "src": "3926:9:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
-                          "typeString": "address[]"
-                        }
-                      },
-                      "visibility": "internal"
-                    }
-                  ],
-                  "id": 8047,
-                  "initialValue": {
-                    "arguments": [
-                      {
-                        "expression": {
-                          "expression": {
-                            "id": 8043,
-                            "name": "tokenTrackerState",
-                            "nodeType": "Identifier",
-                            "overloadedDeclarations": [],
-                            "referencedDeclaration": 7776,
-                            "src": "3977:17:24",
-                            "typeDescriptions": {
-                              "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage",
-                              "typeString": "struct TokenTracker.TokenTrackerState storage ref"
-                            }
-                          },
-                          "id": 8044,
-                          "isConstant": false,
-                          "isLValue": true,
-                          "isPure": false,
-                          "lValueRequested": false,
-                          "memberName": "trackedTokens",
-                          "nodeType": "MemberAccess",
-                          "referencedDeclaration": 8193,
-                          "src": "3977:31:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_array$_t_struct$_TrackedToken_$8189_storage_$dyn_storage",
-                            "typeString": "struct TokenTracker.TrackedToken storage ref[] storage ref"
-                          }
-                        },
-                        "id": 8045,
-                        "isConstant": false,
-                        "isLValue": false,
-                        "isPure": false,
-                        "lValueRequested": false,
-                        "memberName": "length",
-                        "nodeType": "MemberAccess",
-                        "src": "3977:38:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_uint256",
-                          "typeString": "uint256"
-                        }
-                      }
-                    ],
-                    "expression": {
-                      "argumentTypes": [
-                        {
-                          "typeIdentifier": "t_uint256",
-                          "typeString": "uint256"
-                        }
-                      ],
-                      "id": 8042,
-                      "isConstant": false,
-                      "isLValue": false,
-                      "isPure": true,
-                      "lValueRequested": false,
-                      "nodeType": "NewExpression",
-                      "src": "3963:13:24",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_function_objectcreation_pure$_t_uint256_$returns$_t_array$_t_address_$dyn_memory_ptr_$",
-                        "typeString": "function (uint256) pure returns (address[] memory)"
-                      },
-                      "typeName": {
-                        "baseType": {
-                          "id": 8040,
-                          "name": "address",
-                          "nodeType": "ElementaryTypeName",
-                          "src": "3967:7:24",
-                          "stateMutability": "nonpayable",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_address",
-                            "typeString": "address"
-                          }
-                        },
-                        "id": 8041,
-                        "nodeType": "ArrayTypeName",
-                        "src": "3967:9:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
-                          "typeString": "address[]"
-                        }
-                      }
-                    },
-                    "id": 8046,
-                    "isConstant": false,
-                    "isLValue": false,
-                    "isPure": false,
-                    "kind": "functionCall",
-                    "lValueRequested": false,
-                    "names": [],
-                    "nodeType": "FunctionCall",
-                    "src": "3963:53:24",
-                    "tryCall": false,
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_array$_t_address_$dyn_memory_ptr",
-                      "typeString": "address[] memory"
-                    }
-                  },
-                  "nodeType": "VariableDeclarationStatement",
-                  "src": "3926:90:24"
-                },
-                {
-                  "assignments": [
-                    8052
-                  ],
-                  "declarations": [
-                    {
-                      "constant": false,
-                      "id": 8052,
-                      "mutability": "mutable",
-                      "name": "tokenIds",
-                      "nameLocation": "4043:8:24",
-                      "nodeType": "VariableDeclaration",
-                      "scope": 8110,
-                      "src": "4026:25:24",
-                      "stateVariable": false,
-                      "storageLocation": "memory",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_array$_t_uint256_$dyn_memory_ptr",
-                        "typeString": "uint256[]"
-                      },
-                      "typeName": {
-                        "baseType": {
-                          "id": 8050,
-                          "name": "uint256",
-                          "nodeType": "ElementaryTypeName",
-                          "src": "4026:7:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_uint256",
-                            "typeString": "uint256"
-                          }
-                        },
-                        "id": 8051,
-                        "nodeType": "ArrayTypeName",
-                        "src": "4026:9:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
-                          "typeString": "uint256[]"
-                        }
-                      },
-                      "visibility": "internal"
-                    }
-                  ],
-                  "id": 8060,
-                  "initialValue": {
-                    "arguments": [
-                      {
-                        "expression": {
-                          "expression": {
-                            "id": 8056,
-                            "name": "tokenTrackerState",
-                            "nodeType": "Identifier",
-                            "overloadedDeclarations": [],
-                            "referencedDeclaration": 7776,
-                            "src": "4068:17:24",
-                            "typeDescriptions": {
-                              "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage",
-                              "typeString": "struct TokenTracker.TokenTrackerState storage ref"
-                            }
-                          },
-                          "id": 8057,
-                          "isConstant": false,
-                          "isLValue": true,
-                          "isPure": false,
-                          "lValueRequested": false,
-                          "memberName": "trackedTokens",
-                          "nodeType": "MemberAccess",
-                          "referencedDeclaration": 8193,
-                          "src": "4068:31:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_array$_t_struct$_TrackedToken_$8189_storage_$dyn_storage",
-                            "typeString": "struct TokenTracker.TrackedToken storage ref[] storage ref"
-                          }
-                        },
-                        "id": 8058,
-                        "isConstant": false,
-                        "isLValue": false,
-                        "isPure": false,
-                        "lValueRequested": false,
-                        "memberName": "length",
-                        "nodeType": "MemberAccess",
-                        "src": "4068:38:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_uint256",
-                          "typeString": "uint256"
-                        }
-                      }
-                    ],
-                    "expression": {
-                      "argumentTypes": [
-                        {
-                          "typeIdentifier": "t_uint256",
-                          "typeString": "uint256"
-                        }
-                      ],
-                      "id": 8055,
-                      "isConstant": false,
-                      "isLValue": false,
-                      "isPure": true,
-                      "lValueRequested": false,
-                      "nodeType": "NewExpression",
-                      "src": "4054:13:24",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_function_objectcreation_pure$_t_uint256_$returns$_t_array$_t_uint256_$dyn_memory_ptr_$",
-                        "typeString": "function (uint256) pure returns (uint256[] memory)"
-                      },
-                      "typeName": {
-                        "baseType": {
-                          "id": 8053,
-                          "name": "uint256",
-                          "nodeType": "ElementaryTypeName",
-                          "src": "4058:7:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_uint256",
-                            "typeString": "uint256"
-                          }
-                        },
-                        "id": 8054,
-                        "nodeType": "ArrayTypeName",
-                        "src": "4058:9:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
-                          "typeString": "uint256[]"
-                        }
-                      }
-                    },
-                    "id": 8059,
-                    "isConstant": false,
-                    "isLValue": false,
-                    "isPure": false,
-                    "kind": "functionCall",
-                    "lValueRequested": false,
-                    "names": [],
-                    "nodeType": "FunctionCall",
-                    "src": "4054:53:24",
-                    "tryCall": false,
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_array$_t_uint256_$dyn_memory_ptr",
-                      "typeString": "uint256[] memory"
-                    }
-                  },
-                  "nodeType": "VariableDeclarationStatement",
-                  "src": "4026:81:24"
-                },
-                {
-                  "body": {
-                    "id": 8103,
-                    "nodeType": "Block",
-                    "src": "4185:242:24",
-                    "statements": [
-                      {
-                        "expression": {
-                          "id": 8081,
-                          "isConstant": false,
-                          "isLValue": false,
-                          "isPure": false,
-                          "lValueRequested": false,
-                          "leftHandSide": {
-                            "baseExpression": {
-                              "id": 8073,
-                              "name": "tokenTypes",
-                              "nodeType": "Identifier",
-                              "overloadedDeclarations": [],
-                              "referencedDeclaration": 8025,
-                              "src": "4199:10:24",
-                              "typeDescriptions": {
-                                "typeIdentifier": "t_array$_t_enum$_TokenType_$2746_$dyn_memory_ptr",
-                                "typeString": "enum Enums.TokenType[] memory"
-                              }
-                            },
-                            "id": 8075,
-                            "indexExpression": {
-                              "id": 8074,
-                              "name": "i",
-                              "nodeType": "Identifier",
-                              "overloadedDeclarations": [],
-                              "referencedDeclaration": 8062,
-                              "src": "4210:1:24",
-                              "typeDescriptions": {
-                                "typeIdentifier": "t_uint32",
-                                "typeString": "uint32"
-                              }
-                            },
-                            "isConstant": false,
-                            "isLValue": true,
-                            "isPure": false,
-                            "lValueRequested": true,
-                            "nodeType": "IndexAccess",
-                            "src": "4199:13:24",
-                            "typeDescriptions": {
-                              "typeIdentifier": "t_enum$_TokenType_$2746",
-                              "typeString": "enum Enums.TokenType"
-                            }
-                          },
-                          "nodeType": "Assignment",
-                          "operator": "=",
-                          "rightHandSide": {
-                            "expression": {
-                              "baseExpression": {
-                                "expression": {
-                                  "id": 8076,
-                                  "name": "tokenTrackerState",
-                                  "nodeType": "Identifier",
-                                  "overloadedDeclarations": [],
-                                  "referencedDeclaration": 7776,
-                                  "src": "4215:17:24",
-                                  "typeDescriptions": {
-                                    "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage",
-                                    "typeString": "struct TokenTracker.TokenTrackerState storage ref"
-                                  }
-                                },
-                                "id": 8077,
-                                "isConstant": false,
-                                "isLValue": true,
-                                "isPure": false,
-                                "lValueRequested": false,
-                                "memberName": "trackedTokens",
-                                "nodeType": "MemberAccess",
-                                "referencedDeclaration": 8193,
-                                "src": "4215:31:24",
-                                "typeDescriptions": {
-                                  "typeIdentifier": "t_array$_t_struct$_TrackedToken_$8189_storage_$dyn_storage",
-                                  "typeString": "struct TokenTracker.TrackedToken storage ref[] storage ref"
-                                }
-                              },
-                              "id": 8079,
-                              "indexExpression": {
-                                "id": 8078,
-                                "name": "i",
-                                "nodeType": "Identifier",
-                                "overloadedDeclarations": [],
-                                "referencedDeclaration": 8062,
-                                "src": "4247:1:24",
-                                "typeDescriptions": {
-                                  "typeIdentifier": "t_uint32",
-                                  "typeString": "uint32"
-                                }
-                              },
-                              "isConstant": false,
-                              "isLValue": true,
-                              "isPure": false,
-                              "lValueRequested": false,
-                              "nodeType": "IndexAccess",
-                              "src": "4215:34:24",
-                              "typeDescriptions": {
-                                "typeIdentifier": "t_struct$_TrackedToken_$8189_storage",
-                                "typeString": "struct TokenTracker.TrackedToken storage ref"
-                              }
-                            },
-                            "id": 8080,
-                            "isConstant": false,
-                            "isLValue": true,
-                            "isPure": false,
-                            "lValueRequested": false,
-                            "memberName": "tokenType",
-                            "nodeType": "MemberAccess",
-                            "referencedDeclaration": 8184,
-                            "src": "4215:44:24",
-                            "typeDescriptions": {
-                              "typeIdentifier": "t_enum$_TokenType_$2746",
-                              "typeString": "enum Enums.TokenType"
-                            }
-                          },
-                          "src": "4199:60:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_enum$_TokenType_$2746",
-                            "typeString": "enum Enums.TokenType"
-                          }
-                        },
-                        "id": 8082,
-                        "nodeType": "ExpressionStatement",
-                        "src": "4199:60:24"
-                      },
-                      {
-                        "expression": {
-                          "id": 8091,
-                          "isConstant": false,
-                          "isLValue": false,
-                          "isPure": false,
-                          "lValueRequested": false,
-                          "leftHandSide": {
-                            "baseExpression": {
-                              "id": 8083,
-                              "name": "contractAddresses",
-                              "nodeType": "Identifier",
-                              "overloadedDeclarations": [],
-                              "referencedDeclaration": 8039,
-                              "src": "4273:17:24",
-                              "typeDescriptions": {
-                                "typeIdentifier": "t_array$_t_address_$dyn_memory_ptr",
-                                "typeString": "address[] memory"
-                              }
-                            },
-                            "id": 8085,
-                            "indexExpression": {
-                              "id": 8084,
-                              "name": "i",
-                              "nodeType": "Identifier",
-                              "overloadedDeclarations": [],
-                              "referencedDeclaration": 8062,
-                              "src": "4291:1:24",
-                              "typeDescriptions": {
-                                "typeIdentifier": "t_uint32",
-                                "typeString": "uint32"
-                              }
-                            },
-                            "isConstant": false,
-                            "isLValue": true,
-                            "isPure": false,
-                            "lValueRequested": true,
-                            "nodeType": "IndexAccess",
-                            "src": "4273:20:24",
-                            "typeDescriptions": {
-                              "typeIdentifier": "t_address",
-                              "typeString": "address"
-                            }
-                          },
-                          "nodeType": "Assignment",
-                          "operator": "=",
-                          "rightHandSide": {
-                            "expression": {
-                              "baseExpression": {
-                                "expression": {
-                                  "id": 8086,
-                                  "name": "tokenTrackerState",
-                                  "nodeType": "Identifier",
-                                  "overloadedDeclarations": [],
-                                  "referencedDeclaration": 7776,
-                                  "src": "4296:17:24",
-                                  "typeDescriptions": {
-                                    "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage",
-                                    "typeString": "struct TokenTracker.TokenTrackerState storage ref"
-                                  }
-                                },
-                                "id": 8087,
-                                "isConstant": false,
-                                "isLValue": true,
-                                "isPure": false,
-                                "lValueRequested": false,
-                                "memberName": "trackedTokens",
-                                "nodeType": "MemberAccess",
-                                "referencedDeclaration": 8193,
-                                "src": "4296:31:24",
-                                "typeDescriptions": {
-                                  "typeIdentifier": "t_array$_t_struct$_TrackedToken_$8189_storage_$dyn_storage",
-                                  "typeString": "struct TokenTracker.TrackedToken storage ref[] storage ref"
-                                }
-                              },
-                              "id": 8089,
-                              "indexExpression": {
-                                "id": 8088,
-                                "name": "i",
-                                "nodeType": "Identifier",
-                                "overloadedDeclarations": [],
-                                "referencedDeclaration": 8062,
-                                "src": "4328:1:24",
-                                "typeDescriptions": {
-                                  "typeIdentifier": "t_uint32",
-                                  "typeString": "uint32"
-                                }
-                              },
-                              "isConstant": false,
-                              "isLValue": true,
-                              "isPure": false,
-                              "lValueRequested": false,
-                              "nodeType": "IndexAccess",
-                              "src": "4296:34:24",
-                              "typeDescriptions": {
-                                "typeIdentifier": "t_struct$_TrackedToken_$8189_storage",
-                                "typeString": "struct TokenTracker.TrackedToken storage ref"
-                              }
-                            },
-                            "id": 8090,
-                            "isConstant": false,
-                            "isLValue": true,
-                            "isPure": false,
-                            "lValueRequested": false,
-                            "memberName": "contractAddress",
-                            "nodeType": "MemberAccess",
-                            "referencedDeclaration": 8186,
-                            "src": "4296:50:24",
-                            "typeDescriptions": {
-                              "typeIdentifier": "t_address",
-                              "typeString": "address"
-                            }
-                          },
-                          "src": "4273:73:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_address",
-                            "typeString": "address"
-                          }
-                        },
-                        "id": 8092,
-                        "nodeType": "ExpressionStatement",
-                        "src": "4273:73:24"
-                      },
-                      {
-                        "expression": {
-                          "id": 8101,
-                          "isConstant": false,
-                          "isLValue": false,
-                          "isPure": false,
-                          "lValueRequested": false,
-                          "leftHandSide": {
-                            "baseExpression": {
-                              "id": 8093,
-                              "name": "tokenIds",
-                              "nodeType": "Identifier",
-                              "overloadedDeclarations": [],
-                              "referencedDeclaration": 8052,
-                              "src": "4360:8:24",
-                              "typeDescriptions": {
-                                "typeIdentifier": "t_array$_t_uint256_$dyn_memory_ptr",
-                                "typeString": "uint256[] memory"
-                              }
-                            },
-                            "id": 8095,
-                            "indexExpression": {
-                              "id": 8094,
-                              "name": "i",
-                              "nodeType": "Identifier",
-                              "overloadedDeclarations": [],
-                              "referencedDeclaration": 8062,
-                              "src": "4369:1:24",
-                              "typeDescriptions": {
-                                "typeIdentifier": "t_uint32",
-                                "typeString": "uint32"
-                              }
-                            },
-                            "isConstant": false,
-                            "isLValue": true,
-                            "isPure": false,
-                            "lValueRequested": true,
-                            "nodeType": "IndexAccess",
-                            "src": "4360:11:24",
-                            "typeDescriptions": {
-                              "typeIdentifier": "t_uint256",
-                              "typeString": "uint256"
-                            }
-                          },
-                          "nodeType": "Assignment",
-                          "operator": "=",
-                          "rightHandSide": {
-                            "expression": {
-                              "baseExpression": {
-                                "expression": {
-                                  "id": 8096,
-                                  "name": "tokenTrackerState",
-                                  "nodeType": "Identifier",
-                                  "overloadedDeclarations": [],
-                                  "referencedDeclaration": 7776,
-                                  "src": "4374:17:24",
-                                  "typeDescriptions": {
-                                    "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage",
-                                    "typeString": "struct TokenTracker.TokenTrackerState storage ref"
-                                  }
-                                },
-                                "id": 8097,
-                                "isConstant": false,
-                                "isLValue": true,
-                                "isPure": false,
-                                "lValueRequested": false,
-                                "memberName": "trackedTokens",
-                                "nodeType": "MemberAccess",
-                                "referencedDeclaration": 8193,
-                                "src": "4374:31:24",
-                                "typeDescriptions": {
-                                  "typeIdentifier": "t_array$_t_struct$_TrackedToken_$8189_storage_$dyn_storage",
-                                  "typeString": "struct TokenTracker.TrackedToken storage ref[] storage ref"
-                                }
-                              },
-                              "id": 8099,
-                              "indexExpression": {
-                                "id": 8098,
-                                "name": "i",
-                                "nodeType": "Identifier",
-                                "overloadedDeclarations": [],
-                                "referencedDeclaration": 8062,
-                                "src": "4406:1:24",
-                                "typeDescriptions": {
-                                  "typeIdentifier": "t_uint32",
-                                  "typeString": "uint32"
-                                }
-                              },
-                              "isConstant": false,
-                              "isLValue": true,
-                              "isPure": false,
-                              "lValueRequested": false,
-                              "nodeType": "IndexAccess",
-                              "src": "4374:34:24",
-                              "typeDescriptions": {
-                                "typeIdentifier": "t_struct$_TrackedToken_$8189_storage",
-                                "typeString": "struct TokenTracker.TrackedToken storage ref"
-                              }
-                            },
-                            "id": 8100,
-                            "isConstant": false,
-                            "isLValue": true,
-                            "isPure": false,
-                            "lValueRequested": false,
-                            "memberName": "tokenId",
-                            "nodeType": "MemberAccess",
-                            "referencedDeclaration": 8188,
-                            "src": "4374:42:24",
-                            "typeDescriptions": {
-                              "typeIdentifier": "t_uint256",
-                              "typeString": "uint256"
-                            }
-                          },
-                          "src": "4360:56:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_uint256",
-                            "typeString": "uint256"
-                          }
-                        },
-                        "id": 8102,
-                        "nodeType": "ExpressionStatement",
-                        "src": "4360:56:24"
-                      }
-                    ]
-                  },
-                  "condition": {
-                    "commonType": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
-                    },
-                    "id": 8069,
-                    "isConstant": false,
-                    "isLValue": false,
-                    "isPure": false,
-                    "lValueRequested": false,
-                    "leftExpression": {
-                      "id": 8065,
-                      "name": "i",
-                      "nodeType": "Identifier",
-                      "overloadedDeclarations": [],
-                      "referencedDeclaration": 8062,
-                      "src": "4136:1:24",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_uint32",
-                        "typeString": "uint32"
-                      }
-                    },
-                    "nodeType": "BinaryOperation",
-                    "operator": "<",
-                    "rightExpression": {
-                      "expression": {
-                        "expression": {
-                          "id": 8066,
-                          "name": "tokenTrackerState",
-                          "nodeType": "Identifier",
-                          "overloadedDeclarations": [],
-                          "referencedDeclaration": 7776,
-                          "src": "4140:17:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_struct$_TokenTrackerState_$8199_storage",
-                            "typeString": "struct TokenTracker.TokenTrackerState storage ref"
-                          }
-                        },
-                        "id": 8067,
-                        "isConstant": false,
-                        "isLValue": true,
-                        "isPure": false,
-                        "lValueRequested": false,
-                        "memberName": "trackedTokens",
-                        "nodeType": "MemberAccess",
-                        "referencedDeclaration": 8193,
-                        "src": "4140:31:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_struct$_TrackedToken_$8189_storage_$dyn_storage",
-                          "typeString": "struct TokenTracker.TrackedToken storage ref[] storage ref"
-                        }
-                      },
-                      "id": 8068,
-                      "isConstant": false,
-                      "isLValue": false,
-                      "isPure": false,
-                      "lValueRequested": false,
-                      "memberName": "length",
-                      "nodeType": "MemberAccess",
-                      "src": "4140:38:24",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_uint256",
-                        "typeString": "uint256"
-                      }
-                    },
-                    "src": "4136:42:24",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_bool",
-                      "typeString": "bool"
-                    }
-                  },
-                  "id": 8104,
-                  "initializationExpression": {
-                    "assignments": [
-                      8062
-                    ],
-                    "declarations": [
-                      {
-                        "constant": false,
-                        "id": 8062,
-                        "mutability": "mutable",
-                        "name": "i",
-                        "nameLocation": "4129:1:24",
-                        "nodeType": "VariableDeclaration",
-                        "scope": 8104,
-                        "src": "4122:8:24",
-                        "stateVariable": false,
-                        "storageLocation": "default",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_uint32",
-                          "typeString": "uint32"
-                        },
-                        "typeName": {
-                          "id": 8061,
-                          "name": "uint32",
-                          "nodeType": "ElementaryTypeName",
-                          "src": "4122:6:24",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_uint32",
-                            "typeString": "uint32"
-                          }
-                        },
-                        "visibility": "internal"
-                      }
-                    ],
-                    "id": 8064,
-                    "initialValue": {
-                      "hexValue": "30",
-                      "id": 8063,
-                      "isConstant": false,
-                      "isLValue": false,
-                      "isPure": true,
-                      "kind": "number",
-                      "lValueRequested": false,
-                      "nodeType": "Literal",
-                      "src": "4133:1:24",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_rational_0_by_1",
-                        "typeString": "int_const 0"
-                      },
-                      "value": "0"
-                    },
-                    "nodeType": "VariableDeclarationStatement",
-                    "src": "4122:12:24"
-                  },
-                  "loopExpression": {
-                    "expression": {
-                      "id": 8071,
-                      "isConstant": false,
-                      "isLValue": false,
-                      "isPure": false,
-                      "lValueRequested": false,
-                      "nodeType": "UnaryOperation",
-                      "operator": "++",
-                      "prefix": false,
-                      "src": "4180:3:24",
-                      "subExpression": {
-                        "id": 8070,
-                        "name": "i",
-                        "nodeType": "Identifier",
-                        "overloadedDeclarations": [],
-                        "referencedDeclaration": 8062,
-                        "src": "4180:1:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_uint32",
-                          "typeString": "uint32"
-                        }
-                      },
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_uint32",
-                        "typeString": "uint32"
-                      }
-                    },
-                    "id": 8072,
-                    "nodeType": "ExpressionStatement",
-                    "src": "4180:3:24"
-                  },
-                  "nodeType": "ForStatement",
-                  "src": "4117:310:24"
-                },
-                {
-                  "expression": {
-                    "components": [
-                      {
-                        "id": 8105,
-                        "name": "tokenTypes",
-                        "nodeType": "Identifier",
-                        "overloadedDeclarations": [],
-                        "referencedDeclaration": 8025,
-                        "src": "4444:10:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_enum$_TokenType_$2746_$dyn_memory_ptr",
-                          "typeString": "enum Enums.TokenType[] memory"
-                        }
-                      },
-                      {
-                        "id": 8106,
-                        "name": "contractAddresses",
-                        "nodeType": "Identifier",
-                        "overloadedDeclarations": [],
-                        "referencedDeclaration": 8039,
-                        "src": "4456:17:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_address_$dyn_memory_ptr",
-                          "typeString": "address[] memory"
-                        }
-                      },
-                      {
-                        "id": 8107,
-                        "name": "tokenIds",
-                        "nodeType": "Identifier",
-                        "overloadedDeclarations": [],
-                        "referencedDeclaration": 8052,
-                        "src": "4475:8:24",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_uint256_$dyn_memory_ptr",
-                          "typeString": "uint256[] memory"
-                        }
-                      }
-                    ],
-                    "id": 8108,
-                    "isConstant": false,
-                    "isInlineArray": false,
-                    "isLValue": false,
-                    "isPure": false,
-                    "lValueRequested": false,
-                    "nodeType": "TupleExpression",
-                    "src": "4443:41:24",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_tuple$_t_array$_t_enum$_TokenType_$2746_$dyn_memory_ptr_$_t_array$_t_address_$dyn_memory_ptr_$_t_array$_t_uint256_$dyn_memory_ptr_$",
-                      "typeString": "tuple(enum Enums.TokenType[] memory,address[] memory,uint256[] memory)"
-                    }
-                  },
-                  "functionReturnParameters": 8019,
-                  "id": 8109,
-                  "nodeType": "Return",
-                  "src": "4436:48:24"
-                }
-              ]
-            },
-            "id": 8111,
-            "implemented": true,
-            "kind": "function",
-            "modifiers": [],
-            "name": "_getTrackedTokens",
-            "nameLocation": "3703:17:24",
-            "nodeType": "FunctionDefinition",
-            "parameters": {
-              "id": 8008,
-              "nodeType": "ParameterList",
-              "parameters": [],
-              "src": "3720:2:24"
-            },
-            "returnParameters": {
-              "id": 8019,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 8012,
-                  "mutability": "mutable",
-                  "name": "",
-                  "nameLocation": "-1:-1:-1",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 8111,
-                  "src": "3746:24:24",
-                  "stateVariable": false,
-                  "storageLocation": "memory",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_array$_t_enum$_TokenType_$2746_$dyn_memory_ptr",
-                    "typeString": "enum Enums.TokenType[]"
-                  },
-                  "typeName": {
-                    "baseType": {
-                      "id": 8010,
-                      "nodeType": "UserDefinedTypeName",
-                      "pathNode": {
-                        "id": 8009,
-                        "name": "Enums.TokenType",
-                        "nodeType": "IdentifierPath",
-                        "referencedDeclaration": 2746,
-                        "src": "3746:15:24"
-                      },
-                      "referencedDeclaration": 2746,
-                      "src": "3746:15:24",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_enum$_TokenType_$2746",
-                        "typeString": "enum Enums.TokenType"
-                      }
-                    },
-                    "id": 8011,
-                    "nodeType": "ArrayTypeName",
-                    "src": "3746:17:24",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_array$_t_enum$_TokenType_$2746_$dyn_storage_ptr",
-                      "typeString": "enum Enums.TokenType[]"
-                    }
-                  },
-                  "visibility": "internal"
-                },
-                {
-                  "constant": false,
-                  "id": 8015,
-                  "mutability": "mutable",
-                  "name": "",
-                  "nameLocation": "-1:-1:-1",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 8111,
-                  "src": "3772:16:24",
-                  "stateVariable": false,
-                  "storageLocation": "memory",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_array$_t_address_$dyn_memory_ptr",
-                    "typeString": "address[]"
-                  },
-                  "typeName": {
-                    "baseType": {
-                      "id": 8013,
-                      "name": "address",
-                      "nodeType": "ElementaryTypeName",
-                      "src": "3772:7:24",
-                      "stateMutability": "nonpayable",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_address",
-                        "typeString": "address"
-                      }
-                    },
-                    "id": 8014,
-                    "nodeType": "ArrayTypeName",
-                    "src": "3772:9:24",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
-                      "typeString": "address[]"
-                    }
-                  },
-                  "visibility": "internal"
-                },
-                {
-                  "constant": false,
-                  "id": 8018,
-                  "mutability": "mutable",
-                  "name": "",
-                  "nameLocation": "-1:-1:-1",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 8111,
-                  "src": "3790:16:24",
-                  "stateVariable": false,
-                  "storageLocation": "memory",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_array$_t_uint256_$dyn_memory_ptr",
-                    "typeString": "uint256[]"
-                  },
-                  "typeName": {
-                    "baseType": {
-                      "id": 8016,
-                      "name": "uint256",
-                      "nodeType": "ElementaryTypeName",
-                      "src": "3790:7:24",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_uint256",
-                        "typeString": "uint256"
-                      }
-                    },
-                    "id": 8017,
-                    "nodeType": "ArrayTypeName",
-                    "src": "3790:9:24",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
-                      "typeString": "uint256[]"
-                    }
-                  },
-                  "visibility": "internal"
-                }
-              ],
-              "src": "3745:62:24"
-            },
-            "scope": 8112,
-            "src": "3694:797:24",
-            "stateMutability": "view",
-            "virtual": false,
-            "visibility": "internal"
           }
         ],
-        "scope": 8113,
-        "src": "457:4037:24",
+        "scope": 8009,
+        "src": "457:3233:24",
         "usedErrors": []
       }
     ],
-    "src": "39:4456:24"
+    "src": "39:3652:24"
   },
   "compiler": {
     "name": "solc",
@@ -9947,7 +7569,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.2",
-  "updatedAt": "2021-11-13T14:37:07.843Z",
+  "updatedAt": "2021-11-14T00:26:57.077Z",
   "devdoc": {
     "kind": "dev",
     "methods": {

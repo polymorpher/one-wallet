@@ -157,7 +157,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
     }
 
     function getTrackedTokens() external override view returns (Enums.TokenType[] memory, address[] memory, uint256[] memory){
-        return TokenManager._getTrackedTokens();
+        return tokenTrackerState.getTrackedTokens();
     }
 
     function getBalance(Enums.TokenType tokenType, address contractAddress, uint256 tokenId) external override view returns (uint256){
