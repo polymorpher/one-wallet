@@ -3,8 +3,6 @@ pragma solidity ^0.8.4;
 
 import "./Enums.sol";
 import "./IONEWallet.sol";
-import "./CommitManager.sol";
-import "./TokenManager.sol";
 import "./DomainManager.sol";
 import "./WalletGraph.sol";
 import "./SignatureManager.sol";
