@@ -214,7 +214,7 @@ const init = () => {
     const key = config.networks[k].key
     const account = new Account(key)
     // console.log(k, account.address, account.bech32Address)
-    const params = k.startsWith('eth') ? { from: account.address, gas: 672197500 } : { from: account.address, gas: config.gasLimit, gasPrice: config.gasPrice }
+    const params = k.startsWith('eth') ? { from: account.address } : { from: account.address, gas: config.gasLimit, gasPrice: config.gasPrice }
     c.defaults(params)
     c5.defaults(params)
     c6.defaults(params)
