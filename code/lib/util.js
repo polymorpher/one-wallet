@@ -10,6 +10,7 @@ const STANDARD_DECIMAL = 18
 const PERMIT_DEPRECATED_METHOD = process.env.PERMIT_DEPRECATED_METHOD
 const uts46 = require('idna-uts46')
 const abi = require('web3-eth-abi')
+const elliptic = require('elliptic')
 
 const utils = {
   hexView: (bytes) => {
@@ -92,12 +93,12 @@ const utils = {
   processOtpSeed: (seed) => {
     if (seed.constructor.name !== 'Uint8Array') {
       if (typeof seed !== 'string') {
-        throw new Error('otpSeed must be either string (Base32 encoded) or Uint8Array')
+        throw new Error('otpSeed must be either string (Base32 encoded without padding) or Uint8Array')
       }
       const bn = base32.decode.asBytes(seed)
       seed = new Uint8Array(bn)
     }
-    seed = seed.slice(0, 20)
+    seed = seed.slice(0, 32)
     return seed
   },
 
@@ -278,6 +279,57 @@ const utils = {
       r.push({ name: params[i], value: decoded[i] })
     }
     return r
+  },
+
+  // seed: Uint8Array[32]
+  getIdentificationKey: (seed, str) => {
+    // eslint-disable-next-line new-cap
+    const ec = new elliptic.ec('secp256k1')
+    const key = ec.keyFromPrivate(seed)
+    try {
+      const publicKey = new Uint8Array(key.getPublic().encode().slice(1))
+      if (str) {
+        return utils.hexString(publicKey)
+      }
+      return publicKey
+    } catch (ex) {
+      console.error(ex)
+      return null
+    }
+  },
+
+  // uint256 spendingLimit; // current maximum amount of wei allowed to be spent per interval
+  // uint256 spentAmount; // amount spent for the current time interval
+  // uint32 lastSpendingInterval; // last time interval when spending of ONE occurred (block.timestamp / spendingInterval)
+  // uint32 spendingInterval; // number of seconds per interval of spending, e.g. when this equals 86400, the spending limit represents a daily spending limit
+  // uint32 lastLimitAdjustmentTime; // last time when spend limit was adjusted
+  // uint256 highestSpendingLimit; // the highest spending limit the wallet ever got. Should be set to equal `spendingLimit` initially (by the client)
+
+  getDefaultSpendingState: (limit, interval) =>{
+    return {
+      spendingLimit: new BN(limit).toString(),
+      spentAmount: 0,
+      lastSpendingInterval: 0,
+      spendingInterval: interval,
+      lastLimitAdjustmentTime: 0,
+      highestSpendingLimit: new BN(limit).toString(),
+    }
+  },
+
+  predictAddress: ({ seed, identificationKey, deployerAddress, code }) => {
+    const bytes = new Uint8Array(1 + 20 + 32 + 32) // bytes.concat(bytes1(0xff), bytes20(address(this)), bytes32(salt), keccak256(code));
+    if (!identificationKey) {
+      identificationKey = utils.getIdentificationKey(seed)
+      if (!identificationKey) {
+        return null
+      }
+    }
+    bytes.set(new Uint8Array([255]))
+    bytes.set(utils.hexStringToBytes(deployerAddress), 1)
+    bytes.set(utils.keccak(identificationKey).slice(12), 21)
+    bytes.set(utils.keccak(code), 53)
+    const hash = utils.keccak(bytes)
+    return utils.hexString(hash.slice(12))
   }
 }
 module.exports = utils
