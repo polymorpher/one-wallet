@@ -30,7 +30,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
 
     /// global mutable variables
     address payable recoveryAddress; // where money will be sent during a recovery process (or when the wallet is beyond its lifespan)
-    bytes32 public override identificationKey;
+    bytes public override identificationKey;
 
     SpendingManager.SpendingState spendingState;
 

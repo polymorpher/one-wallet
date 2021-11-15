@@ -35,10 +35,10 @@ interface IONEWallet {
         CoreSetting core; // the most recent core (root, time, etc.) to validate EOTPs against, for normal operations of the wallet
         SpendingManager.SpendingState spendingState;
         address payable recoveryAddress; // an address where funds should go to, when the user triggers recovery. The `recoveryAddress` may send 1.0 ONE to the 1wallet address to trigger auto-recovery, provided that the wallet has been inactive (that no operation has been performed by the user) for 14 days. Merely receiving funds does not make an inactive wallet become active.
-        bytes32 identificationKey; // = ECDSA secp256k1 public key of the 32-byte seed (as private key); Since identificationKey can be computed instantly as soon as we have the seed, we know the wallet address instantly and we can store the full address in the Google Authenticator entry. Contracts can also use identificationKey to verify the integrity of the code on the contract, therefore identifying whether a contract is legit ONEWallet or not. In the future we may allow some operations authorized by signatures produced from the seed when OTP becomes no longer available, such as renewing the wallet after the wallet is already expired.
         IONEWallet[] backlinkAddresses;
         CoreSetting[] oldCores; // for cores used previously to validate EOTPs. They are inserted by "displaceCore" method. In this method, a new core is assigned to `core`, and the old core is inserted here in `oldCores`. Each core in `oldCore` provides the same level of authorization compared to the current core. Essentially, each oldCore can be considered as authorizing a new authenticator account (where it could be the same compared to an old authenticator account, and the differences in root hash only arises from differences in start time and duration of the OTP Merkle Tree).
         CoreSetting[] innerCores; // for validating an EOTP constructed from N-consecutive OTPs against recovery roots. Since there are N possible offsets, for N consecutive OTPs, we need N roots as well. Therefore, the interval of each innerCore is N times the interval of core or oldCores (assuming they have the same interval, which is 30 seconds by default)
+        bytes identificationKey; // 64 bytes. ECDSA secp256k1 uncompressed public key of the 32-byte seed (as private key) with leading byte (0x04) removed; Since identificationKey can be computed instantly as soon as we have the seed, we know the wallet address instantly and we can store the full address in the Google Authenticator entry. Contracts can also use identificationKey to verify the integrity of the code on the contract, therefore identifying whether a contract is legit ONEWallet or not. In the future we may allow some operations authorized by signatures produced from the seed when OTP becomes no longer available, such as renewing the wallet after the wallet is already expired.
     }
 
     event TransferError(address dest, bytes error);
@@ -60,7 +60,7 @@ interface IONEWallet {
     event ExternalCallFailed(address contractAddress, uint256 amount, bytes data, bytes ret);
 
 
-    function identificationKey() external view returns (bytes32);
+    function identificationKey() external view returns (bytes memory);
 
     function initialize(InitParams memory initParams) external;
 
