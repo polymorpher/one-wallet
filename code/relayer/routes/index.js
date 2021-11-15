@@ -34,11 +34,11 @@ router.use((req, res, next) => {
   console.log(`Address: ${req.body.address}; network: ${req.network}; majorVersion: ${req.majorVersion}; minorVersion: ${req.minorVersion}`)
   // TODO: differentiate <v5 and >=v6 contracts
   if (!(req.majorVersion >= 6)) {
-    req.contract = blockchain.getContractV5(network)
+    req.contract = blockchain.getWalletContract(network, 5)
   } else if (req.majorVersion === 6) {
-    req.contract = blockchain.getContractV6(network)
+    req.contract = blockchain.getWalletContract(network, 6)
   } else {
-    req.contract = blockchain.getContract(network)
+    req.contract = blockchain.getWalletContract(network)
   }
   req.provider = blockchain.getProvider(network)
   next()
@@ -115,7 +115,7 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
   }
   // TODO parameter verification
   try {
-    const wallet = await blockchain.getContract(req.network).new()
+    const wallet = await blockchain.getWalletContract(req.network).new()
     console.log('/new', wallet?.address)
     await wallet.initialize([
       [root, height, interval, t0, lifespan, slotSize],

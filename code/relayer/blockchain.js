@@ -10,6 +10,11 @@ const SignatureManager = require('../build/contracts/SignatureManager.json')
 const TokenTracker = require('../build/contracts/TokenTracker.json')
 const DomainManager = require('../build/contracts/DomainManager.json')
 const SpendingManager = require('../build/contracts/SpendingManager.json')
+const CoreManager = require('../build/contracts/CoreManager.json')
+const Executor = require('../build/contracts/Executor.json')
+const ONEWalletFactory = require('../build/contracts/ONEWalletFactory.json')
+const ONEWalletFactoryHelper = require('../build/contracts/ONEWalletFactoryHelper.json')
+const ONEWalletCodeHelper = require('../build/contracts/ONEWalletCodeHelper.json')
 const Reveal = require('../build/contracts/Reveal.json')
 const ONEWallet = require('../build/contracts/ONEWallet.json')
 const ONEWalletV5 = require('../build/contracts/ONEWalletV5.json')
@@ -20,14 +25,35 @@ const path = require('path')
 const { pick } = require('lodash')
 const { backOff } = require('exponential-backoff')
 
+const baseLibraries = [DomainManager, TokenTracker, WalletGraph, CommitManager, SignatureManager, SpendingManager, Reveal, CoreManager, Executor]
+const factoryLibraries = [ONEWalletCodeHelper]
+const factoryContracts = { ONEWalletFactory, ONEWalletFactoryHelper }
+const libraryList = [...baseLibraries, ...factoryLibraries]
+const dependencies = {
+  WalletGraph: [DomainManager],
+  Reveal: [CommitManager],
+  Executor: [WalletGraph, SpendingManager, SignatureManager, TokenTracker, DomainManager],
+  ONEWalletCodeHelper: baseLibraries,
+  ONEWalletFactoryHelper: [...baseLibraries, ONEWalletCodeHelper],
+}
+
+const networks = []
 const providers = {}
 const contracts = {}
 const contractsV5 = {}
 const contractsV6 = {}
-const networks = []
-const libraryList = [DomainManager, TokenTracker, WalletGraph, CommitManager, SignatureManager, SpendingManager, Reveal]
-const libraryDeps = { WalletGraph: [DomainManager], Reveal: [CommitManager] }
+const factories = {}
 const libraries = {}
+
+const knownAddresses = {
+  ONEWalletFactory: (network) => ONEConfig.networks[network]?.deploy?.factory,
+  ONEWalletFactoryHelper: (network) => ONEConfig.networks[network]?.deploy?.deployer,
+  ONEWalletCodeHelper: (network) => ONEConfig.networks[network]?.deploy?.codeHelper,
+}
+
+const constructorArguments = {
+  ONEWalletFactoryHelper: (network) => [factories[network]['ONEWalletFactory'].address]
+}
 
 const ensureDir = async (p) => {
   try {
@@ -37,13 +63,20 @@ const ensureDir = async (p) => {
   }
 }
 
-const initCachedLibraries = async () => {
+// including libraries
+const initCachedContracts = async () => {
   const p = path.join(config.cache, ONEConfig.lastLibraryUpdateVersion || ONEConfig.version)
   await ensureDir(p)
   for (let network of networks) {
+    if (config.networks[network].skip) {
+      console.log(`[${network}] Skipped`)
+      continue
+    }
     libraries[network] = {}
-    for (let lib of libraryList) {
-      const f = [lib.contractName, network].join('-')
+    factories[network] = {}
+    for (let lib of [...libraryList, ...Object.values(factoryContracts)]) {
+      const libName = lib.contractName
+      const f = [libName, network].join('-')
       const fp = path.join(p, f)
       const key = config.networks[network].key
       const account = new Account(key)
@@ -52,22 +85,40 @@ const initCachedLibraries = async () => {
       c.defaults({ from: account.address })
       const expectedHash = ONEUtil.hexString(ONEUtil.keccak(ONEUtil.hexToBytes(lib.bytecode)))
       try {
+        if (knownAddresses[libName]) {
+          const libAddress = knownAddresses[libName](network)
+          if (libAddress) {
+            console.log(`[${network}][${libName}] Found contract known address at ${libAddress}`)
+            const instance = new c(libAddress)
+            if (!factoryContracts[libName]) {
+              libraries[network][libName] = instance
+            } else {
+              factories[network][libName] = instance
+            }
+            continue
+          }
+        }
         await fs.access(fp)
         const content = await fs.readFile(fp, { encoding: 'utf-8' })
         const [address, hash] = content.split(',')
         if (hash === expectedHash) {
-          console.log(`[${network}][${lib.contractName}] Found existing deployed library at address ${address}`)
-          libraries[network][lib.contractName] = await c.at(address)
-          console.log(`[${network}][${lib.contractName}] Initialized contract at ${address}`)
+          console.log(`[${network}][${libName}] Found existing deployed library at address ${address}`)
+          const instance = new c(address)
+          if (!factoryContracts[libName]) {
+            libraries[network][libName] = instance
+          } else {
+            factories[network][libName] = instance
+          }
+          console.log(`[${network}][${libName}] Initialized contract at ${address}`)
           continue
         } else {
-          console.log(`[${network}][${lib.contractName}] Library code is changed. Redeploying`)
+          console.log(`[${network}][${libName}] Library code is changed. Redeploying`)
         }
       } catch {}
-      console.log(`[${network}][${lib.contractName}] Library address is not cached or is outdated. Deploying new instance`)
-      if (libraryDeps[lib.contractName]) {
-        for (let dep of libraryDeps[lib.contractName]) {
-          console.log(`[${network}][${lib.contractName}] Library depends on ${dep.contractName}. Linking...`)
+      console.log(`[${network}][${libName}] Library address is not cached or is outdated. Deploying new instance`)
+      if (dependencies[libName]) {
+        for (let dep of dependencies[libName]) {
+          console.log(`[${network}][${libName}] Library depends on ${dep.contractName}. Linking...`)
           if (!libraries[network][dep.contractName]) {
             throw new Error(`[${network}][${dep.contractName}] Library is not deployed yet`)
           }
@@ -77,18 +128,22 @@ const initCachedLibraries = async () => {
       }
       try {
         await backOff(async () => {
-          const instance = await c.new()
-          libraries[network][lib.contractName] = instance
+          let args = []
+          if (constructorArguments[libName]) {
+            args = constructorArguments[libName](network)
+          }
+          const instance = await c.new(...args)
+          libraries[network][libName] = instance
           await fs.writeFile(fp, `${instance.address},${expectedHash}`, { encoding: 'utf-8' })
         }, {
           retry: (ex, n) => {
-            console.error(`[${network}] Failed to deploy ${lib.contractName} (attempted ${n}/10)`)
+            console.error(`[${network}] Failed to deploy ${libName} (attempted ${n}/10)`)
             console.error(ex)
             return true
           }
         })
       } catch (ex) {
-        console.error(`Failed to deploy ${lib.contractName} after all attempts. Exiting`)
+        console.error(`Failed to deploy ${libName} after all attempts. Exiting`)
         process.exit(1)
       }
     }
@@ -110,6 +165,10 @@ const HarmonyProvider = ({ key, url, chainId, gasLimit, gasPrice }) => {
 
 const init = () => {
   Object.keys(config.networks).forEach(k => {
+    if (config.networks[k].skip) {
+      console.log(`[${k}] Skipped initialization`)
+      return
+    }
     const n = config.networks[k]
     // console.log(n)
     if (n.key) {
@@ -157,7 +216,7 @@ const init = () => {
     contractsV5: Object.keys(contractsV5).map(k => contracts[k].toString()),
     contractsV6: Object.keys(contractsV6).map(k => contracts[k].toString()),
   })
-  initCachedLibraries().then(async () => {
+  initCachedContracts().then(async () => {
     console.log('library initialization complete')
     for (let network in libraries) {
       for (let libraryName in libraries[network]) {
@@ -183,8 +242,17 @@ module.exports = {
   init,
   getNetworks: () => networks,
   getProvider: (network) => providers[network],
-  getContract: (network) => contracts[network],
-  getContractV5: (network) => contractsV5[network],
-  getContractV6: (network) => contractsV6[network],
+  getWalletContract: (network, version) => {
+    if (!version) {
+      return contracts[network]
+    }
+    if (version === 5) {
+      return contractsV5[network]
+    }
+    if (version === 6) {
+      return contractsV6[network]
+    }
+  },
   getLibraries: (network) => libraries[network],
+  getFactory: (network, name) => factories[network][name],
 }
