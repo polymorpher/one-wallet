@@ -20,6 +20,12 @@ module.exports = {
         name: 'Ganache',
         url: 'http://127.0.0.1:7545',
         // explorer: 'https://explorer.harmony.one/#/tx/{{txId}}',
+        deploy: {
+          factory: process.env.DEPLOY_FACTORY_GANACHE,
+          deployer: process.env.DEPLOY_DEPLOYER_GANACHE,
+          codeHelper: process.env.DEPLOY_CODE_HELPER_GANACHE
+        },
+        skip: process.env.SKIP_GANACHE,
       }
     }),
     'harmony-mainnet': {
@@ -28,11 +34,23 @@ module.exports = {
       explorer: 'https://explorer.harmony.one/tx/{{txId}}',
       production: true,
       chainId: 1,
+      deploy: {
+        factory: process.env.DEPLOY_FACTORY_MAINNET,
+        deployer: process.env.DEPLOY_DEPLOYER_MAINNET,
+        codeHelper: process.env.DEPLOY_CODE_HELPER_MAINNET
+      },
+      skip: process.env.SKIP_MAINNET,
     },
     'harmony-testnet': {
       name: 'Harmony Testnet',
       url: 'https://api.s0.b.hmny.io',
       chainId: 2,
+      deploy: {
+        factory: process.env.DEPLOY_FACTORY_TESTNET,
+        deployer: process.env.DEPLOY_DEPLOYER_TESTNET,
+        codeHelper: process.env.DEPLOY_CODE_HELPER_TESTNET
+      },
+      skip: process.env.SKIP_TESTNET,
     }
   },
   relayers: {
