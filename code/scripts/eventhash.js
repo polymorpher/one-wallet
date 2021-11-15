@@ -25,7 +25,7 @@ async function main () {
     const hash = ONEUtil.hexString(ONEUtil.keccak(sig))
     hashMap[hash] = sig
   }
-  const out = JSON.stringify(hashMap)
+  const out = JSON.stringify(hashMap, null, 2)
   console.log(out)
   await fs.writeFile(EVENT_MAP_OUT, out, { encoding: 'UTF-8' })
 }

@@ -119,13 +119,13 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
       [root, height, interval, t0, lifespan, slotSize],
       [ new BN(spendingLimit), new BN(spentAmount), new BN(lastSpendingInterval), new BN(spendingInterval), new BN(lastLimitAdjustmentTime), new BN(highestSpendingLimit) ],
       lastResortAddress,
-      identificationKeys,
       backlinks,
       oldCoreTransformed,
-      innerCoreTransformed
+      innerCoreTransformed,
+      identificationKeys,
     ]
     const receipt = await blockchain.getFactory(req.network).deploy(initArgs)
-    console.log(receipt)
+    console.log(JSON.stringify(receipt, null, 2))
     const { logs } = receipt
     const successLog = logs.find(log => log.event === 'ONEWalletDeploySuccess')
     if (!successLog) {

@@ -102,7 +102,7 @@ const initCachedContracts = async () => {
         const content = await fs.readFile(fp, { encoding: 'utf-8' })
         const [address, hash] = content.split(',')
         if (hash === expectedHash) {
-          console.log(`[${network}][${libName}] Found existing deployed library at address ${address}`)
+          console.log(`[${network}][${libName}] Found existing deployed contract at address ${address}`)
           const instance = new c(address)
           if (!factoryContracts[libName]) {
             libraries[network][libName] = instance
@@ -112,7 +112,7 @@ const initCachedContracts = async () => {
           console.log(`[${network}][${libName}] Initialized contract at ${address}`)
           continue
         } else {
-          console.log(`[${network}][${libName}] Library code is changed. Redeploying`)
+          console.log(`[${network}][${libName}] Contract code is changed. Redeploying`)
         }
       } catch {}
       console.log(`[${network}][${libName}] Library address is not cached or is outdated. Deploying new instance`)
@@ -211,10 +211,10 @@ const init = () => {
   })
   console.log('init complete:', {
     networks,
-    providers: Object.keys(providers).map(k => pick(providers[k], ['gasLimit', 'gasPrice', 'addresses'])),
-    contracts: Object.keys(contracts).map(k => contracts[k].toString()),
-    contractsV5: Object.keys(contractsV5).map(k => contracts[k].toString()),
-    contractsV6: Object.keys(contractsV6).map(k => contracts[k].toString()),
+    providers: JSON.stringify(Object.keys(providers).map(k => pick(providers[k], ['gasLimit', 'gasPrice', 'addresses']))),
+    contracts: Object.keys(contracts),
+    contractsV5: Object.keys(contractsV5),
+    contractsV6: Object.keys(contractsV6),
   })
   initCachedContracts().then(async () => {
     console.log('library initialization complete')
@@ -235,6 +235,10 @@ const init = () => {
         console.log(`Linked ${network} (${JSON.stringify(n)}) ${libraryName} with ${libraries[network][libraryName].address}`)
       }
     }
+    console.log({
+      factories,
+      libraries,
+    })
   })
 }
 
