@@ -27,7 +27,9 @@ const { backOff } = require('exponential-backoff')
 
 const baseLibraries = [DomainManager, TokenTracker, WalletGraph, CommitManager, SignatureManager, SpendingManager, Reveal, CoreManager, Executor]
 const factoryLibraries = [ONEWalletCodeHelper]
-const factoryContracts = { ONEWalletFactory, ONEWalletFactoryHelper }
+const factoryContractsList = [ ONEWalletFactory, ONEWalletFactoryHelper ]
+const factoryContracts = Object.fromEntries(factoryContractsList.map(e => [e.contractName, e]))
+
 const libraryList = [...baseLibraries, ...factoryLibraries]
 const dependencies = {
   WalletGraph: [DomainManager],
@@ -52,7 +54,10 @@ const knownAddresses = {
 }
 
 const constructorArguments = {
-  ONEWalletFactoryHelper: (network) => [factories[network]['ONEWalletFactory'].address]
+  ONEWalletFactoryHelper: (network) => {
+    console.log(factories[network])
+    return [factories[network]['ONEWalletFactory'].address]
+  }
 }
 
 const ensureDir = async (p) => {
@@ -74,7 +79,7 @@ const initCachedContracts = async () => {
     }
     libraries[network] = {}
     factories[network] = {}
-    for (let lib of [...libraryList, ...Object.values(factoryContracts)]) {
+    for (let lib of [...libraryList, ...factoryContractsList]) {
       const libName = lib.contractName
       const f = [libName, network].join('-')
       const fp = path.join(p, f)
@@ -89,7 +94,8 @@ const initCachedContracts = async () => {
           const libAddress = knownAddresses[libName](network)
           if (libAddress) {
             console.log(`[${network}][${libName}] Found contract known address at ${libAddress}`)
-            const instance = new c(libAddress)
+            // const instance = new c(libAddress)
+            const instance = await c.at(libAddress)
             if (!factoryContracts[libName]) {
               libraries[network][libName] = instance
             } else {
@@ -103,7 +109,8 @@ const initCachedContracts = async () => {
         const [address, hash] = content.split(',')
         if (hash === expectedHash) {
           console.log(`[${network}][${libName}] Found existing deployed contract at address ${address}`)
-          const instance = new c(address)
+          // const instance = new c(address)
+          const instance = await c.at(address)
           if (!factoryContracts[libName]) {
             libraries[network][libName] = instance
           } else {
@@ -115,12 +122,12 @@ const initCachedContracts = async () => {
           console.log(`[${network}][${libName}] Contract code is changed. Redeploying`)
         }
       } catch {}
-      console.log(`[${network}][${libName}] Library address is not cached or is outdated. Deploying new instance`)
+      console.log(`[${network}][${libName}] Contract address is not cached or is outdated. Deploying new instance`)
       if (dependencies[libName]) {
         for (let dep of dependencies[libName]) {
-          console.log(`[${network}][${libName}] Library depends on ${dep.contractName}. Linking...`)
+          console.log(`[${network}][${libName}] Contract depends on ${dep.contractName}. Linking...`)
           if (!libraries[network][dep.contractName]) {
-            throw new Error(`[${network}][${dep.contractName}] Library is not deployed yet`)
+            throw new Error(`[${network}][${dep.contractName}] Contract is not deployed yet`)
           }
           await c.detectNetwork()
           await c.link(libraries[network][dep.contractName])
@@ -133,7 +140,13 @@ const initCachedContracts = async () => {
             args = constructorArguments[libName](network)
           }
           const instance = await c.new(...args)
-          libraries[network][libName] = instance
+          if (!factoryContracts[libName]) {
+            libraries[network][libName] = instance
+            // console.log(`libraries[${network}][${libName}] = ${instance.address}`)
+          } else {
+            // console.log(`factories[${network}][${libName}] = ${instance.address}`)
+            factories[network][libName] = instance
+          }
           await fs.writeFile(fp, `${instance.address},${expectedHash}`, { encoding: 'utf-8' })
         }, {
           retry: (ex, n) => {
@@ -201,7 +214,7 @@ const init = () => {
     const key = config.networks[k].key
     const account = new Account(key)
     // console.log(k, account.address, account.bech32Address)
-    const params = k.startsWith('eth') ? { from: account.address } : { from: account.address, gas: config.gasLimit, gasPrice: config.gasPrice }
+    const params = k.startsWith('eth') ? { from: account.address, gas: 672197500 } : { from: account.address, gas: config.gasLimit, gasPrice: config.gasPrice }
     c.defaults(params)
     c5.defaults(params)
     c6.defaults(params)
