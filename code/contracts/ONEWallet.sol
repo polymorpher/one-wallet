@@ -30,7 +30,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
 
     /// global mutable variables
     address payable recoveryAddress; // where money will be sent during a recovery process (or when the wallet is beyond its lifespan)
-    bytes public override identificationKey;
+    bytes[] identificationKeys;
 
     SpendingManager.SpendingState spendingState;
 
@@ -57,8 +57,16 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
         spendingState = initParams.spendingState;
         recoveryAddress = initParams.recoveryAddress;
         backlinkAddresses = initParams.backlinkAddresses;
-        identificationKey = initParams.identificationKey;
+        identificationKeys = initParams.identificationKeys;
         initialized = true;
+    }
+
+    function identificationKey() external override view returns (bytes memory){
+        return identificationKeys[0];
+    }
+
+    function getIdentificationKeys() external override view returns (bytes[] memory){
+        return identificationKeys;
     }
 
     function _getForwardAddress() internal override view returns (address payable){
@@ -297,7 +305,7 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
                 _multiCall(op.data);
             }
         } else if (op.operationType == Enums.OperationType.DISPLACE) {
-            CoreManager.displace(oldCores, innerCores, core, op.data, forwardAddress);
+            CoreManager.displace(oldCores, innerCores, core, identificationKeys, op.data, forwardAddress);
         } else if (op.operationType == Enums.OperationType.BATCH) {
             _batch(op.data);
         } else {

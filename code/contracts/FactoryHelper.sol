@@ -22,7 +22,7 @@ contract ONEWalletFactoryHelper {
     }
     function deploy(IONEWallet.InitParams memory args) payable public returns (address){
         // ONEWallet has no constructor argument since v15
-        address addr = factory.deploy{value : msg.value}(ONEWalletCodeHelper.code(), uint256(keccak256(args.identificationKey)));
+        address addr = factory.deploy{value : msg.value}(ONEWalletCodeHelper.code(), uint256(keccak256(args.identificationKeys[0])));
         if (addr == address(0)) {
             return addr;
         }
@@ -32,6 +32,10 @@ contract ONEWalletFactoryHelper {
 
     function predict(bytes memory identificationKey) public view returns (address){
         return factory.predict(ONEWalletCodeHelper.code(), uint256(keccak256(identificationKey)));
+    }
+
+    function getCode() public pure returns (bytes memory){
+        return ONEWalletCodeHelper.code();
     }
 
     function verify(IONEWallet addr) public view returns (bool){
