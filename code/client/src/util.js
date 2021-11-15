@@ -285,7 +285,7 @@ export const updateQRCodeState = (newValue, state) => {
 }
 
 export const generateOtpSeed = () => {
-  const otpSeedBuffer = new Uint8Array(20)
+  const otpSeedBuffer = new Uint8Array(32)
   return window.crypto.getRandomValues(otpSeedBuffer)
 }
 
