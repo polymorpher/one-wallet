@@ -22,7 +22,7 @@ contract ONEWalletFactoryHelper {
     }
     function deploy(IONEWallet.InitParams memory args) payable public returns (address){
         // ONEWallet has no constructor argument since v15
-        address addr = factory.deploy{value : msg.value}(ONEWalletCodeHelper.code(), uint256(args.identificationHash));
+        address addr = factory.deploy{value : msg.value}(ONEWalletCodeHelper.code(), uint256(args.identificationKey));
         if (addr == address(0)) {
             return addr;
         }
@@ -30,12 +30,12 @@ contract ONEWalletFactoryHelper {
         return addr;
     }
 
-    function predict(bytes32 identificationHash) public view returns (address){
-        return factory.predict(ONEWalletCodeHelper.code(), uint256(identificationHash));
+    function predict(bytes32 identificationKey) public view returns (address){
+        return factory.predict(ONEWalletCodeHelper.code(), uint256(identificationKey));
     }
 
     function verify(IONEWallet addr) public view returns (bool){
-        address predictedAddress = factory.predict(ONEWalletCodeHelper.code(), uint256(addr.identificationHash()));
+        address predictedAddress = factory.predict(ONEWalletCodeHelper.code(), uint256(addr.identificationKey()));
         return predictedAddress == address(addr);
     }
 }
