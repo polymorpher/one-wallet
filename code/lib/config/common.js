@@ -25,7 +25,6 @@ module.exports = {
           deployer: process.env.DEPLOY_DEPLOYER_GANACHE,
           codeHelper: process.env.DEPLOY_CODE_HELPER_GANACHE
         },
-        skip: process.env.SKIP_GANACHE,
       }
     }),
     'harmony-mainnet': {
@@ -39,7 +38,6 @@ module.exports = {
         deployer: process.env.DEPLOY_DEPLOYER_MAINNET,
         codeHelper: process.env.DEPLOY_CODE_HELPER_MAINNET
       },
-      skip: process.env.SKIP_MAINNET,
     },
     'harmony-testnet': {
       name: 'Harmony Testnet',
@@ -50,7 +48,6 @@ module.exports = {
         deployer: process.env.DEPLOY_DEPLOYER_TESTNET,
         codeHelper: process.env.DEPLOY_CODE_HELPER_TESTNET
       },
-      skip: process.env.SKIP_TESTNET,
     }
   },
   relayers: {
