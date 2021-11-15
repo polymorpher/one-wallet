@@ -58,10 +58,21 @@ export const OTPUriMode = {
   TOTP: 2, // seems deprecated, should not use unless it is for testing
 }
 
+const b32Encode = (otpSeed) => {
+  const encoded = b32.encode(otpSeed)
+  let len
+  for (len = encoded.length - 1; len >= 0; len--) {
+    if (encoded[len] !== '=') {
+      break
+    }
+  }
+  return encoded.substr(0, len + 1)
+}
+
 export const getQRCodeUri = (otpSeed, otpDisplayName, mode = OTPUriMode.STANDARD) => {
   if (mode === OTPUriMode.STANDARD) {
     // otpauth://TYPE/LABEL?PARAMETERS
-    return `otpauth://totp/${otpDisplayName}?secret=${b32.encode(otpSeed)}&issuer=Harmony`
+    return `otpauth://totp/${otpDisplayName}?secret=${b32Encode(otpSeed)}&issuer=Harmony`
   }
   if (mode === OTPUriMode.MIGRATION) {
     const payload = MigrationPayload.create({
