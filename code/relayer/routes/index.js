@@ -48,7 +48,7 @@ router.use((req, res, next) => {
 
 router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), globalLimiter({ max: 250 }), async (req, res) => {
   let { root, height, interval, t0, lifespan, slotSize, lastResortAddress,
-    spendingLimit, spentAmount, lastSpendingInterval, spendingInterval, lastLimitAdjustmentTime, highestSpendingLimit, backlinks, oldCores, innerCores, identificationKey } = req.body
+    spendingLimit, spentAmount, lastSpendingInterval, spendingInterval, lastLimitAdjustmentTime, highestSpendingLimit, backlinks, oldCores, innerCores, identificationKeys } = req.body
   // root is hex string, 32 bytes
   height = parseInt(height)
   interval = parseInt(interval)
@@ -65,7 +65,7 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
     console.log(`[/new] `, { core: { root, height, interval, t0, lifespan, slotSize },
       spending: { spendingLimit, spentAmount, lastSpendingInterval, spendingInterval, lastLimitAdjustmentTime, highestSpendingLimit },
       lastResortAddress,
-      identificationKey,
+      identificationKeys,
       backlinks,
       oldCores,
       innerCores,
@@ -86,7 +86,7 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
     spendingInterval,
     lastLimitAdjustmentTime,
     highestSpendingLimit,
-    identificationKey,
+    identificationKeys,
     backlinks,
     oldCores,
     innerCores
@@ -115,18 +115,24 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
   }
   // TODO parameter verification
   try {
-    const wallet = await blockchain.getWalletContract(req.network).new()
-    console.log('/new', wallet?.address)
-    await wallet.initialize([
+    const initArgs = [
       [root, height, interval, t0, lifespan, slotSize],
       [ new BN(spendingLimit), new BN(spentAmount), new BN(lastSpendingInterval), new BN(spendingInterval), new BN(lastLimitAdjustmentTime), new BN(highestSpendingLimit) ],
       lastResortAddress,
-      identificationKey,
+      identificationKeys,
       backlinks,
       oldCoreTransformed,
       innerCoreTransformed
-    ])
-    return res.json({ success: true, address: wallet.address })
+    ]
+    const receipt = await blockchain.getFactory(req.network).deploy(initArgs)
+    console.log(receipt)
+    const { logs } = receipt
+    const successLog = logs.find(log => log.event === 'ONEWalletDeploySuccess')
+    if (!successLog) {
+      return res.status(StatusCodes.NOT_ACCEPTABLE).json(receipt)
+    }
+    const address = successLog.args['addr']
+    return res.json({ success: true, address, receipt })
   } catch (ex) {
     console.error(ex)
     const { code, error, success } = parseError(ex)

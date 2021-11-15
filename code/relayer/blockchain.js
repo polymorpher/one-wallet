@@ -254,5 +254,5 @@ module.exports = {
     }
   },
   getLibraries: (network) => libraries[network],
-  getFactory: (network, name) => factories[network][name],
+  getFactory: (network, name) => factories[network][name || 'ONEWalletFactoryHelper'],
 }
