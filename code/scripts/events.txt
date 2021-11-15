@@ -7,6 +7,8 @@ event PaymentForwarded(uint256 amount, address dest);
 event AutoRecoveryTriggered(address from);
 event AutoRecoveryTriggeredPrematurely(address from, uint256 requiredTime);
 event RecoveryFailure();
+event RecoveryTriggered();
+event Retired();
 event ForwardAddressUpdated(address dest);
 event ForwardAddressAlreadySet(address dest);
 event ForwardAddressInvalid(address dest);
@@ -51,3 +53,7 @@ event CoreDisplaced(tuple(bytes32,uint8,uint8,uint32,uint32,uint8) oldCore, tupl
 event CoreDisplacementFailed(tuple(bytes32,uint8,uint8,uint32,uint32,uint8) newCore, tuple(bytes32,uint8,uint8,uint32,uint32,uint8)[] newInnerCores, string reason);
 event ONEWalletDeployFailed(uint256 salt, bytes32 codeHash);
 event ONEWalletDeploySuccess(address addr, uint256 salt, bytes32 codeHash);
+event SpendingLimitChanged(uint256 newLimit);
+event HighestSpendingLimitChanged(uint256 newLimit);
+event SpendingLimitChangeFailed(uint256 newLimit, string reason);
+event SpendingLimitJumped(uint256 newLimit);
