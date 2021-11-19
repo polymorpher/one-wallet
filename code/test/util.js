@@ -3,6 +3,7 @@ const ONEWalletUtil = require('../lib/util')
 const ONEWallet = artifacts.require('ONEWallet')
 const config = require('../config')
 const base32 = require('hi-base32')
+const BN = require('bn.js')
 const INTERVAL = 30000
 const Logger = {
   debug: (...args) => {
@@ -12,14 +13,17 @@ const Logger = {
   }
 }
 
-const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval, lastResortAddress, dailyLimit, doubleOtp, randomness = 0, hasher = ONEWalletUtil.sha256b }) => {
-  const otpSeed = base32.encode('0xdeadbeef1234567890')
+const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval, lastResortAddress, spendingLimit, doubleOtp, randomness = 0, hasher = ONEWalletUtil.sha256b,
+  spendingInterval = 86400, backlinks = []
+}) => {
+  const otpSeed = base32.encode('0xdeadbeef1234567890123456789012')
+  const identificationKeys = [ONEWalletUtil.getIdentificationKey(otpSeed, true)]
   let otpSeed2
   if (doubleOtp) {
     otpSeed2 = base32.encode('0x1234567890deadbeef')
   }
   effectiveTime = Math.floor(effectiveTime / INTERVAL) * INTERVAL
-  const { seed, seed2, hseed, root, leaves, layers, maxOperationsPerInterval: slotSize, randomnessResults, counter } = await ONEWalletLib.computeMerkleTree({
+  const { seed, seed2, hseed, root, leaves, layers, maxOperationsPerInterval: slotSize, randomnessResults, counter, innerTrees } = await ONEWalletLib.computeMerkleTree({
     otpSeed,
     otpSeed2,
     effectiveTime,
@@ -35,14 +39,31 @@ const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval,
   const t0 = effectiveTime / INTERVAL
   const lifespan = duration / INTERVAL
   const interval = INTERVAL / 1000
-  // constructor(bytes32 root_, uint8 height_, uint8 interval_, uint32 t0_, uint32 lifespan_, uint8 maxOperationsPerInterval_,
-  //   address payable lastResortAddress_, uint256 dailyLimit_)
-  Logger.debug('Creating ONEWallet contract with parameters', {
-    root: ONEWalletUtil.hexString(root), height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit
-  })
-  const wallet = await ONEWallet.new(
-    ONEWalletUtil.hexString(root), height, interval, t0, lifespan, slotSize, lastResortAddress, dailyLimit
-  )
+
+  const innerCores = []
+  for (let [index, innerTree] of innerTrees.entries()) {
+    const { root: innerRoot, layers: innerLayers } = innerTree
+    const innerInterval = INTERVAL * 6
+    const innerLifespan = duration / innerInterval
+    innerCores.push([innerRoot, innerLayers.height, innerInterval, t0 + index, innerLifespan, slotSize])
+    if (!innerRoot) {
+      throw new Error(`inner core has empty root: ${JSON.stringify(innerRoot)}`)
+    }
+  }
+
+  const initArgs = [
+    [root, height, interval, t0, lifespan, slotSize],
+    [ new BN(spendingLimit), new BN(0), new BN(0), new BN(spendingInterval), new BN(0), new BN(spendingLimit) ],
+    lastResortAddress,
+    backlinks,
+    [], // old cores - need not testing at the moment. To add later (TODO)
+    innerCores,
+    identificationKeys,
+  ]
+  Logger.debug('Creating ONEWallet contract with parameters', initArgs)
+  const wallet = await ONEWallet.new()
+  Logger.debug('Address', wallet.address)
+  wallet.initialize(initArgs)
 
   return {
     seed,
@@ -55,6 +76,7 @@ const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval,
     client: {
       leaves, // uint8array packed altogether
       layers, // uint8array[] each layer is packed uint8array
+      innerTrees,
     },
     contract: {
       slotSize, // maxOperationsPerInterval

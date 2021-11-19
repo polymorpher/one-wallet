@@ -44,7 +44,7 @@ contract('ONEWallet', (accounts) => {
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
       lastResortAddress: purse.address,
-      dailyLimit: ONE_ETH
+      spendingLimit: ONE_ETH
     })
     console.log({
       seed,
@@ -79,7 +79,7 @@ contract('ONEWallet', (accounts) => {
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
       lastResortAddress: purse.address,
-      dailyLimit: ONE_ETH
+      spendingLimit: ONE_ETH
     })
 
     await web3.eth.sendTransaction({
@@ -145,14 +145,14 @@ contract('ONEWallet', (accounts) => {
     assert.equal(ONE_CENT / 2, purseBalance, 'Purse has correct balance')
   })
 
-  it('Wallet_DailyLimit: must respect daily limit', async () => {
+  it('Wallet_spendingLimit: must respect daily limit', async () => {
     const purse = web3.eth.accounts.create()
     const { seed, hseed, wallet, client: { layers } } = await TestUtil.createWallet({
       effectiveTime: EFFECTIVE_TIME,
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
       lastResortAddress: purse.address,
-      dailyLimit: ONE_CENT
+      spendingLimit: ONE_CENT
     })
     await web3.eth.sendTransaction({
       from: accounts[0],
@@ -188,7 +188,7 @@ contract('ONEWallet', (accounts) => {
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
       lastResortAddress: purse.address,
-      dailyLimit: ONE_CENT
+      spendingLimit: ONE_CENT
     })
     await web3.eth.sendTransaction({
       from: accounts[0],
