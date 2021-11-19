@@ -23,6 +23,22 @@ const utils = {
 
   sha256,
 
+  // input bytes are divided into units of `unitSize`, each consecutive `window` number of units will be hashed and provided in the output
+  // e.g. for unit size = 2, window size = 3, the input [a1, a2, a3, a4, a5, a6, a7, a8] where each a represents a byte, will produce output
+  // [sha256(a1 . a2 . a3 . a4 . a5 . a6), sha256(a3 . a4 . a5 . a6 . a7. a8)]
+  sha256Interlaced: (input, { progressObserver, unitSize = 4, window = 6 } = {}) => {
+    const n = input.length / unitSize - window + 1
+    const output = new Uint8Array(n * 32)
+    for (let i = 0; i < n; i++) {
+      const r = sha256(input.subarray(i * unitSize, i * unitSize + window * unitSize))
+      output.set(r, i * 32)
+      if (progressObserver) {
+        progressObserver(i, n)
+      }
+    }
+    return output
+  },
+
   // batched sha256
   sha256b: async (input, { progressObserver, batchSize = 32 } = {}) => {
     const n = input.length / batchSize
@@ -305,7 +321,7 @@ const utils = {
   // uint32 lastLimitAdjustmentTime; // last time when spend limit was adjusted
   // uint256 highestSpendingLimit; // the highest spending limit the wallet ever got. Should be set to equal `spendingLimit` initially (by the client)
 
-  getDefaultSpendingState: (limit, interval) =>{
+  getDefaultSpendingState: (limit, interval) => {
     return {
       spendingLimit: new BN(limit).toString(),
       spentAmount: 0,
