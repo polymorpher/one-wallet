@@ -37,11 +37,15 @@ const deploy = async (initArgs) => {
 const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval, lastResortAddress, spendingLimit, doubleOtp, randomness = 0, hasher = OWUtil.sha256b,
   spendingInterval = 86400, backlinks = []
 }) => {
-  const otpSeed = base32.encode('0xdeadbeef1234567890123456789012')
-  const identificationKeys = [OWUtil.getIdentificationKey(otpSeed, true)]
+  const byteSeed = OWUtil.stringToBytes('0xdeadbeef1234567890123456789012')
+  const otpSeed = OWUtil.base32Encode(byteSeed)
+  console.log(otpSeed)
+  const identificationKeys = [OWUtil.getIdentificationKey(byteSeed, true)]
   let otpSeed2
+  let byteSeed2
   if (doubleOtp) {
-    otpSeed2 = base32.encode('0x1234567890deadbeef')
+    byteSeed2 = OWUtil.stringToBytes('0x1234567890deadbeef')
+    otpSeed2 = base32.encode(byteSeed2)
   }
   effectiveTime = Math.floor(effectiveTime / INTERVAL) * INTERVAL
   const { seed, seed2, hseed, root, leaves, layers, maxOperationsPerInterval: slotSize, randomnessResults, counter, innerTrees } = await OW.computeMerkleTree({
@@ -94,8 +98,13 @@ const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval,
   Logger.debug('Address', address)
 
   return {
+    identificationKeys,
     address,
     wallet: new Wallet(address),
+    otpSeed,
+    otpSeed2,
+    byteSeed,
+    byteSeed2,
     seed,
     seed2,
     hseed,
@@ -150,4 +159,5 @@ module.exports = {
   increaseTime,
   createWallet,
   Logger,
+  getFactory: (factory) => Factories[factory]
 }
