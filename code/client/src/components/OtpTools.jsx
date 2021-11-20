@@ -1,10 +1,9 @@
 import message from '../message'
 import { MigrationPayload } from '../proto/oauthMigration'
-import b32 from 'hi-base32'
 import { Image, Row } from 'antd'
 import { OSType } from '../util'
 import React from 'react'
-
+import ONEUtil from '../../../lib/util'
 const OAUTH_OTP_PATTERN = /otpauth:\/\/totp\/(.+)(%3A|:)(.+)\?.+/
 export const parseOAuthOTP = (url) => {
   const m = url.match(OAUTH_OTP_PATTERN)
@@ -58,21 +57,10 @@ export const OTPUriMode = {
   TOTP: 2, // seems deprecated, should not use unless it is for testing
 }
 
-const b32Encode = (otpSeed) => {
-  const encoded = b32.encode(otpSeed)
-  let len
-  for (len = encoded.length - 1; len >= 0; len--) {
-    if (encoded[len] !== '=') {
-      break
-    }
-  }
-  return encoded.substr(0, len + 1)
-}
-
 export const getQRCodeUri = (otpSeed, otpDisplayName, mode = OTPUriMode.STANDARD) => {
   if (mode === OTPUriMode.STANDARD) {
     // otpauth://TYPE/LABEL?PARAMETERS
-    return `otpauth://totp/${otpDisplayName}?secret=${b32Encode(otpSeed)}&issuer=Harmony`
+    return `otpauth://totp/${otpDisplayName}?secret=${ONEUtil.base32Encode(otpSeed)}&issuer=Harmony`
   }
   if (mode === OTPUriMode.MIGRATION) {
     const payload = MigrationPayload.create({

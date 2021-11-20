@@ -10,6 +10,7 @@ const STANDARD_DECIMAL = 18
 const PERMIT_DEPRECATED_METHOD = process.env.PERMIT_DEPRECATED_METHOD
 const uts46 = require('idna-uts46')
 const abi = require('web3-eth-abi')
+const web3utils = require('web3-utils')
 const elliptic = require('elliptic')
 
 const utils = {
@@ -117,7 +118,23 @@ const utils = {
     seed = seed.slice(0, 32)
     return seed
   },
-
+  base32Decode: (str, asStr) => {
+    const decoded = base32.decode(str)
+    if (!asStr) {
+      return utils.stringToBytes(decoded)
+    }
+    return decoded
+  },
+  base32Encode: (otpSeed) => {
+    const encoded = base32.encode(otpSeed)
+    let len
+    for (len = encoded.length - 1; len >= 0; len--) {
+      if (encoded[len] !== '=') {
+        break
+      }
+    }
+    return encoded.substr(0, len + 1)
+  },
   genOTP: ({ seed, interval = 30000, counter = Math.floor(Date.now() / interval), n = 1, progressObserver }) => {
     const codes = new Uint8Array(n * 4)
     const v = new DataView(codes.buffer)
@@ -342,10 +359,12 @@ const utils = {
     }
     bytes.set(new Uint8Array([255]))
     bytes.set(utils.hexStringToBytes(deployerAddress), 1)
-    bytes.set(utils.keccak(identificationKey).slice(12), 21)
+    bytes.set(utils.keccak(utils.hexStringToBytes(identificationKey)), 21)
     bytes.set(utils.keccak(code), 53)
     const hash = utils.keccak(bytes)
-    return utils.hexString(hash.slice(12))
-  }
+    return web3utils.toChecksumAddress(utils.hexString(hash.slice(12)))
+  },
+
+  web3utils
 }
 module.exports = utils
