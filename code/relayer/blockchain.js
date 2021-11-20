@@ -4,40 +4,14 @@ const ONEUtil = require('../lib/util')
 const contract = require('@truffle/contract')
 const { TruffleProvider } = require('@harmony-js/core')
 const { Account } = require('@harmony-js/account')
-const WalletGraph = require('../build/contracts/WalletGraph.json')
-const CommitManager = require('../build/contracts/CommitManager.json')
-const SignatureManager = require('../build/contracts/SignatureManager.json')
-const TokenTracker = require('../build/contracts/TokenTracker.json')
-const DomainManager = require('../build/contracts/DomainManager.json')
-const SpendingManager = require('../build/contracts/SpendingManager.json')
-const CoreManager = require('../build/contracts/CoreManager.json')
-const Executor = require('../build/contracts/Executor.json')
-const ONEWalletFactory = require('../build/contracts/ONEWalletFactory.json')
-const ONEWalletFactoryHelper = require('../build/contracts/ONEWalletFactoryHelper.json')
-const ONEWalletCodeHelper = require('../build/contracts/ONEWalletCodeHelper.json')
-const Reveal = require('../build/contracts/Reveal.json')
-const ONEWallet = require('../build/contracts/ONEWallet.json')
-const ONEWalletV5 = require('../build/contracts/ONEWalletV5.json')
-const ONEWalletV6 = require('../build/contracts/ONEWalletV6.json')
+const { ONEWallet, factoryContractsList, factoryContracts, libraryList, dependencies } = require('../extensions/contracts')
+const { ONEWalletV5, ONEWalletV6 } = require('../extensions/deprecated')
+const { knownAddresses } = require('../extensions/loader')
 const HDWalletProvider = require('@truffle/hdwallet-provider')
 const fs = require('fs/promises')
 const path = require('path')
 const { pick } = require('lodash')
 const { backOff } = require('exponential-backoff')
-
-const baseLibraries = [DomainManager, TokenTracker, WalletGraph, CommitManager, SignatureManager, SpendingManager, Reveal, CoreManager, Executor]
-const factoryLibraries = [ONEWalletCodeHelper]
-const factoryContractsList = [ ONEWalletFactory, ONEWalletFactoryHelper ]
-const factoryContracts = Object.fromEntries(factoryContractsList.map(e => [e.contractName, e]))
-
-const libraryList = [...baseLibraries, ...factoryLibraries]
-const dependencies = {
-  WalletGraph: [DomainManager],
-  Reveal: [CommitManager],
-  Executor: [WalletGraph, SpendingManager, SignatureManager, TokenTracker, DomainManager],
-  ONEWalletCodeHelper: baseLibraries,
-  ONEWalletFactoryHelper: [...baseLibraries, ONEWalletCodeHelper],
-}
 
 const networks = []
 const providers = {}
@@ -47,15 +21,8 @@ const contractsV6 = {}
 const factories = {}
 const libraries = {}
 
-const knownAddresses = {
-  ONEWalletFactory: (network) => ONEConfig.networks[network]?.deploy?.factory,
-  ONEWalletFactoryHelper: (network) => ONEConfig.networks[network]?.deploy?.deployer,
-  ONEWalletCodeHelper: (network) => ONEConfig.networks[network]?.deploy?.codeHelper,
-}
-
 const constructorArguments = {
-  ONEWalletFactoryHelper: (network) => {
-    console.log(factories[network])
+  ONEWalletFactoryHelper: (factories, network) => {
     return [factories[network]['ONEWalletFactory'].address]
   }
 }

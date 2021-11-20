@@ -28,7 +28,7 @@ contract('ONEWallet', (accounts) => {
     const {
       seed,
       hseed,
-      wallet,
+      address,
       root,
       client: {
         leaves,
@@ -47,9 +47,9 @@ contract('ONEWallet', (accounts) => {
       spendingLimit: ONE_ETH
     })
     console.log({
+      address,
       seed,
       hseed,
-      wallet: wallet.toString(),
       root,
       client: {
         leaves,
@@ -61,14 +61,14 @@ contract('ONEWallet', (accounts) => {
         lifespan,
         interval
       } })
-    Logger.debug(`Sending ${ONE_CENT} from ${accounts[0]} to ${wallet.address}`)
+    Logger.debug(`Sending ${ONE_CENT} from ${accounts[0]} to ${address}`)
     await web3.eth.sendTransaction({
       from: accounts[0],
-      to: wallet.address,
+      to: address,
       value: ONE_CENT
     })
-    Logger.debug(`Sent ${ONE_CENT} to ${wallet.address}`)
-    const balance = await web3.eth.getBalance(wallet.address)
+    Logger.debug(`Sent ${ONE_CENT} to ${address}`)
+    const balance = await web3.eth.getBalance(address)
     assert.equal(ONE_CENT, balance, 'Wallet has correct balance')
   })
 

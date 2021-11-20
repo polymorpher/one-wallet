@@ -35,17 +35,21 @@ const computeMerkleTree = async ({
   randomness = 0, // number of bits for Controlled Randomness. 17 bits is recommended for the best balance between user experience and security. It maps to 2^17 = 131072 possibilities.
   hasher = sha256b, // must be a batch hasher
   buildInnerTrees = true,
+  reportInterval,
 }) => {
   maxOperationsPerInterval = 2 ** Math.ceil(Math.log2(maxOperationsPerInterval))
   maxOperationsPerInterval = Math.min(16, maxOperationsPerInterval)
   const height = Math.ceil(Math.log2(duration / otpInterval * maxOperationsPerInterval)) + 1
   const n = Math.pow(2, height - 1)
-  const reportInterval = Math.floor(n / 100)
+  if (n < 16) {
+    buildInnerTrees = false
+  }
+  reportInterval = reportInterval || Math.floor(n / 100)
   const counter = Math.floor(effectiveTime / otpInterval)
   const seed = processOtpSeed(otpSeed)
   const seed2 = otpSeed2 && processOtpSeed(otpSeed2)
-  // console.log('Generating Wallet with parameters', { seed, seed2, height, otpInterval, effectiveTime, randomness, hasher, maxOperationsPerInterval })
-  const buildProgressObserver = (max, stage, offset) => (i, n = 0) => (i + (offset || 0)) % reportInterval === 0 && progressObserver(i + (offset || 0), max || n, stage || 0)
+  // console.log('Generating Wallet with parameters', { seed, seed2, height, otpInterval, effectiveTime, duration, randomness, hasher, maxOperationsPerInterval })
+  const buildProgressObserver = (max, stage, offset) => (i, n = 0) => (i === max - 1 || ((i + (offset || 0)) % reportInterval === 0)) && progressObserver(i + (offset || 0), max || n, stage || 0)
   // prepare OTPs - stage 0
   const otps = genOTP({ seed, counter, n, progressObserver: buildProgressObserver(seed2 ? n * 2 : n, 0, 0) })
   const otps2 = seed2 && genOTP({ seed: seed2, counter, n, progressObserver: buildProgressObserver(n * 2, 0, n) })
@@ -94,16 +98,16 @@ const computeMerkleTree = async ({
   // prepare merkle tree - stage 1
   // TODO: parallelize this
   const eotps = await hasher(input, { progressObserver:
-      buildProgressObserver(n * maxOperationsPerInterval * 3, 1)
+      buildProgressObserver(n * maxOperationsPerInterval * 3 - 1, 1)
   })
   const leaves = await sha256b(eotps, { progressObserver:
-      buildProgressObserver(n * maxOperationsPerInterval * 3, 1, n * maxOperationsPerInterval)
+      buildProgressObserver(n * maxOperationsPerInterval * 3 - 1, 1, n * maxOperationsPerInterval)
   })
   const layers = buildMerkleTree({
     leaves,
     width: n,
     height,
-    progressObserver: buildProgressObserver(n * maxOperationsPerInterval * 3, 1, n * maxOperationsPerInterval * 2)
+    progressObserver: buildProgressObserver(n * maxOperationsPerInterval * 3 - 1, 1, n * maxOperationsPerInterval * 2)
   })
   const root = layers[height - 1]
 
@@ -112,13 +116,14 @@ const computeMerkleTree = async ({
   const perTreeHeight = Math.ceil(Math.log2((n - 6 + 1) / 6)) + 1 // (n - 6 + 1) == interlaced.length / 32
   const perTreeWidth = 2 ** (perTreeHeight - 1) // number of leaves for each innerCore tree
   const totalNumOps = (n - 6 + 1) + perTreeWidth * 2 * 6
-  // i.e. eotps for inner trees
-  const interlaced = sha256Interlaced(otps, {
-    progressObserver: buildProgressObserver(totalNumOps, 2), unitSize: 4, window: 6
-  })
 
   const innerTrees = []
   if (buildInnerTrees) {
+    // i.e. eotps for inner trees
+    const interlaced = sha256Interlaced(otps, {
+      progressObserver: buildProgressObserver(totalNumOps, 2), unitSize: 4, window: 6
+    })
+    // console.log(interlaced)
     const observerInnerLeaves = buildProgressObserver(totalNumOps, 2, n - 6 + 1)
     for (let i = 0; i < 6; i++) {
       const leaves = new Uint8Array(perTreeWidth * 32)

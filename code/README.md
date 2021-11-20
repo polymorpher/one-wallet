@@ -80,3 +80,11 @@ When you modify the smart contracts (or the core library, introduced below), it 
 ## Core Library
 
 See `/lib`. README will be added soon. 
+
+## Advanced Testing
+
+Skipping compile step and run tests matching a particular pattern:  
+
+```
+VERBOSE=1 truffle test --network=ganache --compile-none --grep 'Wallet_Create'
+```

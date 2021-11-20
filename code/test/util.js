@@ -1,9 +1,12 @@
-const ONEWalletLib = require('../lib/onewallet')
-const ONEWalletUtil = require('../lib/util')
-const ONEWallet = artifacts.require('ONEWallet')
+const { ONEWallet } = require('../extensions/contracts')
+const { loadContracts } = require('../extensions/loader')
+
+const OW = require('../lib/onewallet')
+const OWUtil = require('../lib/util')
 const config = require('../config')
 const base32 = require('hi-base32')
 const BN = require('bn.js')
+const { once } = require('lodash')
 const INTERVAL = 30000
 const Logger = {
   debug: (...args) => {
@@ -12,18 +15,34 @@ const Logger = {
     }
   }
 }
+let Factories
+// eslint-disable-next-line no-unused-vars
+let Libraries
+const init = async () => {
+  const { factories, libraries } = await loadContracts()
+  Factories = factories
+  Libraries = libraries
+  console.log('Initialized')
+}
 
-const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval, lastResortAddress, spendingLimit, doubleOtp, randomness = 0, hasher = ONEWalletUtil.sha256b,
+const deploy = async (initArgs) => {
+  if (!Factories) {
+    await init()
+  }
+  return Factories['ONEWalletFactoryHelper'].deploy(initArgs)
+}
+
+const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval, lastResortAddress, spendingLimit, doubleOtp, randomness = 0, hasher = OWUtil.sha256b,
   spendingInterval = 86400, backlinks = []
 }) => {
   const otpSeed = base32.encode('0xdeadbeef1234567890123456789012')
-  const identificationKeys = [ONEWalletUtil.getIdentificationKey(otpSeed, true)]
+  const identificationKeys = [OWUtil.getIdentificationKey(otpSeed, true)]
   let otpSeed2
   if (doubleOtp) {
     otpSeed2 = base32.encode('0x1234567890deadbeef')
   }
   effectiveTime = Math.floor(effectiveTime / INTERVAL) * INTERVAL
-  const { seed, seed2, hseed, root, leaves, layers, maxOperationsPerInterval: slotSize, randomnessResults, counter, innerTrees } = await ONEWalletLib.computeMerkleTree({
+  const { seed, seed2, hseed, root, leaves, layers, maxOperationsPerInterval: slotSize, randomnessResults, counter, innerTrees } = await OW.computeMerkleTree({
     otpSeed,
     otpSeed2,
     effectiveTime,
@@ -31,8 +50,9 @@ const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval,
     duration,
     randomness,
     hasher,
+    reportInterval: config.verbose ? 1 : null,
     progressObserver: (i, n, s) => {
-      Logger.debug(`${((i / n) * 100).toFixed(2)}% (${i}/${n}) (Stage ${s})`)
+      Logger.debug(`${((i + 1 / n) * 100).toFixed(2)}% (${i}/${n}) (Stage ${s})`)
     }
   })
   const height = layers.length
@@ -47,7 +67,7 @@ const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval,
     const innerLifespan = duration / innerInterval
     innerCores.push([innerRoot, innerLayers.height, innerInterval, t0 + index, innerLifespan, slotSize])
     if (!innerRoot) {
-      throw new Error(`inner core has empty root: ${JSON.stringify(innerRoot)}`)
+      throw new Error(`inner core has empty root: ${JSON.stringify(innerTree)}`)
     }
   }
 
@@ -61,17 +81,23 @@ const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval,
     identificationKeys,
   ]
   Logger.debug('Creating ONEWallet contract with parameters', initArgs)
-  const wallet = await ONEWallet.new()
-  Logger.debug('Address', wallet.address)
-  wallet.initialize(initArgs)
+  const tx = await deploy(initArgs)
+  Logger.debug(tx)
+  const successLog = tx.logs.find(log => log.event === 'ONEWalletDeploySuccess')
+  if (!successLog) {
+    throw new Error('Wallet deploy unsuccessful')
+  }
+  Logger.debug(successLog)
+  const address = successLog.args.addr
+  Logger.debug('Address', address)
 
   return {
+    address,
     seed,
     seed2,
     hseed,
     randomnessResults,
     counter,
-    wallet, // smart contract
     root, // uint8array
     client: {
       leaves, // uint8array packed altogether
