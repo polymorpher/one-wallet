@@ -5,7 +5,6 @@ const ONEDebugger = require('../lib/debug')
 const ONE = require('../lib/onewallet')
 const ONEConstants = require('../lib/constants')
 const Flow = require('../lib/api/flow')
-const { IONEWallet } = require('../extensions/contracts')
 
 const INTERVAL = 30000
 const DURATION = INTERVAL * 8
@@ -17,13 +16,9 @@ const Debugger = ONEDebugger(Logger)
 contract('ONEWallet', (accounts) => {
   const EFFECTIVE_TIME = Math.floor(Date.now() / INTERVAL) * INTERVAL - DURATION / 2
   const ONE_CENT = unit.toWei('0.01', 'ether')
-  // eslint-disable-next-line no-unused-vars
   const HALF_DIME = unit.toWei('0.05', 'ether')
-  // eslint-disable-next-line no-unused-vars
   const ONE_DIME = unit.toWei('0.1', 'ether')
   const ONE_ETH = unit.toWei('1', 'ether')
-  // eslint-disable-next-line no-unused-vars
-  const TWO_ETH = unit.toWei('2', 'ether')
   it('Wallet_Create: must create wallet with expected parameters', async () => {
     const purse = web3.eth.accounts.create()
     const {
@@ -47,7 +42,7 @@ contract('ONEWallet', (accounts) => {
       lastResortAddress: purse.address,
       spendingLimit: ONE_ETH
     })
-    console.log({
+    Logger.debug({
       address,
       seed,
       hseed,
