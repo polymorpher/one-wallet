@@ -6,7 +6,6 @@ import api from '../api'
 import ONEUtil from '../../../lib/util'
 import ONEConstants from '../../../lib/constants'
 import ONENames from '../../../lib/names'
-import { MigrationPayload } from '../proto/oauthMigration'
 // import { uniqueNamesGenerator, colors, animals } from 'unique-names-generator'
 import {
   Button,
@@ -14,15 +13,12 @@ import {
   Space,
   Typography,
   Slider,
-  Image,
-  Checkbox,
   Tooltip
 } from 'antd'
 import message from '../message'
-import { RedoOutlined, LoadingOutlined, QuestionCircleOutlined, SnippetsOutlined } from '@ant-design/icons'
+import { RedoOutlined, LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import humanizeDuration from 'humanize-duration'
 import AnimatedSection from '../components/AnimatedSection'
-import b32 from 'hi-base32'
 import qrcode from 'qrcode'
 import storage from '../storage'
 import walletActions from '../state/modules/wallet/actions'
@@ -30,7 +26,6 @@ import WalletConstants from '../constants/wallet'
 import util, { useWindowDimensions, OSType, generateOtpSeed } from '../util'
 import { handleAPIError, handleAddressError } from '../handler'
 import { Hint, Heading, InputBox, Warning } from '../components/Text'
-import OtpBox from '../components/OtpBox'
 import { getAddress } from '@harmony-js/crypto'
 import AddressInput from '../components/AddressInput'
 import WalletCreateProgress from '../components/WalletCreateProgress'
