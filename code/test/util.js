@@ -18,10 +18,12 @@ const Logger = {
 let Factories
 // eslint-disable-next-line no-unused-vars
 let Libraries
+let Wallet
 const init = async () => {
-  const { factories, libraries } = await loadContracts()
+  const { factories, libraries, ONEWalletAbs } = await loadContracts()
   Factories = factories
   Libraries = libraries
+  Wallet = ONEWalletAbs
   console.log('Initialized')
 }
 
@@ -93,6 +95,7 @@ const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval,
 
   return {
     address,
+    wallet: new Wallet(address),
     seed,
     seed2,
     hseed,

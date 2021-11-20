@@ -1,4 +1,4 @@
-const { factoryContractsList, factoryContracts, libraryList, dependencies } = require('./contracts')
+const { factoryContractsList, factoryContracts, libraryList, dependencies, ONEWallet } = require('./contracts')
 const ONEConfig = require('../lib/config/common')
 const Contract = require('@truffle/contract')
 
@@ -12,9 +12,9 @@ const knownAddresses = {
 const loadContracts = async () => {
   const libraries = {}
   const factories = {}
+  const accounts = await web3.eth.getAccounts()
   for (let lib of [...libraryList, ...factoryContractsList]) {
     const libName = lib.contractName
-    const accounts = await web3.eth.getAccounts()
     const c = Contract(lib)
     c.setProvider(web3.currentProvider)
     c.defaults({ from: accounts[0] })
@@ -48,7 +48,14 @@ const loadContracts = async () => {
       console.error(ex)
     }
   }
-  return { factories, libraries }
+  const c = Contract(ONEWallet)
+  c.setProvider(web3.currentProvider)
+  c.defaults({ from: accounts[0] })
+  await c.detectNetwork()
+  for (const library of Object.values(libraries)) {
+    c.link(library)
+  }
+  return { factories, libraries, ONEWalletAbs: c }
 }
 
 module.exports = {
