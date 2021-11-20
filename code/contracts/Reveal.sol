@@ -173,7 +173,7 @@ library Reveal {
         } else if (op.operationType == Enums.OperationType.DISPLACE) {
             authenticateCores(innerCores[0], innerCores, commitState, auth, op, false, true);
         } else if (op.operationType == Enums.OperationType.RECOVER) {
-            authenticateCores(core, oldCores, commitState, auth, op, false, false);
+            authenticateCores(core, oldCores, commitState, auth, op, true, true);
         } else if (op.operationType == Enums.OperationType.JUMP_SPENDING_LIMIT) {
             authenticateCores(innerCores[0], innerCores, commitState, auth, op, false, true);
         } else {
