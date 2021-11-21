@@ -1,9 +1,10 @@
 // eslint-disable-next-line no-unused-vars
-const Util, { hexString, genOTP, hexStringToBytes, keccak, bytesEqual, sha256: fastSHA256, sha256Interlaced, sha256b, processOtpSeed, namehash } = require('./util')
+const Util = require('./util')
 const ONEConstants = require('./constants')
 const BN = require('bn.js')
 const AES = require('aes-js')
 const abi = require('web3-eth-abi')
+const { hexString, genOTP, hexStringToBytes, keccak, bytesEqual, sha256: fastSHA256, sha256Interlaced, sha256b, processOtpSeed, namehash } = Util
 
 const buildMerkleTree = ({ leaves, height, width, progressObserver }) => {
   const layers = [leaves]
@@ -417,7 +418,7 @@ const computeTransferDomainHash = ({
 
 const computeForwardHash = ({ address }) => computeSetRecoveryAddressHash({ address })
 
-const encodeDisplaceData = ({core, innerCores, identificationKey}) =>{
+const encodeDisplaceData = ({ core, innerCores, identificationKey }) => {
   return Util.abi.encodeParameters(['tuple(bytes32,uint8,uint8,uint32,uint32,uint8)', 'tuple[](bytes32,uint8,uint8,uint32,uint32,uint8)', 'bytes'], [core, innerCores, identificationKey])
 }
 
