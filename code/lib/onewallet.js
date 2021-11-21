@@ -46,7 +46,7 @@ const computeMerkleTree = async ({
     buildInnerTrees = false
   }
   reportInterval = reportInterval || Math.floor(n / 100)
-  const counter = Math.floor(effectiveTime / otpInterval)
+  const counter = Math.floor(effectiveTime / (otpInterval * 6)) * 6
   const seed = processOtpSeed(otpSeed)
   const seed2 = otpSeed2 && processOtpSeed(otpSeed2)
   // console.log('Generating Wallet with parameters', { seed, seed2, height, otpInterval, effectiveTime, duration, randomness, hasher, maxOperationsPerInterval })
@@ -114,9 +114,9 @@ const computeMerkleTree = async ({
 
   // prepare inner trees - stage 2
 
-  const perTreeHeight = Math.ceil(Math.log2((n - 6 + 1) / 6)) + 1 // (n - 6 + 1) == interlaced.length / 32
+  const perTreeHeight = Math.ceil(Math.log2(Math.ceil((n - 6 + 1) / 6))) + 1 // (n - 6 + 1) == interlaced.length / 32
   const perTreeWidth = 2 ** (perTreeHeight - 1) // number of leaves for each innerCore tree
-  const totalNumOps = (n - 6 + 1) + perTreeWidth * 2 * 6
+  const totalNumOps = (n - 6 + 1) + perTreeWidth * 6 + (perTreeWidth - 1) * 6
 
   const innerTrees = []
   if (buildInnerTrees) {
@@ -124,7 +124,6 @@ const computeMerkleTree = async ({
     const interlaced = sha256Interlaced(otps, {
       progressObserver: buildProgressObserver(totalNumOps, 2), unitSize: 4, window: 6
     })
-    console.log(interlaced)
     const observerInnerLeaves = buildProgressObserver(totalNumOps, 2, n - 6 + 1)
     for (let i = 0; i < 6; i++) {
       const leaves = new Uint8Array(perTreeWidth * 32)
@@ -137,15 +136,16 @@ const computeMerkleTree = async ({
         // This means each individual tree may have a good number of leaves filled with zero, but in practice we won't use those leaves anyway.
         // Because the time range they correspond to would go beyond the time range of generated oto lifespan.
         if (index < interlaced.length) {
-          leaves.set(interlaced.subarray(index, index + 32), j * 32)
+          const leaf = fastSHA256(interlaced.subarray(index, index + 32))
+          leaves.set(leaf, j * 32)
         }
-        observerInnerLeaves(j + i * perTreeWidth * 2)
+        observerInnerLeaves(j + i * perTreeWidth + i * (perTreeWidth - 1))
       }
       const layers = buildMerkleTree({
         leaves,
         width: perTreeWidth,
         height: perTreeHeight,
-        progressObserver: count => observerInnerLeaves(count + i * perTreeWidth * 2 + perTreeWidth)
+        progressObserver: count => observerInnerLeaves(count + i * perTreeWidth + i * (perTreeWidth - 1) + perTreeWidth)
       })
       innerTrees.push({ layers, root: layers[perTreeHeight - 1] })
     }
@@ -418,7 +418,7 @@ const computeTransferDomainHash = ({
 
 const computeForwardHash = ({ address }) => computeSetRecoveryAddressHash({ address })
 
-const encodeDisplaceData = ({ core, innerCores, identificationKey }) => {
+const encodeDisplaceDataHex = ({ core, innerCores, identificationKey }) => {
   return Util.abi.encodeParameters(['tuple(bytes32,uint8,uint8,uint32,uint32,uint8)', 'tuple[](bytes32,uint8,uint8,uint32,uint32,uint8)', 'bytes'], [core, innerCores, identificationKey])
 }
 
@@ -451,7 +451,7 @@ module.exports = {
 
   // operation - encoders
   encodeBuyDomainData,
-  encodeDisplaceData,
+  encodeDisplaceDataHex,
   computeTokenKey,
 
   // deprecated
