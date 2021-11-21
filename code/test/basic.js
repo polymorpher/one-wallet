@@ -5,16 +5,18 @@ const ONEDebugger = require('../lib/debug')
 const ONE = require('../lib/onewallet')
 const ONEConstants = require('../lib/constants')
 const Flow = require('../lib/api/flow')
+const ONEWallet = require('../lib/onewallet')
+const crypto = require('crypto')
 
 const INTERVAL = 30000
-const DURATION = INTERVAL * 8
+const DURATION = INTERVAL * 12
 const SLOT_SIZE = 1
 
 const Logger = TestUtil.Logger
 const Debugger = ONEDebugger(Logger)
 
 contract('ONEWallet', (accounts) => {
-  const EFFECTIVE_TIME = Math.floor(Date.now() / INTERVAL) * INTERVAL - DURATION / 2
+  const EFFECTIVE_TIME = Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
   const ONE_CENT = unit.toWei('0.01', 'ether')
   const HALF_DIME = unit.toWei('0.05', 'ether')
   const ONE_DIME = unit.toWei('0.1', 'ether')
@@ -36,6 +38,7 @@ contract('ONEWallet', (accounts) => {
         lifespan,
         interval
       } } = await TestUtil.createWallet({
+      salt: 1,
       effectiveTime: EFFECTIVE_TIME,
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
@@ -71,6 +74,7 @@ contract('ONEWallet', (accounts) => {
   it('Wallet_CommitReveal: must commit and reveal a transfer successfully', async () => {
     const purse = web3.eth.accounts.create()
     const { wallet, seed, hseed, root, client: { layers } } = await TestUtil.createWallet({
+      salt: 2,
       effectiveTime: EFFECTIVE_TIME,
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
@@ -84,57 +88,21 @@ contract('ONEWallet', (accounts) => {
       value: ONE_CENT
     })
 
-    // can be used with web3's WebsocketProvider, but not PrivateKeyProvider
-    // wallet.CheckingCommit({}, (error, result) => {
-    //   if (error) {
-    //     return console.error(error)
-    //   }
-    //   console.log(result)
-    // })
-
     Debugger.printLayers({ layers })
-
     const otp = ONEUtil.genOTP({ seed })
     const index = ONEUtil.timeToIndex({ effectiveTime: EFFECTIVE_TIME })
     const eotp = await ONE.computeEOTP({ otp, hseed })
-    Logger.debug(`To compute neighbors`, {
-      otp: new DataView(otp.buffer).getUint32(0, false),
-      eotp: ONEUtil.hexString(eotp),
-      index
+    await TestUtil.commitReveal({
+      Debugger,
+      layers,
+      index,
+      eotp,
+      paramsHash: ONEWallet.computeTransferHash,
+      commitParams: { dest: purse.address, amount: ONE_CENT / 2 },
+      revealParams: { dest: purse.address, amount: ONE_CENT / 2, operationType: ONEConstants.OperationType.TRANSFER },
+      wallet
     })
-    const neighbors = ONE.selectMerkleNeighbors({ layers, index })
-    const neighbor = neighbors[0]
-    const { hash: commitHash } = ONE.computeCommitHash({ neighbor, index, eotp })
-    const { hash: transferHash } = ONE.computeTransferHash({ dest: purse.address, amount: ONE_CENT / 2 })
-    const { hash: verificationHash } = ONE.computeVerificationHash({ paramsHash: transferHash, eotp })
-    Logger.debug(`Committing transfer hash`, { commitHash: ONEUtil.hexString(commitHash), transferHash: ONEUtil.hexString(transferHash), verificationHash: ONEUtil.hexString(verificationHash) })
-    await wallet.commit(ONEUtil.hexString(commitHash), ONEUtil.hexString(transferHash), ONEUtil.hexString(verificationHash))
-    Logger.debug(`Committed`)
-    const neighborsEncoded = neighbors.map(ONEUtil.hexString)
-    Debugger.debugProof({ neighbors, height: layers.length, index, eotp, root })
-    const commits = await wallet.getAllCommits()
-    const hash = commits[0][0]
-    const paramHash = commits[0][1]
-    const verificationHashCommitted = commits[0][2]
-    const timestamp = commits[0][3]
-    Logger.debug({ commit: { hash, paramHash, verificationHash: verificationHashCommitted, timestamp }, currentTimeInSeconds: Math.floor(Date.now() / 1000) })
-    Logger.debug(`Revealing transfer with`, {
-      neighbors: neighborsEncoded,
-      indexWithNonce: index,
-      eotp: ONEUtil.hexString(eotp),
-      dest: purse.address,
-      amount: ONE_CENT / 2
-    })
-    const wouldSucceed = await wallet.reveal.call(
-      [neighborsEncoded, index, ONEUtil.hexString(eotp)],
-      [ONEConstants.OperationType.TRANSFER, ONEConstants.TokenType.NONE, ONEConstants.EmptyAddress, 0, purse.address, ONE_CENT / 2, '0x']
-    )
-    Logger.debug(`Reveal would succeed`, wouldSucceed)
-    await wallet.reveal(
-      [neighborsEncoded, index, ONEUtil.hexString(eotp)],
-      [ONEConstants.OperationType.TRANSFER, ONEConstants.TokenType.NONE, ONEConstants.EmptyAddress, 0, purse.address, ONE_CENT / 2, '0x']
-    )
-    Logger.debug(`Revealed`)
+
     const walletBalance = await web3.eth.getBalance(wallet.address)
     const purseBalance = await web3.eth.getBalance(purse.address)
     assert.equal(ONE_CENT / 2, walletBalance, 'Wallet has correct balance')
@@ -144,6 +112,7 @@ contract('ONEWallet', (accounts) => {
   it('Wallet_spendingLimit: must respect daily limit', async () => {
     const purse = web3.eth.accounts.create()
     const { seed, hseed, wallet, client: { layers } } = await TestUtil.createWallet({
+      salt: 3,
       effectiveTime: EFFECTIVE_TIME,
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
@@ -180,6 +149,7 @@ contract('ONEWallet', (accounts) => {
   it('Wallet_Recover: must recover funds to recovery address without using otp', async () => {
     const purse = web3.eth.accounts.create()
     const { hseed, wallet, client: { layers } } = await TestUtil.createWallet({
+      salt: 4,
       effectiveTime: EFFECTIVE_TIME,
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
