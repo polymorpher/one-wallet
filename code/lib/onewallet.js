@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-const { hexView, hexString, genOTP, hexStringToBytes, keccak, bytesEqual, sha256: fastSHA256, sha256Interlaced, sha256b, processOtpSeed, namehash, DEPRECATED, stringToBytes } = require('./util')
+const Util, { hexString, genOTP, hexStringToBytes, keccak, bytesEqual, sha256: fastSHA256, sha256Interlaced, sha256b, processOtpSeed, namehash } = require('./util')
 const ONEConstants = require('./constants')
 const BN = require('bn.js')
 const AES = require('aes-js')
@@ -123,7 +123,7 @@ const computeMerkleTree = async ({
     const interlaced = sha256Interlaced(otps, {
       progressObserver: buildProgressObserver(totalNumOps, 2), unitSize: 4, window: 6
     })
-    // console.log(interlaced)
+    console.log(interlaced)
     const observerInnerLeaves = buildProgressObserver(totalNumOps, 2, n - 6 + 1)
     for (let i = 0; i < 6; i++) {
       const leaves = new Uint8Array(perTreeWidth * 32)
@@ -136,7 +136,7 @@ const computeMerkleTree = async ({
         // This means each individual tree may have a good number of leaves filled with zero, but in practice we won't use those leaves anyway.
         // Because the time range they correspond to would go beyond the time range of generated oto lifespan.
         if (index < interlaced.length) {
-          leaves[j] = interlaced.subarray(index, index + 32)
+          leaves.set(interlaced.subarray(index, index + 32), j * 32)
         }
         observerInnerLeaves(j + i * perTreeWidth * 2)
       }
@@ -242,6 +242,14 @@ const computeEOTP = async ({ otp, otp2, rand = null, hseed, nonce = 0, hasher = 
     buffer.set(rb, 28)
   }
   return hasher(buffer)
+}
+
+const computeInnerEOTP = async ({ otps }) => {
+  const buffer = new Uint8Array(otps.length * 4)
+  for (let i = 0; i < otps.length; i++) {
+    buffer.set(otps[i], i * 4)
+  }
+  return fastSHA256(buffer)
 }
 
 const computeRecoveryHash = ({ randomSeed, hseed }) => {
@@ -409,22 +417,42 @@ const computeTransferDomainHash = ({
 
 const computeForwardHash = ({ address }) => computeSetRecoveryAddressHash({ address })
 
+const encodeDisplaceData = ({core, innerCores, identificationKey}) =>{
+  return Util.abi.encodeParameters(['tuple(bytes32,uint8,uint8,uint32,uint32,uint8)', 'tuple[](bytes32,uint8,uint8,uint32,uint32,uint8)', 'bytes'], [core, innerCores, identificationKey])
+}
+
+// TODO: organize this and make it hierarchical
 module.exports = {
-  computeCommitHash,
+  // creation
   computeMerkleTree,
+
+  // operation
+  computeEOTP,
+  selectMerkleNeighbors,
+  computeInnerEOTP,
+  recoverRandomness,
+
+  // commit - core
+  computeCommitHash,
+  computeVerificationHash,
+
+  // commit - general operations
+  computeGeneralOperationHash,
+  computeDataHash,
+
+  // commit - specific operations
   computeTransferHash,
   computeRecoveryHash,
   computeSetRecoveryAddressHash,
-  selectMerkleNeighbors,
-  computeEOTP,
-  bruteforceEOTP,
-  computeTokenKey,
-  computeGeneralOperationHash,
-  computeDataHash,
-  computeVerificationHash,
-  recoverRandomness,
-  encodeBuyDomainData,
   computeBuyDomainCommitHash,
   computeForwardHash,
-  computeTransferDomainHash
+  computeTransferDomainHash,
+
+  // operation - encoders
+  encodeBuyDomainData,
+  encodeDisplaceData,
+  computeTokenKey,
+
+  // deprecated
+  bruteforceEOTP,
 }
