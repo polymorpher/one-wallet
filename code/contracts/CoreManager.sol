@@ -48,6 +48,7 @@ library CoreManager {
             identificationKeys.push(newIdentificationKey);
         }
         oldCores.push(oldCore);
+        core.root = newCore.root;
         core.t0 = newCore.t0;
         core.height = newCore.height;
         core.interval = newCore.interval;
