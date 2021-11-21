@@ -38,8 +38,9 @@ const deploy = async (initArgs) => {
 const ONE_ETH = unit.toWei('1', 'ether')
 
 const makeCores = async ({
-  seed = '0xdeadbeef1234567890123456789012',
-  seed2 = '0x1234567890deadbeef',
+  salt = 0,
+  seed = '0x' + (new BN(ONEUtil.hexStringToBytes('0xdeadbeef1234567890123456789012')).addn(salt).toString('hex')),
+  seed2 = '0x' + (new BN(ONEUtil.hexStringToBytes('0x1234567890deadbeef123456789012')).addn(salt).toString('hex')),
   maxOperationsPerInterval = 1,
   doubleOtp = false,
   effectiveTime,
@@ -124,6 +125,7 @@ const makeCores = async ({
 }
 
 const createWallet = async ({
+  salt,
   seed,
   effectiveTime,
   duration,
@@ -136,7 +138,7 @@ const createWallet = async ({
   spendingInterval = 86400,
   backlinks = []
 }) => {
-  const { core, innerCores, identificationKeys, vars } = await makeCores({ seed, maxOperationsPerInterval, doubleOtp, effectiveTime, duration, randomness, hasher })
+  const { core, innerCores, identificationKeys, vars } = await makeCores({ salt, seed, maxOperationsPerInterval, doubleOtp, effectiveTime, duration, randomness, hasher })
   const initArgs = [
     core,
     [ new BN(spendingLimit), new BN(0), new BN(0), new BN(spendingInterval), new BN(0), new BN(spendingLimit) ],
