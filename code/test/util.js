@@ -1,12 +1,10 @@
-const { ONEWallet } = require('../extensions/contracts')
 const { loadContracts } = require('../extensions/loader')
-
 const OW = require('../lib/onewallet')
 const OWUtil = require('../lib/util')
 const config = require('../config')
 const base32 = require('hi-base32')
 const BN = require('bn.js')
-const { once } = require('lodash')
+const unit = require('ethjs-unit')
 const INTERVAL = 30000
 const Logger = {
   debug: (...args) => {
@@ -34,21 +32,33 @@ const deploy = async (initArgs) => {
   return Factories['ONEWalletFactoryHelper'].deploy(initArgs)
 }
 
-const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval, lastResortAddress, spendingLimit, doubleOtp, randomness = 0, hasher = OWUtil.sha256b,
-  spendingInterval = 86400, backlinks = []
-}) => {
-  const byteSeed = OWUtil.stringToBytes('0xdeadbeef1234567890123456789012')
+const ONE_ETH = unit.toWei('1', 'ether')
+
+const makeCores = async ({
+  seed = '0xdeadbeef1234567890123456789012',
+  seed2 = '0x1234567890deadbeef',
+  maxOperationsPerInterval = 1,
+  doubleOtp = false,
+  effectiveTime,
+  duration,
+  randomness = 0,
+  hasher = OWUtil.sha256b }) => {
+  let byteSeed = seed
+  if (typeof seed === 'string') {
+    byteSeed = OWUtil.stringToBytes('0xdeadbeef1234567890123456789012')
+  }
   const otpSeed = OWUtil.base32Encode(byteSeed)
-  console.log(otpSeed)
   const identificationKeys = [OWUtil.getIdentificationKey(byteSeed, true)]
   let otpSeed2
-  let byteSeed2
+  let byteSeed2 = seed2
   if (doubleOtp) {
-    byteSeed2 = OWUtil.stringToBytes('0x1234567890deadbeef')
+    if (typeof seed2 === 'string') {
+      byteSeed2 = OWUtil.stringToBytes('0x1234567890deadbeef')
+    }
     otpSeed2 = base32.encode(byteSeed2)
   }
   effectiveTime = Math.floor(effectiveTime / INTERVAL) * INTERVAL
-  const { seed, seed2, hseed, root, leaves, layers, maxOperationsPerInterval: slotSize, randomnessResults, counter, innerTrees } = await OW.computeMerkleTree({
+  const { seed: computedSeed, seed2: computedSeed2, hseed, root, leaves, layers, maxOperationsPerInterval: slotSize, randomnessResults, counter, innerTrees } = await OW.computeMerkleTree({
     otpSeed,
     otpSeed2,
     effectiveTime,
@@ -67,18 +77,64 @@ const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval,
   const interval = INTERVAL / 1000
 
   const innerCores = []
-  for (let [index, innerTree] of innerTrees.entries()) {
+  for (let innerTree of innerTrees) {
     const { root: innerRoot, layers: innerLayers } = innerTree
     const innerInterval = INTERVAL * 6
-    const innerLifespan = duration / innerInterval
-    innerCores.push([innerRoot, innerLayers.height, innerInterval, t0 + index, innerLifespan, slotSize])
+    const innerLifespan = Math.floor(duration / innerInterval)
+    const innerT0 = Math.floor(effectiveTime / innerInterval)
+    innerCores.push([innerRoot, innerLayers.length, innerInterval / 1000, innerT0, innerLifespan, slotSize])
+
     if (!innerRoot) {
       throw new Error(`inner core has empty root: ${JSON.stringify(innerTree)}`)
     }
   }
+  Logger.debug('Inner Cores:', innerCores)
 
+  const core = [root, height, interval, t0, lifespan, slotSize]
+
+  const vars = {
+    otpSeed,
+    otpSeed2,
+    byteSeed,
+    byteSeed2,
+    seed: computedSeed,
+    seed2: computedSeed2,
+    hseed,
+    randomness,
+    randomnessResults,
+    counter,
+    root, // uint8array
+    client: {
+      leaves, // uint8array packed altogether
+      layers, // uint8array[] each layer is packed uint8array
+      root,
+      innerTrees
+    },
+    contract: {
+      slotSize, // maxOperationsPerInterval
+      t0, // starting index
+      lifespan, // number of indices before the contract expires
+      interval // seconds
+    } }
+
+  return { core, innerCores, identificationKeys, vars }
+}
+
+const createWallet = async ({
+  effectiveTime,
+  duration,
+  lastResortAddress,
+  maxOperationsPerInterval = 1,
+  spendingLimit = ONE_ETH,
+  doubleOtp = false,
+  randomness = 0,
+  hasher = OWUtil.sha256b,
+  spendingInterval = 86400,
+  backlinks = []
+}) => {
+  const { core, innerCores, identificationKeys, vars } = makeCores({ maxOperationsPerInterval, doubleOtp, effectiveTime, duration, randomness, hasher })
   const initArgs = [
-    [root, height, interval, t0, lifespan, slotSize],
+    core,
     [ new BN(spendingLimit), new BN(0), new BN(0), new BN(spendingInterval), new BN(0), new BN(spendingLimit) ],
     lastResortAddress,
     backlinks,
@@ -101,27 +157,7 @@ const createWallet = async ({ effectiveTime, duration, maxOperationsPerInterval,
     identificationKeys,
     address,
     wallet: new Wallet(address),
-    otpSeed,
-    otpSeed2,
-    byteSeed,
-    byteSeed2,
-    seed,
-    seed2,
-    hseed,
-    randomnessResults,
-    counter,
-    root, // uint8array
-    client: {
-      leaves, // uint8array packed altogether
-      layers, // uint8array[] each layer is packed uint8array
-      innerTrees,
-    },
-    contract: {
-      slotSize, // maxOperationsPerInterval
-      t0, // starting index
-      lifespan, // number of indices before the contract expires
-      interval // seconds
-    }
+    ...vars
   }
 }
 
@@ -158,6 +194,7 @@ const increaseTime = async (seconds) => {
 module.exports = {
   increaseTime,
   createWallet,
+  makeCores,
   Logger,
   getFactory: (factory) => Factories[factory]
 }
