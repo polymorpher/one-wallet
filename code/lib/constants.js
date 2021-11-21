@@ -37,6 +37,9 @@ module.exports = {
     REVOKE: 20,
     CALL: 21,
     BATCH: 22,
+    NOOP: 23,
+    CHANGE_SPENDING_LIMIT: 24,
+    JUMP_SPENDING_LIMIT: 25,
 
     0: 'TRACK',
     1: 'UNTRACK',
@@ -60,7 +63,10 @@ module.exports = {
     19: 'SIGN',
     20: 'REVOKE',
     21: 'CALL',
-    22: 'BATCH'
+    22: 'BATCH',
+    23: 'NOOP',
+    24: 'CHANGE_SPENDING_LIMIT',
+    25: 'JUMP_SPENDING_LIMIT'
   },
   EmptyAddress: '0x0000000000000000000000000000000000000000',
   EmptyBech32Address: 'one1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqquzw7vz',
@@ -84,7 +90,7 @@ module.exports = {
     address: '0x0000000000000000000000000000000000000000', neighbors: [], index: 0, eotp: '0x0000000000000000000000000000000000000000000000000000000000000000',
   },
   get NullOperationParams () {
-    return { operationType: this.OperationType.TRANSFER, tokenType: this.TokenType.NONE, contractAddress: this.EmptyAddress, tokenId: 0, dest: this.EmptyAddress, amount: 0 }
+    return { operationType: this.OperationType.NOOP, tokenType: this.TokenType.NONE, contractAddress: this.EmptyAddress, tokenId: 0, dest: this.EmptyAddress, amount: 0 }
   },
   Sushi: {
     ROUTER: '0x1b02da8cb0d097eb8d57a175b88c7d8b47997506',
