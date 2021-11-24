@@ -17,7 +17,7 @@ const NOW = Math.floor(Date.now() / (INTERVAL)) * INTERVAL - 5000
 contract('ONEWallet', (accounts) => {
   const ONE_ETH = unit.toWei('1', 'ether')
   const ONE_DIME = unit.toWei('0.1', 'ether')
-  const duration = INTERVAL * 24
+  const duration = INTERVAL * 2 * 60 * 24 * 4
   const effectiveTime = Math.floor(NOW / INTERVAL6) * INTERVAL6 - duration / 2
   let snapshotId
   beforeEach(async function () {
@@ -151,7 +151,29 @@ contract('ONEWallet', (accounts) => {
       const spendingState = await wallet.getSpendingState()
       Logger.debug(spendingState)
       Logger.debug(tx)
-      assert.equal(spendingState.spendingLimit.toString(), newLimit.toString(), 'New limit still should be 2 ETH')
+      assert.equal(spendingState.spendingLimit.toString(), newLimit.toString(), 'New limit now should be 2 ETH')
+    }
+    {
+      await TestUtil.increaseTime(24 * 3600)
+      const newLimit = ONE_ETH.muln(4)
+      const { eotp, index } = await TestUtil.getEOTP({ seed, hseed, effectiveTime, timeOffset: 240 * 1000 + 24 * 3600 * 1000 })
+      const { tx } = await TestUtil.commitReveal({
+        Debugger,
+        layers,
+        index,
+        eotp,
+        paramsHash: ONEWallet.computeAmountHash,
+        commitParams: { amount: newLimit },
+        revealParams: {
+          amount: newLimit.toString(),
+          operationType: ONEConstants.OperationType.CHANGE_SPENDING_LIMIT
+        },
+        wallet
+      })
+      const spendingState = await wallet.getSpendingState()
+      Logger.debug(spendingState)
+      Logger.debug(tx)
+      assert.equal(spendingState.spendingLimit.toString(), newLimit.toString(), 'New limit should be 4 ETH')
     }
   })
 })
