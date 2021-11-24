@@ -38,9 +38,9 @@ const deploy = async (initArgs) => {
 const ONE_ETH = unit.toWei('1', 'ether')
 
 const makeCores = async ({
-  salt = 0,
-  seed = '0x' + (new BN(ONEUtil.hexStringToBytes('0xdeadbeef1234567890123456789012')).addn(salt).toString('hex')),
-  seed2 = '0x' + (new BN(ONEUtil.hexStringToBytes('0x1234567890deadbeef123456789012')).addn(salt).toString('hex')),
+  salt = new BN(0),
+  seed = '0x' + (new BN(ONEUtil.hexStringToBytes('0xdeadbeef1234567890123456789012')).add(salt).toString('hex')),
+  seed2 = '0x' + (new BN(ONEUtil.hexStringToBytes('0x1234567890deadbeef123456789012')).add(salt).toString('hex')),
   maxOperationsPerInterval = 1,
   doubleOtp = false,
   effectiveTime,
@@ -166,20 +166,14 @@ const createWallet = async ({
   }
 }
 
-const getClient = () => {
-  return new Promise((resolve, reject) => {
-    web3.eth.getNodeInfo((err, res) => {
-      if (err !== null) return reject(err)
-      return resolve(res)
-    })
-  })
+const getClient = async () => {
+  return web3.eth.getNodeInfo()
 }
 
 const increaseTime = async (seconds) => {
   const client = await getClient()
   if (client.indexOf('TestRPC') === -1) {
-    console.warning('Client is not ganache-cli and cannot forward time')
-    return
+    throw new Error('Client is not ganache-cli and cannot forward time')
   }
 
   await web3.currentProvider.send({
@@ -187,14 +181,49 @@ const increaseTime = async (seconds) => {
     method: 'evm_increaseTime',
     params: [seconds],
     id: 0,
-  })
+  }, (err) => err && console.error(err))
 
   await web3.currentProvider.send({
     jsonrpc: '2.0',
     method: 'evm_mine',
     params: [],
     id: 0,
+  }, (err) => err && console.error(err))
+
+  console.log('EVM increased time by', seconds)
+}
+
+const snapshot = async () => {
+  console.log('Taking EVM Snapshot')
+  return new Promise((resolve, reject) => {
+    web3.currentProvider.send({ jsonrpc: '2.0', method: 'evm_snapshot' },
+      (err, { result } = {}) => {
+        if (err) {
+          reject(err)
+        }
+        resolve(result)
+      })
   })
+}
+
+const revert = async (id) => {
+  console.log(`EVM reverting to ${id}`)
+  return new Promise((resolve, reject) => {
+    web3.currentProvider.send({ jsonrpc: '2.0', method: 'evm_revert', params: [id] }, (err, { result } = {}) => {
+      if (err) {
+        reject(err)
+      }
+      resolve(result)
+    })
+  })
+}
+
+const getEOTP = async ({ seed, hseed, effectiveTime, timeOffset }) => {
+  const counter = timeOffset && Math.floor((Date.now() + timeOffset) / INTERVAL)
+  const otp = ONEUtil.genOTP({ seed, counter })
+  const index = ONEUtil.timeToIndex({ effectiveTime, time: timeOffset && (Date.now() + timeOffset) })
+  const eotp = await ONE.computeEOTP({ otp, hseed })
+  return { index, eotp }
 }
 
 const commitReveal = async ({ layers, Debugger, index, eotp, paramsHash, commitParams, revealParams, wallet }) => {
@@ -246,5 +275,8 @@ module.exports = {
   Logger,
   getFactory: (factory) => Factories[factory],
   commitReveal,
-  printInnerTrees
+  printInnerTrees,
+  getEOTP,
+  snapshot,
+  revert
 }

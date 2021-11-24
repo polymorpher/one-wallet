@@ -361,6 +361,13 @@ const computeDataHash = ({ data }) => {
   return { hash: keccak(input), bytes: input }
 }
 
+const computeAmountHash = ({ amount }) => {
+  const amountBytes = new BN(amount).toArrayLike(Uint8Array, 'be', 32)
+  const input = new Uint8Array(32)
+  input.set(amountBytes)
+  return { hash: keccak(input), bytes: amountBytes }
+}
+
 // address, hex string
 const computeVerificationHash = ({ paramsHash, eotp }) => {
   const input = new Uint8Array(64)
@@ -448,6 +455,7 @@ module.exports = {
   computeBuyDomainCommitHash,
   computeForwardHash,
   computeTransferDomainHash,
+  computeAmountHash,
 
   // operation - encoders
   encodeBuyDomainData,

@@ -7,6 +7,7 @@ const ONEConstants = require('../lib/constants')
 const Flow = require('../lib/api/flow')
 const ONEWallet = require('../lib/onewallet')
 const crypto = require('crypto')
+const BN = require('bn.js')
 
 const INTERVAL = 30000
 const DURATION = INTERVAL * 12
@@ -38,7 +39,7 @@ contract('ONEWallet', (accounts) => {
         lifespan,
         interval
       } } = await TestUtil.createWallet({
-      salt: 1,
+      salt: new BN(1),
       effectiveTime: EFFECTIVE_TIME,
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
@@ -74,7 +75,7 @@ contract('ONEWallet', (accounts) => {
   it('Wallet_CommitReveal: must commit and reveal a transfer successfully', async () => {
     const purse = web3.eth.accounts.create()
     const { wallet, seed, hseed, root, client: { layers } } = await TestUtil.createWallet({
-      salt: 2,
+      salt: new BN(2),
       effectiveTime: EFFECTIVE_TIME,
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
@@ -112,7 +113,7 @@ contract('ONEWallet', (accounts) => {
   it('Wallet_spendingLimit: must respect daily limit', async () => {
     const purse = web3.eth.accounts.create()
     const { seed, hseed, wallet, client: { layers } } = await TestUtil.createWallet({
-      salt: 3,
+      salt: new BN(3),
       effectiveTime: EFFECTIVE_TIME,
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
@@ -149,7 +150,7 @@ contract('ONEWallet', (accounts) => {
   it('Wallet_Recover: must recover funds to recovery address without using otp', async () => {
     const purse = web3.eth.accounts.create()
     const { hseed, wallet, client: { layers } } = await TestUtil.createWallet({
-      salt: 4,
+      salt: new BN(4),
       effectiveTime: EFFECTIVE_TIME,
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
