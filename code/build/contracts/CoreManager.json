@@ -10129,7 +10129,7 @@
         4179
       ],
       "SpendingManager": [
-        8096
+        8121
       ]
     },
     "id": 2304,
@@ -13203,7 +13203,7 @@
         4179
       ],
       "SpendingManager": [
-        8096
+        8121
       ]
     },
     "id": 2304,
@@ -16270,7 +16270,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.2",
-  "updatedAt": "2021-11-21T17:05:05.782Z",
+  "updatedAt": "2021-11-24T12:47:57.635Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

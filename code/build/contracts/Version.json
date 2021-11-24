@@ -15,15 +15,15 @@
     "absolutePath": "project:/contracts/Version.sol",
     "exportedSymbols": {
       "Version": [
-        9756
+        9929
       ]
     },
-    "id": 9757,
+    "id": 9930,
     "license": "Apache-2.0",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 9749,
+        "id": 9922,
         "literals": [
           "solidity",
           "^",
@@ -39,9 +39,9 @@
         "contractDependencies": [],
         "contractKind": "library",
         "fullyImplemented": true,
-        "id": 9756,
+        "id": 9929,
         "linearizedBaseContracts": [
-          9756
+          9929
         ],
         "name": "Version",
         "nameLocation": "104:7:27",
@@ -49,12 +49,12 @@
         "nodes": [
           {
             "constant": true,
-            "id": 9752,
+            "id": 9925,
             "mutability": "constant",
             "name": "majorVersion",
             "nameLocation": "133:12:27",
             "nodeType": "VariableDeclaration",
-            "scope": 9756,
+            "scope": 9929,
             "src": "117:34:27",
             "stateVariable": true,
             "storageLocation": "default",
@@ -63,7 +63,7 @@
               "typeString": "uint32"
             },
             "typeName": {
-              "id": 9750,
+              "id": 9923,
               "name": "uint32",
               "nodeType": "ElementaryTypeName",
               "src": "117:6:27",
@@ -74,7 +74,7 @@
             },
             "value": {
               "hexValue": "307866",
-              "id": 9751,
+              "id": 9924,
               "isConstant": false,
               "isLValue": false,
               "isPure": true,
@@ -92,12 +92,12 @@
           },
           {
             "constant": true,
-            "id": 9755,
+            "id": 9928,
             "mutability": "constant",
             "name": "minorVersion",
             "nameLocation": "217:12:27",
             "nodeType": "VariableDeclaration",
-            "scope": 9756,
+            "scope": 9929,
             "src": "201:34:27",
             "stateVariable": true,
             "storageLocation": "default",
@@ -106,7 +106,7 @@
               "typeString": "uint32"
             },
             "typeName": {
-              "id": 9753,
+              "id": 9926,
               "name": "uint32",
               "nodeType": "ElementaryTypeName",
               "src": "201:6:27",
@@ -117,7 +117,7 @@
             },
             "value": {
               "hexValue": "307831",
-              "id": 9754,
+              "id": 9927,
               "isConstant": false,
               "isLValue": false,
               "isPure": true,
@@ -134,7 +134,7 @@
             "visibility": "internal"
           }
         ],
-        "scope": 9757,
+        "scope": 9930,
         "src": "96:194:27",
         "usedErrors": []
       }
@@ -145,15 +145,15 @@
     "absolutePath": "project:/contracts/Version.sol",
     "exportedSymbols": {
       "Version": [
-        9756
+        9929
       ]
     },
-    "id": 9757,
+    "id": 9930,
     "license": "Apache-2.0",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 9749,
+        "id": 9922,
         "literals": [
           "solidity",
           "^",
@@ -169,9 +169,9 @@
         "contractDependencies": [],
         "contractKind": "library",
         "fullyImplemented": true,
-        "id": 9756,
+        "id": 9929,
         "linearizedBaseContracts": [
-          9756
+          9929
         ],
         "name": "Version",
         "nameLocation": "104:7:27",
@@ -179,12 +179,12 @@
         "nodes": [
           {
             "constant": true,
-            "id": 9752,
+            "id": 9925,
             "mutability": "constant",
             "name": "majorVersion",
             "nameLocation": "133:12:27",
             "nodeType": "VariableDeclaration",
-            "scope": 9756,
+            "scope": 9929,
             "src": "117:34:27",
             "stateVariable": true,
             "storageLocation": "default",
@@ -193,7 +193,7 @@
               "typeString": "uint32"
             },
             "typeName": {
-              "id": 9750,
+              "id": 9923,
               "name": "uint32",
               "nodeType": "ElementaryTypeName",
               "src": "117:6:27",
@@ -204,7 +204,7 @@
             },
             "value": {
               "hexValue": "307866",
-              "id": 9751,
+              "id": 9924,
               "isConstant": false,
               "isLValue": false,
               "isPure": true,
@@ -222,12 +222,12 @@
           },
           {
             "constant": true,
-            "id": 9755,
+            "id": 9928,
             "mutability": "constant",
             "name": "minorVersion",
             "nameLocation": "217:12:27",
             "nodeType": "VariableDeclaration",
-            "scope": 9756,
+            "scope": 9929,
             "src": "201:34:27",
             "stateVariable": true,
             "storageLocation": "default",
@@ -236,7 +236,7 @@
               "typeString": "uint32"
             },
             "typeName": {
-              "id": 9753,
+              "id": 9926,
               "name": "uint32",
               "nodeType": "ElementaryTypeName",
               "src": "201:6:27",
@@ -247,7 +247,7 @@
             },
             "value": {
               "hexValue": "307831",
-              "id": 9754,
+              "id": 9927,
               "isConstant": false,
               "isLValue": false,
               "isPure": true,
@@ -264,7 +264,7 @@
             "visibility": "internal"
           }
         ],
-        "scope": 9757,
+        "scope": 9930,
         "src": "96:194:27",
         "usedErrors": []
       }
@@ -277,7 +277,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.2",
-  "updatedAt": "2021-11-14T13:19:56.876Z",
+  "updatedAt": "2021-11-24T12:47:57.866Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

@@ -1196,10 +1196,10 @@
         2824
       ],
       "IONEWallet": [
-        4137
+        4179
       ],
       "SpendingManager": [
-        8053
+        8121
       ]
     },
     "id": 868,
@@ -1236,7 +1236,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 868,
-        "sourceUnit": 4138,
+        "sourceUnit": 4180,
         "src": "86:26:10",
         "symbolAliases": [],
         "unitAlias": ""
@@ -1249,7 +1249,7 @@
               "id": 766,
               "name": "IONEWallet",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 4137,
+              "referencedDeclaration": 4179,
               "src": "303:10:10"
             },
             "id": 767,
@@ -1269,7 +1269,7 @@
         "id": 867,
         "linearizedBaseContracts": [
           867,
-          4137
+          4179
         ],
         "name": "AbstractONEWallet",
         "nameLocation": "282:17:10",
@@ -1277,7 +1277,7 @@
         "nodes": [
           {
             "baseFunctions": [
-              3925
+              3967
             ],
             "body": {
               "id": 778,
@@ -1413,7 +1413,7 @@
           },
           {
             "baseFunctions": [
-              3968
+              4010
             ],
             "body": {
               "id": 799,
@@ -1645,7 +1645,7 @@
           },
           {
             "baseFunctions": [
-              4000
+              4042
             ],
             "body": {
               "id": 818,
@@ -1869,7 +1869,7 @@
           },
           {
             "baseFunctions": [
-              4055
+              4097
             ],
             "body": {
               "id": 849,
@@ -2246,7 +2246,7 @@
           },
           {
             "baseFunctions": [
-              3936
+              3978
             ],
             "body": {
               "id": 865,
@@ -2452,10 +2452,10 @@
         2824
       ],
       "IONEWallet": [
-        4137
+        4179
       ],
       "SpendingManager": [
-        8053
+        8121
       ]
     },
     "id": 868,
@@ -2492,7 +2492,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 868,
-        "sourceUnit": 4138,
+        "sourceUnit": 4180,
         "src": "86:26:10",
         "symbolAliases": [],
         "unitAlias": ""
@@ -2505,7 +2505,7 @@
               "id": 766,
               "name": "IONEWallet",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 4137,
+              "referencedDeclaration": 4179,
               "src": "303:10:10"
             },
             "id": 767,
@@ -2525,7 +2525,7 @@
         "id": 867,
         "linearizedBaseContracts": [
           867,
-          4137
+          4179
         ],
         "name": "AbstractONEWallet",
         "nameLocation": "282:17:10",
@@ -2533,7 +2533,7 @@
         "nodes": [
           {
             "baseFunctions": [
-              3925
+              3967
             ],
             "body": {
               "id": 778,
@@ -2669,7 +2669,7 @@
           },
           {
             "baseFunctions": [
-              3968
+              4010
             ],
             "body": {
               "id": 799,
@@ -2901,7 +2901,7 @@
           },
           {
             "baseFunctions": [
-              4000
+              4042
             ],
             "body": {
               "id": 818,
@@ -3125,7 +3125,7 @@
           },
           {
             "baseFunctions": [
-              4055
+              4097
             ],
             "body": {
               "id": 849,
@@ -3502,7 +3502,7 @@
           },
           {
             "baseFunctions": [
-              3936
+              3978
             ],
             "body": {
               "id": 865,
@@ -3704,7 +3704,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.2",
-  "updatedAt": "2021-11-15T12:09:38.140Z",
+  "updatedAt": "2021-11-24T12:47:57.613Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

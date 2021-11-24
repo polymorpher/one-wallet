@@ -8,6 +8,26 @@ import "./Recovery.sol";
 
 library Reveal {
     using CommitManager for CommitManager.CommitState;
+
+    function isDataOnlyOperation(Enums.OperationType op) pure internal returns (bool){
+        return op == Enums.OperationType.BACKLINK_ADD ||
+        op == Enums.OperationType.BACKLINK_DELETE ||
+        op == Enums.OperationType.BACKLINK_OVERRIDE ||
+        op == Enums.OperationType.DISPLACE ||
+        op == Enums.OperationType.RECOVER;
+        // Data does not contain parameters. It is used for privacy reasons
+    }
+
+    function isDestOnlyOperation(Enums.OperationType op) pure internal returns (bool){
+        return op == Enums.OperationType.SET_RECOVERY_ADDRESS ||
+        op == Enums.OperationType.FORWARD;
+    }
+
+    function isAmountOnlyOperation(Enums.OperationType op) pure internal returns (bool){
+        return op == Enums.OperationType.CHANGE_SPENDING_LIMIT ||
+        op == Enums.OperationType.JUMP_SPENDING_LIMIT;
+    }
+
     /// Provides commitHash, paramsHash, and verificationHash given the parameters
     function getRevealHash(IONEWallet.AuthParams memory auth, IONEWallet.OperationParams memory op) pure public returns (bytes32, bytes32) {
         bytes32 hash = keccak256(bytes.concat(auth.neighbors[0], bytes32(bytes4(auth.indexWithNonce)), auth.eotp));
@@ -15,16 +35,12 @@ library Reveal {
         // Perhaps a better way to do this is simply using the general paramsHash (in else branch) to handle all cases. We are holding off from doing that because that would be a drastic change and it would result in a lot of work for backward compatibility reasons.
         if (op.operationType == Enums.OperationType.TRANSFER) {
             paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(op.dest))), bytes32(op.amount)));
-        } else if (op.operationType == Enums.OperationType.RECOVER) {
+        } else if (isAmountOnlyOperation(op.operationType)) {
+            paramsHash = keccak256(bytes.concat(bytes32(op.amount)));
+        } else if (isDataOnlyOperation(op.operationType)) {
             paramsHash = keccak256(op.data);
-        } else if (op.operationType == Enums.OperationType.SET_RECOVERY_ADDRESS) {
+        } else if (isDestOnlyOperation(op.operationType)) {
             paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(op.dest)))));
-        } else if (op.operationType == Enums.OperationType.FORWARD) {
-            paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(op.dest)))));
-        } else if (op.operationType == Enums.OperationType.BACKLINK_ADD || op.operationType == Enums.OperationType.BACKLINK_DELETE || op.operationType == Enums.OperationType.BACKLINK_OVERRIDE) {
-            paramsHash = keccak256(op.data);
-        } else if (op.operationType == Enums.OperationType.DISPLACE) {
-            paramsHash = keccak256(op.data);
         } else if (op.operationType == Enums.OperationType.RECOVER_SELECTED_TOKENS) {
             paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(op.dest))), op.data));
         } else {
