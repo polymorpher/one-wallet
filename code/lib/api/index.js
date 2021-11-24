@@ -668,11 +668,11 @@ const api = {
       })
     },
 
-    reveal: async ({ address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data = '0x' }) => {
+    reveal: async ({ address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data = '0x', majorVersion, minorVersion }) => {
       if (data.constructor === Uint8Array) {
         data = ONEUtil.hexString(data)
       }
-      const { data: ret } = await base.post('/reveal', { address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
+      const { data: ret } = await base.post('/reveal', { address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data, majorVersion, minorVersion })
       return ret
     },
     retire: async ({ address }) => {
