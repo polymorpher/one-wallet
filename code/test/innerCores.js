@@ -19,7 +19,7 @@ contract('ONEWallet', (accounts) => {
   const DURATIONS = MULTIPLES.map(e => INTERVAL * e) // need to be greater than 16 to trigger innerCore generations
   const EFFECTIVE_TIMES = DURATIONS.map(d => Math.floor(NOW / INTERVAL) * INTERVAL - d / 2)
 
-  const testForTime = async (multiple, effectiveTime, duration, seedBase = '0xdeadbeef1234567890023456789012', numTrees = 6) => {
+  const testForTime = async (multiple, effectiveTime, duration, seedBase = '0xdeadbeef1234567890023456789012', numTrees = 6, checkDisplacementSuccess = false) => {
     console.log('testing:', { multiple, effectiveTime, duration })
     const purse = web3.eth.accounts.create()
     const creationSeed = '0x' + (new BN(ONEUtil.hexStringToBytes(seedBase)).addn(duration).toString('hex'))
@@ -85,7 +85,7 @@ contract('ONEWallet', (accounts) => {
         wallet
       })
       const successLog = tx.logs.find(log => log.event === 'CoreDisplaced') || tx.receipt.rawLogs.find(log => log.topics.includes('0x0b6dd4942da3070d72e5249990ad2b2703efd3f3a99c79cd0ce1a8eb50f8fdf4'))
-      if (!successLog) {
+      if (checkDisplacementSuccess && !successLog) {
         console.error(tx, authParams, revealParams)
         console.log(tx.receipt.rawLogs)
         throw new Error('CoreDisplaced log missing')
@@ -100,7 +100,7 @@ contract('ONEWallet', (accounts) => {
     }
   })
   it('InnerCores_New: must authenticate otp from new core after displacement', async () => {
-    const { wallet, newSeed, newEffectiveTime, newHseed, newLayers } = await testForTime(MULTIPLES[0], EFFECTIVE_TIMES[0], DURATIONS[0], '0xdeadbeef1234567890123456789012', 1)
+    const { wallet, newSeed, newEffectiveTime, newHseed, newLayers } = await testForTime(MULTIPLES[0], EFFECTIVE_TIMES[0], DURATIONS[0], '0xdeadbeef1234567890123456789012', 1, true)
     console.log('newSeed', newSeed)
     const counter = Math.floor(NOW / INTERVAL)
     const otp = ONEUtil.genOTP({ seed: newSeed, counter })
