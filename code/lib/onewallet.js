@@ -42,6 +42,7 @@ const computeMerkleTree = async ({
   maxOperationsPerInterval = Math.min(16, maxOperationsPerInterval)
   const height = Math.ceil(Math.log2(duration / otpInterval * maxOperationsPerInterval)) + 1
   const n = Math.pow(2, height - 1)
+  const n0 = Math.ceil(duration / otpInterval)
   if (n < 16) {
     buildInnerTrees = false
   }
@@ -114,9 +115,9 @@ const computeMerkleTree = async ({
 
   // prepare inner trees - stage 2
 
-  const perTreeHeight = Math.ceil(Math.log2(Math.ceil((n - 6 + 1) / 6))) + 1 // (n - 6 + 1) == interlaced.length / 32
+  const perTreeHeight = Math.ceil(Math.log2(Math.ceil((n0 - 6 + 1) / 6))) + 1 // (n - 6 + 1) == interlaced.length / 32
   const perTreeWidth = 2 ** (perTreeHeight - 1) // number of leaves for each innerCore tree
-  const totalNumOps = (n - 6 + 1) + perTreeWidth * 6 + (perTreeWidth - 1) * 6
+  const totalNumOps = (n0 - 6 + 1) + perTreeWidth * 6 + (perTreeWidth - 1) * 6
 
   const innerTrees = []
   if (buildInnerTrees) {
@@ -124,7 +125,7 @@ const computeMerkleTree = async ({
     const interlaced = sha256Interlaced(otps, {
       progressObserver: buildProgressObserver(totalNumOps, 2), unitSize: 4, window: 6
     })
-    const observerInnerLeaves = buildProgressObserver(totalNumOps, 2, n - 6 + 1)
+    const observerInnerLeaves = buildProgressObserver(totalNumOps, 2, n0 - 6 + 1)
     for (let i = 0; i < 6; i++) {
       const leaves = new Uint8Array(perTreeWidth * 32)
       for (let j = 0; j < perTreeWidth; j++) {

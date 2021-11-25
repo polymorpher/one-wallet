@@ -111,6 +111,10 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
   }
   const innerCoreTransformed = []
   for (let innerCore of innerCores) {
+    if (innerCore.length > 0) {
+      innerCoreTransformed.push([...innerCore])
+      continue
+    }
     const { root: innerRoot, height: innerHeight, interval: innerInterval, t0: innerT0, lifespan: innertLifespan, slotSize: innerSlotSize } = innerCore
     innerCoreTransformed.push([innerRoot, innerHeight, innerInterval, innerT0, innertLifespan, innerSlotSize])
     if (!innerRoot) {

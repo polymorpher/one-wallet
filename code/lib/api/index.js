@@ -533,8 +533,8 @@ const api = {
   },
 
   relayer: {
-    create: async ({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, spendingInterval, backlinks = [], oldCores = [], innerCores }) => {
-      const { data } = await base.post('/new', { root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, spendingInterval, backlinks, oldCores, innerCores })
+    create: async ({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, spendingInterval, backlinks = [], oldCores = [], innerCores, identificationKeys }) => {
+      const { data } = await base.post('/new', { root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, spendingInterval, backlinks, oldCores, innerCores, identificationKeys })
       return data
     },
     commit: async ({ address, hash, paramsHash, verificationHash }) => {
