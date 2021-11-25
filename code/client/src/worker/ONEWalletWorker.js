@@ -42,6 +42,7 @@ onmessage = async function (event) {
       leaves,
       root,
       layers,
+      innerTrees,
       maxOperationsPerInterval,
     } = await ONE.computeMerkleTree({
       otpSeed: seed,
@@ -66,6 +67,7 @@ onmessage = async function (event) {
         leaves,
         root,
         layers,
+        innerTrees,
         maxOperationsPerInterval,
       }
     })

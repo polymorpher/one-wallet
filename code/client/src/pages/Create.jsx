@@ -100,6 +100,7 @@ const Create = ({ expertMode, showRecovery }) => {
   const [root, setRoot] = useState()
   const [hseed, setHseed] = useState()
   const [layers, setLayers] = useState()
+  const [innerTrees, setInnerTrees] = useState()
   const [slotSize, setSlotSize] = useState(1)
   const [progress, setProgress] = useState(0)
   const [progressStage, setProgressStage] = useState(0)
@@ -135,7 +136,7 @@ const Create = ({ expertMode, showRecovery }) => {
   useEffect(() => {
     if (section === sectionViews.setupOtp && worker) {
       // console.log('Posting to worker. Security parameters:', securityParameters)
-      const t = Math.floor(Date.now() / WalletConstants.interval) * WalletConstants.interval
+      const t = Math.floor(Date.now() / WalletConstants.interval6) * WalletConstants.interval6
       const salt = ONEUtil.hexView(generateOtpSeed())
       setEffectiveTime(t)
       if (worker) {
@@ -165,11 +166,12 @@ const Create = ({ expertMode, showRecovery }) => {
             setProgressStage(stage)
           }
           if (status === 'done') {
-            const { hseed, root, layers, maxOperationsPerInterval } = result
+            const { hseed, root, layers, maxOperationsPerInterval, innerTrees } = result
             setRoot(root)
             setHseed(hseed)
             setLayers(layers)
             setSlotSize(maxOperationsPerInterval)
+            setInnerTrees(innerTrees)
             // console.log('Received created wallet from worker:', result)
           }
         }
@@ -227,24 +229,37 @@ const Create = ({ expertMode, showRecovery }) => {
     return storage.setItem(ONEUtil.hexView(root), layers)
   }
 
+  const storeInnerLayers = async () => {
+    if (!innerTrees || innerTrees.length === 0) {
+      return Promise.resolve([])
+    }
+    const promises = []
+    for (const { layers: innerLayers, root: innerRoot } of innerTrees) {
+      promises.push(storage.setItem(ONEUtil.hexView(innerRoot), innerLayers))
+    }
+    return Promise.all(promises)
+  }
+
   const deploy = async () => {
     if (!(root && hseed && layers && slotSize)) {
       message.error('Cannot deploy wallet. Error: root is not set.')
       return
     }
-
     // Ensure valid address for both 0x and one1 formats
     const normalizedAddress = util.safeExec(util.normalizedAddress, [lastResortAddress?.value], handleAddressError)
-
     if (!normalizedAddress) {
       return
     }
-
     setDeploying(true)
+
+    const identificationKeys = [ONEUtil.getIdentificationKey(seed, true)]
+    const innerCores = ONEUtil.makeInnerCores({ innerTrees, effectiveTime, duration, slotSize, interval: WalletConstants.interval })
 
     try {
       const { address } = await api.relayer.create({
         root: ONEUtil.hexString(root),
+        identificationKeys,
+        innerCores,
         height: layers.length,
         interval: WalletConstants.interval / 1000,
         t0: effectiveTime / WalletConstants.interval,
@@ -270,10 +285,12 @@ const Create = ({ expertMode, showRecovery }) => {
         minorVersion: ONEConstants.MinorVersion,
         network,
         doubleOtp,
+        innerRoots: innerTrees.map(({ root }) => ONEUtil.hexView(root)),
         ...securityParameters,
         expert: !!expertMode,
       }
       await storeLayers()
+      await storeInnerLayers()
       dispatch(walletActions.updateWallet(wallet))
       dispatch(walletActions.fetchBalanceSuccess({ address, balance: 0 }))
       setAddress(address)
@@ -297,10 +314,10 @@ const Create = ({ expertMode, showRecovery }) => {
 
   useEffect(() => {
     if (section === sectionViews.prepareWallet && !showRecovery &&
-      root && hseed && slotSize && layers) {
+      root && hseed && slotSize && layers && innerTrees) {
       deploy()
     }
-  }, [section, root, hseed, layers, slotSize])
+  }, [section, root, hseed, layers, slotSize, innerTrees])
 
   return (
     <>
