@@ -10,7 +10,7 @@ import WalletConstants from '../constants/wallet'
 import storage from '../storage'
 import { useDispatch, useSelector } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
-import util from '../util'
+import util, { useWindowDimensions } from '../util'
 import { handleAddressError } from '../handler'
 import Paths from '../constants/paths'
 import * as Sentry from '@sentry/browser'
@@ -18,8 +18,10 @@ import AddressInput from '../components/AddressInput'
 import QrCodeScanner from '../components/QrCodeScanner'
 import ScanGASteps from '../components/ScanGASteps'
 import { parseOAuthOTP, parseMigrationPayload } from '../components/OtpTools'
+import WalletCreateProgress from '../components/WalletCreateProgress'
 
 const Restore = () => {
+  const { isMobile, os } = useWindowDimensions()
   const history = useHistory()
   const [section, setSection] = useState(1)
   const network = useSelector(state => state.wallet.network)
@@ -253,12 +255,7 @@ const Restore = () => {
                   }}
                   percent={progress}
                 />
-                <Space direction='vertical'>
-                  <Timeline pending={progressStage < 2 && 'Rebuilding your 1wallet'}>
-                    <Timeline.Item color={progressStage < 1 ? 'grey' : 'green'}>Recomputing proofs for each time interval</Timeline.Item>
-                    <Timeline.Item color={progressStage < 2 ? 'grey' : 'green'}>Preparing hashes for verification</Timeline.Item>
-                  </Timeline>
-                </Space>
+                <WalletCreateProgress progress={progress} isMobile={isMobile} progressStage={progressStage} subtitle='Rebuilding your 1wallet' />
               </Space>
             </>}
         </Space>

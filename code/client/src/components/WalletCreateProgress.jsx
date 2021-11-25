@@ -16,9 +16,10 @@ const WalletCreateProgress = ({ progress, progressStage, isMobile, title, subtit
           percent={progress}
         />
         <Space direction='vertical'>
-          <Timeline pending={progressStage < 2 && (subtitle || 'Securing your keyless 1wallet')}>
-            <Timeline.Item color={progressStage < 1 ? 'grey' : 'green'}>Generating proofs</Timeline.Item>
-            <Timeline.Item color={progressStage < 2 ? 'grey' : 'green'}>Preparing signatures</Timeline.Item>
+          <Timeline pending={progressStage < 3 && (subtitle || 'Securing your keyless 1wallet')}>
+            <Timeline.Item color={progressStage < 1 ? 'grey' : 'green'}>Encrypting codes</Timeline.Item>
+            <Timeline.Item color={progressStage < 2 ? 'grey' : 'green'}>Preparing recovery</Timeline.Item>
+            <Timeline.Item color={progressStage < 3 ? 'grey' : 'green'}>Creating signatures</Timeline.Item>
           </Timeline>
         </Space>
       </Space>
