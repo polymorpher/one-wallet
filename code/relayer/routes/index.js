@@ -59,6 +59,10 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
   backlinks = backlinks || []
   lastResortAddress = lastResortAddress || config.nullAddress
   oldCores = oldCores || []
+  spentAmount = spentAmount || 0
+  lastSpendingInterval = lastSpendingInterval || 0
+  lastLimitAdjustmentTime = lastLimitAdjustmentTime || 0
+  highestSpendingLimit = highestSpendingLimit || spendingLimit
   // lastResortAddress is hex string, 20 bytes
   // dailyLimit is a BN in string form
   if (config.debug || config.verbose) {

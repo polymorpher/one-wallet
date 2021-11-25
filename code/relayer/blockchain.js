@@ -104,7 +104,7 @@ const initCachedContracts = async () => {
         await backOff(async () => {
           let args = []
           if (constructorArguments[libName]) {
-            args = constructorArguments[libName](network)
+            args = constructorArguments[libName](factories, network)
           }
           const instance = await c.new(...args)
           if (!factoryContracts[libName]) {
