@@ -24,6 +24,7 @@ export const deleteWalletLocally = async ({ wallet, wallets, dispatch, history, 
     return
   }
   dispatch(walletActions.deleteWallet(address))
+  dispatch(walletActions.deleteKnownAddress(address))
   if (!wallets) {
     return
   }
