@@ -365,6 +365,22 @@ const utils = {
     return web3utils.toChecksumAddress(utils.hexString(hash.slice(12)))
   },
 
+  makeInnerCores: ({ innerTrees, effectiveTime, duration, interval = 30000, slotSize = 1 }) => {
+    const innerCores = []
+    for (let innerTree of innerTrees) {
+      const { root: innerRoot, layers: innerLayers } = innerTree
+      const innerInterval = interval * 6
+      const innerLifespan = Math.floor(duration / innerInterval)
+      const innerT0 = Math.floor(effectiveTime / innerInterval)
+      innerCores.push([utils.hexString(innerRoot), innerLayers.length, innerInterval / 1000, innerT0, innerLifespan, slotSize])
+
+      if (!innerRoot) {
+        throw new Error(`inner core has empty root: ${JSON.stringify(innerTree)}`)
+      }
+    }
+    return innerCores
+  },
+
   web3utils
 }
 module.exports = utils
