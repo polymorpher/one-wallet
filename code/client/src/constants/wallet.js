@@ -1,6 +1,7 @@
 const ONEConstants = require('../../../lib/constants')
 export default {
   interval: 30 * 1000,
+  interval6: 30 * 1000 * 6,
   defaultDuration: 3600 * 1000 * 24 * 364,
   defaultSpendingLimit: 1000, // ONEs
   defaultSpendingInterval: ONEConstants.DefaultSpendingInterval,
