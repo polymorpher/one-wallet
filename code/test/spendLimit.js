@@ -5,7 +5,6 @@ const ONEDebugger = require('../lib/debug')
 const ONEWallet = require('../lib/onewallet')
 const ONEConstants = require('../lib/constants')
 const BN = require('bn.js')
-const ONE = require('../lib/onewallet')
 const INTERVAL = 30000
 const INTERVAL6 = INTERVAL * 6
 const SLOT_SIZE = 1

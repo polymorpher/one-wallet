@@ -80,18 +80,7 @@ const makeCores = async ({
   const lifespan = duration / INTERVAL
   const interval = INTERVAL / 1000
 
-  const innerCores = []
-  for (let innerTree of innerTrees) {
-    const { root: innerRoot, layers: innerLayers } = innerTree
-    const innerInterval = INTERVAL * 6
-    const innerLifespan = Math.floor(duration / innerInterval)
-    const innerT0 = Math.floor(effectiveTime / innerInterval)
-    innerCores.push([ONEUtil.hexString(innerRoot), innerLayers.length, innerInterval / 1000, innerT0, innerLifespan, slotSize])
-
-    if (!innerRoot) {
-      throw new Error(`inner core has empty root: ${JSON.stringify(innerTree)}`)
-    }
-  }
+  const innerCores = ONEUtil.makeInnerCores({ innerTrees, effectiveTime, duration })
   // Logger.debug('Inner Cores:', innerCores)
 
   const core = [ONEUtil.hexString(root), height, interval, t0, lifespan, slotSize]
