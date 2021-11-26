@@ -83,7 +83,9 @@ const Routes = () => {
     const store = require('./state/store')
     dispatch(walletActions.fetchPrice())
     setInterval(() => {
-      dispatch(walletActions.fetchPrice())
+      if (!document.hidden) {
+        dispatch(walletActions.fetchPrice())
+      }
     }, config.priceRefreshInterval)
     persistStore(store.default, null, () => {
       setRehydrated(true)
