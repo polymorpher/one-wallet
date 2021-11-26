@@ -6,8 +6,8 @@ import {
 import createSagaMiddleware from 'redux-saga'
 import { createBrowserHistory } from 'history'
 import { routerMiddleware } from 'connected-react-router'
-import rootReducer from './rootReducer'
-
+import rootReducer, { rootConfig } from './rootReducer'
+import { crosstab } from './crosstab'
 // Create a history of your choosing (we're using a browser history in this case).
 export const history = createBrowserHistory()
 
@@ -25,5 +25,6 @@ const store = createStore(
     )
   )
 )
+crosstab(store, rootConfig, { blocklist: ['router'] })
 
 export default store

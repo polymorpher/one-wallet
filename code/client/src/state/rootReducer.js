@@ -12,7 +12,7 @@ const storage = localForage.createInstance({
   storeName: 'ONEWalletState'
 })
 
-const rootConfig = {
+export const rootConfig = {
   key: 'root',
   storage,
   whitelist: ['wallet']
