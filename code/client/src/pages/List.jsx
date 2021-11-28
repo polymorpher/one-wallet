@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
 import { values, omit } from 'lodash'
-import { Card, Row, Space, Typography, Col, Tag } from 'antd'
+import { Card, Row, Space, Typography, Col, Tag, Button, Upload } from 'antd'
 import message from '../message'
 import util, { useWindowDimensions } from '../util'
 import { useHistory, useLocation } from 'react-router'
@@ -12,6 +12,7 @@ import { getAddress } from '@harmony-js/crypto'
 import ONEConstants from '../../../lib/constants'
 import * as Sentry from '@sentry/browser'
 import { deleteWalletLocally } from '../storage/util'
+import { ImportOutlined, LoadingOutlined } from '@ant-design/icons'
 const { Text, Title } = Typography
 
 const walletShortName = (fullName) => {
@@ -91,6 +92,7 @@ const List = () => {
   const { formatted, fiatFormatted } = util.computeBalance(totalBalance, price)
   const titleLevel = isMobile ? 4 : 3
   const [purged, setPurged] = useState(false)
+  const [fileUploading, setFileUploading] = useState(false)
 
   const purge = (wallet) => {
     Sentry.withScope(scope => {
@@ -126,8 +128,54 @@ const List = () => {
       w.address !== ONEConstants.EmptyAddress
   }
 
+  const getBase64 = (data) => new Promise((resolve) => {
+    const reader = new FileReader()
+    reader.addEventListener('load', () => resolve(reader.result))
+    reader.readAsText(data)
+  })
+
+  const handleImport = async (info) => {
+    if (info.file.status === 'uploading') {
+      setFileUploading(true)
+    }
+
+    if (info.file.status === 'done') {
+      try {
+        const walletBase64 = await getBase64(info.file.originFileObj)
+        const wallet = JSON.parse(walletBase64)
+
+        dispatch(walletActions.updateWallet(wallet))
+        setFileUploading(false)
+
+        message.info('Imported Successfully')
+      } catch (err) {
+        message.error('File data corrupted')
+      }
+    }
+  }
+
+  const beforeUpload = (file) => {
+    const isJson = file.type === 'application/json'
+    if (!isJson) {
+      message.error('You can only upload json file')
+    }
+
+    return isJson
+  }
+
   return (
-    <>
+    <Space direction='vertical'>
+      <Upload
+        name='walletjson'
+        showUploadList={false}
+        customRequest={({ onSuccess }) => {
+          onSuccess('ok')
+        }}
+        beforeUpload={beforeUpload}
+        onChange={handleImport}
+      >
+        <Button type='primary' shape='round' size='large' icon={fileUploading ? <LoadingOutlined /> : <ImportOutlined />}>Import locally</Button>
+      </Upload>
       <Row gutter={[24, 24]}>
         {values(wallets).filter(w => isMatchingWallet(w)).map((w, i) => <Col span={isMobile && 24} key={`${w.address}-${i}`}><WalletCard wallet={w} /></Col>)}
       </Row>
@@ -143,7 +191,7 @@ const List = () => {
           </Space>
         </Space>
       </Row>
-    </>
+    </Space>
   )
 }
 export default List

@@ -1,7 +1,7 @@
 import { TallRow } from '../../components/Grid'
 import { Button, Col, Popconfirm, Row, Space, Tooltip, Typography } from 'antd'
 import humanizeDuration from 'humanize-duration'
-import { DeleteOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+import { DeleteOutlined, QuestionCircleOutlined, ExportOutlined } from '@ant-design/icons'
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import util, { useWindowDimensions } from '../../util'
@@ -10,6 +10,7 @@ import Paths from '../../constants/paths'
 import { useHistory } from 'react-router'
 import WalletAddress from '../../components/WalletAddress'
 import { deleteWalletLocally } from '../../storage/util'
+import message from '../../message'
 
 const { Title, Text } = Typography
 
@@ -47,6 +48,18 @@ const About = ({ address }) => {
 
   const reclaim = async (backlink) => {
     history.push(Paths.showAddress(address, 'reclaim') + `?from=${backlink}`)
+  }
+
+  const handleExport = () => {
+    const label = wallet.name.toLowerCase().split(' ').join('-')
+    const blob = new Blob([JSON.stringify(wallet)])
+    const element = document.createElement('a')
+    element.href = URL.createObjectURL(blob)
+    element.download = `1wallet-${label}.json`
+    document.body.appendChild(element)
+    element.click()
+    URL.revokeObjectURL(element.href)
+    message.info(`Exported ${wallet.name} Successfully`)
   }
 
   return (
@@ -144,9 +157,12 @@ const About = ({ address }) => {
           </Col>
         </TallRow>}
       <Row style={{ marginTop: 24 }}>
-        <Popconfirm title='Are you sure？' onConfirm={() => deleteWalletLocally({ wallet, wallets, dispatch, history })}>
-          <Button type='primary' shape='round' danger size='large' icon={<DeleteOutlined />}>Delete locally</Button>
-        </Popconfirm>
+        <Space>
+          <Button type='primary' shape='round' size='large' icon={<ExportOutlined />} onClick={handleExport}>Export locally</Button>
+          <Popconfirm title='Are you sure？' onConfirm={() => deleteWalletLocally({ wallet, wallets, dispatch, history })}>
+            <Button type='primary' shape='round' danger size='large' icon={<DeleteOutlined />}>Delete locally</Button>
+          </Popconfirm>
+        </Space>
       </Row>
     </>
   )
