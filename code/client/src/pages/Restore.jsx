@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useHistory } from 'react-router'
 import { Heading, Hint } from '../components/Text'
 import AnimatedSection from '../components/AnimatedSection'
-import { Space, Progress, Timeline } from 'antd'
+import { Space, Progress, Col, Button, Typography } from 'antd'
 import message from '../message'
 import api from '../api'
 import ONEUtil from '../../../lib/util'
@@ -19,11 +19,20 @@ import QrCodeScanner from '../components/QrCodeScanner'
 import ScanGASteps from '../components/ScanGASteps'
 import { parseOAuthOTP, parseMigrationPayload } from '../components/OtpTools'
 import WalletCreateProgress from '../components/WalletCreateProgress'
+import { AverageRow } from '../components/Grid'
+const { Title } = Typography
+
+const Sections = {
+  Choose: 0,
+  ScanQR: 1,
+  RecoveryCode: 2,
+  SetupNewCode: 3,
+}
 
 const Restore = () => {
-  const { isMobile, os } = useWindowDimensions()
+  const { isMobile } = useWindowDimensions()
   const history = useHistory()
-  const [section, setSection] = useState(1)
+  const [section, setSection] = useState(Sections.Choose)
   const network = useSelector(state => state.wallet.network)
   const wallets = useSelector(state => state.wallet.wallets)
   const dispatch = useDispatch()
@@ -225,6 +234,25 @@ const Restore = () => {
 
   return (
     <>
+      <AnimatedSection show={section === Sections.Choose}>
+        <AverageRow>
+          <Title level={3}>Choose a method for restoring 1wallet</Title>
+        </AverageRow>
+        <AverageRow gutter={24}>
+          <Col span={isMobile ? 24 : 12}>
+            <Space direction='vertical' size='large' style={{ width: '100%' }} align='center'>
+              <Button shape='round' type='primary' onClick={() => setSection(Sections.RecoveryCode)}>Authenticator Codes</Button>
+              <Hint>(New since v15) Provide 6 consecutive authenticator codes over the next 3 minutes and your wallet restoration file. Setup a new authenticator code after that.</Hint>
+            </Space>
+          </Col>
+          <Col span={isMobile ? 24 : 12}>
+            <Space direction='vertical' size='large' style={{ width: '100%' }} align='center'>
+              <Button shape='round' type='primary' onClick={() => setSection(Sections.ScanQR)}>Scan QR Code</Button>
+              <Hint>(Classic) Scan QR code exported by your (Google) Authenticator</Hint>
+            </Space>
+          </Col>
+        </AverageRow>
+      </AnimatedSection>
       <AnimatedSection show={section === 1}>
         <Space direction='vertical' size='large'>
           <Heading>What is the address of the wallet?</Heading>
