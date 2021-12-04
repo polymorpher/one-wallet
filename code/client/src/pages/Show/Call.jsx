@@ -38,7 +38,7 @@ const Call = ({
   const { isMobile } = useWindowDimensions()
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
-  const { majorVersion } = wallet
+  const { majorVersion, minorVersion } = wallet
   const network = useSelector(state => state.wallet.network)
 
   const doubleOtp = wallet.doubleOtp
@@ -124,7 +124,7 @@ const Call = ({
       beforeCommit: () => setStage(1),
       afterCommit: () => setStage(2),
       revealAPI: api.relayer.reveal,
-      revealArgs: { ...args, data: encodedData },
+      revealArgs: { ...args, data: encodedData, majorVersion, minorVersion },
       ...handlers
     })
   }
