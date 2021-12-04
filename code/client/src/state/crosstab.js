@@ -1,4 +1,5 @@
 import { REHYDRATE } from 'redux-persist/lib/constants'
+import { BroadcastChannel } from 'broadcast-channel';
 
 /**
  * Event listener to update cross browser tab redux store
@@ -11,42 +12,52 @@ export function crosstab (store, persistConfig, crosstabConfig = {}) {
 
   const { key } = persistConfig
 
-  if (window.BroadcastChannel) {
-    const channel = new window.BroadcastChannel('crosstabState-channel')
-    let dispatchingSelf = false
+  let channel
+  let dispatchingSelf = false
 
-    // Subscribe to Redux store State Changes
-    store.subscribe(() => {
-      if (dispatchingSelf) {
-        dispatchingSelf = false
-        return false
+  // https://github.com/pubkey/broadcast-channel#handling-indexeddb-onclose-events
+  const createChannel = () => {
+    channel = new BroadcastChannel('1wallet-crosstab', {
+      idb: {
+        onclose: () => {
+          channel.close()
+          createChannel()
+        }
       }
-
-      channel.postMessage(store.getState())
     })
 
-    // Listen to Redux store State Changes message and rehydrate
-    channel.addEventListener('message', ev => {
-      dispatchingSelf = true
+    channel.onmessage = (msg) => {
+      if (msg?._persist?.rehydrated) {
+        const state = Object.keys(msg).reduce((state, reducerKey) => {
+          if (accesslist && accesslist.indexOf(reducerKey) === -1) {
+            return state
+          }
+          if (blocklist && blocklist.indexOf(reducerKey) !== -1) {
+            return state
+          }
+          state[reducerKey] = msg[reducerKey]
+          return state 
+        }, {})
 
-      const state = Object.keys(ev.data).reduce((state, reducerKey) => {
-        if (accesslist && accesslist.indexOf(reducerKey) === -1) {
-          return state
-        }
-        if (blocklist && blocklist.indexOf(reducerKey) !== -1) {
-          return state
-        }
-
-        state[reducerKey] = ev.data[reducerKey]
-
-        return state
-      }, {})
-
-      store.dispatch({
-        key: key,
-        payload: state,
-        type: REHYDRATE,
-      })
-    })
+        dispatchingSelf = true
+        store.dispatch({
+          key: key,
+          payload: state,
+          type: REHYDRATE,
+        })
+      }
+    }
   }
+  createChannel()
+
+  // Subscribe to Redux store State Changes
+  store.subscribe(() => {
+    if (dispatchingSelf) {
+      dispatchingSelf = false
+      return false
+    }
+    if (channel) {
+      channel.postMessage(store.getState())
+    }
+  })
 }
