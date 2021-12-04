@@ -288,7 +288,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
     return (
       <Select.Option key={addressDisplay} value={filterValue} style={{ padding: 0 }}>
         <Row align='middle'>
-          <Col span={!displayActionButton ? 24 : 19}>
+          <Col span={!displayActionButton ? 24 : 20}>
             <Tooltip title={useHex ? address : oneAddress}>
               <Button
                 block
@@ -305,30 +305,31 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
               </Button>
             </Tooltip>
           </Col>
-          <Col span={5}>
-            {
-            displayActionButton
-              ? [<Button key="edit"
-                  type='text' style={{ textAlign: 'left', height: '50px' }} onClick={(e) => {
+          {displayActionButton &&
+            <Col span={4}>
+              <Row justify='space-between'>
+                <Button
+                  key='edit'
+                  type='text' style={{ textAlign: 'left', height: '50px', padding: 8 }} onClick={(e) => {
                     history.push(Paths.addressDetail(address))
                     e.stopPropagation()
                     return false
                   }}
                 >
                   <EditOutlined />
-                </Button>,
-                <Button key="delete"
-                  type='text' style={{ textAlign: 'left', height: '50px' }} onClick={(e) => {
+                </Button>
+                <Button
+                  key='delete'
+                  type='text' style={{ textAlign: 'left', height: '50px', padding: 8, marginRight: 16 }} onClick={(e) => {
                     deleteKnownAddress(address)
                     e.stopPropagation()
                     return false
                   }}
                 >
                   <CloseOutlined style={{ color: 'red' }} />
-                </Button>]
-              : <></>
-          }
-          </Col>
+                </Button>
+              </Row>
+            </Col>}
         </Row>
       </Select.Option>
     )
