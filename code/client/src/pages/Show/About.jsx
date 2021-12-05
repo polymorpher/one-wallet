@@ -11,6 +11,7 @@ import { useHistory } from 'react-router'
 import WalletAddress from '../../components/WalletAddress'
 import { deleteWalletLocally } from '../../storage/util'
 import message from '../../message'
+import storage from '../../storage'
 
 const { Title, Text } = Typography
 
@@ -50,12 +51,15 @@ const About = ({ address }) => {
     history.push(Paths.showAddress(address, 'reclaim') + `?from=${backlink}`)
   }
 
-  const handleExport = () => {
+  const handleExport = async () => {
+    const layer = await storage.getItem(wallet.root)
     const label = wallet.name.toLowerCase().split(' ').join('-')
-    const blob = new Blob([JSON.stringify(wallet)])
+    const jsonData = JSON.stringify(wallet)
+    const blobData = [jsonData, '\r\n', layer.join('\r\n')]
+    const blob = new Blob(blobData, { type: 'text/plain' })
     const element = document.createElement('a')
     element.href = URL.createObjectURL(blob)
-    element.download = `1wallet-${label}.json`
+    element.download = `1wallet-${label}.txt`
     document.body.appendChild(element)
     element.click()
     URL.revokeObjectURL(element.href)

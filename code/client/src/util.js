@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { HarmonyAddress } from '@harmony-js/crypto'
-import { isInteger, values } from 'lodash'
+import { isInteger, values, keys } from 'lodash'
 import ONEUtil from '../../lib/util'
 import ONEConstants from '../../lib/constants'
 import { AddressError } from './constants/errors'
@@ -149,6 +149,10 @@ const util = {
 
   filterNetworkWallets: (wallets, network) => {
     return values(wallets).filter(w => w.network === network)
+  },
+
+  isWalletExisted: (wallets, wallet) => {
+    return !!keys(wallets).find(w => w === wallet?.address)
   },
 
   getNetworkExplorerUrl: (address, network) => {

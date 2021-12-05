@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useHistory } from 'react-router'
 import { Heading, Hint } from '../components/Text'
 import AnimatedSection from '../components/AnimatedSection'
-import { Space, Progress, Timeline } from 'antd'
+import { Space, Progress, Timeline, Row } from 'antd'
 import message from '../message'
 import api from '../api'
 import ONEUtil from '../../../lib/util'
@@ -18,6 +18,7 @@ import AddressInput from '../components/AddressInput'
 import QrCodeScanner from '../components/QrCodeScanner'
 import ScanGASteps from '../components/ScanGASteps'
 import { parseOAuthOTP, parseMigrationPayload } from '../components/OtpTools'
+import LocalImport from '../components/LocalImport'
 
 const Restore = () => {
   const history = useHistory()
@@ -225,6 +226,9 @@ const Restore = () => {
     <>
       <AnimatedSection show={section === 1}>
         <Space direction='vertical' size='large'>
+          <Row justify='end'>
+            <LocalImport />
+          </Row>
           <Heading>What is the address of the wallet?</Heading>
           <AddressInput
             addressValue={addressInput}
