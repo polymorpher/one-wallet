@@ -1,7 +1,7 @@
 import { TallRow } from '../../components/Grid'
 import { Button, Col, Popconfirm, Row, Space, Tooltip, Typography } from 'antd'
 import humanizeDuration from 'humanize-duration'
-import { DeleteOutlined, QuestionCircleOutlined, ExportOutlined } from '@ant-design/icons'
+import { DeleteOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import util, { useWindowDimensions } from '../../util'
@@ -10,8 +10,7 @@ import Paths from '../../constants/paths'
 import { useHistory } from 'react-router'
 import WalletAddress from '../../components/WalletAddress'
 import { deleteWalletLocally } from '../../storage/util'
-import message from '../../message'
-import storage from '../../storage'
+import LocalExport from '../../components/LocalExport'
 
 const { Title, Text } = Typography
 
@@ -49,21 +48,6 @@ const About = ({ address }) => {
 
   const reclaim = async (backlink) => {
     history.push(Paths.showAddress(address, 'reclaim') + `?from=${backlink}`)
-  }
-
-  const handleExport = async () => {
-    const layer = await storage.getItem(wallet.root)
-    const label = wallet.name.toLowerCase().split(' ').join('-')
-    const jsonData = JSON.stringify(wallet)
-    const blobData = [jsonData, '\r\n', layer.join('\r\n')]
-    const blob = new Blob(blobData, { type: 'text/plain' })
-    const element = document.createElement('a')
-    element.href = URL.createObjectURL(blob)
-    element.download = `1wallet-${label}.txt`
-    document.body.appendChild(element)
-    element.click()
-    URL.revokeObjectURL(element.href)
-    message.info(`Exported ${wallet.name} Successfully`)
   }
 
   return (
@@ -162,7 +146,7 @@ const About = ({ address }) => {
         </TallRow>}
       <Row style={{ marginTop: 24 }}>
         <Space>
-          <Button type='primary' shape='round' size='large' icon={<ExportOutlined />} onClick={handleExport}>Export locally</Button>
+          <LocalExport wallet={wallet} />
           <Popconfirm title='Are you sure？' onConfirm={() => deleteWalletLocally({ wallet, wallets, dispatch, history })}>
             <Button type='primary' shape='round' danger size='large' icon={<DeleteOutlined />}>Delete locally</Button>
           </Popconfirm>

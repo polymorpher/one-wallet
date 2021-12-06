@@ -9,9 +9,9 @@ import util from '../util'
 import ONEUtil from '../../../lib/util'
 import { walletActions } from '../state/modules/wallet'
 import Paths from '../constants/paths'
+import {LocalExportMessage} from './LocalExport'
 
-
-const LocalImport = ({onSuccess}) => {
+const LocalImport = () => {
   const dispatch = useDispatch()
   const history = useHistory()
   const wallets = useSelector(state => state.wallet.wallets)
@@ -20,8 +20,8 @@ const LocalImport = ({onSuccess}) => {
   const getDataFromFile = file =>
     new Promise(resolve => {
       const reader = new FileReader()
-      reader.addEventListener('load', () => resolve(reader.result.split('\r\n')))
-      reader.readAsText(file)
+      reader.addEventListener('load', () => resolve(reader.result))
+      reader.readAsArrayBuffer(file)
     })
 
   const handleImport = async info => {
@@ -31,9 +31,10 @@ const LocalImport = ({onSuccess}) => {
 
     if (info.file.status === 'done') {
       try {
-        const [walletString, ...buffer] = await getDataFromFile(info.file.originFileObj)
-        const wallet = JSON.parse(walletString)
-        const layers = buffer.map(b => new Uint8Array(b.split(',')))
+        const data = await getDataFromFile(info.file.originFileObj)
+        const decoded =  LocalExportMessage.decode(new Uint8Array(data))
+        const wallet = JSON.parse(decoded.wallet)
+        const layers = decoded.layers
 
         if (!util.isValidWallet(wallet)) { throw new Error('Wallet is invalid') }
         if (util.isWalletExisted(wallets, wallet)) { throw new Error('Wallet is existed') }
@@ -50,21 +51,12 @@ const LocalImport = ({onSuccess}) => {
     }
   }
 
-  const beforeUpload = file => {
-    const isTextFile = file.type === 'text/plain'
-    if (!isTextFile) {
-      message.error('You can only upload text file')
-    }
-
-    return isTextFile
-  }
-
   return (
     <Upload
       name='walletjson'
       showUploadList={false}
       customRequest={({ onSuccess }) => { onSuccess('ok') }}
-      beforeUpload={beforeUpload}
+      accept={'text/plain'}
       onChange={handleImport}
     >
       <Button
