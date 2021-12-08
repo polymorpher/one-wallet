@@ -208,7 +208,7 @@ const Swap = ({ address }) => {
       return
     }
     const erc20Tracked = (wallet.trackedTokens || []).filter(e => e.tokenType === ONEConstants.TokenType.ERC20)
-    const trackedTokens = [harmonyToken, ...(erc20Tracked || []), ...withKeys(DefaultTrackedERC20(network))]
+    const trackedTokens = [harmonyToken, ...withKeys(DefaultTrackedERC20(network)), ...(erc20Tracked || [])]
     trackedTokens.forEach(tt => {
       // align formats
       tt.address = tt.address || tt.contractAddress
