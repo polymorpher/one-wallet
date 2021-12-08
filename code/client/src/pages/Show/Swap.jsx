@@ -443,7 +443,7 @@ const Swap = ({ address }) => {
   const { resetWorker, recoverRandomness } = useRandomWorker()
   const { prepareValidation, onRevealSuccess, ...handlers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
 
-  const commonCommitReveal = ({ otp, otp2, hexData, args, trackToken, updateFromBalance }) => {
+  const commonCommitReveal = ({ otp, otp2, hexData, args, trackToken, updateFromBalance, extraHandlers }) => {
     SmartFlows.commitReveal({
       wallet,
       otp,
@@ -480,6 +480,7 @@ const Swap = ({ address }) => {
         }
       },
       ...handlers,
+      ...extraHandlers
     })
   }
   const handleSwapONEToToken = ({ slippage, deadline, otp, otp2 }) => {
