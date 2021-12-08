@@ -1,5 +1,5 @@
 import { Card, Image, Row, Space, Typography, Col, Divider, Button } from 'antd'
-import { unionWith, isNull, isUndefined } from 'lodash'
+import { unionWith, isNull, isUndefined, uniqBy } from 'lodash'
 import walletActions from '../state/modules/wallet/actions'
 
 import { CloseOutlined, PlusCircleOutlined } from '@ant-design/icons'
@@ -148,7 +148,8 @@ export const ERC20Grid = ({ address }) => {
   const { formatted } = util.computeBalance(balance)
   const walletOutdated = !util.canWalletSupportToken(wallet)
   const defaultTrackedTokens = withKeys(DefaultTrackedERC20(network))
-  const [currentTrackedTokens, setCurrentTrackedTokens] = useState([...defaultTrackedTokens, ...(trackedTokens || [])].filter(e => untrackedTokenKeys.find(k => k === e.key) === undefined))
+  const initTrackedTokenState = uniqBy([...defaultTrackedTokens, ...(trackedTokens || [])].filter(e => untrackedTokenKeys.find(k => k === e.key) === undefined), t => t.key)
+  const [currentTrackedTokens, setCurrentTrackedTokens] = useState(initTrackedTokenState)
   const [disabled, setDisabled] = useState(true)
   const selected = (selectedToken && selectedToken.tokenType === ONEConstants.TokenType.ERC20) || HarmonyONE
   const [section, setSection] = useState()
@@ -197,6 +198,7 @@ export const ERC20Grid = ({ address }) => {
       if (cancelled) {
         return
       }
+      // tts = uniqBy(tts, t => t.key)
       setCurrentTrackedTokens(tts)
     }
     // dispatch(walletActions.untrackTokens({ address, keys: trackedTokens.map(e => e.key) }))

@@ -28,6 +28,7 @@ import { Link } from 'react-router-dom'
 import { Chaining } from '../../api/flow'
 import walletActions from '../../state/modules/wallet/actions'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
+import { uniqBy } from 'lodash'
 const { Text, Title } = Typography
 
 const tokenIconUrl = (token) => {
@@ -223,7 +224,7 @@ const Swap = ({ address }) => {
         dispatch(walletActions.fetchTokenBalance({ address, tokenType, tokenId, contractAddress, key }))
       }
     })
-    const filteredTrackedTokens = [...new Map(trackedTokens.map(v => [v.address, v])).values()]
+    const filteredTrackedTokens = uniqBy(trackedTokens, e => e.address)
 
     const updateFromTokens = async () => {
       const trackedTokensUpdated = await api.tokens.batchGetMetadata(filteredTrackedTokens)
@@ -397,7 +398,15 @@ const Swap = ({ address }) => {
     const outDecimal = isFrom ? tokenTo.decimal : tokenFrom.decimal
     const valueDecimal = isFrom ? tokenFrom.decimal : tokenTo.decimal
     const { balance: amountIn, formatted: amountInFormatted } = util.toBalance(value, undefined, valueDecimal)
-    const amountOut = await api.sushi.getAmountOut({ amountIn, tokenAddress, inverse: useFrom !== isFrom })
+
+    // let setAmount
+    // if(isFrom) {
+    //   setAmount = await api.sushi.getAmountOut({ amountIn, tokenAddress, inverse: useFrom !== isFrom })
+    // }else{
+    //   setAmount = await api.sushi.getAmountIn({ amountOut: amountIn, tokenAddress, inverse: useFrom !== isFrom })
+    // }
+    console.log(tokenAddress, amountIn, useFrom !== isFrom)
+    const amountOut = await api.sushi.getAmountIn({ amountOut: amountIn, tokenAddress, inverse: useFrom !== isFrom })
 
     const { formatted: amountOutFormatted } = util.computeBalance(amountOut, undefined, outDecimal)
     toSetter(amountOutFormatted)
