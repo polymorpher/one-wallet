@@ -208,7 +208,7 @@ const Swap = ({ address }) => {
       return
     }
     const erc20Tracked = (wallet.trackedTokens || []).filter(e => e.tokenType === ONEConstants.TokenType.ERC20)
-    const trackedTokens = [harmonyToken, ...withKeys(DefaultTrackedERC20(network)), ...(erc20Tracked || [])]
+    const trackedTokens = [harmonyToken, ...(erc20Tracked || []), ...withKeys(DefaultTrackedERC20(network))]
     trackedTokens.forEach(tt => {
       // align formats
       tt.address = tt.address || tt.contractAddress
@@ -223,8 +223,10 @@ const Swap = ({ address }) => {
         dispatch(walletActions.fetchTokenBalance({ address, tokenType, tokenId, contractAddress, key }))
       }
     })
+    const filteredTrackedTokens = [...new Map(trackedTokens.map(v => [v.address, v])).values()]
+
     const updateFromTokens = async () => {
-      const trackedTokensUpdated = await api.tokens.batchGetMetadata(trackedTokens)
+      const trackedTokensUpdated = await api.tokens.batchGetMetadata(filteredTrackedTokens)
       // ONE has null contractAddress
       const filteredTokens = trackedTokensUpdated.filter(t => t.contractAddress === null || tokens[t.contractAddress])
 
