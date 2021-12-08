@@ -10,8 +10,6 @@ import api from '../../api'
 import { Hint, InputBox, Warning } from '../../components/Text'
 import BN from 'bn.js'
 import {
-  CheckCircleOutlined,
-  LoadingOutlined,
   PercentageOutlined,
   QuestionCircleOutlined,
   SwapOutlined
@@ -29,6 +27,7 @@ import { Chaining } from '../../api/flow'
 import walletActions from '../../state/modules/wallet/actions'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import { uniqBy } from 'lodash'
+import styled from 'styled-components'
 const { Text, Title } = Typography
 
 const tokenIconUrl = (token) => {
@@ -44,10 +43,13 @@ const textStyle = {
   display: 'block'
 }
 
-const optionButtonStyle = {
-  textAlign: 'left',
-  height: '48px',
-}
+const OptionButton = styled(Button)`
+  text-align: left;
+  height: 48px;
+  &:disabled{
+    opacity: 0.3;
+  }
+`
 
 const selectOptionStyle = {
   padding: 0
@@ -188,6 +190,9 @@ const Swap = ({ address }) => {
   const [tokenAllowance, setTokenAllowance] = useState(new BN(0))
   const [tokenReserve, setTokenReserve] = useState({ from: new BN(0), to: new BN(0) })
   const [updatingReserve, setUpdatingReserve] = useState(false)
+
+  const [fromAmountError, setFromAmountError] = useState('')
+  const [toAmountError, setToAmountError] = useState('')
 
   // Loads supported tokens that are available for swap.
   useEffect(() => {
@@ -340,15 +345,14 @@ const Swap = ({ address }) => {
 
   const buildSwapOptions = (tokens, setSelectedToken) => tokens.map((token, index) => {
     const inner = (
-      <Button
+      <OptionButton
         type='text'
         block
-        style={optionButtonStyle}
         onClick={() => setSelectedToken(token)}
         disabled={token.disabled}
       >
         <TokenLabel token={token} />
-      </Button>
+      </OptionButton>
     )
     const outer = token.disabled ? <Tooltip title='This option is temporarily disabled. It will be available in the future version of 1wallet'>{inner}</Tooltip> : inner
     return <Select.Option key={index} value={token.symbol || 'one'} style={selectOptionStyle}>{outer}</Select.Option>
@@ -430,6 +434,26 @@ const Swap = ({ address }) => {
     setFromAmount(tokenBalance)
     onAmountChange(true)({ target: { value: formatted, preciseValue: tokenBalance } })
   }, [tokenFrom, balance, tokenBalances, onAmountChange, setFromAmountFormatted])
+
+  useEffect(() => {
+    if (!fromAmountFormatted) {
+      return
+    }
+    const parsed = parseFloat(fromAmountFormatted)
+    if (!parsed || parsed < 0) {
+      setFromAmountError('Invalid Amount')
+    }
+  }, [fromAmountFormatted])
+
+  useEffect(() => {
+    if (!toAmountFormatted) {
+      return
+    }
+    const parsed = parseFloat(toAmountFormatted)
+    if (!parsed || parsed < 0) {
+      setToAmountError('Invalid Amount')
+    }
+  }, [toAmountFormatted])
 
   const onSelectTokenSwapFrom = (token) => {
     setTokenFrom({ ...token, value: token.symbol, label: <TokenLabel token={token} selected /> })
@@ -612,7 +636,7 @@ const Swap = ({ address }) => {
           </Col>
           <Col span={isMobile ? 24 : 16}>
             <Space direction='vertical' style={{ width: '100%' }}>
-              <Text style={textStyle} type='secondary'>Amount (Balance: {tokenBalanceFormatted})</Text>
+              <Text style={textStyle} type={fromAmountError ? 'danger' : 'secondary'}>Amount (Balance: {tokenBalanceFormatted}) {fromAmountError}</Text>
               <Row>
                 <InputBox $decimal size='default' style={amountInputStyle} placeholder='0.00' value={fromAmountFormatted} onChange={onAmountChange(true)} />
                 <Button style={maxButtonStyle} shape='round' onClick={setMaxSwapAmount}>Max</Button>
@@ -640,7 +664,7 @@ const Swap = ({ address }) => {
           </Col>
           <Col span={isMobile ? 24 : 16}>
             <Space direction='vertical' style={{ width: '100%' }}>
-              <Text style={textStyle} type='secondary'>Expected Amount</Text>
+              <Text style={textStyle} type={toAmountError ? 'danger' : 'secondary'}>Expected Amount {toAmountError}</Text>
               <InputBox $decimal size='default' style={{ ...amountInputStyle, width: '100%' }} placeholder='0.00' value={toAmountFormatted} onChange={onAmountChange(false)} />
             </Space>
           </Col>
