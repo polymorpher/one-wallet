@@ -193,6 +193,7 @@ const Swap = ({ address }) => {
 
   const [fromAmountError, setFromAmountError] = useState('')
   const [toAmountError, setToAmountError] = useState('')
+  const [unknownError, setUnknownError] = useState('')
 
   // Loads supported tokens that are available for swap.
   useEffect(() => {
@@ -409,8 +410,15 @@ const Swap = ({ address }) => {
     // }else{
     //   setAmount = await api.sushi.getAmountIn({ amountOut: amountIn, tokenAddress, inverse: useFrom !== isFrom })
     // }
-    console.log(tokenAddress, amountIn, useFrom !== isFrom)
-    const amountOut = await api.sushi.getAmountIn({ amountOut: amountIn, tokenAddress, inverse: useFrom !== isFrom })
+    // console.log(tokenAddress, amountIn, useFrom !== isFrom)
+    let amountOut
+    try {
+      amountOut = await api.sushi.getAmountOut({ amountIn: amountIn, tokenAddress, inverse: useFrom !== isFrom })
+    } catch (ex) {
+      console.error(ex)
+      setUnknownError(ex.toString())
+      amountOut = new BN(0)
+    }
 
     const { formatted: amountOutFormatted } = util.computeBalance(amountOut, undefined, outDecimal)
     toSetter(amountOutFormatted)
@@ -440,8 +448,10 @@ const Swap = ({ address }) => {
       return
     }
     const parsed = parseFloat(fromAmountFormatted)
-    if (!parsed || parsed < 0) {
+    if (isNaN(parsed) || parsed < 0) {
       setFromAmountError('Invalid Amount')
+    } else {
+      setFromAmountError('')
     }
   }, [fromAmountFormatted])
 
@@ -450,10 +460,24 @@ const Swap = ({ address }) => {
       return
     }
     const parsed = parseFloat(toAmountFormatted)
-    if (!parsed || parsed < 0) {
+    if (isNaN(parsed) || parsed < 0) {
       setToAmountError('Invalid Amount')
+    } else {
+      setToAmountError('')
     }
   }, [toAmountFormatted])
+
+  useEffect(() => {
+    if (tokenTo.value && !toAmountFormatted) {
+      setToAmountFormatted('0')
+    }
+  }, [tokenTo])
+
+  useEffect(() => {
+    if (tokenFrom.value && !fromAmountFormatted) {
+      setFromAmountFormatted('0')
+    }
+  }, [tokenFrom])
 
   const onSelectTokenSwapFrom = (token) => {
     setTokenFrom({ ...token, value: token.symbol, label: <TokenLabel token={token} selected /> })
@@ -680,6 +704,14 @@ const Swap = ({ address }) => {
           <Col span={24}>
             <Warning>
               Insufficient liquidity in SushiSwap. Please reduce expected amount or try a different token pair.
+            </Warning>
+          </Col>
+        </TallRow>}
+      {unknownError &&
+        <TallRow>
+          <Col span={24}>
+            <Warning>
+              An unknown error occurred. Network might be offline. The token pair may have insufficient liquidity. Please submit a bug report if you think you caught a bug in 1wallet. Error: {unknownError}
             </Warning>
           </Col>
         </TallRow>}
