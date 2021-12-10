@@ -7,9 +7,7 @@ import { BroadcastChannel } from 'broadcast-channel';
  * and https://github.com/rt2zz/redux-persist-crosstab/issues/7#issuecomment-355528453
  */
 export function crosstab (store, persistConfig, crosstabConfig = {}) {
-  const blocklist = crosstabConfig.blocklist || null
-  const accesslist = crosstabConfig.accesslist || null
-
+  const {blocklist = null, accesslist = null, allowActions = null} = crosstabConfig
   const { key } = persistConfig
 
   let channel
@@ -39,12 +37,12 @@ export function crosstab (store, persistConfig, crosstabConfig = {}) {
           return state 
         }, {})
 
-        dispatchingSelf = true
-        store.dispatch({
-          key: key,
-          payload: state,
-          type: REHYDRATE,
-        })
+          dispatchingSelf = true
+          store.dispatch({
+            key: key,
+            payload: state,
+            type: REHYDRATE,
+          })
       }
     }
   }
@@ -56,7 +54,8 @@ export function crosstab (store, persistConfig, crosstabConfig = {}) {
       dispatchingSelf = false
       return false
     }
-    if (channel) {
+    const allowed = allowActions?.indexOf(store.getState().lastAction) !== -1
+    if (channel && allowed) {
       channel.postMessage(store.getState())
     }
   })

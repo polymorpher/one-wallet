@@ -24,10 +24,15 @@ const walletConfig = {
   blacklist: ['layers', 'provider', 'error', 'fetching', 'loading']
 }
 
+const lastAction = (state = null, action) => {
+  return action.type
+}
+
 const rootReducer = (history) => combineReducers({
   ...reducers,
   wallet: persistReducer(walletConfig, reducers.wallet),
-  router: connectRouter(history)
+  router: connectRouter(history),
+  lastAction
 })
 
 export default (history) => persistReducer(rootConfig, rootReducer(history))

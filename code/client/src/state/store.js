@@ -25,6 +25,19 @@ const store = createStore(
     )
   )
 )
-crosstab(store, rootConfig, { blocklist: ['router'] })
+crosstab(store, rootConfig, {
+  blocklist: ['router', 'lastAction'],
+  allowActions: [
+    'UPDATE_WALLET',
+    'DELETE_WALLET',
+    'SET_NETWORK',
+    'SET_KNOWN_ADDRESS',
+    'DELETE_KNOWN_ADDRESS',
+    'BIND_DOMAIN',
+    'USER_ACKNOWLEDGED_TO_SAVE_ADDRESS',
+    'USER_ACKNOWLEDGED_NEW_ROOT',
+    'USER_SKIP_VERSION',
+  ]
+})
 
 export default store
