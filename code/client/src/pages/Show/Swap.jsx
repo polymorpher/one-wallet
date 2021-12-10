@@ -10,8 +10,6 @@ import api from '../../api'
 import { Hint, InputBox, Warning } from '../../components/Text'
 import BN from 'bn.js'
 import {
-  CheckCircleOutlined,
-  LoadingOutlined,
   PercentageOutlined,
   QuestionCircleOutlined,
   SwapOutlined
@@ -28,6 +26,8 @@ import { Link } from 'react-router-dom'
 import { Chaining } from '../../api/flow'
 import walletActions from '../../state/modules/wallet/actions'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
+import { uniqBy } from 'lodash'
+import styled from 'styled-components'
 const { Text, Title } = Typography
 
 const tokenIconUrl = (token) => {
@@ -43,10 +43,13 @@ const textStyle = {
   display: 'block'
 }
 
-const optionButtonStyle = {
-  textAlign: 'left',
-  height: '48px',
-}
+const OptionButton = styled(Button)`
+  text-align: left;
+  height: 48px;
+  &:disabled{
+    opacity: 0.3;
+  }
+`
 
 const selectOptionStyle = {
   padding: 0
@@ -188,6 +191,10 @@ const Swap = ({ address }) => {
   const [tokenReserve, setTokenReserve] = useState({ from: new BN(0), to: new BN(0) })
   const [updatingReserve, setUpdatingReserve] = useState(false)
 
+  const [fromAmountError, setFromAmountError] = useState('')
+  const [toAmountError, setToAmountError] = useState('')
+  const [unknownError, setUnknownError] = useState('')
+
   // Loads supported tokens that are available for swap.
   useEffect(() => {
     const getPairs = async () => {
@@ -223,8 +230,10 @@ const Swap = ({ address }) => {
         dispatch(walletActions.fetchTokenBalance({ address, tokenType, tokenId, contractAddress, key }))
       }
     })
+    const filteredTrackedTokens = uniqBy(trackedTokens, e => e.address)
+
     const updateFromTokens = async () => {
-      const trackedTokensUpdated = await api.tokens.batchGetMetadata(trackedTokens)
+      const trackedTokensUpdated = await api.tokens.batchGetMetadata(filteredTrackedTokens)
       // ONE has null contractAddress
       const filteredTokens = trackedTokensUpdated.filter(t => t.contractAddress === null || tokens[t.contractAddress])
 
@@ -337,15 +346,14 @@ const Swap = ({ address }) => {
 
   const buildSwapOptions = (tokens, setSelectedToken) => tokens.map((token, index) => {
     const inner = (
-      <Button
+      <OptionButton
         type='text'
         block
-        style={optionButtonStyle}
         onClick={() => setSelectedToken(token)}
         disabled={token.disabled}
       >
         <TokenLabel token={token} />
-      </Button>
+      </OptionButton>
     )
     const outer = token.disabled ? <Tooltip title='This option is temporarily disabled. It will be available in the future version of 1wallet'>{inner}</Tooltip> : inner
     return <Select.Option key={index} value={token.symbol || 'one'} style={selectOptionStyle}>{outer}</Select.Option>
@@ -395,7 +403,22 @@ const Swap = ({ address }) => {
     const outDecimal = isFrom ? tokenTo.decimal : tokenFrom.decimal
     const valueDecimal = isFrom ? tokenFrom.decimal : tokenTo.decimal
     const { balance: amountIn, formatted: amountInFormatted } = util.toBalance(value, undefined, valueDecimal)
-    const amountOut = await api.sushi.getAmountOut({ amountIn, tokenAddress, inverse: useFrom !== isFrom })
+
+    // let setAmount
+    // if(isFrom) {
+    //   setAmount = await api.sushi.getAmountOut({ amountIn, tokenAddress, inverse: useFrom !== isFrom })
+    // }else{
+    //   setAmount = await api.sushi.getAmountIn({ amountOut: amountIn, tokenAddress, inverse: useFrom !== isFrom })
+    // }
+    // console.log(tokenAddress, amountIn, useFrom !== isFrom)
+    let amountOut
+    try {
+      amountOut = await api.sushi.getAmountOut({ amountIn: amountIn, tokenAddress, inverse: useFrom !== isFrom })
+    } catch (ex) {
+      console.error(ex)
+      setUnknownError(ex.toString())
+      amountOut = new BN(0)
+    }
 
     const { formatted: amountOutFormatted } = util.computeBalance(amountOut, undefined, outDecimal)
     toSetter(amountOutFormatted)
@@ -420,6 +443,42 @@ const Swap = ({ address }) => {
     onAmountChange(true)({ target: { value: formatted, preciseValue: tokenBalance } })
   }, [tokenFrom, balance, tokenBalances, onAmountChange, setFromAmountFormatted])
 
+  useEffect(() => {
+    if (!fromAmountFormatted) {
+      return
+    }
+    const parsed = parseFloat(fromAmountFormatted)
+    if (isNaN(parsed) || parsed < 0) {
+      setFromAmountError('Invalid Amount')
+    } else {
+      setFromAmountError('')
+    }
+  }, [fromAmountFormatted])
+
+  useEffect(() => {
+    if (!toAmountFormatted) {
+      return
+    }
+    const parsed = parseFloat(toAmountFormatted)
+    if (isNaN(parsed) || parsed < 0) {
+      setToAmountError('Invalid Amount')
+    } else {
+      setToAmountError('')
+    }
+  }, [toAmountFormatted])
+
+  useEffect(() => {
+    if (tokenTo.value && !toAmountFormatted) {
+      setToAmountFormatted('0')
+    }
+  }, [tokenTo])
+
+  useEffect(() => {
+    if (tokenFrom.value && !fromAmountFormatted) {
+      setFromAmountFormatted('0')
+    }
+  }, [tokenFrom])
+
   const onSelectTokenSwapFrom = (token) => {
     setTokenFrom({ ...token, value: token.symbol, label: <TokenLabel token={token} selected /> })
     // onAmountChange(false)({ target: { value: targetSwapAmountFormatted } })
@@ -432,7 +491,7 @@ const Swap = ({ address }) => {
   const { resetWorker, recoverRandomness } = useRandomWorker()
   const { prepareValidation, onRevealSuccess, ...handlers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
 
-  const commonCommitReveal = ({ otp, otp2, hexData, args, trackToken, updateFromBalance }) => {
+  const commonCommitReveal = ({ otp, otp2, hexData, args, trackToken, updateFromBalance, extraHandlers }) => {
     SmartFlows.commitReveal({
       wallet,
       otp,
@@ -469,6 +528,7 @@ const Swap = ({ address }) => {
         }
       },
       ...handlers,
+      ...extraHandlers
     })
   }
   const handleSwapONEToToken = ({ slippage, deadline, otp, otp2 }) => {
@@ -600,7 +660,7 @@ const Swap = ({ address }) => {
           </Col>
           <Col span={isMobile ? 24 : 16}>
             <Space direction='vertical' style={{ width: '100%' }}>
-              <Text style={textStyle} type='secondary'>Amount (Balance: {tokenBalanceFormatted})</Text>
+              <Text style={textStyle} type={fromAmountError ? 'danger' : 'secondary'}>Amount (Balance: {tokenBalanceFormatted}) {fromAmountError}</Text>
               <Row>
                 <InputBox $decimal size='default' style={amountInputStyle} placeholder='0.00' value={fromAmountFormatted} onChange={onAmountChange(true)} />
                 <Button style={maxButtonStyle} shape='round' onClick={setMaxSwapAmount}>Max</Button>
@@ -628,7 +688,7 @@ const Swap = ({ address }) => {
           </Col>
           <Col span={isMobile ? 24 : 16}>
             <Space direction='vertical' style={{ width: '100%' }}>
-              <Text style={textStyle} type='secondary'>Expected Amount</Text>
+              <Text style={textStyle} type={toAmountError ? 'danger' : 'secondary'}>Expected Amount {toAmountError}</Text>
               <InputBox $decimal size='default' style={{ ...amountInputStyle, width: '100%' }} placeholder='0.00' value={toAmountFormatted} onChange={onAmountChange(false)} />
             </Space>
           </Col>
@@ -644,6 +704,14 @@ const Swap = ({ address }) => {
           <Col span={24}>
             <Warning>
               Insufficient liquidity in SushiSwap. Please reduce expected amount or try a different token pair.
+            </Warning>
+          </Col>
+        </TallRow>}
+      {unknownError &&
+        <TallRow>
+          <Col span={24}>
+            <Warning>
+              An unknown error occurred. Network might be offline. The token pair may have insufficient liquidity. Please submit a bug report if you think you caught a bug in 1wallet. Error: {unknownError}
             </Warning>
           </Col>
         </TallRow>}

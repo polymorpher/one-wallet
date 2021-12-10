@@ -7,6 +7,7 @@ import { Layout, Row, Spin } from 'antd'
 import SiderMenu from './components/SiderMenu'
 import WalletHeader from './components/WalletHeader'
 import CreatePage from './pages/Create'
+import AddressDetailPage from './pages/Contacts/AddressDetail'
 import ListPage from './pages/List'
 import RestorePage from './pages/Restore'
 import ShowPage from './pages/Show'
@@ -55,6 +56,7 @@ const LocalRoutes = () => {
             <Route path={Paths.create2} render={() => <CreatePage expertMode showRecovery />} />
             <Route path={Paths.wallets} component={ListPage} />
             <Route path={Paths.restore} component={RestorePage} />
+            <Route path={Paths.address} component={AddressDetailPage} exact />
             <Route path={Paths.show} component={ShowPage} />
             <Route path={Paths.tools} component={ToolsPage} />
             <Route path={Paths.unwrap} component={Unwrap} />

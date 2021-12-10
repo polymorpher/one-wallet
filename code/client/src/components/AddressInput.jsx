@@ -1,7 +1,8 @@
-import { CloseOutlined, ScanOutlined } from '@ant-design/icons'
+import { CloseOutlined, ScanOutlined, EditOutlined } from '@ant-design/icons'
 import { Select, Button, Tooltip, Row, Col, Spin, Typography, Space } from 'antd'
 import message from '../message'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import Paths from '../constants/paths'
 import { useDispatch, useSelector } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
 import util, { useWaitExecution, useWindowDimensions, updateQRCodeState } from '../util'
@@ -10,6 +11,7 @@ import api from '../api'
 import { isEmpty, trim } from 'lodash'
 import ONEConstants from '../../../lib/constants'
 import QrCodeScanner from './QrCodeScanner'
+import { useHistory } from 'react-router'
 
 const { Text } = Typography
 
@@ -36,6 +38,7 @@ const ScanButton = ({ isMobile, showQrCodeScanner, setShowQrCodeScanner }) => {
  */
 const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSelectOptions, disableManualInput, disabled, style, allowTemp, useHex }) => {
   const dispatch = useDispatch()
+  const history = useHistory()
   const state = useRef({ last: undefined, lastTime: Date.now() }).current
   const [searchingAddress, setSearchingAddress] = useState(false)
   const [searchValue, setSearchValue] = useState('')
@@ -265,7 +268,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
    * ONE address is only used for display, normalized address is used for any internal operations and keys.
    * @param {*} address normalized address for the selection.
    * @param {*} key key for the iterated rendering.
-   * @param {*} displayDeleteButton indicates if this option should display delete button or not.
+   * @param {*} displayActionButton indicates if this option should display edit and delete button or not.
    * @param {*} label of the rendered address option.
    * @param {*} domainName of the displayed address.
    * @param {*} filterValue value used to perform filter, this value should match the user input value.
@@ -274,7 +277,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
   const buildSelectOption = ({
     address,
     key = address,
-    displayDeleteButton,
+    displayActionButton,
     label,
     domainName,
     filterValue
@@ -284,8 +287,8 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
     const displayLabel = `${label ? `(${label})` : ''} ${addressDisplay}`
     return (
       <Select.Option key={addressDisplay} value={filterValue} style={{ padding: 0 }}>
-        <Row align='left'>
-          <Col span={!displayDeleteButton ? 24 : 20}>
+        <Row align='middle'>
+          <Col span={!displayActionButton ? 24 : 20}>
             <Tooltip title={useHex ? address : oneAddress}>
               <Button
                 block
@@ -302,23 +305,31 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
               </Button>
             </Tooltip>
           </Col>
-          <Col span={4}>
-            {
-            displayDeleteButton
-              ? (
+          {displayActionButton &&
+            <Col span={4}>
+              <Row justify='space-between'>
                 <Button
-                  type='text' style={{ textAlign: 'left', height: '50px' }} onClick={(e) => {
+                  key='edit'
+                  type='text' style={{ textAlign: 'left', height: '50px', padding: 8 }} onClick={(e) => {
+                    history.push(Paths.addressDetail(address))
+                    e.stopPropagation()
+                    return false
+                  }}
+                >
+                  <EditOutlined />
+                </Button>
+                <Button
+                  key='delete'
+                  type='text' style={{ textAlign: 'left', height: '50px', padding: 8, marginRight: 16 }} onClick={(e) => {
                     deleteKnownAddress(address)
                     e.stopPropagation()
                     return false
                   }}
                 >
-                  <CloseOutlined />
+                  <CloseOutlined style={{ color: 'red' }} />
                 </Button>
-                )
-              : <></>
-          }
-          </Col>
+              </Row>
+            </Col>}
         </Row>
       </Select.Option>
     )
@@ -370,12 +381,12 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
 
               // Only display actions for addresses that are not selected.
               // User's wallets addresses are not deletable.
-              const displayDeleteButton = addressValue.value !== knownAddress.address && !walletsAddresses.includes(knownAddress.address)
+              const displayActionButton = addressValue.value !== knownAddress.address && !walletsAddresses.includes(knownAddress.address)
 
               return buildSelectOption({
                 key: index,
                 address: knownAddress.address,
-                displayDeleteButton,
+                displayActionButton,
                 label: addressLabel,
                 domainName: knownAddress.domain?.name,
                 filterValue: `${knownAddress.address} ${useHex ? knownAddress.address : oneAddress} ${knownAddress.domain?.name}`
