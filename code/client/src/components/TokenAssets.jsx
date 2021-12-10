@@ -18,24 +18,28 @@ export const KnownERC20 = {
     icon: IconETH,
     symbol: '1ETH',
     name: 'Ethereum ETH',
+    decimals: 18,
     contractAddress: '0x6983D1E6DEf3690C4d616b13597A09e6193EA013'
   },
   '1WBTC': {
     icon: IconBTC,
     symbol: '1WBTC',
     name: 'Wrapped BTC',
+    decimals: 6,
     contractAddress: '0x3095c7557bCb296ccc6e363DE01b760bA031F2d9'
   },
   '1USDC': {
     icon: IconUSDC,
     symbol: '1USDC',
     name: 'USD Coin',
+    decimals: 6,
     contractAddress: '0x985458E523dB3d53125813eD68c274899e9DfAb4'
   },
   BUSD: {
     icon: IconBUSD,
     symbol: 'BUSD',
     name: 'Binance USD',
+    decimals: 18,
     contractAddress: '0xE176EBE47d621b984a73036B9DA5d834411ef734'
   },
   USDT: {
@@ -49,30 +53,35 @@ export const KnownERC20 = {
     icon: IconBNB,
     symbol: 'bscBUSD',
     name: 'BUSD Token',
+    decimals: 18,
     contractAddress: '0x0aB43550A6915F9f67d0c454C2E90385E6497EaA'
   },
   '1SUSHI': {
     icon: IconSushi,
     symbol: '1SUSHI',
     name: 'SushiToken',
+    decimals: 18,
     contractAddress: '0xBEC775Cb42AbFa4288dE81F387a9b1A3c4Bc552A'
   },
   '1DAI': {
     icon: IconDAI,
     symbol: '1DAI',
     name: 'Dai Stablecoin',
+    decimals: 18,
     contractAddress: '0xEf977d2f931C1978Db5F6747666fa1eACB0d0339'
   },
   '1AAVE': {
     icon: IconAAVE,
     symbol: '1AAVE',
     name: 'Aave Token',
+    decimals: 18,
     contractAddress: '0xcF323Aad9E522B93F11c352CaA519Ad0E14eB40F'
   },
   bscUSDT: {
     icon: IconUSDT,
     symbol: 'bscUSDT',
     name: 'Binance USDT',
+    decimals: 18,
     contractAddress: '0x9a89d0e1b051640c6704dde4df881f73adfef39a'
   },
 }
@@ -91,13 +100,14 @@ export const DefaultTrackedERC20 = network => {
     return []
   }
   return Object.keys(KnownERC20).map(symbol => {
-    const { contractAddress, icon, name } = KnownERC20[symbol]
+    const { contractAddress, icon, name, decimals } = KnownERC20[symbol]
     return {
       tokenType: ONEConstants.TokenType.ERC20,
       tokenId: 0,
       contractAddress,
       icon,
       name,
+      decimals,
       symbol,
     }
   })
