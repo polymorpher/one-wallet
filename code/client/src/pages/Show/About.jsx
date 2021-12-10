@@ -144,13 +144,11 @@ const About = ({ address }) => {
               </Row>}
           </Col>
         </TallRow>}
-      <Row style={{ marginTop: 24 }}>
-        <Space>
-          <LocalExport wallet={wallet} />
-          <Popconfirm title='Are you sure？' onConfirm={() => deleteWalletLocally({ wallet, wallets, dispatch, history })}>
-            <Button type='primary' shape='round' danger size='large' icon={<DeleteOutlined />}>Delete locally</Button>
-          </Popconfirm>
-        </Space>
+      <Row style={{ marginTop: 24 }} justify='space-between'>
+        <Popconfirm title='Are you sure？' onConfirm={() => deleteWalletLocally({ wallet, wallets, dispatch, history })}>
+          <Button type='primary' shape='round' danger size='large' icon={<DeleteOutlined />}>Delete locally</Button>
+        </Popconfirm>
+        <LocalExport wallet={wallet} />
       </Row>
     </>
   )

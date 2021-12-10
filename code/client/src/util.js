@@ -151,10 +151,6 @@ const util = {
     return values(wallets).filter(w => w.network === network)
   },
 
-  isWalletExisted: (wallets, wallet) => {
-    return !!keys(wallets).find(w => w === wallet?.address)
-  },
-
   getNetworkExplorerUrl: (address, network) => {
     if (network === 'harmony-testnet') {
       return `https://explorer.pops.one/#/address/${address}`

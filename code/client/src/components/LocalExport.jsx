@@ -1,44 +1,40 @@
 import React from 'react'
-import protobuf from 'protobufjs/light'
 import message from '../message'
 import storage from '../storage'
 import { Button } from 'antd'
 import { ExportOutlined, LoadingOutlined } from '@ant-design/icons'
 import { useState } from 'react'
-
-const Field = protobuf.Field
-
-export function LocalExportMessage (properties) {
-  protobuf.Message.call(this, properties)
-}
-
-Field.d(1, 'string')(LocalExportMessage.prototype, 'wallet')
-Field.d(2, 'bytes', 'repeated')(LocalExportMessage.prototype, 'layers')
+import { LocalExportMessage } from '../proto/localExportMessage'
 
 const LocalExport = ({ wallet }) => {
   const [loading, setLoading] = useState(false)
 
   const handleExport = async () => {
+    let element
     try {
       setLoading(true)
-
+      
       const layers = await storage.getItem(wallet.root)
-      const filename = `1wallet-${wallet.name.toLowerCase().split(' ').join('-')}.txt`
+      const filename = `${wallet.name.toLowerCase().split(' ').join('-')}.1wallet`
       const msg = new LocalExportMessage({ wallet: JSON.stringify(wallet), layers: layers })
       const buffer = LocalExportMessage.encode(msg).finish()
-      const blob = new Blob([buffer], { type: 'text/plain' })
-      const element = document.createElement('a')
+      const blob = new Blob([buffer])
 
-      element.href = URL.createObjectURL(blob)
+      element = document.createElement('a')
       element.download = filename
+      element.href = URL.createObjectURL(blob)
       document.body.appendChild(element)
       element.click()
 
-      URL.revokeObjectURL(element.href)
       message.success(`Exported ${filename} Successfully`)
     } catch(err) {
       message.error(err?.message)
     } finally {
+      if(element.href) URL.revokeObjectURL(element.href)
+      if(element) {
+        document.body.removeChild(element)
+        element = undefined
+      }
       setLoading(false)
     }
   }
