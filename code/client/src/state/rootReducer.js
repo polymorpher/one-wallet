@@ -21,12 +21,18 @@ const rootConfig = {
 const walletConfig = {
   key: 'wallet',
   storage,
-  blacklist: ['layers', 'provider', 'error', 'fetching', 'loading']
+  blacklist: ['error', 'fetching', 'loading']
+}
+
+const cacheConfig = {
+  key: 'cache',
+  storage,
 }
 
 const rootReducer = (history) => combineReducers({
   ...reducers,
   wallet: persistReducer(walletConfig, reducers.wallet),
+  cache: persistReducer(cacheConfig, reducers.cache),
   router: connectRouter(history)
 })
 
