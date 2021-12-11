@@ -77,9 +77,7 @@ const QrCodeScanner = ({ onScan, shouldInit, style }) => {
 
   const getBase64 = (img) => new Promise((resolve) => {
     const reader = new FileReader()
-
     reader.addEventListener('load', () => resolve(reader.result))
-
     reader.readAsDataURL(img)
   })
 
@@ -90,24 +88,18 @@ const QrCodeScanner = ({ onScan, shouldInit, style }) => {
 
     if (info.file.status === 'done') {
       const imageUri = await getBase64(info.file.originFileObj)
-
       const imageData = await convertURIToImageData(imageUri)
-
       const qrCode = jsQR(imageData.data, imageData.width, imageData.height)
-
       onScan(qrCode.data)
-
       setQrCodeImageUploading(false)
     }
   }
 
   const beforeUpload = (file) => {
     const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png'
-
     if (!isJpgOrPng) {
       message.error('You can only upload JPG/PNG file')
     }
-
     return isJpgOrPng
   }
 
