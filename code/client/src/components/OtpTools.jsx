@@ -1,8 +1,9 @@
 import message from '../message'
 import { MigrationPayload } from '../proto/oauthMigration'
 import { Image, Row } from 'antd'
-import { OSType } from '../util'
+import util, { OSType } from '../util'
 import React from 'react'
+import config from '../config'
 import ONEUtil from '../../../lib/util'
 const OAUTH_OTP_PATTERN = /otpauth:\/\/totp\/(.+)(%3A|:)(.+)\?.+/
 export const parseOAuthOTP = (url) => {
@@ -16,8 +17,8 @@ export const parseOAuthOTP = (url) => {
     const secret = parsedUrl.searchParams.get('secret')
     const issuer2 = parsedUrl.searchParams.get('issuer')
     const issuer = m[1] || issuer2
-    if (issuer !== 'ONE Wallet' && issuer !== 'Harmony') {
-      message.error('Invalid issuer of the recovery QR code. Must be either `ONE Wallet` or `Harmony`')
+    if (issuer !== 'ONE Wallet' && issuer !== 'Harmony' && issuer !== '1wallet') {
+      message.error('Invalid issuer of the recovery QR code. Expecting `1wallet` or `Harmony`')
       return null
     }
     return { name: decodeURIComponent(m[3]), secret }
@@ -34,14 +35,14 @@ export const parseMigrationPayload = url => {
   const params = decoded.otpParameters
   const filteredParams = params.filter(e => e.issuer === 'ONE Wallet' || e.issuer === 'Harmony')
   if (filteredParams.length > 2) {
-    message.error('You selected more than one authenticator entry to export. Please reselect on Google Authenticator')
+    message.error('You selected too many accounts to export. Please pick one account only.')
     return null
   }
   let secret2
   if (filteredParams.length === 2) {
     const names = filteredParams.map(e => e.name.split('-')[0].trim()).map(e => e.split('(')[0].trim())
     if (names[0] !== names[1]) {
-      message.error('You selected two wallets with different names. If you want to select two entries belonging to the same wallet, make sure they have the same name and the second one has "- 2nd" in the end')
+      message.error('You selected two 1wallets with different names. If you want to select two entries belonging to the same wallet, make sure they have the same name and the second one has "- 2nd" in the end')
       return undefined
     }
     secret2 = filteredParams[1]?.secret
@@ -113,3 +114,17 @@ export const buildQRCodeComponent = ({ seed, name, os, isMobile, qrCodeData }) =
 }
 
 export const getSecondCodeName = (name) => `${name} - 2nd`
+
+export const NAME_ADDRESS_COMBINED_PATTERN = /([A-Za-z ]+)\[([a-z0-9]+)\]/
+
+// input is assumed to be already gone through decodeURIComponent
+export const parseAuthAccountName = (rawName) => {
+  if (rawName.indexOf('[') > 0) {
+    const m = rawName.match(NAME_ADDRESS_COMBINED_PATTERN)
+    if (!m) {
+      return null
+    }
+    return { name: m[1].trim(), address: m[2].trim() }
+  }
+  return { name: rawName.trim() }
+}
