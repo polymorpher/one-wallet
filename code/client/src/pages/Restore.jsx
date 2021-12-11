@@ -17,16 +17,20 @@ import * as Sentry from '@sentry/browser'
 import AddressInput from '../components/AddressInput'
 import QrCodeScanner from '../components/QrCodeScanner'
 import ScanGASteps from '../components/ScanGASteps'
-import { parseOAuthOTP, parseMigrationPayload } from '../components/OtpTools'
+import { parseOAuthOTP, parseMigrationPayload, parseAuthAccountName } from '../components/OtpTools'
 import WalletCreateProgress from '../components/WalletCreateProgress'
 import { AverageRow } from '../components/Grid'
+import RestoreByCodes from './Restore/RestoreByCodes'
+import SyncRecoveryFile from './Restore/SyncRecoveryFile'
+import SetupNewCode from './Restore/SetupNewCode'
 const { Title } = Typography
 
 const Sections = {
   Choose: 0,
   ScanQR: 1,
-  RecoveryCode: 2,
+  SyncRecoveryFile: 2,
   SetupNewCode: 3,
+  RecoveryCode: 4,
 }
 
 const Restore = () => {
@@ -39,8 +43,69 @@ const Restore = () => {
   const [secret, setSecret] = useState()
   const [secret2, setSecret2] = useState()
   const [name, setName] = useState()
-  const [majorVersion, setMajorVersion] = useState()
-  const [minorVersion, setMinorVersion] = useState()
+  const [address, setAddress] = useState()
+  const [addressInput, setAddressInput] = useState({ value: '', label: '' })
+
+  const [walletInfo, setWalletInfo] = useState()
+
+  const [progress, setProgress] = useState(0)
+  const [progressStage, setProgressStage] = useState(0)
+  const [innerLayers, setInnerLayers] = useState()
+  const [expert, setExpert] = useState()
+  const [newCoreParams, setNewCoreParams] = useState()
+
+  const retrieveWalletInfoFromAddress = async (address) => {
+    const oneAddress = util.safeOneAddress(address)
+    message.info(`Retrieving wallet information from ${oneAddress}`)
+    try {
+      const {
+        root,
+        effectiveTime,
+        duration,
+        slotSize,
+        lastResortAddress,
+        majorVersion,
+        minorVersion,
+        spendingLimit,
+        spendingInterval,
+        lastLimitAdjustmentTime,
+        highestSpendingLimit,
+      } = await api.blockchain.getWallet({ address })
+      message.info('Wallet information retrieved from blockchain')
+
+      const walletInfo = {
+        address,
+        root,
+        effectiveTime,
+        duration,
+        slotSize,
+        lastResortAddress,
+        majorVersion,
+        minorVersion,
+        spendingLimit,
+        spendingInterval,
+        lastLimitAdjustmentTime,
+        highestSpendingLimit,
+      }
+      console.log('Retrieved wallet:', walletInfo)
+      setWalletInfo(walletInfo)
+      setAddress(address)
+    } catch (ex) {
+      Sentry.captureException(ex)
+
+      console.error(ex)
+
+      const errorMessage = ex.toString()
+
+      if (errorMessage.includes('no code at address')) {
+        message.error('This is a wallet, but is not a 1wallet address')
+      } else if (errorMessage.includes('Returned values aren\'t valid')) {
+        message.error('This is a smart contract, but is not a 1wallet')
+      } else {
+        message.error(`Cannot retrieve 1wallet at address ${address}. Error: ${ex.toString()}`)
+      }
+    }
+  }
 
   const onScan = (e) => {
     if (e && !secret) {
@@ -54,7 +119,14 @@ const Restore = () => {
         if (!parsed) {
           return
         }
-        const { secret2, secret, name } = parsed
+        const { secret2, secret, name: rawName } = parsed
+        const bundle = parseAuthAccountName(rawName)
+        if (!bundle) {
+          message.error('Authenticator code account name is ill-formatted. Expecting three-word name, optionally followed by address')
+          return
+        }
+        const { name, address } = bundle
+        retrieveWalletInfoFromAddress(address)
         setSecret2(secret2)
         setSecret(secret)
         setName(name)
@@ -66,26 +138,13 @@ const Restore = () => {
     }
   }
 
-  const [addressInput, setAddressInput] = useState({ value: '', label: '' })
-  const [address, setAddress] = useState()
-  const [root, setRoot] = useState()
-  const [effectiveTime, setEffectiveTime] = useState()
-  const [duration, setDuration] = useState()
-  const [slotSize, setSlotSize] = useState()
-  const [lastResortAddress, setLastResortAddress] = useState()
-  const [spendingLimit, setSpendingLimit] = useState()
-  const [spendingInterval, setSpendingInterval] = useState()
-
-  const [progress, setProgress] = useState(0)
-  const [progressStage, setProgressStage] = useState(0)
-
   const onRestore = async (ignoreDoubleOtp) => {
-    if (!root) {
+    if (!walletInfo.root) {
       console.error('Root is not set. Abort.')
       return
     }
     try {
-      const securityParameters = ONEUtil.securityParameters({ majorVersion, minorVersion })
+      const securityParameters = ONEUtil.securityParameters(walletInfo)
       const worker = new Worker('ONEWalletWorker.js')
       worker.onmessage = (event) => {
         const { status, current, total, stage, result } = event.data
@@ -95,21 +154,8 @@ const Restore = () => {
         }
         if (status === 'done') {
           const { hseed, root: computedRoot, layers, doubleOtp } = result
-          if (!ONEUtil.bytesEqual(ONEUtil.hexToBytes(root), computedRoot)) {
-            console.error('Roots are not equal', root, ONEUtil.hexString(computedRoot))
-            // console.error('Roots are not equal', root, ONEUtil.hexString(computedRoot), {
-            //   hseed,
-            //   doubleOtp,
-            //   secret,
-            //   secret2,
-            //   ignoreDoubleOtp,
-            //   ...securityParameters,
-            //   majorVersion,
-            //   minorVersion,
-            //   effectiveTime,
-            //   duration,
-            //   slotSize,
-            // })
+          if (!ONEUtil.bytesEqual(ONEUtil.hexToBytes(walletInfo.root), computedRoot)) {
+            console.error('Roots are not equal', walletInfo.root, ONEUtil.hexString(computedRoot))
             if (!ignoreDoubleOtp && doubleOtp) {
               message.error('Verification failed. Retrying using single authenticator code...')
               onRestore(true)
@@ -118,23 +164,15 @@ const Restore = () => {
             message.error('Verification failed. Your authenticator QR code might correspond to a different contract address.')
             return
           }
-          storage.setItem(root, layers)
+          storage.setItem(walletInfo.root, layers)
           const wallet = {
             _merge: true,
             name,
-            address,
-            root,
-            duration,
-            effectiveTime,
-            lastResortAddress,
+            ...walletInfo,
             hseed: ONEUtil.hexView(hseed),
-            majorVersion,
-            minorVersion,
             doubleOtp,
             network,
             ...securityParameters,
-            spendingLimit,
-            spendingInterval
           }
           dispatch(walletActions.updateWallet(wallet))
           dispatch(walletActions.fetchBalance({ address }))
@@ -147,9 +185,9 @@ const Restore = () => {
       worker && worker.postMessage({
         seed: secret,
         seed2: !ignoreDoubleOtp && secret2,
-        effectiveTime,
-        duration,
-        slotSize,
+        effectiveTime: walletInfo.effectiveTime,
+        duration: walletInfo.duration,
+        slotSize: walletInfo.slotSize,
         interval: WalletConstants.interval,
         ...securityParameters
       })
@@ -162,66 +200,18 @@ const Restore = () => {
 
   useEffect(() => {
     const f = async () => {
-      try {
-        if (!addressInput.value || addressInput.value.length < 42) {
-          return
-        }
-        const address = util.safeExec(util.normalizedAddress, [addressInput.value], handleAddressError)
-        if (!address) {
-          return
-        }
-        if (wallets[address]) {
-          message.error(`Wallet ${address} already exists locally`)
-          return
-        }
-        const {
-          root,
-          effectiveTime,
-          duration,
-          slotSize,
-          lastResortAddress,
-          majorVersion,
-          minorVersion,
-          spendingLimit,
-          spendingInterval
-        } = await api.blockchain.getWallet({ address })
-        console.log('Retrieved wallet:', {
-          root,
-          effectiveTime,
-          duration,
-          slotSize,
-          lastResortAddress,
-          majorVersion,
-          minorVersion,
-          spendingLimit,
-          spendingInterval
-        })
-        setAddress(address)
-        setRoot(root)
-        setEffectiveTime(effectiveTime)
-        setDuration(duration)
-        setSlotSize(slotSize)
-        setLastResortAddress(lastResortAddress)
-        setSpendingLimit(spendingLimit)
-        setSpendingInterval(spendingInterval)
-        setSection(2)
-        setMajorVersion(majorVersion)
-        setMinorVersion(minorVersion)
-      } catch (ex) {
-        Sentry.captureException(ex)
-
-        console.error(ex)
-
-        const errorMessage = ex.toString()
-
-        if (errorMessage.includes('no code at address')) {
-          message.error('This is a wallet, but is not a 1wallet address')
-        } else if (errorMessage.includes('Returned values aren\'t valid')) {
-          message.error('This is a smart contract, but is not a 1wallet address')
-        } else {
-          message.error(`Cannot retrieve wallet at address ${address}. Error: ${ex.toString()}`)
-        }
+      if (!addressInput.value || addressInput.value.length < 42) {
+        return
       }
+      const address = util.safeExec(util.normalizedAddress, [addressInput.value], handleAddressError)
+      if (!address) {
+        return
+      }
+      if (wallets[address]) {
+        message.error(`Wallet ${address} already exists locally`)
+        return
+      }
+      retrieveWalletInfoFromAddress(address)
     }
     f()
   }, [addressInput])
@@ -231,6 +221,18 @@ const Restore = () => {
       onRestore()
     }
   }, [secret, name])
+
+  const onSynced = async (address, layers, expert) => {
+    try {
+      await retrieveWalletInfoFromAddress(address)
+      setExpert(expert)
+      setInnerLayers(layers)
+      setSection(Sections.SetupNewCode)
+    } catch (ex) {
+      console.error(ex)
+      message.error('Please reselect recovery file and try again.')
+    }
+  }
 
   return (
     <>
@@ -242,36 +244,35 @@ const Restore = () => {
           <Col span={isMobile ? 24 : 12}>
             <Space direction='vertical' size='large' style={{ width: '100%' }} align='center'>
               <Button shape='round' type='primary' onClick={() => setSection(Sections.RecoveryCode)}>Authenticator Codes</Button>
-              <Hint>(New since v15) Provide 6 consecutive authenticator codes over the next 3 minutes and your wallet restoration file. Setup a new authenticator code after that.</Hint>
+              <Hint>(New) Provide 36 digit authenticator codes (6 each time) over the next 3 minutes and your wallet restoration file. Setup a new authenticator code after that</Hint>
             </Space>
           </Col>
           <Col span={isMobile ? 24 : 12}>
             <Space direction='vertical' size='large' style={{ width: '100%' }} align='center'>
               <Button shape='round' type='primary' onClick={() => setSection(Sections.ScanQR)}>Scan QR Code</Button>
-              <Hint>(Classic) Scan QR code exported by your (Google) Authenticator</Hint>
+              <Hint>(Classic) Use your webcam to scan QR code exported from your Authenticator (Google and Aegis Authenticator only)</Hint>
             </Space>
           </Col>
         </AverageRow>
       </AnimatedSection>
-      <AnimatedSection show={section === 1}>
-        <Space direction='vertical' size='large'>
-          <Heading>What is the address of the wallet?</Heading>
-          <AddressInput
-            addressValue={addressInput}
-            setAddressCallback={setAddressInput}
-          />
-          <Hint>Next, we will ask for your permission to use your computer's camera. We need that to scan the QR code exported from your Google Authenticator.</Hint>
-        </Space>
-      </AnimatedSection>
-      <AnimatedSection show={section === 2}>
+      <AnimatedSection show={section === Sections.ScanQR}>
         <Space direction='vertical' size='large'>
           <Heading>Restore your wallet from Google Authenticator</Heading>
           {!secret &&
             <>
               <ScanGASteps />
-              <QrCodeScanner shouldInit={section === 2} onScan={onScan} />
+              <QrCodeScanner shouldInit={section === Sections.ScanQR} onScan={onScan} />
             </>}
-          {secret &&
+          {secret && !address &&
+            <Space direction='vertical' size='large'>
+              <Heading>What is the address of the wallet?</Heading>
+              <AddressInput
+                addressValue={addressInput}
+                setAddressCallback={setAddressInput}
+              />
+              <Hint>Your wallet is created prior to v15. So we need its address to complete the restoration process. Newer wallet's address is self-contained and predictable.</Hint>
+            </Space>}
+          {secret && address &&
             <>
               <Hint>Restoring your wallet...</Hint>
               <Space size='large'>
@@ -288,6 +289,32 @@ const Restore = () => {
             </>}
         </Space>
 
+      </AnimatedSection>
+      <AnimatedSection show={section === Sections.SyncRecoveryFile}>
+        <SyncRecoveryFile
+          onSynced={onSynced}
+          onCancel={() => setSection(Sections.Choose)}
+        />
+      </AnimatedSection>
+      <AnimatedSection show={section === Sections.SetupNewCode}>
+        <SetupNewCode
+          expert={expert}
+          active={section === Sections.SetupNewCode}
+          onComplete={() => setSection(Sections.RecoveryCode)}
+          onCancel={() => setSection(Sections.Choose)}
+          onProgressUpdate={({ progress, stage }) => { setProgress(progress); setProgressStage(stage) }}
+          onComputedCoreParams={e => setNewCoreParams(e)}
+        />
+      </AnimatedSection>
+      <AnimatedSection show={section === Sections.RecoveryCode}>
+        <RestoreByCodes
+          isActive={section === Sections.RecoveryCode}
+          onComplete={() => setSection(Sections.SetupNewCode)}
+          onCancel={() => setSection(Sections.Choose)}
+          newCoreParams={newCoreParams}
+          wallet={walletInfo}
+          layers={innerLayers}
+        />
       </AnimatedSection>
     </>
   )
