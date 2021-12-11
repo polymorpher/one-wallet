@@ -22,6 +22,7 @@ import AnimatedSection from '../components/AnimatedSection'
 import qrcode from 'qrcode'
 import storage from '../storage'
 import walletActions from '../state/modules/wallet/actions'
+import cacheActions from '../state/modules/cache/actions'
 import WalletConstants from '../constants/wallet'
 import util, { useWindowDimensions, OSType, generateOtpSeed } from '../util'
 import { handleAPIError, handleAddressError } from '../handler'
@@ -33,6 +34,7 @@ import { TallRow } from '../components/Grid'
 import { FlashyButton } from '../components/Buttons'
 import { buildQRCodeComponent, getQRCodeUri, getSecondCodeName, OTPUriMode } from '../components/OtpTools'
 import { OtpSetup, TwoCodeOption } from '../components/OtpSetup'
+import config from '../config'
 const { Text, Link } = Typography
 
 // const genName = () => uniqueNamesGenerator({
@@ -82,14 +84,10 @@ const Create = ({ expertMode, showRecovery }) => {
   const [seed2, setSeed2] = useState(generateOtpSeed())
   const [duration, setDuration] = useState(WalletConstants.defaultDuration)
   const [showRecoveryDetail, setShowRecoveryDetail] = useState(false)
+  const code = useSelector(state => state.cache.code)
+  const needCodeUpdate = useSelector(state => state.cache.needCodeUpdate)
+  const clientVersion = useSelector(state => state.cache.clientVersion)
 
-  // Used for Recovery address setup. Only used when user does not choose a Recovery address.
-  // A valid wallet of user's wallets in the network can be used as default recovery wallet.
-  // const defaultRecoveryWallet = Object.keys(wallets)
-  //   .map((address) => ({ ...wallets[address], oneAddress: util.safeOneAddress(wallets[address].address) }))
-  //   .find((wallet) => util.safeOneAddress(wallet.address) && wallet.network === network && !wallet.temp)
-
-  // const defaultRecoveryAddress = defaultRecoveryWallet ? { value: defaultRecoveryWallet.oneAddress, label: `(${defaultRecoveryWallet.name}) ${defaultRecoveryWallet.oneAddress}` } : oneWalletTreasurySelectOption
   const defaultRecoveryAddress = { value: ONEConstants.TreasuryAddress, label: WalletConstants.defaultRecoveryAddressLabel }
 
   const [lastResortAddress, setLastResortAddress] = useState(defaultRecoveryAddress)
@@ -123,15 +121,32 @@ const Create = ({ expertMode, showRecovery }) => {
   })
 
   useEffect(() => {
+    dispatch(cacheActions.fetchVersion())
+  }, [])
+  useEffect(() => {
+    if (needCodeUpdate || clientVersion !== config.version) {
+      dispatch(cacheActions.updateClientVersion(config.version))
+      dispatch(cacheActions.fetchCode())
+    }
+  }, [needCodeUpdate, clientVersion])
+
+  useEffect(() => {
+    if (!code || !name) {
+      return
+    }
     (async function () {
-      const otpUri = getQRCodeUri(seed, name, OTPUriMode.MIGRATION)
-      const secondOtpUri = getQRCodeUri(seed2, getSecondCodeName(name), OTPUriMode.MIGRATION)
+      const deployerAddress = config.networks[network].deploy.deployer
+      const address = ONEUtil.predictAddress({ seed, deployerAddress, code })
+      const oneAddress = util.safeOneAddress(address)
+      const otpDisplayName = `${name} [${oneAddress}]`
+      const otpUri = getQRCodeUri(seed, otpDisplayName, OTPUriMode.MIGRATION)
+      const secondOtpUri = getQRCodeUri(seed2, getSecondCodeName(otpDisplayName), OTPUriMode.MIGRATION)
       const otpQrCodeData = await qrcode.toDataURL(otpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       const secondOtpQrCodeData = await qrcode.toDataURL(secondOtpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       setQRCodeData(otpQrCodeData)
       setSecondOtpQrCodeData(secondOtpQrCodeData)
     })()
-  }, [name])
+  }, [name, code])
 
   useEffect(() => {
     if (section === sectionViews.setupOtp && worker) {
