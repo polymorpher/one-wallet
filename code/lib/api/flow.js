@@ -13,6 +13,9 @@ const EotpBuilders = {
     const encodedOtp2 = otp2 ? ONEUtil.encodeNumericalOtp(otp2) : undefined
     return ONE.computeEOTP({ otp: encodedOtp, otp2: encodedOtp2, rand, nonce, hseed: ONEUtil.hexToBytes(hseed) })
   },
+  restore: async ({ otp }) => {
+    return ONE.computeInnerEOTP({ otps: otp })
+  },
   recovery: async ({ wallet, layers }) => {
     // eslint-disable-next-line no-unused-vars
     const { hseed, effectiveTime } = wallet
