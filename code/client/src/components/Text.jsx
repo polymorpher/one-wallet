@@ -7,6 +7,8 @@ import { AverageRow } from './Grid'
 
 const { Text, Title, Link, Paragraph } = Typography
 
+export { Text, Title, Link, Paragraph }
+
 export const Heading = styled(Title).attrs((props) => ({ level: 2, ...props }))`
   //font-size: 24px;
   //color: #1f1f1f;
