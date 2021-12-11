@@ -19,7 +19,7 @@ export const useOtpState = () => {
   return { state: { otpRef, otp2Ref, otpInput, otp2Input, setOtpInput, setOtp2Input, resetOtp } }
 }
 
-export const OtpStack = ({ isDisabled, shouldAutoFocus, wideLabel, walletName, otpState, doubleOtp = otpState?.doubleOtp, onComplete, action }) => {
+export const OtpStack = ({ isDisabled, shouldAutoFocus, wideLabel, walletName, otpState, doubleOtp = otpState?.doubleOtp, onComplete, action, label, label2 }) => {
   const { isMobile } = useWindowDimensions()
   const location = useLocation()
   const { otpRef, otp2Ref, otpInput, otp2Input, setOtpInput, setOtp2Input, resetOtp } = otpState || useOtpState()
@@ -49,7 +49,7 @@ export const OtpStack = ({ isDisabled, shouldAutoFocus, wideLabel, walletName, o
     <Space direction='vertical'>
       <Space align='center' size='large' style={{ marginTop: 16 }}>
         <Label wide={wideLabel}>
-          <Hint>Code {doubleOtp ? '1' : ''}</Hint>
+          <Hint>Code {label || (doubleOtp ? '1' : '')}</Hint>
         </Label>
         <OtpBox
           ref={otpRef}
@@ -69,7 +69,7 @@ export const OtpStack = ({ isDisabled, shouldAutoFocus, wideLabel, walletName, o
       {doubleOtp &&
         <Space align='baseline' size='large' style={{ marginTop: 16 }}>
           <Label wide={wideLabel}>
-            <Hint>Code 2</Hint>
+            <Hint>Code {label2 || '2'}</Hint>
           </Label>
           <OtpBox
             ref={otp2Ref}
