@@ -12,19 +12,26 @@ library ONEWalletCodeHelper {
     }
 }
 
-contract ONEWalletFactoryHelper {
+interface IONEWalletFactoryHelper{
     event ONEWalletDeployFailed(uint256 salt, bytes32 codeHash);
     event ONEWalletDeploySuccess(address addr, uint256 salt, bytes32 codeHash);
+    function getVersion() external pure returns (uint32, uint32);
+    function deploy(IONEWallet.InitParams memory args) payable external returns (address);
+    function predict(bytes memory identificationKey) external view returns (address);
+    function getCode() external pure returns (bytes memory);
+    function verify(IONEWallet addr) external view returns (bool);
+}
 
+contract ONEWalletFactoryHelper is IONEWalletFactoryHelper {
     ONEWalletFactory public factory = ONEWalletFactory(address(0));
     constructor(ONEWalletFactory factory_){
         factory = factory_;
     }
-    function getVersion() public pure returns (uint32, uint32){
+    function getVersion() override public pure returns (uint32, uint32){
         return (Version.majorVersion, Version.minorVersion);
     }
 
-    function deploy(IONEWallet.InitParams memory args) payable public returns (address){
+    function deploy(IONEWallet.InitParams memory args) payable override public returns (address){
         // ONEWallet has no constructor argument since v15
         bytes memory code = ONEWalletCodeHelper.code();
         bytes32 codeHash = keccak256(code);
@@ -41,15 +48,15 @@ contract ONEWalletFactoryHelper {
         return addr;
     }
 
-    function predict(bytes memory identificationKey) public view returns (address){
+    function predict(bytes memory identificationKey) override public view returns (address){
         return factory.predict(uint256(keccak256(identificationKey)), ONEWalletCodeHelper.code());
     }
 
-    function getCode() public pure returns (bytes memory){
+    function getCode() override public pure returns (bytes memory){
         return ONEWalletCodeHelper.code();
     }
 
-    function verify(IONEWallet addr) public view returns (bool){
+    function verify(IONEWallet addr) override public view returns (bool){
         address predictedAddress = factory.predict(uint256(keccak256(addr.identificationKey())), ONEWalletCodeHelper.code());
         return predictedAddress == address(addr);
     }
