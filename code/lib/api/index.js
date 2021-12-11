@@ -5,6 +5,7 @@ const contract = require('@truffle/contract')
 const { TruffleProvider } = require('@harmony-js/core')
 const Web3 = require('web3')
 const ONEWalletContract = require('../../build/contracts/IONEWallet.json')
+const IONEWalletFactoryHelper = require('../../build/contracts/IONEWalletFactoryHelper.json')
 const IERC20 = require('../../build/contracts/IERC20.json')
 const IERC20Metadata = require('../../build/contracts/IERC20Metadata.json')
 const IERC721 = require('../../build/contracts/IERC721.json')
@@ -186,6 +187,27 @@ const api = {
       }
     }
   },
+  factory: {
+    getCode: async () => {
+      const c = new web3.eth.Contract(IONEWalletFactoryHelper, config.networks[activeNetwork].deploy.deployer)
+      return c.methods.getCode().call()
+    },
+    getVersion: async () => {
+      const c = new web3.eth.Contract(IONEWalletFactoryHelper, config.networks[activeNetwork].deploy.deployer)
+      const r = await c.methods.getVersion().call()
+      const majorVersion = r[0].toString()
+      const minorVersion = r[1].toString()
+      return `${majorVersion}.${minorVersion}`
+    },
+    predictAddress: async ({ identificationKey }) => {
+      const c = new web3.eth.Contract(IONEWalletFactoryHelper, config.networks[activeNetwork].deploy.deployer)
+      return c.methods.predict(identificationKey).call()
+    },
+    verify: async ({ address }) => {
+      const c = new web3.eth.Contract(IONEWalletFactoryHelper, config.networks[activeNetwork].deploy.deployer)
+      return c.methods.verify(address).call()
+    }
+  },
   blockchain: {
     getOldInfos: async ({ address, raw }) => {
       const c = await one.at(address)
@@ -249,8 +271,17 @@ const api = {
         if (config.debug) console.log(`Failed to get wallet version. Wallet might be too old. Error: ${ex.toString()}`)
       }
       const [root, height, interval, t0, lifespan, maxOperationsPerInterval, lastResortAddress, dailyLimit] = Object.keys(result).map(k => result[k])
-      let spendingLimit, spendingAmount, lastSpendingInterval, spendingInterval
-      if (majorVersion >= 12) {
+      let spendingLimit; let spendingAmount; let lastSpendingInterval; let spendingInterval
+      let lastLimitAdjustmentTime = new BN(0); let highestSpendingLimit = new BN(0)
+      if (majorVersion >= 15) {
+        const r = await c.getSpendingState()
+        spendingLimit = r[0]
+        spendingAmount = r[1]
+        lastSpendingInterval = r[2]
+        spendingInterval = r[3]
+        lastLimitAdjustmentTime = r[4]
+        highestSpendingLimit = r[5]
+      } else if (majorVersion >= 12) {
         const r = await c.getCurrentSpendingState()
         spendingLimit = r[0]
         spendingAmount = r[1]
@@ -279,7 +310,9 @@ const api = {
           spendingAmount,
           lastSpendingInterval,
           spendingLimit,
-          spendingInterval
+          spendingInterval,
+          lastLimitAdjustmentTime,
+          highestSpendingLimit,
         }
       }
       const intervalMs = interval.toNumber() * 1000
@@ -296,7 +329,9 @@ const api = {
         spendingLimit: spendingLimit.toString(),
         lastSpendingInterval: lastSpendingInterval.toNumber(),
         spendingAmount: spendingAmount.toString(),
-        spendingInterval: spendingInterval.toNumber() * 1000
+        spendingInterval: spendingInterval.toNumber() * 1000,
+        lastLimitAdjustmentTime: lastLimitAdjustmentTime.toNumber() * 1000,
+        highestSpendingLimit: highestSpendingLimit.toString(),
       }
     },
     getBalance: async ({ address }) => {
