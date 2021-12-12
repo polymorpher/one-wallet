@@ -118,15 +118,15 @@ const WalletAddress = ({ showLabel, labelOverride, address, shorten, onToggle, a
       >
         {showAddressOptions
           ? <WalletAddressOptions
-              onAddressStyleSwitch={() => {
-                setShowOneAddress(!showOneAddress)
-                navigator.clipboard.writeText(`${!showOneAddress ? util.safeOneAddress(address) : util.safeNormalizedAddress(address)} (${getLabel(address)})`)
-              }}
-              address={address}
-              copyText={currentDisplayAddress}
-              network={network}
-              itemStyle={itemStyle}
-            />
+            onAddressStyleSwitch={() => {
+              setShowOneAddress(!showOneAddress)
+              navigator.clipboard.writeText(`${!showOneAddress ? util.safeOneAddress(address) : util.safeNormalizedAddress(address)} (${getLabel(address)})`)
+            }}
+            address={address}
+            copyText={currentDisplayAddress}
+            network={network}
+            itemStyle={itemStyle}
+          />
           : <></>}
       </Space>
     </Space>

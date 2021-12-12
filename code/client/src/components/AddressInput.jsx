@@ -145,7 +145,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
    */
   const notCurrentWallet = useCallback((inputWalletAddress) =>
     !currentWallet || currentWallet?.address !== inputWalletAddress,
-    [currentWallet])
+  [currentWallet])
 
   useEffect(() => {
     const initKnownAddresses = async () => {
@@ -364,7 +364,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
           onSearch={onSearchAddress}
           disabled={disabled}
           {
-          ...selectInputValueProp
+            ...selectInputValueProp
           }
         >
           {

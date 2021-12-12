@@ -320,7 +320,7 @@ const Extend = ({
             <Title level={3}>Renew Wallet</Title>
             <WalletAddress showLabel alwaysShowOptions address={address} addressStyle={{ padding: 0 }} />
           </Space>
-}
+        }
       >
         {children}
         <Row justify='start' style={{ marginTop: 48 }}>
