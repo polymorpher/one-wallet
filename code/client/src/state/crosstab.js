@@ -1,5 +1,5 @@
 import { REHYDRATE } from 'redux-persist/lib/constants'
-import { BroadcastChannel } from 'broadcast-channel';
+import { BroadcastChannel } from 'broadcast-channel'
 
 /**
  * Event listener to update cross browser tab redux store
@@ -7,7 +7,7 @@ import { BroadcastChannel } from 'broadcast-channel';
  * and https://github.com/rt2zz/redux-persist-crosstab/issues/7#issuecomment-355528453
  */
 export function crosstab (store, persistConfig, crosstabConfig = {}) {
-  const {blocklist = null, accesslist = null, allowActions = null} = crosstabConfig
+  const { blocklist = null, accesslist = null, allowActions = null } = crosstabConfig
   const { key } = persistConfig
 
   let channel
@@ -34,15 +34,15 @@ export function crosstab (store, persistConfig, crosstabConfig = {}) {
             return state
           }
           state[reducerKey] = msg[reducerKey]
-          return state 
+          return state
         }, {})
 
-          dispatchingSelf = true
-          store.dispatch({
-            key: key,
-            payload: state,
-            type: REHYDRATE,
-          })
+        dispatchingSelf = true
+        store.dispatch({
+          key: key,
+          payload: state,
+          type: REHYDRATE,
+        })
       }
     }
   }
