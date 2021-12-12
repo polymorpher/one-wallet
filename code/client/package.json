@@ -5,7 +5,8 @@
   "license": "Apache-2.0",
   "main": "client.js",
   "scripts": {
-    "dev": "DEBUG=1 webpack serve --mode=development",
+    "dev": "webpack serve --mode=development",
+    "dev:d": "DEBUG=1 webpack serve --mode=development",
     "local": "webpack serve --mode=development",
     "build": "webpack --config webpack.config.js",
     "pb": "pbjs -t static-module -o ./src/proto/oauthMigration.js ./src/proto/oauth_migration.proto"
@@ -82,6 +83,7 @@
     "antd": "^4.16.2",
     "axios": "^0.21.1",
     "bn.js": "^5.2.0",
+    "broadcast-channel": "^4.7.0",
     "connected-react-router": "^6.9.1",
     "hi-base32": "^0.5.1",
     "history": "4.10.1",

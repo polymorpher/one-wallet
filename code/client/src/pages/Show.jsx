@@ -75,7 +75,9 @@ const Show = () => {
     }
     const fetch = () => dispatch(walletActions.fetchBalance({ address }))
     fetch()
-    const handler = setInterval(() => fetch(), WalletConstants.fetchBalanceFrequency)
+    const handler = setInterval(() => { 
+      if (!document.hidden) { fetch() }
+    }, WalletConstants.fetchBalanceFrequency)
     dispatch(walletActions.fetchWallet({ address }))
     return () => { clearInterval(handler) }
   }, [address])
