@@ -1,8 +1,10 @@
 import { put, all, call, takeLatest, takeEvery } from 'redux-saga/effects'
 import walletActions from './actions'
+import globalActions from '../global/actions'
 import api from '../../../api'
 
 function * handleFetchWallet (action) {
+  yield put(globalActions.setFetchStatus(true))
   try {
     const { address } = action.payload
     const wallet = yield call(api.blockchain.getWallet, { address })
@@ -16,31 +18,51 @@ function * handleFetchWallet (action) {
     if (wallet?.majorVersion >= 14) {
       oldInfos = yield call(api.blockchain.getOldInfos, { address })
     }
-    yield put(walletActions.fetchWalletSuccess({ ...wallet, backlinks, forwardAddress, oldInfos }))
+    yield all([
+      put(walletActions.fetchWalletSuccess({ ...wallet, backlinks, forwardAddress, oldInfos })),
+      put(globalActions.setFetchStatus(false)),
+    ])
   } catch (err) {
     console.error(err)
-    yield put(walletActions.fetchWalletFailed(new Error('Failed to get wallet information')))
+    yield all([
+      put(globalActions.setFetchStatus(false)),
+      put(globalActions.setError(new Error('Failed to get wallet information'))),
+    ])
   }
 }
 
 function * handleFetchBalance (action) {
+  yield put(globalActions.setFetchStatus(true))
   try {
     const { address } = action.payload
     const balance = yield call(api.blockchain.getBalance, { address })
-    yield put(walletActions.fetchBalanceSuccess({ address, balance }))
+    yield all([
+      put(walletActions.fetchBalanceSuccess({ address, balance })),
+      put(globalActions.setFetchStatus(false)),
+    ])
   } catch (err) {
     console.error(err)
-    yield put(walletActions.fetchBalanceFailed(new Error('Failed to get wallet balance')))
+    yield all([
+      put(globalActions.setFetchStatus(false)),
+      put(globalActions.setError(new Error('Failed to get wallet balance'))),
+    ])
   }
 }
 
 function * handleFetchPrice () {
+  yield put(globalActions.setFetchStatus(true))
   try {
     const price = yield call(api.binance.getPrice)
-    yield put(walletActions.fetchPriceSuccess(price))
+    yield all([
+      put(walletActions.fetchPriceSuccess(price)),
+      put(globalActions.setFetchStatus(false)),
+    ])
   } catch (err) {
     console.error(err)
-    yield put(walletActions.fetchPriceFailed(new Error('Failed to get ONE/USDT price')))
+    yield all([
+      put(globalActions.setFetchStatus(false)),
+      put(globalActions.setError(new Error('Failed to get ONE/USDT price'))),
+    ])
   }
 }
 
@@ -48,10 +70,16 @@ function * handleFetchTokenBalance (action) {
   try {
     const { address, contractAddress, tokenType, tokenId, key } = action.payload
     const balance = yield call(api.blockchain.tokenBalance, { contractAddress, tokenType, tokenId, address })
-    yield put(walletActions.fetchTokenBalanceSuccess({ address, key, balance: balance.toString() }))
+    yield all([
+      put(walletActions.fetchTokenBalanceSuccess({ address, key, balance: balance.toString() })),
+      put(globalActions.setFetchStatus(false)),
+    ])
   } catch (err) {
     console.error(err)
-    yield put(walletActions.fetchTokenBalanceFailed(new Error('Failed to get wallet balance')))
+    yield all([
+      put(globalActions.setFetchStatus(false)),
+      put(globalActions.setError(new Error('Failed to get wallet balance'))),
+    ])
   }
 }
 

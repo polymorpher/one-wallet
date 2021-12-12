@@ -8,6 +8,13 @@ const updateStats = createAction('UPDATE_STATS')
 const setKnownAddress = createAction('SET_KNOWN_ADDRESS')
 const deleteKnownAddress = createAction('DELETE_KNOWN_ADDRESS')
 
+// TODO: remove if not used.
+const setProvider = createAction('SET_PROVIDER')
+const setFetchStatus = createAction('SET_FETCH_STATUS')
+// TODO: remove if not used.
+const setLoadStatus = createAction('SET_LOAD_STATUS')
+const setError = createAction('SET_ERROR')
+
 export default {
   setDev,
 
@@ -15,4 +22,8 @@ export default {
 
   deleteKnownAddress,
   setKnownAddress,
+  setError,
+  setFetchStatus,
+  setLoadStatus,
+  setProvider,
 }

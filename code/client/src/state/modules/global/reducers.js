@@ -3,8 +3,12 @@ import globalActions from './actions'
 
 export const initialState = {
   knownAddresses: {},
+  stats: {},
+  provider: undefined,
   dev: false,
-  stats: {}
+  fetching: false,
+  loading: false,
+  error: undefined,
 }
 
 const reducer = handleActions(
@@ -45,6 +49,26 @@ const reducer = handleActions(
         knownAddresses: restKnownAddresses
       }
     },
+
+    [globalActions.setProvider]: (state, action) => ({
+      ...state,
+      provider: action.payload,
+    }),
+
+    [globalActions.setFetchStatus]: (state, action) => ({
+      ...state,
+      fetching: action.payload,
+    }),
+
+    [globalActions.setError]: (state, action) => ({
+      ...state,
+      error: action.payload,
+    }),
+
+    [globalActions.setLoadStatus]: (state, action) => ({
+      ...state,
+      loading: action.payload,
+    }),
   },
   {
     ...initialState

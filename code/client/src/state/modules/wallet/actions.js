@@ -1,15 +1,12 @@
 import { createAction } from '@reduxjs/toolkit'
 const fetchWallet = createAction('FETCH_WALLET')
 const fetchWalletSuccess = createAction('FETCH_WALLET_SUCCESS')
-const fetchWalletFailed = createAction('FETCH_WALLET_FAILED')
 
 const fetchBalance = createAction('FETCH_BALANCE')
 const fetchBalanceSuccess = createAction('FETCH_BALANCE_SUCCESS')
-const fetchBalanceFailed = createAction('FETCH_BALANCE_FAILED')
 
 const fetchPrice = createAction('FETCH_PRICE')
 const fetchPriceSuccess = createAction('FETCH_PRICE_SUCCESS')
-const fetchPriceFailed = createAction('FETCH_PRICE_FAILED')
 
 const updateWallet = createAction('UPDATE_WALLET')
 const selectWallet = createAction('SELECT_WALLET')
@@ -20,12 +17,10 @@ const untrackTokens = createAction('UNTRACK_TOKENS')
 const setSelectedToken = createAction('SET_SELECTED_TOKEN')
 const fetchTokenBalance = createAction('FETCH_TOKEN_BALANCE')
 const fetchTokenBalanceSuccess = createAction('FETCH_TOKEN_BALANCE_SUCCESS')
-const fetchTokenBalanceFailed = createAction('FETCH_TOKEN_BALANCE_FAILED')
 
 const setRelayer = createAction('SET_RELAYER')
 const setRelayerSecret = createAction('SET_RELAYER_SECRET')
 const setNetwork = createAction('SET_NETWORK')
-const setProvider = createAction('SET_PROVIDER')
 
 const bindDomain = createAction('BIND_DOMAIN')
 
@@ -37,20 +32,16 @@ const userSkipVersion = createAction('USER_SKIP_VERSION')
 export default {
   fetchWallet,
   fetchWalletSuccess,
-  fetchWalletFailed,
   fetchBalance,
   fetchBalanceSuccess,
-  fetchBalanceFailed,
   fetchPrice,
   fetchPriceSuccess,
-  fetchPriceFailed,
   updateWallet,
   selectWallet,
   deleteWallet,
   setRelayer,
   setRelayerSecret,
   setNetwork,
-  setProvider,
   bindDomain,
 
   userAcknowledgedToSaveAddress,
@@ -62,5 +53,4 @@ export default {
   setSelectedToken,
   fetchTokenBalance,
   fetchTokenBalanceSuccess,
-  fetchTokenBalanceFailed,
 }

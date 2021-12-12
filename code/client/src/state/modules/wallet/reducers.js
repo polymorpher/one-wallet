@@ -10,54 +10,23 @@ export const initialState = {
   network: config.defaults.network,
   relayer: config.defaults.relayer,
   relayerSecret: config.defaults.relayerSecret,
-  provider: undefined,
-  fetching: false,
-  loading: false,
-  error: undefined,
 }
 
 const reducer = handleActions(
   {
-    [walletActions.fetchWallet]: (state) => ({
-      ...state,
-      fetching: true,
-    }),
     [walletActions.fetchWalletSuccess]: (state, action) => ({
       ...state,
       wallets: { ...state.wallets, [action.payload.address]: { ...state.wallets[action.payload.address], ...action.payload } },
-      fetching: false,
-    }),
-    [walletActions.fetchWalletFailed]: (state, action) => ({
-      ...state,
-      fetching: false,
-      error: action.payload,
     }),
 
-    [walletActions.fetchBalance]: (state) => ({
-      ...state,
-      fetching: true,
-    }),
     [walletActions.fetchBalanceSuccess]: (state, action) => ({
       ...state,
       balances: { ...state.balances, [action.payload.address]: action.payload.balance },
-      fetching: false,
-    }),
-    [walletActions.fetchBalanceFailed]: (state, action) => ({
-      ...state,
-      fetching: false,
-      error: action.payload,
     }),
 
-    [walletActions.fetchPrice]: (state) => ({
-      ...state,
-    }),
     [walletActions.fetchPriceSuccess]: (state, action) => ({
       ...state,
       price: action.payload,
-    }),
-    [walletActions.fetchPriceFailed]: (state, action) => ({
-      ...state,
-      fetching: false,
     }),
 
     [walletActions.updateWallet]: (state, action) => ({
@@ -126,10 +95,6 @@ const reducer = handleActions(
       }
     }),
 
-    [walletActions.fetchTokenBalanceFailed]: (state, action) => ({
-      ...state,
-    }),
-
     [walletActions.setRelayer]: (state, action) => ({
       ...state,
       relayer: action.payload,
@@ -143,11 +108,6 @@ const reducer = handleActions(
     [walletActions.setNetwork]: (state, action) => ({
       ...state,
       network: action.payload,
-    }),
-
-    [walletActions.setProvider]: (state, action) => ({
-      ...state,
-      provider: action.payload,
     }),
 
     [walletActions.bindDomain]: (state, action) => ({
