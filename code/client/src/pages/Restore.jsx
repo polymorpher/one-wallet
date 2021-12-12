@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useHistory } from 'react-router'
 import { Heading, Hint } from '../components/Text'
 import AnimatedSection from '../components/AnimatedSection'
-import { Space, Progress, Timeline, Row } from 'antd'
+import { Space, Progress, Timeline, Row, Divider } from 'antd'
 import message from '../message'
 import api from '../api'
 import ONEUtil from '../../../lib/util'
@@ -226,16 +226,21 @@ const Restore = () => {
     <>
       <AnimatedSection show={section === 1}>
         <Space direction='vertical' size='large'>
-          <Row justify='end'>
-            <LocalImport />
-          </Row>
-          <Heading>What is the address of the wallet?</Heading>
+          <Heading>Import a wallet file</Heading>
+          <LocalImport />
+          <Hint>This is the file that you exported under "About" tab. This option lets you share 1wallets across multiple devices, without having to export the seed from Google Authenticator as QR code.</Hint>
+        </Space>
+        <Divider><Hint>Or</Hint></Divider>
+
+        <Space direction='vertical' size='large'>
+          <Heading>Provide your wallet's address</Heading>
           <AddressInput
             addressValue={addressInput}
             setAddressCallback={setAddressInput}
           />
-          <Hint>Next, we will ask for your permission to use your computer's camera. We need that to scan the QR code exported from your Google Authenticator.</Hint>
+          <Hint>After you provide your address, in the next page you will need to scan the QR Code exported from Google Authenticator (not the QR code which you previously saved to let others transfer assets to you). To do that, you need to grant webcam permission.</Hint>
         </Space>
+
       </AnimatedSection>
       <AnimatedSection show={section === 2}>
         <Space direction='vertical' size='large'>

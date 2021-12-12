@@ -37,15 +37,20 @@ const LocalImport = () => {
         const wallet = JSON.parse(decoded.wallet)
         const layers = decoded.layers
 
-        if (!util.isValidWallet(wallet)) { throw new Error('Wallet is invalid') }
-        if (wallets[wallet.address]) { throw new Error('Wallet is existed') }
-
+        if (!util.isValidWallet(wallet)) {
+          message.error('Wallet file has invalid data')
+          return
+        }
+        if (wallets[wallet.address]) {
+          message.error('Wallet already exists. Please use the existing one or delete it first.')
+          return
+        }
         dispatch(walletActions.updateWallet(wallet))
-        storage.setItem(wallet.root, layers)
+        await storage.setItem(wallet.root, layers)
         message.success(`Wallet ${wallet.name} (${wallet.address}) is restored!`)
         setTimeout(() => history.push(Paths.showAddress(wallet.address)), 1500)
       } catch (err) {
-        message.error(err?.message || 'Import file is corrupted')
+        message.error(err?.message || 'Unable to parse wallet file')
       } finally {
         setFileUploading(false)
       }
@@ -77,7 +82,7 @@ const LocalImport = () => {
         size='large'
         icon={fileUploading ? <LoadingOutlined /> : <ImportOutlined />}
       >
-        Import locally
+        Import
       </Button>
     </Upload>
   )
