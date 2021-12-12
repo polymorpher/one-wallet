@@ -10,6 +10,7 @@ import Paths from '../../constants/paths'
 import { useHistory } from 'react-router'
 import WalletAddress from '../../components/WalletAddress'
 import { deleteWalletLocally } from '../../storage/util'
+import LocalExport from '../../components/LocalExport'
 
 const { Title, Text } = Typography
 
@@ -143,10 +144,11 @@ const About = ({ address }) => {
               </Row>}
           </Col>
         </TallRow>}
-      <Row style={{ marginTop: 24 }}>
+      <Row style={{ marginTop: 24 }} justify='space-between'>
         <Popconfirm title='Are you sure？' onConfirm={() => deleteWalletLocally({ wallet, wallets, dispatch, history })}>
           <Button type='primary' shape='round' danger size='large' icon={<DeleteOutlined />}>Delete locally</Button>
         </Popconfirm>
+        <LocalExport wallet={wallet} />
       </Row>
     </>
   )

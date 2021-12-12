@@ -127,7 +127,7 @@ const List = () => {
   }
 
   return (
-    <>
+    <Space direction='vertical' wi>
       <Row gutter={[24, 24]}>
         {values(wallets).filter(w => isMatchingWallet(w)).map((w, i) => <Col span={isMobile && 24} key={`${w.address}-${i}`}><WalletCard wallet={w} /></Col>)}
       </Row>
@@ -143,7 +143,7 @@ const List = () => {
           </Space>
         </Space>
       </Row>
-    </>
+    </Space>
   )
 }
 export default List
