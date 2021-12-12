@@ -55,7 +55,7 @@ function * handleFetchTokenBalance (action) {
   }
 }
 
-function * walletSages () {
+function * walletSagas () {
   yield all([
     takeEvery(walletActions.fetchWallet().type, handleFetchWallet),
     takeEvery(walletActions.fetchBalance().type, handleFetchBalance),
@@ -64,4 +64,4 @@ function * walletSages () {
   ])
 }
 
-export default walletSages
+export default walletSagas

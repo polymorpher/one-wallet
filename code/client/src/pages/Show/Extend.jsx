@@ -53,7 +53,7 @@ const Extend = ({
     dispatch, wallet, network, stage, setStage,
     resetWorker, recoverRandomness, otpState, isMobile, os
   } = useOps({ address })
-  const dev = useSelector(state => state.wallet.dev)
+  const dev = useSelector(state => state.global.dev)
   const { majorVersion, name, expert } = wallet
   const [method, setMethod] = useState()
   const [seed, setSeed] = useState()

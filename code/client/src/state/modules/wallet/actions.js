@@ -39,10 +39,6 @@ const userAcknowledgedToSaveAddress = createAction('USER_ACKNOWLEDGED_TO_SAVE_AD
 const userAcknowledgedNewRoot = createAction('USER_ACKNOWLEDGED_NEW_ROOT')
 const userSkipVersion = createAction('USER_SKIP_VERSION')
 
-const setDev = createAction('SET_DEV')
-
-const updateGlobalStats = createAction('UPDATE_GLOBAL_STATS')
-
 export default {
   fetchWallet,
   fetchWalletSuccess,
@@ -74,7 +70,4 @@ export default {
   fetchTokenBalance,
   fetchTokenBalanceSuccess,
   fetchTokenBalanceFailed,
-  setDev,
-
-  updateGlobalStats
 }

@@ -64,7 +64,7 @@ const Show = () => {
   const network = useSelector(state => state.wallet.network)
   const [activeTab, setActiveTab] = useState('coins')
   const { expert } = wallet
-  const dev = useSelector(state => state.wallet.dev)
+  const dev = useSelector(state => state.global.dev)
 
   useEffect(() => {
     if (!wallet) {

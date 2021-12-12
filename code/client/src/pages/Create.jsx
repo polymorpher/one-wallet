@@ -73,7 +73,7 @@ const sectionViews = {
 
 const Create = ({ expertMode, showRecovery }) => {
   // eslint-disable-next-line no-unused-vars
-  const dev = useSelector(state => state.wallet.dev)
+  const dev = useSelector(state => state.global.dev)
   const { isMobile, os } = useWindowDimensions()
   const dispatch = useDispatch()
   const history = useHistory()
