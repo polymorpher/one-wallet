@@ -4,7 +4,7 @@ import message from '../message'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Paths from '../constants/paths'
 import { useDispatch, useSelector } from 'react-redux'
-import walletActions from '../state/modules/wallet/actions'
+import { globalActions } from '../state/modules/global'
 import util, { useWaitExecution, useWindowDimensions, updateQRCodeState } from '../util'
 import WalletConstants from '../constants/wallet'
 import api from '../api'
@@ -46,13 +46,13 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
   const walletsMap = useSelector(state => state.wallet.wallets)
   const wallets = Object.keys(walletsMap).map((k) => walletsMap[k])
   const knownAddresses = useSelector(state =>
-    state.wallet.knownAddresses || {}
+    state.global.knownAddresses || {}
   )
   const network = useSelector(state => state.wallet.network)
   const { isMobile } = useWindowDimensions()
   const deleteKnownAddress = useCallback((address) => {
     setAddressCallback({ value: '', label: '' })
-    dispatch(walletActions.deleteKnownAddress(address))
+    dispatch(globalActions.deleteKnownAddress(address))
   }, [dispatch])
 
   const onSearchAddress = (value) => {
@@ -145,7 +145,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
    */
   const notCurrentWallet = useCallback((inputWalletAddress) =>
     !currentWallet || currentWallet?.address !== inputWalletAddress,
-  [currentWallet])
+    [currentWallet])
 
   useEffect(() => {
     const initKnownAddresses = async () => {
@@ -165,7 +165,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
 
       // Init the known address entries for existing wallets.
       walletsNotInKnownAddresses.forEach((wallet) => {
-        dispatch(walletActions.setKnownAddress({
+        dispatch(globalActions.setKnownAddress({
           label: wallet.name,
           address: wallet.address,
           network: wallet.network,
@@ -175,7 +175,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
       })
 
       unlabelledWalletAddress.forEach((w) => {
-        dispatch(walletActions.setKnownAddress({
+        dispatch(globalActions.setKnownAddress({
           ...knownAddresses[w],
           label: w.name,
         }))
@@ -186,7 +186,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
         const nowInMillis = new Date().valueOf()
 
         if (!isEmpty(domainName)) {
-          dispatch(walletActions.setKnownAddress({
+          dispatch(globalActions.setKnownAddress({
             ...knownAddress,
             domain: {
               ...knownAddress.domain,
@@ -210,17 +210,17 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
       // console.log(addressObject)
       setAddressCallback(addressObject.label
         ? {
-            ...addressObject,
-            selected: true
-          }
+          ...addressObject,
+          selected: true
+        }
         : {
-            value: addressObject.value,
-            label: useHex ? addressObject.value : util.safeOneAddress(addressObject.value),
-            domainName: addressObject.domainName,
-            selected: true
-          })
+          value: addressObject.value,
+          label: useHex ? addressObject.value : util.safeOneAddress(addressObject.value),
+          domainName: addressObject.domainName,
+          selected: true
+        })
 
-      dispatch(walletActions.setKnownAddress({
+      dispatch(globalActions.setKnownAddress({
         ...existingKnownAddress,
         label: existingKnownAddress?.label,
         creationTime: existingKnownAddress?.creationTime || nowInMillis,
@@ -339,8 +339,8 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
   // will cover the inner search input that will make the right-click to paste not available.
   const selectInputValueProp = addressValue.value !== ''
     ? {
-        value: addressValue
-      }
+      value: addressValue
+    }
     : {}
 
   return (
@@ -365,45 +365,45 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
           disabled={disabled}
           {
           ...selectInputValueProp
-        }
+          }
         >
           {
-          knownAddressesOptions
-            .filter((knownAddress) =>
-              knownAddress.network === network &&
-              notCurrentWallet(knownAddress.address) &&
-              (!walletsMap?.[knownAddress.address]?.temp || allowTemp) && // not a temporary wallet
-              !util.isDefaultRecoveryAddress(knownAddress.address))
-            .sort((knownAddress) => knownAddress.label ? -1 : 0)
-            .map((knownAddress, index) => {
-              const oneAddress = util.safeOneAddress(knownAddress.address)
-              const addressLabel = knownAddress.label || knownAddress.domain?.name
+            knownAddressesOptions
+              .filter((knownAddress) =>
+                knownAddress.network === network &&
+                notCurrentWallet(knownAddress.address) &&
+                (!walletsMap?.[knownAddress.address]?.temp || allowTemp) && // not a temporary wallet
+                !util.isDefaultRecoveryAddress(knownAddress.address))
+              .sort((knownAddress) => knownAddress.label ? -1 : 0)
+              .map((knownAddress, index) => {
+                const oneAddress = util.safeOneAddress(knownAddress.address)
+                const addressLabel = knownAddress.label || knownAddress.domain?.name
 
-              // Only display actions for addresses that are not selected.
-              // User's wallets addresses are not deletable.
-              const displayActionButton = addressValue.value !== knownAddress.address && !walletsAddresses.includes(knownAddress.address)
+                // Only display actions for addresses that are not selected.
+                // User's wallets addresses are not deletable.
+                const displayActionButton = addressValue.value !== knownAddress.address && !walletsAddresses.includes(knownAddress.address)
 
-              return buildSelectOption({
-                key: index,
-                address: knownAddress.address,
-                displayActionButton,
-                label: addressLabel,
-                domainName: knownAddress.domain?.name,
-                filterValue: `${knownAddress.address} ${useHex ? knownAddress.address : oneAddress} ${knownAddress.domain?.name}`
+                return buildSelectOption({
+                  key: index,
+                  address: knownAddress.address,
+                  displayActionButton,
+                  label: addressLabel,
+                  domainName: knownAddress.domain?.name,
+                  filterValue: `${knownAddress.address} ${useHex ? knownAddress.address : oneAddress} ${knownAddress.domain?.name}`
+                })
               })
+          }
+          {
+            showSelectManualInputAddress && buildSelectOption({
+              address: addressValue.value,
+              label: addressValue.domainName,
+              domainName: addressValue.domainName,
+              filterValue: addressValue.filterValue
             })
-        }
+          }
           {
-          showSelectManualInputAddress && buildSelectOption({
-            address: addressValue.value,
-            label: addressValue.domainName,
-            domainName: addressValue.domainName,
-            filterValue: addressValue.filterValue
-          })
-        }
-          {
-          extraSelectOptions ? extraSelectOptions.map(buildSelectOption) : <></>
-        }
+            extraSelectOptions ? extraSelectOptions.map(buildSelectOption) : <></>
+          }
         </Select>
         {showQrCodeScanner && <QrCodeScanner shouldInit onScan={onScan} />}
       </Space>

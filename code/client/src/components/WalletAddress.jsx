@@ -51,7 +51,7 @@ const MOUSE_HOVER_DETECTION_DELAY = 1000
  */
 const WalletAddress = ({ showLabel, labelOverride, address, shorten, onToggle, addressStyle, alwaysShowOptions, onClick, itemStyle, useHex }) => {
   const network = useSelector(state => state.wallet.network)
-  const knownAddresses = useSelector(state => state.wallet.knownAddresses)
+  const knownAddresses = useSelector(state => state.global.knownAddresses)
   const [showAddressOptions, setShowAddressOptions] = useState(false)
   const [showAddressOptionsLocked, setShowAddressOptionsLocked] = useState(alwaysShowOptions || false)
   const [mouseOnOptions, setMouseOnOptions] = useState(false)

@@ -14,7 +14,6 @@ export const initialState = {
   fetching: false,
   loading: false,
   error: undefined,
-  knownAddresses: {},
 }
 
 const reducer = handleActions(
@@ -150,33 +149,6 @@ const reducer = handleActions(
       ...state,
       provider: action.payload,
     }),
-
-    [walletActions.setKnownAddress]: (state, action) => ({
-      ...state,
-      knownAddresses: {
-        ...state.knownAddresses,
-        [action.payload.address]: {
-          ...state.knownAddresses?.[action.payload.address],
-          label: action.payload.label,
-          address: action.payload.address,
-          network: action.payload.network,
-          domainName: action.payload.domainName,
-          createTime: action.payload.creationTime,
-          lastUsedTime: action.payload.lastUsedTime,
-          numUsed: action.payload.numUsed,
-          domain: action.payload.domain
-        }
-      },
-    }),
-
-    [walletActions.deleteKnownAddress]: (state, action) => {
-      const { [action.payload]: deleted, ...restKnownAddresses } = state.knownAddresses
-
-      return {
-        ...state,
-        knownAddresses: restKnownAddresses
-      }
-    },
 
     [walletActions.bindDomain]: (state, action) => ({
       ...state,
