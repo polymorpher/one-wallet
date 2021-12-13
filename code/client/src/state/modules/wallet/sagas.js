@@ -1,4 +1,4 @@
-import { put, all, call, takeLatest, takeEvery } from 'redux-saga/effects'
+import { put, all, call, takeEvery } from 'redux-saga/effects'
 import walletActions from './actions'
 import globalActions from '../global/actions'
 import balanceActions from '../balance/actions'
@@ -32,23 +32,6 @@ function * handleFetchWallet (action) {
   }
 }
 
-function * handleFetchPrice () {
-  yield put(globalActions.setFetchStatus(true))
-  try {
-    const price = yield call(api.binance.getPrice)
-    yield all([
-      put(walletActions.fetchPriceSuccess(price)),
-      put(globalActions.setFetchStatus(false)),
-    ])
-  } catch (err) {
-    console.error(err)
-    yield all([
-      put(globalActions.setFetchStatus(false)),
-      put(globalActions.setError(new Error('Failed to get ONE/USDT price'))),
-    ])
-  }
-}
-
 function * handleDeleteWallet (action) {
   yield all([
     put(balanceActions.deleteBalance(action.payload)),
@@ -58,7 +41,6 @@ function * handleDeleteWallet (action) {
 function * walletSagas () {
   yield all([
     takeEvery(walletActions.fetchWallet().type, handleFetchWallet),
-    takeLatest(walletActions.fetchPrice().type, handleFetchPrice),
     takeEvery(walletActions.deleteWallet().type, handleDeleteWallet),
   ])
 }

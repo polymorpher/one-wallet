@@ -6,6 +6,7 @@ export const initialState = {
   dev: false,
   fetching: false,
   error: undefined,
+  price: 0,
 }
 
 const reducer = handleActions(
@@ -50,6 +51,11 @@ const reducer = handleActions(
     [globalActions.setError]: (state, action) => ({
       ...state,
       error: action.payload,
+    }),
+
+    [globalActions.fetchPriceSuccess]: (state, action) => ({
+      ...state,
+      price: action.payload,
     }),
   },
   {

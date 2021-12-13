@@ -16,7 +16,7 @@ const { Title, Paragraph } = Typography
 const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amount, from, verbose }) => {
   dest = util.safeNormalizedAddress(dest)
   const balances = useSelector(state => state.balance)
-  const price = useSelector(state => state.wallet.price)
+  const price = useSelector(state => state.global.price)
   const { isMobile } = useWindowDimensions()
   const [selectedAddress, setSelectedAddress] = useState({})
   const { formatted: amountFormatted, fiatFormatted: amountFiatFormatted } = util.computeBalance(amount || 0, price)

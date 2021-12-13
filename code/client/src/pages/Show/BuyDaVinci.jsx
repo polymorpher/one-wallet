@@ -25,7 +25,7 @@ const BuyDaVinci = ({ address, onSuccess, onClose }) => {
   const { isMobile } = useWindowDimensions()
   const [url, setUrl] = useState('')
   const [pendingToken, setPendingToken] = useState(null)
-  const price = useSelector(state => state.wallet.price)
+  const price = useSelector(state => state.global.price)
   const { formatted, fiatFormatted } = util.computeBalance(pendingToken?.price?.toString() || 0, price)
 
   const { state: otpState } = useOtpState()

@@ -46,7 +46,7 @@ const Send = ({
   const { resetWorker, recoverRandomness } = useRandomWorker()
 
   const balances = useSelector(state => state.balance)
-  const price = useSelector(state => state.wallet.price)
+  const price = useSelector(state => state.global.price)
   const { balance = 0, tokenBalances = {} } = balances[address]
   const selectedToken = overrideToken || wallet?.selectedToken || HarmonyONE
   const selectedTokenBalance = selectedToken.key === 'one' ? balance : (tokenBalances[selectedToken.key] || 0)

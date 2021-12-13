@@ -106,7 +106,7 @@ const PurchaseDomain = ({ show, address, onClose }) => {
   const [enoughBalance, setEnoughBalance] = useState(false)
   const [domainAvailable, setDomainAvailable] = useState(false)
   const [checkingAvailability, setCheckingAvailability] = useState(true)
-  const price = useSelector(state => state.wallet.price)
+  const price = useSelector(state => state.global.price)
   const validatedSubdomain = validateSubdomain(subdomain)
 
   const [stage, setStage] = useState(-1)

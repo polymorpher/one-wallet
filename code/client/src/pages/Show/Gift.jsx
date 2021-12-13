@@ -91,7 +91,7 @@ const Gift = ({
   prefilledClaimInterval // int, non-zero
 }) => {
   const { isMobile } = useWindowDimensions()
-  const price = useSelector(state => state.wallet.price)
+  const price = useSelector(state => state.global.price)
   const network = useSelector(state => state.wallet.network)
   const wallets = useSelector(state => state.wallet.wallets)
   const balances = useSelector(state => state.balance)

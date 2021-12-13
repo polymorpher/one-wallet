@@ -18,11 +18,6 @@ const reducer = handleActions(
       wallets: { ...state.wallets, [action.payload.address]: { ...state.wallets[action.payload.address], ...action.payload } },
     }),
 
-    [walletActions.fetchPriceSuccess]: (state, action) => ({
-      ...state,
-      price: action.payload,
-    }),
-
     [walletActions.updateWallet]: (state, action) => ({
       ...state,
       wallets: { ...state.wallets, [action.payload.address]: action.payload._merge ? omit({ ...state.wallets[action.payload.address], ...action.payload }, ['_merge']) : action.payload }

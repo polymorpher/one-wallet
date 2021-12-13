@@ -2,9 +2,6 @@ import { createAction } from '@reduxjs/toolkit'
 const fetchWallet = createAction('FETCH_WALLET')
 const fetchWalletSuccess = createAction('FETCH_WALLET_SUCCESS')
 
-const fetchPrice = createAction('FETCH_PRICE')
-const fetchPriceSuccess = createAction('FETCH_PRICE_SUCCESS')
-
 const updateWallet = createAction('UPDATE_WALLET')
 const selectWallet = createAction('SELECT_WALLET')
 const deleteWallet = createAction('DELETE_WALLET')
@@ -27,8 +24,6 @@ const userSkipVersion = createAction('USER_SKIP_VERSION')
 export default {
   fetchWallet,
   fetchWalletSuccess,
-  fetchPrice,
-  fetchPriceSuccess,
   updateWallet,
   selectWallet,
   deleteWallet,
