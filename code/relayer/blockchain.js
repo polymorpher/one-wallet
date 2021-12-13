@@ -1,7 +1,7 @@
 const config = require('./config')
 const ONEConfig = require('../lib/config/common')
 const ONEUtil = require('../lib/util')
-const contract = require('@truffle/contract')
+const TruffleContract = require('@truffle/contract')
 const { TruffleProvider } = require('@harmony-js/core')
 const { Account } = require('@harmony-js/account')
 const { ONEWallet, factoryContractsList, factoryContracts, libraryList, dependencies } = require('../extensions/contracts')
@@ -52,9 +52,10 @@ const initCachedContracts = async () => {
       const fp = path.join(p, f)
       const key = config.networks[network].key
       const account = new Account(key)
-      const c = contract(lib)
+      const c = TruffleContract(lib)
       c.setProvider(providers[network])
-      c.defaults({ from: account.address })
+      const params = network.startsWith('eth') ? { from: account.address } : { from: account.address, gas: config.gasLimit, gasPrice: config.gasPrice }
+      c.defaults(params)
       const expectedHash = ONEUtil.hexString(ONEUtil.keccak(ONEUtil.hexToBytes(lib.bytecode)))
       try {
         if (knownAddresses[libName]) {
@@ -62,10 +63,11 @@ const initCachedContracts = async () => {
           if (libAddress) {
             console.log(`[${network}][${libName}] Found contract known address at ${libAddress}`)
             // const instance = new c(libAddress)
-            const instance = await c.at(libAddress)
+            const instance = new c(libAddress)
             if (!factoryContracts[libName]) {
               libraries[network][libName] = instance
             } else {
+              c.defaults({ from: account.address })
               factories[network][libName] = instance
             }
             continue
@@ -77,7 +79,7 @@ const initCachedContracts = async () => {
         if (hash === expectedHash) {
           console.log(`[${network}][${libName}] Found existing deployed contract at address ${address}`)
           // const instance = new c(address)
-          const instance = await c.at(address)
+          const instance = new c(address)
           if (!factoryContracts[libName]) {
             libraries[network][libName] = instance
           } else {
@@ -172,11 +174,11 @@ const init = () => {
     }
   })
   Object.keys(providers).forEach(k => {
-    const c = contract(ONEWallet)
+    const c = TruffleContract(ONEWallet)
     c.setProvider(providers[k])
-    const c5 = contract(ONEWalletV5)
+    const c5 = TruffleContract(ONEWalletV5)
     c5.setProvider(providers[k])
-    const c6 = contract(ONEWalletV6)
+    const c6 = TruffleContract(ONEWalletV6)
     c6.setProvider(providers[k])
     const key = config.networks[k].key
     const account = new Account(key)
