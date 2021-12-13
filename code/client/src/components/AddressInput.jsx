@@ -210,15 +210,15 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
       // console.log(addressObject)
       setAddressCallback(addressObject.label
         ? {
-          ...addressObject,
-          selected: true
-        }
+            ...addressObject,
+            selected: true
+          }
         : {
-          value: addressObject.value,
-          label: useHex ? addressObject.value : util.safeOneAddress(addressObject.value),
-          domainName: addressObject.domainName,
-          selected: true
-        })
+            value: addressObject.value,
+            label: useHex ? addressObject.value : util.safeOneAddress(addressObject.value),
+            domainName: addressObject.domainName,
+            selected: true
+          })
 
       dispatch(globalActions.setKnownAddress({
         ...existingKnownAddress,
@@ -339,8 +339,8 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
   // will cover the inner search input that will make the right-click to paste not available.
   const selectInputValueProp = addressValue.value !== ''
     ? {
-      value: addressValue
-    }
+        value: addressValue
+      }
     : {}
 
   return (

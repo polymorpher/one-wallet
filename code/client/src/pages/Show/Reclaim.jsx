@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Button, Space, Typography, Col } from 'antd'
 import message from '../../message'
-import { CloseOutlined} from '@ant-design/icons'
+import { CloseOutlined } from '@ant-design/icons'
 import { Warning, LabeledRow } from '../../components/Text'
 import { AverageRow } from '../../components/Grid'
 import AddressInput from '../../components/AddressInput'

@@ -92,7 +92,7 @@ const SiderMenu = ({ ...args }) => {
               <Menu.Item key='wiki' style={mobileMenuItemStyle} icon={<InfoCircleOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/wiki'>Wiki</SiderLink></Menu.Item>
               <Menu.Item key='tools' style={mobileMenuItemStyle} icon={<ToolOutlined />}>Tools</Menu.Item>
             </Menu>
-          )
+            )
           : (
             <Layout.Sider collapsed={isMobile} {...args}>
               {/* <Image src='/assets/harmony.svg' /> */}
@@ -141,7 +141,7 @@ const SiderMenu = ({ ...args }) => {
                 <Menu.Item key='tools' icon={<ToolOutlined />}>Tools</Menu.Item>
               </Menu>
             </Layout.Sider>
-          )
+            )
       }
     </>
   )
