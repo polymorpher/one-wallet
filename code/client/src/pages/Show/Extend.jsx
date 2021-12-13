@@ -53,7 +53,7 @@ const Extend = ({
     dispatch, wallet, network, stage, setStage,
     resetWorker, recoverRandomness, otpState, isMobile, os
   } = useOps({ address })
-  const dev = useSelector(state => state.wallet.dev)
+  const dev = useSelector(state => state.global.dev)
   const { majorVersion, name, expert } = wallet
   const [method, setMethod] = useState()
   const [seed, setSeed] = useState()
@@ -320,7 +320,7 @@ const Extend = ({
             <Title level={3}>Renew Wallet</Title>
             <WalletAddress showLabel alwaysShowOptions address={address} addressStyle={{ padding: 0 }} />
           </Space>
-}
+        }
       >
         {children}
         <Row justify='start' style={{ marginTop: 48 }}>

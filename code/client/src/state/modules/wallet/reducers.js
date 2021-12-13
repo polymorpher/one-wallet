@@ -10,57 +10,23 @@ export const initialState = {
   network: config.defaults.network,
   relayer: config.defaults.relayer,
   relayerSecret: config.defaults.relayerSecret,
-  provider: undefined,
-  fetching: false,
-  loading: false,
-  error: undefined,
-  knownAddresses: {},
-  dev: false,
-  global: {}
 }
 
 const reducer = handleActions(
   {
-    [walletActions.fetchWallet]: (state) => ({
-      ...state,
-      fetching: true,
-    }),
     [walletActions.fetchWalletSuccess]: (state, action) => ({
       ...state,
       wallets: { ...state.wallets, [action.payload.address]: { ...state.wallets[action.payload.address], ...action.payload } },
-      fetching: false,
-    }),
-    [walletActions.fetchWalletFailed]: (state, action) => ({
-      ...state,
-      fetching: false,
-      error: action.payload,
     }),
 
-    [walletActions.fetchBalance]: (state) => ({
-      ...state,
-      fetching: true,
-    }),
     [walletActions.fetchBalanceSuccess]: (state, action) => ({
       ...state,
       balances: { ...state.balances, [action.payload.address]: action.payload.balance },
-      fetching: false,
-    }),
-    [walletActions.fetchBalanceFailed]: (state, action) => ({
-      ...state,
-      fetching: false,
-      error: action.payload,
     }),
 
-    [walletActions.fetchPrice]: (state) => ({
-      ...state,
-    }),
     [walletActions.fetchPriceSuccess]: (state, action) => ({
       ...state,
       price: action.payload,
-    }),
-    [walletActions.fetchPriceFailed]: (state, action) => ({
-      ...state,
-      fetching: false,
     }),
 
     [walletActions.updateWallet]: (state, action) => ({
@@ -129,10 +95,6 @@ const reducer = handleActions(
       }
     }),
 
-    [walletActions.fetchTokenBalanceFailed]: (state, action) => ({
-      ...state,
-    }),
-
     [walletActions.setRelayer]: (state, action) => ({
       ...state,
       relayer: action.payload,
@@ -147,38 +109,6 @@ const reducer = handleActions(
       ...state,
       network: action.payload,
     }),
-
-    [walletActions.setProvider]: (state, action) => ({
-      ...state,
-      provider: action.payload,
-    }),
-
-    [walletActions.setKnownAddress]: (state, action) => ({
-      ...state,
-      knownAddresses: {
-        ...state.knownAddresses,
-        [action.payload.address]: {
-          ...state.knownAddresses?.[action.payload.address],
-          label: action.payload.label,
-          address: action.payload.address,
-          network: action.payload.network,
-          domainName: action.payload.domainName,
-          createTime: action.payload.creationTime,
-          lastUsedTime: action.payload.lastUsedTime,
-          numUsed: action.payload.numUsed,
-          domain: action.payload.domain
-        }
-      },
-    }),
-
-    [walletActions.deleteKnownAddress]: (state, action) => {
-      const { [action.payload]: deleted, ...restKnownAddresses } = state.knownAddresses
-
-      return {
-        ...state,
-        knownAddresses: restKnownAddresses
-      }
-    },
 
     [walletActions.bindDomain]: (state, action) => ({
       ...state,
@@ -222,16 +152,6 @@ const reducer = handleActions(
           skipVersion: action.payload.version
         }
       }
-    }),
-
-    [walletActions.setDev]: (state, action) => ({
-      ...state,
-      dev: action.payload
-    }),
-
-    [walletActions.updateGlobalStats]: (state, action) => ({
-      ...state,
-      global: { ...state.global, stats: action.payload }
     }),
   },
   {

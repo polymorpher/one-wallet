@@ -3,8 +3,8 @@ import { DeleteOutlined, EditOutlined } from '@ant-design/icons'
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useWindowDimensions } from '../../util'
-import walletActions from '../../state/modules/wallet/actions'
 import Paths from '../../constants/paths'
+import { globalActions } from '../../state/modules/global'
 import { matchPath, useHistory, useLocation } from 'react-router'
 import { Hint, InputBox, Label } from '../../components/Text'
 import AnimatedSection from '../../components/AnimatedSection'
@@ -20,11 +20,11 @@ const AddressDetail = () => {
   const [contact, setContact] = useState()
   const { isMobile } = useWindowDimensions()
   const knownAddresses = useSelector(
-    (state) => state.wallet.knownAddresses || {},
+    (state) => state.global.knownAddresses || {},
   )
 
   const deleteKnownAddress = () => {
-    dispatch(walletActions.deleteKnownAddress(contact.address))
+    dispatch(globalActions.deleteKnownAddress(contact.address))
     message.error('Address deleted')
     setTimeout(() => {
       history.goBack()
@@ -33,7 +33,7 @@ const AddressDetail = () => {
 
   const editKnownAddress = () => {
     dispatch(
-      walletActions.setKnownAddress({
+      globalActions.setKnownAddress({
         ...contact,
         label: label,
       }),
