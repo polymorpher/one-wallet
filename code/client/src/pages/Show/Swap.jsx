@@ -620,11 +620,11 @@ const Swap = ({ address }) => {
     })
   }
 
-  const swapAllowed =
-    tokenFrom.value !== '' &&
-    tokenTo.value !== '' &&
-    fromAmountFormatted !== '' && !isNaN(fromAmountFormatted) &&
-    toAmountFormatted !== '' && !isNaN(toAmountFormatted)
+  // const swapAllowed =
+  //   tokenFrom.value !== '' &&
+  //   tokenTo.value !== '' &&
+  //   fromAmountFormatted !== '' && !isNaN(fromAmountFormatted) &&
+  //   toAmountFormatted !== '' && !isNaN(toAmountFormatted)
 
   const tokenApproved = util.isONE(tokenFrom) || isTrivialSwap(tokenTo, tokenFrom) || tokenAllowance.gt(fromAmount ? new BN(fromAmount) : new BN(0))
 

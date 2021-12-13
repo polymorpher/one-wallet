@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useHistory } from 'react-router'
 import { Heading, Hint } from '../components/Text'
 import AnimatedSection from '../components/AnimatedSection'
-import { Space, Progress, Col, Button, Typography, Divider } from 'antd'
+import { Space, Progress, Button, Divider } from 'antd'
 import message from '../message'
 import api from '../api'
 import ONEUtil from '../../../lib/util'
@@ -20,12 +20,10 @@ import QrCodeScanner from '../components/QrCodeScanner'
 import ScanGASteps from '../components/ScanGASteps'
 import { parseOAuthOTP, parseMigrationPayload, parseAuthAccountName } from '../components/OtpTools'
 import WalletCreateProgress from '../components/WalletCreateProgress'
-import { AverageRow } from '../components/Grid'
 import RestoreByCodes from './Restore/RestoreByCodes'
 import SyncRecoveryFile from './Restore/SyncRecoveryFile'
 import SetupNewCode from './Restore/SetupNewCode'
 import LocalImport from '../components/LocalImport'
-const { Title } = Typography
 
 const Sections = {
   Choose: 0,

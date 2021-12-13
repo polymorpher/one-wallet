@@ -12,7 +12,7 @@ import walletActions from '../state/modules/wallet/actions'
 import { balanceActions } from '../state/modules/balance/actions'
 import { api } from '../../../lib/api'
 import { TallRow } from './Grid'
-import { Heading, Hint, InputBox, Label, LabeledRow } from './Text'
+import { Heading, InputBox, LabeledRow } from './Text'
 
 const TrackNewNFT = ({ onClose, onTracked, address }) => {
   const dispatch = useDispatch()

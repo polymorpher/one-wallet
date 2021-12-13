@@ -26,7 +26,6 @@ import ONE from '../../../lib/onewallet'
 import { useHistory } from 'react-router'
 import { CheckCircleOutlined, LoadingOutlined } from '@ant-design/icons'
 import humanizeDuration from 'humanize-duration'
-import config from '../config'
 const { Title, Text, Link } = Typography
 
 const shortHumanizeDuration = humanizeDuration.humanizer({

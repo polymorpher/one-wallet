@@ -1,4 +1,4 @@
-import { Card, Image, Row, Space, Typography, Col, Button, Carousel, Popconfirm, Spin } from 'antd'
+import { Card, Image, Row, Space, Typography, Col, Button, Carousel, Spin } from 'antd'
 import message from '../message'
 import { unionWith, differenceBy } from 'lodash'
 import walletActions from '../state/modules/wallet/actions'

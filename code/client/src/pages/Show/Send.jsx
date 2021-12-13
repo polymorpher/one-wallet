@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { Button, Col, Row, Space, Typography } from 'antd'
-import { CheckCircleOutlined, CloseOutlined, LoadingOutlined } from '@ant-design/icons'
+import { Button, Col, Row, Typography } from 'antd'
+import { CloseOutlined } from '@ant-design/icons'
 import { Hint, InputBox, Label, Warning } from '../../components/Text'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
