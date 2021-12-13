@@ -84,9 +84,9 @@ const Create = ({ expertMode, showRecovery }) => {
   const [seed2, setSeed2] = useState(generateOtpSeed())
   const [duration, setDuration] = useState(WalletConstants.defaultDuration)
   const [showRecoveryDetail, setShowRecoveryDetail] = useState(false)
-  const code = useSelector(state => state.cache.code)
+  const code = useSelector(state => state.cache.code[network])
   const needCodeUpdate = useSelector(state => state.cache.needCodeUpdate)
-  const clientVersion = useSelector(state => state.cache.clientVersion)
+  const clientVersion = useSelector(state => state.cache.clientVersion[network])
 
   const defaultRecoveryAddress = { value: ONEConstants.TreasuryAddress, label: WalletConstants.defaultRecoveryAddressLabel }
 
@@ -122,12 +122,13 @@ const Create = ({ expertMode, showRecovery }) => {
   })
 
   useEffect(() => {
-    dispatch(cacheActions.fetchVersion())
+    dispatch(cacheActions.fetchVersion({ network }))
+    // dispatch(cacheActions.clearCode())
   }, [])
   useEffect(() => {
     if (needCodeUpdate || clientVersion !== config.version) {
       dispatch(cacheActions.updateClientVersion(config.version))
-      dispatch(cacheActions.fetchCode())
+      dispatch(cacheActions.fetchCode({ network }))
     }
   }, [needCodeUpdate, clientVersion])
 
@@ -136,8 +137,8 @@ const Create = ({ expertMode, showRecovery }) => {
       return
     }
     (async function () {
-      const deployerAddress = config.networks[network].deploy.deployer
-      const address = ONEUtil.predictAddress({ seed, deployerAddress, code })
+      const deployerAddress = config.networks[network].deploy.factory
+      const address = ONEUtil.predictAddress({ seed, deployerAddress, code: ONEUtil.hexStringToBytes(code) })
       const oneAddress = util.safeOneAddress(address)
       const otpDisplayName = `${name} [${oneAddress}]`
       const otpUri = getQRCodeUri(seed, otpDisplayName, OTPUriMode.MIGRATION)

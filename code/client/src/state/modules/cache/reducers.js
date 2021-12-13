@@ -2,9 +2,9 @@ import { handleActions } from 'redux-actions'
 import cacheActions from './actions'
 
 export const initialState = {
-  code: '',
+  code: {},
   global: {},
-  version: '',
+  version: {},
   clientVersion: '',
   needCodeUpdate: true,
 }
@@ -13,12 +13,25 @@ const reducer = handleActions(
   {
     [cacheActions.updateCode]: (state, action) => ({
       ...state,
-      code: action.payload,
+      code: {
+        ...state.code,
+        [action.payload.network]: action.payload.code,
+      },
+    }),
+    [cacheActions.clearCode]: (state, action) => ({
+      ...state,
+      code: {},
+      version: {},
+      clientVersion: '',
+      needCodeUpdate: true,
     }),
     [cacheActions.updateVersion]: (state, action) => ({
       ...state,
-      version: action.payload,
-      needCodeUpdate: action.payload !== state.version
+      version: {
+        ...state.version,
+        [action.payload.network]: action.payload.version,
+      },
+      needCodeUpdate: action.payload.version !== state.version[action.payload.network]
     }),
     [cacheActions.updateClientVersion]: (state, action) => ({
       ...state,

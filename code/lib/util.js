@@ -350,9 +350,10 @@ const utils = {
   },
 
   predictAddress: ({ seed, identificationKey, deployerAddress, code }) => {
+    // console.log({ seed, identificationKey, deployerAddress, code })
     const bytes = new Uint8Array(1 + 20 + 32 + 32) // bytes.concat(bytes1(0xff), bytes20(address(this)), bytes32(salt), keccak256(code));
     if (!identificationKey) {
-      identificationKey = utils.getIdentificationKey(seed)
+      identificationKey = utils.getIdentificationKey(seed, true)
       if (!identificationKey) {
         return null
       }
