@@ -4,10 +4,8 @@ import globalActions from './actions'
 export const initialState = {
   knownAddresses: {},
   stats: {},
-  provider: undefined,
   dev: false,
   fetching: false,
-  loading: false,
   error: undefined,
 }
 
@@ -50,11 +48,6 @@ const reducer = handleActions(
       }
     },
 
-    [globalActions.setProvider]: (state, action) => ({
-      ...state,
-      provider: action.payload,
-    }),
-
     [globalActions.setFetchStatus]: (state, action) => ({
       ...state,
       fetching: action.payload,
@@ -63,11 +56,6 @@ const reducer = handleActions(
     [globalActions.setError]: (state, action) => ({
       ...state,
       error: action.payload,
-    }),
-
-    [globalActions.setLoadStatus]: (state, action) => ({
-      ...state,
-      loading: action.payload,
     }),
   },
   {

@@ -5,7 +5,6 @@ import { omit, uniq } from 'lodash'
 
 export const initialState = {
   wallets: {},
-  balances: {}, // address => amount in wei
   selected: undefined, // address in hex string, matching a key in wallets
   network: config.defaults.network,
   relayer: config.defaults.relayer,
@@ -17,11 +16,6 @@ const reducer = handleActions(
     [walletActions.fetchWalletSuccess]: (state, action) => ({
       ...state,
       wallets: { ...state.wallets, [action.payload.address]: { ...state.wallets[action.payload.address], ...action.payload } },
-    }),
-
-    [walletActions.fetchBalanceSuccess]: (state, action) => ({
-      ...state,
-      balances: { ...state.balances, [action.payload.address]: action.payload.balance },
     }),
 
     [walletActions.fetchPriceSuccess]: (state, action) => ({
@@ -42,8 +36,8 @@ const reducer = handleActions(
     [walletActions.deleteWallet]: (state, action) => ({
       ...state,
       wallets: omit(state.wallets, [action.payload]),
-      balances: omit(state.balances, [action.payload])
     }),
+
     [walletActions.trackTokens]: (state, action) => ({
       ...state,
       wallets: {
@@ -73,24 +67,6 @@ const reducer = handleActions(
         [action.payload.address]: {
           ...state.wallets[action.payload.address],
           selectedToken: action.payload.token
-        }
-      }
-    }),
-
-    [walletActions.fetchTokenBalance]: (state, action) => ({
-      ...state,
-    }),
-
-    [walletActions.fetchTokenBalanceSuccess]: (state, action) => ({
-      ...state,
-      wallets: {
-        ...state.wallets,
-        [action.payload.address]: {
-          ...state.wallets[action.payload.address],
-          tokenBalances: {
-            ...state.wallets?.[action.payload.address]?.tokenBalances,
-            [action.payload.key]: action.payload.balance
-          }
         }
       }
     }),
