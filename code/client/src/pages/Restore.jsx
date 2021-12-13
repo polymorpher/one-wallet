@@ -298,6 +298,7 @@ const Restore = () => {
       </AnimatedSection>
       <AnimatedSection show={section === Sections.SetupNewCode}>
         <SetupNewCode
+          wallet={walletInfo}
           expert={expert}
           active={section === Sections.SetupNewCode}
           onComplete={() => setSection(Sections.RecoveryCode)}

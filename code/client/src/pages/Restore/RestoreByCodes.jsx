@@ -68,7 +68,7 @@ const RestoreByCodes = ({ isActive, wallet, layers, newCoreParams, onComplete, o
         action='(submit for validation)'
         wideLabel={isMobile}
         shouldAutoFocus={isActive}
-        walletName={wallet.name}
+        walletName={wallet?.name}
         onComplete={doDisplace}
         isDisabled={stage >= 0}
       />

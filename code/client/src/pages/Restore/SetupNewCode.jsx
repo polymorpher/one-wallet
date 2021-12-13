@@ -11,7 +11,7 @@ import WalletConstants from '../../constants/wallet'
 import message from '../../message'
 
 const SetupNewCode = ({ expert, active, wallet, onComplete, onCancel, onComputedCoreParams, onProgressUpdate }) => {
-  const { name } = wallet
+  const { name, slotSize } = wallet || {}
   const [showSecondCode, setShowSecondCode] = useState()
   const [qrCodeData, setQRCodeData] = useState()
   const [secondOtpQrCodeData, setSecondOtpQrCodeData] = useState()
@@ -27,9 +27,8 @@ const SetupNewCode = ({ expert, active, wallet, onComplete, onCancel, onComputed
   const [root, setRoot] = useState() // Uint8Array
   const [effectiveTime, setEffectiveTime] = useState()
   const [layers, setLayers] = useState()
-  const securityParameters = ONEUtil.securityParameters(wallet)
+  const securityParameters = wallet ? ONEUtil.securityParameters(wallet) : {}
   const duration = WalletConstants.defaultDuration
-  const slotSize = wallet.slotSize
 
   const onClose = () => {
     setRoot(null)
