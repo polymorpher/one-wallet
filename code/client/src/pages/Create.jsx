@@ -112,6 +112,7 @@ const Create = ({ expertMode, showRecovery }) => {
   const [secondOtpQrCodeData, setSecondOtpQrCodeData] = useState()
   const [otp, setOtp] = useState('')
   const [deploying, setDeploying] = useState()
+  const [deployed, setDeployed] = useState(false)
 
   const otpRef = useRef()
 
@@ -310,6 +311,7 @@ const Create = ({ expertMode, showRecovery }) => {
       dispatch(walletActions.fetchBalanceSuccess({ address, balance: 0 }))
       setAddress(address)
       setDeploying(false)
+      setDeployed(true)
       message.success('Your wallet is deployed!')
       setTimeout(() => {
         dispatch(walletActions.fetchWallet({ address }))
@@ -318,13 +320,22 @@ const Create = ({ expertMode, showRecovery }) => {
       // setSection(4)
     } catch (ex) {
       handleAPIError(ex)
+      message.error('Failed to deploy 1wallet. Please try again. If it keeps happening, please report this issue.')
       setDeploying(false)
+      setDeployed(false)
     }
   }
 
   useEffect(() => {
-    const worker = new Worker('/ONEWalletWorker.js')
-    setWorker(worker)
+    if (!worker) {
+      const worker = new Worker('/ONEWalletWorker.js')
+      setWorker(worker)
+    }
+    return () => {
+      if (worker) {
+        worker.terminate()
+      }
+    }
   }, [])
 
   useEffect(() => {
@@ -470,7 +481,8 @@ const Create = ({ expertMode, showRecovery }) => {
             {!showRecovery &&
               <TallRow>
                 {(deploying || !root) && <Space><Text>Working on your 1wallet...</Text><LoadingOutlined /></Space>}
-                {(!deploying && root) && <Text>Your 1wallet is ready!</Text>}
+                {(!deploying && root && deployed) && <Text>Your 1wallet is ready!</Text>}
+                {(!deploying && root && deployed === false) && <Text>There was an issue deploying your 1wallet. <Button type='link' onClick={() => location.href = Paths.create}>Try again</Button>?</Text>}
               </TallRow>}
             {!expertMode && <Hint>In beta, you can only spend {WalletConstants.defaultSpendingLimit} ONE per day</Hint>}
             {!expertMode && <Button type='link' onClick={() => enableExpertMode(true)} style={{ padding: 0 }}>I want to create a higher limit wallet instead</Button>}
