@@ -9,6 +9,7 @@ import BN from 'bn.js'
 import ONEUtil from '../../../lib/util'
 import ONE from '../../../lib/onewallet'
 import walletActions from '../state/modules/wallet/actions'
+import { balanceActions } from '../state/modules/balance/actions'
 import { api } from '../../../lib/api'
 import { TallRow } from './Grid'
 import { Heading, Hint, InputBox, Label, LabeledRow } from './Text'
@@ -63,7 +64,7 @@ const TrackNewNFT = ({ onClose, onTracked, address }) => {
     const tokenType = tokenTypeInput.value
     const tt = { tokenType, tokenId, contractAddress }
     const key = ONEUtil.hexView(ONE.computeTokenKey(tt).hash)
-    dispatch(walletActions.fetchTokenBalance({ address, ...tt, key }))
+    dispatch(balanceActions.fetchTokenBalance({ address, ...tt, key }))
     tt.key = key
     try {
       if (tt) {

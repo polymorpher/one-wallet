@@ -35,7 +35,7 @@ const ListWallets = () => {
     const newComputedBalances = {}
     Object.keys(balances).forEach(address => {
       if (!computedBalances[address] || computedBalances[address].pending) {
-        const { balance, formatted, fiat, fiatFormatted, valid } = computeBalance(balances[address], price)
+        const { balance, formatted, fiat, fiatFormatted, valid } = computeBalance(balances[address].balance, price)
         const pending = !price
         newComputedBalances[address] = { balance, formatted, fiat, fiatFormatted, valid, pending }
         // console.log(address, newComputedBalances[address])

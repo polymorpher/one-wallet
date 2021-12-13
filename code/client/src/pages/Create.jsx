@@ -22,6 +22,7 @@ import AnimatedSection from '../components/AnimatedSection'
 import qrcode from 'qrcode'
 import storage from '../storage'
 import walletActions from '../state/modules/wallet/actions'
+import { balanceActions } from '../state/modules/balance'
 import cacheActions from '../state/modules/cache/actions'
 import WalletConstants from '../constants/wallet'
 import util, { useWindowDimensions, OSType, generateOtpSeed } from '../util'
@@ -309,7 +310,7 @@ const Create = ({ expertMode, showRecovery }) => {
       await storeLayers()
       await storeInnerLayers()
       dispatch(walletActions.updateWallet(wallet))
-      dispatch(walletActions.fetchBalanceSuccess({ address, balance: 0 }))
+      dispatch(balanceActions.fetchBalanceSuccess({ address, balance: 0 }))
       setAddress(address)
       setDeploying(false)
       setDeployed(true)

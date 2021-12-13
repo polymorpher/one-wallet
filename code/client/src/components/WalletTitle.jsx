@@ -20,8 +20,8 @@ const WalletTitle = ({ address, onQrCodeClick, onScanClick, noWarning }) => {
   const [domain, setDomain] = useState(wallet.domain)
   const [doubleLinked, setDoubleLinked] = useState(null)
   const hasDomainName = domain && domain !== ''
-  const balances = useSelector(state => state.wallet.balances)
-  const balance = new BN(balances[address] || 0)
+  const balances = useSelector(state => state.balance)
+  const balance = new BN(balances[address].balance || 0)
   useEffect(() => {
     const f = async () => {
       setDoubleLinked(null)

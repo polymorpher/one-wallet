@@ -15,7 +15,7 @@ import { WALLET_OUTDATED_DISABLED_TEXT, WalletSelector } from './Common'
 const { Title, Paragraph } = Typography
 const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amount, from, verbose }) => {
   dest = util.safeNormalizedAddress(dest)
-  const balances = useSelector(state => state.wallet.balances)
+  const balances = useSelector(state => state.balance)
   const price = useSelector(state => state.wallet.price)
   const { isMobile } = useWindowDimensions()
   const [selectedAddress, setSelectedAddress] = useState({})

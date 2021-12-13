@@ -10,6 +10,7 @@ import WalletConstants from '../constants/wallet'
 import storage from '../storage'
 import { useDispatch, useSelector } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
+import { balanceActions } from '../state/modules/balance'
 import util, { useWindowDimensions } from '../util'
 import { handleAddressError } from '../handler'
 import Paths from '../constants/paths'
@@ -176,7 +177,7 @@ const Restore = () => {
             ...securityParameters,
           }
           dispatch(walletActions.updateWallet(wallet))
-          dispatch(walletActions.fetchBalance({ address }))
+          dispatch(balanceActions.fetchBalance({ address }))
           console.log('Completed wallet restoration', wallet)
           message.success(`Wallet ${name} (${address}) is restored!`)
           setTimeout(() => history.push(Paths.showAddress(address)), 1500)

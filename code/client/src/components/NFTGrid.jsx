@@ -2,6 +2,7 @@ import { Card, Image, Row, Space, Typography, Col, Button, Carousel, Popconfirm,
 import message from '../message'
 import { unionWith, differenceBy } from 'lodash'
 import walletActions from '../state/modules/wallet/actions'
+import { balanceActions } from '../state/modules/balance'
 import React, { useState, useEffect } from 'react'
 import { AverageRow, TallRow } from './Grid'
 import { api } from '../../../lib/api'
@@ -285,7 +286,7 @@ export const useTokenBalanceTracker = ({ tokens, address }) => {
     }
     (tokens || []).forEach(tt => {
       const { tokenType, tokenId, contractAddress, key } = tt
-      dispatch(walletActions.fetchTokenBalance({ address, tokenType, tokenId, contractAddress, key }))
+      dispatch(balanceActions.fetchTokenBalance({ address, tokenType, tokenId, contractAddress, key }))
     })
   }, [tokens, address])
 }
@@ -294,8 +295,9 @@ export const NFTGrid = ({ address, onTrackNew }) => {
   const history = useHistory()
   const dispatch = useDispatch()
   const wallet = useSelector(state => state.wallet.wallets[address])
+  const walletBalance = useSelector(state => state.balance[address] || {})
   const selectedToken = util.isNFT(wallet.selectedToken) && wallet.selectedToken
-  const tokenBalances = wallet.tokenBalances || {}
+  const tokenBalances = walletBalance.tokenBalances || {}
   const trackedTokens = (wallet.trackedTokens || []).filter(util.isNFT)
   const [showTrackNew, setShowTrackNew] = useState(false)
 
