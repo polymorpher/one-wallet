@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useHistory } from 'react-router'
 import { Heading, Hint } from '../components/Text'
 import AnimatedSection from '../components/AnimatedSection'
-import { Space, Progress, Col, Button, Typography } from 'antd'
+import { Space, Progress, Col, Button, Typography, Divider } from 'antd'
 import message from '../message'
 import api from '../api'
 import ONEUtil from '../../../lib/util'
@@ -23,6 +23,7 @@ import { AverageRow } from '../components/Grid'
 import RestoreByCodes from './Restore/RestoreByCodes'
 import SyncRecoveryFile from './Restore/SyncRecoveryFile'
 import SetupNewCode from './Restore/SetupNewCode'
+import LocalImport from '../components/LocalImport'
 const { Title } = Typography
 
 const Sections = {
@@ -237,23 +238,23 @@ const Restore = () => {
   return (
     <>
       <AnimatedSection show={section === Sections.Choose}>
-        <AverageRow>
-          <Title level={3}>Choose a method for restoring 1wallet</Title>
-        </AverageRow>
-        <AverageRow gutter={24}>
-          <Col span={isMobile ? 24 : 12}>
-            <Space direction='vertical' size='large' style={{ width: '100%' }} align='center'>
-              <Button shape='round' type='primary' onClick={() => setSection(Sections.RecoveryCode)}>Authenticator Codes</Button>
-              <Hint>(New) Provide 36 digit authenticator codes (6 each time) over the next 3 minutes and your wallet restoration file. Setup a new authenticator code after that</Hint>
-            </Space>
-          </Col>
-          <Col span={isMobile ? 24 : 12}>
-            <Space direction='vertical' size='large' style={{ width: '100%' }} align='center'>
-              <Button shape='round' type='primary' onClick={() => setSection(Sections.ScanQR)}>Scan QR Code</Button>
-              <Hint>(Classic) Use your webcam to scan QR code exported from your Authenticator (Google and Aegis Authenticator only)</Hint>
-            </Space>
-          </Col>
-        </AverageRow>
+        <Space direction='vertical' size='large'>
+          <Heading>Import a wallet file</Heading>
+          <LocalImport />
+          <Hint>This option best suits cross-device synchronization. This is the file that you exported under "About" tab. This option lets you share 1wallets across multiple devices, without having to export the seed from Google Authenticator as QR code.</Hint>
+        </Space>
+        <Divider><Hint>Or</Hint></Divider>
+        <Space direction='vertical' size='large' style={{ width: '100%' }}>
+          <Heading>Scan authenticator seed QR code</Heading>
+          <Button shape='round' size='large' type='primary' onClick={() => setSection(Sections.ScanQR)}>Scan Now</Button>
+          <Hint>Use your webcam to scan QR code exported from your Authenticator (Google and Aegis Authenticator only)</Hint>
+        </Space>
+        <Divider><Hint>Or</Hint></Divider>
+        <Space direction='vertical' size='large' style={{ width: '100%' }}>
+          <Heading>Use recovery file + 6 x 6-digit code</Heading>
+          <Button shape='round' size='large' type='primary' onClick={() => setSection(Sections.RecoveryCode)}>Begin Now</Button>
+          <Hint>Provide wallet recovery file, and 36 digit authenticator codes (6 each time) over the next 3 minutes. Setup a new authenticator code after that</Hint>
+        </Space>
       </AnimatedSection>
       <AnimatedSection show={section === Sections.ScanQR}>
         <Space direction='vertical' size='large'>
