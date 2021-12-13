@@ -4,6 +4,7 @@ import { connectRouter } from 'connected-react-router'
 import * as reducers from './modules'
 import { persistConfig as globalPersistConfig } from './modules/global'
 import { persistConfig as walletPersistConfig } from './modules/wallet'
+import { persistConfig as cachePersistConfig } from './modules/cache'
 import localForage from 'localforage'
 import config from '../config'
 
@@ -24,16 +25,10 @@ const lastAction = (state = null, action) => {
   return action.type
 }
 
-
-const cacheConfig = {
-  return action.type
-  storage,
-}
-
 const rootReducer = (history) => combineReducers({
   ...reducers,
   wallet: persistReducer({ ...walletPersistConfig, storage }, reducers.wallet),
-  cache: persistReducer(cacheConfig, reducers.cache),
+  cache: persistReducer({ ...cachePersistConfig, storage }, reducers.cache),
   global: persistReducer({ ...globalPersistConfig, storage }, reducers.global),
   router: connectRouter(history),
   lastAction
