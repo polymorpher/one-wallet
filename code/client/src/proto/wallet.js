@@ -23,9 +23,9 @@
          * @exports ISimpleWalletExport
          * @interface ISimpleWalletExport
          * @property {string|null} [address] SimpleWalletExport address
-         * @property {Uint8Array|null} [layers] SimpleWalletExport layers
          * @property {boolean|null} [expert] SimpleWalletExport expert
          * @property {string|null} [state] SimpleWalletExport state
+         * @property {Array.<Uint8Array>|null} [layers] SimpleWalletExport layers
          */
     
         /**
@@ -37,6 +37,7 @@
          * @param {ISimpleWalletExport=} [properties] Properties to set
          */
         function SimpleWalletExport(properties) {
+            this.layers = [];
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null)
@@ -50,14 +51,6 @@
          * @instance
          */
         SimpleWalletExport.prototype.address = "";
-    
-        /**
-         * SimpleWalletExport layers.
-         * @member {Uint8Array} layers
-         * @memberof SimpleWalletExport
-         * @instance
-         */
-        SimpleWalletExport.prototype.layers = $util.newBuffer([]);
     
         /**
          * SimpleWalletExport expert.
@@ -74,6 +67,14 @@
          * @instance
          */
         SimpleWalletExport.prototype.state = "";
+    
+        /**
+         * SimpleWalletExport layers.
+         * @member {Array.<Uint8Array>} layers
+         * @memberof SimpleWalletExport
+         * @instance
+         */
+        SimpleWalletExport.prototype.layers = $util.emptyArray;
     
         /**
          * Creates a new SimpleWalletExport instance using the specified properties.
@@ -101,12 +102,13 @@
                 writer = $Writer.create();
             if (message.address != null && Object.hasOwnProperty.call(message, "address"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.address);
-            if (message.layers != null && Object.hasOwnProperty.call(message, "layers"))
-                writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.layers);
             if (message.expert != null && Object.hasOwnProperty.call(message, "expert"))
-                writer.uint32(/* id 3, wireType 0 =*/24).bool(message.expert);
+                writer.uint32(/* id 2, wireType 0 =*/16).bool(message.expert);
             if (message.state != null && Object.hasOwnProperty.call(message, "state"))
-                writer.uint32(/* id 4, wireType 2 =*/34).string(message.state);
+                writer.uint32(/* id 3, wireType 2 =*/26).string(message.state);
+            if (message.layers != null && message.layers.length)
+                for (var i = 0; i < message.layers.length; ++i)
+                    writer.uint32(/* id 4, wireType 2 =*/34).bytes(message.layers[i]);
             return writer;
         };
     
@@ -145,13 +147,15 @@
                     message.address = reader.string();
                     break;
                 case 2:
-                    message.layers = reader.bytes();
-                    break;
-                case 3:
                     message.expert = reader.bool();
                     break;
-                case 4:
+                case 3:
                     message.state = reader.string();
+                    break;
+                case 4:
+                    if (!(message.layers && message.layers.length))
+                        message.layers = [];
+                    message.layers.push(reader.bytes());
                     break;
                 default:
                     reader.skipType(tag & 7);
@@ -191,15 +195,19 @@
             if (message.address != null && message.hasOwnProperty("address"))
                 if (!$util.isString(message.address))
                     return "address: string expected";
-            if (message.layers != null && message.hasOwnProperty("layers"))
-                if (!(message.layers && typeof message.layers.length === "number" || $util.isString(message.layers)))
-                    return "layers: buffer expected";
             if (message.expert != null && message.hasOwnProperty("expert"))
                 if (typeof message.expert !== "boolean")
                     return "expert: boolean expected";
             if (message.state != null && message.hasOwnProperty("state"))
                 if (!$util.isString(message.state))
                     return "state: string expected";
+            if (message.layers != null && message.hasOwnProperty("layers")) {
+                if (!Array.isArray(message.layers))
+                    return "layers: array expected";
+                for (var i = 0; i < message.layers.length; ++i)
+                    if (!(message.layers[i] && typeof message.layers[i].length === "number" || $util.isString(message.layers[i])))
+                        return "layers: buffer[] expected";
+            }
             return null;
         };
     
@@ -217,15 +225,20 @@
             var message = new $root.SimpleWalletExport();
             if (object.address != null)
                 message.address = String(object.address);
-            if (object.layers != null)
-                if (typeof object.layers === "string")
-                    $util.base64.decode(object.layers, message.layers = $util.newBuffer($util.base64.length(object.layers)), 0);
-                else if (object.layers.length)
-                    message.layers = object.layers;
             if (object.expert != null)
                 message.expert = Boolean(object.expert);
             if (object.state != null)
                 message.state = String(object.state);
+            if (object.layers) {
+                if (!Array.isArray(object.layers))
+                    throw TypeError(".SimpleWalletExport.layers: array expected");
+                message.layers = [];
+                for (var i = 0; i < object.layers.length; ++i)
+                    if (typeof object.layers[i] === "string")
+                        $util.base64.decode(object.layers[i], message.layers[i] = $util.newBuffer($util.base64.length(object.layers[i])), 0);
+                    else if (object.layers[i].length)
+                        message.layers[i] = object.layers[i];
+            }
             return message;
         };
     
@@ -242,26 +255,24 @@
             if (!options)
                 options = {};
             var object = {};
+            if (options.arrays || options.defaults)
+                object.layers = [];
             if (options.defaults) {
                 object.address = "";
-                if (options.bytes === String)
-                    object.layers = "";
-                else {
-                    object.layers = [];
-                    if (options.bytes !== Array)
-                        object.layers = $util.newBuffer(object.layers);
-                }
                 object.expert = false;
                 object.state = "";
             }
             if (message.address != null && message.hasOwnProperty("address"))
                 object.address = message.address;
-            if (message.layers != null && message.hasOwnProperty("layers"))
-                object.layers = options.bytes === String ? $util.base64.encode(message.layers, 0, message.layers.length) : options.bytes === Array ? Array.prototype.slice.call(message.layers) : message.layers;
             if (message.expert != null && message.hasOwnProperty("expert"))
                 object.expert = message.expert;
             if (message.state != null && message.hasOwnProperty("state"))
                 object.state = message.state;
+            if (message.layers && message.layers.length) {
+                object.layers = [];
+                for (var j = 0; j < message.layers.length; ++j)
+                    object.layers[j] = options.bytes === String ? $util.base64.encode(message.layers[j], 0, message.layers[j].length) : options.bytes === Array ? Array.prototype.slice.call(message.layers[j]) : message.layers[j];
+            }
             return object;
         };
     
