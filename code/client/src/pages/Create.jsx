@@ -148,7 +148,7 @@ const Create = ({ expertMode, showRecovery }) => {
       setQRCodeData(otpQrCodeData)
       setSecondOtpQrCodeData(secondOtpQrCodeData)
     })()
-  }, [name, code])
+  }, [name, code, network])
 
   useEffect(() => {
     if (section === sectionViews.setupOtp && worker) {
