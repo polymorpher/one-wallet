@@ -3,7 +3,6 @@ import globalActions from './actions'
 
 export const initialState = {
   knownAddresses: {},
-  stats: {},
   dev: false,
   fetching: false,
   error: undefined,
@@ -14,11 +13,6 @@ const reducer = handleActions(
     [globalActions.setDev]: (state, action) => ({
       ...state,
       dev: action.payload
-    }),
-
-    [globalActions.updateStats]: (state, action) => ({
-      ...state,
-      stats: { ...state.stats, stats: action.payload }
     }),
 
     [globalActions.setKnownAddress]: (state, action) => ({
