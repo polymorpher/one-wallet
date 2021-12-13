@@ -13,7 +13,7 @@ import abbr from '../abbr'
 import * as Sentry from '@sentry/browser'
 import { useDispatch, useSelector } from 'react-redux'
 import WalletConstants from '../constants/wallet'
-import { walletActions } from '../state/modules/wallet'
+import { globalActions } from '../state/modules/global'
 const { Link } = Typography
 
 const SiderLink = styled(Link).attrs((e) => ({
@@ -48,7 +48,7 @@ const SiderMenu = ({ ...args }) => {
   const nav = ({ key }) => {
     history.push(Paths[key])
   }
-  const statsCached = useSelector(state => state.wallet.global?.stats)
+  const statsCached = useSelector(state => state.global.stats)
   const [stats, setStats] = useState(null)
   const dispatch = useDispatch()
 
@@ -59,7 +59,7 @@ const SiderMenu = ({ ...args }) => {
       try {
         const statsData = await api.walletStats.getStats()
         setStats(statsData)
-        dispatch(walletActions.updateGlobalStats({ ...statsData, timeUpdated: Date.now() }))
+        dispatch(globalActions.updateStats({ ...statsData, timeUpdated: Date.now() }))
       } catch (ex) {
         Sentry.captureException(ex)
         console.error(ex)

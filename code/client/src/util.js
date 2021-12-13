@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { HarmonyAddress } from '@harmony-js/crypto'
-import { isInteger, values } from 'lodash'
+import { isInteger, values, keys } from 'lodash'
 import ONEUtil from '../../lib/util'
 import ONEConstants from '../../lib/constants'
 import { AddressError } from './constants/errors'

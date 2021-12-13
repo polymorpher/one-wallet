@@ -64,7 +64,7 @@ const Show = () => {
   const network = useSelector(state => state.wallet.network)
   const [activeTab, setActiveTab] = useState('coins')
   const { expert } = wallet
-  const dev = useSelector(state => state.wallet.dev)
+  const dev = useSelector(state => state.global.dev)
 
   useEffect(() => {
     if (!wallet) {
@@ -75,7 +75,9 @@ const Show = () => {
     }
     const fetch = () => dispatch(walletActions.fetchBalance({ address }))
     fetch()
-    const handler = setInterval(() => fetch(), WalletConstants.fetchBalanceFrequency)
+    const handler = setInterval(() => {
+      if (!document.hidden) { fetch() }
+    }, WalletConstants.fetchBalanceFrequency)
     dispatch(walletActions.fetchWallet({ address }))
     return () => { clearInterval(handler) }
   }, [address])

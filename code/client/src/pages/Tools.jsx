@@ -190,7 +190,7 @@ const addHarmonyNetwork = async () => {
 }
 
 const Tools = () => {
-  const dev = useSelector(state => state.wallet.dev)
+  const dev = useSelector(state => state.global.dev)
   const wallets = useSelector(state => state.wallet.wallets)
   const [section, setSection] = useState(Sections.Home)
 

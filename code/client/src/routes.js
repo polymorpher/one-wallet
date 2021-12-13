@@ -14,13 +14,14 @@ import ShowPage from './pages/Show'
 import ToolsPage from './pages/Tools'
 import WalletAuth from './integration/WalletAuth'
 import { walletActions } from './state/modules/wallet'
+import { globalActions } from './state/modules/global'
 import config from './config'
 import util, { useWindowDimensions } from './util'
 import Unwrap from './pages/Unwrap'
 
 const LocalRoutes = () => {
   const dispatch = useDispatch()
-  const dev = useSelector(state => state.wallet.dev)
+  const dev = useSelector(state => state.global.dev)
   const wallets = useSelector(state => state.wallet.wallets)
   const network = useSelector(state => state.wallet.network)
   const networkWallets = util.filterNetworkWallets(wallets, network)
@@ -46,7 +47,7 @@ const LocalRoutes = () => {
           <Switch>
             <Route
               path={Paths.dev} render={() => {
-                dispatch(walletActions.setDev(!dev))
+                dispatch(globalActions.setDev(!dev))
                 return <Redirect to={Paths.root} />
               }}
             />
@@ -85,7 +86,9 @@ const Routes = () => {
     const store = require('./state/store')
     dispatch(walletActions.fetchPrice())
     setInterval(() => {
-      dispatch(walletActions.fetchPrice())
+      if (!document.hidden) {
+        dispatch(walletActions.fetchPrice())
+      }
     }, config.priceRefreshInterval)
     persistStore(store.default, null, () => {
       setRehydrated(true)

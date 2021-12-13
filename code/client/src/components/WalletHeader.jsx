@@ -86,7 +86,7 @@ const SecretSettings = ({ visible, onClose }) => {
 
 const WalletHeader = () => {
   const { isMobile } = useWindowDimensions()
-  const dev = useSelector(state => state.wallet.dev)
+  const dev = useSelector(state => state.global.dev)
   const history = useHistory()
   const match = useRouteMatch('/:action/:address?')
   const { action, address: routeAddress } = match ? match.params : {}

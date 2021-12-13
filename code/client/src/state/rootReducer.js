@@ -2,6 +2,8 @@ import { persistReducer } from 'redux-persist'
 import { combineReducers } from 'redux'
 import { connectRouter } from 'connected-react-router'
 import * as reducers from './modules'
+import { persistConfig as globalPersistConfig } from './modules/global'
+import { persistConfig as walletPersistConfig } from './modules/wallet'
 import localForage from 'localforage'
 import config from '../config'
 
@@ -12,28 +14,29 @@ const storage = localForage.createInstance({
   storeName: 'ONEWalletState'
 })
 
-const rootConfig = {
+export const rootConfig = {
   key: 'root',
   storage,
-  whitelist: ['wallet']
+  whitelist: [globalPersistConfig.key, walletPersistConfig.key]
 }
 
-const walletConfig = {
-  key: 'wallet',
-  storage,
-  blacklist: ['error', 'fetching', 'loading']
+const lastAction = (state = null, action) => {
+  return action.type
 }
+
 
 const cacheConfig = {
-  key: 'cache',
+  return action.type
   storage,
 }
 
 const rootReducer = (history) => combineReducers({
   ...reducers,
-  wallet: persistReducer(walletConfig, reducers.wallet),
+  wallet: persistReducer({ ...walletPersistConfig, storage }, reducers.wallet),
   cache: persistReducer(cacheConfig, reducers.cache),
-  router: connectRouter(history)
+  global: persistReducer({ ...globalPersistConfig, storage }, reducers.global),
+  router: connectRouter(history),
+  lastAction
 })
 
 export default (history) => persistReducer(rootConfig, rootReducer(history))

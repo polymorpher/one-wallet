@@ -1,4 +1,5 @@
 import walletActions from '../state/modules/wallet/actions'
+import { globalActions } from '../state/modules/global'
 import storage from './index'
 import message from '../message'
 import Paths from '../constants/paths'
@@ -24,7 +25,7 @@ export const deleteWalletLocally = async ({ wallet, wallets, dispatch, history, 
     return
   }
   dispatch(walletActions.deleteWallet(address))
-  dispatch(walletActions.deleteKnownAddress(address))
+  dispatch(globalActions.deleteKnownAddress(address))
   if (!wallets) {
     return
   }
