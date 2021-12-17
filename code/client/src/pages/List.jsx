@@ -88,7 +88,7 @@ const List = () => {
   const totalBalance = Object.keys(balances)
     .filter(a => wallets[a] && wallets[a].network === network && !wallets[a].temp)
     .map(a => balances[a])
-    .reduce((a, b) => a.add(new BN(b.balance, 10)), new BN(0)).toString()
+    .reduce((a, b) => a.add(new BN(b?.balance || 0, 10)), new BN(0)).toString()
   const { formatted, fiatFormatted } = util.computeBalance(totalBalance, price)
   const titleLevel = isMobile ? 4 : 3
   const [purged, setPurged] = useState(false)
