@@ -1,5 +1,5 @@
 import WalletConstants from '../constants/wallet'
-import walletActions from '../state/modules/wallet/actions'
+import { balanceActions } from '../state/modules/balance'
 import { EotpBuilders, SecureFlows, Flows, SmartFlows } from '../../../lib/api/flow'
 import { api } from '../../../lib/api'
 
@@ -13,7 +13,7 @@ export const Chaining = {
     WalletConstants.fetchDelaysAfterTransfer.forEach(t => {
       setTimeout(() => {
         addresses.forEach(address => {
-          dispatch(walletActions.fetchBalance({ address }))
+          dispatch(balanceActions.fetchBalance({ address }))
         })
       }, t)
     })
@@ -23,7 +23,7 @@ export const Chaining = {
     const { tokenType, contractAddress, tokenId, key } = token
     WalletConstants.fetchDelaysAfterTransfer.forEach(t => {
       setTimeout(() => {
-        dispatch(walletActions.fetchTokenBalance({ address, contractAddress, tokenType, tokenId, key }))
+        dispatch(balanceActions.fetchTokenBalance({ address, contractAddress, tokenType, tokenId, key }))
       }, t)
     })
   },

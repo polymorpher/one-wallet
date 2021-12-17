@@ -4,6 +4,7 @@ import { useHistory, useRouteMatch, Redirect, useLocation, matchPath } from 'rea
 import Paths from '../constants/paths'
 import WalletConstants from '../constants/wallet'
 import walletActions from '../state/modules/wallet/actions'
+import { balanceActions } from '../state/modules/balance'
 import util from '../util'
 import ONEConstants from '../../../lib/constants'
 
@@ -73,7 +74,7 @@ const Show = () => {
     if (address && (address !== selectedAddress)) {
       dispatch(walletActions.selectWallet(address))
     }
-    const fetch = () => dispatch(walletActions.fetchBalance({ address }))
+    const fetch = () => dispatch(balanceActions.fetchBalance({ address }))
     fetch()
     const handler = setInterval(() => {
       if (!document.hidden) { fetch() }

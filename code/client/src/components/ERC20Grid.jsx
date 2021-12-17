@@ -1,6 +1,7 @@
 import { Card, Image, Row, Space, Typography, Col, Divider, Button } from 'antd'
 import { unionWith, isNull, isUndefined, uniqBy } from 'lodash'
 import walletActions from '../state/modules/wallet/actions'
+import { balanceActions } from '../state/modules/balance'
 
 import { CloseOutlined, PlusCircleOutlined } from '@ant-design/icons'
 import React, { useState, useEffect, useRef, useCallback } from 'react'
@@ -34,7 +35,7 @@ export const handleTrackNewToken = async ({ newContractAddress, currentTrackedTo
   try {
     const tt = { tokenType: ONEConstants.TokenType.ERC20, tokenId: 0, contractAddress }
     const key = ONEUtil.hexView(ONE.computeTokenKey(tt).hash)
-    dispatch(walletActions.fetchTokenBalance({ address, ...tt, key }))
+    dispatch(balanceActions.fetchTokenBalance({ address, ...tt, key }))
     tt.key = key
     try {
       const { name, symbol, decimals } = await api.blockchain.getTokenMetadata(tt)
@@ -140,11 +141,10 @@ export const ERC20Grid = ({ address }) => {
   const wallet = useSelector(state => state.wallet.wallets[address])
   const network = useSelector(state => state.wallet.network)
   const { selectedToken } = wallet
-  const tokenBalances = wallet.tokenBalances || {}
   const trackedTokens = (wallet.trackedTokens || []).filter(e => e.tokenType === ONEConstants.TokenType.ERC20)
   const untrackedTokenKeys = (wallet.untrackedTokens || [])
-  const balances = useSelector(state => state.wallet.balances)
-  const balance = balances[address] || 0
+  const balances = useSelector(state => state.balance)
+  const { balance = 0, tokenBalances = {} } = balances[address]
   const { formatted } = util.computeBalance(balance)
   const walletOutdated = !util.canWalletSupportToken(wallet)
   const defaultTrackedTokens = withKeys(DefaultTrackedERC20(network))
@@ -209,7 +209,7 @@ export const ERC20Grid = ({ address }) => {
   useEffect(() => {
     (currentTrackedTokens || []).forEach(tt => {
       const { tokenType, tokenId, contractAddress, key } = tt
-      dispatch(walletActions.fetchTokenBalance({ address, tokenType, tokenId, contractAddress, key }))
+      dispatch(balanceActions.fetchTokenBalance({ address, tokenType, tokenId, contractAddress, key }))
     })
     const newTokens = currentTrackedTokens.filter(e =>
       defaultTrackedTokens.find(dt => dt.key === e.key) === undefined &&

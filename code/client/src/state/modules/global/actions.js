@@ -7,10 +7,11 @@ const setDev = createAction('SET_DEV')
 const setKnownAddress = createAction('SET_KNOWN_ADDRESS')
 const deleteKnownAddress = createAction('DELETE_KNOWN_ADDRESS')
 
-// TODO: remove if not used.
 const setFetchStatus = createAction('SET_FETCH_STATUS')
-// TODO: remove if not used.
 const setError = createAction('SET_ERROR')
+
+const fetchPrice = createAction('FETCH_PRICE')
+const fetchPriceSuccess = createAction('FETCH_PRICE_SUCCESS')
 
 export default {
   setDev,
@@ -19,4 +20,7 @@ export default {
   setKnownAddress,
   setError,
   setFetchStatus,
+
+  fetchPrice,
+  fetchPriceSuccess,
 }

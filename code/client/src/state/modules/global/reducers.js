@@ -3,12 +3,10 @@ import globalActions from './actions'
 
 export const initialState = {
   knownAddresses: {},
-  stats: {},
-  provider: undefined,
   dev: false,
   fetching: false,
-  loading: false,
   error: undefined,
+  price: 0,
 }
 
 const reducer = handleActions(
@@ -16,11 +14,6 @@ const reducer = handleActions(
     [globalActions.setDev]: (state, action) => ({
       ...state,
       dev: action.payload
-    }),
-
-    [globalActions.updateStats]: (state, action) => ({
-      ...state,
-      stats: { ...state.stats, stats: action.payload }
     }),
 
     [globalActions.setKnownAddress]: (state, action) => ({
@@ -50,11 +43,6 @@ const reducer = handleActions(
       }
     },
 
-    [globalActions.setProvider]: (state, action) => ({
-      ...state,
-      provider: action.payload,
-    }),
-
     [globalActions.setFetchStatus]: (state, action) => ({
       ...state,
       fetching: action.payload,
@@ -65,9 +53,9 @@ const reducer = handleActions(
       error: action.payload,
     }),
 
-    [globalActions.setLoadStatus]: (state, action) => ({
+    [globalActions.fetchPriceSuccess]: (state, action) => ({
       ...state,
-      loading: action.payload,
+      price: action.payload,
     }),
   },
   {

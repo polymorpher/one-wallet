@@ -25,6 +25,7 @@ import { handleTrackNewToken } from '../../components/ERC20Grid'
 import { Link } from 'react-router-dom'
 import { Chaining } from '../../api/flow'
 import walletActions from '../../state/modules/wallet/actions'
+import { balanceActions } from '../../state/modules/balance'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import { uniqBy } from 'lodash'
 import styled from 'styled-components'
@@ -157,8 +158,6 @@ const Swap = ({ address }) => {
   const { state: otpState } = useOtpState()
   const { otpInput, otp2Input, resetOtp } = otpState
 
-  const tokenBalances = wallet.tokenBalances || {}
-
   const harmonyToken = { ...HarmonyONE }
   const harmonySelectOption = {
     ...harmonyToken,
@@ -166,8 +165,8 @@ const Swap = ({ address }) => {
     label: <TokenLabel token={harmonyToken} selected />
   }
 
-  const balances = useSelector(state => state.wallet.balances)
-  const balance = balances[address] || 0
+  const balances = useSelector(state => state.balance)
+  const { balance = 0, tokenBalances = {} } = balances[address]
 
   const [pairs, setPairs] = useState([])
   const [tokens, setTokens] = useState({})
@@ -227,7 +226,7 @@ const Swap = ({ address }) => {
       }
       const { tokenType, tokenId, contractAddress, key } = tt
       if (contractAddress && key) {
-        dispatch(walletActions.fetchTokenBalance({ address, tokenType, tokenId, contractAddress, key }))
+        dispatch(balanceActions.fetchTokenBalance({ address, tokenType, tokenId, contractAddress, key }))
       }
     })
     const filteredTrackedTokens = uniqBy(trackedTokens, e => e.address)
@@ -621,11 +620,11 @@ const Swap = ({ address }) => {
     })
   }
 
-  const swapAllowed =
-    tokenFrom.value !== '' &&
-    tokenTo.value !== '' &&
-    fromAmountFormatted !== '' && !isNaN(fromAmountFormatted) &&
-    toAmountFormatted !== '' && !isNaN(toAmountFormatted)
+  // const swapAllowed =
+  //   tokenFrom.value !== '' &&
+  //   tokenTo.value !== '' &&
+  //   fromAmountFormatted !== '' && !isNaN(fromAmountFormatted) &&
+  //   toAmountFormatted !== '' && !isNaN(toAmountFormatted)
 
   const tokenApproved = util.isONE(tokenFrom) || isTrivialSwap(tokenTo, tokenFrom) || tokenAllowance.gt(fromAmount ? new BN(fromAmount) : new BN(0))
 
