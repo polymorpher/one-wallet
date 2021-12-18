@@ -142,7 +142,7 @@ const initBlockchain = (store) => {
   store.subscribe(() => {
     const state = store.getState()
     const { network } = state.wallet
-    if (network && network !== activeNetwork) {
+    if (network !== activeNetwork) {
       if (config.debug) console.log(`Switching blockchain provider: from ${activeNetwork} to ${network}`)
       activeNetwork = network
       switchNetwork()

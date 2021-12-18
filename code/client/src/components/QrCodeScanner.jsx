@@ -25,6 +25,7 @@ const QrCodeScanner = ({ onScan, shouldInit, style }) => {
         setTimeout(() => f(), 2500)
         console.log('got empty labels. retrying in 2.5s')
       }
+      // console.log(cams)
       setVideoDevices(cams)
       if (isMobile) {
         const backCam = cams.find(e => e.label.toLowerCase().indexOf('back') >= 0)
@@ -89,11 +90,6 @@ const QrCodeScanner = ({ onScan, shouldInit, style }) => {
       const imageUri = await getBase64(info.file.originFileObj)
       const imageData = await convertURIToImageData(imageUri)
       const qrCode = jsQR(imageData.data, imageData.width, imageData.height)
-      if (!qrCode) {
-        message.error('Fail to read the uploaded image.', 15)
-        setQrCodeImageUploading(false)
-        return
-      }
       onScan(qrCode.data)
       setQrCodeImageUploading(false)
     }
@@ -148,17 +144,7 @@ const QrCodeScanner = ({ onScan, shouldInit, style }) => {
               </Row>
             </>
             )
-          : <Upload
-              name='qrcode'
-              showUploadList={false}
-              customRequest={({ onSuccess }) => {
-                onSuccess('ok')
-              }}
-              beforeUpload={beforeUpload}
-              onChange={onQrcodeChange}
-            >
-            <Button icon={qrCodeImageUploading ? <LoadingOutlined /> : <UploadOutlined />}>Upload QR Code Image Instead</Button>
-            </Upload>
+          : <></>
       }
     </>
   )
