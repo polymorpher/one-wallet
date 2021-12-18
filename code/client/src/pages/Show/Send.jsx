@@ -31,9 +31,9 @@ const Send = ({
   prefillDest, // string, hex format
 }) => {
   const dispatch = useDispatch()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
   const { isMobile } = useWindowDimensions()
 
   const doubleOtp = wallet.doubleOtp

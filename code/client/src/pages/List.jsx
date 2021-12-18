@@ -80,10 +80,10 @@ const WalletCard = ({ wallet }) => {
 
 const List = () => {
   const { isMobile } = useWindowDimensions()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const balances = useSelector(state => state.balance)
   const price = useSelector(state => state.global.price)
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
   const dispatch = useDispatch()
   const totalBalance = Object.keys(balances)
     .filter(a => wallets[a] && wallets[a].network === network && !wallets[a].temp)

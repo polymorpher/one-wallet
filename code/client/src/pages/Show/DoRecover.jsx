@@ -12,11 +12,11 @@ import ShowUtils from './show-util'
 import { walletActions } from '../../state/modules/wallet'
 const { Title, Text } = Typography
 const DoRecover = ({ address, show, onClose }) => {
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const { lastResortAddress } = wallet
   const [stage, setStage] = useState(-1)
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
   const dispatch = useDispatch()
 
   const helpers = ShowUtils.buildHelpers({

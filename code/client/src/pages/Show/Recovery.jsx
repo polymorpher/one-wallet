@@ -12,7 +12,7 @@ const { Text } = Typography
 
 const Recovery = ({ address }) => {
   const history = useHistory()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const { lastResortAddress } = wallet
   const { isMobile } = useWindowDimensions()

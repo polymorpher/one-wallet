@@ -149,8 +149,8 @@ const isTrivialSwap = (tokenFrom, tokenTo) => {
  */
 const Swap = ({ address }) => {
   const { isMobile } = useWindowDimensions()
-  const wallets = useSelector(state => state.wallet.wallets)
-  const network = useSelector(state => state.wallet.network)
+  const wallets = useSelector(state => state.wallet)
+  const network = useSelector(state => state.global.network)
   const wallet = wallets[address] || {}
   const dispatch = useDispatch()
   const [stage, setStage] = useState(-1)

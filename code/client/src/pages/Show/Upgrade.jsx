@@ -34,9 +34,9 @@ const CardStyle = {
 const Upgrade = ({ address, onClose }) => {
   const history = useHistory()
   const dispatch = useDispatch()
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
   const [confirmUpgradeVisible, setConfirmUpgradeVisible] = useState(false)
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const [skipUpdate, setSkipUpdate] = useState(false)
   const { majorVersion, minorVersion, lastResortAddress, doubleOtp, forwardAddress, temp } = wallet

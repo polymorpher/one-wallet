@@ -21,8 +21,8 @@ import Unwrap from './pages/Unwrap'
 const LocalRoutes = () => {
   const dispatch = useDispatch()
   const dev = useSelector(state => state.global.dev)
-  const wallets = useSelector(state => state.wallet.wallets)
-  const network = useSelector(state => state.wallet.network)
+  const wallets = useSelector(state => state.wallet)
+  const network = useSelector(state => state.global.network)
   const networkWallets = util.filterNetworkWallets(wallets, network)
   const { isMobile } = useWindowDimensions()
   return (

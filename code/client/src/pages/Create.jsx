@@ -75,8 +75,8 @@ const Create = ({ expertMode, showRecovery }) => {
   const { isMobile, os } = useWindowDimensions()
   const dispatch = useDispatch()
   const history = useHistory()
-  const network = useSelector(state => state.wallet.network)
-  const wallets = useSelector(state => state.wallet.wallets)
+  const network = useSelector(state => state.global.network)
+  const wallets = useSelector(state => state.wallet)
   const generateNewOtpName = () => genName(Object.keys(wallets).map(k => wallets[k].name))
   const [name, setName] = useState(generateNewOtpName())
   // eslint-disable-next-line no-unused-vars

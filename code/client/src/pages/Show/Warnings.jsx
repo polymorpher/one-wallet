@@ -12,7 +12,7 @@ const { Link, Text } = Typography
 const Warnings = ({ address }) => {
   const history = useHistory()
   const dispatch = useDispatch()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const walletOutdated = util.isWalletOutdated(wallet)
 

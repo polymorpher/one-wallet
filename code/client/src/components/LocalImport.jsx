@@ -14,7 +14,7 @@ import { LocalExportMessage } from '../proto/localExportMessage'
 const LocalImport = () => {
   const dispatch = useDispatch()
   const history = useHistory()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const [fileUploading, setFileUploading] = useState(false)
 
   const getDataFromFile = file =>

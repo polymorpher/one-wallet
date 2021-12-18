@@ -19,9 +19,9 @@ const { Title } = Typography
 
 const SetRecovery = ({ address, onClose, show }) => {
   const dispatch = useDispatch()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
   const [stage, setStage] = useState(-1)
   const [transferTo, setTransferTo] = useState({ value: '', label: '' })
   const { resetWorker, recoverRandomness } = useRandomWorker()

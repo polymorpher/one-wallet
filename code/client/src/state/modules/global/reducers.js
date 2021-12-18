@@ -1,12 +1,17 @@
 import { handleActions } from 'redux-actions'
 import globalActions from './actions'
+import config from '../../../config'
 
 export const initialState = {
   knownAddresses: {},
   dev: false,
   fetching: false,
   error: undefined,
+  selectedWallet: undefined, // address in hex string, matching a key in wallets
   price: 0,
+  network: config.defaults.network,
+  relayer: config.defaults.relayer,
+  relayerSecret: config.defaults.relayerSecret,
 }
 
 const reducer = handleActions(
@@ -43,6 +48,7 @@ const reducer = handleActions(
       }
     },
 
+    // Status
     [globalActions.setFetchStatus]: (state, action) => ({
       ...state,
       fetching: action.payload,
@@ -53,9 +59,32 @@ const reducer = handleActions(
       error: action.payload,
     }),
 
+    [globalActions.selectWallet]: (state, action) => ({
+      ...state,
+      selectedWallet: action.payload,
+    }),
+
+    // Price
     [globalActions.fetchPriceSuccess]: (state, action) => ({
       ...state,
       price: action.payload,
+    }),
+
+    // Relayer
+    [globalActions.setRelayer]: (state, action) => ({
+      ...state,
+      relayer: action.payload,
+    }),
+
+    [globalActions.setRelayerSecret]: (state, action) => ({
+      ...state,
+      relayerSecret: action.payload,
+    }),
+
+    // Network
+    [globalActions.setNetwork]: (state, action) => ({
+      ...state,
+      network: action.payload,
     }),
   },
   {

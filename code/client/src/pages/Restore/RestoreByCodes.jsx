@@ -18,7 +18,7 @@ import WalletConstants from '../../constants/wallet'
 const RestoreByCodes = ({ isActive, wallet, layers, newCoreParams, onComplete, onCancel }) => {
   const [stage, setStage] = useState(-1)
   const { isMobile } = useWindowDimensions()
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
   const otpStates = new Array(6).map(() => useOtpState())
 
   const resetOtps = () => { otpStates.forEach(({ resetOtp }) => resetOtp()) }

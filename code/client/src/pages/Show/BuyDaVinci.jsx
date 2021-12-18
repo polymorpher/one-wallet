@@ -19,8 +19,8 @@ const { Title, Text } = Typography
 const DAVINCI_URL_PATTERN = /\/\/davinci.gallery\/view\/(0x[a-zA-Z0-9]+)/
 const DAVINCI_CONTRACT = '0x1d89bc60cd482ddfae8208e6a14d6c185c2095a1'
 const BuyDaVinci = ({ address, onSuccess, onClose }) => {
-  const network = useSelector(state => state.wallet.network)
-  const wallets = useSelector(state => state.wallet.wallets)
+  const network = useSelector(state => state.global.network)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const { isMobile } = useWindowDimensions()
   const [url, setUrl] = useState('')
