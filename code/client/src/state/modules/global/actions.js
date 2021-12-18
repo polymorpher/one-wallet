@@ -9,7 +9,7 @@ const deleteKnownAddress = createAction('DELETE_KNOWN_ADDRESS')
 
 const setFetchStatus = createAction('SET_FETCH_STATUS')
 const setError = createAction('SET_ERROR')
-const setSelectedToken = createAction('SET_SELECTED_TOKEN')
+const selectWallet = createAction('SELECT_WALLET')
 
 const fetchPrice = createAction('FETCH_PRICE')
 const fetchPriceSuccess = createAction('FETCH_PRICE_SUCCESS')
@@ -25,7 +25,7 @@ export default {
   setKnownAddress,
   setError,
   setFetchStatus,
-  setSelectedToken,
+  selectWallet,
 
   fetchPrice,
   fetchPriceSuccess,

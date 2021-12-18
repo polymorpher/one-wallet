@@ -3,11 +3,11 @@ const fetchWallet = createAction('FETCH_WALLET')
 const fetchWalletSuccess = createAction('FETCH_WALLET_SUCCESS')
 
 const updateWallet = createAction('UPDATE_WALLET')
-const selectWallet = createAction('SELECT_WALLET')
 const deleteWallet = createAction('DELETE_WALLET')
 
 const trackTokens = createAction('TRACK_TOKENS')
 const untrackTokens = createAction('UNTRACK_TOKENS')
+const setSelectedToken = createAction('SET_SELECTED_TOKEN')
 
 const bindDomain = createAction('BIND_DOMAIN')
 
@@ -20,7 +20,6 @@ export default {
   fetchWallet,
   fetchWalletSuccess,
   updateWallet,
-  selectWallet,
   deleteWallet,
   bindDomain,
 
@@ -30,4 +29,5 @@ export default {
 
   trackTokens,
   untrackTokens,
+  setSelectedToken,
 }
