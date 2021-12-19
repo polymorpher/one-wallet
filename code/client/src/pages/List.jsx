@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
+import { balanceActions } from '../state/modules/balance'
 import { values, omit } from 'lodash'
 import { Card, Row, Space, Typography, Col, Tag } from 'antd'
 import message from '../message'
@@ -30,13 +31,13 @@ const WalletCard = ({ wallet }) => {
   const { address, name } = wallet
   const oneAddress = getAddress(address).bech32
   const dispatch = useDispatch()
-  const balance = useSelector(state => state.wallet.balances[address])
-  const price = useSelector(state => state.wallet.price)
-  const { formatted, fiatFormatted } = util.computeBalance(balance, price)
+  const walletBalance = useSelector(state => state.balance[address] || {})
+  const price = useSelector(state => state.global.price)
+  const { formatted, fiatFormatted } = util.computeBalance(walletBalance.balance || 0, price)
   const walletOutdated = util.isWalletOutdated(wallet)
 
   useEffect(() => {
-    dispatch(walletActions.fetchBalance({ address }))
+    dispatch(balanceActions.fetchBalance({ address }))
     dispatch(walletActions.fetchWallet({ address }))
   }, [location.pathname])
 
@@ -80,14 +81,14 @@ const WalletCard = ({ wallet }) => {
 const List = () => {
   const { isMobile } = useWindowDimensions()
   const wallets = useSelector(state => state.wallet.wallets)
-  const balances = useSelector(state => state.wallet.balances)
-  const price = useSelector(state => state.wallet.price)
+  const balances = useSelector(state => state.balance)
+  const price = useSelector(state => state.global.price)
   const network = useSelector(state => state.wallet.network)
   const dispatch = useDispatch()
   const totalBalance = Object.keys(balances)
     .filter(a => wallets[a] && wallets[a].network === network && !wallets[a].temp)
     .map(a => balances[a])
-    .reduce((a, b) => a.add(new BN(b, 10)), new BN(0)).toString()
+    .reduce((a, b) => a.add(new BN(b?.balance || 0, 10)), new BN(0)).toString()
   const { formatted, fiatFormatted } = util.computeBalance(totalBalance, price)
   const titleLevel = isMobile ? 4 : 3
   const [purged, setPurged] = useState(false)

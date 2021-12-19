@@ -5,6 +5,7 @@ import * as reducers from './modules'
 import { persistConfig as globalPersistConfig } from './modules/global'
 import { persistConfig as walletPersistConfig } from './modules/wallet'
 import { persistConfig as cachePersistConfig } from './modules/cache'
+import { persistConfig as balancePersistConfig } from './modules/balance'
 import localForage from 'localforage'
 import config from '../config'
 
@@ -18,7 +19,12 @@ const storage = localForage.createInstance({
 export const rootConfig = {
   key: 'root',
   storage,
-  whitelist: [globalPersistConfig.key, walletPersistConfig.key]
+  whitelist: [
+    globalPersistConfig.key,
+    walletPersistConfig.key,
+    cachePersistConfig.key,
+    balancePersistConfig.key,
+  ]
 }
 
 const lastAction = (state = null, action) => {
@@ -30,6 +36,7 @@ const rootReducer = (history) => combineReducers({
   wallet: persistReducer({ ...walletPersistConfig, storage }, reducers.wallet),
   cache: persistReducer({ ...cachePersistConfig, storage }, reducers.cache),
   global: persistReducer({ ...globalPersistConfig, storage }, reducers.global),
+  balance: persistReducer({ ...balancePersistConfig, storage }, reducers.balance),
   router: connectRouter(history),
   lastAction
 })

@@ -22,6 +22,7 @@ import AnimatedSection from '../components/AnimatedSection'
 import qrcode from 'qrcode'
 import storage from '../storage'
 import walletActions from '../state/modules/wallet/actions'
+import { balanceActions } from '../state/modules/balance'
 import cacheActions from '../state/modules/cache/actions'
 import WalletConstants from '../constants/wallet'
 import util, { useWindowDimensions, OSType, generateOtpSeed } from '../util'
@@ -309,7 +310,7 @@ const Create = ({ expertMode, showRecovery }) => {
       await storeLayers()
       await storeInnerLayers()
       dispatch(walletActions.updateWallet(wallet))
-      dispatch(walletActions.fetchBalanceSuccess({ address, balance: 0 }))
+      dispatch(balanceActions.fetchBalanceSuccess({ address, balance: 0 }))
       setAddress(address)
       setDeploying(false)
       setDeployed(true)
@@ -483,7 +484,7 @@ const Create = ({ expertMode, showRecovery }) => {
               <TallRow>
                 {(deploying || !root) && <Space><Text>Working on your 1wallet...</Text><LoadingOutlined /></Space>}
                 {(!deploying && root && deployed) && <Text>Your 1wallet is ready!</Text>}
-                {(!deploying && root && deployed === false) && <Text>There was an issue deploying your 1wallet. <Button type='link' onClick={() => location.href = Paths.create}>Try again</Button>?</Text>}
+                {(!deploying && root && deployed === false) && <Text>There was an issue deploying your 1wallet. <Button type='link' onClick={() => (location.href = Paths.create)}>Try again</Button>?</Text>}
               </TallRow>}
             {!expertMode && <Hint>In beta, you can only spend {WalletConstants.defaultSpendingLimit} ONE per day</Hint>}
             {!expertMode && <Button type='link' onClick={() => enableExpertMode(true)} style={{ padding: 0 }}>I want to create a higher limit wallet instead</Button>}

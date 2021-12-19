@@ -91,9 +91,10 @@ const Gift = ({
   prefilledClaimInterval // int, non-zero
 }) => {
   const { isMobile } = useWindowDimensions()
-  const price = useSelector(state => state.wallet.price)
+  const price = useSelector(state => state.global.price)
   const network = useSelector(state => state.wallet.network)
   const wallets = useSelector(state => state.wallet.wallets)
+  const balances = useSelector(state => state.balance)
   const wallet = wallets[address] || {}
   const [stage, setStage] = useState(-1)
   const doubleOtp = wallet.doubleOtp
@@ -104,7 +105,7 @@ const Gift = ({
   const [editingSetting, setEditingSetting] = useState(false)
   const [randomFactor, setRandomFactor] = useState(2)
   const [message, setMessage] = useState()
-  const tokenBalances = wallet.tokenBalances || {}
+  const { tokenBalances = {} } = balances[address]
 
   const [totalAmountInput, setTotalAmountInput] = useState(prefilledTotalAmount || 3) // ONEs, string
   const [claimLimitInput, setClaimLimitInput] = useState(prefilledClaimLimit || 1) // ONEs, string

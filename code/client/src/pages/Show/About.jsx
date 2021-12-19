@@ -23,7 +23,7 @@ const About = ({ address }) => {
   const wallet = wallets[address] || {}
   const backlinks = wallet.backlinks || []
   const { spendingLimit, spendingInterval } = wallet
-  const price = useSelector(state => state.wallet.price)
+  const price = useSelector(state => state.global.price)
   const { formatted: spendingLimitFormatted, fiatFormatted: spendingLimitFiatFormatted } = util.computeBalance(spendingLimit, price)
   const [selectedLink, setSelectedLink] = useState()
   const [inspecting, setInspecting] = useState()

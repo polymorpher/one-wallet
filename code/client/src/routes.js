@@ -13,7 +13,6 @@ import RestorePage from './pages/Restore'
 import ShowPage from './pages/Show'
 import ToolsPage from './pages/Tools'
 import WalletAuth from './integration/WalletAuth'
-import { walletActions } from './state/modules/wallet'
 import { globalActions } from './state/modules/global'
 import config from './config'
 import util, { useWindowDimensions } from './util'
@@ -84,10 +83,10 @@ const Routes = () => {
   const [rehydrated, setRehydrated] = useState(false)
   useEffect(() => {
     const store = require('./state/store')
-    dispatch(walletActions.fetchPrice())
+    dispatch(globalActions.fetchPrice())
     setInterval(() => {
       if (!document.hidden) {
-        dispatch(walletActions.fetchPrice())
+        dispatch(globalActions.fetchPrice())
       }
     }, config.priceRefreshInterval)
     persistStore(store.default, null, () => {

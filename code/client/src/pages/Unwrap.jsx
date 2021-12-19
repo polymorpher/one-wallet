@@ -7,6 +7,7 @@ import message from '../message'
 import ONEUtil from '../../../lib/util'
 import storage from '../storage'
 import walletActions from '../state/modules/wallet/actions'
+import { balanceActions } from '../state/modules/balance'
 import Paths from '../constants/paths'
 import WalletConstants from '../constants/wallet'
 import { api } from '../../../lib/api'
@@ -25,7 +26,6 @@ import ONE from '../../../lib/onewallet'
 import { useHistory } from 'react-router'
 import { CheckCircleOutlined, LoadingOutlined } from '@ant-design/icons'
 import humanizeDuration from 'humanize-duration'
-import config from '../config'
 const { Title, Text, Link } = Typography
 
 const shortHumanizeDuration = humanizeDuration.humanizer({
@@ -160,17 +160,17 @@ const Unwrap = () => {
 
   const dispatch = useDispatch()
   const { isMobile } = useWindowDimensions()
-  const price = useSelector(state => state.wallet.price)
+  const price = useSelector(state => state.global.price)
   const network = useSelector(state => state.wallet.network)
   const wallets = useSelector(state => state.wallet.wallets)
-  const balances = useSelector(state => state.wallet.balances)
+  const balances = useSelector(state => state.balance)
   const [seed, setSeed] = useState()
   const [address, setAddress] = useState()
   const [customMessage, setCustomMessage] = useState()
   const [randomFactor, setRandomFactor] = useState(1)
   const [error, setError] = useState()
   const wallet = wallets[address]
-  const balance = balances[address] || 0
+  const { balance = 0, tokenBalances = {} } = balances[address]
   const { formatted, fiatFormatted } = util.computeBalance(balance, price)
   const firstWallet = Object.keys(wallets).map((address) => wallets[address])
     .find((wallet) => util.safeOneAddress(wallet.address) && wallet.network === network && !wallet.temp)
@@ -190,7 +190,6 @@ const Unwrap = () => {
 
   const { nfts, nftMap } = useNFTs({ address })
   useTokenBalanceTracker({ tokens: nfts, address })
-  const tokenBalances = wallet?.tokenBalances || {}
   const [selected, setSelected] = useState()
 
   const [stage, setStage] = useState(-1)
@@ -294,7 +293,7 @@ const Unwrap = () => {
             _merge: true
           }
           dispatch(walletActions.updateWallet(wallet))
-          dispatch(walletActions.fetchBalance({ address }))
+          dispatch(balanceActions.fetchBalance({ address }))
           console.log('Retrieved red packet info', wallet)
           dispatch(walletActions.fetchWallet({ address }))
         }
