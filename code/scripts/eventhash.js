@@ -1,7 +1,7 @@
 const fs = require('fs').promises
 const EVENT_LIST = process.env.EVENT_LIST || './scripts/events.txt'
 const EVENT_MAP_OUT = process.env.EVENT_MAP_OUT || './scripts/events-map.txt'
-const EVENT_MAP_OUT_JSON = process.env.EVENT_MAP_OUT || './scripts/events-map.json'
+const EVENT_MAP_OUT_JSON = process.env.EVENT_MAP_OUT_JSON || './lib/events-map.json'
 const ONEUtil = require('../lib/util')
 const PATTERN = /^event ([A-Za-z0-9]+)\((.*)\);$/
 async function main () {

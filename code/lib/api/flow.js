@@ -4,6 +4,8 @@ const config = require('../config/provider').getConfig()
 const storage = require('./storage').getStorage()
 const messager = require('./message').getMessage()
 const { api } = require('./index')
+const EventMessage = require('../event-message')
+const EventMaps = require('../events-map.json')
 const BN = require('bn.js')
 
 const EotpBuilders = {
@@ -157,7 +159,7 @@ const Flows = {
         beforeReveal && await beforeReveal(commitHash, paramsHash, verificationHash)
         // TODO: should reveal only when commit is confirmed and viewable on-chain. This should be fixed before releasing it to 1k+ users
         // TODO: Prevent transfer more than maxOperationsPerInterval per interval (30 seconds)
-        const { success, txId, error } = await revealAPI({
+        const { success, tx, txId, error } = await revealAPI({
           neighbors: neighbors.map(n => ONEUtil.hexString(n)),
           index,
           eotp: ONEUtil.hexString(eotp),
@@ -173,7 +175,8 @@ const Flows = {
           onRevealFailure && await onRevealFailure(error)
           return
         }
-        onRevealSuccess && await onRevealSuccess(txId)
+        const messages = tx?.receipt?.rawLogs.flatMap(l => l.topics.map(t => EventMessage?.[EventMaps?.[t]])).filter(Boolean)
+        onRevealSuccess && await onRevealSuccess(txId, messages)
         return true
       } catch (ex) {
         // console.trace(ex)

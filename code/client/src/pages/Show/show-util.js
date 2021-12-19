@@ -53,13 +53,17 @@ export default {
       message.error(`Failed to finalize transaction. Trying ${numAttemptsRemaining} more time`)
     }
 
-    const onRevealSuccess = (txId) => {
+    const onRevealSuccess = (txId, messages = []) => {
       setStage(3)
+      if(messages.length) {
+        messages.forEach(m => message[m.type](<Text>{m.message}</Text>))
+      }
+
       if (config.networks[network].explorer) {
         const link = config.networks[network].explorer.replace(/{{txId}}/, txId)
-        message.success(<Text>Done! View transaction <Link href={link} target='_blank' rel='noreferrer'>{util.ellipsisAddress(txId)}</Link></Text>, 10)
+        message[messages.length ? 'info' : 'success'](<Text>Done! View transaction <Link href={link} target='_blank' rel='noreferrer'>{util.ellipsisAddress(txId)}</Link></Text>, 10)
       } else {
-        message.success(<Text>Done! Copy transaction id: <Text copyable={{ text: txId }}>{util.ellipsisAddress(txId)} </Text></Text>, 10)
+        message[messages.length ? 'info' : 'success'](<Text>Done! Copy transaction id: <Text copyable={{ text: txId }}>{util.ellipsisAddress(txId)} </Text></Text>, 10)
       }
       setTimeout(() => restart(), 3000)
       onSuccess && onSuccess(txId)
