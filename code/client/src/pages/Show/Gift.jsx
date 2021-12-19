@@ -254,8 +254,8 @@ const Gift = ({
       revealAPI: api.relayer.reveal,
       revealArgs: { ...args, data: hexData },
       ...handlers,
-      onRevealSuccess: (txId) => {
-        onRevealSuccess(txId)
+      onRevealSuccess: (txId, messages) => {
+        onRevealSuccess(txId, messages)
         setSection(sections.share)
       }
     })

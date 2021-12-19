@@ -363,8 +363,8 @@ const Unwrap = () => {
       revealAPI: api.relayer.reveal,
       revealArgs: { ...args, data: hexData },
       ...handlers,
-      onRevealSuccess: (txId) => {
-        onRevealSuccess(txId)
+      onRevealSuccess: (txId, messages) => {
+        onRevealSuccess(txId, messages)
         message.success('Claim completed. Redirecting to your wallet...')
         history.push(Paths.showAddress(dest))
       }

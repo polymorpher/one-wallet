@@ -96,8 +96,8 @@ const Sign = ({
       afterCommit: () => setStage(2),
       revealAPI: api.relayer.reveal,
       revealArgs,
-      onRevealSuccess: (txId) => {
-        onRevealSuccess(txId)
+      onRevealSuccess: (txId, messages) => {
+        onRevealSuccess(txId, messages)
         onSuccess && onSuccess(txId, { hash, signature })
       },
       ...handlers

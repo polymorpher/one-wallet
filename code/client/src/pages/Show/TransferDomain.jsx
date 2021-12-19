@@ -60,8 +60,8 @@ const TransferDomain = ({ address, onClose, show }) => {
       onRevealFailure,
       onRevealError,
       onRevealAttemptFailed,
-      onRevealSuccess: async (txId) => {
-        onRevealSuccess(txId)
+      onRevealSuccess: async (txId, messages) => {
+        onRevealSuccess(txId, messages)
         const resolved = await api.blockchain.domain.resolve({ domain })
         if (resolved === dest) {
           message.success(`Domain ${domain} is transferred to ${dest}`)
