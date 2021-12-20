@@ -25,12 +25,12 @@ const config = {
       skip: process.env.SKIP_MAINNET,
     },
     'eth-rinkeby': {
-      url: process.env.ETH_RINKEBY_URL,
+      url: process.env.RINKEBY_URL,
       key: process.env.ETH_RINKEBY_KEY || '',
       skip: process.env.SKIP_RINKEBY,
     },
     'eth-ganache': {
-      url: process.env.ETH_GANACHE_URL || 'http://127.0.0.1:7545',
+      url: process.env.GANACHE_URL || 'http://127.0.0.1:7545',
       key: process.env.ETH_GANACHE_KEY,
       mnemonic: process.env.ETH_GANACHE_MNEMONIC,
       skip: process.env.SKIP_GANACHE,
