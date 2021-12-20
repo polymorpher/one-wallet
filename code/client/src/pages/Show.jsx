@@ -68,7 +68,7 @@ const Show = () => {
   const dev = useSelector(state => state.global.dev)
 
   useEffect(() => {
-    if (!wallet) {
+    if (!wallet.address) {
       return history.push(Paths.wallets)
     }
     if (address && (address !== selectedAddress)) {
@@ -103,7 +103,7 @@ const Show = () => {
   const showStartScreen = () => { history.push(Paths.showAddress(oneAddress)) }
 
   // UI Rendering below
-  if (!wallet || wallet.network !== network) {
+  if (!wallet.address || wallet.network !== network) {
     return <Redirect to={Paths.wallets} />
   }
 
