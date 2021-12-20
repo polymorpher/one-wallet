@@ -21,9 +21,9 @@ module.exports = {
         url: process.env.GANACHE_RPC || 'http://127.0.0.1:7545',
         // explorer: 'https://explorer.harmony.one/#/tx/{{txId}}',
         deploy: {
-          factory: process.env.DEPLOY_FACTORY_GANACHE || '0xdEaCb1947f62159A65e5BbB50D140E7f0CB9DB7c',
-          deployer: process.env.DEPLOY_DEPLOYER_GANACHE || '0x0F4da00F9B03e78AB13Bc597d27940ee0Bd19907',
-          codeHelper: process.env.DEPLOY_CODE_HELPER_GANACHE || '0x9C18CAA009c31fF97169beaa4f34f2995dD719e4'
+          factory: process.env.DEPLOY_FACTORY_GANACHE,
+          deployer: process.env.DEPLOY_DEPLOYER_GANACHE,
+          codeHelper: process.env.DEPLOY_CODE_HELPER_GANACHE
         },
       }
     }),
