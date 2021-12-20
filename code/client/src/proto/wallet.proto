@@ -1,8 +1,13 @@
 syntax = "proto3";
 
+message InnerTree {
+    repeated bytes layers = 1;
+}
+
 message SimpleWalletExport {
     string address = 1;
     bool expert = 2;
     string state = 3; // JSON serialized
     repeated bytes layers = 4;
+    repeated InnerTree innerTrees = 5;
 }
