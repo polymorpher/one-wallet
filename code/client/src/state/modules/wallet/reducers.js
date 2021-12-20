@@ -9,7 +9,7 @@ export const initialState = {
 const reducer = handleActions(
   {
     // Auto-migrate for old structure: `{wallets: {address: wallet}}`
-    [walletActions.fetchWallet]: (state, action) => ({
+    [walletActions.autoMigrateWallets]: (state, action) => ({
       ...state.wallets,
       ...omit(state, 'wallets')
     }),

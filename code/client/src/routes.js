@@ -13,6 +13,7 @@ import RestorePage from './pages/Restore'
 import ShowPage from './pages/Show'
 import ToolsPage from './pages/Tools'
 import WalletAuth from './integration/WalletAuth'
+import { walletActions } from './state/modules/wallet'
 import { globalActions } from './state/modules/global'
 import config from './config'
 import util, { useWindowDimensions } from './util'
@@ -90,6 +91,7 @@ const Routes = () => {
       }
     }, config.priceRefreshInterval)
     persistStore(store.default, null, () => {
+      dispatch(walletActions.autoMigrateWallets())
       setRehydrated(true)
     })
   }, [dispatch])

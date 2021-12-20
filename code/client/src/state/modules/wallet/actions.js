@@ -1,4 +1,6 @@
 import { createAction } from '@reduxjs/toolkit'
+const autoMigrateWallets = createAction('WALLETS_AUTO_MIGRATION')
+
 const fetchWallet = createAction('FETCH_WALLET')
 const fetchWalletSuccess = createAction('FETCH_WALLET_SUCCESS')
 
@@ -17,6 +19,8 @@ const userAcknowledgedNewRoot = createAction('USER_ACKNOWLEDGED_NEW_ROOT')
 const userSkipVersion = createAction('USER_SKIP_VERSION')
 
 export default {
+  autoMigrateWallets,
+
   fetchWallet,
   fetchWalletSuccess,
   updateWallet,
