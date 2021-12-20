@@ -8,6 +8,12 @@ export const initialState = {
 
 const reducer = handleActions(
   {
+    // Auto-migrate for old structure: `{wallets: {address: wallet}}`
+    [walletActions.fetchWallet]: (state, action) => ({
+      ...state.wallets,
+      ...omit(state, 'wallets')
+    }),
+
     [walletActions.fetchWalletSuccess]: (state, action) => ({
       ...state,
       [action.payload.address]: { ...state[action.payload.address], ...action.payload },
