@@ -1,5 +1,5 @@
 import { Warning } from '../../components/Text'
-import util, { useWindowDimensions } from '../../util'
+import util from '../../util'
 import ONEUtil from '../../../../lib/util'
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'

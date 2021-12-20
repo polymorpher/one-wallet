@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector, useDispatch, batch } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
 import { balanceActions } from '../state/modules/balance'
 import { values, omit } from 'lodash'
 import { Card, Row, Space, Typography, Col, Tag } from 'antd'
 import message from '../message'
 import util, { useWindowDimensions } from '../util'
-import { useHistory, useLocation } from 'react-router'
+import { useHistory } from 'react-router'
 import Paths from '../constants/paths'
 import BN from 'bn.js'
 import { getAddress } from '@harmony-js/crypto'
@@ -27,19 +27,12 @@ const walletShortName = (fullName) => {
 const WalletCard = ({ wallet }) => {
   const { isMobile } = useWindowDimensions()
   const history = useHistory()
-  const location = useLocation()
   const { address, name } = wallet
   const oneAddress = getAddress(address).bech32
-  const dispatch = useDispatch()
   const walletBalance = useSelector(state => state?.balance[address] || {})
   const price = useSelector(state => state.global.price)
   const { formatted, fiatFormatted } = util.computeBalance(walletBalance.balance || 0, price)
   const walletOutdated = util.isWalletOutdated(wallet)
-
-  useEffect(() => {
-    dispatch(balanceActions.fetchBalance({ address }))
-    dispatch(walletActions.fetchWallet({ address }))
-  }, [location.pathname])
 
   return (
     <Card
@@ -120,6 +113,15 @@ const List = () => {
       }
     })
   }, [wallets])
+
+  useEffect(() => {
+    batch(() => {
+      values(wallets).filter(w => isMatchingWallet(w)).forEach(({ address }) => {
+        dispatch(walletActions.fetchWallet({ address }))
+        dispatch(balanceActions.fetchBalance({ address }))
+      })
+    })
+  }, [])
 
   const isMatchingWallet = (w) => {
     return w.network === network &&

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch, useSelector, batch } from 'react-redux'
 import { useHistory, useRouteMatch, Redirect, useLocation, matchPath } from 'react-router'
 import Paths from '../constants/paths'
 import WalletConstants from '../constants/wallet'
@@ -68,18 +68,20 @@ const Show = () => {
   const dev = useSelector(state => state.global.dev)
 
   useEffect(() => {
-    if (!wallet) {
+    if (!wallet.address) {
       return history.push(Paths.wallets)
     }
     if (address && (address !== selectedAddress)) {
       dispatch(walletActions.selectWallet(address))
     }
     const fetch = () => dispatch(balanceActions.fetchBalance({ address }))
-    fetch()
     const handler = setInterval(() => {
       if (!document.hidden) { fetch() }
     }, WalletConstants.fetchBalanceFrequency)
-    dispatch(walletActions.fetchWallet({ address }))
+    batch(() => {
+      fetch()
+      dispatch(walletActions.fetchWallet({ address }))
+    })
     return () => { clearInterval(handler) }
   }, [address])
 
