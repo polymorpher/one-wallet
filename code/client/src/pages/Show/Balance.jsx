@@ -15,9 +15,9 @@ const Balance = ({ address }) => {
   const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const network = useSelector(state => state.global.network)
-  const balances = useSelector(state => state.balance)
+  const balances = useSelector(state => state.balance || {})
   const price = useSelector(state => state.global.price)
-  const { balance = 0, tokenBalances = {} } = balances[address]
+  const { balance = 0, tokenBalances = {} } = balances[address] || {}
   const selectedToken = wallet?.selectedToken || HarmonyONE
   const selectedTokenBech32Address = util.safeOneAddress(selectedToken.contractAddress)
   const selectedTokenBalance = selectedToken.key === 'one' ? balance : (tokenBalances[selectedToken.key] || 0)

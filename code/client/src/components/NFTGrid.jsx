@@ -295,7 +295,7 @@ export const NFTGrid = ({ address, onTrackNew }) => {
   const history = useHistory()
   const dispatch = useDispatch()
   const wallet = useSelector(state => state.wallet[address])
-  const walletBalance = useSelector(state => state.balance[address] || {})
+  const walletBalance = useSelector(state => state?.balance[address] || {})
   const selectedToken = util.isNFT(wallet.selectedToken) && wallet.selectedToken
   const tokenBalances = walletBalance.tokenBalances || {}
   const trackedTokens = (wallet.trackedTokens || []).filter(util.isNFT)

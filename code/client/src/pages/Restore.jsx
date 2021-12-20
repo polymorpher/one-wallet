@@ -139,7 +139,7 @@ const Restore = () => {
   }
 
   const onRestore = async (ignoreDoubleOtp) => {
-    if (!walletInfo.root) {
+    if (!walletInfo?.root) {
       console.error('Root is not set. Abort.')
       return
     }

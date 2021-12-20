@@ -143,8 +143,8 @@ export const ERC20Grid = ({ address }) => {
   const { selectedToken } = wallet
   const trackedTokens = (wallet.trackedTokens || []).filter(e => e.tokenType === ONEConstants.TokenType.ERC20)
   const untrackedTokenKeys = (wallet.untrackedTokens || [])
-  const balances = useSelector(state => state.balance)
-  const { balance = 0, tokenBalances = {} } = balances[address]
+  const balances = useSelector(state => state.balance || {})
+  const { balance = 0, tokenBalances = {} } = balances[address] || {}
   const { formatted } = util.computeBalance(balance)
   const walletOutdated = !util.canWalletSupportToken(wallet)
   const defaultTrackedTokens = withKeys(DefaultTrackedERC20(network))

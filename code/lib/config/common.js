@@ -18,7 +18,7 @@ module.exports = {
     ...(DEBUG && {
       'eth-ganache': {
         name: 'Ganache',
-        url: 'http://127.0.0.1:7545',
+        url: process.env.GANACHE_RPC || 'http://127.0.0.1:7545',
         // explorer: 'https://explorer.harmony.one/#/tx/{{txId}}',
         deploy: {
           factory: process.env.DEPLOY_FACTORY_GANACHE || '0xdEaCb1947f62159A65e5BbB50D140E7f0CB9DB7c',
@@ -29,7 +29,7 @@ module.exports = {
     }),
     'harmony-mainnet': {
       name: 'Harmony Mainnet',
-      url: 'https://api.s0.t.hmny.io',
+      url: process.env.MAINNET_RPC || 'https://api.s0.t.hmny.io',
       explorer: 'https://explorer.harmony.one/tx/{{txId}}',
       production: true,
       chainId: 1,
@@ -41,7 +41,7 @@ module.exports = {
     },
     'harmony-testnet': {
       name: 'Harmony Testnet',
-      url: 'https://api.s0.b.hmny.io',
+      url: process.env.TESTNET_RPC || 'https://api.s0.b.hmny.io',
       chainId: 2,
       deploy: {
         factory: process.env.DEPLOY_FACTORY_TESTNET || '0x12CfEeB5D792Fb5C5b06b166b14706AE4A14bC6d',
