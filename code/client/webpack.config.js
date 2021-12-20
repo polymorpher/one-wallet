@@ -117,9 +117,6 @@ module.exports = {
       SENTRY_DSN: '', // dev
       LOCAL_RELAYER_URL: '',
       ROOT_URL: '',
-      DEPLOY_FACTORY_GANACHE: '',
-      DEPLOY_DEPLOYER_GANACHE: '',
-      DEPLOY_CODE_HELPER_GANACHE: '',
     }),
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],
