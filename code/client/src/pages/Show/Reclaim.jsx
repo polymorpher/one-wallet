@@ -23,7 +23,6 @@ const { Title, Text } = Typography
 
 const Reclaim = ({
   address,
-  show,
   onClose, // optional
   onSuccess = onClose, // optional
   prefillFrom,
@@ -169,7 +168,7 @@ const Reclaim = ({
     return (
       <AnimatedSection
         style={{ maxWidth: 720 }}
-        show={show} title={<Title level={2}>Reclaim Assets</Title>} extra={[
+        title={<Title level={2}>Reclaim Assets</Title>} extra={[
           <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
         ]}
       >
@@ -181,7 +180,7 @@ const Reclaim = ({
   return (
     <AnimatedSection
       style={{ maxWidth: 720 }}
-      show={show} title={<Title level={2}>Reclaim Assets</Title>} extra={[
+      title={<Title level={2}>Reclaim Assets</Title>} extra={[
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
       ]}
     >

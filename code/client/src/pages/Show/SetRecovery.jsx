@@ -17,7 +17,7 @@ import { useRandomWorker } from './randomWorker'
 import { useWindowDimensions } from '../../util'
 const { Title } = Typography
 
-const SetRecovery = ({ address, onClose, show }) => {
+const SetRecovery = ({ address, onClose }) => {
   const dispatch = useDispatch()
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
@@ -71,7 +71,6 @@ const SetRecovery = ({ address, onClose, show }) => {
   return (
     <AnimatedSection
       style={{ maxWidth: 720 }}
-      show={show}
       title={<Title level={isMobile ? 5 : 2}>Set Recovery Address</Title>}
       extra={[
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />

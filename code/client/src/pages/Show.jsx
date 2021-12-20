@@ -136,13 +136,13 @@ const Show = () => {
         <CheckRoots address={address} onClose={() => history.push(Paths.wallets)} />
       </AnimatedSection>
 
-      <Send address={address} show={section === 'transfer'} onClose={showStartScreen} />
-      <DoRecover address={address} show={section === 'recover'} onClose={showStartScreen} />
-      <SetRecovery show={section === 'setRecoveryAddress'} address={address} onClose={showStartScreen} />
-      <PurchaseDomain show={section === 'domain'} address={address} onClose={showStartScreen} />
-      <TransferDomain show={section === 'domainTransfer'} address={address} onClose={showStartScreen} />
-      <Reclaim show={section === 'reclaim'} address={address} onClose={showStartScreen} />
-      <Extend show={section === 'extend'} address={address} onClose={showStartScreen} />
+      {section === 'transfer' ? <Send address={address} onClose={showStartScreen} /> : <></>}
+      {section === 'recover' ? <DoRecover address={address} onClose={showStartScreen} /> : <></>}
+      {section === 'setRecoveryAddress' ? <SetRecovery address={address} onClose={showStartScreen} /> : <></>}
+      {section === 'domain' ? <PurchaseDomain address={address} onClose={showStartScreen} /> : <></>}
+      {section === 'domainTransfer' ? <TransferDomain address={address} onClose={showStartScreen} /> : <></>}
+      {section === 'reclaim' ? <Reclaim address={address} onClose={showStartScreen} /> : <></>}
+      {section === 'extend' ? <Extend address={address} onClose={showStartScreen} /> : <></>}
     </>
   )
 }
