@@ -94,7 +94,7 @@ const { balance: PAYMENT_EXCESS_BUFFER } = util.toBalance(0.1)
  */
 const PurchaseDomain = ({ show, address, onClose }) => {
   const dispatch = useDispatch()
-  const balances = useSelector(state => state.balance)
+  const balances = useSelector(state => state.balance || {})
   const wallets = useSelector(state => state.wallet.wallets)
   const wallet = wallets[address] || {}
   const network = useSelector(state => state.wallet.network)

@@ -163,14 +163,14 @@ const Unwrap = () => {
   const price = useSelector(state => state.global.price)
   const network = useSelector(state => state.wallet.network)
   const wallets = useSelector(state => state.wallet.wallets)
-  const balances = useSelector(state => state.balance)
+  const balances = useSelector(state => state.balance || {})
   const [seed, setSeed] = useState()
   const [address, setAddress] = useState()
   const [customMessage, setCustomMessage] = useState()
   const [randomFactor, setRandomFactor] = useState(1)
   const [error, setError] = useState()
   const wallet = wallets[address]
-  const { balance = 0, tokenBalances = {} } = balances[address]
+  const { balance = 0, tokenBalances = {} } = balances[address] || {}
   const { formatted, fiatFormatted } = util.computeBalance(balance, price)
   const firstWallet = Object.keys(wallets).map((address) => wallets[address])
     .find((wallet) => util.safeOneAddress(wallet.address) && wallet.network === network && !wallet.temp)

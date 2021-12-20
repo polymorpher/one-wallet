@@ -85,6 +85,7 @@
     "bn.js": "^5.2.0",
     "broadcast-channel": "^4.7.0",
     "connected-react-router": "^6.9.1",
+    "dotenv-webpack": "^7.0.3",
     "hi-base32": "^0.5.1",
     "history": "4.10.1",
     "html2canvas": "^1.3.2",

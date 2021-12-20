@@ -165,8 +165,8 @@ const Swap = ({ address }) => {
     label: <TokenLabel token={harmonyToken} selected />
   }
 
-  const balances = useSelector(state => state.balance)
-  const { balance = 0, tokenBalances = {} } = balances[address]
+  const balances = useSelector(state => state.balance || {})
+  const { balance = 0, tokenBalances = {} } = balances[address] || {}
 
   const [pairs, setPairs] = useState([])
   const [tokens, setTokens] = useState({})

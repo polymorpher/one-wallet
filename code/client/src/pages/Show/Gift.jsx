@@ -94,7 +94,7 @@ const Gift = ({
   const price = useSelector(state => state.global.price)
   const network = useSelector(state => state.wallet.network)
   const wallets = useSelector(state => state.wallet.wallets)
-  const balances = useSelector(state => state.balance)
+  const balances = useSelector(state => state.balance || {})
   const wallet = wallets[address] || {}
   const [stage, setStage] = useState(-1)
   const doubleOtp = wallet.doubleOtp

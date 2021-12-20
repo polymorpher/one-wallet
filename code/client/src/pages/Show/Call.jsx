@@ -50,7 +50,7 @@ const Call = ({
 
   const { resetWorker, recoverRandomness } = useRandomWorker()
 
-  const balances = useSelector(state => state.balance)
+  const balances = useSelector(state => state.balance || {})
   const price = useSelector(state => state.global.price)
   const { balance, formatted } = util.computeBalance(balances[address]?.balance || 0, price)
 
