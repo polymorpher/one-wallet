@@ -1,5 +1,5 @@
 import { Button, Space } from 'antd'
-import { Hint, Text } from '../../components/Text'
+import { Text } from '../../components/Text'
 import { OtpSuperStack } from '../../components/OtpSuperStack'
 import React, { useState } from 'react'
 import { useWindowDimensions } from '../../util'
@@ -15,7 +15,7 @@ import message from '../../message'
 import WalletConstants from '../../constants/wallet'
 
 // new core params should be already computed, and wallet info already retrieved from blockchain
-const RestoreByCodes = ({ isActive, wallet, layers, newCoreParams, onComplete, onCancel }) => {
+const RestoreByCodes = ({ isActive, wallet, innerTrees, newCoreParams, onComplete, onCancel }) => {
   const [stage, setStage] = useState(-1)
   const { isMobile } = useWindowDimensions()
   const network = useSelector(state => state.global.network)
@@ -43,6 +43,8 @@ const RestoreByCodes = ({ isActive, wallet, layers, newCoreParams, onComplete, o
     const index = ONEUtil.timeToIndex({
       effectiveTime: wallet.effectiveTime, interval: WalletConstants.interval6
     })
+    const treeIndex = ONEUtil.timeToIndex({ effectiveTime: wallet.effectiveTime }) % 6
+    const layers = innerTrees[treeIndex]
     SmartFlows.commitReveal({
       wallet,
       otp: otps,

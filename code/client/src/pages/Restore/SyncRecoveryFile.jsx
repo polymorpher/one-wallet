@@ -1,9 +1,9 @@
-import { Hint, Text } from '../../components/Text'
-import { Button, Upload } from 'antd'
+import { Hint, Text, Title } from '../../components/Text'
+import { Button, Upload, Space } from 'antd'
 import { LoadingOutlined, UploadOutlined } from '@ant-design/icons'
 import React, { useState } from 'react'
 import message from '../../message'
-import { BasicWalletExport } from '../../proto/wallet'
+import { SimpleWalletExport } from '../../proto/wallet'
 const SyncRecoveryFile = ({ onSynced, onCancel }) => {
   const [uploading, setSyncing] = useState(false)
   const beforeUpload = (file) => {
@@ -13,13 +13,6 @@ const SyncRecoveryFile = ({ onSynced, onCancel }) => {
       return false
     }
     return true
-    // const addressSeg = file.name.split('.').find(e => e.startsWith('one1') || e.startsWith('0x'))
-    // const address = util.safeNormalizedAddress(addressSeg)
-    // if (!address) {
-    //   message.error('The filename contains invalid address segment')
-    //   return false
-    // }
-    // return true
   }
 
   const onFileUploadChange = async (info) => {
@@ -34,8 +27,8 @@ const SyncRecoveryFile = ({ onSynced, onCancel }) => {
       reader.readAsArrayBuffer(info.file.originFileObj)
       reader.onload = () => {
         try {
-          const { layers, address, expert } = BasicWalletExport.decode(reader.result)
-          onSynced && onSynced(address, layers, expert)
+          const { innerTrees, address, expert } = SimpleWalletExport.decode(reader.result)
+          onSynced && onSynced(address, innerTrees, expert)
           setSyncing(false)
         } catch (ex) {
           console.error(ex.toString())
@@ -54,8 +47,8 @@ const SyncRecoveryFile = ({ onSynced, onCancel }) => {
   }
 
   return (
-    <>
-      <Text>Please upload your wallet recovery file (with extension .recovery.1wallet)</Text>
+    <Space direction='vertical' size='large'>
+      <Title level={2}>Recovery: Step 1/3</Title>
       <Upload
         name='recoveryFile'
         showUploadList={false}
@@ -63,11 +56,11 @@ const SyncRecoveryFile = ({ onSynced, onCancel }) => {
         beforeUpload={beforeUpload}
         onChange={onFileUploadChange}
       >
-        <Button icon={uploading ? <LoadingOutlined /> : <UploadOutlined />}>Upload QR Code Image Instead</Button>
+        <Button shape='round' size='large' icon={uploading ? <LoadingOutlined /> : <UploadOutlined />}>Select your wallet recovery file</Button>
       </Upload>
-      <Hint>(Coming soon: automatically store and synchronize your recovery file from cloud storage or IPFS)</Hint>
+      <Hint>Your wallet recovery file ends with file extension <Text style={{ color: 'red' }}>.recovery.1wallet</Text></Hint>
       <Button size='large' type='text' onClick={onCancel} danger>Cancel</Button>
-    </>
+    </Space>
   )
 }
 
