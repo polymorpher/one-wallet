@@ -17,11 +17,11 @@ module.exports = {
   },
   eth: {
     rinkeby: {
-      url: process.env.ETH_RINKEBY_URL,
+      url: process.env.RINKEBY_RPC,
       key: process.env.ETH_RINKEBY_KEY || '',
     },
     ganache: {
-      url: process.env.ETH_GANACHE_URL || 'http://127.0.0.1:7545',
+      url: process.env.GANACHE_RPC || 'http://127.0.0.1:7545',
       key: process.env.ETH_GANACHE_KEY,
     }
   },

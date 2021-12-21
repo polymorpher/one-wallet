@@ -10,20 +10,13 @@ import ONEUtil from '../../../lib/util'
 import { walletActions } from '../state/modules/wallet'
 import Paths from '../constants/paths'
 import { LocalExportMessage } from '../proto/localExportMessage'
+import { getDataFromFile } from './Common'
 
 const LocalImport = () => {
   const dispatch = useDispatch()
   const history = useHistory()
   const wallets = useSelector(state => state.wallet)
   const [fileUploading, setFileUploading] = useState(false)
-
-  const getDataFromFile = file =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.addEventListener('load', () => resolve(reader.result))
-      reader.addEventListener('error', () => reject(reader.error))
-      reader.readAsArrayBuffer(file)
-    })
 
   const handleImport = async info => {
     if (info.file.status === 'uploading') {

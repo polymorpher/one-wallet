@@ -1,7 +1,7 @@
-import { Button, Space } from 'antd'
-import { Text } from '../../components/Text'
+import { Button, Space, Row } from 'antd'
+import { Text, Title } from '../../components/Text'
 import { OtpSuperStack } from '../../components/OtpSuperStack'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useWindowDimensions } from '../../util'
 import ShowUtils from '../Show/show-util'
 import ONEConstants from '../../../../lib/constants'
@@ -13,15 +13,23 @@ import { useSelector } from 'react-redux'
 import { useOtpState } from '../../components/OtpStack'
 import message from '../../message'
 import WalletConstants from '../../constants/wallet'
+import WalletCreateProgress from '../../components/WalletCreateProgress'
 
 // new core params should be already computed, and wallet info already retrieved from blockchain
-const RestoreByCodes = ({ isActive, wallet, innerTrees, newCoreParams, onComplete, onCancel }) => {
+const RestoreByCodes = ({ isActive, wallet, innerTrees, newCoreParams, onComplete, onCancel, progressStage, progress }) => {
   const [stage, setStage] = useState(-1)
   const { isMobile } = useWindowDimensions()
   const network = useSelector(state => state.global.network)
-  const otpStates = new Array(6).map(() => useOtpState())
+  const otpStates = new Array(6).fill(0).map(() => useOtpState().state)
+  const [otpComplete, setOtpComplete] = useState(false)
 
-  const resetOtps = () => { otpStates.forEach(({ resetOtp }) => resetOtp()) }
+  const resetOtps = () => {
+    for (let i = otpStates.length - 1; i >= 0; i--) {
+      otpStates[i].resetOtp(i > 0)
+    }
+    setOtpComplete(false)
+  }
+
   const { prepareValidation, ...handlers } = ShowUtils.buildHelpers({
     setStage,
     resetOtp: resetOtps,
@@ -33,18 +41,24 @@ const RestoreByCodes = ({ isActive, wallet, innerTrees, newCoreParams, onComplet
   })
 
   const doDisplace = () => {
-    const { core, innerCores, identificationKey } = newCoreParams
+    if (!newCoreParams) {
+      console.error('Not ready yet: newCoreParams')
+      return
+    }
+    const { core, innerCores, identificationKeys } = newCoreParams
     if (!newCoreParams) {
       message.error('Must generate new core first')
       return
     }
-    const data = ONE.encodeDisplaceDataHex({ core, innerCores, identificationKey })
+    console.log(newCoreParams)
+    const data = ONE.encodeDisplaceDataHex({ core, innerCores, identificationKey: identificationKeys[0] })
     const otps = otpStates.map(({ otpInput }) => ONEUtil.encodeNumericalOtp(parseInt(otpInput)))
     const index = ONEUtil.timeToIndex({
       effectiveTime: wallet.effectiveTime, interval: WalletConstants.interval6
     })
-    const treeIndex = ONEUtil.timeToIndex({ effectiveTime: wallet.effectiveTime }) % 6
+    const treeIndex = ONEUtil.timeToIndex({ effectiveTime: wallet.effectiveTime }) % innerTrees.length
     const layers = innerTrees[treeIndex]
+    console.log(treeIndex, layers)
     SmartFlows.commitReveal({
       wallet,
       otp: otps,
@@ -57,24 +71,36 @@ const RestoreByCodes = ({ isActive, wallet, innerTrees, newCoreParams, onComplet
       beforeCommit: () => setStage(1),
       afterCommit: () => setStage(2),
       revealAPI: api.relayer.reveal,
-      revealArgs: { data, operationType: ONEConstants.OperationType.DISPLACE },
+      revealArgs: { ...ONEConstants.NullOperationParams, data, operationType: ONEConstants.OperationType.DISPLACE },
       ...handlers
     })
   }
 
+  useEffect(() => {
+    if (!newCoreParams || !otpComplete) {
+      return
+    }
+    doDisplace()
+  }, [otpComplete, newCoreParams])
+
   return (
-    <Space direction='vertical' size='large' style={{ width: '100%' }} align='center'>
-      <Text>You need 3 minutes to complete this process. Please type in your 6-digit authenticator code every time you get a new one, for the next three minutes. If you miss any, you would have to start over. In the end, you should have typed 36 digits in total.</Text>
+    <Space direction='vertical' size='large' style={{ width: '100%' }}>
+      <Title level={2}>Restore: Step 3/3</Title>
+      <Text>Please provide <b>the original</b> authenticator codes, 6-digit at a time, every time you get a new one. Please make sure you do not miss any (in which case you need to start over). Please make sure you use the original code, not the one you just scanned.</Text>
       <OtpSuperStack
         otpStates={otpStates}
-        action='(submit for validation)'
+        action='submit for validation'
         wideLabel={isMobile}
         shouldAutoFocus={isActive}
-        walletName={wallet?.name}
-        onComplete={doDisplace}
+        onComplete={() => setOtpComplete(true)}
         isDisabled={stage >= 0}
       />
-      <Button size='large' type='text' onClick={onCancel} danger>Cancel</Button>
+      {!newCoreParams && otpComplete && <WalletCreateProgress progress={progress} isMobile={isMobile} progressStage={progressStage} subtitle='Rebuilding your 1wallet' />}
+      <Row justify='space-between'>
+        <Button size='large' type='text' onClick={onCancel} danger>Cancel</Button>
+        <Button size='large' type='default' shape='round' onClick={resetOtps}>Reset</Button>
+        <span />
+      </Row>
     </Space>
   )
 }

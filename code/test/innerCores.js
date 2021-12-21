@@ -18,7 +18,14 @@ contract('ONEWallet', (accounts) => {
   const MULTIPLES = process.env.LIGHT ? [24] : [24, 26, 28, 30, 32, 34, 36]
   const DURATIONS = MULTIPLES.map(e => INTERVAL * e) // need to be greater than 16 to trigger innerCore generations
   const EFFECTIVE_TIMES = DURATIONS.map(d => Math.floor(NOW / INTERVAL) * INTERVAL - d / 2)
+  let snapshotId
+  beforeEach(async function () {
+    snapshotId = await TestUtil.snapshot()
+  })
 
+  afterEach(async function () {
+    await TestUtil.revert(snapshotId)
+  })
   const testForTime = async (multiple, effectiveTime, duration, seedBase = '0xdeadbeef1234567890023456789012', numTrees = 6, checkDisplacementSuccess = false) => {
     console.log('testing:', { multiple, effectiveTime, duration })
     const purse = web3.eth.accounts.create()

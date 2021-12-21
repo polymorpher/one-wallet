@@ -12,6 +12,7 @@ const uts46 = require('idna-uts46')
 const abi = require('web3-eth-abi')
 const web3utils = require('web3-utils')
 const elliptic = require('elliptic')
+const { range } = require('lodash')
 
 const utils = {
   hexView: (bytes) => {
@@ -385,7 +386,26 @@ const utils = {
   makeCore: ({ effectiveTime, duration, height, slotSize = 1, interval = 30000, root }) => {
     const t0 = effectiveTime / interval
     const lifespan = duration / interval
-    return [utils.hexString(root), height, interval, t0, lifespan, slotSize]
+    return [utils.hexString(root), height, interval / 1000, t0, lifespan, slotSize]
+  },
+
+  // core retrieved from blockchain
+  processCore: (info, raw) => {
+    const [root, height, interval, t0, lifespan, maxOperationsPerInterval] = range(6).map(k => info[k])
+    const intervalMs = new BN(interval).toNumber() * 1000
+    return raw ? {
+      root,
+      height: new BN(height).toNumber(),
+      interval: new BN(interval).toNumber(),
+      t0: new BN(t0).toNumber(),
+      lifespan: new BN(lifespan).toNumber(),
+      maxOperationsPerInterval: new BN(maxOperationsPerInterval).toNumber(),
+    } : {
+      root: root.slice(2),
+      effectiveTime: new BN(t0).toNumber() * intervalMs,
+      duration: new BN(lifespan).toNumber() * intervalMs,
+      slotSize: new BN(maxOperationsPerInterval).toNumber(),
+    }
   },
 
   web3utils
