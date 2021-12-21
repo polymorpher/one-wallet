@@ -1,17 +1,17 @@
 import { Button, Space } from 'antd'
-import { Hint } from '../../components/Text'
+import { Hint, Title } from '../../components/Text'
 import { buildQRCodeComponent, getQRCodeUri, getSecondCodeName, OTPUriMode } from '../../components/OtpTools'
 import { OtpSetup, TwoCodeOption } from '../../components/OtpSetup'
 import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { generateOtpSeed, useWindowDimensions } from '../../util'
+import util, { generateOtpSeed, useWindowDimensions } from '../../util'
 import qrcode from 'qrcode'
 import ONEUtil from '../../../../lib/util'
 import WalletConstants from '../../constants/wallet'
 import message from '../../message'
 
-const SetupNewCode = ({ expert, active, wallet, onComplete, onCancel, onComputedCoreParams, onProgressUpdate }) => {
-  const { name, slotSize } = wallet || {}
+const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onComputedCoreParams, onProgressUpdate }) => {
+  const { slotSize } = wallet || {}
   const [showSecondCode, setShowSecondCode] = useState()
   const [qrCodeData, setQRCodeData] = useState()
   const [secondOtpQrCodeData, setSecondOtpQrCodeData] = useState()
@@ -44,25 +44,31 @@ const SetupNewCode = ({ expert, active, wallet, onComplete, onCancel, onComputed
       return
     }
     const f = async function () {
-      const otpUri = getQRCodeUri(seed, name, OTPUriMode.MIGRATION)
+      const oneAddress = util.safeOneAddress(wallet?.address)
+      const otpUri = getQRCodeUri(seed, `${name} [${oneAddress}]`, OTPUriMode.MIGRATION)
       const otpQrCodeData = await qrcode.toDataURL(otpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       setQRCodeData(otpQrCodeData)
     }
     f()
-  }, [name])
+  }, [name, wallet?.address])
   useEffect(() => {
     if (!doubleOtp || !seed2) {
       return
     }
     const f = async function () {
-      const secondOtpUri = getQRCodeUri(seed2, getSecondCodeName(name), OTPUriMode.MIGRATION)
+      const oneAddress = util.safeOneAddress(wallet?.address)
+      const secondOtpUri = getQRCodeUri(seed2, getSecondCodeName(`${name} [${oneAddress}]`), OTPUriMode.MIGRATION)
       const secondOtpQrCodeData = await qrcode.toDataURL(secondOtpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       setSecondOtpQrCodeData(secondOtpQrCodeData)
     }
     f()
-  }, [name, doubleOtp])
+  }, [name, doubleOtp, wallet?.address])
 
   useEffect(() => {
+    if (!seed || (doubleOtp && !seed2)) {
+      console.error('No seed')
+      return
+    }
     if (validationOtp?.length !== 6) {
       return
     }
@@ -79,7 +85,7 @@ const SetupNewCode = ({ expert, active, wallet, onComplete, onCancel, onComputed
     } else {
       onComplete && onComplete()
     }
-  }, [validationOtp])
+  }, [validationOtp, seed, seed2])
 
   useEffect(() => {
     if (!seed || !active) {
@@ -127,15 +133,16 @@ const SetupNewCode = ({ expert, active, wallet, onComplete, onCancel, onComputed
     }
     const identificationKeys = [ONEUtil.getIdentificationKey(seed, true)]
     const innerCores = ONEUtil.makeInnerCores({ innerTrees, effectiveTime, duration, slotSize, interval: WalletConstants.interval })
-    const core = ONEUtil.makeCore({ effectiveTime, duration, interval: WalletConstants.interval, height: layers.length, slotSize })
-    setSeed(null)
-    setSeed2(null)
+    const core = ONEUtil.makeCore({ effectiveTime, duration, interval: WalletConstants.interval, height: layers.length, slotSize, root })
+    setSeed(generateOtpSeed()) // erase seed
+    setSeed2(generateOtpSeed()) // erase seed
     onComputedCoreParams && onComputedCoreParams({ core, innerCores, identificationKeys })
   }, [root, innerTrees])
 
   return (
-    <Space direction='vertical' align='center' style={{ width: '100%' }}>
-      <Hint>{isMobile ? 'Tap' : 'Scan'} the QR code to setup a new authenticator code, which will only work for this device. Your old code will still work on other devices.</Hint>
+    <Space direction='vertical' style={{ width: '100%' }}>
+      <Title level={2}>Restore: Step 2/3</Title>
+      <Hint><b>Setup a new authenticator code</b>: {isMobile ? 'Tap' : 'Scan'} the QR code below.</Hint>
       {!showSecondCode &&
         <>
           {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData })}
@@ -147,6 +154,7 @@ const SetupNewCode = ({ expert, active, wallet, onComplete, onCancel, onComputed
           {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData: secondOtpQrCodeData })}
           <OtpSetup isMobile={isMobile} otpRef={validationOtpRef} otpValue={validationOtp} setOtpValue={setValidationOtp} name={getSecondCodeName(name)} />
         </>}
+      <Hint>*If you already have this wallet on other devices, this code will not work there, until you synchronize them later.</Hint>
       <Button size='large' type='text' onClick={onClose} danger>Cancel</Button>
     </Space>
   )

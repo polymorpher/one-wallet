@@ -139,6 +139,10 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
         return oldCores;
     }
 
+    function getInnerCores() external override view returns (CoreSetting[] memory){
+        return innerCores;
+    }
+
     function getRootKey() external override view returns (bytes32){
         if (oldCores.length > 0) {
             return oldCores[0].root;

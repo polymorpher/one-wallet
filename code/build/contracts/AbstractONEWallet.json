@@ -434,6 +434,51 @@
     },
     {
       "inputs": [],
+      "name": "getInnerCores",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes32",
+              "name": "root",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint8",
+              "name": "height",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint8",
+              "name": "interval",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint32",
+              "name": "t0",
+              "type": "uint32"
+            },
+            {
+              "internalType": "uint32",
+              "name": "lifespan",
+              "type": "uint32"
+            },
+            {
+              "internalType": "uint8",
+              "name": "maxOperationsPerInterval",
+              "type": "uint8"
+            }
+          ],
+          "internalType": "struct IONEWallet.CoreSetting[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "getNonce",
       "outputs": [
         {
@@ -1176,7 +1221,7 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.4+commit.c7e474f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"}],\"name\":\"AutoRecoveryTriggered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"requiredTime\",\"type\":\"uint256\"}],\"name\":\"AutoRecoveryTriggeredPrematurely\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"ret\",\"type\":\"bytes\"}],\"name\":\"ExternalCallCompleted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"ret\",\"type\":\"bytes\"}],\"name\":\"ExternalCallFailed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"ForwardAddressAlreadySet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"ForwardAddressInvalid\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"ForwardAddressUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"success\",\"type\":\"bool\"}],\"name\":\"ForwardedBalance\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[],\"name\":\"LastResortAddressNotSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"PaymentForwarded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"}],\"name\":\"PaymentReceived\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"PaymentSent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"RecoveryAddressUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[],\"name\":\"RecoveryFailure\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[],\"name\":\"RecoveryTriggered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[],\"name\":\"Retired\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"error\",\"type\":\"bytes\"}],\"name\":\"TransferError\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"hash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"paramsHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"verificationHash\",\"type\":\"bytes32\"}],\"name\":\"commit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"findCommit\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAllCommits\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint32[]\",\"name\":\"\",\"type\":\"uint32[]\"},{\"internalType\":\"bool[]\",\"name\":\"\",\"type\":\"bool[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getBacklinks\",\"outputs\":[{\"internalType\":\"contract IONEWallet[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"enum Enums.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getBalance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getCommits\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint32[]\",\"name\":\"\",\"type\":\"uint32[]\"},{\"internalType\":\"bool[]\",\"name\":\"\",\"type\":\"bool[]\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getCurrentSpending\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getCurrentSpendingState\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getForwardAddress\",\"outputs\":[{\"internalType\":\"address payable\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getIdentificationKeys\",\"outputs\":[{\"internalType\":\"bytes[]\",\"name\":\"\",\"type\":\"bytes[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInfo\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getNonce\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getOldInfos\",\"outputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"root\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"height\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"interval\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"t0\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"lifespan\",\"type\":\"uint32\"},{\"internalType\":\"uint8\",\"name\":\"maxOperationsPerInterval\",\"type\":\"uint8\"}],\"internalType\":\"struct IONEWallet.CoreSetting[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRootKey\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getSpendingState\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"spendingLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"spentAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"lastSpendingInterval\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"spendingInterval\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"lastLimitAdjustmentTime\",\"type\":\"uint32\"},{\"internalType\":\"uint256\",\"name\":\"highestSpendingLimit\",\"type\":\"uint256\"}],\"internalType\":\"struct SpendingManager.SpendingState\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getTrackedTokens\",\"outputs\":[{\"internalType\":\"enum Enums.TokenType[]\",\"name\":\"\",\"type\":\"uint8[]\"},{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getVersion\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"identificationKey\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"root\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"height\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"interval\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"t0\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"lifespan\",\"type\":\"uint32\"},{\"internalType\":\"uint8\",\"name\":\"maxOperationsPerInterval\",\"type\":\"uint8\"}],\"internalType\":\"struct IONEWallet.CoreSetting\",\"name\":\"core\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"spendingLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"spentAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"lastSpendingInterval\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"spendingInterval\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"lastLimitAdjustmentTime\",\"type\":\"uint32\"},{\"internalType\":\"uint256\",\"name\":\"highestSpendingLimit\",\"type\":\"uint256\"}],\"internalType\":\"struct SpendingManager.SpendingState\",\"name\":\"spendingState\",\"type\":\"tuple\"},{\"internalType\":\"address payable\",\"name\":\"recoveryAddress\",\"type\":\"address\"},{\"internalType\":\"contract IONEWallet[]\",\"name\":\"backlinkAddresses\",\"type\":\"address[]\"},{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"root\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"height\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"interval\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"t0\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"lifespan\",\"type\":\"uint32\"},{\"internalType\":\"uint8\",\"name\":\"maxOperationsPerInterval\",\"type\":\"uint8\"}],\"internalType\":\"struct IONEWallet.CoreSetting[]\",\"name\":\"oldCores\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"root\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"height\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"interval\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"t0\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"lifespan\",\"type\":\"uint32\"},{\"internalType\":\"uint8\",\"name\":\"maxOperationsPerInterval\",\"type\":\"uint8\"}],\"internalType\":\"struct IONEWallet.CoreSetting[]\",\"name\":\"innerCores\",\"type\":\"tuple[]\"},{\"internalType\":\"bytes[]\",\"name\":\"identificationKeys\",\"type\":\"bytes[]\"}],\"internalType\":\"struct IONEWallet.InitParams\",\"name\":\"initParams\",\"type\":\"tuple\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"hash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"isValidSignature\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"lastOperationTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"start\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"end\",\"type\":\"uint32\"}],\"name\":\"listSignatures\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint32[]\",\"name\":\"\",\"type\":\"uint32[]\"},{\"internalType\":\"uint32[]\",\"name\":\"\",\"type\":\"uint32[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"hash\",\"type\":\"bytes32\"}],\"name\":\"lookupCommit\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint32[]\",\"name\":\"\",\"type\":\"uint32[]\"},{\"internalType\":\"bool[]\",\"name\":\"\",\"type\":\"bool[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"hash\",\"type\":\"bytes32\"}],\"name\":\"lookupSignature\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"retire\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"bytes32[]\",\"name\":\"neighbors\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint32\",\"name\":\"indexWithNonce\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"eotp\",\"type\":\"bytes32\"}],\"internalType\":\"struct IONEWallet.AuthParams\",\"name\":\"auth\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"enum Enums.OperationType\",\"name\":\"operationType\",\"type\":\"uint8\"},{\"internalType\":\"enum Enums.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address payable\",\"name\":\"dest\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"internalType\":\"struct IONEWallet.OperationParams\",\"name\":\"op\",\"type\":\"tuple\"}],\"name\":\"reveal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"enum Enums.OperationType\",\"name\":\"\",\"type\":\"uint8\"},{\"internalType\":\"enum Enums.TokenType\",\"name\":\"\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address payable\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"reveal\",\"outputs\":[],\"stateMutability\":\"pure\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"findCommit(bytes32)\":{\"notice\":\"DEPRECATED\"},\"getCommits()\":{\"notice\":\"DEPRECATED\"},\"isValidSignature(bytes32,bytes)\":{\"notice\":\"https://eips.ethereum.org/EIPS/eip-1271\"}},\"notice\":\"For now, this is just a place to put all the deprecated stuff. In the future we can put some state variables here, along with some simple getters\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/AbstractONEWallet.sol\":\"AbstractONEWallet\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/AbstractONEWallet.sol\":{\"keccak256\":\"0xa7d6641f4d52a108ec510bc8a4f0150ed3d9d59cbeedce497c1ac273e4426a12\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://e3fb55fd8f0dbd3f9a08050e689bde7a493455ea575387b4ea01126ea1754315\",\"dweb:/ipfs/QmWL8SBT3wpmRRjqijmAB1KWsz7GyXZEgngUvE9PCD4QK1\"]},\"project:/contracts/Enums.sol\":{\"keccak256\":\"0x965c9c2718886c3251ea4ace644a179aa16333628ec3a50f356249d4879d5ab2\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://d835c7a7d5aef2a8b7689c28e69b25360ccc46541321034412b73b31fbcb2ed8\",\"dweb:/ipfs/QmerS3UiqudhUJr8nAej7NnKHbExLWfnB4T96Sghh3Q3K8\"]},\"project:/contracts/IONEWallet.sol\":{\"keccak256\":\"0x012ebf16b924d72c88ea5fb068086f89ad271818c40a78d6b782833b434d854b\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://52474d9ac78deb4401fb73044625a24535f8ac7bcb89996742faa29baa384616\",\"dweb:/ipfs/QmWKetajxd1WNKk6eDw9rJHjXoqnSUrc5YVZ7Tm1mW1ErX\"]},\"project:/contracts/SpendingManager.sol\":{\"keccak256\":\"0xa3e1dbce6ce37a2cbda9a2d5488459d055aa356520c290e5602697d8221342e0\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://3c664993ad3eb573d905170cdf8532b776f6142f2ec6b63492865b4fc89752e6\",\"dweb:/ipfs/QmcUQcTXo6221J7fm5cXnPBZL4VKpSsZbDM9qUCJcVAJe7\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.4+commit.c7e474f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"}],\"name\":\"AutoRecoveryTriggered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"requiredTime\",\"type\":\"uint256\"}],\"name\":\"AutoRecoveryTriggeredPrematurely\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"ret\",\"type\":\"bytes\"}],\"name\":\"ExternalCallCompleted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"ret\",\"type\":\"bytes\"}],\"name\":\"ExternalCallFailed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"ForwardAddressAlreadySet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"ForwardAddressInvalid\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"ForwardAddressUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"success\",\"type\":\"bool\"}],\"name\":\"ForwardedBalance\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[],\"name\":\"LastResortAddressNotSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"PaymentForwarded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"}],\"name\":\"PaymentReceived\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"PaymentSent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"RecoveryAddressUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[],\"name\":\"RecoveryFailure\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[],\"name\":\"RecoveryTriggered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[],\"name\":\"Retired\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"error\",\"type\":\"bytes\"}],\"name\":\"TransferError\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"hash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"paramsHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"verificationHash\",\"type\":\"bytes32\"}],\"name\":\"commit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"findCommit\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAllCommits\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint32[]\",\"name\":\"\",\"type\":\"uint32[]\"},{\"internalType\":\"bool[]\",\"name\":\"\",\"type\":\"bool[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getBacklinks\",\"outputs\":[{\"internalType\":\"contract IONEWallet[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"enum Enums.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getBalance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getCommits\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint32[]\",\"name\":\"\",\"type\":\"uint32[]\"},{\"internalType\":\"bool[]\",\"name\":\"\",\"type\":\"bool[]\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getCurrentSpending\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getCurrentSpendingState\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getForwardAddress\",\"outputs\":[{\"internalType\":\"address payable\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getIdentificationKeys\",\"outputs\":[{\"internalType\":\"bytes[]\",\"name\":\"\",\"type\":\"bytes[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInfo\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInnerCores\",\"outputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"root\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"height\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"interval\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"t0\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"lifespan\",\"type\":\"uint32\"},{\"internalType\":\"uint8\",\"name\":\"maxOperationsPerInterval\",\"type\":\"uint8\"}],\"internalType\":\"struct IONEWallet.CoreSetting[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getNonce\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getOldInfos\",\"outputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"root\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"height\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"interval\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"t0\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"lifespan\",\"type\":\"uint32\"},{\"internalType\":\"uint8\",\"name\":\"maxOperationsPerInterval\",\"type\":\"uint8\"}],\"internalType\":\"struct IONEWallet.CoreSetting[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRootKey\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getSpendingState\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"spendingLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"spentAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"lastSpendingInterval\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"spendingInterval\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"lastLimitAdjustmentTime\",\"type\":\"uint32\"},{\"internalType\":\"uint256\",\"name\":\"highestSpendingLimit\",\"type\":\"uint256\"}],\"internalType\":\"struct SpendingManager.SpendingState\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getTrackedTokens\",\"outputs\":[{\"internalType\":\"enum Enums.TokenType[]\",\"name\":\"\",\"type\":\"uint8[]\"},{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getVersion\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"identificationKey\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"root\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"height\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"interval\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"t0\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"lifespan\",\"type\":\"uint32\"},{\"internalType\":\"uint8\",\"name\":\"maxOperationsPerInterval\",\"type\":\"uint8\"}],\"internalType\":\"struct IONEWallet.CoreSetting\",\"name\":\"core\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"spendingLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"spentAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"lastSpendingInterval\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"spendingInterval\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"lastLimitAdjustmentTime\",\"type\":\"uint32\"},{\"internalType\":\"uint256\",\"name\":\"highestSpendingLimit\",\"type\":\"uint256\"}],\"internalType\":\"struct SpendingManager.SpendingState\",\"name\":\"spendingState\",\"type\":\"tuple\"},{\"internalType\":\"address payable\",\"name\":\"recoveryAddress\",\"type\":\"address\"},{\"internalType\":\"contract IONEWallet[]\",\"name\":\"backlinkAddresses\",\"type\":\"address[]\"},{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"root\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"height\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"interval\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"t0\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"lifespan\",\"type\":\"uint32\"},{\"internalType\":\"uint8\",\"name\":\"maxOperationsPerInterval\",\"type\":\"uint8\"}],\"internalType\":\"struct IONEWallet.CoreSetting[]\",\"name\":\"oldCores\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"root\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"height\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"interval\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"t0\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"lifespan\",\"type\":\"uint32\"},{\"internalType\":\"uint8\",\"name\":\"maxOperationsPerInterval\",\"type\":\"uint8\"}],\"internalType\":\"struct IONEWallet.CoreSetting[]\",\"name\":\"innerCores\",\"type\":\"tuple[]\"},{\"internalType\":\"bytes[]\",\"name\":\"identificationKeys\",\"type\":\"bytes[]\"}],\"internalType\":\"struct IONEWallet.InitParams\",\"name\":\"initParams\",\"type\":\"tuple\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"hash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"isValidSignature\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"lastOperationTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"start\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"end\",\"type\":\"uint32\"}],\"name\":\"listSignatures\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint32[]\",\"name\":\"\",\"type\":\"uint32[]\"},{\"internalType\":\"uint32[]\",\"name\":\"\",\"type\":\"uint32[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"hash\",\"type\":\"bytes32\"}],\"name\":\"lookupCommit\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint32[]\",\"name\":\"\",\"type\":\"uint32[]\"},{\"internalType\":\"bool[]\",\"name\":\"\",\"type\":\"bool[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"hash\",\"type\":\"bytes32\"}],\"name\":\"lookupSignature\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"retire\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"bytes32[]\",\"name\":\"neighbors\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint32\",\"name\":\"indexWithNonce\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"eotp\",\"type\":\"bytes32\"}],\"internalType\":\"struct IONEWallet.AuthParams\",\"name\":\"auth\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"enum Enums.OperationType\",\"name\":\"operationType\",\"type\":\"uint8\"},{\"internalType\":\"enum Enums.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address payable\",\"name\":\"dest\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"internalType\":\"struct IONEWallet.OperationParams\",\"name\":\"op\",\"type\":\"tuple\"}],\"name\":\"reveal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"enum Enums.OperationType\",\"name\":\"\",\"type\":\"uint8\"},{\"internalType\":\"enum Enums.TokenType\",\"name\":\"\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address payable\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"reveal\",\"outputs\":[],\"stateMutability\":\"pure\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"findCommit(bytes32)\":{\"notice\":\"DEPRECATED\"},\"getCommits()\":{\"notice\":\"DEPRECATED\"},\"isValidSignature(bytes32,bytes)\":{\"notice\":\"https://eips.ethereum.org/EIPS/eip-1271\"}},\"notice\":\"For now, this is just a place to put all the deprecated stuff. In the future we can put some state variables here, along with some simple getters\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/AbstractONEWallet.sol\":\"AbstractONEWallet\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/AbstractONEWallet.sol\":{\"keccak256\":\"0xa7d6641f4d52a108ec510bc8a4f0150ed3d9d59cbeedce497c1ac273e4426a12\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://e3fb55fd8f0dbd3f9a08050e689bde7a493455ea575387b4ea01126ea1754315\",\"dweb:/ipfs/QmWL8SBT3wpmRRjqijmAB1KWsz7GyXZEgngUvE9PCD4QK1\"]},\"project:/contracts/Enums.sol\":{\"keccak256\":\"0x965c9c2718886c3251ea4ace644a179aa16333628ec3a50f356249d4879d5ab2\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://d835c7a7d5aef2a8b7689c28e69b25360ccc46541321034412b73b31fbcb2ed8\",\"dweb:/ipfs/QmerS3UiqudhUJr8nAej7NnKHbExLWfnB4T96Sghh3Q3K8\"]},\"project:/contracts/IONEWallet.sol\":{\"keccak256\":\"0xed5a4465be471c1030e43f1da05bdbbde6b7cf5af3fe7e0cd798527ac4f7988b\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://a0d3d7e77ac8097333df96190593a4b0dc255bc674cf8eaec25087397d58f3d1\",\"dweb:/ipfs/QmSFcuZfeqUG5znAeMXCrYxZUNtoNHJt8GiVd8gWFwm5Ut\"]},\"project:/contracts/SpendingManager.sol\":{\"keccak256\":\"0xa3e1dbce6ce37a2cbda9a2d5488459d055aa356520c290e5602697d8221342e0\",\"license\":\"Apache-2.0\",\"urls\":[\"bzz-raw://3c664993ad3eb573d905170cdf8532b776f6142f2ec6b63492865b4fc89752e6\",\"dweb:/ipfs/QmcUQcTXo6221J7fm5cXnPBZL4VKpSsZbDM9qUCJcVAJe7\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -1196,10 +1241,10 @@
         2824
       ],
       "IONEWallet": [
-        4179
+        4229
       ],
       "SpendingManager": [
-        8121
+        8182
       ]
     },
     "id": 868,
@@ -1236,7 +1281,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 868,
-        "sourceUnit": 4180,
+        "sourceUnit": 4230,
         "src": "86:26:10",
         "symbolAliases": [],
         "unitAlias": ""
@@ -1249,7 +1294,7 @@
               "id": 766,
               "name": "IONEWallet",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 4179,
+              "referencedDeclaration": 4229,
               "src": "303:10:10"
             },
             "id": 767,
@@ -1269,7 +1314,7 @@
         "id": 867,
         "linearizedBaseContracts": [
           867,
-          4179
+          4229
         ],
         "name": "AbstractONEWallet",
         "nameLocation": "282:17:10",
@@ -1277,7 +1322,7 @@
         "nodes": [
           {
             "baseFunctions": [
-              3967
+              4017
             ],
             "body": {
               "id": 778,
@@ -1413,7 +1458,7 @@
           },
           {
             "baseFunctions": [
-              4010
+              4060
             ],
             "body": {
               "id": 799,
@@ -1645,7 +1690,7 @@
           },
           {
             "baseFunctions": [
-              4042
+              4092
             ],
             "body": {
               "id": 818,
@@ -1869,7 +1914,7 @@
           },
           {
             "baseFunctions": [
-              4097
+              4147
             ],
             "body": {
               "id": 849,
@@ -2246,7 +2291,7 @@
           },
           {
             "baseFunctions": [
-              3978
+              4028
             ],
             "body": {
               "id": 865,
@@ -2452,10 +2497,10 @@
         2824
       ],
       "IONEWallet": [
-        4179
+        4229
       ],
       "SpendingManager": [
-        8121
+        8182
       ]
     },
     "id": 868,
@@ -2492,7 +2537,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 868,
-        "sourceUnit": 4180,
+        "sourceUnit": 4230,
         "src": "86:26:10",
         "symbolAliases": [],
         "unitAlias": ""
@@ -2505,7 +2550,7 @@
               "id": 766,
               "name": "IONEWallet",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 4179,
+              "referencedDeclaration": 4229,
               "src": "303:10:10"
             },
             "id": 767,
@@ -2525,7 +2570,7 @@
         "id": 867,
         "linearizedBaseContracts": [
           867,
-          4179
+          4229
         ],
         "name": "AbstractONEWallet",
         "nameLocation": "282:17:10",
@@ -2533,7 +2578,7 @@
         "nodes": [
           {
             "baseFunctions": [
-              3967
+              4017
             ],
             "body": {
               "id": 778,
@@ -2669,7 +2714,7 @@
           },
           {
             "baseFunctions": [
-              4010
+              4060
             ],
             "body": {
               "id": 799,
@@ -2901,7 +2946,7 @@
           },
           {
             "baseFunctions": [
-              4042
+              4092
             ],
             "body": {
               "id": 818,
@@ -3125,7 +3170,7 @@
           },
           {
             "baseFunctions": [
-              4097
+              4147
             ],
             "body": {
               "id": 849,
@@ -3502,7 +3547,7 @@
           },
           {
             "baseFunctions": [
-              3978
+              4028
             ],
             "body": {
               "id": 865,
@@ -3704,7 +3749,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.2",
-  "updatedAt": "2021-11-24T12:47:57.613Z",
+  "updatedAt": "2021-12-21T09:09:50.700Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

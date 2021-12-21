@@ -385,7 +385,7 @@ const utils = {
   makeCore: ({ effectiveTime, duration, height, slotSize = 1, interval = 30000, root }) => {
     const t0 = effectiveTime / interval
     const lifespan = duration / interval
-    return [utils.hexString(root), height, interval, t0, lifespan, slotSize]
+    return [utils.hexString(root), height, interval / 1000, t0, lifespan, slotSize]
   },
 
   web3utils

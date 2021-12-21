@@ -27,8 +27,8 @@ const SyncRecoveryFile = ({ onSynced, onCancel }) => {
       try {
         const data = await getDataFromFile(info.file.originFileObj)
         try {
-          const { innerTrees, address, expert } = SimpleWalletExport.decode(new Uint8Array(data))
-          onSynced && onSynced(address, innerTrees, expert)
+          const { innerTrees, address, expert, name } = SimpleWalletExport.decode(new Uint8Array(data))
+          onSynced && onSynced({ address, innerTrees: innerTrees.map(t => t.layers), name, expert })
           setSyncing(false)
         } catch (ex) {
           console.error(ex.toString())
@@ -45,7 +45,7 @@ const SyncRecoveryFile = ({ onSynced, onCancel }) => {
 
   return (
     <Space direction='vertical' size='large'>
-      <Title level={2}>Recovery: Step 1/3</Title>
+      <Title level={2}>Restore: Step 1/3</Title>
       <Upload
         name='recoveryFile'
         showUploadList={false}
