@@ -30,8 +30,8 @@ const Restore = () => {
   const [progress, setProgress] = useState(0)
   const [progressStage, setProgressStage] = useState(0)
   const [innerTrees, setInnerTrees] = useState()
-  const [name, setName] = useState()
   const [expert, setExpert] = useState()
+  const [name, setName] = useState()
   const [newCoreParams, setNewCoreParams] = useState()
   const [address, setAddress] = useState()
 
@@ -89,6 +89,7 @@ const Restore = () => {
           active={section === Sections.SetupNewCode}
           onComplete={() => setSection(Sections.RecoveryCode)}
           onCancel={() => setSection(Sections.Choose)}
+          onProgressUpdate={({ progress, stage }) => { setProgress(progress); setProgressStage(stage) }}
           onComputedCoreParams={e => setNewCoreParams(e)}
         />
       </AnimatedSection>
@@ -100,7 +101,6 @@ const Restore = () => {
           isActive={section === Sections.RecoveryCode}
           onComplete={() => setTimeout(() => history.push(Paths.showAddress(address)), 2000)}
           onCancel={() => setSection(Sections.Choose)}
-          onProgressUpdate={({ progress, stage }) => { setProgress(progress); setProgressStage(stage) }}
           newCoreParams={newCoreParams}
           wallet={walletInfo}
           innerTrees={innerTrees}
