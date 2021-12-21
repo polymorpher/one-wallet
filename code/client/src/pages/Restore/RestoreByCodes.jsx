@@ -9,11 +9,13 @@ import { EotpBuilders, SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import ONEUtil from '../../../../lib/util'
 import { api } from '../../../../lib/api'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { useOtpState } from '../../components/OtpStack'
 import message from '../../message'
-import WalletConstants from '../../constants/wallet'
 import WalletCreateProgress from '../../components/WalletCreateProgress'
+import storage from '../../storage'
+import walletActions from '../../state/modules/wallet/actions'
+import WalletConstants from '../../constants/wallet'
 
 // new core params should be already computed, and wallet info already retrieved from blockchain
 const RestoreByCodes = ({ isActive, wallet, innerTrees, newCoreParams, onComplete, onCancel, progressStage, progress }) => {
@@ -22,6 +24,7 @@ const RestoreByCodes = ({ isActive, wallet, innerTrees, newCoreParams, onComplet
   const network = useSelector(state => state.wallet.network)
   const otpStates = new Array(6).fill(0).map(() => useOtpState().state)
   const [otpComplete, setOtpComplete] = useState(false)
+  const dispatch = useDispatch()
 
   const resetOtps = () => {
     for (let i = otpStates.length - 1; i >= 0; i--) {
@@ -34,13 +37,38 @@ const RestoreByCodes = ({ isActive, wallet, innerTrees, newCoreParams, onComplet
     setStage,
     resetOtp: resetOtps,
     network,
-    onSuccess: () => {
+    onSuccess: async () => {
       // TODO: saving new wallet locally, store layers and innerLayers spawned from newCore
+      const promises = []
+      for (const tree of innerTrees) {
+        const innerRoot = tree[tree.length - 1]
+        const hex = ONEUtil.hexView(innerRoot)
+        console.log(`Storing innerTree ${hex}`)
+        promises.push(storage.setItem(hex, tree))
+      }
+      await Promise.all(promises)
+      console.log(`${promises.length} innerTrees stored`)
+      const { layers, hseed, doubleOtp, name } = newCoreParams
+      const { root } = wallet
+      const hex = ONEUtil.hexView(root)
+      console.log(`Storing tree ${hex}`)
+      await storage.setItem(hex, layers)
+      const newWallet = {
+        _merge: true,
+        name,
+        hseed: ONEUtil.hexView(hseed),
+        doubleOtp,
+        ...wallet,
+        network,
+      }
+      const securityParameters = ONEUtil.securityParameters(newWallet)
+      const walletUpdate = { ...newWallet, ...securityParameters }
+      dispatch(walletActions.updateWallet(walletUpdate))
       onComplete && onComplete()
     }
   })
 
-  const doDisplace = () => {
+  const doDisplace = async () => {
     if (!newCoreParams) {
       console.error('Not ready yet: newCoreParams')
       return
@@ -50,15 +78,38 @@ const RestoreByCodes = ({ isActive, wallet, innerTrees, newCoreParams, onComplet
       message.error('Must generate new core first')
       return
     }
-    console.log(newCoreParams)
     const data = ONE.encodeDisplaceDataHex({ core, innerCores, identificationKey: identificationKeys[0] })
-    const otps = otpStates.map(({ otpInput }) => ONEUtil.encodeNumericalOtp(parseInt(otpInput)))
-    const index = ONEUtil.timeToIndex({
-      effectiveTime: wallet.effectiveTime, interval: WalletConstants.interval6
-    })
-    const treeIndex = ONEUtil.timeToIndex({ effectiveTime: wallet.effectiveTime }) % innerTrees.length
+    const otps = otpStates.map(({ otpInput }) => parseInt(otpInput))
+    const eotp = await EotpBuilders.restore({ otp: otps })
+    console.log('eotp=', eotp)
+    const maxIndex = ONEUtil.timeToIndex({ effectiveTime: wallet.effectiveTime, interval: WalletConstants.interval6 })
+    // const treeIndex = ONEUtil.timeToIndex({ effectiveTime: wallet.effectiveTime }) % innerTrees.length
+
+    let index = null
+    let treeIndex = null
+    setStage(0)
+    for (let i = maxIndex + 1; i >= 0; i--) {
+      for (const [ind, innerTree] of innerTrees.entries()) {
+        const layer = innerTree[0]
+        const b = new Uint8Array(layer.subarray(i * 32, i * 32 + 32))
+        if (ONEUtil.bytesEqual(b, ONEUtil.sha256(eotp))) {
+          index = i
+          treeIndex = ind
+          console.log(`Matching tree index ${treeIndex} at position ${index}`)
+          break
+          // console.log(`Matching index: ${ind} (expected ${treeIndex}), at ${i} (expected ${index})`)
+        }
+      }
+      if (index !== null && treeIndex !== null) {
+        break
+      }
+    }
+    if (index === null || treeIndex === null) {
+      message.error('Code is incorrect. Please start over.')
+      resetOtps()
+      return
+    }
     const layers = innerTrees[treeIndex]
-    console.log(treeIndex, layers)
     SmartFlows.commitReveal({
       wallet,
       otp: otps,
