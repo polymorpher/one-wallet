@@ -6,8 +6,9 @@ message InnerTree {
 
 message SimpleWalletExport {
     string address = 1;
-    bool expert = 2;
-    string state = 3; // JSON serialized
-    repeated bytes layers = 4;
-    repeated InnerTree innerTrees = 5;
+    string name = 2;
+    bool expert = 3;
+    string state = 4; // JSON serialized
+    repeated bytes layers = 5;
+    repeated InnerTree innerTrees = 6;
 }

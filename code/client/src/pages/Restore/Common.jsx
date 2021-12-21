@@ -1,6 +1,6 @@
 import util from '../../util'
 import message from '../../message'
-import api from '../../../../lib/api'
+import { api } from '../../../../lib/api'
 import * as Sentry from '@sentry/browser'
 
 export const retrieveWalletInfoFromAddress = async (address) => {

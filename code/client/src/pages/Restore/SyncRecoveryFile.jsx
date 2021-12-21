@@ -4,6 +4,7 @@ import { LoadingOutlined, UploadOutlined } from '@ant-design/icons'
 import React, { useState } from 'react'
 import message from '../../message'
 import { SimpleWalletExport } from '../../proto/wallet'
+import { getDataFromFile } from '../../components/Common'
 const SyncRecoveryFile = ({ onSynced, onCancel }) => {
   const [uploading, setSyncing] = useState(false)
   const beforeUpload = (file) => {
@@ -23,24 +24,20 @@ const SyncRecoveryFile = ({ onSynced, onCancel }) => {
     if (info.file.status === 'done') {
       // const addressSeg = info.file.name.split('.').find(e => e.startsWith('one1') || e.startsWith('0x'))
       // const address = util.safeNormalizedAddress(addressSeg)
-      const reader = new FileReader()
-      reader.readAsArrayBuffer(info.file.originFileObj)
-      reader.onload = () => {
+      try {
+        const data = await getDataFromFile(info.file.originFileObj)
         try {
-          const { innerTrees, address, expert } = SimpleWalletExport.decode(reader.result)
-          onSynced && onSynced(address, innerTrees, expert)
+          const { innerTrees, address, expert, name } = SimpleWalletExport.decode(new Uint8Array(data))
+          onSynced && onSynced({ address, innerTrees: innerTrees.map(t => t.layers), name, expert })
           setSyncing(false)
         } catch (ex) {
           console.error(ex.toString())
           message.error('Unable to parse the provided file as 1wallet recovery file')
           setSyncing(false)
         }
-      }
-      reader.onerror = () => {
+      } catch (ex) {
+        console.error(ex)
         message.error('An error occurred while reading the file. Please try again.')
-        setSyncing(false)
-      }
-      reader.onabort = () => {
         setSyncing(false)
       }
     }
@@ -48,7 +45,7 @@ const SyncRecoveryFile = ({ onSynced, onCancel }) => {
 
   return (
     <Space direction='vertical' size='large'>
-      <Title level={2}>Recovery: Step 1/3</Title>
+      <Title level={2}>Restore: Step 1/3</Title>
       <Upload
         name='recoveryFile'
         showUploadList={false}

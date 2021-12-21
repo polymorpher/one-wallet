@@ -39,6 +39,7 @@ const Recovery = ({ address }) => {
     let element
     try {
       const exportPB = SimpleWalletExport.create({
+        name: wallet.name,
         address: wallet.address,
         expert: wallet.expert,
         innerTrees: innerTreePB,
