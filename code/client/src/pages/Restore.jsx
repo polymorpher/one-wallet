@@ -47,7 +47,7 @@ const Restore = () => {
   const [innerTrees, setInnerTrees] = useState()
   const [expert, setExpert] = useState()
   const [name, setName] = useState()
-  const [newCoreParams, setNewCoreParams] = useState()
+  const [newLocalParams, setNewLocalParams] = useState()
   const [address, setAddress] = useState()
 
   const onSynced = async ({ name, address: retrievalAddress, innerTrees, expert }) => {
@@ -105,7 +105,7 @@ const Restore = () => {
           onComplete={() => setSection(Sections.RecoveryCode)}
           onCancel={() => setSection(Sections.Choose)}
           onProgressUpdate={({ progress, stage }) => { setProgress(progress); setProgressStage(stage) }}
-          onComputedCoreParams={e => setNewCoreParams(e)}
+          onComputeLocalParams={e => setNewLocalParams(e)}
         />
       </AnimatedSection>
       <AnimatedSection show={section === Sections.RecoveryCode}>
@@ -116,7 +116,7 @@ const Restore = () => {
           isActive={section === Sections.RecoveryCode}
           onComplete={() => setTimeout(() => history.push(Paths.showAddress(address)), 2000)}
           onCancel={() => setSection(Sections.Choose)}
-          newCoreParams={newCoreParams}
+          newCoreParams={newLocalParams}
           wallet={walletInfo}
           innerTrees={innerTrees}
         />
