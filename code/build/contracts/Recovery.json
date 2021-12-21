@@ -152,15 +152,15 @@
     "absolutePath": "project:/contracts/Recovery.sol",
     "exportedSymbols": {
       "Recovery": [
-        5580
+        5641
       ]
     },
-    "id": 5581,
+    "id": 5642,
     "license": "Apache-2.0",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 5551,
+        "id": 5612,
         "literals": [
           "solidity",
           "^",
@@ -176,9 +176,9 @@
         "contractDependencies": [],
         "contractKind": "library",
         "fullyImplemented": true,
-        "id": 5580,
+        "id": 5641,
         "linearizedBaseContracts": [
-          5580
+          5641
         ],
         "name": "Recovery",
         "nameLocation": "104:8:21",
@@ -186,12 +186,12 @@
         "nodes": [
           {
             "constant": true,
-            "id": 5554,
+            "id": 5615,
             "mutability": "constant",
             "name": "ONE_WALLET_TREASURY",
             "nameLocation": "136:19:21",
             "nodeType": "VariableDeclaration",
-            "scope": 5580,
+            "scope": 5641,
             "src": "119:81:21",
             "stateVariable": true,
             "storageLocation": "default",
@@ -200,7 +200,7 @@
               "typeString": "address"
             },
             "typeName": {
-              "id": 5552,
+              "id": 5613,
               "name": "address",
               "nodeType": "ElementaryTypeName",
               "src": "119:7:21",
@@ -212,7 +212,7 @@
             },
             "value": {
               "hexValue": "307837353334393738463966613930333135306544343239433438364431663432423766444237613631",
-              "id": 5553,
+              "id": 5614,
               "isConstant": false,
               "isLValue": false,
               "isPure": true,
@@ -231,12 +231,12 @@
           {
             "constant": true,
             "functionSelector": "f5ab9ff3",
-            "id": 5557,
+            "id": 5618,
             "mutability": "constant",
             "name": "AUTO_RECOVERY_TRIGGER_AMOUNT",
             "nameLocation": "230:28:21",
             "nodeType": "VariableDeclaration",
-            "scope": 5580,
+            "scope": 5641,
             "src": "206:62:21",
             "stateVariable": true,
             "storageLocation": "default",
@@ -245,7 +245,7 @@
               "typeString": "uint256"
             },
             "typeName": {
-              "id": 5555,
+              "id": 5616,
               "name": "uint256",
               "nodeType": "ElementaryTypeName",
               "src": "206:7:21",
@@ -256,7 +256,7 @@
             },
             "value": {
               "hexValue": "31",
-              "id": 5556,
+              "id": 5617,
               "isConstant": false,
               "isLValue": false,
               "isPure": true,
@@ -276,12 +276,12 @@
           {
             "constant": true,
             "functionSelector": "4210ca30",
-            "id": 5560,
+            "id": 5621,
             "mutability": "constant",
             "name": "AUTO_RECOVERY_MANDATORY_WAIT_TIME",
             "nameLocation": "298:33:21",
             "nodeType": "VariableDeclaration",
-            "scope": 5580,
+            "scope": 5641,
             "src": "274:67:21",
             "stateVariable": true,
             "storageLocation": "default",
@@ -290,7 +290,7 @@
               "typeString": "uint256"
             },
             "typeName": {
-              "id": 5558,
+              "id": 5619,
               "name": "uint256",
               "nodeType": "ElementaryTypeName",
               "src": "274:7:21",
@@ -301,7 +301,7 @@
             },
             "value": {
               "hexValue": "3134",
-              "id": 5559,
+              "id": 5620,
               "isConstant": false,
               "isLValue": false,
               "isPure": true,
@@ -320,7 +320,7 @@
           },
           {
             "body": {
-              "id": 5578,
+              "id": 5639,
               "nodeType": "Block",
               "src": "432:95:21",
               "statements": [
@@ -330,7 +330,7 @@
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
                     },
-                    "id": 5576,
+                    "id": 5637,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -340,17 +340,17 @@
                         "typeIdentifier": "t_address",
                         "typeString": "address"
                       },
-                      "id": 5572,
+                      "id": 5633,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
-                        "id": 5567,
+                        "id": 5628,
                         "name": "recoveryAddress",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 5562,
+                        "referencedDeclaration": 5623,
                         "src": "449:15:21",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
@@ -363,7 +363,7 @@
                         "arguments": [
                           {
                             "hexValue": "30",
-                            "id": 5570,
+                            "id": 5631,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": true,
@@ -385,7 +385,7 @@
                               "typeString": "int_const 0"
                             }
                           ],
-                          "id": 5569,
+                          "id": 5630,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": true,
@@ -397,14 +397,14 @@
                             "typeString": "type(address)"
                           },
                           "typeName": {
-                            "id": 5568,
+                            "id": 5629,
                             "name": "address",
                             "nodeType": "ElementaryTypeName",
                             "src": "468:7:21",
                             "typeDescriptions": {}
                           }
                         },
-                        "id": 5571,
+                        "id": 5632,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": true,
@@ -432,17 +432,17 @@
                         "typeIdentifier": "t_address",
                         "typeString": "address"
                       },
-                      "id": 5575,
+                      "id": 5636,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
-                        "id": 5573,
+                        "id": 5634,
                         "name": "recoveryAddress",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 5562,
+                        "referencedDeclaration": 5623,
                         "src": "482:15:21",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
@@ -452,11 +452,11 @@
                       "nodeType": "BinaryOperation",
                       "operator": "!=",
                       "rightExpression": {
-                        "id": 5574,
+                        "id": 5635,
                         "name": "ONE_WALLET_TREASURY",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 5554,
+                        "referencedDeclaration": 5615,
                         "src": "501:19:21",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
@@ -475,14 +475,14 @@
                       "typeString": "bool"
                     }
                   },
-                  "functionReturnParameters": 5566,
-                  "id": 5577,
+                  "functionReturnParameters": 5627,
+                  "id": 5638,
                   "nodeType": "Return",
                   "src": "442:78:21"
                 }
               ]
             },
-            "id": 5579,
+            "id": 5640,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
@@ -490,17 +490,17 @@
             "nameLocation": "357:20:21",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5563,
+              "id": 5624,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5562,
+                  "id": 5623,
                   "mutability": "mutable",
                   "name": "recoveryAddress",
                   "nameLocation": "386:15:21",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5579,
+                  "scope": 5640,
                   "src": "378:23:21",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -509,7 +509,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 5561,
+                    "id": 5622,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "378:7:21",
@@ -525,17 +525,17 @@
               "src": "377:25:21"
             },
             "returnParameters": {
-              "id": 5566,
+              "id": 5627,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5565,
+                  "id": 5626,
                   "mutability": "mutable",
                   "name": "",
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5579,
+                  "scope": 5640,
                   "src": "426:4:21",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -544,7 +544,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 5564,
+                    "id": 5625,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "426:4:21",
@@ -558,14 +558,14 @@
               ],
               "src": "425:6:21"
             },
-            "scope": 5580,
+            "scope": 5641,
             "src": "348:179:21",
             "stateMutability": "pure",
             "virtual": false,
             "visibility": "internal"
           }
         ],
-        "scope": 5581,
+        "scope": 5642,
         "src": "96:433:21",
         "usedErrors": []
       }
@@ -576,15 +576,15 @@
     "absolutePath": "project:/contracts/Recovery.sol",
     "exportedSymbols": {
       "Recovery": [
-        5580
+        5641
       ]
     },
-    "id": 5581,
+    "id": 5642,
     "license": "Apache-2.0",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 5551,
+        "id": 5612,
         "literals": [
           "solidity",
           "^",
@@ -600,9 +600,9 @@
         "contractDependencies": [],
         "contractKind": "library",
         "fullyImplemented": true,
-        "id": 5580,
+        "id": 5641,
         "linearizedBaseContracts": [
-          5580
+          5641
         ],
         "name": "Recovery",
         "nameLocation": "104:8:21",
@@ -610,12 +610,12 @@
         "nodes": [
           {
             "constant": true,
-            "id": 5554,
+            "id": 5615,
             "mutability": "constant",
             "name": "ONE_WALLET_TREASURY",
             "nameLocation": "136:19:21",
             "nodeType": "VariableDeclaration",
-            "scope": 5580,
+            "scope": 5641,
             "src": "119:81:21",
             "stateVariable": true,
             "storageLocation": "default",
@@ -624,7 +624,7 @@
               "typeString": "address"
             },
             "typeName": {
-              "id": 5552,
+              "id": 5613,
               "name": "address",
               "nodeType": "ElementaryTypeName",
               "src": "119:7:21",
@@ -636,7 +636,7 @@
             },
             "value": {
               "hexValue": "307837353334393738463966613930333135306544343239433438364431663432423766444237613631",
-              "id": 5553,
+              "id": 5614,
               "isConstant": false,
               "isLValue": false,
               "isPure": true,
@@ -655,12 +655,12 @@
           {
             "constant": true,
             "functionSelector": "f5ab9ff3",
-            "id": 5557,
+            "id": 5618,
             "mutability": "constant",
             "name": "AUTO_RECOVERY_TRIGGER_AMOUNT",
             "nameLocation": "230:28:21",
             "nodeType": "VariableDeclaration",
-            "scope": 5580,
+            "scope": 5641,
             "src": "206:62:21",
             "stateVariable": true,
             "storageLocation": "default",
@@ -669,7 +669,7 @@
               "typeString": "uint256"
             },
             "typeName": {
-              "id": 5555,
+              "id": 5616,
               "name": "uint256",
               "nodeType": "ElementaryTypeName",
               "src": "206:7:21",
@@ -680,7 +680,7 @@
             },
             "value": {
               "hexValue": "31",
-              "id": 5556,
+              "id": 5617,
               "isConstant": false,
               "isLValue": false,
               "isPure": true,
@@ -700,12 +700,12 @@
           {
             "constant": true,
             "functionSelector": "4210ca30",
-            "id": 5560,
+            "id": 5621,
             "mutability": "constant",
             "name": "AUTO_RECOVERY_MANDATORY_WAIT_TIME",
             "nameLocation": "298:33:21",
             "nodeType": "VariableDeclaration",
-            "scope": 5580,
+            "scope": 5641,
             "src": "274:67:21",
             "stateVariable": true,
             "storageLocation": "default",
@@ -714,7 +714,7 @@
               "typeString": "uint256"
             },
             "typeName": {
-              "id": 5558,
+              "id": 5619,
               "name": "uint256",
               "nodeType": "ElementaryTypeName",
               "src": "274:7:21",
@@ -725,7 +725,7 @@
             },
             "value": {
               "hexValue": "3134",
-              "id": 5559,
+              "id": 5620,
               "isConstant": false,
               "isLValue": false,
               "isPure": true,
@@ -744,7 +744,7 @@
           },
           {
             "body": {
-              "id": 5578,
+              "id": 5639,
               "nodeType": "Block",
               "src": "432:95:21",
               "statements": [
@@ -754,7 +754,7 @@
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
                     },
-                    "id": 5576,
+                    "id": 5637,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -764,17 +764,17 @@
                         "typeIdentifier": "t_address",
                         "typeString": "address"
                       },
-                      "id": 5572,
+                      "id": 5633,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
-                        "id": 5567,
+                        "id": 5628,
                         "name": "recoveryAddress",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 5562,
+                        "referencedDeclaration": 5623,
                         "src": "449:15:21",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
@@ -787,7 +787,7 @@
                         "arguments": [
                           {
                             "hexValue": "30",
-                            "id": 5570,
+                            "id": 5631,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": true,
@@ -809,7 +809,7 @@
                               "typeString": "int_const 0"
                             }
                           ],
-                          "id": 5569,
+                          "id": 5630,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": true,
@@ -821,14 +821,14 @@
                             "typeString": "type(address)"
                           },
                           "typeName": {
-                            "id": 5568,
+                            "id": 5629,
                             "name": "address",
                             "nodeType": "ElementaryTypeName",
                             "src": "468:7:21",
                             "typeDescriptions": {}
                           }
                         },
-                        "id": 5571,
+                        "id": 5632,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": true,
@@ -856,17 +856,17 @@
                         "typeIdentifier": "t_address",
                         "typeString": "address"
                       },
-                      "id": 5575,
+                      "id": 5636,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
-                        "id": 5573,
+                        "id": 5634,
                         "name": "recoveryAddress",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 5562,
+                        "referencedDeclaration": 5623,
                         "src": "482:15:21",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
@@ -876,11 +876,11 @@
                       "nodeType": "BinaryOperation",
                       "operator": "!=",
                       "rightExpression": {
-                        "id": 5574,
+                        "id": 5635,
                         "name": "ONE_WALLET_TREASURY",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 5554,
+                        "referencedDeclaration": 5615,
                         "src": "501:19:21",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
@@ -899,14 +899,14 @@
                       "typeString": "bool"
                     }
                   },
-                  "functionReturnParameters": 5566,
-                  "id": 5577,
+                  "functionReturnParameters": 5627,
+                  "id": 5638,
                   "nodeType": "Return",
                   "src": "442:78:21"
                 }
               ]
             },
-            "id": 5579,
+            "id": 5640,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
@@ -914,17 +914,17 @@
             "nameLocation": "357:20:21",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5563,
+              "id": 5624,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5562,
+                  "id": 5623,
                   "mutability": "mutable",
                   "name": "recoveryAddress",
                   "nameLocation": "386:15:21",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5579,
+                  "scope": 5640,
                   "src": "378:23:21",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -933,7 +933,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 5561,
+                    "id": 5622,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "378:7:21",
@@ -949,17 +949,17 @@
               "src": "377:25:21"
             },
             "returnParameters": {
-              "id": 5566,
+              "id": 5627,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5565,
+                  "id": 5626,
                   "mutability": "mutable",
                   "name": "",
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5579,
+                  "scope": 5640,
                   "src": "426:4:21",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -968,7 +968,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 5564,
+                    "id": 5625,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "426:4:21",
@@ -982,14 +982,14 @@
               ],
               "src": "425:6:21"
             },
-            "scope": 5580,
+            "scope": 5641,
             "src": "348:179:21",
             "stateMutability": "pure",
             "virtual": false,
             "visibility": "internal"
           }
         ],
-        "scope": 5581,
+        "scope": 5642,
         "src": "96:433:21",
         "usedErrors": []
       }
@@ -1002,7 +1002,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.2",
-  "updatedAt": "2021-11-24T12:47:57.784Z",
+  "updatedAt": "2021-12-21T09:09:50.851Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

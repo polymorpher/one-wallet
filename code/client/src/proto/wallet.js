@@ -229,6 +229,7 @@
          * @exports ISimpleWalletExport
          * @interface ISimpleWalletExport
          * @property {string|null} [address] SimpleWalletExport address
+         * @property {string|null} [name] SimpleWalletExport name
          * @property {boolean|null} [expert] SimpleWalletExport expert
          * @property {string|null} [state] SimpleWalletExport state
          * @property {Array.<Uint8Array>|null} [layers] SimpleWalletExport layers
@@ -259,6 +260,14 @@
          * @instance
          */
         SimpleWalletExport.prototype.address = "";
+    
+        /**
+         * SimpleWalletExport name.
+         * @member {string} name
+         * @memberof SimpleWalletExport
+         * @instance
+         */
+        SimpleWalletExport.prototype.name = "";
     
         /**
          * SimpleWalletExport expert.
@@ -318,16 +327,18 @@
                 writer = $Writer.create();
             if (message.address != null && Object.hasOwnProperty.call(message, "address"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.address);
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                writer.uint32(/* id 2, wireType 2 =*/18).string(message.name);
             if (message.expert != null && Object.hasOwnProperty.call(message, "expert"))
-                writer.uint32(/* id 2, wireType 0 =*/16).bool(message.expert);
+                writer.uint32(/* id 3, wireType 0 =*/24).bool(message.expert);
             if (message.state != null && Object.hasOwnProperty.call(message, "state"))
-                writer.uint32(/* id 3, wireType 2 =*/26).string(message.state);
+                writer.uint32(/* id 4, wireType 2 =*/34).string(message.state);
             if (message.layers != null && message.layers.length)
                 for (var i = 0; i < message.layers.length; ++i)
-                    writer.uint32(/* id 4, wireType 2 =*/34).bytes(message.layers[i]);
+                    writer.uint32(/* id 5, wireType 2 =*/42).bytes(message.layers[i]);
             if (message.innerTrees != null && message.innerTrees.length)
                 for (var i = 0; i < message.innerTrees.length; ++i)
-                    $root.InnerTree.encode(message.innerTrees[i], writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
+                    $root.InnerTree.encode(message.innerTrees[i], writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
             return writer;
         };
     
@@ -366,17 +377,20 @@
                     message.address = reader.string();
                     break;
                 case 2:
-                    message.expert = reader.bool();
+                    message.name = reader.string();
                     break;
                 case 3:
-                    message.state = reader.string();
+                    message.expert = reader.bool();
                     break;
                 case 4:
+                    message.state = reader.string();
+                    break;
+                case 5:
                     if (!(message.layers && message.layers.length))
                         message.layers = [];
                     message.layers.push(reader.bytes());
                     break;
-                case 5:
+                case 6:
                     if (!(message.innerTrees && message.innerTrees.length))
                         message.innerTrees = [];
                     message.innerTrees.push($root.InnerTree.decode(reader, reader.uint32()));
@@ -419,6 +433,9 @@
             if (message.address != null && message.hasOwnProperty("address"))
                 if (!$util.isString(message.address))
                     return "address: string expected";
+            if (message.name != null && message.hasOwnProperty("name"))
+                if (!$util.isString(message.name))
+                    return "name: string expected";
             if (message.expert != null && message.hasOwnProperty("expert"))
                 if (typeof message.expert !== "boolean")
                     return "expert: boolean expected";
@@ -458,6 +475,8 @@
             var message = new $root.SimpleWalletExport();
             if (object.address != null)
                 message.address = String(object.address);
+            if (object.name != null)
+                message.name = String(object.name);
             if (object.expert != null)
                 message.expert = Boolean(object.expert);
             if (object.state != null)
@@ -504,11 +523,14 @@
             }
             if (options.defaults) {
                 object.address = "";
+                object.name = "";
                 object.expert = false;
                 object.state = "";
             }
             if (message.address != null && message.hasOwnProperty("address"))
                 object.address = message.address;
+            if (message.name != null && message.hasOwnProperty("name"))
+                object.name = message.name;
             if (message.expert != null && message.hasOwnProperty("expert"))
                 object.expert = message.expert;
             if (message.state != null && message.hasOwnProperty("state"))

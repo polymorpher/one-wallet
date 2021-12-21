@@ -212,25 +212,12 @@ const api = {
     getOldInfos: async ({ address, raw }) => {
       const c = await one.at(address)
       const res = await c.getOldInfos()
-      const ret = []
-      for (let info of res) {
-        const [root, height, interval, t0, lifespan, maxOperationsPerInterval] = range(6).map(k => info[k])
-        const intervalMs = new BN(interval).toNumber() * 1000
-        ret.push(raw ? {
-          root,
-          height: new BN(height).toNumber(),
-          interval: new BN(interval).toNumber(),
-          t0: new BN(t0).toNumber(),
-          lifespan: new BN(lifespan).toNumber(),
-          maxOperationsPerInterval: new BN(maxOperationsPerInterval).toNumber(),
-        } : {
-          root: root.slice(2),
-          effectiveTime: new BN(t0).toNumber() * intervalMs,
-          duration: new BN(lifespan).toNumber() * intervalMs,
-          slotSize: new BN(maxOperationsPerInterval).toNumber(),
-        })
-      }
-      return ret
+      return res.map(e => ONEUtil.processCore(e, raw))
+    },
+    getInnerCores: async ({ address, raw }) => {
+      const c = await one.at(address)
+      const res = await c.getInnerCores()
+      return res.map(e => ONEUtil.processCore(e, raw))
     },
     getLastOperationTime: async ({ address }) => {
       const c = await one.at(address)

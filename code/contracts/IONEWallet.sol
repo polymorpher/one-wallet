@@ -74,6 +74,8 @@ interface IONEWallet {
 
     function getOldInfos() external view returns (CoreSetting[] memory);
 
+    function getInnerCores() external view returns (CoreSetting[] memory);
+
     // returns the first root assigned to this contract
     function getRootKey() external view returns (bytes32);
 

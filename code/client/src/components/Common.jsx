@@ -34,3 +34,11 @@ export const useOps = ({ address }) => {
     os
   }
 }
+
+export const getDataFromFile = file =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.addEventListener('load', () => resolve(reader.result))
+    reader.addEventListener('error', () => reject(reader.error))
+    reader.readAsArrayBuffer(file)
+  })
