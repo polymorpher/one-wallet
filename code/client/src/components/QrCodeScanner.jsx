@@ -133,34 +133,23 @@ const QrCodeScanner = ({ onScan, shouldInit, style }) => {
                 onScan={onScan}
                 style={{ width: '100%', ...style }}
               />
-              <Row justify='center' style={{ marginTop: 16 }}>
-                <Upload
-                  name='qrcode'
-                  showUploadList={false}
-                  customRequest={({ onSuccess }) => {
-                    onSuccess('ok')
-                  }}
-                  beforeUpload={beforeUpload}
-                  onChange={onQrcodeChange}
-                >
-                  <Button icon={qrCodeImageUploading ? <LoadingOutlined /> : <UploadOutlined />}>Upload QR Code Image Instead</Button>
-                </Upload>
-              </Row>
             </>
             )
-          : (
-            <Upload
-              name='qrcode'
-              showUploadList={false}
-              customRequest={({ onSuccess }) => {
-                onSuccess('ok')
-              }}
-              beforeUpload={beforeUpload}
-              onChange={onQrcodeChange}
-            >
-              <Button icon={qrCodeImageUploading ? <LoadingOutlined /> : <UploadOutlined />}>Upload QR Code Image Instead</Button>
-            </Upload>)
+          : <></>
       }
+      <Row justify='center' style={{ marginTop: 16 }}>
+        <Upload
+          name='qrcode'
+          showUploadList={false}
+          customRequest={({ onSuccess }) => {
+            onSuccess('ok')
+          }}
+          beforeUpload={beforeUpload}
+          onChange={onQrcodeChange}
+        >
+          <Button icon={qrCodeImageUploading ? <LoadingOutlined /> : <UploadOutlined />}>Upload QR Code Image Instead</Button>
+        </Upload>
+      </Row>
     </>
   )
 }
