@@ -10,7 +10,7 @@ import ONEUtil from '../../../../lib/util'
 import WalletConstants from '../../constants/wallet'
 import message from '../../message'
 
-const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onComputedCoreParams, onProgressUpdate }) => {
+const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onComputeLocalParams, onProgressUpdate }) => {
   const { slotSize } = wallet || {}
   const [showSecondCode, setShowSecondCode] = useState()
   const [qrCodeData, setQRCodeData] = useState()
@@ -25,6 +25,7 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
 
   const [innerTrees, setInnerTrees] = useState()
   const [root, setRoot] = useState() // Uint8Array
+  const [hseed, setHseed] = useState() // string
   const [effectiveTime, setEffectiveTime] = useState()
   const [layers, setLayers] = useState()
   const securityParameters = wallet ? ONEUtil.securityParameters(wallet) : {}
@@ -104,7 +105,8 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
         onProgressUpdate && onProgressUpdate({ progress, stage })
       }
       if (status === 'done') {
-        const { root, layers, doubleOtp, innerTrees } = result
+        const { root, layers, doubleOtp, innerTrees, hseed } = result
+        setHseed(hseed)
         setRoot(root)
         setLayers(layers)
         setDoubleOtp(doubleOtp)
@@ -128,16 +130,17 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
   }, [seed, active, doubleOtp])
 
   useEffect(() => {
-    if (!root || !innerTrees) {
+    if (!root || !innerTrees || !layers) {
       return
     }
     const identificationKeys = [ONEUtil.getIdentificationKey(seed, true)]
     const innerCores = ONEUtil.makeInnerCores({ innerTrees, effectiveTime, duration, slotSize, interval: WalletConstants.interval })
     const core = ONEUtil.makeCore({ effectiveTime, duration, interval: WalletConstants.interval, height: layers.length, slotSize, root })
+    onComputeLocalParams && onComputeLocalParams({ core, innerCores, identificationKeys, layers, hseed, doubleOtp, name })
     setSeed(generateOtpSeed()) // erase seed
     setSeed2(generateOtpSeed()) // erase seed
-    onComputedCoreParams && onComputedCoreParams({ core, innerCores, identificationKeys })
-  }, [root, innerTrees])
+    setHseed('')
+  }, [root, innerTrees, layers])
 
   return (
     <Space direction='vertical' style={{ width: '100%' }}>
