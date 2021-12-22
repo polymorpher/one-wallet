@@ -59,7 +59,7 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
     }
     const f = async function () {
       const oneAddress = util.safeOneAddress(wallet?.address)
-      const otpDisplayName = `${ONENames.nameWithTime(name, effectiveTime)} [${oneAddress}`
+      const otpDisplayName = `${ONENames.nameWithTime(name, effectiveTime)} [${oneAddress}]`
 
       const otpUri = getQRCodeUri(seed, otpDisplayName, OTPUriMode.MIGRATION)
       const otpQrCodeData = await qrcode.toDataURL(otpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
@@ -73,7 +73,7 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
     }
     const f = async function () {
       const oneAddress = util.safeOneAddress(wallet?.address)
-      const otpDisplayName2 = `${ONENames.nameWithTime(getSecondCodeName(name), effectiveTime)} [${oneAddress}`
+      const otpDisplayName2 = `${ONENames.nameWithTime(getSecondCodeName(name), effectiveTime)} [${oneAddress}]`
       const secondOtpUri = getQRCodeUri(seed2, otpDisplayName2, OTPUriMode.MIGRATION)
       const secondOtpQrCodeData = await qrcode.toDataURL(secondOtpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       setSecondOtpQrCodeData(secondOtpQrCodeData)

@@ -69,13 +69,14 @@ const RestoreByScan = ({ isActive, onComplete, onCancel }) => {
         const { secret2, secret, name: rawName } = parsed
         const bundle = parseAuthAccountName(rawName)
         if (!bundle) {
-          message.error('Authenticator code account name is ill-formatted. Expecting three-word name, optionally followed by address')
+          message.error('Bad authenticator account name. Expecting name, followed by time and address (optional)')
           return
         }
-        const { name, address } = bundle
+        const { name, address: oneAddress } = bundle
         setSecret2(secret2)
         setSecret(secret)
         setName(name)
+        const address = util.safeNormalizedAddress(oneAddress)
         if (address) {
           const { wallet } = await retrieveWalletInfoFromAddress(address)
           setAddress(address)
@@ -97,30 +98,37 @@ const RestoreByScan = ({ isActive, onComplete, onCancel }) => {
     try {
       const securityParameters = ONEUtil.securityParameters(walletInfo)
       const worker = new Worker('ONEWalletWorker.js')
-      worker.onmessage = (event) => {
+      worker.onmessage = async (event) => {
         const { status, current, total, stage, result } = event.data
         if (status === 'working') {
           setProgress(Math.round(current / total * 100))
           setProgressStage(stage)
         }
         if (status === 'done') {
-          const { hseed, root: computedRoot, layers, doubleOtp } = result
+          const { hseed, root: computedRoot, layers, doubleOtp, innerTrees } = result
           if (!ONEUtil.bytesEqual(ONEUtil.hexToBytes(walletInfo.root), computedRoot)) {
             console.error('Roots are not equal', walletInfo.root, ONEUtil.hexString(computedRoot))
             if (!ignoreDoubleOtp && doubleOtp) {
               message.error('Verification failed. Retrying using single authenticator code...')
-              onRestore(true)
-              return
+              return onRestore(true)
             }
             message.error('Verification failed. Your authenticator QR code might correspond to a different contract address.')
             return
           }
-          storage.setItem(walletInfo.root, layers)
+          message.info('Saving your wallet...')
+          await storage.setItem(walletInfo.root, layers)
+          const promises = []
+          for (const { layers: innerLayers, root: innerRoot } of innerTrees) {
+            promises.push(storage.setItem(ONEUtil.hexView(innerRoot), innerLayers))
+          }
+          await Promise.all(promises)
+
           const wallet = {
             _merge: true,
             name,
             ...walletInfo,
             hseed: ONEUtil.hexView(hseed),
+            innerRoots: innerTrees.map(({ root }) => ONEUtil.hexView(root)),
             doubleOtp,
             network,
             ...securityParameters,
@@ -128,9 +136,9 @@ const RestoreByScan = ({ isActive, onComplete, onCancel }) => {
           dispatch(walletActions.updateWallet(wallet))
           dispatch(balanceActions.fetchBalance({ address }))
           console.log('Completed wallet restoration', wallet)
-          message.success(`Wallet ${name} (${address}) is restored!`)
+          message.success(`Wallet ${name} (${address}) is restored! Redirecting to your wallet in 2 seconds...`)
           onComplete && onComplete()
-          setTimeout(() => history.push(Paths.showAddress(address)), 1500)
+          setTimeout(() => history.push(Paths.showAddress(address)), 2000)
         }
       }
       console.log('[Restore] Posting to worker')

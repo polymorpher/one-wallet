@@ -137,8 +137,8 @@ const Create = ({ expertMode, showRecovery }) => {
       const address = ONEUtil.predictAddress({ seed, deployerAddress, code: ONEUtil.hexStringToBytes(code) })
       console.log({ address, seed, deployerAddress, code })
       const oneAddress = util.safeOneAddress(address)
-      const otpDisplayName = `${ONENames.nameWithTime(name, effectiveTime)} [${oneAddress}`
-      const otpDisplayName2 = `${ONENames.nameWithTime(getSecondCodeName(name), effectiveTime)} [${oneAddress}`
+      const otpDisplayName = `${ONENames.nameWithTime(name, effectiveTime)} [${oneAddress}]`
+      const otpDisplayName2 = `${ONENames.nameWithTime(getSecondCodeName(name), effectiveTime)} [${oneAddress}]`
       const otpUri = getQRCodeUri(seed, otpDisplayName, OTPUriMode.MIGRATION)
       const secondOtpUri = getQRCodeUri(seed2, otpDisplayName2, OTPUriMode.MIGRATION)
       const otpQrCodeData = await qrcode.toDataURL(otpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
