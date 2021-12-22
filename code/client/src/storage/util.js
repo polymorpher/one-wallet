@@ -20,7 +20,7 @@ export const deleteRoot = async ({ root, wallets, name, history, silent }) => {
 }
 
 export const deleteWalletLocally = async ({ wallet, wallets, dispatch, history, silent }) => {
-  const { root, name, address, oldInfos } = wallet || {}
+  const { root, name, address, oldInfos, innerRoots } = wallet || {}
   if (!root || !address) {
     return
   }
@@ -36,6 +36,11 @@ export const deleteWalletLocally = async ({ wallet, wallets, dispatch, history, 
         continue
       }
       await deleteRoot({ root: oldroot, wallets, silent: true })
+    }
+  }
+  if (innerRoots?.length > 0) {
+    for (const innerRoot of innerRoots) {
+      await deleteRoot({ root: innerRoot, wallets, silent: true })
     }
   }
   return deleteRoot({ root, wallets, name, history, silent })

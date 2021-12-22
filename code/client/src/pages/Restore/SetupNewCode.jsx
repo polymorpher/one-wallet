@@ -10,7 +10,7 @@ import ONEUtil from '../../../../lib/util'
 import WalletConstants from '../../constants/wallet'
 import message from '../../message'
 
-const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onComputedCoreParams, onProgressUpdate }) => {
+const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onComputeLocalParams, onProgressUpdate }) => {
   const { slotSize } = wallet || {}
   const [showSecondCode, setShowSecondCode] = useState()
   const [qrCodeData, setQRCodeData] = useState()
@@ -18,6 +18,7 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
   const [validationOtp, setValidationOtp] = useState()
   const validationOtpRef = useRef()
   const dev = useSelector(state => state.wallet.dev)
+  const [worker, setWorker] = useState()
   const [seed, setSeed] = useState(generateOtpSeed())
   const [seed2, setSeed2] = useState(generateOtpSeed())
   const { isMobile, os } = useWindowDimensions()
@@ -25,10 +26,21 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
 
   const [innerTrees, setInnerTrees] = useState()
   const [root, setRoot] = useState() // Uint8Array
+  const [hseed, setHseed] = useState() // string
   const [effectiveTime, setEffectiveTime] = useState()
   const [layers, setLayers] = useState()
   const securityParameters = wallet ? ONEUtil.securityParameters(wallet) : {}
   const duration = WalletConstants.defaultDuration
+
+  useEffect(() => {
+    setWorker(new Worker('/ONEWalletWorker.js'))
+    return () => {
+      if (worker) {
+        console.log('worker shutdown')
+        worker.terminate()
+      }
+    }
+  }, [])
 
   const onClose = () => {
     setRoot(null)
@@ -77,6 +89,9 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
     const code = new DataView(expected.buffer).getUint32(0, false).toString()
     setValidationOtp('')
     if (code.padStart(6, '0') !== validationOtp.padStart(6, '0')) {
+      if (dev) {
+        console.log(code.padStart(6, '0'))
+      }
       message.error('Code is incorrect. Please try again.')
       validationOtpRef?.current?.focusInput(0)
     } else if (doubleOtp && !showSecondCode) {
@@ -88,10 +103,9 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
   }, [validationOtp, seed, seed2])
 
   useEffect(() => {
-    if (!seed || !active) {
+    if (!seed || !active || !worker) {
       return
     }
-    const worker = new Worker('/ONEWalletWorker.js')
     const effectiveTime = Math.floor(Date.now() / WalletConstants.interval6) * WalletConstants.interval6
     const salt = ONEUtil.hexView(generateOtpSeed())
     worker.onmessage = (event) => {
@@ -104,7 +118,8 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
         onProgressUpdate && onProgressUpdate({ progress, stage })
       }
       if (status === 'done') {
-        const { root, layers, doubleOtp, innerTrees } = result
+        const { root, layers, doubleOtp, innerTrees, hseed } = result
+        setHseed(hseed)
         setRoot(root)
         setLayers(layers)
         setDoubleOtp(doubleOtp)
@@ -125,19 +140,20 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
       ...securityParameters
     })
     onProgressUpdate && onProgressUpdate({ computing: true })
-  }, [seed, active, doubleOtp])
+  }, [seed, active, doubleOtp, worker])
 
   useEffect(() => {
-    if (!root || !innerTrees) {
+    if (!root || !innerTrees || !layers) {
       return
     }
     const identificationKeys = [ONEUtil.getIdentificationKey(seed, true)]
     const innerCores = ONEUtil.makeInnerCores({ innerTrees, effectiveTime, duration, slotSize, interval: WalletConstants.interval })
     const core = ONEUtil.makeCore({ effectiveTime, duration, interval: WalletConstants.interval, height: layers.length, slotSize, root })
+    onComputeLocalParams && onComputeLocalParams({ core, innerCores, identificationKeys, layers, hseed, doubleOtp, name })
     setSeed(generateOtpSeed()) // erase seed
     setSeed2(generateOtpSeed()) // erase seed
-    onComputedCoreParams && onComputedCoreParams({ core, innerCores, identificationKeys })
-  }, [root, innerTrees])
+    setHseed('')
+  }, [root, innerTrees, layers])
 
   return (
     <Space direction='vertical' style={{ width: '100%' }}>

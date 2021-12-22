@@ -353,7 +353,6 @@ const api = {
     getCommits: async ({ address }) => {
       const c = await one.at(address)
       const result = await c.getAllCommits()
-      console.log('v7', result)
       return parseCommits(result)
     },
     /**
@@ -559,8 +558,8 @@ const api = {
       const { data } = await base.post('/new', { root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, spendingInterval, backlinks, oldCores, innerCores, identificationKeys })
       return data
     },
-    commit: async ({ address, hash, paramsHash, verificationHash }) => {
-      const { data } = await base.post('/commit', { address, hash, paramsHash, verificationHash })
+    commit: async ({ address, hash, paramsHash, verificationHash, majorVersion, minorVersion }) => {
+      const { data } = await base.post('/commit', { address, hash, paramsHash, verificationHash, majorVersion, minorVersion })
       return data
     },
     revealTransfer: async ({ neighbors, index, eotp, dest, amount, address }) => {
