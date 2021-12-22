@@ -65,6 +65,7 @@ const RestoreByScan = ({ isActive, onComplete, onCancel }) => {
         if (!parsed) {
           return
         }
+        console.log(parsed)
         const { secret2, secret, name: rawName } = parsed
         const bundle = parseAuthAccountName(rawName)
         if (!bundle) {

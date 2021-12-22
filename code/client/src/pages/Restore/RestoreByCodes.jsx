@@ -19,7 +19,7 @@ import WalletConstants from '../../constants/wallet'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 
 // new core params should be already computed, and wallet info already retrieved from blockchain
-const RestoreByCodes = ({ isActive, wallet, innerTrees, innerCores, newCoreParams, onComplete, onCancel, progressStage, progress, expert }) => {
+const RestoreByCodes = ({ isActive, wallet, innerTrees, innerCores, newLocalParams, onComplete, onCancel, progressStage, progress, expert }) => {
   const [stage, setStage] = useState(-1)
   const { isMobile } = useWindowDimensions()
   const network = useSelector(state => state.wallet.network)
@@ -35,24 +35,22 @@ const RestoreByCodes = ({ isActive, wallet, innerTrees, innerCores, newCoreParam
     setStage(-1)
   }
 
-  const { prepareValidation, ...handlers } = ShowUtils.buildHelpers({
+  const { ...handlers } = ShowUtils.buildHelpers({
     setStage,
     resetOtp: resetOtps,
     network,
     onSuccess: async () => {
-      // TODO: saving new wallet locally, store layers and innerLayers spawned from newCore
+      const { layers, hseed, doubleOtp, name, core, innerTrees: newInnerTrees } = newLocalParams
       const promises = []
       message.info('Saving your wallet...')
-      for (const tree of innerTrees) {
-        const innerRoot = tree[tree.length - 1]
+      for (const { root: innerRoot, layers: innerLayers } of newInnerTrees) {
         const hex = ONEUtil.hexView(innerRoot)
         console.log(`Storing innerTree ${hex}`)
-        promises.push(storage.setItem(hex, tree))
+        promises.push(storage.setItem(hex, innerLayers))
       }
       await Promise.all(promises)
       console.log(`${promises.length} innerTrees stored`)
-      const { layers, hseed, doubleOtp, name } = newCoreParams
-      const { root } = wallet
+      const root = core[0].slice(2)
       console.log(`Storing tree ${root}`)
       await storage.setItem(root, layers)
       const newWallet = {
@@ -62,8 +60,9 @@ const RestoreByCodes = ({ isActive, wallet, innerTrees, innerCores, newCoreParam
         hseed: ONEUtil.hexView(hseed),
         doubleOtp,
         network,
-        innerRoots: innerTrees.map(layers => ONEUtil.hexView(layers[0])),
         expert,
+        innerRoots: newInnerTrees.map(({ root: innerRoot }) => ONEUtil.hexView(innerRoot)),
+        root: root
       }
       const securityParameters = ONEUtil.securityParameters(newWallet)
       const walletUpdate = { ...newWallet, ...securityParameters }
@@ -73,12 +72,12 @@ const RestoreByCodes = ({ isActive, wallet, innerTrees, innerCores, newCoreParam
   })
 
   const doDisplace = async () => {
-    if (!newCoreParams) {
-      console.error('Not ready yet: newCoreParams')
+    if (!newLocalParams) {
+      console.error('Not ready yet: newLocalParams')
       return
     }
-    const { core: coreRaw, innerCores: newInnerCoresRaw, identificationKeys } = newCoreParams
-    if (!newCoreParams) {
+    const { core: coreRaw, innerCores: newInnerCoresRaw, identificationKeys } = newLocalParams
+    if (!newLocalParams) {
       message.error('Must generate new core first')
       return
     }
@@ -137,11 +136,11 @@ const RestoreByCodes = ({ isActive, wallet, innerTrees, innerCores, newCoreParam
   }
 
   useEffect(() => {
-    if (!newCoreParams || !otpComplete) {
+    if (!newLocalParams || !otpComplete) {
       return
     }
     doDisplace()
-  }, [otpComplete, newCoreParams])
+  }, [otpComplete, newLocalParams])
 
   return (
     <Space direction='vertical' size='large' style={{ width: '100%' }}>
@@ -155,7 +154,7 @@ const RestoreByCodes = ({ isActive, wallet, innerTrees, innerCores, newCoreParam
         onComplete={() => setOtpComplete(true)}
         isDisabled={stage >= 0}
       />
-      {!newCoreParams && otpComplete && <WalletCreateProgress progress={progress} isMobile={isMobile} progressStage={progressStage} subtitle='Rebuilding your 1wallet' />}
+      {!newLocalParams && otpComplete && <WalletCreateProgress progress={progress} isMobile={isMobile} progressStage={progressStage} subtitle='Rebuilding your 1wallet' />}
       {stage >= 0 && <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />}
       <Row justify='space-between'>
         <Button size='large' type='text' onClick={onCancel} danger>Cancel</Button>

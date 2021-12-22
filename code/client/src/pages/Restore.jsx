@@ -94,7 +94,10 @@ const Restore = () => {
           onComplete={() => setSection(Sections.RecoveryCode)}
           onCancel={() => setSection(Sections.Choose)}
           onProgressUpdate={({ progress, stage }) => { setProgress(progress); setProgressStage(stage) }}
-          onComputeLocalParams={e => setNewLocalParams(e)}
+          onComputeLocalParams={e => {
+            // console.log(e)
+            setNewLocalParams(e)
+          }}
         />
       </AnimatedSection>
       <AnimatedSection show={section === Sections.RecoveryCode}>
@@ -109,7 +112,7 @@ const Restore = () => {
             setTimeout(() => history.push(Paths.showAddress(address)), 2000)
           }}
           onCancel={() => setSection(Sections.Choose)}
-          newCoreParams={newLocalParams}
+          newLocalParams={newLocalParams}
           wallet={walletInfo}
           innerTrees={innerTrees}
           innerCores={innerCores}

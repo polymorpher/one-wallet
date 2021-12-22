@@ -62,7 +62,7 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
       setQRCodeData(otpQrCodeData)
     }
     f()
-  }, [name, wallet?.address])
+  }, [name, wallet?.address, seed])
   useEffect(() => {
     if (!doubleOtp || !seed2) {
       return
@@ -74,7 +74,7 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
       setSecondOtpQrCodeData(secondOtpQrCodeData)
     }
     f()
-  }, [name, doubleOtp, wallet?.address])
+  }, [name, doubleOtp, wallet?.address, seed2])
 
   useEffect(() => {
     if (!seed || (doubleOtp && !seed2)) {
@@ -143,17 +143,17 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
   }, [seed, active, doubleOtp, worker])
 
   useEffect(() => {
-    if (!root || !innerTrees || !layers) {
+    if (!root || !innerTrees || !layers || !hseed) {
       return
     }
     const identificationKeys = [ONEUtil.getIdentificationKey(seed, true)]
     const innerCores = ONEUtil.makeInnerCores({ innerTrees, effectiveTime, duration, slotSize, interval: WalletConstants.interval })
     const core = ONEUtil.makeCore({ effectiveTime, duration, interval: WalletConstants.interval, height: layers.length, slotSize, root })
-    onComputeLocalParams && onComputeLocalParams({ core, innerCores, identificationKeys, layers, hseed, doubleOtp, name })
+    onComputeLocalParams && onComputeLocalParams({ core, innerCores, identificationKeys, layers, hseed, doubleOtp, name, innerTrees })
     setSeed(generateOtpSeed()) // erase seed
     setSeed2(generateOtpSeed()) // erase seed
     setHseed('')
-  }, [root, innerTrees, layers])
+  }, [root, innerTrees, layers, hseed, effectiveTime])
 
   return (
     <Space direction='vertical' style={{ width: '100%' }}>
