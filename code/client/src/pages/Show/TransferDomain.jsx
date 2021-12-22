@@ -15,6 +15,7 @@ import ShowUtils from './show-util'
 import { useDispatch, useSelector } from 'react-redux'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
+import ONENames from '../../../../lib/names'
 const { Title } = Typography
 
 const TransferDomain = ({ address, onClose }) => {
@@ -96,7 +97,7 @@ const TransferDomain = ({ address, onClose }) => {
             currentWallet={wallet}
           />
         </Space>
-        <OtpStack walletName={wallet.name} otpState={otpState} doubleOtp={wallet.doubleOtp} onComplete={doTransferDomain} action='confirm' />
+        <OtpStack walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)} otpState={otpState} doubleOtp={wallet.doubleOtp} onComplete={doTransferDomain} action='confirm' />
       </Space>
       {!domain &&
         <Row justify='center' style={{ margin: 12 }}>

@@ -27,6 +27,7 @@ import { handleAPIError } from '../../handler'
 import WalletCreateProgress from '../../components/WalletCreateProgress'
 import config from '../../config'
 import qrcode from 'qrcode'
+import ONENames from '../../../../lib/names'
 const { Title, Text, Link } = Typography
 
 const Share = ({ seed, redPacketAddress, address, network, isMobile, onClose, message, randomFactor }) => {
@@ -402,7 +403,7 @@ const Gift = ({
           {redPacketAddress &&
             <>
               <TallRow>
-                <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={createRedPacket} action='confirm transfer assets' />
+                <OtpStack walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)} doubleOtp={doubleOtp} otpState={otpState} onComplete={createRedPacket} action='confirm transfer assets' />
               </TallRow>
             </>}
           <Hint>

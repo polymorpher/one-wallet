@@ -229,7 +229,7 @@ const PurchaseDomain = ({ address, onClose }) => {
           validatedDomain={validatedSubdomain}
         />
       </Row>
-      {available && <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={doPurchase} action='buy now' />}
+      {available && <OtpStack walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)} doubleOtp={doubleOtp} otpState={otpState} onComplete={doPurchase} action='buy now' />}
       <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
     </AnimatedSection>
   )

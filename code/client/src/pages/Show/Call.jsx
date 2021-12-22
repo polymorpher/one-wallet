@@ -18,6 +18,7 @@ import { api } from '../../../../lib/api'
 import ONEConstants from '../../../../lib/constants'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
+import ONENames from '../../../../lib/names'
 const { Title } = Typography
 const { TextArea } = Input
 
@@ -211,7 +212,7 @@ const Call = ({
       <AverageRow align='middle'>
         <Col span={24}>
           <OtpStack
-            walletName={wallet.name}
+            walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)}
             doubleOtp={doubleOtp}
             otpState={otpState}
             onComplete={doCall}

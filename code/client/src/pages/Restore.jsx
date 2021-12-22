@@ -58,21 +58,21 @@ const Restore = () => {
     <>
       <AnimatedSection show={section === Sections.Choose}>
         <Space direction='vertical' size='large' style={{ width: '100%' }}>
-          <Heading>Use auth codes + recovery file</Heading>
-          <Button shape='round' size='large' type='primary' onClick={() => setSection(Sections.SyncRecoveryFile)} icon={<FieldBinaryOutlined />}>Begin</Button>
-          <Hint>You need (1) wallet recovery file (2) your authenticator. You will be asked to provide type 6-digit code for 6 times (30 seconds each). You need to setup a new authenticator code after that</Hint>
-        </Space>
-        <Divider><Hint>Or</Hint></Divider>
-        <Space direction='vertical' size='large'>
-          <Heading>Synchronize 1wallet across devices</Heading>
-          <LocalImport />
-          <Hint>Easiest but less secure. This is best for synchronization across multiple devices. To use this, you need the file you exported under "About" tab.</Hint>
+          <Heading>Scan authenticator seed QR code</Heading>
+          <Button shape='round' size='large' type='primary' onClick={() => setSection(Sections.ScanQR)} icon={<ScanOutlined />}>Scan Now</Button>
+          <Hint>Classic restore method. Requires webcam. Scan seed QR code exported from your authenticator (Google and Aegis Authenticator only)</Hint>
         </Space>
         <Divider><Hint>Or</Hint></Divider>
         <Space direction='vertical' size='large' style={{ width: '100%' }}>
-          <Heading>Scan authenticator seed QR code</Heading>
-          <Button shape='round' size='large' type='primary' onClick={() => setSection(Sections.ScanQR)} icon={<ScanOutlined />}>Scan Now</Button>
-          <Hint>Fast and secure, best for advanced users. Use your webcam to scan QR code exported from your authenticator (Google and Aegis Authenticator only)</Hint>
+          <Heading>Use auth codes + recovery file</Heading>
+          <Button shape='round' size='large' type='primary' onClick={() => setSection(Sections.SyncRecoveryFile)} icon={<FieldBinaryOutlined />}>Begin</Button>
+          <Hint>New method. Works with all authenticators. You need (1) wallet recovery file (2) your authenticator. Provide 6-digit auth code for 6 times (30 seconds each time). Setup a new authenticator code after that.</Hint>
+        </Space>
+        <Divider><Hint>Or</Hint></Divider>
+        <Space direction='vertical' size='large'>
+          <Heading>Sync 1wallet across devices</Heading>
+          <LocalImport />
+          <Hint>Requires the same 1wallet from another device. Does not require authenticator. To use this, you need to export .1wallet file under "About" tab from another device. For best security, you should delete the .1wallet file after that.</Hint>
         </Space>
 
       </AnimatedSection>
@@ -94,7 +94,10 @@ const Restore = () => {
           onComplete={() => setSection(Sections.RecoveryCode)}
           onCancel={() => setSection(Sections.Choose)}
           onProgressUpdate={({ progress, stage }) => { setProgress(progress); setProgressStage(stage) }}
-          onComputeLocalParams={e => setNewLocalParams(e)}
+          onComputeLocalParams={e => {
+            // console.log(e)
+            setNewLocalParams(e)
+          }}
         />
       </AnimatedSection>
       <AnimatedSection show={section === Sections.RecoveryCode}>
@@ -109,7 +112,7 @@ const Restore = () => {
             setTimeout(() => history.push(Paths.showAddress(address)), 2000)
           }}
           onCancel={() => setSection(Sections.Choose)}
-          newCoreParams={newLocalParams}
+          newLocalParams={newLocalParams}
           wallet={walletInfo}
           innerTrees={innerTrees}
           innerCores={innerCores}

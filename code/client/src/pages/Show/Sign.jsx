@@ -15,6 +15,7 @@ import ONEConstants from '../../../../lib/constants'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
 import humanizeDuration from 'humanize-duration'
+import ONENames from '../../../../lib/names'
 const { Title } = Typography
 const { TextArea } = Input
 
@@ -150,7 +151,7 @@ const Sign = ({
             />
             <Hint>{humanizeDuration(duration, { largest: 2, round: true })}</Hint>
           </Space>}
-        <OtpStack shouldAutoFocus={shouldAutoFocus} wideLabel walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={doSign} action='confirm' />
+        <OtpStack shouldAutoFocus={shouldAutoFocus} wideLabel walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)} doubleOtp={doubleOtp} otpState={otpState} onComplete={doSign} action='confirm' />
       </Space>
       <Row justify='start' style={{ marginTop: 24 }}>
         <Button size='large' type='text' onClick={onClose} danger>Cancel</Button>

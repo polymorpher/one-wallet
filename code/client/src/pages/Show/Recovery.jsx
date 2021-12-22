@@ -48,7 +48,8 @@ const Recovery = ({ address }) => {
       })
       const bytes = SimpleWalletExport.encode(exportPB).finish()
       console.log(bytes.length)
-      const filename = `${util.safeOneAddress(address)}.recovery.1wallet`
+      const nameReplaced = wallet.name.replace(' ', '-').toLowerCase()
+      const filename = `${nameReplaced}-${util.safeOneAddress(address)}.recovery.1wallet`
       const file = new Blob([bytes])
       element = document.createElement('a')
       element.download = filename
