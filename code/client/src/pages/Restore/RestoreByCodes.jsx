@@ -1,5 +1,5 @@
 import { Button, Space, Row } from 'antd'
-import { Text, Title } from '../../components/Text'
+import { Text, Title, Paragraph } from '../../components/Text'
 import { OtpSuperStack } from '../../components/OtpSuperStack'
 import React, { useEffect, useState } from 'react'
 import { useWindowDimensions } from '../../util'
@@ -17,9 +17,10 @@ import storage from '../../storage'
 import walletActions from '../../state/modules/wallet/actions'
 import WalletConstants from '../../constants/wallet'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
+import ONENames from '../../../../lib/names'
 
 // new core params should be already computed, and wallet info already retrieved from blockchain
-const RestoreByCodes = ({ isActive, wallet, innerTrees, innerCores, newLocalParams, onComplete, onCancel, progressStage, progress, expert }) => {
+const RestoreByCodes = ({ isActive, name, wallet, innerTrees, innerCores, newLocalParams, onComplete, onCancel, progressStage, progress, expert }) => {
   const [stage, setStage] = useState(-1)
   const { isMobile } = useWindowDimensions()
   const network = useSelector(state => state.wallet.network)
@@ -145,7 +146,13 @@ const RestoreByCodes = ({ isActive, wallet, innerTrees, innerCores, newLocalPara
   return (
     <Space direction='vertical' size='large' style={{ width: '100%' }}>
       <Title level={2}>Restore: Step 3/3</Title>
-      <Text>Please provide <b>the original</b> authenticator codes, 6-digit at a time, every time you get a new one. Please make sure you do not miss any (in which case you need to start over). Please make sure you use the original code, not the one you just scanned.</Text>
+      <Paragraph>
+        Please provide the authenticator codes from<br />
+        &nbsp;&nbsp;<b>{ONENames.nameWithTime(name || newLocalParams?.name, innerCores?.[0]?.effectiveTime)}</b><br />
+        - Please make sure you do not miss any code <br />
+        - If you miss any code, you need to start over <br />
+        - Make sure you use the right code, not the one you just scanned <br />
+      </Paragraph>
       <OtpSuperStack
         otpStates={otpStates}
         action='submit for validation'

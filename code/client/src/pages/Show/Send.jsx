@@ -19,6 +19,7 @@ import ONEConstants from '../../../../lib/constants'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
 import { AverageRow } from '../../components/Grid'
+import ONENames from '../../../../lib/names'
 const { Title, Link } = Typography
 
 const Send = ({
@@ -224,7 +225,7 @@ const Send = ({
       <Row align='middle'>
         <Col span={24}>
           <OtpStack
-            walletName={wallet.name}
+            walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)}
             doubleOtp={doubleOtp}
             otpState={otpState}
             onComplete={doSend}

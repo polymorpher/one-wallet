@@ -5,7 +5,10 @@ import React, { useState } from 'react'
 import message from '../../message'
 import { SimpleWalletExport } from '../../proto/wallet'
 import { getDataFromFile } from '../../components/Common'
+import { useSelector } from 'react-redux'
+import util from '../../util'
 const SyncRecoveryFile = ({ onSynced, onCancel }) => {
+  const wallets = useSelector(state => state.wallet.wallets)
   const [uploading, setSyncing] = useState(false)
   const beforeUpload = (file) => {
     const validExt = file.name.endsWith('.recovery.1wallet')
@@ -28,6 +31,10 @@ const SyncRecoveryFile = ({ onSynced, onCancel }) => {
         const data = await getDataFromFile(info.file.originFileObj)
         try {
           const { innerTrees, address, expert, name } = SimpleWalletExport.decode(new Uint8Array(data))
+          if (wallets[address]) {
+            message.error(`Wallet [${name}] already exists (${util.safeOneAddress(address)})`)
+            return
+          }
           onSynced && await onSynced({ address, innerTrees: innerTrees.map(t => t.layers), name, expert })
         } catch (ex) {
           console.error(ex.toString())
