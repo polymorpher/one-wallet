@@ -18,7 +18,7 @@ import walletActions from '../../state/modules/wallet/actions'
 import WalletConstants from '../../constants/wallet'
 
 // new core params should be already computed, and wallet info already retrieved from blockchain
-const RestoreByCodes = ({ isActive, wallet, innerTrees, newCoreParams, onComplete, onCancel, progressStage, progress }) => {
+const RestoreByCodes = ({ isActive, wallet, innerTrees, innerCores, newCoreParams, onComplete, onCancel, progressStage, progress, expert }) => {
   const [stage, setStage] = useState(-1)
   const { isMobile } = useWindowDimensions()
   const network = useSelector(state => state.wallet.network)
@@ -31,6 +31,7 @@ const RestoreByCodes = ({ isActive, wallet, innerTrees, newCoreParams, onComplet
       otpStates[i].resetOtp(i > 0)
     }
     setOtpComplete(false)
+    setStage(-1)
   }
 
   const { prepareValidation, ...handlers } = ShowUtils.buildHelpers({
@@ -50,16 +51,17 @@ const RestoreByCodes = ({ isActive, wallet, innerTrees, newCoreParams, onComplet
       console.log(`${promises.length} innerTrees stored`)
       const { layers, hseed, doubleOtp, name } = newCoreParams
       const { root } = wallet
-      const hex = ONEUtil.hexView(root)
-      console.log(`Storing tree ${hex}`)
-      await storage.setItem(hex, layers)
+      console.log(`Storing tree ${root}`)
+      await storage.setItem(root, layers)
       const newWallet = {
         _merge: true,
+        ...wallet,
         name,
         hseed: ONEUtil.hexView(hseed),
         doubleOtp,
-        ...wallet,
         network,
+        innerRoots: innerTrees.map(layers => ONEUtil.hexView(layers[0])),
+        expert,
       }
       const securityParameters = ONEUtil.securityParameters(newWallet)
       const walletUpdate = { ...newWallet, ...securityParameters }
@@ -73,26 +75,30 @@ const RestoreByCodes = ({ isActive, wallet, innerTrees, newCoreParams, onComplet
       console.error('Not ready yet: newCoreParams')
       return
     }
-    const { core, innerCores, identificationKeys } = newCoreParams
+    const { core: coreRaw, innerCores: newInnerCoresRaw, identificationKeys } = newCoreParams
     if (!newCoreParams) {
       message.error('Must generate new core first')
       return
     }
-    const data = ONE.encodeDisplaceDataHex({ core, innerCores, identificationKey: identificationKeys[0] })
+    const data = ONE.encodeDisplaceDataHex({ core: coreRaw, innerCores: newInnerCoresRaw, identificationKey: identificationKeys[0] })
     const otps = otpStates.map(({ otpInput }) => parseInt(otpInput))
     const eotp = await EotpBuilders.restore({ otp: otps })
-    console.log('eotp=', eotp)
-    const maxIndex = ONEUtil.timeToIndex({ effectiveTime: wallet.effectiveTime, interval: WalletConstants.interval6 })
+    const expectedLeaf = ONEUtil.sha256(eotp)
+    console.log({ expectedLeaf, eotp })
+    const maxIndex = ONEUtil.timeToIndex({ effectiveTime: innerCores[0].effectiveTime, interval: WalletConstants.interval6 })
     // const treeIndex = ONEUtil.timeToIndex({ effectiveTime: wallet.effectiveTime }) % innerTrees.length
 
     let index = null
     let treeIndex = null
     setStage(0)
-    for (let i = maxIndex + 1; i >= 0; i--) {
+    const maxIndexAcrossTrees = Math.max(...innerTrees.map(t => t[0].length / 32))
+    console.log({ maxIndex, maxIndexAcrossTrees })
+    for (let i = Math.min(maxIndexAcrossTrees - 1, maxIndex + 1); i >= 0; i--) {
+    // for (let i = 0; i < maxIndexAcrossTrees; i++) {
       for (const [ind, innerTree] of innerTrees.entries()) {
         const layer = innerTree[0]
         const b = new Uint8Array(layer.subarray(i * 32, i * 32 + 32))
-        if (ONEUtil.bytesEqual(b, ONEUtil.sha256(eotp))) {
+        if (ONEUtil.bytesEqual(b, expectedLeaf)) {
           index = i
           treeIndex = ind
           console.log(`Matching tree index ${treeIndex} at position ${index}`)
