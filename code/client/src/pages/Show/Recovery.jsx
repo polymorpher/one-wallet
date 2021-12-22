@@ -1,6 +1,6 @@
 import { TallRow, AverageRow } from '../../components/Grid'
 import { Text, Hint, Title } from '../../components/Text'
-import { Button, Col, Row, Typography, Space } from 'antd'
+import { Button, Col, Row, Typography, Space, Tooltip } from 'antd'
 import util, { useWindowDimensions } from '../../util'
 import WalletAddress from '../../components/WalletAddress'
 import { WarningOutlined } from '@ant-design/icons'
@@ -21,12 +21,14 @@ const Recovery = ({ address }) => {
   const { isMobile } = useWindowDimensions()
   const oneLastResort = util.safeOneAddress(lastResortAddress)
   const oneAddress = util.safeOneAddress(address)
+  const isRecoveryFileSupported = majorVersion >= 15 && innerRoots?.length > 0
+
   const showRecovery = () => { history.push(Paths.showAddress(oneAddress, 'recover')) }
 
   const showSetRecoveryAddress = () => { history.push(Paths.showAddress(oneAddress, 'setRecoveryAddress')) }
 
   const exportRecovery = async () => {
-    if (!(majorVersion >= 15) || !innerRoots) {
+    if (!isRecoveryFileSupported) {
       message.error('Only available for wallets created after v15, or wallets upgraded to v15 and extended its lifespan')
       return
     }
@@ -93,9 +95,10 @@ const Recovery = ({ address }) => {
       <Row align='middle' style={{ marginTop: 32 }}>
         <Col span={isMobile ? 24 : 10}> <Title level={3}>Recovery File</Title></Col>
         <Col>
-          <Button type='primary' size='large' shape='round' onClick={exportRecovery}> Download </Button>
+          <Button type='primary' size='large' shape='round' onClick={exportRecovery} disabled={!isRecoveryFileSupported}> Download </Button>
         </Col>
       </Row>
+      {!isRecoveryFileSupported && <Text style={{ color: 'red' }}>Recovery file is only available to wallets created from v15, or upgraded to v15 and extended its lifespan for at least once</Text>}
       <Hint>You can use the recovery file and your authenticator to restore your wallet on any device. You do not need to keep this file confidential, because it cannot be used without your authenticator - the correct 6-digit authenticator code is required for six consecutive times. Feel free to upload this file in any personal or public storage, such as Google Drive, iCloud, IPFS, Keybase.</Hint>
     </Space>
   )
