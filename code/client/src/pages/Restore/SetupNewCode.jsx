@@ -18,6 +18,7 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
   const [validationOtp, setValidationOtp] = useState()
   const validationOtpRef = useRef()
   const dev = useSelector(state => state.wallet.dev)
+  const [worker, setWorker] = useState()
   const [seed, setSeed] = useState(generateOtpSeed())
   const [seed2, setSeed2] = useState(generateOtpSeed())
   const { isMobile, os } = useWindowDimensions()
@@ -30,6 +31,16 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
   const [layers, setLayers] = useState()
   const securityParameters = wallet ? ONEUtil.securityParameters(wallet) : {}
   const duration = WalletConstants.defaultDuration
+
+  useEffect(() => {
+    setWorker(new Worker('/ONEWalletWorker.js'))
+    return () => {
+      if (worker) {
+        console.log('worker shutdown')
+        worker.terminate()
+      }
+    }
+  }, [])
 
   const onClose = () => {
     setRoot(null)
@@ -92,10 +103,9 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
   }, [validationOtp, seed, seed2])
 
   useEffect(() => {
-    if (!seed || !active) {
+    if (!seed || !active || !worker) {
       return
     }
-    const worker = new Worker('/ONEWalletWorker.js')
     const effectiveTime = Math.floor(Date.now() / WalletConstants.interval6) * WalletConstants.interval6
     const salt = ONEUtil.hexView(generateOtpSeed())
     worker.onmessage = (event) => {
@@ -130,7 +140,7 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
       ...securityParameters
     })
     onProgressUpdate && onProgressUpdate({ computing: true })
-  }, [seed, active, doubleOtp])
+  }, [seed, active, doubleOtp, worker])
 
   useEffect(() => {
     if (!root || !innerTrees || !layers) {
