@@ -26,8 +26,8 @@ router.use((req, res, next) => {
   if (!blockchain.getNetworks().includes(network)) {
     return res.status(StatusCodes.NOT_IMPLEMENTED).json({ error: `Unsupported network ${network}` })
   }
-  const majorVersion = req.header('X-MAJOR-VERSION')
-  const minorVersion = req.header('X-MINOR-VERSION')
+  const majorVersion = req?.body?.majorVersion || req.header('X-MAJOR-VERSION')
+  const minorVersion = req?.body?.minorVersion || req.header('X-MINOR-VERSION')
   req.network = network
   req.majorVersion = parseInt(majorVersion || 0)
   req.minorVersion = parseInt(minorVersion || 0)
@@ -191,16 +191,14 @@ router.post('/commit', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
 })
 
 router.post('/reveal', generalLimiter({ max: 240 }), walletAddressLimiter({ max: 240 }), async (req, res) => {
-  let { neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data, majorVersion, minorVersion } = req.body
-  majorVersion = majorVersion || req.majorVersion
-  minorVersion = majorVersion || req.minorVersion
+  let { neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data } = req.body
   if (!checkParams({ neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data }, res)) {
     return
   }
   if (config.debug || config.verbose) {
     console.log(`[/reveal] `, { neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
   }
-  if (!(majorVersion >= 6)) {
+  if (!(req.majorVersion >= 6)) {
     operationType = parseInt(operationType || -1)
     if (!(operationType > 0)) {
       return res.status(StatusCodes.BAD_REQUEST).json(`Bad operationType: ${operationType}`)
@@ -221,7 +219,7 @@ router.post('/reveal', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
     const wallet = new req.contract(address)
     // console.log({ neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
     let tx = null
-    if (!(majorVersion >= 14)) {
+    if (!(req.majorVersion >= 14)) {
       tx = await wallet.reveal(neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data)
     } else {
       tx = await wallet.reveal([neighbors, index, eotp], [operationType, tokenType, contractAddress, tokenId, dest, amount, data])
