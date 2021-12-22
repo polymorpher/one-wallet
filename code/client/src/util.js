@@ -374,4 +374,5 @@ export const useWaitExecution = (func, runCondition, wait, dependencies) => {
 if (window) {
   window.ONEWallet = window.ONEWallet || {}
   window.ONEWallet.util = util
+  window.ONEWallet.ONEUtil = ONEUtil
 }

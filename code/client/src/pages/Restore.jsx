@@ -1,32 +1,18 @@
-import React, { useState, useEffect } from 'react'
-import { ScanOutlined, FieldBinaryOutlined, ImportOutlined } from '@ant-design/icons'
+import React, { useState } from 'react'
+import { ScanOutlined, FieldBinaryOutlined } from '@ant-design/icons'
 import { useHistory } from 'react-router'
 import { Heading, Hint } from '../components/Text'
 import AnimatedSection from '../components/AnimatedSection'
-import { Space, Progress, Button, Divider } from 'antd'
+import { Space, Button, Divider } from 'antd'
 import message from '../message'
-import api from '../api'
-import ONEUtil from '../../../lib/util'
-import WalletConstants from '../constants/wallet'
-import storage from '../storage'
-import { useDispatch, useSelector } from 'react-redux'
-import walletActions from '../state/modules/wallet/actions'
-import { balanceActions } from '../state/modules/balance'
-import util, { useWindowDimensions } from '../util'
-import { handleAddressError } from '../handler'
 import Paths from '../constants/paths'
-import * as Sentry from '@sentry/browser'
-import AddressInput from '../components/AddressInput'
-import QrCodeScanner from '../components/QrCodeScanner'
-import ScanGASteps from '../components/ScanGASteps'
-import { parseOAuthOTP, parseMigrationPayload, parseAuthAccountName } from '../components/OtpTools'
-import WalletCreateProgress from '../components/WalletCreateProgress'
 import RestoreByCodes from './Restore/RestoreByCodes'
 import SyncRecoveryFile from './Restore/SyncRecoveryFile'
 import SetupNewCode from './Restore/SetupNewCode'
 import LocalImport from '../components/LocalImport'
 import RestoreByScan from './Restore/RestoreByScan'
 import { retrieveWalletInfoFromAddress } from './Restore/Common'
+import { api } from '../../../lib/api'
 
 const Sections = {
   Choose: 0,
@@ -45,14 +31,17 @@ const Restore = () => {
   const [progress, setProgress] = useState(0)
   const [progressStage, setProgressStage] = useState(0)
   const [innerTrees, setInnerTrees] = useState()
+  const [innerCores, setInnerCores] = useState()
   const [expert, setExpert] = useState()
   const [name, setName] = useState()
-  const [newCoreParams, setNewCoreParams] = useState()
+  const [newLocalParams, setNewLocalParams] = useState()
   const [address, setAddress] = useState()
 
   const onSynced = async ({ name, address: retrievalAddress, innerTrees, expert }) => {
     try {
       const { wallet } = await retrieveWalletInfoFromAddress(retrievalAddress)
+      const innerCores = await api.blockchain.getInnerCores({ address: retrievalAddress })
+      setInnerCores(innerCores)
       setName(name)
       setAddress(retrievalAddress)
       setWalletInfo(wallet)
@@ -105,20 +94,25 @@ const Restore = () => {
           onComplete={() => setSection(Sections.RecoveryCode)}
           onCancel={() => setSection(Sections.Choose)}
           onProgressUpdate={({ progress, stage }) => { setProgress(progress); setProgressStage(stage) }}
-          onComputedCoreParams={e => setNewCoreParams(e)}
+          onComputeLocalParams={e => setNewLocalParams(e)}
         />
       </AnimatedSection>
       <AnimatedSection show={section === Sections.RecoveryCode}>
         <RestoreByCodes
           name={name}
           progress={progress}
+          expert={expert}
           progressStage={progressStage}
           isActive={section === Sections.RecoveryCode}
-          onComplete={() => setTimeout(() => history.push(Paths.showAddress(address)), 2000)}
+          onComplete={() => {
+            message.info('Redirecting to your wallet in 2 seconds...')
+            setTimeout(() => history.push(Paths.showAddress(address)), 2000)
+          }}
           onCancel={() => setSection(Sections.Choose)}
-          newCoreParams={newCoreParams}
+          newCoreParams={newLocalParams}
           wallet={walletInfo}
           innerTrees={innerTrees}
+          innerCores={innerCores}
         />
       </AnimatedSection>
     </>

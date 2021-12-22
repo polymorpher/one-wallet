@@ -28,16 +28,15 @@ const SyncRecoveryFile = ({ onSynced, onCancel }) => {
         const data = await getDataFromFile(info.file.originFileObj)
         try {
           const { innerTrees, address, expert, name } = SimpleWalletExport.decode(new Uint8Array(data))
-          onSynced && onSynced({ address, innerTrees: innerTrees.map(t => t.layers), name, expert })
-          setSyncing(false)
+          onSynced && await onSynced({ address, innerTrees: innerTrees.map(t => t.layers), name, expert })
         } catch (ex) {
           console.error(ex.toString())
           message.error('Unable to parse the provided file as 1wallet recovery file')
-          setSyncing(false)
         }
       } catch (ex) {
         console.error(ex)
         message.error('An error occurred while reading the file. Please try again.')
+      } finally {
         setSyncing(false)
       }
     }

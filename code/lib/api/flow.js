@@ -14,7 +14,7 @@ const EotpBuilders = {
     return ONE.computeEOTP({ otp: encodedOtp, otp2: encodedOtp2, rand, nonce, hseed: ONEUtil.hexToBytes(hseed) })
   },
   restore: async ({ otp }) => {
-    return ONE.computeInnerEOTP({ otps: otp })
+    return ONE.computeInnerEOTP({ otps: otp.map(e => ONEUtil.encodeNumericalOtp(e)) })
   },
   recovery: async ({ wallet, layers }) => {
     // eslint-disable-next-line no-unused-vars
@@ -68,8 +68,9 @@ const Flows = {
     beforeReveal, index,
     maxTransferAttempts = 3, checkCommitInterval = 4000,
     message = messager,
+    overrideVersion = false,
   }) => {
-    const { oldInfos, address, randomness, hseed, hasher } = wallet
+    const { oldInfos, address, randomness, hseed, hasher, majorVersion, minorVersion } = wallet
     let { effectiveTime, root } = wallet
     if (!layers) {
       layers = await storage.getItem(root)
@@ -140,7 +141,8 @@ const Flows = {
         address,
         hash: ONEUtil.hexString(commitHash),
         paramsHash: paramsHash && ONEUtil.hexString(paramsHash),
-        verificationHash: verificationHash && ONEUtil.hexString(verificationHash)
+        verificationHash: verificationHash && ONEUtil.hexString(verificationHash),
+        ...(overrideVersion ? { majorVersion, minorVersion } : {})
       })
       if (!success) {
         onCommitFailure && await onCommitFailure(error)
@@ -162,6 +164,7 @@ const Flows = {
           index,
           eotp: ONEUtil.hexString(eotp),
           address,
+          ...(overrideVersion ? { majorVersion, minorVersion } : {}),
           ...(typeof revealArgs === 'function' ? revealArgs({ neighbor, index, eotp }) : revealArgs)
         })
         if (!success) {
