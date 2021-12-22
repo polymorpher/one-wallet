@@ -104,7 +104,10 @@ const Restore = () => {
           expert={expert}
           progressStage={progressStage}
           isActive={section === Sections.RecoveryCode}
-          onComplete={() => setTimeout(() => history.push(Paths.showAddress(address)), 2000)}
+          onComplete={() => {
+            message.info('Redirecting to your wallet in 2 seconds...')
+            setTimeout(() => history.push(Paths.showAddress(address)), 2000)
+          }}
           onCancel={() => setSection(Sections.Choose)}
           newCoreParams={newLocalParams}
           wallet={walletInfo}
