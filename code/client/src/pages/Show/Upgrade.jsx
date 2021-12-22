@@ -17,6 +17,7 @@ import { walletActions } from '../../state/modules/wallet'
 import { useHistory } from 'react-router'
 import Paths from '../../constants/paths'
 import WalletAddress from '../../components/WalletAddress'
+import ONENames from '../../../../lib/names'
 const { Title, Text, Link } = Typography
 const { Step } = Steps
 const CardStyle = {
@@ -208,7 +209,7 @@ const Upgrade = ({ address, onClose }) => {
               </>}
             {!needSetRecoveryAddressFirst &&
               <>
-                <OtpStack shouldAutoFocus walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={doUpgrade} action='confirm upgrade' />
+                <OtpStack shouldAutoFocus walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)} doubleOtp={doubleOtp} otpState={otpState} onComplete={doUpgrade} action='confirm upgrade' />
 
                 <Title level={3}>
                   How upgrade works:

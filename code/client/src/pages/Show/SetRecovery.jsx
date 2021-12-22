@@ -15,6 +15,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
 import { useWindowDimensions } from '../../util'
+import ONENames from '../../../../lib/names'
 const { Title } = Typography
 
 const SetRecovery = ({ address, onClose, show }) => {
@@ -92,7 +93,7 @@ const SetRecovery = ({ address, onClose, show }) => {
             currentWallet={wallet}
           />
         </Space>
-        <OtpStack walletName={wallet.name} otpState={otpState} doubleOtp={wallet.doubleOtp} onComplete={doSetRecoveryAddress} action='confirm' />
+        <OtpStack walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)} otpState={otpState} doubleOtp={wallet.doubleOtp} onComplete={doSetRecoveryAddress} action='confirm' />
       </Space>
       <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
     </AnimatedSection>

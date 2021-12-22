@@ -5,8 +5,9 @@ import util, { OSType } from '../util'
 import React from 'react'
 import config from '../config'
 import ONEUtil from '../../../lib/util'
-const OAUTH_OTP_PATTERN = /otpauth:\/\/totp\/(.+)(%3A|:)(.+)\?.+/
+const OAUTH_OTP_PATTERN = /otpauth:\/\/totp\/([a-zA-Z0-9]+)(%3A|:)(.+)\?.+/
 export const parseOAuthOTP = (url) => {
+  // console.log(url)
   const m = url.match(OAUTH_OTP_PATTERN)
   if (!m) {
     message.error('Invalid account transfer QR code')
@@ -115,7 +116,7 @@ export const buildQRCodeComponent = ({ seed, name, os, isMobile, qrCodeData }) =
 
 export const getSecondCodeName = (name) => `${name} - 2nd`
 
-export const NAME_ADDRESS_COMBINED_PATTERN = /([A-Za-z ]+)\[([a-z0-9]+)\]/
+export const NAME_ADDRESS_COMBINED_PATTERN = /([A-Za-z ]+)([0-9\- :]+)\[([a-z0-9]+)\]/
 
 // input is assumed to be already gone through decodeURIComponent
 export const parseAuthAccountName = (rawName) => {
@@ -124,7 +125,7 @@ export const parseAuthAccountName = (rawName) => {
     if (!m) {
       return null
     }
-    return { name: m[1].trim(), address: m[2].trim() }
+    return { name: m[1].trim(), time: m[2].trim(), address: m[3].trim() }
   }
   return { name: rawName.trim() }
 }

@@ -14,6 +14,7 @@ import ONEUtil from '../../../../lib/util'
 import { SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
+import ONENames from '../../../../lib/names'
 const { Title, Text } = Typography
 
 const DAVINCI_URL_PATTERN = /\/\/davinci.gallery\/view\/(0x[a-zA-Z0-9]+)/
@@ -166,7 +167,7 @@ const BuyDaVinci = ({ address, onSuccess, onClose }) => {
               </Space>
             </Col>
           </Row>
-          <OtpStack shouldAutoFocus walletName={wallet.name} doubleOtp={wallet.doubleOtp} otpState={otpState} onComplete={doBuy} action='buy now' />
+          <OtpStack shouldAutoFocus walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)} doubleOtp={wallet.doubleOtp} otpState={otpState} onComplete={doBuy} action='buy now' />
           <TallRow justify='space-between' style={{ marginTop: 24 }}>
             <Button size='large' type='text' onClick={reset} danger>Cancel</Button>
           </TallRow>
