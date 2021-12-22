@@ -353,7 +353,6 @@ const api = {
     getCommits: async ({ address }) => {
       const c = await one.at(address)
       const result = await c.getAllCommits()
-      console.log('v7', result)
       return parseCommits(result)
     },
     /**
