@@ -16,6 +16,7 @@ import WalletCreateProgress from '../../components/WalletCreateProgress'
 import storage from '../../storage'
 import walletActions from '../../state/modules/wallet/actions'
 import WalletConstants from '../../constants/wallet'
+import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 
 // new core params should be already computed, and wallet info already retrieved from blockchain
 const RestoreByCodes = ({ isActive, wallet, innerTrees, innerCores, newCoreParams, onComplete, onCancel, progressStage, progress, expert }) => {
@@ -41,6 +42,7 @@ const RestoreByCodes = ({ isActive, wallet, innerTrees, innerCores, newCoreParam
     onSuccess: async () => {
       // TODO: saving new wallet locally, store layers and innerLayers spawned from newCore
       const promises = []
+      message.info('Saving your wallet...')
       for (const tree of innerTrees) {
         const innerRoot = tree[tree.length - 1]
         const hex = ONEUtil.hexView(innerRoot)
@@ -84,7 +86,7 @@ const RestoreByCodes = ({ isActive, wallet, innerTrees, innerCores, newCoreParam
     const otps = otpStates.map(({ otpInput }) => parseInt(otpInput))
     const eotp = await EotpBuilders.restore({ otp: otps })
     const expectedLeaf = ONEUtil.sha256(eotp)
-    console.log({ expectedLeaf, eotp })
+    // console.log({ expectedLeaf, eotp })
     const maxIndex = ONEUtil.timeToIndex({ effectiveTime: innerCores[0].effectiveTime, interval: WalletConstants.interval6 })
     // const treeIndex = ONEUtil.timeToIndex({ effectiveTime: wallet.effectiveTime }) % innerTrees.length
 
@@ -129,6 +131,7 @@ const RestoreByCodes = ({ isActive, wallet, innerTrees, innerCores, newCoreParam
       afterCommit: () => setStage(2),
       revealAPI: api.relayer.reveal,
       revealArgs: { ...ONEConstants.NullOperationParams, data, operationType: ONEConstants.OperationType.DISPLACE },
+      overrideVersion: true,
       ...handlers
     })
   }
@@ -153,6 +156,7 @@ const RestoreByCodes = ({ isActive, wallet, innerTrees, innerCores, newCoreParam
         isDisabled={stage >= 0}
       />
       {!newCoreParams && otpComplete && <WalletCreateProgress progress={progress} isMobile={isMobile} progressStage={progressStage} subtitle='Rebuilding your 1wallet' />}
+      {stage >= 0 && <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />}
       <Row justify='space-between'>
         <Button size='large' type='text' onClick={onCancel} danger>Cancel</Button>
         <Button size='large' type='default' shape='round' onClick={resetOtps}>Reset</Button>
