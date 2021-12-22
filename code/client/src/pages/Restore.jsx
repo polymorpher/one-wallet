@@ -12,6 +12,7 @@ import SetupNewCode from './Restore/SetupNewCode'
 import LocalImport from '../components/LocalImport'
 import RestoreByScan from './Restore/RestoreByScan'
 import { retrieveWalletInfoFromAddress } from './Restore/Common'
+import { api } from '../../../lib/api'
 
 const Sections = {
   Choose: 0,
@@ -30,6 +31,7 @@ const Restore = () => {
   const [progress, setProgress] = useState(0)
   const [progressStage, setProgressStage] = useState(0)
   const [innerTrees, setInnerTrees] = useState()
+  const [innerCores, setInnerCores] = useState()
   const [expert, setExpert] = useState()
   const [name, setName] = useState()
   const [newLocalParams, setNewLocalParams] = useState()
@@ -38,6 +40,8 @@ const Restore = () => {
   const onSynced = async ({ name, address: retrievalAddress, innerTrees, expert }) => {
     try {
       const { wallet } = await retrieveWalletInfoFromAddress(retrievalAddress)
+      const innerCores = await api.blockchain.getInnerCores({ address: retrievalAddress })
+      setInnerCores(innerCores)
       setName(name)
       setAddress(retrievalAddress)
       setWalletInfo(wallet)
@@ -97,6 +101,7 @@ const Restore = () => {
         <RestoreByCodes
           name={name}
           progress={progress}
+          expert={expert}
           progressStage={progressStage}
           isActive={section === Sections.RecoveryCode}
           onComplete={() => setTimeout(() => history.push(Paths.showAddress(address)), 2000)}
@@ -104,6 +109,7 @@ const Restore = () => {
           newCoreParams={newLocalParams}
           wallet={walletInfo}
           innerTrees={innerTrees}
+          innerCores={innerCores}
         />
       </AnimatedSection>
     </>
