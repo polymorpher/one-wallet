@@ -29,6 +29,7 @@ import { balanceActions } from '../../state/modules/balance'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import { uniqBy } from 'lodash'
 import styled from 'styled-components'
+import ONENames from '../../../../lib/names'
 const { Text, Title } = Typography
 
 const tokenIconUrl = (token) => {
@@ -716,7 +717,7 @@ const Swap = ({ address }) => {
         </TallRow>}
 
       <TallRow>
-        <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={tokenApproved ? confirmSwap : approveToken} action={tokenApproved ? 'approve' : 'confirm'} />
+        <OtpStack walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)} doubleOtp={doubleOtp} otpState={otpState} onComplete={tokenApproved ? confirmSwap : approveToken} action={tokenApproved ? 'approve' : 'confirm'} />
       </TallRow>
       <TallRow justify='start' align='baseline'>
         <Space size='large' align='top'>

@@ -19,6 +19,7 @@ import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
 import querystring from 'query-string'
 import { useLocation } from 'react-router'
+import ONENames from '../../../../lib/names'
 const { Title, Text } = Typography
 
 const Reclaim = ({
@@ -212,7 +213,7 @@ const Reclaim = ({
         <Col span={24}>
           <OtpStack
             shouldAutoFocus
-            walletName={wallet.name}
+            walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)}
             doubleOtp={doubleOtp}
             otpState={otpState}
             onComplete={doReclaim}

@@ -9,6 +9,8 @@ import qrcode from 'qrcode'
 import ONEUtil from '../../../../lib/util'
 import WalletConstants from '../../constants/wallet'
 import message from '../../message'
+import ONENames from '../../../../lib/names'
+import { AverageRow, TallRow } from '../../components/Grid'
 
 const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onComputeLocalParams, onProgressUpdate }) => {
   const { slotSize } = wallet || {}
@@ -52,29 +54,32 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
   }
 
   useEffect(() => {
-    if (!seed) {
+    if (!seed || !effectiveTime) {
       return
     }
     const f = async function () {
       const oneAddress = util.safeOneAddress(wallet?.address)
-      const otpUri = getQRCodeUri(seed, `${name} [${oneAddress}]`, OTPUriMode.MIGRATION)
+      const otpDisplayName = `${ONENames.nameWithTime(name, effectiveTime)} [${oneAddress}]`
+
+      const otpUri = getQRCodeUri(seed, otpDisplayName, OTPUriMode.MIGRATION)
       const otpQrCodeData = await qrcode.toDataURL(otpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       setQRCodeData(otpQrCodeData)
     }
     f()
-  }, [name, wallet?.address])
+  }, [name, wallet?.address, seed, effectiveTime])
   useEffect(() => {
-    if (!doubleOtp || !seed2) {
+    if (!doubleOtp || !seed2 || !effectiveTime) {
       return
     }
     const f = async function () {
       const oneAddress = util.safeOneAddress(wallet?.address)
-      const secondOtpUri = getQRCodeUri(seed2, getSecondCodeName(`${name} [${oneAddress}]`), OTPUriMode.MIGRATION)
+      const otpDisplayName2 = `${ONENames.nameWithTime(getSecondCodeName(name), effectiveTime)} [${oneAddress}]`
+      const secondOtpUri = getQRCodeUri(seed2, otpDisplayName2, OTPUriMode.MIGRATION)
       const secondOtpQrCodeData = await qrcode.toDataURL(secondOtpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       setSecondOtpQrCodeData(secondOtpQrCodeData)
     }
     f()
-  }, [name, doubleOtp, wallet?.address])
+  }, [name, doubleOtp, wallet?.address, seed2, effectiveTime])
 
   useEffect(() => {
     if (!seed || (doubleOtp && !seed2)) {
@@ -107,6 +112,7 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
       return
     }
     const effectiveTime = Math.floor(Date.now() / WalletConstants.interval6) * WalletConstants.interval6
+    setEffectiveTime(effectiveTime)
     const salt = ONEUtil.hexView(generateOtpSeed())
     worker.onmessage = (event) => {
       const { status, current, total, stage, result, salt: workerSalt } = event.data
@@ -123,7 +129,6 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
         setRoot(root)
         setLayers(layers)
         setDoubleOtp(doubleOtp)
-        setEffectiveTime(effectiveTime)
         setInnerTrees(innerTrees)
         onProgressUpdate && onProgressUpdate({ computing: false })
       }
@@ -143,35 +148,37 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
   }, [seed, active, doubleOtp, worker])
 
   useEffect(() => {
-    if (!root || !innerTrees || !layers) {
+    if (!root || !innerTrees || !layers || !hseed) {
       return
     }
     const identificationKeys = [ONEUtil.getIdentificationKey(seed, true)]
     const innerCores = ONEUtil.makeInnerCores({ innerTrees, effectiveTime, duration, slotSize, interval: WalletConstants.interval })
     const core = ONEUtil.makeCore({ effectiveTime, duration, interval: WalletConstants.interval, height: layers.length, slotSize, root })
-    onComputeLocalParams && onComputeLocalParams({ core, innerCores, identificationKeys, layers, hseed, doubleOtp, name })
+    onComputeLocalParams && onComputeLocalParams({ core, innerCores, identificationKeys, layers, hseed, doubleOtp, name, innerTrees })
     setSeed(generateOtpSeed()) // erase seed
     setSeed2(generateOtpSeed()) // erase seed
     setHseed('')
-  }, [root, innerTrees, layers])
+  }, [root, innerTrees, layers, hseed, effectiveTime])
 
   return (
     <Space direction='vertical' style={{ width: '100%' }}>
       <Title level={2}>Restore: Step 2/3</Title>
       <Hint><b>Setup a new authenticator code</b>: {isMobile ? 'Tap' : 'Scan'} the QR code below.</Hint>
       {!showSecondCode &&
-        <>
+        <Space direction='vertical' align='center' style={{ width: '100%' }}>
           {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData })}
-          <OtpSetup isMobile={isMobile} otpRef={validationOtpRef} otpValue={validationOtp} setOtpValue={setValidationOtp} name={name} />
+          <OtpSetup isMobile={isMobile} otpRef={validationOtpRef} otpValue={validationOtp} setOtpValue={setValidationOtp} name={ONENames.nameWithTime(name, effectiveTime)} />
           {(dev || expert) && <TwoCodeOption isMobile={isMobile} setDoubleOtp={setDoubleOtp} doubleOtp={doubleOtp} />}
-        </>}
+        </Space>}
       {showSecondCode &&
         <>
           {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData: secondOtpQrCodeData })}
-          <OtpSetup isMobile={isMobile} otpRef={validationOtpRef} otpValue={validationOtp} setOtpValue={setValidationOtp} name={getSecondCodeName(name)} />
+          <OtpSetup isMobile={isMobile} otpRef={validationOtpRef} otpValue={validationOtp} setOtpValue={setValidationOtp} name={ONENames.nameWithTime(getSecondCodeName(name), effectiveTime)} />
         </>}
-      <Hint>*If you already have this wallet on other devices, this code will not work there, until you synchronize them later.</Hint>
-      <Button size='large' type='text' onClick={onClose} danger>Cancel</Button>
+      <Hint>*If you already have this wallet on other devices, this code will not work on those devices, until you delete the wallet on that device then restore it (using any method).</Hint>
+      <AverageRow>
+        <Button size='large' type='text' onClick={onClose} danger>Cancel</Button>
+      </AverageRow>
     </Space>
   )
 }

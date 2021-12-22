@@ -45,14 +45,6 @@ const { Text, Link } = Typography
 //   length: 1
 // })
 
-const genName = (existingNames) => {
-  const name = `${ONENames.randomWord()} ${ONENames.randomWord()} ${ONENames.randomWord()}`
-  if (existingNames && existingNames.includes(name)) {
-    return genName()
-  }
-  return name
-}
-
 const getGoogleAuthenticatorAppLink = (os) => {
   let link = 'https://apps.apple.com/us/app/google-authenticator/id388497605'
   if (os === OSType.Android) {
@@ -76,8 +68,11 @@ const Create = ({ expertMode, showRecovery }) => {
   const dispatch = useDispatch()
   const history = useHistory()
   const network = useSelector(state => state.global.network)
-  const wallets = useSelector(state => state.wallet)
-  const generateNewOtpName = () => genName(Object.keys(wallets).map(k => wallets[k].name))
+  const wallets = useSelector(state => state.wallets)
+
+  const [effectiveTime, setEffectiveTime] = useState()
+
+  const generateNewOtpName = () => ONENames.genName(Object.keys(wallets).map(k => wallets[k].name))
   const [name, setName] = useState(generateNewOtpName())
   // eslint-disable-next-line no-unused-vars
   const [seed, setSeed] = useState(generateOtpSeed())
@@ -104,7 +99,7 @@ const Create = ({ expertMode, showRecovery }) => {
   const [progress, setProgress] = useState(0)
   const [progressStage, setProgressStage] = useState(0)
   const [address, setAddress] = useState() // '0x12345678901234567890'
-  const [effectiveTime, setEffectiveTime] = useState()
+
   const [doubleOtp, setDoubleOtp] = useState(false)
 
   const [durationVisible, setDurationVisible] = useState(false)
@@ -134,7 +129,7 @@ const Create = ({ expertMode, showRecovery }) => {
   }, [needCodeUpdate, clientVersion])
 
   useEffect(() => {
-    if (!code || !name) {
+    if (!code || !name || !effectiveTime) {
       return
     }
     (async function () {
@@ -142,15 +137,16 @@ const Create = ({ expertMode, showRecovery }) => {
       const address = ONEUtil.predictAddress({ seed, deployerAddress, code: ONEUtil.hexStringToBytes(code) })
       console.log({ address, seed, deployerAddress, code })
       const oneAddress = util.safeOneAddress(address)
-      const otpDisplayName = `${name} [${oneAddress}]`
+      const otpDisplayName = `${ONENames.nameWithTime(name, effectiveTime)} [${oneAddress}]`
+      const otpDisplayName2 = `${ONENames.nameWithTime(getSecondCodeName(name), effectiveTime)} [${oneAddress}]`
       const otpUri = getQRCodeUri(seed, otpDisplayName, OTPUriMode.MIGRATION)
-      const secondOtpUri = getQRCodeUri(seed2, getSecondCodeName(otpDisplayName), OTPUriMode.MIGRATION)
+      const secondOtpUri = getQRCodeUri(seed2, otpDisplayName2, OTPUriMode.MIGRATION)
       const otpQrCodeData = await qrcode.toDataURL(otpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       const secondOtpQrCodeData = await qrcode.toDataURL(secondOtpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       setQRCodeData(otpQrCodeData)
       setSecondOtpQrCodeData(secondOtpQrCodeData)
     })()
-  }, [name, code, network])
+  }, [name, code, network, effectiveTime])
 
   useEffect(() => {
     if (section === sectionViews.setupOtp && worker) {
@@ -356,7 +352,7 @@ const Create = ({ expertMode, showRecovery }) => {
         <Row align='middle' style={{ marginBottom: 32, marginTop: 16 }}>
           <Space size='large'>
             <InputBox
-              prefix={<Button type='text' onClick={() => setName(genName())} style={{ }}><RedoOutlined /></Button>}
+              prefix={<Button type='text' onClick={() => setName(generateNewOtpName())} style={{ }}><RedoOutlined /></Button>}
               value={name} onChange={({ target: { value } }) => setName(value)}
               style={{ padding: 0 }}
             />
@@ -384,12 +380,12 @@ const Create = ({ expertMode, showRecovery }) => {
             <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
             {!isMobile && <Hint>Scan the QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use the wallet </Hint>}
             {isMobile && <Hint>Tap QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use the wallet</Hint>}
-            {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData })}
+            {buildQRCodeComponent({ seed, name: ONENames.nameWithTime(name, effectiveTime), os, isMobile, qrCodeData })}
           </Space>
         </Row>
         <Row style={{ marginTop: 16 }}>
           <Space direction='vertical' size='large' align='center' style={{ width: '100%' }}>
-            <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={name} />
+            <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={ONENames.nameWithTime(name, effectiveTime)} />
             {expertMode && <TwoCodeOption isMobile={isMobile} setDoubleOtp={setDoubleOtp} doubleOtp={doubleOtp} />}
             {expertMode && <Hint>You can adjust spending limit in the next step</Hint>}
           </Space>
@@ -400,11 +396,11 @@ const Create = ({ expertMode, showRecovery }) => {
           <Space direction='vertical'>
             <Heading>Create Your 1wallet (second code)</Heading>
             <Hint align='center'>{isMobile ? 'Tap' : 'Scan'} to setup the <b>second</b> code</Hint>
-            {buildQRCodeComponent({ seed: seed2, name: getSecondCodeName(name), os, isMobile, qrCodeData: secondOtpQrCodeData })}
+            {buildQRCodeComponent({ seed: seed2, name: ONENames.nameWithTime(getSecondCodeName(name), effectiveTime), os, isMobile, qrCodeData: secondOtpQrCodeData })}
           </Space>
         </Row>
         <Row>
-          <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={getSecondCodeName(name)} />
+          <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={ONENames.nameWithTime(getSecondCodeName(name), effectiveTime)} />
         </Row>
       </AnimatedSection>
       <AnimatedSection show={section === sectionViews.prepareWallet}>

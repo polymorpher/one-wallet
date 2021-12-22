@@ -34,6 +34,7 @@ import qrcode from 'qrcode'
 import { OtpSetup, TwoCodeOption } from '../../components/OtpSetup'
 import WalletAddress from '../../components/WalletAddress'
 import { useHistory } from 'react-router'
+import ONENames from '../../../../lib/names'
 const { Title, Text } = Typography
 
 const Subsections = {
@@ -416,7 +417,7 @@ const Extend = ({
           <Col span={24}>
             <OtpStack
               isDisabled={!root}
-              walletName={wallet.name}
+              walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)}
               otpState={otpState}
               onComplete={doReplace}
               action={`confirm ${method === 'new' ? '[using old authenticator code]' : ''}`}
