@@ -41,7 +41,7 @@ const RestoreByCodes = ({ isActive, name, wallet, innerTrees, innerCores, newLoc
     resetOtp: resetOtps,
     network,
     onSuccess: async () => {
-      const { layers, hseed, doubleOtp, name, core, innerTrees: newInnerTrees } = newLocalParams
+      const { layers, hseed, doubleOtp, name, core, innerTrees: newInnerTrees, identificationKeys } = newLocalParams
       const promises = []
       message.info('Saving your wallet...')
       for (const { root: innerRoot, layers: innerLayers } of newInnerTrees) {
@@ -63,7 +63,8 @@ const RestoreByCodes = ({ isActive, name, wallet, innerTrees, innerCores, newLoc
         network,
         expert,
         innerRoots: newInnerTrees.map(({ root: innerRoot }) => ONEUtil.hexView(innerRoot)),
-        root: root
+        root,
+        localIdentificationKey: identificationKeys[0],
       }
       const securityParameters = ONEUtil.securityParameters(newWallet)
       const walletUpdate = { ...newWallet, ...securityParameters }

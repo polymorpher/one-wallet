@@ -298,6 +298,8 @@ const Create = ({ expertMode, showRecovery }) => {
         spendingInterval: spendingInterval * 1000,
         majorVersion: ONEConstants.MajorVersion,
         minorVersion: ONEConstants.MinorVersion,
+        identificationKeys,
+        localIdentificationKey: identificationKeys[0],
         network,
         doubleOtp,
         innerRoots: innerTrees.map(({ root }) => ONEUtil.hexView(root)),

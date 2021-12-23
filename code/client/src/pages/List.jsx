@@ -12,7 +12,7 @@ import BN from 'bn.js'
 import { getAddress } from '@harmony-js/crypto'
 import ONEConstants from '../../../lib/constants'
 import * as Sentry from '@sentry/browser'
-import { deleteWalletLocally } from '../storage/util'
+import { cleanStorage, deleteWalletLocally } from '../storage/util'
 const { Text, Title } = Typography
 
 const walletShortName = (fullName) => {
@@ -94,24 +94,33 @@ const List = () => {
     deleteWalletLocally({ wallet, wallets, dispatch, silent: true })
   }
   useEffect(() => {
-    if (purged || !wallets || wallets.length === 0) {
+    if (purged || !wallets || Object.keys(wallets).length === 0) {
       return
     }
-    const now = Date.now()
-    setPurged(true)
-    Object.keys(wallets || {}).forEach((address) => {
-      const wallet = wallets[address]
-      if (!wallet) {
-        return
-      }
-      if (
-        (wallet?.temp && wallet.temp < now) ||
-        address === ONEConstants.EmptyAddress ||
-        !wallet.network
-      ) {
-        purge(wallet)
-      }
-    })
+    async function scanWalletsForPurge () {
+      await cleanStorage({ wallets })
+      const now = Date.now()
+      setPurged(true)
+      Object.keys(wallets || {}).forEach((address) => {
+        const wallet = wallets[address]
+        if (!wallet) {
+          return
+        }
+        if (address === 'undefined') {
+          // leftover stale wallet due to buggy code
+          dispatch(walletActions.deleteWallet('undefined'))
+          return
+        }
+        if (
+          (wallet?.temp && wallet.temp < now) ||
+          address === ONEConstants.EmptyAddress ||
+          !wallet.network
+        ) {
+          purge(wallet)
+        }
+      })
+    }
+    scanWalletsForPurge()
   }, [wallets])
 
   useEffect(() => {

@@ -12,6 +12,7 @@ function * handleFetchWallet (action) {
     let backlinks = []
     let forwardAddress = null
     let oldInfos = []
+    let identificationKeys = []
     if (wallet?.majorVersion >= 9) {
       backlinks = yield call(api.blockchain.getBacklinks, { address })
       forwardAddress = yield call(api.blockchain.getForwardAddress, { address })
@@ -19,8 +20,11 @@ function * handleFetchWallet (action) {
     if (wallet?.majorVersion >= 14) {
       oldInfos = yield call(api.blockchain.getOldInfos, { address })
     }
+    if (wallet?.majorVersion >= 15) {
+      identificationKeys = yield call(api.blockchain.getIdentificationKeys, { address })
+    }
     yield all([
-      put(walletActions.fetchWalletSuccess({ ...wallet, backlinks, forwardAddress, oldInfos })),
+      put(walletActions.fetchWalletSuccess({ ...wallet, backlinks, forwardAddress, oldInfos, identificationKeys })),
       put(globalActions.setFetchStatus(false)),
     ])
   } catch (err) {

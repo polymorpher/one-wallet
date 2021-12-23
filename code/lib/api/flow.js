@@ -70,11 +70,30 @@ const Flows = {
     message = messager,
     overrideVersion = false,
   }) => {
-    const { oldInfos, address, randomness, hseed, hasher, majorVersion, minorVersion } = wallet
+    const { oldInfos, address, randomness, hseed, hasher, majorVersion, minorVersion, identificationKeys, localIdentificationKey } = wallet
     let { effectiveTime, root } = wallet
     if (!layers) {
-      layers = await storage.getItem(root)
+      if (localIdentificationKey && identificationKeys) {
+        const idKeyIndex = identificationKeys.findIndex(e => e === localIdentificationKey)
+        if (idKeyIndex === -1) {
+          message.debug('Cannot identify tree to use because of identification key mismatch. Falling back to brute force search')
+          layers = await storage.getItem(root)
+        } else {
+          message.debug(`Identified tree via localIdentificationKey=${localIdentificationKey}`)
+          if (idKeyIndex === identificationKeys.length - 1) {
+            layers = await storage.getItem(root)
+          } else {
+            const info = oldInfos[idKeyIndex]
+            layers = await storage.getItem(info.root)
+            effectiveTime = info.effectiveTime
+            root = info.root
+          }
+        }
+      } else {
+        layers = await storage.getItem(root)
+      }
       if (!layers) {
+        message.debug(`Did not find root ${root}. Looking up storage for old roots`)
         // look for old roots
         for (let info of oldInfos) {
           if (info.root && (info.effectiveTime + info.duration > Date.now())) {
@@ -90,8 +109,11 @@ const Flows = {
           message.error('Cannot find pre-computed proofs for this wallet. Storage might be corrupted. Please restore the wallet from Google Authenticator.')
           return
         }
+      } else {
+        message.debug(`Found root ${root}`)
       }
     }
+
     prepareProof && prepareProof()
     index = index || ONEUtil.timeToIndex({ effectiveTime })
     if (index < 0) {
