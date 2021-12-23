@@ -37,7 +37,8 @@ const config = merge({}, baseConfig, {
       'RO'
     ]
 
-  }
+  },
+  scanDelay: 250,
 })
 
 export default config
