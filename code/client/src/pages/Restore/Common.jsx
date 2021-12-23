@@ -3,9 +3,10 @@ import message from '../../message'
 import { api } from '../../../../lib/api'
 import * as Sentry from '@sentry/browser'
 
-export const retrieveWalletInfoFromAddress = async (address) => {
+export const retrieveWalletInfoFromAddress = async (address, name) => {
   const oneAddress = util.safeOneAddress(address)
-  message.info(`Retrieving wallet information from ${oneAddress}`)
+  const displayName = name ? `${name} (${oneAddress})` : oneAddress
+  message.info(`Retrieving wallet information from ${displayName}`)
   try {
     const {
       root,
