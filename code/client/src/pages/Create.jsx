@@ -68,7 +68,7 @@ const Create = ({ expertMode, showRecovery }) => {
   const dispatch = useDispatch()
   const history = useHistory()
   const network = useSelector(state => state.global.network)
-  const wallets = useSelector(state => state.wallets)
+  const wallets = useSelector(state => state.wallet)
 
   const [effectiveTime, setEffectiveTime] = useState()
 
