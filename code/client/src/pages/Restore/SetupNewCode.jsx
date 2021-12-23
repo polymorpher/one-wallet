@@ -19,7 +19,7 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
   const [secondOtpQrCodeData, setSecondOtpQrCodeData] = useState()
   const [validationOtp, setValidationOtp] = useState()
   const validationOtpRef = useRef()
-  const dev = useSelector(state => state.wallet.dev)
+  const dev = useSelector(state => state.global.dev)
   const [worker, setWorker] = useState()
   const [seed, setSeed] = useState(generateOtpSeed())
   const [seed2, setSeed2] = useState(generateOtpSeed())

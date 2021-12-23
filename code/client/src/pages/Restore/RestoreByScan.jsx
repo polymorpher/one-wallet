@@ -4,7 +4,7 @@ import * as Sentry from '@sentry/browser'
 import { Heading, Hint, Text } from '../../components/Text'
 import ScanGASteps from '../../components/ScanGASteps'
 import QrCodeScanner from '../../components/QrCodeScanner'
-import { Button, Progress, Space } from 'antd'
+import { Button, Space } from 'antd'
 import AddressInput from '../../components/AddressInput'
 import WalletCreateProgress from '../../components/WalletCreateProgress'
 import React, { useEffect, useState, useRef } from 'react'
@@ -38,8 +38,8 @@ const RestoreByScan = ({ isActive, onComplete, onCancel }) => {
   const [progress, setProgress] = useState(0)
   const [progressStage, setProgressStage] = useState(0)
   const [walletInfo, setWalletInfo] = useState()
-  const network = useSelector(state => state.wallet.network)
-  const wallets = useSelector(state => state.wallet.wallets)
+  const network = useSelector(state => state.global.network)
+  const wallets = useSelector(state => state.wallet)
   const control = useRef({ lastScan: 0, restoring: false }).current
 
   useEffect(() => {
