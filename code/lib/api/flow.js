@@ -75,6 +75,7 @@ const Flows = {
     if (!layers) {
       layers = await storage.getItem(root)
       if (!layers) {
+        message.debug(`Did not find root ${root}. Looking up storage for old roots`)
         // look for old roots
         for (let info of oldInfos) {
           if (info.root && (info.effectiveTime + info.duration > Date.now())) {
@@ -90,8 +91,11 @@ const Flows = {
           message.error('Cannot find pre-computed proofs for this wallet. Storage might be corrupted. Please restore the wallet from Google Authenticator.')
           return
         }
+      } else {
+        message.debug(`Found root ${root}`)
       }
     }
+
     prepareProof && prepareProof()
     index = index || ONEUtil.timeToIndex({ effectiveTime })
     if (index < 0) {
