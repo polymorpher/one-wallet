@@ -11,7 +11,7 @@ const SyncRecoveryFile = ({ onSynced, onCancel }) => {
   const wallets = useSelector(state => state.wallet.wallets)
   const [uploading, setSyncing] = useState(false)
   const beforeUpload = (file) => {
-    const validExt = file.name.endsWith('.recovery.1wallet')
+    const validExt = file.name.endsWith('.recover1wallet')
     if (!validExt) {
       message.error('Please only upload 1wallet recovery file ending with .recovery.1wallet')
       return false
