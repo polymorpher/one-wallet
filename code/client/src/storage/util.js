@@ -3,11 +3,16 @@ import { globalActions } from '../state/modules/global'
 import storage from './index'
 import message from '../message'
 import Paths from '../constants/paths'
+import { flatten } from 'lodash'
 
-export const deleteRoot = async ({ root, wallets, name, history, silent }) => {
+export const deleteRoot = async ({ fromAddress, root, wallets, name, history, silent }) => {
   try {
-    if (Object.keys(wallets).map(k => wallets[k]).filter(w => w.root === root).length === 0) {
+    const usedByWallets = Object.keys(wallets).map(k => wallets[k]).filter(w => w.root === root && w.address !== fromAddress)
+    if (usedByWallets.length === 0) {
+      message.debug(`Deleted root ${root}`)
       await storage.removeItem(root)
+    } else {
+      message.debug(`Skip deleting root ${root} (used by ${usedByWallets.join(', ')})`)
     }
     !silent && message.success(`Wallet ${name} is deleted`)
     if (history) {
@@ -43,5 +48,21 @@ export const deleteWalletLocally = async ({ wallet, wallets, dispatch, history, 
       await deleteRoot({ root: innerRoot, wallets, silent: true })
     }
   }
-  return deleteRoot({ root, wallets, name, history, silent })
+  return deleteRoot({ fromAddress: address, root, wallets, name, history, silent })
+}
+
+export const cleanStorage = async ({ wallets }) => {
+  message.debug('Scanning orphaned trees from storage')
+  const keys = await storage.keys()
+  const roots = flatten(Object.values(wallets).map(e => [e.root, ...(e.oldInfos || []).map(e => e.root), ...(e.innerRoots || [])])).map(e => [e, true])
+  const rootLookup = Object.fromEntries(roots)
+  const promises = []
+  for (const k of keys) {
+    if (!rootLookup[k]) {
+      message.debug(`Deleting tree root ${k} from storage`)
+      promises.push(storage.removeItem(k))
+    }
+  }
+  await Promise.all(promises)
+  message.debug(`Deleted ${promises.length}/${keys.length} trees from storage`, 15)
 }
