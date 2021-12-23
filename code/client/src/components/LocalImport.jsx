@@ -9,7 +9,7 @@ import util from '../util'
 import ONEUtil from '../../../lib/util'
 import { walletActions } from '../state/modules/wallet'
 import Paths from '../constants/paths'
-import { LocalExportMessage } from '../proto/localExportMessage'
+import { SimpleWalletExport } from '../proto/wallet'
 import { getDataFromFile } from './Common'
 
 const LocalImport = () => {
@@ -26,10 +26,11 @@ const LocalImport = () => {
     if (info.file.status === 'done') {
       try {
         const data = await getDataFromFile(info.file.originFileObj)
-        const decoded = LocalExportMessage.decode(new Uint8Array(data))
-        const wallet = JSON.parse(decoded.wallet)
-        const layers = decoded.layers
+        const { innerTrees, layers, state, address, name } = SimpleWalletExport.decode(new Uint8Array(data))
 
+        // const decoded = LocalExportMessage.decode(new Uint8Array(data))
+        const wallet = JSON.parse(state)
+        // console.log(ONEUtil.hexView(layers[layers.length - 1]), wallet.root)
         if (!util.isValidWallet(wallet)) {
           message.error('Wallet file has invalid data')
           return
@@ -38,8 +39,19 @@ const LocalImport = () => {
           message.error('Wallet already exists. Please use the existing one or delete it first.')
           return
         }
+        if (!layers) {
+          message.error('Wallet file has corrupted data')
+          return
+        }
+        message.info(`Saving wallet ${name} (${util.safeOneAddress(address)})`)
         dispatch(walletActions.updateWallet(wallet))
-        await storage.setItem(wallet.root, layers)
+        const promises = []
+        for (const { layers: innerLayers } of innerTrees) {
+          const innerRoot = innerLayers[innerLayers.length - 1]
+          promises.push(storage.setItem(ONEUtil.hexView(innerRoot), innerLayers))
+        }
+        promises.push(storage.setItem(ONEUtil.hexView(layers[layers.length - 1]), layers))
+        await Promise.all(promises)
         message.success(`Wallet ${wallet.name} (${wallet.address}) is restored!`)
         setTimeout(() => history.push(Paths.showAddress(wallet.address)), 1500)
       } catch (err) {
