@@ -211,27 +211,32 @@ const api = {
   },
   blockchain: {
     getOldInfos: async ({ address, raw }) => {
-      const c = await one.at(address)
+      const c = new one(address)
       const res = await c.getOldInfos()
       return res.map(e => ONEUtil.processCore(e, raw))
     },
     getInnerCores: async ({ address, raw }) => {
-      const c = await one.at(address)
+      const c = new one(address)
       const res = await c.getInnerCores()
       return res.map(e => ONEUtil.processCore(e, raw))
     },
+    getIdentificationKeys: async ({ address }) => {
+      const c = new one(address)
+      const res = await c.getIdentificationKeys()
+      return res
+    },
     getLastOperationTime: async ({ address }) => {
-      const c = await one.at(address)
+      const c = new one(address)
       const t = await c.lastOperationTime() // BN but convertible to uint32
       return t.toNumber()
     },
     getNonce: async ({ address }) => {
-      const c = await one.at(address)
+      const c = new one(address)
       const nonce = await c.getNonce()
       return nonce.toNumber()
     },
     getSpending: async ({ address }) => {
-      const c = await one.at(address)
+      const c = new one(address)
       let spendingLimit, spendingAmount, lastSpendingInterval, spendingInterval
       const r = await c.getCurrentSpendingState()
       spendingLimit = new BN(r[0])
@@ -244,10 +249,10 @@ const api = {
      * Require contract >= v2
      * @param address
      * @param raw
-     * @returns {Promise<{duration: number, address, slotSize, effectiveTime: number, root, dailyLimit: string, majorVersion: (number|number), minorVersion: (number|number), lastResortAddress: *}|{maxOperationsPerInterval, lifespan, root: *, dailyLimit: string, interval, t0, majorVersion: (number|number), minorVersion: (number|number), lastResortAddress: *, height}>}
+     * @returns {Promise<{address, slotSize, highestSpendingLimit: string, effectiveTime: number, majorVersion: (number|number), lastSpendingInterval: number, spendingAmount: string, duration: number, spendingLimit: string, lastLimitAdjustmentTime: number, root, minorVersion: (number|number), spendingInterval: number, lastResortAddress: *}|{maxOperationsPerInterval, highestSpendingLimit: BN, lifespan, majorVersion: (number|number), spendingAmount: BN, lastSpendingInterval: BN, spendingLimit: BN, lastLimitAdjustmentTime: BN, root: *, dailyLimit: string, interval, t0, minorVersion: (number|number), spendingInterval: BN, lastResortAddress: *, height}>}
      */
     getWallet: async ({ address, raw }) => {
-      const c = await one.at(address)
+      const c = new one(address)
       const result = await c.getInfo()
       let majorVersion = new BN(0)
       let minorVersion = new BN(0)
@@ -336,7 +341,7 @@ const api = {
      * @returns {Promise<*[]>}
      */
     getCommitsV3: async ({ address }) => {
-      const c = await one.at(address)
+      const c = new one(address)
       const result = await c.getCommits()
       const [hashes, paramsHashes, timestamps, completed] = Object.keys(result).map(k => result[k])
       const commits = []
@@ -352,7 +357,7 @@ const api = {
      * @returns {Promise<*[]>}
      */
     getCommits: async ({ address }) => {
-      const c = await one.at(address)
+      const c = new one(address)
       const result = await c.getAllCommits()
       return parseCommits(result)
     },
@@ -362,7 +367,7 @@ const api = {
      * @returns {Promise<void>}
      */
     findCommitV6: async ({ address, commitHash }) => {
-      const c = await one.at(address)
+      const c = new one(address)
       const result = await c.findCommit(commitHash)
       const [hash, paramsHash, timestamp, completed] = Object.keys(result).map(k => result[k])
       return { hash, paramsHash, timestamp: new BN(timestamp).toNumber(), completed }
@@ -373,7 +378,7 @@ const api = {
      * @returns {Promise<void>}
      */
     findCommit: async ({ address, commitHash }) => {
-      const c = await one.at(address)
+      const c = new one(address)
       const result = await c.lookupCommit(commitHash)
       return parseCommits(result)
     },
@@ -383,7 +388,7 @@ const api = {
      * @returns {Promise<*[]>}
      */
     getTrackedTokens: async ({ address }) => {
-      const c = await one.at(address)
+      const c = new one(address)
       const result = await c.getTrackedTokens()
       const [tokenTypes, contracts, tokenIds] = Object.keys(result).map(k => result[k])
       const tt = []
@@ -434,7 +439,7 @@ const api = {
     },
 
     getBacklinks: async ({ address }) => {
-      const c = await one.at(address)
+      const c = new one(address)
       try {
         const backlinks = await c.getBacklinks()
         return backlinks
@@ -445,7 +450,7 @@ const api = {
     },
 
     getForwardAddress: async ({ address }) => {
-      const c = await one.at(address)
+      const c = new one(address)
       try {
         const forwardAddress = await c.getForwardAddress()
         return forwardAddress
