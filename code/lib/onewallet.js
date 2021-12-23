@@ -46,7 +46,7 @@ const computeMerkleTree = async ({
     buildInnerTrees = false
   }
   reportInterval = reportInterval || Math.floor(n / 100)
-  const counter = Math.floor(effectiveTime / (otpInterval * 6)) * 6
+  const counter = buildInnerTrees ? Math.floor(effectiveTime / (otpInterval * 6)) * 6 : Math.floor(effectiveTime / otpInterval)
   const seed = processOtpSeed(otpSeed)
   const seed2 = otpSeed2 && processOtpSeed(otpSeed2)
   // console.log('Generating Wallet with parameters', { seed, seed2, height, otpInterval, effectiveTime, duration, randomness, hasher, maxOperationsPerInterval })
