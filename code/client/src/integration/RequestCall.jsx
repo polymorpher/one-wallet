@@ -157,7 +157,7 @@ const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amo
         <Call
           shouldAutoFocus
           minimal={!showDetails}
-          address={selectedAddress.value} show={showCall} onClose={onCallClose} onSuccess={onSuccess}
+          address={selectedAddress.value} onClose={onCallClose} onSuccess={onSuccess}
           prefillHex={calldata.hex}
           prefillAmount={amountFormatted} prefillDest={dest} prefillData={(calldata.parameters || []).map(e => e.value)} prefillMethod={calldata.method}
         />}
