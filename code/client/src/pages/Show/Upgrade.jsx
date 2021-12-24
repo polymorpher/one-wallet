@@ -1,4 +1,4 @@
-import { useDispatch, useSelector } from 'react-redux'
+import { batch, useDispatch, useSelector } from 'react-redux'
 import React, { useState } from 'react'
 import ONEConstants from '../../../../lib/constants'
 import ONEUtil from '../../../../lib/util'
@@ -76,12 +76,27 @@ const Upgrade = ({ address, onClose }) => {
       maxOperationsPerInterval,
       lastResortAddress,
       spendingLimit,
-      spendingInterval
+      spendingAmount, // ^classic
+
+      spendingInterval, // v12
+
+      highestSpendingLimit,
+      lastLimitAdjustmentTime,
+      lastSpendingInterval,
+      spentAmount, // ^v15
     } = await api.blockchain.getWallet({ address, raw: true })
-    const backlinks = await api.blockchain.getBacklinks({ address })
-    let oldCores = []
+
+    const backlinks = await api.blockchain.getBacklinks({ address }) // v9
+    let oldCores = [] // v14
     if (majorVersion >= 14) {
       oldCores = await api.blockchain.getOldInfos({ address, raw: true })
+    }
+    let identificationKeys = []; let innerCores = [] // v15
+    if (majorVersion >= 15) {
+      [innerCores, identificationKeys] = await Promise.all([
+        api.blockchain.getInnerCores({ address, raw: true }),
+        api.blockchain.getIdentificationKeys({ address }),
+      ])
     }
     const transformedLastResortAddress = util.isDefaultRecoveryAddress(lastResortAddress) ? ONEConstants.TreasuryAddress : lastResortAddress
     const { address: newAddress } = await api.relayer.create({
@@ -92,10 +107,20 @@ const Upgrade = ({ address, onClose }) => {
       lifespan,
       slotSize: maxOperationsPerInterval,
       lastResortAddress: transformedLastResortAddress,
-      spendingLimit: spendingLimit.toString(),
-      spendingInterval: spendingInterval.toString(),
+      spendingAmount,
+      spendingLimit,
+
+      spendingInterval,
+
       backlinks: [...backlinks, address],
-      oldCores
+      oldCores,
+
+      highestSpendingLimit,
+      lastLimitAdjustmentTime,
+      lastSpendingInterval,
+      spentAmount,
+      innerCores,
+      identificationKeys, // ^v15
     })
     const { otp, otp2, invalidOtp2, invalidOtp } = prepareValidation({ state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp }, checkAmount: false, checkDest: false }) || {}
     if (invalidOtp || invalidOtp2) return
@@ -128,11 +153,13 @@ const Upgrade = ({ address, onClose }) => {
           forwardAddress: newAddress,
           _merge: true
         }
-        dispatch(walletActions.updateWallet(newWallet))
-        dispatch(walletActions.updateWallet(oldWallet))
-        dispatch(walletActions.fetchWallet({ address: newAddress }))
-        setTimeout(() => history.push(Paths.showAddress(util.safeOneAddress(newAddress))), 1000)
-        message.success('Upgrade completed!')
+        batch(() => {
+          dispatch(walletActions.updateWallet(newWallet))
+          dispatch(walletActions.updateWallet(oldWallet))
+          dispatch(walletActions.fetchWallet({ address: newAddress }))
+        })
+        message.success('Upgrade completed! Redirecting to wallet in 2 seconds...')
+        setTimeout(() => history.push(Paths.showAddress(util.safeOneAddress(newAddress))), 2000)
       }
     })
   }
