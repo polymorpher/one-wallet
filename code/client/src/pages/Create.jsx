@@ -227,6 +227,7 @@ const Create = ({ expertMode, showRecovery }) => {
     setOtp('')
     if (code.padStart(6, '0') !== otp.padStart(6, '0')) {
       message.error('Code is incorrect. Please try again.')
+      message.debug(`Correct code is ${code.padStart(6, '0')}`)
       otpRef?.current?.focusInput(0)
     } else if (doubleOtp && !settingUpSecondOtp) {
       setSection(sectionViews.setupSecondOtp)

@@ -94,10 +94,8 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
     const code = new DataView(expected.buffer).getUint32(0, false).toString()
     setValidationOtp('')
     if (code.padStart(6, '0') !== validationOtp.padStart(6, '0')) {
-      if (dev) {
-        console.log(code.padStart(6, '0'))
-      }
       message.error('Code is incorrect. Please try again.')
+      message.debug(`Correct code is ${code.padStart(6, '0')}`)
       validationOtpRef?.current?.focusInput(0)
     } else if (doubleOtp && !showSecondCode) {
       setShowSecondCode(true)
