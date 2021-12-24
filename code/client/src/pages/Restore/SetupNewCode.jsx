@@ -10,7 +10,7 @@ import ONEUtil from '../../../../lib/util'
 import WalletConstants from '../../constants/wallet'
 import message from '../../message'
 import ONENames from '../../../../lib/names'
-import { AverageRow, TallRow } from '../../components/Grid'
+import { AverageRow } from '../../components/Grid'
 
 const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onComputeLocalParams, onProgressUpdate }) => {
   const { slotSize } = wallet || {}

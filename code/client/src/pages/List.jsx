@@ -29,7 +29,7 @@ const WalletCard = ({ wallet }) => {
   const history = useHistory()
   const location = useLocation()
   const { address, name } = wallet
-  const oneAddress = getAddress(address).bech32
+  const oneAddress = util.safeOneAddress(address)
   const dispatch = useDispatch()
   const walletBalance = useSelector(state => state?.balance[address] || {})
   const price = useSelector(state => state.global.price)
@@ -135,6 +135,7 @@ const List = () => {
       !w.temp &&
       w.address !== ONEConstants.EmptyAddress
   }
+  // console.log(wallets)
 
   return (
     <Space direction='vertical' style={{ width: '100%' }}>
