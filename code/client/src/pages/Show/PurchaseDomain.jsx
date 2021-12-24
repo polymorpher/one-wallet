@@ -92,12 +92,12 @@ const { balance: PAYMENT_EXCESS_BUFFER } = util.toBalance(0.1)
 /**
  * Renders Purchase Domain section that enables users to purchase an available domain for their selected wallet using selected token.
  */
-const PurchaseDomain = ({ show, address, onClose }) => {
+const PurchaseDomain = ({ address, onClose }) => {
   const dispatch = useDispatch()
   const balances = useSelector(state => state.balance || {})
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
   const oneBalance = balances[address]?.balance || 0
   const [subdomain, setSubdomain] = useState(prepareName(wallet.name))
   const [purchaseOnePrice, setPurchaseOnePrice] = useState({ value: '', formatted: '' })
@@ -193,8 +193,7 @@ const PurchaseDomain = ({ show, address, onClose }) => {
   const titleLevel = isMobile ? 4 : 3
   return (
     <AnimatedSection
-      style={{ maxWidth: 720 }}
-      show={show} title={<Title level={2}>Buy Domain</Title>} extra={[
+      style={{ maxWidth: 720 }} title={<Title level={2}>Buy Domain</Title>} extra={[
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
       ]}
     >

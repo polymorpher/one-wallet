@@ -14,7 +14,7 @@ const { Title, Text } = Typography
 const WalletTitle = ({ address, onQrCodeClick, onScanClick, noWarning }) => {
   const dispatch = useDispatch()
   const history = useHistory()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const { isMobile } = useWindowDimensions()
   const [domain, setDomain] = useState(wallet.domain)

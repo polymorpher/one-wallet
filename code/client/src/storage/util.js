@@ -12,7 +12,7 @@ export const deleteRoot = async ({ fromAddress, root, wallets, name, history, si
       message.debug(`Deleted root ${root}`)
       await storage.removeItem(root)
     } else {
-      message.debug(`Skip deleting root ${root} (used by ${usedByWallets.join(', ')})`)
+      message.debug(`Skip deleting root ${root} (used by ${usedByWallets.map(e => e.address).join(', ')})`)
     }
     !silent && message.success(`Wallet ${name} is deleted`)
     if (history) {

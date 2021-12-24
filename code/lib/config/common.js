@@ -23,7 +23,7 @@ module.exports = {
         deploy: {
           factory: process.env.DEPLOY_FACTORY_GANACHE,
           deployer: process.env.DEPLOY_DEPLOYER_GANACHE,
-          codeHelper: process.env.DEPLOY_CODE_HELPER_GANACHE,
+          codeHelper: process.env.DEPLOY_CODE_HELPER_GANACHE
         },
       }
     }),

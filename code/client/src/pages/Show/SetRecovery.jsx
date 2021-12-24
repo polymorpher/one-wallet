@@ -18,11 +18,11 @@ import { useWindowDimensions } from '../../util'
 import ONENames from '../../../../lib/names'
 const { Title } = Typography
 
-const SetRecovery = ({ address, onClose, show }) => {
+const SetRecovery = ({ address, onClose }) => {
   const dispatch = useDispatch()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
   const [stage, setStage] = useState(-1)
   const [transferTo, setTransferTo] = useState({ value: '', label: '' })
   const { resetWorker, recoverRandomness } = useRandomWorker()
@@ -72,7 +72,6 @@ const SetRecovery = ({ address, onClose, show }) => {
   return (
     <AnimatedSection
       style={{ maxWidth: 720 }}
-      show={show}
       title={<Title level={isMobile ? 5 : 2}>Set Recovery Address</Title>}
       extra={[
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />

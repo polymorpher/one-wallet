@@ -1,6 +1,5 @@
-import { TallRow, AverageRow } from '../../components/Grid'
 import { Text, Hint, Title } from '../../components/Text'
-import { Button, Col, Row, Typography, Space, Tooltip } from 'antd'
+import { Button, Col, Row, Space } from 'antd'
 import util, { useWindowDimensions } from '../../util'
 import WalletAddress from '../../components/WalletAddress'
 import { WarningOutlined } from '@ant-design/icons'
@@ -8,14 +7,13 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import Paths from '../../constants/paths'
 import { useHistory } from 'react-router'
-import WalletConstants from '../../constants/wallet'
 import { SimpleWalletExport, InnerTree } from '../../proto/wallet'
 import message from '../../message'
 import storage from '../../storage'
 
 const Recovery = ({ address }) => {
   const history = useHistory()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const { lastResortAddress, majorVersion, innerRoots } = wallet
   const { isMobile } = useWindowDimensions()
@@ -49,7 +47,7 @@ const Recovery = ({ address }) => {
       const bytes = SimpleWalletExport.encode(exportPB).finish()
       console.log(bytes.length)
       const nameReplaced = wallet.name.replace(' ', '-').toLowerCase()
-      const filename = `${nameReplaced}-${util.safeOneAddress(address)}.recovery.1wallet`
+      const filename = `${nameReplaced}-${util.safeOneAddress(address)}.recover1wallet`
       const file = new Blob([bytes])
       element = document.createElement('a')
       element.download = filename

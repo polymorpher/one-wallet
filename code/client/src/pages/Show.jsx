@@ -4,6 +4,7 @@ import { useHistory, useRouteMatch, Redirect, useLocation, matchPath } from 'rea
 import Paths from '../constants/paths'
 import WalletConstants from '../constants/wallet'
 import walletActions from '../state/modules/wallet/actions'
+import { globalActions } from '../state/modules/global'
 import { balanceActions } from '../state/modules/balance'
 import util from '../util'
 import ONEConstants from '../../../lib/constants'
@@ -54,15 +55,15 @@ const Show = () => {
   const location = useLocation()
   const dispatch = useDispatch()
 
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const match = useRouteMatch(Paths.show)
   const { address: routeAddress, action } = match ? match.params : {}
   const oneAddress = util.safeOneAddress(routeAddress)
   const address = util.safeNormalizedAddress(routeAddress)
-  const selectedAddress = useSelector(state => state.wallet.selected)
+  const selectedAddress = useSelector(state => state.global.selectedWallet)
   const wallet = wallets[address] || {}
   const [section, setSection] = useState(action)
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
   const [activeTab, setActiveTab] = useState('coins')
   const { expert } = wallet
   const dev = useSelector(state => state.global.dev)
@@ -72,7 +73,7 @@ const Show = () => {
       return history.push(Paths.wallets)
     }
     if (address && (address !== selectedAddress)) {
-      dispatch(walletActions.selectWallet(address))
+      dispatch(globalActions.selectWallet(address))
     }
     const fetch = () => dispatch(balanceActions.fetchBalance({ address }))
     const handler = setInterval(() => {
@@ -105,7 +106,7 @@ const Show = () => {
   const showStartScreen = () => { history.push(Paths.showAddress(oneAddress)) }
 
   // UI Rendering below
-  if (!wallet || wallet.network !== network) {
+  if (!wallet.address || wallet.network !== network) {
     return <Redirect to={Paths.wallets} />
   }
 
@@ -138,13 +139,13 @@ const Show = () => {
         <CheckRoots address={address} onClose={() => history.push(Paths.wallets)} />
       </AnimatedSection>
 
-      <Send address={address} show={section === 'transfer'} onClose={showStartScreen} />
-      <DoRecover address={address} show={section === 'recover'} onClose={showStartScreen} />
-      <SetRecovery show={section === 'setRecoveryAddress'} address={address} onClose={showStartScreen} />
-      <PurchaseDomain show={section === 'domain'} address={address} onClose={showStartScreen} />
-      <TransferDomain show={section === 'domainTransfer'} address={address} onClose={showStartScreen} />
-      <Reclaim show={section === 'reclaim'} address={address} onClose={showStartScreen} />
-      <Extend show={section === 'extend'} address={address} onClose={showStartScreen} />
+      {section === 'transfer' && <Send address={address} onClose={showStartScreen} />}
+      {section === 'recover' && <DoRecover address={address} onClose={showStartScreen} />}
+      {section === 'setRecoveryAddress' && <SetRecovery address={address} onClose={showStartScreen} />}
+      {section === 'domain' && <PurchaseDomain address={address} onClose={showStartScreen} />}
+      {section === 'domainTransfer' && <TransferDomain address={address} onClose={showStartScreen} />}
+      {section === 'reclaim' && <Reclaim address={address} onClose={showStartScreen} />}
+      {section === 'extend' && <Extend address={address} onClose={showStartScreen} />}
     </>
   )
 }

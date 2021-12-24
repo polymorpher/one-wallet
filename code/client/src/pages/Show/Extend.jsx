@@ -47,7 +47,6 @@ const Subsections = {
 const Extend = ({
   address,
   onClose: onCloseOuter,
-  show,
 }) => {
   const history = useHistory()
   const {
@@ -330,10 +329,6 @@ const Extend = ({
       </AnimatedSection>
     )
   }, [address])
-
-  if (!show) {
-    return <></>
-  }
 
   if (majorVersion < 14) {
     console.log(majorVersion, name)

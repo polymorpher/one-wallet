@@ -116,7 +116,7 @@ const utils = {
       const bn = base32.decode.asBytes(seed)
       seed = new Uint8Array(bn)
     }
-    seed = seed.slice(0, 32)
+    seed = new Uint8Array(seed.slice(0, 32))
     return seed
   },
   base32Decode: (str, asStr) => {

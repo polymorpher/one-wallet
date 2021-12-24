@@ -28,7 +28,7 @@ const WalletCard = ({ wallet }) => {
   const { isMobile } = useWindowDimensions()
   const history = useHistory()
   const { address, name } = wallet
-  const oneAddress = getAddress(address).bech32
+  const oneAddress = util.safeOneAddress(address)
   const walletBalance = useSelector(state => state?.balance[address] || {})
   const price = useSelector(state => state.global.price)
   const { formatted, fiatFormatted } = util.computeBalance(walletBalance.balance || 0, price)
@@ -73,10 +73,10 @@ const WalletCard = ({ wallet }) => {
 
 const List = () => {
   const { isMobile } = useWindowDimensions()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const balances = useSelector(state => state.balance || {})
   const price = useSelector(state => state.global.price)
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
   const dispatch = useDispatch()
   const totalBalance = Object.keys(balances)
     .filter(a => wallets[a] && wallets[a].network === network && !wallets[a].temp)
@@ -137,6 +137,7 @@ const List = () => {
       !w.temp &&
       w.address !== ONEConstants.EmptyAddress
   }
+  // console.log(wallets)
 
   return (
     <Space direction='vertical' style={{ width: '100%' }}>
