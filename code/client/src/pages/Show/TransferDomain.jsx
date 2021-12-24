@@ -18,7 +18,7 @@ import { useRandomWorker } from './randomWorker'
 import ONENames from '../../../../lib/names'
 const { Title } = Typography
 
-const TransferDomain = ({ address, onClose, show }) => {
+const TransferDomain = ({ address, onClose }) => {
   const dispatch = useDispatch()
   const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
@@ -83,7 +83,7 @@ const TransferDomain = ({ address, onClose, show }) => {
   return (
     <AnimatedSection
       style={{ maxWidth: 720 }}
-      show={show} title={<Title level={2}>Transfer Domain</Title>} extra={[
+      title={<Title level={2}>Transfer Domain</Title>} extra={[
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
       ]}
     >

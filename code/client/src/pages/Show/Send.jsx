@@ -24,7 +24,6 @@ const { Title, Link } = Typography
 
 const Send = ({
   address,
-  show,
   onClose, // optional
   onSuccess, // optional
   overrideToken, // optional
@@ -151,7 +150,6 @@ const Send = ({
   return (
     <AnimatedSection
       style={{ maxWidth: 720 }}
-      show={show}
       title={
         <Title level={isMobile ? 5 : 2}>
           {

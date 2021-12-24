@@ -18,7 +18,7 @@ import { useWindowDimensions } from '../../util'
 import ONENames from '../../../../lib/names'
 const { Title } = Typography
 
-const SetRecovery = ({ address, onClose, show }) => {
+const SetRecovery = ({ address, onClose }) => {
   const dispatch = useDispatch()
   const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
@@ -72,7 +72,6 @@ const SetRecovery = ({ address, onClose, show }) => {
   return (
     <AnimatedSection
       style={{ maxWidth: 720 }}
-      show={show}
       title={<Title level={isMobile ? 5 : 2}>Set Recovery Address</Title>}
       extra={[
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
