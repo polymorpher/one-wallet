@@ -55,7 +55,7 @@ export const CurrencyChooser = ({ visible, confirm, onClose }) => {
 
 export const useBuyCrypto = ({ address }) => {
   const { isMobile } = useWindowDimensions()
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
   const buy = useCallback((currency) => {
     return new Promise((resolve, reject) => {
       const isTest = !config.networks[network]?.production

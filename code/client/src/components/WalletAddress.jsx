@@ -50,7 +50,7 @@ const MOUSE_HOVER_DETECTION_DELAY = 1000
  * Provides the ability to copy the address and link to wallet explorer.
  */
 const WalletAddress = ({ showLabel, labelOverride, address, shorten, onToggle, addressStyle, alwaysShowOptions, onClick, itemStyle, useHex }) => {
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
   const knownAddresses = useSelector(state => state.global.knownAddresses)
   const [showAddressOptions, setShowAddressOptions] = useState(false)
   const [showAddressOptionsLocked, setShowAddressOptionsLocked] = useState(alwaysShowOptions || false)

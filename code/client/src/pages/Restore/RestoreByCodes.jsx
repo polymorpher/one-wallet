@@ -23,7 +23,7 @@ import ONENames from '../../../../lib/names'
 const RestoreByCodes = ({ isActive, name, wallet, innerTrees, innerCores, newLocalParams, onComplete, onCancel, progressStage, progress, expert }) => {
   const [stage, setStage] = useState(-1)
   const { isMobile } = useWindowDimensions()
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
   const otpStates = new Array(6).fill(0).map(() => useOtpState().state)
   const [otpComplete, setOtpComplete] = useState(false)
   const dispatch = useDispatch()

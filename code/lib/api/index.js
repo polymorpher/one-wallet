@@ -50,8 +50,9 @@ let base = axios.create({
 const initAPI = (store) => {
   store.subscribe(() => {
     const state = store.getState()
-    const { relayer: relayerId, network, relayerSecret: secret, wallets, selected } = state.wallet
-    const { majorVersion, minorVersion } = wallets?.[selected] || {}
+    const { relayer: relayerId, network, relayerSecret: secret, selectedWallet } = state.global
+    const wallets = state.wallet
+    const { majorVersion, minorVersion } = wallets?.[selectedWallet] || {}
     let relayer = relayerId
     if (relayer && !relayer.startsWith('http')) {
       relayer = config.relayers[relayer]?.url
@@ -141,7 +142,7 @@ const initBlockchain = (store) => {
   switchNetwork()
   store.subscribe(() => {
     const state = store.getState()
-    const { network } = state.wallet
+    const { network } = state.global
     if (network && network !== activeNetwork) {
       if (config.debug) console.log(`Switching blockchain provider: from ${activeNetwork} to ${network}`)
       activeNetwork = network

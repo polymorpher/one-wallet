@@ -43,12 +43,12 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
   const [searchingAddress, setSearchingAddress] = useState(false)
   const [searchValue, setSearchValue] = useState('')
   const [showQrCodeScanner, setShowQrCodeScanner] = useState('')
-  const walletsMap = useSelector(state => state.wallet.wallets)
+  const walletsMap = useSelector(state => state.wallet)
   const wallets = Object.keys(walletsMap).map((k) => walletsMap[k])
   const knownAddresses = useSelector(state =>
     state.global.knownAddresses || {}
   )
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
   const { isMobile } = useWindowDimensions()
   const deleteKnownAddress = useCallback((address) => {
     setAddressCallback({ value: '', label: '' })

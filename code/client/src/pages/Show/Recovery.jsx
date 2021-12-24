@@ -13,7 +13,7 @@ import storage from '../../storage'
 
 const Recovery = ({ address }) => {
   const history = useHistory()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const { lastResortAddress, majorVersion, innerRoots } = wallet
   const { isMobile } = useWindowDimensions()

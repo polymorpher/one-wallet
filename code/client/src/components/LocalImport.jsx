@@ -15,7 +15,7 @@ import { getDataFromFile } from './Common'
 const LocalImport = () => {
   const dispatch = useDispatch()
   const history = useHistory()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const [fileUploading, setFileUploading] = useState(false)
 
   const handleImport = async info => {

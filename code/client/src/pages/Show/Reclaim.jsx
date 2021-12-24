@@ -32,10 +32,10 @@ const Reclaim = ({
   const location = useLocation()
 
   const { isMobile } = useWindowDimensions()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const { majorVersion } = wallet
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
 
   const doubleOtp = wallet.doubleOtp
   const { state: otpState } = useOtpState()

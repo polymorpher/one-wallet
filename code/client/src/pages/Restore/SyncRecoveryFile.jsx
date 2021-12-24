@@ -8,7 +8,7 @@ import { getDataFromFile } from '../../components/Common'
 import { useSelector } from 'react-redux'
 import util from '../../util'
 const SyncRecoveryFile = ({ onSynced, onCancel }) => {
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const [uploading, setSyncing] = useState(false)
   const beforeUpload = (file) => {
     const validExt = file.name.endsWith('.recover1wallet')

@@ -9,9 +9,15 @@ const deleteKnownAddress = createAction('DELETE_KNOWN_ADDRESS')
 
 const setFetchStatus = createAction('SET_FETCH_STATUS')
 const setError = createAction('SET_ERROR')
+const selectWallet = createAction('SELECT_WALLET')
 
 const fetchPrice = createAction('FETCH_PRICE')
 const fetchPriceSuccess = createAction('FETCH_PRICE_SUCCESS')
+
+const setRelayer = createAction('SET_RELAYER')
+const setRelayerSecret = createAction('SET_RELAYER_SECRET')
+const setNetwork = createAction('SET_NETWORK')
+const migrate = createAction('GLOBAL_AUTO_MIGRATE')
 
 export default {
   setDev,
@@ -20,7 +26,14 @@ export default {
   setKnownAddress,
   setError,
   setFetchStatus,
+  selectWallet,
 
   fetchPrice,
   fetchPriceSuccess,
+
+  setRelayer,
+  setRelayerSecret,
+  setNetwork,
+
+  migrate
 }
