@@ -1,4 +1,4 @@
-import { notification } from 'antd'
+import notification from 'antd/es/notification'
 import { isMobile } from './util'
 import clientConfig from './config'
 

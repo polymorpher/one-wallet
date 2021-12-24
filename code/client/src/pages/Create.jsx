@@ -7,14 +7,12 @@ import ONEUtil from '../../../lib/util'
 import ONEConstants from '../../../lib/constants'
 import ONENames from '../../../lib/names'
 // import { uniqueNamesGenerator, colors, animals } from 'unique-names-generator'
-import {
-  Button,
-  Row,
-  Space,
-  Typography,
-  Slider,
-  Tooltip
-} from 'antd'
+import Row from 'antd/es/row'
+import Slider from 'antd/es/slider'
+import Tooltip from 'antd/es/tooltip'
+import Button from 'antd/es/button'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
 import message from '../message'
 import { RedoOutlined, LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import humanizeDuration from 'humanize-duration'

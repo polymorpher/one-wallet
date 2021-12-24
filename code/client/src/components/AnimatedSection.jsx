@@ -1,7 +1,9 @@
 import React from 'react'
 import { Transition } from 'react-transition-group'
 import styled from 'styled-components'
-import { Button, Card, Space } from 'antd'
+import Button from 'antd/es/button'
+import Card from 'antd/es/card'
+import Space from 'antd/es/space'
 import { useWindowDimensions } from '../util'
 
 const Section = styled(Card)`

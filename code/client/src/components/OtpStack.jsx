@@ -1,4 +1,6 @@
-import { Button, Space, Tooltip } from 'antd'
+import Button from 'antd/es/button'
+import Space from 'antd/es/space'
+import Tooltip from 'antd/es/tooltip'
 import { Hint, Label } from './Text'
 import OtpBox from './OtpBox'
 import { QuestionCircleOutlined, SnippetsOutlined } from '@ant-design/icons'

@@ -1,4 +1,5 @@
-import { Button, Space } from 'antd'
+import Button from 'antd/es/button'
+import Space from 'antd/es/space'
 import { Hint, Title } from '../../components/Text'
 import { buildQRCodeComponent, getQRCodeUri, getSecondCodeName, OTPUriMode } from '../../components/OtpTools'
 import { OtpSetup, TwoCodeOption } from '../../components/OtpSetup'

@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/browser'
-import { Typography } from 'antd'
+import Typography from 'antd/es/typography'
 import message from '../../message'
 import config from '../../config'
 import util from '../../util'

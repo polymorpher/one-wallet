@@ -1,4 +1,7 @@
-import { Button, Row, Space, Typography } from 'antd'
+import Button from 'antd/es/button'
+import Row from 'antd/es/row'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
 import { CloseOutlined } from '@ant-design/icons'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'

@@ -1,6 +1,9 @@
 import { Hint } from './Text'
 import OtpBox from './OtpBox'
-import { Button, Checkbox, Space, Tooltip } from 'antd'
+import Button from 'antd/es/button'
+import Checkbox from 'antd/es/checkbox'
+import Space from 'antd/es/space'
+import Tooltip from 'antd/es/tooltip'
 import { QuestionCircleOutlined, SnippetsOutlined } from '@ant-design/icons'
 import React from 'react'
 

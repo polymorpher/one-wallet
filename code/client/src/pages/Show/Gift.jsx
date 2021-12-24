@@ -1,6 +1,12 @@
 import { useSelector } from 'react-redux'
 import React, { useEffect, useState } from 'react'
-import { Button, Row, Space, Typography, Select, Image, Tooltip } from 'antd'
+import Button from 'antd/es/button'
+import Row from 'antd/es/row'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
+import Select from 'antd/es/select'
+import Image from 'antd/es/image'
+import Tooltip from 'antd/es/tooltip'
 import {
   CloseOutlined,
   CloseCircleOutlined,

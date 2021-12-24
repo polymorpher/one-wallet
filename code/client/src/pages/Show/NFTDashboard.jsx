@@ -1,4 +1,7 @@
-import { Space, Typography, Button, Divider } from 'antd'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
+import Button from 'antd/es/button'
+import Divider from 'antd/es/divider'
 
 import React, { useState } from 'react'
 import { TallRow } from '../../components/Grid'

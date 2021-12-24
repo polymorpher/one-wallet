@@ -1,5 +1,7 @@
 import { Hint, Text, Title } from '../../components/Text'
-import { Button, Upload, Space } from 'antd'
+import Button from 'antd/es/button'
+import Upload from 'antd/es/upload'
+import Space from 'antd/es/space'
 import { LoadingOutlined, UploadOutlined } from '@ant-design/icons'
 import React, { useState } from 'react'
 import message from '../../message'

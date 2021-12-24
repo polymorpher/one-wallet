@@ -1,5 +1,5 @@
 import React from 'react'
-import { Space } from 'antd'
+import Space from 'antd/es/space'
 import { useOtpState, OtpStack } from './OtpStack'
 
 // a stack of 6 otps

@@ -1,4 +1,7 @@
-import { Button, Space, Typography, Divider } from 'antd'
+import Button from 'antd/es/button'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
+import Divider from 'antd/es/divider'
 import message from '../message'
 import BN from 'bn.js'
 import AnimatedSection from '../components/AnimatedSection'
