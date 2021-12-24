@@ -135,7 +135,7 @@ const Create = ({ expertMode, showRecovery }) => {
     (async function () {
       const deployerAddress = config.networks[network].deploy.factory
       const address = ONEUtil.predictAddress({ seed, deployerAddress, code: ONEUtil.hexStringToBytes(code) })
-      console.log({ address, seed, deployerAddress, code })
+      // console.log({ address, seed, deployerAddress, code })
       const oneAddress = util.safeOneAddress(address)
       const otpDisplayName = `${ONENames.nameWithTime(name, effectiveTime)} [${oneAddress}]`
       const otpDisplayName2 = `${ONENames.nameWithTime(getSecondCodeName(name), effectiveTime)} [${oneAddress}]`
