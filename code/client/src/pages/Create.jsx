@@ -81,8 +81,7 @@ const Create = ({ expertMode, showRecovery }) => {
   const [duration, setDuration] = useState(WalletConstants.defaultDuration)
   const [showRecoveryDetail, setShowRecoveryDetail] = useState(false)
   const code = useSelector(state => state.cache.code[network])
-  const needCodeUpdate = useSelector(state => state.cache.needCodeUpdate)
-  const clientVersion = useSelector(state => state.cache.clientVersion[network])
+
 
   const defaultRecoveryAddress = { value: ONEConstants.TreasuryAddress, label: WalletConstants.defaultRecoveryAddressLabel }
 
@@ -116,17 +115,6 @@ const Create = ({ expertMode, showRecovery }) => {
     majorVersion: ONEConstants.MajorVersion,
     minorVersion: ONEConstants.MinorVersion,
   })
-
-  useEffect(() => {
-    dispatch(cacheActions.fetchVersion({ network }))
-    // dispatch(cacheActions.clearCode())
-  }, [])
-  useEffect(() => {
-    if (needCodeUpdate || clientVersion !== config.version) {
-      dispatch(cacheActions.updateClientVersion(config.version))
-      dispatch(cacheActions.fetchCode({ network }))
-    }
-  }, [needCodeUpdate, clientVersion])
 
   useEffect(() => {
     if (!code || !name || !effectiveTime) {
