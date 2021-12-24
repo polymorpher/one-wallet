@@ -17,8 +17,7 @@ import { matchPath, useHistory, useLocation, useRouteMatch } from 'react-router'
 import Paths from '../constants/paths'
 import MetaMaskAdd from '../../assets/metamask-add.png'
 import MetaMaskSwitch from '../../assets/metamask-switch.png'
-import walletActions from '../state/modules/wallet/actions'
-const { Text, Link, Title, Paragraph } = Typography
+const { Text, Title } = Typography
 
 const Sections = {
   SushiEncoder: 'safe-sushi',
@@ -232,42 +231,45 @@ const Tools = () => {
 
   return (
     <>
-      <AnimatedSection show={section === Sections.Home} wide>
-        <Space direction='vertical' style={{ width: '100%' }}>
-          <Title level={3}>MetaMask</Title>
-          <Button type='primary' shape='round' onClick={() => openTool(Sections.MetamaskAdd)}>Switch to Harmony Network</Button>
-          <Divider />
-          <Title level={3}>Harmony Safe</Title>
-          <Space wrap>
-            <Button type='primary' shape='round' href='http://multisig.harmony.one' target='_blank'>Open Harmony MultiSig</Button>
-            <Button type='primary' shape='round' onClick={() => openTool(Sections.SushiEncoder)}>SushiSwap Transaction Encoder</Button>
+      {section === Sections.Home &&
+        <AnimatedSection wide>
+          <Space direction='vertical' style={{ width: '100%' }}>
+            <Title level={3}>MetaMask</Title>
+            <Button type='primary' shape='round' onClick={() => openTool(Sections.MetamaskAdd)}>Switch to Harmony Network</Button>
+            <Divider />
+            <Title level={3}>Harmony Safe</Title>
+            <Space wrap>
+              <Button type='primary' shape='round' href='http://multisig.harmony.one' target='_blank'>Open Harmony MultiSig</Button>
+              <Button type='primary' shape='round' onClick={() => openTool(Sections.SushiEncoder)}>SushiSwap Transaction Encoder</Button>
+            </Space>
+            {dev &&
+              <>
+                <Divider />
+                <Title level={3}>Developer Tools</Title>
+                <Button type='primary' shape='round' onClick={dumpState}>Dump Wallet States</Button>
+              </>}
           </Space>
-          {dev &&
-            <>
-              <Divider />
-              <Title level={3}>Developer Tools</Title>
-              <Button type='primary' shape='round' onClick={dumpState}>Dump Wallet States</Button>
-            </>}
-        </Space>
-      </AnimatedSection>
-      <AnimatedSection show={section === Sections.SushiEncoder} title='Harmony Safe | SushiSwap Encoder' wide>
-        <SushiSwapEncoder onClose={() => openTool()} />
-      </AnimatedSection>
-      <AnimatedSection show={section === Sections.MetamaskAdd} title='Switch to Harmony Network' wide>
-        <Space direction='vertical' style={{ width: '100%' }}>
-          <Text>This tool helps you quickly setup MetaMask for Harmony. Follow the instructions on MetaMask extension to complete the setup</Text>
-          <Divider />
-          <Text>You should see something like this. Verify the information and click "Approve" to proceed.</Text>
-          <Row justify='center'><Image src={MetaMaskAdd} style={{ objectFit: 'contain', maxHeight: 600 }} /></Row>
-          <Divider />
-          <Text>If you already had Harmony on MetaMask, it will help you switch to Harmony network instead.</Text>
-          <Row justify='center'><Image src={MetaMaskSwitch} style={{ objectFit: 'contain', maxHeight: 600 }} /></Row>
-          <TallRow justify='space-between'>
-            <Button type='text' danger onClick={() => openTool()}>Cancel</Button>
-            <Button type='primary' shape='round' onClick={addHarmonyNetwork}>Retry</Button>
-          </TallRow>
-        </Space>
-      </AnimatedSection>
+        </AnimatedSection>}
+      {section === Sections.SushiEncoder &&
+        <AnimatedSection title='Harmony Safe | SushiSwap Encoder' wide>
+          <SushiSwapEncoder onClose={() => openTool()} />
+        </AnimatedSection>}
+      {section === Sections.MetamaskAdd &&
+        <AnimatedSection title='Switch to Harmony Network' wide>
+          <Space direction='vertical' style={{ width: '100%' }}>
+            <Text>This tool helps you quickly setup MetaMask for Harmony. Follow the instructions on MetaMask extension to complete the setup</Text>
+            <Divider />
+            <Text>You should see something like this. Verify the information and click "Approve" to proceed.</Text>
+            <Row justify='center'><Image src={MetaMaskAdd} style={{ objectFit: 'contain', maxHeight: 600 }} /></Row>
+            <Divider />
+            <Text>If you already had Harmony on MetaMask, it will help you switch to Harmony network instead.</Text>
+            <Row justify='center'><Image src={MetaMaskSwitch} style={{ objectFit: 'contain', maxHeight: 600 }} /></Row>
+            <TallRow justify='space-between'>
+              <Button type='text' danger onClick={() => openTool()}>Cancel</Button>
+              <Button type='primary' shape='round' onClick={addHarmonyNetwork}>Retry</Button>
+            </TallRow>
+          </Space>
+        </AnimatedSection>}
     </>
   )
 }
