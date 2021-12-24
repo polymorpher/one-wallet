@@ -9,7 +9,6 @@ const { hexString, genOTP, hexStringToBytes, keccak, bytesEqual, sha256: fastSHA
 const buildMerkleTree = ({ leaves, height, width, progressObserver }) => {
   const layers = [leaves]
   let count = 0
-  const totalCount = width - 1
   for (let j = 1; j < height; j++) {
     const layer = new Uint8Array(width / (2 ** j) * 32)
     const lastLayer = layers[j - 1]
@@ -18,7 +17,7 @@ const buildMerkleTree = ({ leaves, height, width, progressObserver }) => {
       const h = fastSHA256(d)
       // console.log(`layer=${j}, index=${i}`)
       layer.set(h, i * 32)
-      progressObserver(count, totalCount)
+      progressObserver(count)
       count += 1
     }
     layers.push(layer)
@@ -47,7 +46,7 @@ const computeMerkleTree = async ({
     buildInnerTrees = false
   }
   reportInterval = reportInterval || Math.floor(n / 100)
-  const counter = Math.floor(effectiveTime / (otpInterval * 6)) * 6
+  const counter = buildInnerTrees ? Math.floor(effectiveTime / (otpInterval * 6)) * 6 : Math.floor(effectiveTime / otpInterval)
   const seed = processOtpSeed(otpSeed)
   const seed2 = otpSeed2 && processOtpSeed(otpSeed2)
   // console.log('Generating Wallet with parameters', { seed, seed2, height, otpInterval, effectiveTime, duration, randomness, hasher, maxOperationsPerInterval })

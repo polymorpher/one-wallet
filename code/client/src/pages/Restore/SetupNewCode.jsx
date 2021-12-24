@@ -10,7 +10,7 @@ import ONEUtil from '../../../../lib/util'
 import WalletConstants from '../../constants/wallet'
 import message from '../../message'
 import ONENames from '../../../../lib/names'
-import { AverageRow, TallRow } from '../../components/Grid'
+import { AverageRow } from '../../components/Grid'
 
 const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onComputeLocalParams, onProgressUpdate }) => {
   const { slotSize } = wallet || {}
@@ -19,7 +19,7 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
   const [secondOtpQrCodeData, setSecondOtpQrCodeData] = useState()
   const [validationOtp, setValidationOtp] = useState()
   const validationOtpRef = useRef()
-  const dev = useSelector(state => state.wallet.dev)
+  const dev = useSelector(state => state.global.dev)
   const [worker, setWorker] = useState()
   const [seed, setSeed] = useState(generateOtpSeed())
   const [seed2, setSeed2] = useState(generateOtpSeed())
@@ -94,10 +94,8 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
     const code = new DataView(expected.buffer).getUint32(0, false).toString()
     setValidationOtp('')
     if (code.padStart(6, '0') !== validationOtp.padStart(6, '0')) {
-      if (dev) {
-        console.log(code.padStart(6, '0'))
-      }
-      message.error('Code is incorrect. Please try again.')
+      message.error('Code is incorrect. Please try again and make sure your device\'s time is set correctly.')
+      message.debug(`Correct code is ${code.padStart(6, '0')}`)
       validationOtpRef?.current?.focusInput(0)
     } else if (doubleOtp && !showSecondCode) {
       setShowSecondCode(true)

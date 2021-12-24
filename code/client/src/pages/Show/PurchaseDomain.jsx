@@ -95,9 +95,9 @@ const { balance: PAYMENT_EXCESS_BUFFER } = util.toBalance(0.1)
 const PurchaseDomain = ({ address, onClose }) => {
   const dispatch = useDispatch()
   const balances = useSelector(state => state.balance || {})
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
   const oneBalance = balances[address]?.balance || 0
   const [subdomain, setSubdomain] = useState(prepareName(wallet.name))
   const [purchaseOnePrice, setPurchaseOnePrice] = useState({ value: '', formatted: '' })

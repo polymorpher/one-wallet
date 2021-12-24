@@ -4,6 +4,7 @@ import { useHistory, useRouteMatch, Redirect, useLocation, matchPath } from 'rea
 import Paths from '../constants/paths'
 import WalletConstants from '../constants/wallet'
 import walletActions from '../state/modules/wallet/actions'
+import { globalActions } from '../state/modules/global'
 import { balanceActions } from '../state/modules/balance'
 import util from '../util'
 import ONEConstants from '../../../lib/constants'
@@ -54,15 +55,15 @@ const Show = () => {
   const location = useLocation()
   const dispatch = useDispatch()
 
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const match = useRouteMatch(Paths.show)
   const { address: routeAddress, action } = match ? match.params : {}
   const oneAddress = util.safeOneAddress(routeAddress)
   const address = util.safeNormalizedAddress(routeAddress)
-  const selectedAddress = useSelector(state => state.wallet.selected)
+  const selectedAddress = useSelector(state => state.global.selectedWallet)
   const wallet = wallets[address] || {}
   const [section, setSection] = useState(action)
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
   const [activeTab, setActiveTab] = useState('coins')
   const { expert } = wallet
   const dev = useSelector(state => state.global.dev)
@@ -72,7 +73,7 @@ const Show = () => {
       return history.push(Paths.wallets)
     }
     if (address && (address !== selectedAddress)) {
-      dispatch(walletActions.selectWallet(address))
+      dispatch(globalActions.selectWallet(address))
     }
     const fetch = () => dispatch(balanceActions.fetchBalance({ address }))
     fetch()

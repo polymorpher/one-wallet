@@ -1,13 +1,12 @@
 import { useLocation, useRouteMatch } from 'react-router'
 import Paths from '../constants/paths'
-import util from '../util'
 import config from '../config'
 import React, { useEffect } from 'react'
 import querystring from 'query-string'
 import ConnectWallet from './Connect'
 import RequestPayment from './RequestPayment'
 import { useDispatch } from 'react-redux'
-import walletActions from '../state/modules/wallet/actions'
+import { globalActions } from '../state/modules/global'
 import RequestCall from './RequestCall'
 import AnimatedSection from '../components/AnimatedSection'
 import RequestSignature from './RequestSignature'
@@ -34,7 +33,7 @@ const WalletAuth = () => {
         message.error(`App requested invalid network: ${network}`)
       } else {
         message.success(`Switched to: ${network} (per request from ${caller})`, 10)
-        dispatch(walletActions.setNetwork(network))
+        dispatch(globalActions.setNetwork(network))
       }
     }
   }, [network])

@@ -29,7 +29,7 @@ const CheckForwardState = ({ address, onClose }) => {
   const { isMobile } = useWindowDimensions()
   const history = useHistory()
   const dispatch = useDispatch()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const [skip, setSkip] = useState(false)
   const [isPostRecovery, setIsPostRecovery] = useState(false)

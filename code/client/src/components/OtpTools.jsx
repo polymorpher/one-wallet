@@ -22,7 +22,8 @@ export const parseOAuthOTP = (url) => {
       message.error('Invalid issuer of the recovery QR code. Expecting `1wallet` or `Harmony`')
       return null
     }
-    return { name: decodeURIComponent(m[3]), secret }
+    // return { name: decodeURIComponent(m[3]), secret }
+    return { name: decodeURIComponent(m[3]), secret: ONEUtil.processOtpSeed(secret) }
   } catch (ex) {
     message.error('Unable to parse URL contained in QR code')
     console.error(ex)
@@ -41,14 +42,17 @@ export const parseMigrationPayload = url => {
   }
   let secret2
   if (filteredParams.length === 2) {
-    const names = filteredParams.map(e => e.name.split('-')[0].trim()).map(e => e.split('(')[0].trim())
+    const names = filteredParams.map(e => e.name.split(' -')[0].trim()).map(e => e.split('(')[0].trim())
     if (names[0] !== names[1]) {
       message.error('You selected two 1wallets with different names. If you want to select two entries belonging to the same wallet, make sure they have the same name and the second one has "- 2nd" in the end')
       return undefined
     }
-    secret2 = filteredParams[1]?.secret
+    secret2 = new Uint8Array(filteredParams[1]?.secret)
+    // secret2 = ONEUtil.base32Encode(filteredParams[1]?.secret)
   }
-  const secret = filteredParams[0]?.secret
+  const secret = new Uint8Array(filteredParams[0]?.secret)
+  // const secret = ONEUtil.base32Encode(filteredParams[0]?.secret)
+  // console.log(secret.constructor.name)
   const name = filteredParams[0]?.name
   return { secret, secret2, name }
 }

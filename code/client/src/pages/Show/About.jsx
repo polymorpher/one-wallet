@@ -18,7 +18,7 @@ const About = ({ address }) => {
   const dispatch = useDispatch()
   const history = useHistory()
   const { isMobile } = useWindowDimensions()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const dev = useSelector(state => state.global.dev)
   const wallet = wallets[address] || {}
   const backlinks = wallet.backlinks || []

@@ -67,8 +67,8 @@ const Create = ({ expertMode, showRecovery }) => {
   const { isMobile, os } = useWindowDimensions()
   const dispatch = useDispatch()
   const history = useHistory()
-  const network = useSelector(state => state.wallet.network)
-  const wallets = useSelector(state => state.wallet.wallets)
+  const network = useSelector(state => state.global.network)
+  const wallets = useSelector(state => state.wallet)
 
   const [effectiveTime, setEffectiveTime] = useState()
 
@@ -135,7 +135,7 @@ const Create = ({ expertMode, showRecovery }) => {
     (async function () {
       const deployerAddress = config.networks[network].deploy.factory
       const address = ONEUtil.predictAddress({ seed, deployerAddress, code: ONEUtil.hexStringToBytes(code) })
-      console.log({ address, seed, deployerAddress, code })
+      message.debug(`Predicting wallet address ${address} using parameters: ${JSON.stringify({ seed: ONEUtil.base32Encode(seed), deployerAddress })}; code keccak hash=${ONEUtil.hexView(ONEUtil.keccak(code))}`)
       const oneAddress = util.safeOneAddress(address)
       const otpDisplayName = `${ONENames.nameWithTime(name, effectiveTime)} [${oneAddress}]`
       const otpDisplayName2 = `${ONENames.nameWithTime(getSecondCodeName(name), effectiveTime)} [${oneAddress}]`
@@ -227,6 +227,7 @@ const Create = ({ expertMode, showRecovery }) => {
     setOtp('')
     if (code.padStart(6, '0') !== otp.padStart(6, '0')) {
       message.error('Code is incorrect. Please try again.')
+      message.debug(`Correct code is ${code.padStart(6, '0')}`)
       otpRef?.current?.focusInput(0)
     } else if (doubleOtp && !settingUpSecondOtp) {
       setSection(sectionViews.setupSecondOtp)

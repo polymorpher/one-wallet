@@ -3,7 +3,7 @@ import message from '../message'
 import storage from '../storage'
 import { Button, Modal, Typography } from 'antd'
 import { ExportOutlined, LoadingOutlined } from '@ant-design/icons'
-import { LocalExportMessage } from '../proto/localExportMessage'
+import { SimpleWalletExport, InnerTree } from '../proto/wallet'
 import util from '../util'
 const { Text, Link, Paragraph } = Typography
 
@@ -15,11 +15,44 @@ const LocalExport = ({ wallet }) => {
     try {
       setLoading(true)
       const oneAddress = util.safeOneAddress(wallet.address)
-      const layers = await storage.getItem(wallet.root)
-      const filename = `${wallet.name.toLowerCase().split(' ').join('-')}_[${oneAddress}].1wallet`
-      const msg = new LocalExportMessage({ wallet: JSON.stringify(wallet), layers: layers })
-      const buffer = LocalExportMessage.encode(msg).finish()
-      const blob = new Blob([buffer])
+      let layers
+      const { localIdentificationKey, identificationKeys, oldInfos } = wallet || {}
+      if (localIdentificationKey && identificationKeys) {
+        const idKeyIndex = identificationKeys.findIndex(e => e === localIdentificationKey)
+        if (idKeyIndex === -1) {
+          message.debug('Cannot identify tree to use because of identification key mismatch. Falling back to brute force search')
+          layers = await storage.getItem(wallet.root)
+        } else {
+          message.debug(`Identified tree via localIdentificationKey=${localIdentificationKey}`)
+          if (idKeyIndex === identificationKeys.length - 1) {
+            layers = await storage.getItem(wallet.root)
+          } else {
+            const info = oldInfos[idKeyIndex]
+            layers = await storage.getItem(info.root)
+          }
+        }
+      } else {
+        layers = await storage.getItem(wallet.root)
+      }
+
+      const filename = `${wallet.name.toLowerCase().split(' ').join('-')}-${oneAddress}.1wallet`
+
+      const innerTrees = await Promise.all(wallet.innerRoots.map(r => storage.getItem(r)))
+      if (innerTrees.filter(e => e).length !== innerTrees.length) {
+        message.error('Storage is corrupted. Please restore the wallet using some other way')
+        return
+      }
+      const innerTreePB = innerTrees.map(layers => InnerTree.create({ layers }))
+      const exportPB = SimpleWalletExport.create({
+        name: wallet.name,
+        address: wallet.address,
+        expert: wallet.expert,
+        layers,
+        innerTrees: innerTreePB,
+        state: JSON.stringify(wallet)
+      })
+      const bytes = SimpleWalletExport.encode(exportPB).finish()
+      const blob = new Blob([bytes])
 
       element = document.createElement('a')
       element.download = filename

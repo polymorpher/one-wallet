@@ -5,7 +5,7 @@ export { default as walletActions } from './actions'
 
 export const persistConfig = {
   key: 'wallet',
-  blacklist: ['layers']
+  blacklist: []
 }
 
 export default reducer

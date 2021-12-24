@@ -4,7 +4,7 @@ import * as Sentry from '@sentry/browser'
 import { Heading, Hint, Text } from '../../components/Text'
 import ScanGASteps from '../../components/ScanGASteps'
 import QrCodeScanner from '../../components/QrCodeScanner'
-import { Button, Progress, Space } from 'antd'
+import { Button, Space } from 'antd'
 import AddressInput from '../../components/AddressInput'
 import WalletCreateProgress from '../../components/WalletCreateProgress'
 import React, { useEffect, useState, useRef } from 'react'
@@ -38,9 +38,9 @@ const RestoreByScan = ({ isActive, onComplete, onCancel }) => {
   const [progress, setProgress] = useState(0)
   const [progressStage, setProgressStage] = useState(0)
   const [walletInfo, setWalletInfo] = useState()
-  const network = useSelector(state => state.wallet.network)
-  const wallets = useSelector(state => state.wallet.wallets)
-  const control = useRef({ lastScan: 0 }).current
+  const network = useSelector(state => state.global.network)
+  const wallets = useSelector(state => state.wallet)
+  const control = useRef({ lastScan: 0, restoring: false }).current
 
   useEffect(() => {
     const f = async () => {
@@ -105,7 +105,7 @@ const RestoreByScan = ({ isActive, onComplete, onCancel }) => {
         if (!parsed) {
           return
         }
-        // message.debug(`Scanned: ${JSON.stringify(parsed)}`)
+        message.debug(`Scanned: ${JSON.stringify(parsed)}`)
         const { secret2, secret, name: rawName } = parsed
         const bundle = parseAuthAccountName(rawName)
         if (!bundle) {
@@ -131,8 +131,7 @@ const RestoreByScan = ({ isActive, onComplete, onCancel }) => {
 
   const onSave = async ({ layers, root, hseed, innerTrees, doubleOtp, securityParameters, oldInfos, identificationKeys, localIdentificationKey }) => {
     message.info('Saving your wallet...')
-    await storage.setItem(root, layers)
-    const promises = []
+    const promises = [storage.setItem(root, layers)]
     for (const { layers: innerLayers, root: innerRoot } of innerTrees) {
       promises.push(storage.setItem(ONEUtil.hexView(innerRoot), innerLayers))
     }
@@ -159,11 +158,15 @@ const RestoreByScan = ({ isActive, onComplete, onCancel }) => {
     setTimeout(() => history.push(Paths.showAddress(address)), 2000)
   }
   const onRestore = (ignoreDoubleOtp) => {
+    if (control.restoring) {
+      return
+    }
     if (!walletInfo?.root) {
       console.error('Root is not set. Abort.')
       return
     }
     try {
+      control.restoring = true
       const expectedIdKey = ONEUtil.getIdentificationKey(ONEUtil.processOtpSeed(secret), true)
       const allRoots = [...oldCores.map(e => ONEUtil.hexStringToBytes(e.root)), ONEUtil.hexToBytes(walletInfo.root)]
       let idKeyIndex = -1
@@ -199,7 +202,7 @@ const RestoreByScan = ({ isActive, onComplete, onCancel }) => {
         }
         if (status === 'done') {
           const { hseed, root: computedRoot, layers, doubleOtp, innerTrees } = result
-
+          // console.log(layers)
           const matchedRoot = allRoots.find(e => ONEUtil.bytesEqual(e, computedRoot))
           console.log({ allRoots, matchedRoot })
           if (!matchedRoot) {
@@ -216,7 +219,7 @@ const RestoreByScan = ({ isActive, onComplete, onCancel }) => {
           }).catch(ex => console.error(ex))
         }
       }
-
+      // let secretProcessed =  secret
       console.log('[Restore] Posting to worker')
       worker && worker.postMessage({
         seed: secret,
@@ -233,6 +236,8 @@ const RestoreByScan = ({ isActive, onComplete, onCancel }) => {
       console.error(ex)
       message.error(`Unexpected error during restoration: ${ex.toString()}`)
       onCancel && onCancel()
+    } finally {
+      control.restoring = false
     }
   }
 
