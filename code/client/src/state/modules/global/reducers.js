@@ -16,6 +16,13 @@ export const initialState = {
 
 const reducer = handleActions(
   {
+    [globalActions.migrate]: (state, action) => ({
+      ...state,
+      network: state.network || action?.payload?.network || config.defaults.network,
+      relayer: state.relayer || action?.payload?.relayer || config.defaults.relayer,
+      relayerSecret: state.relayerSecret || action?.payload?.relayerSecret || config.defaults.relayerSecret,
+    }),
+
     [globalActions.setDev]: (state, action) => ({
       ...state,
       dev: action.payload

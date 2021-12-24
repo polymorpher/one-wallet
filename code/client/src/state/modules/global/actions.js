@@ -17,6 +17,7 @@ const fetchPriceSuccess = createAction('FETCH_PRICE_SUCCESS')
 const setRelayer = createAction('SET_RELAYER')
 const setRelayerSecret = createAction('SET_RELAYER_SECRET')
 const setNetwork = createAction('SET_NETWORK')
+const migrate = createAction('GLOBAL_AUTO_MIGRATE')
 
 export default {
   setDev,
@@ -33,4 +34,6 @@ export default {
   setRelayer,
   setRelayerSecret,
   setNetwork,
+
+  migrate
 }
