@@ -9,10 +9,12 @@ export const initialState = {
 const reducer = handleActions(
   {
     // Auto-migrate for old structure: `{wallets: {address: wallet}}`
-    [walletActions.autoMigrateWallets]: (state, action) => ({
-      ...state.wallets,
-      ...omit(state, 'wallets')
-    }),
+    [walletActions.autoMigrateWallets]: (state) => {
+      const currentEntries = Object.entries(state)
+      const oldWalletEntries = Object.entries(state.wallets || {})
+      const validEntries = oldWalletEntries.concat(currentEntries).filter(([_, wallet]) => wallet.root && wallet.address)
+      return Object.fromEntries(validEntries)
+    },
 
     [walletActions.fetchWalletSuccess]: (state, action) => ({
       ...state,
