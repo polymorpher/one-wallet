@@ -92,6 +92,7 @@ const Routes = () => {
     }, config.priceRefreshInterval)
     persistStore(store.default, null, () => {
       dispatch(walletActions.autoMigrateWallets())
+      dispatch(globalActions.migrate())
       setRehydrated(true)
     })
   }, [dispatch])
