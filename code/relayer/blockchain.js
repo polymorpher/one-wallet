@@ -10,7 +10,7 @@ const { knownAddresses } = require('../extensions/loader')
 const HDWalletProvider = require('@truffle/hdwallet-provider')
 const fs = require('fs/promises')
 const path = require('path')
-const { pick } = require('lodash')
+const pick = require('lodash/fp/pick')
 const { backOff } = require('exponential-backoff')
 
 const networks = []
@@ -193,7 +193,7 @@ const init = () => {
   })
   console.log('init complete:', {
     networks,
-    providers: JSON.stringify(Object.keys(providers).map(k => pick(providers[k], ['gasLimit', 'gasPrice', 'addresses']))),
+    providers: JSON.stringify(Object.keys(providers).map(k => pick(['gasLimit', 'gasPrice', 'addresses'], providers[k]))),
     contracts: Object.keys(contracts),
     contractsV5: Object.keys(contractsV5),
     contractsV6: Object.keys(contractsV6),

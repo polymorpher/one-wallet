@@ -1,6 +1,7 @@
 import { Card, Image, Row, Space, Typography, Col, Button, Carousel, Spin } from 'antd'
 import message from '../message'
-import { unionWith, differenceBy } from 'lodash'
+import unionWith from 'lodash/fp/unionWith'
+import differenceBy from 'lodash/fp/differenceBy'
 import walletActions from '../state/modules/wallet/actions'
 import { balanceActions } from '../state/modules/balance'
 import React, { useState, useEffect } from 'react'
@@ -254,7 +255,7 @@ export const useNFTs = ({ address, withDefault }) => {
       }
       tts = tts.filter(util.isNFT)
       tts = withKeys(tts)
-      tts = unionWith(tts, trackedTokens, (a, b) => a.key === b.key)
+      tts = unionWith((a, b) => a.key === b.key, tts, trackedTokens)
       await Promise.all(tts.map(async tt => {
         // if (tt.name && tt.symbol && tt.uri) { return }
         try {
@@ -334,7 +335,7 @@ export const NFTGrid = ({ address, onTrackNew }) => {
   }
 
   useEffect(() => {
-    const newTokens = differenceBy(currentTrackedTokens, trackedTokens, e => e.key)
+    const newTokens = differenceBy(e => e.key, currentTrackedTokens, trackedTokens)
     dispatch(walletActions.trackTokens({ address, tokens: newTokens }))
   }, [currentTrackedTokens])
 

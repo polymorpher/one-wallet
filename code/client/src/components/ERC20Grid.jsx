@@ -1,5 +1,8 @@
 import { Card, Image, Row, Space, Typography, Col, Divider, Button } from 'antd'
-import { unionWith, isNull, isUndefined, uniqBy } from 'lodash'
+import unionWith from 'lodash/fp/unionWith'
+import isNull from 'lodash/fp/isNull'
+import isUndefined from 'lodash/fp/isUndefined'
+import uniqBy from 'lodash/fp/uniqBy'
 import walletActions from '../state/modules/wallet/actions'
 import { balanceActions } from '../state/modules/balance'
 
@@ -148,7 +151,7 @@ export const ERC20Grid = ({ address }) => {
   const { formatted } = util.computeBalance(balance)
   const walletOutdated = !util.canWalletSupportToken(wallet)
   const defaultTrackedTokens = withKeys(DefaultTrackedERC20(network))
-  const initTrackedTokenState = uniqBy([...defaultTrackedTokens, ...(trackedTokens || [])].filter(e => untrackedTokenKeys.find(k => k === e.key) === undefined), t => t.key)
+  const initTrackedTokenState = uniqBy(t => t.key, [...defaultTrackedTokens, ...(trackedTokens || [])].filter(e => untrackedTokenKeys.find(k => k === e.key) === undefined))
   const [currentTrackedTokens, setCurrentTrackedTokens] = useState(initTrackedTokenState)
   const [disabled, setDisabled] = useState(true)
   const selected = (selectedToken && selectedToken.tokenType === ONEConstants.TokenType.ERC20) || HarmonyONE
@@ -179,7 +182,7 @@ export const ERC20Grid = ({ address }) => {
       tts = tts.filter(e => e.tokenType === ONEConstants.TokenType.ERC20)
       // console.log('tts filtered', tts)
       tts.forEach(tt => { tt.key = ONEUtil.hexView(ONE.computeTokenKey(tt).hash) })
-      tts = unionWith(tts, defaultTrackedTokens, trackedTokens, (a, b) => a.key === b.key).filter(e => untrackedTokenKeys.find(k => k === e.key) === undefined)
+      tts = unionWith((a, b) => a.key === b.key, tts, defaultTrackedTokens, trackedTokens).filter(e => untrackedTokenKeys.find(k => k === e.key) === undefined)
 
       await Promise.all(tts.map(async tt => {
         // if (tt.name && tt.symbol) {

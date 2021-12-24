@@ -12,7 +12,7 @@ const uts46 = require('idna-uts46')
 const abi = require('web3-eth-abi')
 const web3utils = require('web3-utils')
 const elliptic = require('elliptic')
-const { range } = require('lodash')
+const range = require('lodash/fp/range')
 
 const utils = {
   hexView: (bytes) => {

@@ -27,7 +27,7 @@ import { Chaining } from '../../api/flow'
 import walletActions from '../../state/modules/wallet/actions'
 import { balanceActions } from '../../state/modules/balance'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
-import { uniqBy } from 'lodash'
+import uniqBy from 'lodash/fp/uniqBy'
 import styled from 'styled-components'
 import ONENames from '../../../../lib/names'
 const { Text, Title } = Typography
@@ -230,7 +230,7 @@ const Swap = ({ address }) => {
         dispatch(balanceActions.fetchTokenBalance({ address, tokenType, tokenId, contractAddress, key }))
       }
     })
-    const filteredTrackedTokens = uniqBy(trackedTokens, e => e.address)
+    const filteredTrackedTokens = uniqBy(e => e.address, trackedTokens)
 
     const updateFromTokens = async () => {
       const trackedTokensUpdated = await api.tokens.batchGetMetadata(filteredTrackedTokens)

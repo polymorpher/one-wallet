@@ -1,6 +1,6 @@
 import { handleActions } from 'redux-actions'
 import balanceActions from './actions'
-import { omit } from 'lodash'
+import omit from 'lodash/fp/omit'
 
 // address -> {balance, tokenBalances}
 export const initialState = {
@@ -28,7 +28,7 @@ const reducer = handleActions(
     }),
 
     [balanceActions.deleteBalance]: (state, action) => ({
-      ...omit(state, [action.payload])
+      ...omit([action.payload], state)
     }),
   },
   {

@@ -3,7 +3,7 @@ import { globalActions } from '../state/modules/global'
 import storage from './index'
 import message from '../message'
 import Paths from '../constants/paths'
-import { flatten } from 'lodash'
+import flatten from 'lodash/fp/flatten'
 
 export const deleteRoot = async ({ fromAddress, root, wallets, name, history, silent }) => {
   try {
