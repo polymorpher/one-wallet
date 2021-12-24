@@ -163,23 +163,6 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
 
       const unlabelledWalletAddress = wallets.filter(w => existingKnownAddresses.find(a => !a.label && !a.domain?.name && a.address === w.address && (!w.temp || allowTemp)))
 
-      const domainWalletAddresses = await Promise.all(knownAddressesWithoutDomain.map(async (knownAddress) => {
-        const domainName = await api.blockchain.domain.reverseLookup({ address: knownAddress.address })
-        const nowInMillis = new Date().valueOf()
-
-        if (!isEmpty(domainName)) {
-          return {
-            ...knownAddress,
-            domain: {
-              ...knownAddress.domain,
-              name: domainName,
-              lookupTime: nowInMillis
-            }
-          }
-        }
-        return null
-      }))
-
       batch(() => {
         // Init the known address entries for existing wallets.
         walletsNotInKnownAddresses.forEach((wallet) => {
@@ -198,7 +181,27 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
             label: w.name,
           }))
         })
+      })
 
+      // Batch these separately since these promise may take a while to resolve.
+      const domainWalletAddresses = await Promise.all(knownAddressesWithoutDomain.map(async (knownAddress) => {
+        const domainName = await api.blockchain.domain.reverseLookup({ address: knownAddress.address })
+        const nowInMillis = new Date().valueOf()
+
+        if (!isEmpty(domainName)) {
+          return {
+            ...knownAddress,
+            domain: {
+              ...knownAddress.domain,
+              name: domainName,
+              lookupTime: nowInMillis
+            }
+          }
+        }
+        return null
+      }))
+
+      batch(() => {
         domainWalletAddresses.forEach(dwa => {
           if (dwa) {
             dispatch(globalActions.setKnownAddress({
