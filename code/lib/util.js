@@ -76,6 +76,11 @@ const utils = {
 
   // assume Buffer is poly-filled or loaded from https://github.com/feross/buffer
   // accepts string as well
+  /**
+   *
+   * @param {string | Buffer} bytes
+   * @returns {Uint8Array}
+   */
   keccak: (bytes) => {
     const k = createKeccakHash('keccak256')
     // assume Buffer is poly-filled or loaded from https://github.com/feross/buffer
@@ -407,6 +412,8 @@ const utils = {
       slotSize: new BN(maxOperationsPerInterval).toNumber(),
     }
   },
+
+  // get
 
   web3utils
 }

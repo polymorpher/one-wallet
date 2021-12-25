@@ -1241,7 +1241,7 @@
         4229
       ],
       "SpendingManager": [
-        8182
+        8199
       ]
     },
     "id": 4230,
@@ -1278,7 +1278,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 4230,
-        "sourceUnit": 8183,
+        "sourceUnit": 8200,
         "src": "86:31:19",
         "symbolAliases": [],
         "unitAlias": ""
@@ -1840,7 +1840,7 @@
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_struct$_SpendingState_$7854_storage_ptr",
+                  "typeIdentifier": "t_struct$_SpendingState_$7871_storage_ptr",
                   "typeString": "struct SpendingManager.SpendingState"
                 },
                 "typeName": {
@@ -1850,13 +1850,13 @@
                     "id": 3836,
                     "name": "SpendingManager.SpendingState",
                     "nodeType": "IdentifierPath",
-                    "referencedDeclaration": 7854,
+                    "referencedDeclaration": 7871,
                     "src": "1683:29:19"
                   },
-                  "referencedDeclaration": 7854,
+                  "referencedDeclaration": 7871,
                   "src": "1683:29:19",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_struct$_SpendingState_$7854_storage_ptr",
+                    "typeIdentifier": "t_struct$_SpendingState_$7871_storage_ptr",
                     "typeString": "struct SpendingManager.SpendingState"
                   }
                 },
@@ -4063,7 +4063,7 @@
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_struct$_SpendingState_$7854_memory_ptr",
+                    "typeIdentifier": "t_struct$_SpendingState_$7871_memory_ptr",
                     "typeString": "struct SpendingManager.SpendingState"
                   },
                   "typeName": {
@@ -4073,13 +4073,13 @@
                       "id": 4030,
                       "name": "SpendingManager.SpendingState",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 7854,
+                      "referencedDeclaration": 7871,
                       "src": "5800:29:19"
                     },
-                    "referencedDeclaration": 7854,
+                    "referencedDeclaration": 7871,
                     "src": "5800:29:19",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_struct$_SpendingState_$7854_storage_ptr",
+                      "typeIdentifier": "t_struct$_SpendingState_$7871_storage_ptr",
                       "typeString": "struct SpendingManager.SpendingState"
                     }
                   },
@@ -6382,7 +6382,7 @@
         4229
       ],
       "SpendingManager": [
-        8182
+        8199
       ]
     },
     "id": 4230,
@@ -6419,7 +6419,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 4230,
-        "sourceUnit": 8183,
+        "sourceUnit": 8200,
         "src": "86:31:19",
         "symbolAliases": [],
         "unitAlias": ""
@@ -6981,7 +6981,7 @@
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_struct$_SpendingState_$7854_storage_ptr",
+                  "typeIdentifier": "t_struct$_SpendingState_$7871_storage_ptr",
                   "typeString": "struct SpendingManager.SpendingState"
                 },
                 "typeName": {
@@ -6991,13 +6991,13 @@
                     "id": 3836,
                     "name": "SpendingManager.SpendingState",
                     "nodeType": "IdentifierPath",
-                    "referencedDeclaration": 7854,
+                    "referencedDeclaration": 7871,
                     "src": "1683:29:19"
                   },
-                  "referencedDeclaration": 7854,
+                  "referencedDeclaration": 7871,
                   "src": "1683:29:19",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_struct$_SpendingState_$7854_storage_ptr",
+                    "typeIdentifier": "t_struct$_SpendingState_$7871_storage_ptr",
                     "typeString": "struct SpendingManager.SpendingState"
                   }
                 },
@@ -9204,7 +9204,7 @@
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_struct$_SpendingState_$7854_memory_ptr",
+                    "typeIdentifier": "t_struct$_SpendingState_$7871_memory_ptr",
                     "typeString": "struct SpendingManager.SpendingState"
                   },
                   "typeName": {
@@ -9214,13 +9214,13 @@
                       "id": 4030,
                       "name": "SpendingManager.SpendingState",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 7854,
+                      "referencedDeclaration": 7871,
                       "src": "5800:29:19"
                     },
-                    "referencedDeclaration": 7854,
+                    "referencedDeclaration": 7871,
                     "src": "5800:29:19",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_struct$_SpendingState_$7854_storage_ptr",
+                      "typeIdentifier": "t_struct$_SpendingState_$7871_storage_ptr",
                       "typeString": "struct SpendingManager.SpendingState"
                     }
                   },
@@ -11519,7 +11519,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.2",
-  "updatedAt": "2021-12-21T09:09:50.788Z",
+  "updatedAt": "2021-12-24T11:48:14.850Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

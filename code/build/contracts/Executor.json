@@ -3201,7 +3201,7 @@
                 }
               ]
             },
-            "name": "abi_decode_tuple_t_struct$_OperationParams_$3832_memory_ptrt_struct$_TokenTrackerState_$8554_storage_ptrt_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptrt_struct$_SignatureTracker_$6976_storage_ptrt_struct$_SpendingState_$7854_storage_ptr",
+            "name": "abi_decode_tuple_t_struct$_OperationParams_$3832_memory_ptrt_struct$_TokenTrackerState_$8571_storage_ptrt_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptrt_struct$_SignatureTracker_$6993_storage_ptrt_struct$_SpendingState_$7871_storage_ptr",
             "nodeType": "YulFunctionDefinition",
             "parameters": [
               {
@@ -7882,7 +7882,7 @@
                 }
               ]
             },
-            "name": "abi_encode_tuple_t_struct$_SignatureTracker_$6976_storage_ptr_t_address_t_uint256_t_address_payable_t_uint256__to_t_uint256_t_address_t_uint256_t_address_payable_t_uint256__fromStack_library_reversed",
+            "name": "abi_encode_tuple_t_struct$_SignatureTracker_$6993_storage_ptr_t_address_t_uint256_t_address_payable_t_uint256__to_t_uint256_t_address_t_uint256_t_address_payable_t_uint256__fromStack_library_reversed",
             "nodeType": "YulFunctionDefinition",
             "parameters": [
               {
@@ -8041,7 +8041,7 @@
                 }
               ]
             },
-            "name": "abi_encode_tuple_t_struct$_SpendingState_$7854_storage_ptr_t_uint256__to_t_uint256_t_uint256__fromStack_library_reversed",
+            "name": "abi_encode_tuple_t_struct$_SpendingState_$7871_storage_ptr_t_uint256__to_t_uint256_t_uint256__fromStack_library_reversed",
             "nodeType": "YulFunctionDefinition",
             "parameters": [
               {
@@ -8297,7 +8297,7 @@
                 }
               ]
             },
-            "name": "abi_encode_tuple_t_struct$_TokenTrackerState_$8554_storage_ptr_t_address_payable_t_bytes_memory_ptr__to_t_uint256_t_address_t_bytes_memory_ptr__fromStack_library_reversed",
+            "name": "abi_encode_tuple_t_struct$_TokenTrackerState_$8571_storage_ptr_t_address_payable_t_bytes_memory_ptr__to_t_uint256_t_address_t_bytes_memory_ptr__fromStack_library_reversed",
             "nodeType": "YulFunctionDefinition",
             "parameters": [
               {
@@ -8462,7 +8462,7 @@
                 }
               ]
             },
-            "name": "abi_encode_tuple_t_struct$_TokenTrackerState_$8554_storage_ptr_t_bytes_memory_ptr__to_t_uint256_t_bytes_memory_ptr__fromStack_library_reversed",
+            "name": "abi_encode_tuple_t_struct$_TokenTrackerState_$8571_storage_ptr_t_bytes_memory_ptr__to_t_uint256_t_bytes_memory_ptr__fromStack_library_reversed",
             "nodeType": "YulFunctionDefinition",
             "parameters": [
               {
@@ -8743,7 +8743,7 @@
                 }
               ]
             },
-            "name": "abi_encode_tuple_t_struct$_TokenTrackerState_$8554_storage_ptr_t_enum$_TokenType_$2823_t_address_t_uint256__to_t_uint256_t_uint8_t_address_t_uint256__fromStack_library_reversed",
+            "name": "abi_encode_tuple_t_struct$_TokenTrackerState_$8571_storage_ptr_t_enum$_TokenType_$2823_t_address_t_uint256__to_t_uint256_t_uint8_t_address_t_uint256__fromStack_library_reversed",
             "nodeType": "YulFunctionDefinition",
             "parameters": [
               {
@@ -9216,7 +9216,7 @@
                 }
               ]
             },
-            "name": "abi_encode_tuple_t_struct$_TokenTrackerState_$8554_storage_ptr_t_enum$_TokenType_$2823_t_address_t_uint256_t_address_payable_t_uint256_t_bytes_memory_ptr__to_t_uint256_t_uint8_t_address_t_uint256_t_address_t_uint256_t_bytes_memory_ptr__fromStack_library_reversed",
+            "name": "abi_encode_tuple_t_struct$_TokenTrackerState_$8571_storage_ptr_t_enum$_TokenType_$2823_t_address_t_uint256_t_address_payable_t_uint256_t_bytes_memory_ptr__to_t_uint256_t_uint8_t_address_t_uint256_t_address_t_uint256_t_bytes_memory_ptr__fromStack_library_reversed",
             "nodeType": "YulFunctionDefinition",
             "parameters": [
               {
@@ -11063,7 +11063,7 @@
           }
         ]
       },
-      "contents": "{\n    { }\n    function abi_decode_address(offset) -> value\n    {\n        value := calldataload(offset)\n        validator_revert_address(value)\n    }\n    function abi_decode_bytes(offset, end) -> array\n    {\n        if iszero(slt(add(offset, 0x1f), end)) { revert(array, array) }\n        let _1 := calldataload(offset)\n        if gt(_1, 0xffffffffffffffff) { panic_error_0x41() }\n        let memPtr := mload(64)\n        finalize_allocation(memPtr, add(and(add(_1, 0x1f), not(31)), 0x20))\n        mstore(memPtr, _1)\n        if gt(add(add(offset, _1), 0x20), end) { revert(array, array) }\n        calldatacopy(add(memPtr, 0x20), add(offset, 0x20), _1)\n        mstore(add(add(memPtr, _1), 0x20), array)\n        array := memPtr\n    }\n    function abi_decode_enum_OperationType(offset) -> value\n    {\n        value := calldataload(offset)\n        if iszero(lt(value, 26)) { revert(0, 0) }\n    }\n    function abi_decode_enum_TokenType(offset) -> value\n    {\n        value := calldataload(offset)\n        if iszero(lt(value, 4)) { revert(0, 0) }\n    }\n    function abi_decode_tuple_t_array$_t_address_$dyn_memory_ptr_fromMemory(headStart, dataEnd) -> value0\n    {\n        let _1 := 32\n        if slt(sub(dataEnd, headStart), _1) { revert(value0, value0) }\n        let offset := mload(headStart)\n        let _2 := 0xffffffffffffffff\n        if gt(offset, _2) { revert(value0, value0) }\n        let _3 := add(headStart, offset)\n        if iszero(slt(add(_3, 0x1f), dataEnd)) { revert(value0, value0) }\n        let _4 := mload(_3)\n        if gt(_4, _2) { panic_error_0x41() }\n        let _5 := shl(5, _4)\n        let memPtr := mload(64)\n        finalize_allocation(memPtr, add(_5, _1))\n        let dst := memPtr\n        mstore(memPtr, _4)\n        dst := add(memPtr, _1)\n        let src := add(_3, _1)\n        if gt(add(add(_3, _5), _1), dataEnd) { revert(value0, value0) }\n        let i := value0\n        for { } lt(i, _4) { i := add(i, 1) }\n        {\n            let value := mload(src)\n            validator_revert_address(value)\n            mstore(dst, value)\n            dst := add(dst, _1)\n            src := add(src, _1)\n        }\n        value0 := memPtr\n    }\n    function abi_decode_tuple_t_bool_fromMemory(headStart, dataEnd) -> value0\n    {\n        if slt(sub(dataEnd, headStart), 32) { revert(value0, value0) }\n        let value := mload(headStart)\n        if iszero(eq(value, iszero(iszero(value)))) { revert(value0, value0) }\n        value0 := value\n    }\n    function abi_decode_tuple_t_struct$_OperationParams_$3832_memory_ptrt_struct$_TokenTrackerState_$8554_storage_ptrt_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptrt_struct$_SignatureTracker_$6976_storage_ptrt_struct$_SpendingState_$7854_storage_ptr(headStart, dataEnd) -> value0, value1, value2, value3, value4\n    {\n        if slt(sub(dataEnd, headStart), 160) { revert(value4, value4) }\n        let offset := calldataload(headStart)\n        let _1 := 0xffffffffffffffff\n        if gt(offset, _1) { revert(value4, value4) }\n        let _2 := add(headStart, offset)\n        if slt(sub(dataEnd, _2), 0xe0) { revert(value4, value4) }\n        let value := allocate_memory()\n        mstore(value, abi_decode_enum_OperationType(_2))\n        mstore(add(value, 32), abi_decode_enum_TokenType(add(_2, 32)))\n        mstore(add(value, 64), abi_decode_address(add(_2, 64)))\n        mstore(add(value, 96), calldataload(add(_2, 96)))\n        mstore(add(value, 128), abi_decode_address(add(_2, 128)))\n        mstore(add(value, 160), calldataload(add(_2, 160)))\n        let offset_1 := calldataload(add(_2, 192))\n        if gt(offset_1, _1) { revert(value4, value4) }\n        mstore(add(value, 192), abi_decode_bytes(add(_2, offset_1), dataEnd))\n        value0 := value\n        value1 := calldataload(add(headStart, 32))\n        value2 := calldataload(add(headStart, 64))\n        value3 := calldataload(add(headStart, 96))\n        value4 := calldataload(add(headStart, 128))\n    }\n    function abi_encode_array_address_dyn(value, pos) -> end\n    {\n        let length := mload(value)\n        mstore(pos, length)\n        let _1 := 0x20\n        pos := add(pos, _1)\n        let srcPtr := add(value, _1)\n        let i := end\n        for { } lt(i, length) { i := add(i, 1) }\n        {\n            mstore(pos, and(mload(srcPtr), sub(shl(160, 1), 1)))\n            pos := add(pos, _1)\n            srcPtr := add(srcPtr, _1)\n        }\n        end := pos\n    }\n    function abi_encode_bytes(value, pos) -> end\n    {\n        let length := mload(value)\n        mstore(pos, length)\n        let i := end\n        for { } lt(i, length) { i := add(i, 0x20) }\n        {\n            let _1 := 0x20\n            mstore(add(add(pos, i), _1), mload(add(add(value, i), _1)))\n        }\n        if gt(i, length)\n        {\n            mstore(add(add(pos, length), 0x20), end)\n        }\n        end := add(add(pos, and(add(length, 31), not(31))), 0x20)\n    }\n    function abi_encode_enum_TokenType(value, pos)\n    {\n        if iszero(lt(value, 4))\n        {\n            mstore(0, shl(224, 0x4e487b71))\n            mstore(4, 0x21)\n            revert(0, 0x24)\n        }\n        mstore(pos, value)\n    }\n    function abi_encode_tuple_t_address_t_string_memory_ptr__to_t_address_t_string_memory_ptr__fromStack_library_reversed(headStart, value1, value0) -> tail\n    {\n        mstore(headStart, and(value0, sub(shl(160, 1), 1)))\n        mstore(add(headStart, 32), 64)\n        tail := abi_encode_bytes(value1, add(headStart, 64))\n    }\n    function abi_encode_tuple_t_array$_t_address_$dyn_memory_ptr_t_array$_t_address_$dyn_memory_ptr__to_t_array$_t_address_$dyn_memory_ptr_t_array$_t_address_$dyn_memory_ptr__fromStack_reversed(headStart, value1, value0) -> tail\n    {\n        mstore(headStart, 64)\n        let tail_1 := abi_encode_array_address_dyn(value0, add(headStart, 64))\n        mstore(add(headStart, 32), sub(tail_1, headStart))\n        tail := abi_encode_array_address_dyn(value1, tail_1)\n    }\n    function abi_encode_tuple_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_t_array$_t_address_$dyn_memory_ptr__to_t_uint256_t_array$_t_address_$dyn_memory_ptr__fromStack_library_reversed(headStart, value1, value0) -> tail\n    {\n        let tail_1 := add(headStart, 64)\n        mstore(headStart, value0)\n        let _1 := 32\n        mstore(add(headStart, _1), 64)\n        let pos := tail_1\n        let length := mload(value1)\n        mstore(tail_1, length)\n        pos := add(headStart, 96)\n        let srcPtr := add(value1, _1)\n        let i := tail\n        for { } lt(i, length) { i := add(i, 1) }\n        {\n            mstore(pos, and(mload(srcPtr), sub(shl(160, 1), 1)))\n            pos := add(pos, _1)\n            srcPtr := add(srcPtr, _1)\n        }\n        tail := pos\n    }\n    function abi_encode_tuple_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_t_enum$_TokenType_$2823_t_address_t_uint256_t_address_payable_t_uint256_t_bytes_memory_ptr__to_t_uint256_t_uint8_t_address_t_uint256_t_address_payable_t_uint256_t_bytes_memory_ptr__fromStack_library_reversed(headStart, value6, value5, value4, value3, value2, value1, value0) -> tail\n    {\n        mstore(headStart, value0)\n        abi_encode_enum_TokenType(value1, add(headStart, 32))\n        let _1 := sub(shl(160, 1), 1)\n        mstore(add(headStart, 64), and(value2, _1))\n        mstore(add(headStart, 96), value3)\n        mstore(add(headStart, 128), and(value4, _1))\n        mstore(add(headStart, 160), value5)\n        mstore(add(headStart, 192), 224)\n        tail := abi_encode_bytes(value6, add(headStart, 224))\n    }\n    function abi_encode_tuple_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_t_uint32_t_contract$_IRegistrar_$322_t_contract$_IReverseRegistrar_$373_t_bytes_memory_ptr__to_t_uint256_t_uint32_t_address_t_address_t_bytes_memory_ptr__fromStack_library_reversed(headStart, value4, value3, value2, value1, value0) -> tail\n    {\n        mstore(headStart, value0)\n        mstore(add(headStart, 32), and(value1, 0xffffffff))\n        let _1 := sub(shl(160, 1), 1)\n        mstore(add(headStart, 64), and(value2, _1))\n        mstore(add(headStart, 96), and(value3, _1))\n        mstore(add(headStart, 128), 160)\n        tail := abi_encode_bytes(value4, add(headStart, 160))\n    }\n    function abi_encode_tuple_t_bytes_memory_ptr_t_uint256_t_uint8_t_address_t_address_payable__to_t_bytes_memory_ptr_t_uint256_t_uint8_t_address_t_address__fromStack_library_reversed(headStart, value4, value3, value2, value1, value0) -> tail\n    {\n        mstore(headStart, 160)\n        tail := abi_encode_bytes(value0, add(headStart, 160))\n        mstore(add(headStart, 32), value1)\n        mstore(add(headStart, 64), and(value2, 0xff))\n        let _1 := sub(shl(160, 1), 1)\n        mstore(add(headStart, 96), and(value3, _1))\n        mstore(add(headStart, 128), and(value4, _1))\n    }\n    function abi_encode_tuple_t_contract$_IRegistrar_$322_t_address_t_bytes32_t_address_payable__to_t_address_t_address_t_bytes32_t_address_payable__fromStack_library_reversed(headStart, value3, value2, value1, value0) -> tail\n    {\n        tail := add(headStart, 128)\n        let _1 := sub(shl(160, 1), 1)\n        mstore(headStart, and(value0, _1))\n        mstore(add(headStart, 32), and(value1, _1))\n        mstore(add(headStart, 64), value2)\n        mstore(add(headStart, 96), and(value3, _1))\n    }\n    function abi_encode_tuple_t_contract$_IRegistrar_$322_t_bytes32_t_string_memory_ptr_t_uint256__to_t_address_t_bytes32_t_string_memory_ptr_t_uint256__fromStack_library_reversed(headStart, value3, value2, value1, value0) -> tail\n    {\n        mstore(headStart, and(value0, sub(shl(160, 1), 1)))\n        mstore(add(headStart, 32), value1)\n        mstore(add(headStart, 64), 128)\n        tail := abi_encode_bytes(value2, add(headStart, 128))\n        mstore(add(headStart, 96), value3)\n    }\n    function abi_encode_tuple_t_string_memory_ptr__to_t_string_memory_ptr__fromStack_reversed(headStart, value0) -> tail\n    {\n        mstore(headStart, 32)\n        tail := abi_encode_bytes(value0, add(headStart, 32))\n    }\n    function abi_encode_tuple_t_stringliteral_c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470__to_t_string_memory_ptr__fromStack_reversed(headStart) -> tail\n    {\n        mstore(headStart, 32)\n        mstore(add(headStart, 32), tail)\n        tail := add(headStart, 64)\n    }\n    function abi_encode_tuple_t_struct$_SignatureTracker_$6976_storage_ptr_t_address_t_uint256_t_address_payable_t_uint256__to_t_uint256_t_address_t_uint256_t_address_payable_t_uint256__fromStack_library_reversed(headStart, value4, value3, value2, value1, value0) -> tail\n    {\n        tail := add(headStart, 160)\n        mstore(headStart, value0)\n        let _1 := sub(shl(160, 1), 1)\n        mstore(add(headStart, 32), and(value1, _1))\n        mstore(add(headStart, 64), value2)\n        mstore(add(headStart, 96), and(value3, _1))\n        mstore(add(headStart, 128), value4)\n    }\n    function abi_encode_tuple_t_struct$_SpendingState_$7854_storage_ptr_t_uint256__to_t_uint256_t_uint256__fromStack_library_reversed(headStart, value1, value0) -> tail\n    {\n        tail := add(headStart, 64)\n        mstore(headStart, value0)\n        mstore(add(headStart, 32), value1)\n    }\n    function abi_encode_tuple_t_struct$_TokenTrackerState_$8554_storage_ptr_t_address_payable_t_bytes_memory_ptr__to_t_uint256_t_address_t_bytes_memory_ptr__fromStack_library_reversed(headStart, value2, value1, value0) -> tail\n    {\n        mstore(headStart, value0)\n        mstore(add(headStart, 32), and(value1, sub(shl(160, 1), 1)))\n        mstore(add(headStart, 64), 96)\n        tail := abi_encode_bytes(value2, add(headStart, 96))\n    }\n    function abi_encode_tuple_t_struct$_TokenTrackerState_$8554_storage_ptr_t_bytes_memory_ptr__to_t_uint256_t_bytes_memory_ptr__fromStack_library_reversed(headStart, value1, value0) -> tail\n    {\n        mstore(headStart, value0)\n        mstore(add(headStart, 32), 64)\n        tail := abi_encode_bytes(value1, add(headStart, 64))\n    }\n    function abi_encode_tuple_t_struct$_TokenTrackerState_$8554_storage_ptr_t_enum$_TokenType_$2823_t_address_t_uint256__to_t_uint256_t_uint8_t_address_t_uint256__fromStack_library_reversed(headStart, value3, value2, value1, value0) -> tail\n    {\n        tail := add(headStart, 128)\n        mstore(headStart, value0)\n        abi_encode_enum_TokenType(value1, add(headStart, 32))\n        mstore(add(headStart, 64), and(value2, sub(shl(160, 1), 1)))\n        mstore(add(headStart, 96), value3)\n    }\n    function abi_encode_tuple_t_struct$_TokenTrackerState_$8554_storage_ptr_t_enum$_TokenType_$2823_t_address_t_uint256_t_address_payable_t_uint256_t_bytes_memory_ptr__to_t_uint256_t_uint8_t_address_t_uint256_t_address_t_uint256_t_bytes_memory_ptr__fromStack_library_reversed(headStart, value6, value5, value4, value3, value2, value1, value0) -> tail\n    {\n        mstore(headStart, value0)\n        abi_encode_enum_TokenType(value1, add(headStart, 32))\n        let _1 := sub(shl(160, 1), 1)\n        mstore(add(headStart, 64), and(value2, _1))\n        mstore(add(headStart, 96), value3)\n        mstore(add(headStart, 128), and(value4, _1))\n        mstore(add(headStart, 160), value5)\n        mstore(add(headStart, 192), 224)\n        tail := abi_encode_bytes(value6, add(headStart, 224))\n    }\n    function allocate_memory() -> memPtr\n    {\n        memPtr := mload(64)\n        let newFreePtr := add(memPtr, 0xe0)\n        if or(gt(newFreePtr, 0xffffffffffffffff), lt(newFreePtr, memPtr)) { panic_error_0x41() }\n        mstore(64, newFreePtr)\n    }\n    function checked_sub_t_uint256(x, y) -> diff\n    {\n        if lt(x, y) { panic_error_0x11() }\n        diff := sub(x, y)\n    }\n    function finalize_allocation(memPtr, size)\n    {\n        let newFreePtr := add(memPtr, and(add(size, 31), not(31)))\n        if or(gt(newFreePtr, 0xffffffffffffffff), lt(newFreePtr, memPtr)) { panic_error_0x41() }\n        mstore(64, newFreePtr)\n    }\n    function increment_t_uint32(value) -> ret\n    {\n        let _1 := 0xffffffff\n        let value_1 := and(value, _1)\n        if eq(value_1, _1) { panic_error_0x11() }\n        ret := add(value_1, 1)\n    }\n    function panic_error_0x11()\n    {\n        mstore(0, shl(224, 0x4e487b71))\n        mstore(4, 0x11)\n        revert(0, 0x24)\n    }\n    function panic_error_0x41()\n    {\n        mstore(0, shl(224, 0x4e487b71))\n        mstore(4, 0x41)\n        revert(0, 0x24)\n    }\n    function return_data_selector() -> sig\n    {\n        if gt(returndatasize(), 3)\n        {\n            returndatacopy(sig, sig, 4)\n            sig := shr(224, mload(sig))\n        }\n    }\n    function try_decode_error_message() -> ret\n    {\n        if lt(returndatasize(), 0x44) { leave }\n        let data := mload(64)\n        let _1 := not(3)\n        returndatacopy(data, 4, add(returndatasize(), _1))\n        let offset := mload(data)\n        let _2 := returndatasize()\n        let _3 := 0xffffffffffffffff\n        if or(gt(offset, _3), gt(add(offset, 0x24), _2)) { leave }\n        let msg := add(data, offset)\n        let length := mload(msg)\n        if gt(length, _3) { leave }\n        if gt(add(add(msg, length), 0x20), add(add(data, returndatasize()), _1)) { leave }\n        finalize_allocation(data, add(add(offset, length), 0x20))\n        ret := msg\n    }\n    function validator_revert_address(value)\n    {\n        if iszero(eq(value, and(value, sub(shl(160, 1), 1)))) { revert(0, 0) }\n    }\n}",
+      "contents": "{\n    { }\n    function abi_decode_address(offset) -> value\n    {\n        value := calldataload(offset)\n        validator_revert_address(value)\n    }\n    function abi_decode_bytes(offset, end) -> array\n    {\n        if iszero(slt(add(offset, 0x1f), end)) { revert(array, array) }\n        let _1 := calldataload(offset)\n        if gt(_1, 0xffffffffffffffff) { panic_error_0x41() }\n        let memPtr := mload(64)\n        finalize_allocation(memPtr, add(and(add(_1, 0x1f), not(31)), 0x20))\n        mstore(memPtr, _1)\n        if gt(add(add(offset, _1), 0x20), end) { revert(array, array) }\n        calldatacopy(add(memPtr, 0x20), add(offset, 0x20), _1)\n        mstore(add(add(memPtr, _1), 0x20), array)\n        array := memPtr\n    }\n    function abi_decode_enum_OperationType(offset) -> value\n    {\n        value := calldataload(offset)\n        if iszero(lt(value, 26)) { revert(0, 0) }\n    }\n    function abi_decode_enum_TokenType(offset) -> value\n    {\n        value := calldataload(offset)\n        if iszero(lt(value, 4)) { revert(0, 0) }\n    }\n    function abi_decode_tuple_t_array$_t_address_$dyn_memory_ptr_fromMemory(headStart, dataEnd) -> value0\n    {\n        let _1 := 32\n        if slt(sub(dataEnd, headStart), _1) { revert(value0, value0) }\n        let offset := mload(headStart)\n        let _2 := 0xffffffffffffffff\n        if gt(offset, _2) { revert(value0, value0) }\n        let _3 := add(headStart, offset)\n        if iszero(slt(add(_3, 0x1f), dataEnd)) { revert(value0, value0) }\n        let _4 := mload(_3)\n        if gt(_4, _2) { panic_error_0x41() }\n        let _5 := shl(5, _4)\n        let memPtr := mload(64)\n        finalize_allocation(memPtr, add(_5, _1))\n        let dst := memPtr\n        mstore(memPtr, _4)\n        dst := add(memPtr, _1)\n        let src := add(_3, _1)\n        if gt(add(add(_3, _5), _1), dataEnd) { revert(value0, value0) }\n        let i := value0\n        for { } lt(i, _4) { i := add(i, 1) }\n        {\n            let value := mload(src)\n            validator_revert_address(value)\n            mstore(dst, value)\n            dst := add(dst, _1)\n            src := add(src, _1)\n        }\n        value0 := memPtr\n    }\n    function abi_decode_tuple_t_bool_fromMemory(headStart, dataEnd) -> value0\n    {\n        if slt(sub(dataEnd, headStart), 32) { revert(value0, value0) }\n        let value := mload(headStart)\n        if iszero(eq(value, iszero(iszero(value)))) { revert(value0, value0) }\n        value0 := value\n    }\n    function abi_decode_tuple_t_struct$_OperationParams_$3832_memory_ptrt_struct$_TokenTrackerState_$8571_storage_ptrt_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptrt_struct$_SignatureTracker_$6993_storage_ptrt_struct$_SpendingState_$7871_storage_ptr(headStart, dataEnd) -> value0, value1, value2, value3, value4\n    {\n        if slt(sub(dataEnd, headStart), 160) { revert(value4, value4) }\n        let offset := calldataload(headStart)\n        let _1 := 0xffffffffffffffff\n        if gt(offset, _1) { revert(value4, value4) }\n        let _2 := add(headStart, offset)\n        if slt(sub(dataEnd, _2), 0xe0) { revert(value4, value4) }\n        let value := allocate_memory()\n        mstore(value, abi_decode_enum_OperationType(_2))\n        mstore(add(value, 32), abi_decode_enum_TokenType(add(_2, 32)))\n        mstore(add(value, 64), abi_decode_address(add(_2, 64)))\n        mstore(add(value, 96), calldataload(add(_2, 96)))\n        mstore(add(value, 128), abi_decode_address(add(_2, 128)))\n        mstore(add(value, 160), calldataload(add(_2, 160)))\n        let offset_1 := calldataload(add(_2, 192))\n        if gt(offset_1, _1) { revert(value4, value4) }\n        mstore(add(value, 192), abi_decode_bytes(add(_2, offset_1), dataEnd))\n        value0 := value\n        value1 := calldataload(add(headStart, 32))\n        value2 := calldataload(add(headStart, 64))\n        value3 := calldataload(add(headStart, 96))\n        value4 := calldataload(add(headStart, 128))\n    }\n    function abi_encode_array_address_dyn(value, pos) -> end\n    {\n        let length := mload(value)\n        mstore(pos, length)\n        let _1 := 0x20\n        pos := add(pos, _1)\n        let srcPtr := add(value, _1)\n        let i := end\n        for { } lt(i, length) { i := add(i, 1) }\n        {\n            mstore(pos, and(mload(srcPtr), sub(shl(160, 1), 1)))\n            pos := add(pos, _1)\n            srcPtr := add(srcPtr, _1)\n        }\n        end := pos\n    }\n    function abi_encode_bytes(value, pos) -> end\n    {\n        let length := mload(value)\n        mstore(pos, length)\n        let i := end\n        for { } lt(i, length) { i := add(i, 0x20) }\n        {\n            let _1 := 0x20\n            mstore(add(add(pos, i), _1), mload(add(add(value, i), _1)))\n        }\n        if gt(i, length)\n        {\n            mstore(add(add(pos, length), 0x20), end)\n        }\n        end := add(add(pos, and(add(length, 31), not(31))), 0x20)\n    }\n    function abi_encode_enum_TokenType(value, pos)\n    {\n        if iszero(lt(value, 4))\n        {\n            mstore(0, shl(224, 0x4e487b71))\n            mstore(4, 0x21)\n            revert(0, 0x24)\n        }\n        mstore(pos, value)\n    }\n    function abi_encode_tuple_t_address_t_string_memory_ptr__to_t_address_t_string_memory_ptr__fromStack_library_reversed(headStart, value1, value0) -> tail\n    {\n        mstore(headStart, and(value0, sub(shl(160, 1), 1)))\n        mstore(add(headStart, 32), 64)\n        tail := abi_encode_bytes(value1, add(headStart, 64))\n    }\n    function abi_encode_tuple_t_array$_t_address_$dyn_memory_ptr_t_array$_t_address_$dyn_memory_ptr__to_t_array$_t_address_$dyn_memory_ptr_t_array$_t_address_$dyn_memory_ptr__fromStack_reversed(headStart, value1, value0) -> tail\n    {\n        mstore(headStart, 64)\n        let tail_1 := abi_encode_array_address_dyn(value0, add(headStart, 64))\n        mstore(add(headStart, 32), sub(tail_1, headStart))\n        tail := abi_encode_array_address_dyn(value1, tail_1)\n    }\n    function abi_encode_tuple_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_t_array$_t_address_$dyn_memory_ptr__to_t_uint256_t_array$_t_address_$dyn_memory_ptr__fromStack_library_reversed(headStart, value1, value0) -> tail\n    {\n        let tail_1 := add(headStart, 64)\n        mstore(headStart, value0)\n        let _1 := 32\n        mstore(add(headStart, _1), 64)\n        let pos := tail_1\n        let length := mload(value1)\n        mstore(tail_1, length)\n        pos := add(headStart, 96)\n        let srcPtr := add(value1, _1)\n        let i := tail\n        for { } lt(i, length) { i := add(i, 1) }\n        {\n            mstore(pos, and(mload(srcPtr), sub(shl(160, 1), 1)))\n            pos := add(pos, _1)\n            srcPtr := add(srcPtr, _1)\n        }\n        tail := pos\n    }\n    function abi_encode_tuple_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_t_enum$_TokenType_$2823_t_address_t_uint256_t_address_payable_t_uint256_t_bytes_memory_ptr__to_t_uint256_t_uint8_t_address_t_uint256_t_address_payable_t_uint256_t_bytes_memory_ptr__fromStack_library_reversed(headStart, value6, value5, value4, value3, value2, value1, value0) -> tail\n    {\n        mstore(headStart, value0)\n        abi_encode_enum_TokenType(value1, add(headStart, 32))\n        let _1 := sub(shl(160, 1), 1)\n        mstore(add(headStart, 64), and(value2, _1))\n        mstore(add(headStart, 96), value3)\n        mstore(add(headStart, 128), and(value4, _1))\n        mstore(add(headStart, 160), value5)\n        mstore(add(headStart, 192), 224)\n        tail := abi_encode_bytes(value6, add(headStart, 224))\n    }\n    function abi_encode_tuple_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_t_uint32_t_contract$_IRegistrar_$322_t_contract$_IReverseRegistrar_$373_t_bytes_memory_ptr__to_t_uint256_t_uint32_t_address_t_address_t_bytes_memory_ptr__fromStack_library_reversed(headStart, value4, value3, value2, value1, value0) -> tail\n    {\n        mstore(headStart, value0)\n        mstore(add(headStart, 32), and(value1, 0xffffffff))\n        let _1 := sub(shl(160, 1), 1)\n        mstore(add(headStart, 64), and(value2, _1))\n        mstore(add(headStart, 96), and(value3, _1))\n        mstore(add(headStart, 128), 160)\n        tail := abi_encode_bytes(value4, add(headStart, 160))\n    }\n    function abi_encode_tuple_t_bytes_memory_ptr_t_uint256_t_uint8_t_address_t_address_payable__to_t_bytes_memory_ptr_t_uint256_t_uint8_t_address_t_address__fromStack_library_reversed(headStart, value4, value3, value2, value1, value0) -> tail\n    {\n        mstore(headStart, 160)\n        tail := abi_encode_bytes(value0, add(headStart, 160))\n        mstore(add(headStart, 32), value1)\n        mstore(add(headStart, 64), and(value2, 0xff))\n        let _1 := sub(shl(160, 1), 1)\n        mstore(add(headStart, 96), and(value3, _1))\n        mstore(add(headStart, 128), and(value4, _1))\n    }\n    function abi_encode_tuple_t_contract$_IRegistrar_$322_t_address_t_bytes32_t_address_payable__to_t_address_t_address_t_bytes32_t_address_payable__fromStack_library_reversed(headStart, value3, value2, value1, value0) -> tail\n    {\n        tail := add(headStart, 128)\n        let _1 := sub(shl(160, 1), 1)\n        mstore(headStart, and(value0, _1))\n        mstore(add(headStart, 32), and(value1, _1))\n        mstore(add(headStart, 64), value2)\n        mstore(add(headStart, 96), and(value3, _1))\n    }\n    function abi_encode_tuple_t_contract$_IRegistrar_$322_t_bytes32_t_string_memory_ptr_t_uint256__to_t_address_t_bytes32_t_string_memory_ptr_t_uint256__fromStack_library_reversed(headStart, value3, value2, value1, value0) -> tail\n    {\n        mstore(headStart, and(value0, sub(shl(160, 1), 1)))\n        mstore(add(headStart, 32), value1)\n        mstore(add(headStart, 64), 128)\n        tail := abi_encode_bytes(value2, add(headStart, 128))\n        mstore(add(headStart, 96), value3)\n    }\n    function abi_encode_tuple_t_string_memory_ptr__to_t_string_memory_ptr__fromStack_reversed(headStart, value0) -> tail\n    {\n        mstore(headStart, 32)\n        tail := abi_encode_bytes(value0, add(headStart, 32))\n    }\n    function abi_encode_tuple_t_stringliteral_c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470__to_t_string_memory_ptr__fromStack_reversed(headStart) -> tail\n    {\n        mstore(headStart, 32)\n        mstore(add(headStart, 32), tail)\n        tail := add(headStart, 64)\n    }\n    function abi_encode_tuple_t_struct$_SignatureTracker_$6993_storage_ptr_t_address_t_uint256_t_address_payable_t_uint256__to_t_uint256_t_address_t_uint256_t_address_payable_t_uint256__fromStack_library_reversed(headStart, value4, value3, value2, value1, value0) -> tail\n    {\n        tail := add(headStart, 160)\n        mstore(headStart, value0)\n        let _1 := sub(shl(160, 1), 1)\n        mstore(add(headStart, 32), and(value1, _1))\n        mstore(add(headStart, 64), value2)\n        mstore(add(headStart, 96), and(value3, _1))\n        mstore(add(headStart, 128), value4)\n    }\n    function abi_encode_tuple_t_struct$_SpendingState_$7871_storage_ptr_t_uint256__to_t_uint256_t_uint256__fromStack_library_reversed(headStart, value1, value0) -> tail\n    {\n        tail := add(headStart, 64)\n        mstore(headStart, value0)\n        mstore(add(headStart, 32), value1)\n    }\n    function abi_encode_tuple_t_struct$_TokenTrackerState_$8571_storage_ptr_t_address_payable_t_bytes_memory_ptr__to_t_uint256_t_address_t_bytes_memory_ptr__fromStack_library_reversed(headStart, value2, value1, value0) -> tail\n    {\n        mstore(headStart, value0)\n        mstore(add(headStart, 32), and(value1, sub(shl(160, 1), 1)))\n        mstore(add(headStart, 64), 96)\n        tail := abi_encode_bytes(value2, add(headStart, 96))\n    }\n    function abi_encode_tuple_t_struct$_TokenTrackerState_$8571_storage_ptr_t_bytes_memory_ptr__to_t_uint256_t_bytes_memory_ptr__fromStack_library_reversed(headStart, value1, value0) -> tail\n    {\n        mstore(headStart, value0)\n        mstore(add(headStart, 32), 64)\n        tail := abi_encode_bytes(value1, add(headStart, 64))\n    }\n    function abi_encode_tuple_t_struct$_TokenTrackerState_$8571_storage_ptr_t_enum$_TokenType_$2823_t_address_t_uint256__to_t_uint256_t_uint8_t_address_t_uint256__fromStack_library_reversed(headStart, value3, value2, value1, value0) -> tail\n    {\n        tail := add(headStart, 128)\n        mstore(headStart, value0)\n        abi_encode_enum_TokenType(value1, add(headStart, 32))\n        mstore(add(headStart, 64), and(value2, sub(shl(160, 1), 1)))\n        mstore(add(headStart, 96), value3)\n    }\n    function abi_encode_tuple_t_struct$_TokenTrackerState_$8571_storage_ptr_t_enum$_TokenType_$2823_t_address_t_uint256_t_address_payable_t_uint256_t_bytes_memory_ptr__to_t_uint256_t_uint8_t_address_t_uint256_t_address_t_uint256_t_bytes_memory_ptr__fromStack_library_reversed(headStart, value6, value5, value4, value3, value2, value1, value0) -> tail\n    {\n        mstore(headStart, value0)\n        abi_encode_enum_TokenType(value1, add(headStart, 32))\n        let _1 := sub(shl(160, 1), 1)\n        mstore(add(headStart, 64), and(value2, _1))\n        mstore(add(headStart, 96), value3)\n        mstore(add(headStart, 128), and(value4, _1))\n        mstore(add(headStart, 160), value5)\n        mstore(add(headStart, 192), 224)\n        tail := abi_encode_bytes(value6, add(headStart, 224))\n    }\n    function allocate_memory() -> memPtr\n    {\n        memPtr := mload(64)\n        let newFreePtr := add(memPtr, 0xe0)\n        if or(gt(newFreePtr, 0xffffffffffffffff), lt(newFreePtr, memPtr)) { panic_error_0x41() }\n        mstore(64, newFreePtr)\n    }\n    function checked_sub_t_uint256(x, y) -> diff\n    {\n        if lt(x, y) { panic_error_0x11() }\n        diff := sub(x, y)\n    }\n    function finalize_allocation(memPtr, size)\n    {\n        let newFreePtr := add(memPtr, and(add(size, 31), not(31)))\n        if or(gt(newFreePtr, 0xffffffffffffffff), lt(newFreePtr, memPtr)) { panic_error_0x41() }\n        mstore(64, newFreePtr)\n    }\n    function increment_t_uint32(value) -> ret\n    {\n        let _1 := 0xffffffff\n        let value_1 := and(value, _1)\n        if eq(value_1, _1) { panic_error_0x11() }\n        ret := add(value_1, 1)\n    }\n    function panic_error_0x11()\n    {\n        mstore(0, shl(224, 0x4e487b71))\n        mstore(4, 0x11)\n        revert(0, 0x24)\n    }\n    function panic_error_0x41()\n    {\n        mstore(0, shl(224, 0x4e487b71))\n        mstore(4, 0x41)\n        revert(0, 0x24)\n    }\n    function return_data_selector() -> sig\n    {\n        if gt(returndatasize(), 3)\n        {\n            returndatacopy(sig, sig, 4)\n            sig := shr(224, mload(sig))\n        }\n    }\n    function try_decode_error_message() -> ret\n    {\n        if lt(returndatasize(), 0x44) { leave }\n        let data := mload(64)\n        let _1 := not(3)\n        returndatacopy(data, 4, add(returndatasize(), _1))\n        let offset := mload(data)\n        let _2 := returndatasize()\n        let _3 := 0xffffffffffffffff\n        if or(gt(offset, _3), gt(add(offset, 0x24), _2)) { leave }\n        let msg := add(data, offset)\n        let length := mload(msg)\n        if gt(length, _3) { leave }\n        if gt(add(add(msg, length), 0x20), add(add(data, returndatasize()), _1)) { leave }\n        finalize_allocation(data, add(add(offset, length), 0x20))\n        ret := msg\n    }\n    function validator_revert_address(value)\n    {\n        if iszero(eq(value, and(value, sub(shl(160, 1), 1)))) { revert(0, 0) }\n    }\n}",
       "id": 29,
       "language": "Yul",
       "name": "#utility.yul"
@@ -11113,16 +11113,16 @@
         25
       ],
       "SignatureManager": [
-        7801
+        7818
       ],
       "SpendingManager": [
-        8182
+        8199
       ],
       "TokenTracker": [
-        9981
+        9998
       ],
       "WalletGraph": [
-        10753
+        10770
       ]
     },
     "id": 3404,
@@ -11183,7 +11183,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 3404,
-        "sourceUnit": 10754,
+        "sourceUnit": 10771,
         "src": "143:27:15",
         "symbolAliases": [],
         "unitAlias": ""
@@ -11195,7 +11195,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 3404,
-        "sourceUnit": 7802,
+        "sourceUnit": 7819,
         "src": "171:32:15",
         "symbolAliases": [],
         "unitAlias": ""
@@ -11207,7 +11207,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 3404,
-        "sourceUnit": 9982,
+        "sourceUnit": 9999,
         "src": "204:28:15",
         "symbolAliases": [],
         "unitAlias": ""
@@ -11219,7 +11219,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 3404,
-        "sourceUnit": 8183,
+        "sourceUnit": 8200,
         "src": "233:31:15",
         "symbolAliases": [],
         "unitAlias": ""
@@ -11244,7 +11244,7 @@
               "id": 2834,
               "name": "WalletGraph",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 10753,
+              "referencedDeclaration": 10770,
               "src": "295:11:15"
             },
             "nodeType": "UsingForDirective",
@@ -11282,7 +11282,7 @@
               "id": 2839,
               "name": "TokenTracker",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 9981,
+              "referencedDeclaration": 9998,
               "src": "335:12:15"
             },
             "nodeType": "UsingForDirective",
@@ -11294,13 +11294,13 @@
                 "id": 2840,
                 "name": "TokenTracker.TokenTrackerState",
                 "nodeType": "IdentifierPath",
-                "referencedDeclaration": 8554,
+                "referencedDeclaration": 8571,
                 "src": "352:30:15"
               },
-              "referencedDeclaration": 8554,
+              "referencedDeclaration": 8571,
               "src": "352:30:15",
               "typeDescriptions": {
-                "typeIdentifier": "t_struct$_TokenTrackerState_$8554_storage_ptr",
+                "typeIdentifier": "t_struct$_TokenTrackerState_$8571_storage_ptr",
                 "typeString": "struct TokenTracker.TokenTrackerState"
               }
             }
@@ -11311,7 +11311,7 @@
               "id": 2843,
               "name": "SignatureManager",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 7801,
+              "referencedDeclaration": 7818,
               "src": "394:16:15"
             },
             "nodeType": "UsingForDirective",
@@ -11323,13 +11323,13 @@
                 "id": 2844,
                 "name": "SignatureManager.SignatureTracker",
                 "nodeType": "IdentifierPath",
-                "referencedDeclaration": 6976,
+                "referencedDeclaration": 6993,
                 "src": "415:33:15"
               },
-              "referencedDeclaration": 6976,
+              "referencedDeclaration": 6993,
               "src": "415:33:15",
               "typeDescriptions": {
-                "typeIdentifier": "t_struct$_SignatureTracker_$6976_storage_ptr",
+                "typeIdentifier": "t_struct$_SignatureTracker_$6993_storage_ptr",
                 "typeString": "struct SignatureManager.SignatureTracker"
               }
             }
@@ -11340,7 +11340,7 @@
               "id": 2847,
               "name": "SpendingManager",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 8182,
+              "referencedDeclaration": 8199,
               "src": "460:15:15"
             },
             "nodeType": "UsingForDirective",
@@ -11352,13 +11352,13 @@
                 "id": 2848,
                 "name": "SpendingManager.SpendingState",
                 "nodeType": "IdentifierPath",
-                "referencedDeclaration": 7854,
+                "referencedDeclaration": 7871,
                 "src": "480:29:15"
               },
-              "referencedDeclaration": 7854,
+              "referencedDeclaration": 7871,
               "src": "480:29:15",
               "typeDescriptions": {
-                "typeIdentifier": "t_struct$_SpendingState_$7854_storage_ptr",
+                "typeIdentifier": "t_struct$_SpendingState_$7871_storage_ptr",
                 "typeString": "struct SpendingManager.SpendingState"
               }
             }
@@ -13007,7 +13007,7 @@
                                                                 "referencedDeclaration": 2866,
                                                                 "src": "4043:13:15",
                                                                 "typeDescriptions": {
-                                                                  "typeIdentifier": "t_struct$_SpendingState_$7854_storage_ptr",
+                                                                  "typeIdentifier": "t_struct$_SpendingState_$7871_storage_ptr",
                                                                   "typeString": "struct SpendingManager.SpendingState storage pointer"
                                                                 }
                                                               },
@@ -13018,10 +13018,10 @@
                                                               "lValueRequested": false,
                                                               "memberName": "jumpSpendLimit",
                                                               "nodeType": "MemberAccess",
-                                                              "referencedDeclaration": 8181,
+                                                              "referencedDeclaration": 8198,
                                                               "src": "4043:28:15",
                                                               "typeDescriptions": {
-                                                                "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_SpendingState_$7854_storage_ptr_$_t_uint256_$returns$__$bound_to$_t_struct$_SpendingState_$7854_storage_ptr_$",
+                                                                "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_SpendingState_$7871_storage_ptr_$_t_uint256_$returns$__$bound_to$_t_struct$_SpendingState_$7871_storage_ptr_$",
                                                                 "typeString": "function (struct SpendingManager.SpendingState storage pointer,uint256)"
                                                               }
                                                             },
@@ -13101,7 +13101,7 @@
                                                               "referencedDeclaration": 2866,
                                                               "src": "3906:13:15",
                                                               "typeDescriptions": {
-                                                                "typeIdentifier": "t_struct$_SpendingState_$7854_storage_ptr",
+                                                                "typeIdentifier": "t_struct$_SpendingState_$7871_storage_ptr",
                                                                 "typeString": "struct SpendingManager.SpendingState storage pointer"
                                                               }
                                                             },
@@ -13112,10 +13112,10 @@
                                                             "lValueRequested": false,
                                                             "memberName": "changeSpendLimit",
                                                             "nodeType": "MemberAccess",
-                                                            "referencedDeclaration": 8154,
+                                                            "referencedDeclaration": 8171,
                                                             "src": "3906:30:15",
                                                             "typeDescriptions": {
-                                                              "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_SpendingState_$7854_storage_ptr_$_t_uint256_$returns$__$bound_to$_t_struct$_SpendingState_$7854_storage_ptr_$",
+                                                              "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_SpendingState_$7871_storage_ptr_$_t_uint256_$returns$__$bound_to$_t_struct$_SpendingState_$7871_storage_ptr_$",
                                                               "typeString": "function (struct SpendingManager.SpendingState storage pointer,uint256)"
                                                             }
                                                           },
@@ -13288,7 +13288,7 @@
                                                             "referencedDeclaration": 2863,
                                                             "src": "3732:10:15",
                                                             "typeDescriptions": {
-                                                              "typeIdentifier": "t_struct$_SignatureTracker_$6976_storage_ptr",
+                                                              "typeIdentifier": "t_struct$_SignatureTracker_$6993_storage_ptr",
                                                               "typeString": "struct SignatureManager.SignatureTracker storage pointer"
                                                             }
                                                           },
@@ -13299,10 +13299,10 @@
                                                           "lValueRequested": false,
                                                           "memberName": "revokeHandler",
                                                           "nodeType": "MemberAccess",
-                                                          "referencedDeclaration": 7465,
+                                                          "referencedDeclaration": 7482,
                                                           "src": "3732:24:15",
                                                           "typeDescriptions": {
-                                                            "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_SignatureTracker_$6976_storage_ptr_$_t_address_$_t_uint256_$_t_address_payable_$_t_uint256_$returns$__$bound_to$_t_struct$_SignatureTracker_$6976_storage_ptr_$",
+                                                            "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_SignatureTracker_$6993_storage_ptr_$_t_address_$_t_uint256_$_t_address_payable_$_t_uint256_$returns$__$bound_to$_t_struct$_SignatureTracker_$6993_storage_ptr_$",
                                                             "typeString": "function (struct SignatureManager.SignatureTracker storage pointer,address,uint256,address payable,uint256)"
                                                           }
                                                         },
@@ -13475,7 +13475,7 @@
                                                           "referencedDeclaration": 2863,
                                                           "src": "3570:10:15",
                                                           "typeDescriptions": {
-                                                            "typeIdentifier": "t_struct$_SignatureTracker_$6976_storage_ptr",
+                                                            "typeIdentifier": "t_struct$_SignatureTracker_$6993_storage_ptr",
                                                             "typeString": "struct SignatureManager.SignatureTracker storage pointer"
                                                           }
                                                         },
@@ -13486,10 +13486,10 @@
                                                         "lValueRequested": false,
                                                         "memberName": "authorizeHandler",
                                                         "nodeType": "MemberAccess",
-                                                        "referencedDeclaration": 7518,
+                                                        "referencedDeclaration": 7535,
                                                         "src": "3570:27:15",
                                                         "typeDescriptions": {
-                                                          "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_SignatureTracker_$6976_storage_ptr_$_t_address_$_t_uint256_$_t_address_payable_$_t_uint256_$returns$__$bound_to$_t_struct$_SignatureTracker_$6976_storage_ptr_$",
+                                                          "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_SignatureTracker_$6993_storage_ptr_$_t_address_$_t_uint256_$_t_address_payable_$_t_uint256_$returns$__$bound_to$_t_struct$_SignatureTracker_$6993_storage_ptr_$",
                                                           "typeString": "function (struct SignatureManager.SignatureTracker storage pointer,address,uint256,address payable,uint256)"
                                                         }
                                                       },
@@ -14020,7 +14020,7 @@
                                                 "lValueRequested": false,
                                                 "memberName": "command",
                                                 "nodeType": "MemberAccess",
-                                                "referencedDeclaration": 10649,
+                                                "referencedDeclaration": 10666,
                                                 "src": "2986:25:15",
                                                 "typeDescriptions": {
                                                   "typeIdentifier": "t_function_delegatecall_nonpayable$_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_$_t_enum$_TokenType_$2823_$_t_address_$_t_uint256_$_t_address_payable_$_t_uint256_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_$",
@@ -14134,7 +14134,7 @@
                                                 "referencedDeclaration": 2856,
                                                 "src": "2838:17:15",
                                                 "typeDescriptions": {
-                                                  "typeIdentifier": "t_struct$_TokenTrackerState_$8554_storage_ptr",
+                                                  "typeIdentifier": "t_struct$_TokenTrackerState_$8571_storage_ptr",
                                                   "typeString": "struct TokenTracker.TokenTrackerState storage pointer"
                                                 }
                                               },
@@ -14145,10 +14145,10 @@
                                               "lValueRequested": false,
                                               "memberName": "recoverSelectedTokensEncoded",
                                               "nodeType": "MemberAccess",
-                                              "referencedDeclaration": 9841,
+                                              "referencedDeclaration": 9858,
                                               "src": "2838:46:15",
                                               "typeDescriptions": {
-                                                "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8554_storage_ptr_$_t_address_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8554_storage_ptr_$",
+                                                "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8571_storage_ptr_$_t_address_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8571_storage_ptr_$",
                                                 "typeString": "function (struct TokenTracker.TokenTrackerState storage pointer,address,bytes memory)"
                                               }
                                             },
@@ -14448,7 +14448,7 @@
                                             "lValueRequested": false,
                                             "memberName": "reclaimDomainFromBacklink",
                                             "nodeType": "MemberAccess",
-                                            "referencedDeclaration": 10536,
+                                            "referencedDeclaration": 10553,
                                             "src": "2607:43:15",
                                             "typeDescriptions": {
                                               "typeIdentifier": "t_function_delegatecall_nonpayable$_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_$_t_uint32_$_t_contract$_IRegistrar_$322_$_t_contract$_IReverseRegistrar_$373_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_$",
@@ -15657,7 +15657,7 @@
                                     "referencedDeclaration": 2856,
                                     "src": "1696:17:15",
                                     "typeDescriptions": {
-                                      "typeIdentifier": "t_struct$_TokenTrackerState_$8554_storage_ptr",
+                                      "typeIdentifier": "t_struct$_TokenTrackerState_$8571_storage_ptr",
                                       "typeString": "struct TokenTracker.TokenTrackerState storage pointer"
                                     }
                                   },
@@ -15668,10 +15668,10 @@
                                   "lValueRequested": false,
                                   "memberName": "overrideTrackWithBytes",
                                   "nodeType": "MemberAccess",
-                                  "referencedDeclaration": 9218,
+                                  "referencedDeclaration": 9235,
                                   "src": "1696:40:15",
                                   "typeDescriptions": {
-                                    "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8554_storage_ptr_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8554_storage_ptr_$",
+                                    "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8571_storage_ptr_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8571_storage_ptr_$",
                                     "typeString": "function (struct TokenTracker.TokenTrackerState storage pointer,bytes memory)"
                                   }
                                 },
@@ -15906,7 +15906,7 @@
                                   "referencedDeclaration": 2856,
                                   "src": "1499:17:15",
                                   "typeDescriptions": {
-                                    "typeIdentifier": "t_struct$_TokenTrackerState_$8554_storage_ptr",
+                                    "typeIdentifier": "t_struct$_TokenTrackerState_$8571_storage_ptr",
                                     "typeString": "struct TokenTracker.TokenTrackerState storage pointer"
                                   }
                                 },
@@ -15917,10 +15917,10 @@
                                 "lValueRequested": false,
                                 "memberName": "transferToken",
                                 "nodeType": "MemberAccess",
-                                "referencedDeclaration": 9549,
+                                "referencedDeclaration": 9566,
                                 "src": "1499:31:15",
                                 "typeDescriptions": {
-                                  "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8554_storage_ptr_$_t_enum$_TokenType_$2823_$_t_address_$_t_uint256_$_t_address_$_t_uint256_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8554_storage_ptr_$",
+                                  "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8571_storage_ptr_$_t_enum$_TokenType_$2823_$_t_address_$_t_uint256_$_t_address_$_t_uint256_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8571_storage_ptr_$",
                                   "typeString": "function (struct TokenTracker.TokenTrackerState storage pointer,enum Enums.TokenType,address,uint256,address,uint256,bytes memory)"
                                 }
                               },
@@ -16081,7 +16081,7 @@
                                       "referencedDeclaration": 2856,
                                       "src": "1355:17:15",
                                       "typeDescriptions": {
-                                        "typeIdentifier": "t_struct$_TokenTrackerState_$8554_storage_ptr",
+                                        "typeIdentifier": "t_struct$_TokenTrackerState_$8571_storage_ptr",
                                         "typeString": "struct TokenTracker.TokenTrackerState storage pointer"
                                       }
                                     },
@@ -16092,10 +16092,10 @@
                                     "lValueRequested": false,
                                     "memberName": "multiUntrack",
                                     "nodeType": "MemberAccess",
-                                    "referencedDeclaration": 9346,
+                                    "referencedDeclaration": 9363,
                                     "src": "1355:30:15",
                                     "typeDescriptions": {
-                                      "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8554_storage_ptr_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8554_storage_ptr_$",
+                                      "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8571_storage_ptr_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8571_storage_ptr_$",
                                       "typeString": "function (struct TokenTracker.TokenTrackerState storage pointer,bytes memory)"
                                     }
                                   },
@@ -16236,7 +16236,7 @@
                                       "referencedDeclaration": 2856,
                                       "src": "1240:17:15",
                                       "typeDescriptions": {
-                                        "typeIdentifier": "t_struct$_TokenTrackerState_$8554_storage_ptr",
+                                        "typeIdentifier": "t_struct$_TokenTrackerState_$8571_storage_ptr",
                                         "typeString": "struct TokenTracker.TokenTrackerState storage pointer"
                                       }
                                     },
@@ -16247,10 +16247,10 @@
                                     "lValueRequested": false,
                                     "memberName": "untrackToken",
                                     "nodeType": "MemberAccess",
-                                    "referencedDeclaration": 8959,
+                                    "referencedDeclaration": 8976,
                                     "src": "1240:30:15",
                                     "typeDescriptions": {
-                                      "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8554_storage_ptr_$_t_enum$_TokenType_$2823_$_t_address_$_t_uint256_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8554_storage_ptr_$",
+                                      "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8571_storage_ptr_$_t_enum$_TokenType_$2823_$_t_address_$_t_uint256_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8571_storage_ptr_$",
                                       "typeString": "function (struct TokenTracker.TokenTrackerState storage pointer,enum Enums.TokenType,address,uint256)"
                                     }
                                   },
@@ -16476,7 +16476,7 @@
                                     "referencedDeclaration": 2856,
                                     "src": "1026:17:15",
                                     "typeDescriptions": {
-                                      "typeIdentifier": "t_struct$_TokenTrackerState_$8554_storage_ptr",
+                                      "typeIdentifier": "t_struct$_TokenTrackerState_$8571_storage_ptr",
                                       "typeString": "struct TokenTracker.TokenTrackerState storage pointer"
                                     }
                                   },
@@ -16487,10 +16487,10 @@
                                   "lValueRequested": false,
                                   "memberName": "trackToken",
                                   "nodeType": "MemberAccess",
-                                  "referencedDeclaration": 8713,
+                                  "referencedDeclaration": 8730,
                                   "src": "1026:28:15",
                                   "typeDescriptions": {
-                                    "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8554_storage_ptr_$_t_enum$_TokenType_$2823_$_t_address_$_t_uint256_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8554_storage_ptr_$",
+                                    "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8571_storage_ptr_$_t_enum$_TokenType_$2823_$_t_address_$_t_uint256_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8571_storage_ptr_$",
                                     "typeString": "function (struct TokenTracker.TokenTrackerState storage pointer,enum Enums.TokenType,address,uint256)"
                                   }
                                 },
@@ -16569,7 +16569,7 @@
                                     "referencedDeclaration": 2856,
                                     "src": "950:17:15",
                                     "typeDescriptions": {
-                                      "typeIdentifier": "t_struct$_TokenTrackerState_$8554_storage_ptr",
+                                      "typeIdentifier": "t_struct$_TokenTrackerState_$8571_storage_ptr",
                                       "typeString": "struct TokenTracker.TokenTrackerState storage pointer"
                                     }
                                   },
@@ -16580,10 +16580,10 @@
                                   "lValueRequested": false,
                                   "memberName": "multiTrack",
                                   "nodeType": "MemberAccess",
-                                  "referencedDeclaration": 9282,
+                                  "referencedDeclaration": 9299,
                                   "src": "950:28:15",
                                   "typeDescriptions": {
-                                    "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8554_storage_ptr_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8554_storage_ptr_$",
+                                    "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8571_storage_ptr_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8571_storage_ptr_$",
                                     "typeString": "function (struct TokenTracker.TokenTrackerState storage pointer,bytes memory)"
                                   }
                                 },
@@ -16672,7 +16672,7 @@
                   "stateVariable": false,
                   "storageLocation": "storage",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_struct$_TokenTrackerState_$8554_storage_ptr",
+                    "typeIdentifier": "t_struct$_TokenTrackerState_$8571_storage_ptr",
                     "typeString": "struct TokenTracker.TokenTrackerState"
                   },
                   "typeName": {
@@ -16682,13 +16682,13 @@
                       "id": 2854,
                       "name": "TokenTracker.TokenTrackerState",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 8554,
+                      "referencedDeclaration": 8571,
                       "src": "570:30:15"
                     },
-                    "referencedDeclaration": 8554,
+                    "referencedDeclaration": 8571,
                     "src": "570:30:15",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_struct$_TokenTrackerState_$8554_storage_ptr",
+                      "typeIdentifier": "t_struct$_TokenTrackerState_$8571_storage_ptr",
                       "typeString": "struct TokenTracker.TokenTrackerState"
                     }
                   },
@@ -16749,7 +16749,7 @@
                   "stateVariable": false,
                   "storageLocation": "storage",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_struct$_SignatureTracker_$6976_storage_ptr",
+                    "typeIdentifier": "t_struct$_SignatureTracker_$6993_storage_ptr",
                     "typeString": "struct SignatureManager.SignatureTracker"
                   },
                   "typeName": {
@@ -16759,13 +16759,13 @@
                       "id": 2861,
                       "name": "SignatureManager.SignatureTracker",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 6976,
+                      "referencedDeclaration": 6993,
                       "src": "668:33:15"
                     },
-                    "referencedDeclaration": 6976,
+                    "referencedDeclaration": 6993,
                     "src": "668:33:15",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_struct$_SignatureTracker_$6976_storage_ptr",
+                      "typeIdentifier": "t_struct$_SignatureTracker_$6993_storage_ptr",
                       "typeString": "struct SignatureManager.SignatureTracker"
                     }
                   },
@@ -16783,7 +16783,7 @@
                   "stateVariable": false,
                   "storageLocation": "storage",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_struct$_SpendingState_$7854_storage_ptr",
+                    "typeIdentifier": "t_struct$_SpendingState_$7871_storage_ptr",
                     "typeString": "struct SpendingManager.SpendingState"
                   },
                   "typeName": {
@@ -16793,13 +16793,13 @@
                       "id": 2864,
                       "name": "SpendingManager.SpendingState",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 7854,
+                      "referencedDeclaration": 7871,
                       "src": "722:29:15"
                     },
-                    "referencedDeclaration": 7854,
+                    "referencedDeclaration": 7871,
                     "src": "722:29:15",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_struct$_SpendingState_$7854_storage_ptr",
+                      "typeIdentifier": "t_struct$_SpendingState_$7871_storage_ptr",
                       "typeString": "struct SpendingManager.SpendingState"
                     }
                   },
@@ -17510,7 +17510,7 @@
                       "lValueRequested": false,
                       "memberName": "backlinkAdd",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 10278,
+                      "referencedDeclaration": 10295,
                       "src": "4657:29:15",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_delegatecall_nonpayable$_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_$_t_array$_t_address_$dyn_memory_ptr_$returns$__$bound_to$_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_$",
@@ -17843,7 +17843,7 @@
                       "lValueRequested": false,
                       "memberName": "backlinkDelete",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 10177,
+                      "referencedDeclaration": 10194,
                       "src": "4881:32:15",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_delegatecall_nonpayable$_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_$_t_array$_t_address_$dyn_memory_ptr_$returns$__$bound_to$_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_$",
@@ -18176,7 +18176,7 @@
                       "lValueRequested": false,
                       "memberName": "backlinkOverride",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 10346,
+                      "referencedDeclaration": 10363,
                       "src": "5110:34:15",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_$_t_array$_t_address_$dyn_memory_ptr_$returns$__$bound_to$_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_$",
@@ -18348,16 +18348,16 @@
         25
       ],
       "SignatureManager": [
-        7801
+        7818
       ],
       "SpendingManager": [
-        8182
+        8199
       ],
       "TokenTracker": [
-        9981
+        9998
       ],
       "WalletGraph": [
-        10753
+        10770
       ]
     },
     "id": 3404,
@@ -18418,7 +18418,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 3404,
-        "sourceUnit": 10754,
+        "sourceUnit": 10771,
         "src": "143:27:15",
         "symbolAliases": [],
         "unitAlias": ""
@@ -18430,7 +18430,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 3404,
-        "sourceUnit": 7802,
+        "sourceUnit": 7819,
         "src": "171:32:15",
         "symbolAliases": [],
         "unitAlias": ""
@@ -18442,7 +18442,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 3404,
-        "sourceUnit": 9982,
+        "sourceUnit": 9999,
         "src": "204:28:15",
         "symbolAliases": [],
         "unitAlias": ""
@@ -18454,7 +18454,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 3404,
-        "sourceUnit": 8183,
+        "sourceUnit": 8200,
         "src": "233:31:15",
         "symbolAliases": [],
         "unitAlias": ""
@@ -18479,7 +18479,7 @@
               "id": 2834,
               "name": "WalletGraph",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 10753,
+              "referencedDeclaration": 10770,
               "src": "295:11:15"
             },
             "nodeType": "UsingForDirective",
@@ -18517,7 +18517,7 @@
               "id": 2839,
               "name": "TokenTracker",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 9981,
+              "referencedDeclaration": 9998,
               "src": "335:12:15"
             },
             "nodeType": "UsingForDirective",
@@ -18529,13 +18529,13 @@
                 "id": 2840,
                 "name": "TokenTracker.TokenTrackerState",
                 "nodeType": "IdentifierPath",
-                "referencedDeclaration": 8554,
+                "referencedDeclaration": 8571,
                 "src": "352:30:15"
               },
-              "referencedDeclaration": 8554,
+              "referencedDeclaration": 8571,
               "src": "352:30:15",
               "typeDescriptions": {
-                "typeIdentifier": "t_struct$_TokenTrackerState_$8554_storage_ptr",
+                "typeIdentifier": "t_struct$_TokenTrackerState_$8571_storage_ptr",
                 "typeString": "struct TokenTracker.TokenTrackerState"
               }
             }
@@ -18546,7 +18546,7 @@
               "id": 2843,
               "name": "SignatureManager",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 7801,
+              "referencedDeclaration": 7818,
               "src": "394:16:15"
             },
             "nodeType": "UsingForDirective",
@@ -18558,13 +18558,13 @@
                 "id": 2844,
                 "name": "SignatureManager.SignatureTracker",
                 "nodeType": "IdentifierPath",
-                "referencedDeclaration": 6976,
+                "referencedDeclaration": 6993,
                 "src": "415:33:15"
               },
-              "referencedDeclaration": 6976,
+              "referencedDeclaration": 6993,
               "src": "415:33:15",
               "typeDescriptions": {
-                "typeIdentifier": "t_struct$_SignatureTracker_$6976_storage_ptr",
+                "typeIdentifier": "t_struct$_SignatureTracker_$6993_storage_ptr",
                 "typeString": "struct SignatureManager.SignatureTracker"
               }
             }
@@ -18575,7 +18575,7 @@
               "id": 2847,
               "name": "SpendingManager",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 8182,
+              "referencedDeclaration": 8199,
               "src": "460:15:15"
             },
             "nodeType": "UsingForDirective",
@@ -18587,13 +18587,13 @@
                 "id": 2848,
                 "name": "SpendingManager.SpendingState",
                 "nodeType": "IdentifierPath",
-                "referencedDeclaration": 7854,
+                "referencedDeclaration": 7871,
                 "src": "480:29:15"
               },
-              "referencedDeclaration": 7854,
+              "referencedDeclaration": 7871,
               "src": "480:29:15",
               "typeDescriptions": {
-                "typeIdentifier": "t_struct$_SpendingState_$7854_storage_ptr",
+                "typeIdentifier": "t_struct$_SpendingState_$7871_storage_ptr",
                 "typeString": "struct SpendingManager.SpendingState"
               }
             }
@@ -20242,7 +20242,7 @@
                                                                 "referencedDeclaration": 2866,
                                                                 "src": "4043:13:15",
                                                                 "typeDescriptions": {
-                                                                  "typeIdentifier": "t_struct$_SpendingState_$7854_storage_ptr",
+                                                                  "typeIdentifier": "t_struct$_SpendingState_$7871_storage_ptr",
                                                                   "typeString": "struct SpendingManager.SpendingState storage pointer"
                                                                 }
                                                               },
@@ -20253,10 +20253,10 @@
                                                               "lValueRequested": false,
                                                               "memberName": "jumpSpendLimit",
                                                               "nodeType": "MemberAccess",
-                                                              "referencedDeclaration": 8181,
+                                                              "referencedDeclaration": 8198,
                                                               "src": "4043:28:15",
                                                               "typeDescriptions": {
-                                                                "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_SpendingState_$7854_storage_ptr_$_t_uint256_$returns$__$bound_to$_t_struct$_SpendingState_$7854_storage_ptr_$",
+                                                                "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_SpendingState_$7871_storage_ptr_$_t_uint256_$returns$__$bound_to$_t_struct$_SpendingState_$7871_storage_ptr_$",
                                                                 "typeString": "function (struct SpendingManager.SpendingState storage pointer,uint256)"
                                                               }
                                                             },
@@ -20336,7 +20336,7 @@
                                                               "referencedDeclaration": 2866,
                                                               "src": "3906:13:15",
                                                               "typeDescriptions": {
-                                                                "typeIdentifier": "t_struct$_SpendingState_$7854_storage_ptr",
+                                                                "typeIdentifier": "t_struct$_SpendingState_$7871_storage_ptr",
                                                                 "typeString": "struct SpendingManager.SpendingState storage pointer"
                                                               }
                                                             },
@@ -20347,10 +20347,10 @@
                                                             "lValueRequested": false,
                                                             "memberName": "changeSpendLimit",
                                                             "nodeType": "MemberAccess",
-                                                            "referencedDeclaration": 8154,
+                                                            "referencedDeclaration": 8171,
                                                             "src": "3906:30:15",
                                                             "typeDescriptions": {
-                                                              "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_SpendingState_$7854_storage_ptr_$_t_uint256_$returns$__$bound_to$_t_struct$_SpendingState_$7854_storage_ptr_$",
+                                                              "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_SpendingState_$7871_storage_ptr_$_t_uint256_$returns$__$bound_to$_t_struct$_SpendingState_$7871_storage_ptr_$",
                                                               "typeString": "function (struct SpendingManager.SpendingState storage pointer,uint256)"
                                                             }
                                                           },
@@ -20523,7 +20523,7 @@
                                                             "referencedDeclaration": 2863,
                                                             "src": "3732:10:15",
                                                             "typeDescriptions": {
-                                                              "typeIdentifier": "t_struct$_SignatureTracker_$6976_storage_ptr",
+                                                              "typeIdentifier": "t_struct$_SignatureTracker_$6993_storage_ptr",
                                                               "typeString": "struct SignatureManager.SignatureTracker storage pointer"
                                                             }
                                                           },
@@ -20534,10 +20534,10 @@
                                                           "lValueRequested": false,
                                                           "memberName": "revokeHandler",
                                                           "nodeType": "MemberAccess",
-                                                          "referencedDeclaration": 7465,
+                                                          "referencedDeclaration": 7482,
                                                           "src": "3732:24:15",
                                                           "typeDescriptions": {
-                                                            "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_SignatureTracker_$6976_storage_ptr_$_t_address_$_t_uint256_$_t_address_payable_$_t_uint256_$returns$__$bound_to$_t_struct$_SignatureTracker_$6976_storage_ptr_$",
+                                                            "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_SignatureTracker_$6993_storage_ptr_$_t_address_$_t_uint256_$_t_address_payable_$_t_uint256_$returns$__$bound_to$_t_struct$_SignatureTracker_$6993_storage_ptr_$",
                                                             "typeString": "function (struct SignatureManager.SignatureTracker storage pointer,address,uint256,address payable,uint256)"
                                                           }
                                                         },
@@ -20710,7 +20710,7 @@
                                                           "referencedDeclaration": 2863,
                                                           "src": "3570:10:15",
                                                           "typeDescriptions": {
-                                                            "typeIdentifier": "t_struct$_SignatureTracker_$6976_storage_ptr",
+                                                            "typeIdentifier": "t_struct$_SignatureTracker_$6993_storage_ptr",
                                                             "typeString": "struct SignatureManager.SignatureTracker storage pointer"
                                                           }
                                                         },
@@ -20721,10 +20721,10 @@
                                                         "lValueRequested": false,
                                                         "memberName": "authorizeHandler",
                                                         "nodeType": "MemberAccess",
-                                                        "referencedDeclaration": 7518,
+                                                        "referencedDeclaration": 7535,
                                                         "src": "3570:27:15",
                                                         "typeDescriptions": {
-                                                          "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_SignatureTracker_$6976_storage_ptr_$_t_address_$_t_uint256_$_t_address_payable_$_t_uint256_$returns$__$bound_to$_t_struct$_SignatureTracker_$6976_storage_ptr_$",
+                                                          "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_SignatureTracker_$6993_storage_ptr_$_t_address_$_t_uint256_$_t_address_payable_$_t_uint256_$returns$__$bound_to$_t_struct$_SignatureTracker_$6993_storage_ptr_$",
                                                           "typeString": "function (struct SignatureManager.SignatureTracker storage pointer,address,uint256,address payable,uint256)"
                                                         }
                                                       },
@@ -21255,7 +21255,7 @@
                                                 "lValueRequested": false,
                                                 "memberName": "command",
                                                 "nodeType": "MemberAccess",
-                                                "referencedDeclaration": 10649,
+                                                "referencedDeclaration": 10666,
                                                 "src": "2986:25:15",
                                                 "typeDescriptions": {
                                                   "typeIdentifier": "t_function_delegatecall_nonpayable$_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_$_t_enum$_TokenType_$2823_$_t_address_$_t_uint256_$_t_address_payable_$_t_uint256_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_$",
@@ -21369,7 +21369,7 @@
                                                 "referencedDeclaration": 2856,
                                                 "src": "2838:17:15",
                                                 "typeDescriptions": {
-                                                  "typeIdentifier": "t_struct$_TokenTrackerState_$8554_storage_ptr",
+                                                  "typeIdentifier": "t_struct$_TokenTrackerState_$8571_storage_ptr",
                                                   "typeString": "struct TokenTracker.TokenTrackerState storage pointer"
                                                 }
                                               },
@@ -21380,10 +21380,10 @@
                                               "lValueRequested": false,
                                               "memberName": "recoverSelectedTokensEncoded",
                                               "nodeType": "MemberAccess",
-                                              "referencedDeclaration": 9841,
+                                              "referencedDeclaration": 9858,
                                               "src": "2838:46:15",
                                               "typeDescriptions": {
-                                                "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8554_storage_ptr_$_t_address_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8554_storage_ptr_$",
+                                                "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8571_storage_ptr_$_t_address_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8571_storage_ptr_$",
                                                 "typeString": "function (struct TokenTracker.TokenTrackerState storage pointer,address,bytes memory)"
                                               }
                                             },
@@ -21683,7 +21683,7 @@
                                             "lValueRequested": false,
                                             "memberName": "reclaimDomainFromBacklink",
                                             "nodeType": "MemberAccess",
-                                            "referencedDeclaration": 10536,
+                                            "referencedDeclaration": 10553,
                                             "src": "2607:43:15",
                                             "typeDescriptions": {
                                               "typeIdentifier": "t_function_delegatecall_nonpayable$_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_$_t_uint32_$_t_contract$_IRegistrar_$322_$_t_contract$_IReverseRegistrar_$373_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_$",
@@ -22892,7 +22892,7 @@
                                     "referencedDeclaration": 2856,
                                     "src": "1696:17:15",
                                     "typeDescriptions": {
-                                      "typeIdentifier": "t_struct$_TokenTrackerState_$8554_storage_ptr",
+                                      "typeIdentifier": "t_struct$_TokenTrackerState_$8571_storage_ptr",
                                       "typeString": "struct TokenTracker.TokenTrackerState storage pointer"
                                     }
                                   },
@@ -22903,10 +22903,10 @@
                                   "lValueRequested": false,
                                   "memberName": "overrideTrackWithBytes",
                                   "nodeType": "MemberAccess",
-                                  "referencedDeclaration": 9218,
+                                  "referencedDeclaration": 9235,
                                   "src": "1696:40:15",
                                   "typeDescriptions": {
-                                    "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8554_storage_ptr_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8554_storage_ptr_$",
+                                    "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8571_storage_ptr_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8571_storage_ptr_$",
                                     "typeString": "function (struct TokenTracker.TokenTrackerState storage pointer,bytes memory)"
                                   }
                                 },
@@ -23141,7 +23141,7 @@
                                   "referencedDeclaration": 2856,
                                   "src": "1499:17:15",
                                   "typeDescriptions": {
-                                    "typeIdentifier": "t_struct$_TokenTrackerState_$8554_storage_ptr",
+                                    "typeIdentifier": "t_struct$_TokenTrackerState_$8571_storage_ptr",
                                     "typeString": "struct TokenTracker.TokenTrackerState storage pointer"
                                   }
                                 },
@@ -23152,10 +23152,10 @@
                                 "lValueRequested": false,
                                 "memberName": "transferToken",
                                 "nodeType": "MemberAccess",
-                                "referencedDeclaration": 9549,
+                                "referencedDeclaration": 9566,
                                 "src": "1499:31:15",
                                 "typeDescriptions": {
-                                  "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8554_storage_ptr_$_t_enum$_TokenType_$2823_$_t_address_$_t_uint256_$_t_address_$_t_uint256_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8554_storage_ptr_$",
+                                  "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8571_storage_ptr_$_t_enum$_TokenType_$2823_$_t_address_$_t_uint256_$_t_address_$_t_uint256_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8571_storage_ptr_$",
                                   "typeString": "function (struct TokenTracker.TokenTrackerState storage pointer,enum Enums.TokenType,address,uint256,address,uint256,bytes memory)"
                                 }
                               },
@@ -23316,7 +23316,7 @@
                                       "referencedDeclaration": 2856,
                                       "src": "1355:17:15",
                                       "typeDescriptions": {
-                                        "typeIdentifier": "t_struct$_TokenTrackerState_$8554_storage_ptr",
+                                        "typeIdentifier": "t_struct$_TokenTrackerState_$8571_storage_ptr",
                                         "typeString": "struct TokenTracker.TokenTrackerState storage pointer"
                                       }
                                     },
@@ -23327,10 +23327,10 @@
                                     "lValueRequested": false,
                                     "memberName": "multiUntrack",
                                     "nodeType": "MemberAccess",
-                                    "referencedDeclaration": 9346,
+                                    "referencedDeclaration": 9363,
                                     "src": "1355:30:15",
                                     "typeDescriptions": {
-                                      "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8554_storage_ptr_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8554_storage_ptr_$",
+                                      "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8571_storage_ptr_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8571_storage_ptr_$",
                                       "typeString": "function (struct TokenTracker.TokenTrackerState storage pointer,bytes memory)"
                                     }
                                   },
@@ -23471,7 +23471,7 @@
                                       "referencedDeclaration": 2856,
                                       "src": "1240:17:15",
                                       "typeDescriptions": {
-                                        "typeIdentifier": "t_struct$_TokenTrackerState_$8554_storage_ptr",
+                                        "typeIdentifier": "t_struct$_TokenTrackerState_$8571_storage_ptr",
                                         "typeString": "struct TokenTracker.TokenTrackerState storage pointer"
                                       }
                                     },
@@ -23482,10 +23482,10 @@
                                     "lValueRequested": false,
                                     "memberName": "untrackToken",
                                     "nodeType": "MemberAccess",
-                                    "referencedDeclaration": 8959,
+                                    "referencedDeclaration": 8976,
                                     "src": "1240:30:15",
                                     "typeDescriptions": {
-                                      "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8554_storage_ptr_$_t_enum$_TokenType_$2823_$_t_address_$_t_uint256_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8554_storage_ptr_$",
+                                      "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8571_storage_ptr_$_t_enum$_TokenType_$2823_$_t_address_$_t_uint256_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8571_storage_ptr_$",
                                       "typeString": "function (struct TokenTracker.TokenTrackerState storage pointer,enum Enums.TokenType,address,uint256)"
                                     }
                                   },
@@ -23711,7 +23711,7 @@
                                     "referencedDeclaration": 2856,
                                     "src": "1026:17:15",
                                     "typeDescriptions": {
-                                      "typeIdentifier": "t_struct$_TokenTrackerState_$8554_storage_ptr",
+                                      "typeIdentifier": "t_struct$_TokenTrackerState_$8571_storage_ptr",
                                       "typeString": "struct TokenTracker.TokenTrackerState storage pointer"
                                     }
                                   },
@@ -23722,10 +23722,10 @@
                                   "lValueRequested": false,
                                   "memberName": "trackToken",
                                   "nodeType": "MemberAccess",
-                                  "referencedDeclaration": 8713,
+                                  "referencedDeclaration": 8730,
                                   "src": "1026:28:15",
                                   "typeDescriptions": {
-                                    "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8554_storage_ptr_$_t_enum$_TokenType_$2823_$_t_address_$_t_uint256_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8554_storage_ptr_$",
+                                    "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8571_storage_ptr_$_t_enum$_TokenType_$2823_$_t_address_$_t_uint256_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8571_storage_ptr_$",
                                     "typeString": "function (struct TokenTracker.TokenTrackerState storage pointer,enum Enums.TokenType,address,uint256)"
                                   }
                                 },
@@ -23804,7 +23804,7 @@
                                     "referencedDeclaration": 2856,
                                     "src": "950:17:15",
                                     "typeDescriptions": {
-                                      "typeIdentifier": "t_struct$_TokenTrackerState_$8554_storage_ptr",
+                                      "typeIdentifier": "t_struct$_TokenTrackerState_$8571_storage_ptr",
                                       "typeString": "struct TokenTracker.TokenTrackerState storage pointer"
                                     }
                                   },
@@ -23815,10 +23815,10 @@
                                   "lValueRequested": false,
                                   "memberName": "multiTrack",
                                   "nodeType": "MemberAccess",
-                                  "referencedDeclaration": 9282,
+                                  "referencedDeclaration": 9299,
                                   "src": "950:28:15",
                                   "typeDescriptions": {
-                                    "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8554_storage_ptr_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8554_storage_ptr_$",
+                                    "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_TokenTrackerState_$8571_storage_ptr_$_t_bytes_memory_ptr_$returns$__$bound_to$_t_struct$_TokenTrackerState_$8571_storage_ptr_$",
                                     "typeString": "function (struct TokenTracker.TokenTrackerState storage pointer,bytes memory)"
                                   }
                                 },
@@ -23907,7 +23907,7 @@
                   "stateVariable": false,
                   "storageLocation": "storage",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_struct$_TokenTrackerState_$8554_storage_ptr",
+                    "typeIdentifier": "t_struct$_TokenTrackerState_$8571_storage_ptr",
                     "typeString": "struct TokenTracker.TokenTrackerState"
                   },
                   "typeName": {
@@ -23917,13 +23917,13 @@
                       "id": 2854,
                       "name": "TokenTracker.TokenTrackerState",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 8554,
+                      "referencedDeclaration": 8571,
                       "src": "570:30:15"
                     },
-                    "referencedDeclaration": 8554,
+                    "referencedDeclaration": 8571,
                     "src": "570:30:15",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_struct$_TokenTrackerState_$8554_storage_ptr",
+                      "typeIdentifier": "t_struct$_TokenTrackerState_$8571_storage_ptr",
                       "typeString": "struct TokenTracker.TokenTrackerState"
                     }
                   },
@@ -23984,7 +23984,7 @@
                   "stateVariable": false,
                   "storageLocation": "storage",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_struct$_SignatureTracker_$6976_storage_ptr",
+                    "typeIdentifier": "t_struct$_SignatureTracker_$6993_storage_ptr",
                     "typeString": "struct SignatureManager.SignatureTracker"
                   },
                   "typeName": {
@@ -23994,13 +23994,13 @@
                       "id": 2861,
                       "name": "SignatureManager.SignatureTracker",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 6976,
+                      "referencedDeclaration": 6993,
                       "src": "668:33:15"
                     },
-                    "referencedDeclaration": 6976,
+                    "referencedDeclaration": 6993,
                     "src": "668:33:15",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_struct$_SignatureTracker_$6976_storage_ptr",
+                      "typeIdentifier": "t_struct$_SignatureTracker_$6993_storage_ptr",
                       "typeString": "struct SignatureManager.SignatureTracker"
                     }
                   },
@@ -24018,7 +24018,7 @@
                   "stateVariable": false,
                   "storageLocation": "storage",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_struct$_SpendingState_$7854_storage_ptr",
+                    "typeIdentifier": "t_struct$_SpendingState_$7871_storage_ptr",
                     "typeString": "struct SpendingManager.SpendingState"
                   },
                   "typeName": {
@@ -24028,13 +24028,13 @@
                       "id": 2864,
                       "name": "SpendingManager.SpendingState",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 7854,
+                      "referencedDeclaration": 7871,
                       "src": "722:29:15"
                     },
-                    "referencedDeclaration": 7854,
+                    "referencedDeclaration": 7871,
                     "src": "722:29:15",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_struct$_SpendingState_$7854_storage_ptr",
+                      "typeIdentifier": "t_struct$_SpendingState_$7871_storage_ptr",
                       "typeString": "struct SpendingManager.SpendingState"
                     }
                   },
@@ -24745,7 +24745,7 @@
                       "lValueRequested": false,
                       "memberName": "backlinkAdd",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 10278,
+                      "referencedDeclaration": 10295,
                       "src": "4657:29:15",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_delegatecall_nonpayable$_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_$_t_array$_t_address_$dyn_memory_ptr_$returns$__$bound_to$_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_$",
@@ -25078,7 +25078,7 @@
                       "lValueRequested": false,
                       "memberName": "backlinkDelete",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 10177,
+                      "referencedDeclaration": 10194,
                       "src": "4881:32:15",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_delegatecall_nonpayable$_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_$_t_array$_t_address_$dyn_memory_ptr_$returns$__$bound_to$_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_$",
@@ -25411,7 +25411,7 @@
                       "lValueRequested": false,
                       "memberName": "backlinkOverride",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 10346,
+                      "referencedDeclaration": 10363,
                       "src": "5110:34:15",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_$_t_array$_t_address_$dyn_memory_ptr_$returns$__$bound_to$_t_array$_t_contract$_IONEWallet_$4229_$dyn_storage_ptr_$",
@@ -25549,7 +25549,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.2",
-  "updatedAt": "2021-12-21T09:09:50.749Z",
+  "updatedAt": "2021-12-24T11:48:14.817Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

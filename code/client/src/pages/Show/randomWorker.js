@@ -20,6 +20,9 @@ export const useRandomWorker = () => {
   useEffect(() => {
     const worker = new Worker('/ONEWalletWorker.js')
     setWorker(worker)
+    return () => {
+      worker.terminate()
+    }
   }, [])
   useEffect(() => {
     worker && resetWorker(worker)

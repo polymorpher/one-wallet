@@ -1,6 +1,6 @@
 const axios = require('axios')
 const config = require('../config/provider').getConfig()
-const { isEqual, range } = require('lodash')
+const { isEqual } = require('lodash')
 const contract = require('@truffle/contract')
 const { TruffleProvider } = require('@harmony-js/core')
 const Web3 = require('web3')
@@ -300,12 +300,12 @@ const api = {
           dailyLimit: dailyLimit.toString(10),
           majorVersion: majorVersion ? majorVersion.toNumber() : 0,
           minorVersion: minorVersion ? minorVersion.toNumber() : 0,
-          spendingAmount,
-          lastSpendingInterval,
-          spendingLimit,
-          spendingInterval,
-          lastLimitAdjustmentTime,
-          highestSpendingLimit,
+          spendingAmount: spendingAmount.toString(),
+          lastSpendingInterval: lastSpendingInterval.toNumber(),
+          spendingLimit: spendingLimit.toString(),
+          spendingInterval: spendingInterval.toNumber(),
+          lastLimitAdjustmentTime: lastLimitAdjustmentTime.toNumber(),
+          highestSpendingLimit: highestSpendingLimit.toString(),
         }
       }
       const intervalMs = interval.toNumber() * 1000
@@ -560,8 +560,32 @@ const api = {
   },
 
   relayer: {
-    create: async ({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, spendingInterval, backlinks = [], oldCores = [], innerCores, identificationKeys }) => {
-      const { data } = await base.post('/new', { root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, spendingInterval, backlinks, oldCores, innerCores, identificationKeys })
+    create: async ({
+      root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, // classic
+      spendingInterval, spentAmount = 0, lastSpendingInterval = 0, // v12
+      backlinks = [], // v9
+      oldCores = [], // v14
+      innerCores, identificationKeys, lastLimitAdjustmentTime = 0, highestSpendingLimit = spendingLimit, // v15
+    }) => {
+      const { data } = await base.post('/new', {
+        root,
+        height,
+        interval,
+        t0,
+        lifespan,
+        slotSize,
+        lastResortAddress,
+        spendingLimit, // ^classic
+        spendingInterval,
+        spentAmount,
+        lastSpendingInterval, // ^v12
+        backlinks, // v9
+        oldCores, // v14
+        innerCores,
+        identificationKeys,
+        lastLimitAdjustmentTime,
+        highestSpendingLimit, // ^v15
+      })
       return data
     },
     commit: async ({ address, hash, paramsHash, verificationHash, majorVersion, minorVersion }) => {
