@@ -58,68 +58,72 @@ const Restore = () => {
 
   return (
     <>
-      <AnimatedSection show={section === Sections.Choose}>
-        <Space direction='vertical' size='large' style={{ width: '100%' }}>
-          <Heading>Scan authenticator seed QR code</Heading>
-          <Button shape='round' size='large' type='primary' onClick={() => setSection(Sections.ScanQR)} icon={<ScanOutlined />}>Scan Now</Button>
-          <Hint>Classic restore method. Requires webcam. Scan seed QR code exported from your authenticator (Google and Aegis Authenticator only)</Hint>
-        </Space>
-        <Divider><Hint>Or</Hint></Divider>
-        <Space direction='vertical' size='large' style={{ width: '100%' }}>
-          <Heading>Use auth codes + recovery file</Heading>
-          <Button shape='round' size='large' type='primary' onClick={() => setSection(Sections.SyncRecoveryFile)} icon={<FieldBinaryOutlined />}>Begin</Button>
-          <Hint>New method. Works with all authenticators. You need (1) wallet recovery file (2) your authenticator. Provide 6-digit auth code for 6 times (30 seconds each time). Setup a new authenticator code after that.</Hint>
-        </Space>
-        <Divider><Hint>Or</Hint></Divider>
-        <Space direction='vertical' size='large'>
-          <Heading>Sync 1wallet across devices</Heading>
-          <LocalImport />
-          <Hint>Requires the same 1wallet from another device. Does not require authenticator. To use this, you need to export .1wallet file under "About" tab from another device. For best security, you should delete the .1wallet file after that.</Hint>
-        </Space>
-
-      </AnimatedSection>
-      <AnimatedSection show={section === Sections.ScanQR}>
-        <RestoreByScan isActive={section === Sections.ScanQR} onCancel={() => setSection(Sections.Choose)} />
-      </AnimatedSection>
-      <AnimatedSection show={section === Sections.SyncRecoveryFile}>
-        <SyncRecoveryFile
-          onSynced={onSynced}
-          onCancel={() => setSection(Sections.Choose)}
-        />
-      </AnimatedSection>
-      <AnimatedSection show={section === Sections.SetupNewCode}>
-        <SetupNewCode
-          wallet={walletInfo}
-          name={name}
-          expert={expert}
-          active={section === Sections.SetupNewCode}
-          onComplete={() => setSection(Sections.RecoveryCode)}
-          onCancel={() => setSection(Sections.Choose)}
-          onProgressUpdate={({ progress, stage }) => { setProgress(progress); setProgressStage(stage) }}
-          onComputeLocalParams={e => {
-            // console.log(e)
-            setNewLocalParams(e)
-          }}
-        />
-      </AnimatedSection>
-      <AnimatedSection show={section === Sections.RecoveryCode}>
-        <RestoreByCodes
-          name={name}
-          progress={progress}
-          expert={expert}
-          progressStage={progressStage}
-          isActive={section === Sections.RecoveryCode}
-          onComplete={() => {
-            message.info('Redirecting to your wallet in 2 seconds...')
-            setTimeout(() => history.push(Paths.showAddress(address)), 2000)
-          }}
-          onCancel={() => setSection(Sections.Choose)}
-          newLocalParams={newLocalParams}
-          wallet={walletInfo}
-          innerTrees={innerTrees}
-          innerCores={innerCores}
-        />
-      </AnimatedSection>
+      {section === Sections.Choose &&
+        <AnimatedSection>
+          <Space direction='vertical' size='large' style={{ width: '100%' }}>
+            <Heading>Scan authenticator seed QR code</Heading>
+            <Button shape='round' size='large' type='primary' onClick={() => setSection(Sections.ScanQR)} icon={<ScanOutlined />}>Scan Now</Button>
+            <Hint>Classic restore method. Requires webcam. Scan seed QR code exported from your authenticator (Google and Aegis Authenticator only)</Hint>
+          </Space>
+          <Divider><Hint>Or</Hint></Divider>
+          <Space direction='vertical' size='large' style={{ width: '100%' }}>
+            <Heading>Use auth codes + recovery file</Heading>
+            <Button shape='round' size='large' type='primary' onClick={() => setSection(Sections.SyncRecoveryFile)} icon={<FieldBinaryOutlined />}>Begin</Button>
+            <Hint>New method. Works with all authenticators. You need (1) wallet recovery file (2) your authenticator. Provide 6-digit auth code for 6 times (30 seconds each time). Setup a new authenticator code after that.</Hint>
+          </Space>
+          <Divider><Hint>Or</Hint></Divider>
+          <Space direction='vertical' size='large'>
+            <Heading>Sync 1wallet across devices</Heading>
+            <LocalImport />
+            <Hint>Requires the same 1wallet from another device. Does not require authenticator. To use this, you need to export .1wallet file under "About" tab from another device. For best security, you should delete the .1wallet file after that.</Hint>
+          </Space>
+        </AnimatedSection>}
+      {section === Sections.ScanQR &&
+        <AnimatedSection>
+          <RestoreByScan isActive={section === Sections.ScanQR} onCancel={() => setSection(Sections.Choose)} />
+        </AnimatedSection>}
+      {section === Sections.SyncRecoveryFile &&
+        <AnimatedSection>
+          <SyncRecoveryFile
+            onSynced={onSynced}
+            onCancel={() => setSection(Sections.Choose)}
+          />
+        </AnimatedSection>}
+      {section === Sections.SetupNewCode &&
+        <AnimatedSection>
+          <SetupNewCode
+            wallet={walletInfo}
+            name={name}
+            expert={expert}
+            active={section === Sections.SetupNewCode}
+            onComplete={() => setSection(Sections.RecoveryCode)}
+            onCancel={() => setSection(Sections.Choose)}
+            onProgressUpdate={({ progress, stage }) => { setProgress(progress); setProgressStage(stage) }}
+            onComputeLocalParams={e => {
+              // console.log(e)
+              setNewLocalParams(e)
+            }}
+          />
+        </AnimatedSection>}
+      {section === Sections.RecoveryCode &&
+        <AnimatedSection>
+          <RestoreByCodes
+            name={name}
+            progress={progress}
+            expert={expert}
+            progressStage={progressStage}
+            isActive={section === Sections.RecoveryCode}
+            onComplete={() => {
+              message.info('Redirecting to your wallet in 2 seconds...')
+              setTimeout(() => history.push(Paths.showAddress(address)), 2000)
+            }}
+            onCancel={() => setSection(Sections.Choose)}
+            newLocalParams={newLocalParams}
+            wallet={walletInfo}
+            innerTrees={innerTrees}
+            innerCores={innerCores}
+          />
+        </AnimatedSection>}
     </>
   )
 }

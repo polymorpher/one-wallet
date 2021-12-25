@@ -8,13 +8,11 @@ import Select from 'antd/es/select'
 import Image from 'antd/es/image'
 import Tooltip from 'antd/es/tooltip'
 import {
-  CloseOutlined,
   CloseCircleOutlined,
   PlusCircleOutlined, QuestionCircleOutlined,
 } from '@ant-design/icons'
 import { Hint, InputBox, Label } from '../../components/Text'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
-import AnimatedSection from '../../components/AnimatedSection'
 import util, { generateOtpSeed, useWindowDimensions } from '../../util'
 import BN from 'bn.js'
 import ShowUtils from './show-util'
@@ -262,8 +260,8 @@ const Gift = ({
       revealAPI: api.relayer.reveal,
       revealArgs: { ...args, data: hexData },
       ...handlers,
-      onRevealSuccess: (txId) => {
-        onRevealSuccess(txId)
+      onRevealSuccess: (txId, messages) => {
+        onRevealSuccess(txId, messages)
         setSection(sections.share)
       }
     })
@@ -427,28 +425,3 @@ const Gift = ({
 }
 
 export default Gift
-
-export const GiftModule = ({
-  address,
-  show,
-  onClose, // optional
-  onSuccess, // optional
-  prefilledTotalAmount, // string, ONE
-  prefilledClaimLimit, // string, ONE
-  prefilledClaimInterval // int, non-zero
-}) => {
-  return (
-    <AnimatedSection
-      style={{ maxWidth: 720 }}
-      show={show} title={<Title level={2}>Send Gift</Title>} extra={[
-        <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-      ]}
-    >
-      <Gift
-        address={address}
-        prefilledTotalAmount={prefilledTotalAmount} prefilledClaimLimit={prefilledClaimLimit} prefilledClaimInterval={prefilledClaimInterval}
-        onSuccess={onSuccess}
-      />
-    </AnimatedSection>
-  )
-}

@@ -114,30 +114,30 @@ const Show = () => {
 
   return (
     <>
-      <AnimatedSection
-        show={!section}
-        title={<WalletTitle address={address} onQrCodeClick={() => showTab('qr')} onScanClick={() => showTab('scan')} />}
-        tabList={displayTabList}
-        activeTabKey={activeTab}
-        onTabChange={key => showTab(key)}
-        wide
-      >
-        <Warnings address={address} />
-        {activeTab === 'about' && <About address={address} />}
-        {activeTab === 'coins' && <Balance address={address} />}
-        {activeTab === 'coins' && <ERC20Grid address={address} />}
-        {activeTab === 'nft' && <NFTDashboard address={address} />}
-        {activeTab === 'help' && <Recovery address={address} />}
-        {activeTab === 'swap' && <Swap address={address} />}
-        {activeTab === 'gift' && <Gift address={address} />}
-        {activeTab === 'qr' && <QRCode address={address} name={wallet.name} />}
-        {activeTab === 'scan' && <Scan address={address} />}
-        {activeTab === 'call' && <Call address={address} headless />}
-        {activeTab === 'sign' && <Sign address={address} headless />}
-        <Upgrade address={address} />
-        <CheckForwardState address={address} onClose={() => history.push(Paths.wallets)} />
-        <CheckRoots address={address} onClose={() => history.push(Paths.wallets)} />
-      </AnimatedSection>
+      {!section &&
+        <AnimatedSection
+          title={<WalletTitle address={address} onQrCodeClick={() => showTab('qr')} onScanClick={() => showTab('scan')} />}
+          tabList={displayTabList}
+          activeTabKey={activeTab}
+          onTabChange={key => showTab(key)}
+          wide
+        >
+          <Warnings address={address} />
+          {activeTab === 'about' && <About address={address} />}
+          {activeTab === 'coins' && <Balance address={address} />}
+          {activeTab === 'coins' && <ERC20Grid address={address} />}
+          {activeTab === 'nft' && <NFTDashboard address={address} />}
+          {activeTab === 'help' && <Recovery address={address} />}
+          {activeTab === 'swap' && <Swap address={address} />}
+          {activeTab === 'gift' && <Gift address={address} />}
+          {activeTab === 'qr' && <QRCode address={address} name={wallet.name} />}
+          {activeTab === 'scan' && <Scan address={address} />}
+          {activeTab === 'call' && <Call address={address} headless />}
+          {activeTab === 'sign' && <Sign address={address} headless />}
+          <Upgrade address={address} />
+          <CheckForwardState address={address} onClose={() => history.push(Paths.wallets)} />
+          <CheckRoots address={address} onClose={() => history.push(Paths.wallets)} />
+        </AnimatedSection>}
 
       {section === 'transfer' && <Send address={address} onClose={showStartScreen} />}
       {section === 'recover' && <DoRecover address={address} onClose={showStartScreen} />}

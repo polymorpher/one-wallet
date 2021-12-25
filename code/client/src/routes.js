@@ -20,6 +20,7 @@ import { globalActions } from './state/modules/global'
 import config from './config'
 import util, { useWindowDimensions } from './util'
 import Unwrap from './pages/Unwrap'
+import cacheActions from './state/modules/cache/actions'
 
 const LocalRoutes = () => {
   const dispatch = useDispatch()
@@ -28,6 +29,21 @@ const LocalRoutes = () => {
   const network = useSelector(state => state.global.network)
   const networkWallets = util.filterNetworkWallets(wallets, network)
   const { isMobile } = useWindowDimensions()
+
+  const needCodeUpdate = useSelector(state => state.cache.needCodeUpdate)
+  const clientVersion = useSelector(state => state.cache.clientVersion[network])
+
+  useEffect(() => {
+    dispatch(cacheActions.fetchVersion({ network }))
+    dispatch(cacheActions.clearCode())
+  }, [])
+  useEffect(() => {
+    if (needCodeUpdate || clientVersion !== config.version) {
+      dispatch(cacheActions.updateClientVersion(config.version))
+      dispatch(cacheActions.fetchCode({ network }))
+    }
+  }, [needCodeUpdate, clientVersion])
+
   return (
     <Layout style={{
       minHeight: '100vh'
@@ -95,6 +111,7 @@ const Routes = () => {
     persistStore(store.default, null, () => {
       dispatch(walletActions.autoMigrateWallets())
       dispatch(globalActions.migrate())
+
       setRehydrated(true)
     })
   }, [dispatch])

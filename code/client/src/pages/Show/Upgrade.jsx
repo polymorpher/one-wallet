@@ -1,4 +1,4 @@
-import { useDispatch, useSelector } from 'react-redux'
+import { batch, useDispatch, useSelector } from 'react-redux'
 import React, { useState } from 'react'
 import ONEConstants from '../../../../lib/constants'
 import ONEUtil from '../../../../lib/util'
@@ -16,7 +16,7 @@ import message from '../../message'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
 import ShowUtils from './show-util'
-import { SmartFlows } from '../../../../lib/api/flow'
+import { Flows, SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import { api } from '../../../../lib/api'
 import { walletActions } from '../../state/modules/wallet'
@@ -66,12 +66,22 @@ const Upgrade = ({ address, onClose }) => {
   const [stage, setStage] = useState(-1)
   const { resetWorker, recoverRandomness } = useRandomWorker()
 
-  const { prepareValidation, onRevealSuccess, ...helpers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
+  const { prepareValidation, prepareProofFailed, onRevealSuccess, ...helpers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
 
   const doUpgrade = async () => {
     if (stage >= 0) {
       return
     }
+    const { otp, otp2, invalidOtp2, invalidOtp } = prepareValidation({ state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp }, checkAmount: false, checkDest: false }) || {}
+
+    if (invalidOtp || invalidOtp2) return
+
+    const { eotp, index, layers } = await Flows.deriveEOTP({ otp, otp2, wallet, prepareProofFailed })
+    if (!eotp) {
+      return
+    }
+    message.info('Retrieving latest information for the wallet...')
+
     setStage(0)
     const {
       root,
@@ -82,13 +92,32 @@ const Upgrade = ({ address, onClose }) => {
       maxOperationsPerInterval,
       lastResortAddress,
       spendingLimit,
-      spendingInterval
+      spendingAmount, // ^classic
+
+      spendingInterval, // v12
+
+      highestSpendingLimit,
+      lastLimitAdjustmentTime,
+      lastSpendingInterval,
+      spentAmount, // ^v15
     } = await api.blockchain.getWallet({ address, raw: true })
-    const backlinks = await api.blockchain.getBacklinks({ address })
-    let oldCores = []
+
+    const backlinks = await api.blockchain.getBacklinks({ address }) // v9
+    let oldCores = [] // v14
     if (majorVersion >= 14) {
       oldCores = await api.blockchain.getOldInfos({ address, raw: true })
     }
+    // TODO: always add a new identification key, computed using keccak(eotp) or similar. This key will be used for address prediction and contract verification only. It will be automatically ignored for other purposes (due to shorter length)
+
+    const upgradeIdentificationKey = ONEUtil.hexString(ONEUtil.keccak(new Uint8Array([...eotp, ...new Uint8Array(new Uint32Array([index]).buffer)])))
+    let identificationKeys = []; let innerCores = [] // v15
+    if (majorVersion >= 15) {
+      [innerCores, identificationKeys] = await Promise.all([
+        api.blockchain.getInnerCores({ address, raw: true }),
+        api.blockchain.getIdentificationKeys({ address }),
+      ])
+    }
+    identificationKeys.unshift(upgradeIdentificationKey)
     const transformedLastResortAddress = util.isDefaultRecoveryAddress(lastResortAddress) ? ONEConstants.TreasuryAddress : lastResortAddress
     const { address: newAddress } = await api.relayer.create({
       root,
@@ -98,17 +127,29 @@ const Upgrade = ({ address, onClose }) => {
       lifespan,
       slotSize: maxOperationsPerInterval,
       lastResortAddress: transformedLastResortAddress,
-      spendingLimit: spendingLimit.toString(),
-      spendingInterval: spendingInterval.toString(),
+      spendingAmount,
+      spendingLimit,
+
+      spendingInterval,
+
       backlinks: [...backlinks, address],
-      oldCores
+      oldCores,
+
+      highestSpendingLimit,
+      lastLimitAdjustmentTime,
+      lastSpendingInterval,
+      spentAmount,
+      innerCores,
+      identificationKeys, // ^v15
     })
-    const { otp, otp2, invalidOtp2, invalidOtp } = prepareValidation({ state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp }, checkAmount: false, checkDest: false }) || {}
-    if (invalidOtp || invalidOtp2) return
+
     SmartFlows.commitReveal({
       wallet,
       otp,
       otp2,
+      eotp,
+      index,
+      layers,
       recoverRandomness,
       commitHashGenerator: ONE.computeForwardHash,
       commitHashArgs: { address: newAddress },
@@ -117,8 +158,8 @@ const Upgrade = ({ address, onClose }) => {
       revealAPI: api.relayer.revealForward,
       revealArgs: { dest: newAddress },
       ...helpers,
-      onRevealSuccess: async (txId) => {
-        onRevealSuccess(txId)
+      onRevealSuccess: async (txId, messages) => {
+        onRevealSuccess(txId, messages)
         setStage(-1)
         resetOtp()
         resetWorker()
@@ -134,11 +175,13 @@ const Upgrade = ({ address, onClose }) => {
           forwardAddress: newAddress,
           _merge: true
         }
-        dispatch(walletActions.updateWallet(newWallet))
-        dispatch(walletActions.updateWallet(oldWallet))
-        dispatch(walletActions.fetchWallet({ address: newAddress }))
-        setTimeout(() => history.push(Paths.showAddress(util.safeOneAddress(newAddress))), 1000)
-        message.success('Upgrade completed!')
+        batch(() => {
+          dispatch(walletActions.updateWallet(newWallet))
+          dispatch(walletActions.updateWallet(oldWallet))
+          dispatch(walletActions.fetchWallet({ address: newAddress }))
+        })
+        message.success('Upgrade completed! Redirecting to wallet in 2 seconds...')
+        setTimeout(() => history.push(Paths.showAddress(util.safeOneAddress(newAddress))), 2000)
       }
     })
   }

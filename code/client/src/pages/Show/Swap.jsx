@@ -512,8 +512,8 @@ const Swap = ({ address }) => {
       afterCommit: () => setStage(2),
       revealAPI: api.relayer.reveal,
       revealArgs: { ...args, data: hexData },
-      onRevealSuccess: async (txId) => {
-        onRevealSuccess(txId)
+      onRevealSuccess: async (txId, messages) => {
+        onRevealSuccess(txId, messages)
         if (trackToken) {
           const tt = await handleTrackNewToken({
             newContractAddress: tokenTo.address,
@@ -620,8 +620,8 @@ const Swap = ({ address }) => {
       hexData,
       args,
       extraHandlers: {
-        onRevealSuccess: async (txId) => {
-          onRevealSuccess(txId)
+        onRevealSuccess: async (txId, messages) => {
+          onRevealSuccess(txId, messages)
           message.info('Verifying token approval status... It might take 5-10 seconds')
           Chaining.refreshAllowance({ address, contractAddress: tokenFrom.address, onAllowanceReceived: setTokenAllowance })
         },

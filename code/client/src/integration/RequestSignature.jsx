@@ -96,7 +96,7 @@ const RequestSignature = ({ caller, callback, messageB64Encoded, raw, duration, 
       </AnimatedSection>
       {showSign &&
         <Sign
-          address={selectedAddress.value} show={showSign} onClose={onCallClose} onSuccess={onSuccess}
+          address={selectedAddress.value} onClose={onCallClose} onSuccess={onSuccess}
           prefillMessageInput={message}
           prefillUseRawMessage={raw}
           prefillDuration={duration}

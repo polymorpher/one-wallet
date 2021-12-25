@@ -28,7 +28,6 @@ const { TextArea } = Input
 
 const Call = ({
   address,
-  show,
   minimal, // optional
   onClose, // optional
   onSuccess, // optional
@@ -137,7 +136,7 @@ const Call = ({
     return (
       <AnimatedSection
         style={{ maxWidth: 720 }}
-        show={show} title={<Title level={2}>Call Contract Function</Title>} extra={[
+        title={<Title level={2}>Call Contract Function</Title>} extra={[
           <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
         ]}
       >
@@ -238,7 +237,7 @@ const Call = ({
   return (
     <AnimatedSection
       style={{ maxWidth: 720 }}
-      show={show} title={!minimal && <Title level={2}>Call Contract Function</Title>} extra={!minimal && [
+      title={!minimal && <Title level={2}>Call Contract Function</Title>} extra={!minimal && [
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
       ]}
     >
