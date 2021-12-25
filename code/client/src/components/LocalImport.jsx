@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { ImportOutlined, LoadingOutlined } from '@ant-design/icons'
+import ImportOutlined from '@ant-design/icons/ImportOutlined'
+import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import Button from 'antd/es/button'
 import Upload from 'antd/es/upload'
 import { useDispatch, useSelector } from 'react-redux'

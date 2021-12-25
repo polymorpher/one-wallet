@@ -4,7 +4,8 @@ import Button from 'antd/es/button'
 import Checkbox from 'antd/es/checkbox'
 import Space from 'antd/es/space'
 import Tooltip from 'antd/es/tooltip'
-import { QuestionCircleOutlined, SnippetsOutlined } from '@ant-design/icons'
+import QuestionCircleOutlined from '@ant-design/icons/QuestionCircleOutlined'
+import SnippetsOutlined from '@ant-design/icons/SnippetsOutlined'
 import React from 'react'
 
 export const OtpSetup = ({ isMobile, otpRef, otpValue, setOtpValue, name }) => {

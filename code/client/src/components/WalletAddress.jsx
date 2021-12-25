@@ -5,7 +5,8 @@ import Tooltip from 'antd/es/tooltip'
 import Typography from 'antd/es/typography'
 import util from '../util'
 import WalletConstants from '../constants/wallet'
-import { FieldBinaryOutlined, DeploymentUnitOutlined } from '@ant-design/icons'
+import FieldBinaryOutlined from '@ant-design/icons/FieldBinaryOutlined'
+import DeploymentUnitOutlined from '@ant-design/icons/DeploymentUnitOutlined'
 import { useSelector } from 'react-redux'
 const { Text, Link } = Typography
 

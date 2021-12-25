@@ -1,4 +1,6 @@
-import { CloseOutlined, ScanOutlined, EditOutlined } from '@ant-design/icons'
+import CloseOutlined from '@ant-design/icons/CloseOutlined'
+import ScanOutlined from '@ant-design/icons/ScanOutlined'
+import EditOutlined from '@ant-design/icons/EditOutlined'
 import Select from 'antd/es/select'
 import Button from 'antd/es/button'
 import Tooltip from 'antd/es/tooltip'

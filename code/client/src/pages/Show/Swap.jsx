@@ -17,11 +17,9 @@ import { DefaultTrackedERC20, HarmonyONE, withKeys } from '../../components/Toke
 import api from '../../api'
 import { Hint, InputBox, Warning } from '../../components/Text'
 import BN from 'bn.js'
-import {
-  PercentageOutlined,
-  QuestionCircleOutlined,
-  SwapOutlined
-} from '@ant-design/icons'
+import PercentageOutlined from '@ant-design/icons/PercentageOutlined'
+import QuestionCircleOutlined from '@ant-design/icons/QuestionCircleOutlined'
+import SwapOutlined from '@ant-design/icons/SwapOutlined'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { FallbackImage } from '../../constants/ui'
 import ShowUtils from './show-util'

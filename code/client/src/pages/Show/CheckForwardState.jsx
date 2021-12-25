@@ -15,7 +15,7 @@ import { walletActions } from '../../state/modules/wallet'
 import { useHistory } from 'react-router'
 import Paths from '../../constants/paths'
 import WalletAddress from '../../components/WalletAddress'
-import { DeleteOutlined } from '@ant-design/icons'
+import DeleteOutlined from '@ant-design/icons/DeleteOutlined'
 import { deleteWalletLocally } from '../../storage/util'
 const { Title, Text } = Typography
 

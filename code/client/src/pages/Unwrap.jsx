@@ -29,7 +29,8 @@ import ONEConstants from '../../../lib/constants'
 import { SmartFlows } from '../../../lib/api/flow'
 import ONE from '../../../lib/onewallet'
 import { useHistory } from 'react-router'
-import { CheckCircleOutlined, LoadingOutlined } from '@ant-design/icons'
+import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined'
+import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import humanizeDuration from 'humanize-duration'
 const { Title, Text, Link } = Typography
 

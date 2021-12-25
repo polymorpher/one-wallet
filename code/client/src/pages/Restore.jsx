@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { ScanOutlined, FieldBinaryOutlined } from '@ant-design/icons'
+import ScanOutlined from '@ant-design/icons/ScanOutlined'
+import FieldBinaryOutlined from '@ant-design/icons/FieldBinaryOutlined'
 import { useHistory } from 'react-router'
 import { Heading, Hint } from '../components/Text'
 import AnimatedSection from '../components/AnimatedSection'

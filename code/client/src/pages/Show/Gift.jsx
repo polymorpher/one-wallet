@@ -7,10 +7,9 @@ import Typography from 'antd/es/typography'
 import Select from 'antd/es/select'
 import Image from 'antd/es/image'
 import Tooltip from 'antd/es/tooltip'
-import {
-  CloseCircleOutlined,
-  PlusCircleOutlined, QuestionCircleOutlined,
-} from '@ant-design/icons'
+import CloseCircleOutlined from '@ant-design/icons/CloseCircleOutlined'
+import PlusCircleOutlined from '@ant-design/icons/PlusCircleOutlined'
+import QuestionCircleOutlined from '@ant-design/icons/QuestionCircleOutlined'
 import { Hint, InputBox, Label } from '../../components/Text'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import util, { generateOtpSeed, useWindowDimensions } from '../../util'

@@ -6,7 +6,8 @@ import Upload from 'antd/es/upload'
 import message from '../message'
 import QrReader from 'react-qr-reader'
 import { useWindowDimensions } from '../util'
-import { LoadingOutlined, UploadOutlined } from '@ant-design/icons'
+import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
+import UploadOutlined from '@ant-design/icons/UploadOutlined'
 import jsQR from 'jsqr'
 
 const QrCodeScanner = ({ onScan, shouldInit, style }) => {

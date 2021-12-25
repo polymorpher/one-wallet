@@ -13,7 +13,7 @@ import humanizeDuration from 'humanize-duration'
 import { WALLET_OUTDATED_DISABLED_TEXT, WalletSelector } from './Common'
 import ONEUtil from '../../../lib/util'
 import Sign from '../pages/Show/Sign'
-import { QuestionCircleOutlined } from '@ant-design/icons'
+import QuestionCircleOutlined from '@ant-design/icons/QuestionCircleOutlined'
 const { Title, Paragraph } = Typography
 const RequestSignature = ({ caller, callback, messageB64Encoded, raw, duration, from, commentB64Encoded }) => {
   const [message, setMessage] = useState('')
