@@ -58,23 +58,17 @@ const Committer = {
 }
 
 const Flows = {
-  commitReveal: async ({
-    otp, otp2, eotpBuilder = EotpBuilders.fromOtp,
-    committer = Committer.legacy,
-    recoverRandomness,
-    wallet, layers, commitHashGenerator, commitHashArgs, prepareProof, prepareProofFailed,
-    beforeCommit, afterCommit, onCommitError, onCommitFailure,
-    revealAPI, revealArgs, onRevealFailure, onRevealSuccess, onRevealError, onRevealAttemptFailed,
-    beforeReveal, index,
-    maxTransferAttempts = 3, checkCommitInterval = 4000,
+  deriveEOTP: async ({
+    otp, otp2, wallet, eotpBuilder = EotpBuilders.fromOtp,
+    recoverRandomness = null, prepareProof = null, prepareProofFailed = null,
+    layers = null, index = null,
     message = messager,
-    overrideVersion = false,
   }) => {
-    const { oldInfos, address, randomness, hseed, hasher, majorVersion, minorVersion, identificationKeys, localIdentificationKey } = wallet
+    const { oldInfos, randomness, hseed, hasher, identificationKeys, localIdentificationKey } = wallet
     let { effectiveTime, root } = wallet
     if (!layers) {
       if (localIdentificationKey && identificationKeys) {
-        const idKeyIndex = identificationKeys.findIndex(e => e === localIdentificationKey)
+        const idKeyIndex = identificationKeys.filter(e => e.length >= 130).findIndex(e => e === localIdentificationKey)
         if (idKeyIndex === -1) {
           message.debug('Cannot identify tree to use because of identification key mismatch. Falling back to brute force search')
           layers = await storage.getItem(root)
@@ -142,10 +136,46 @@ const Flows = {
       if (rand === null) {
         message.error('Validation error. Code might be incorrect')
         prepareProofFailed && prepareProofFailed()
-        return
+        return {}
       }
     }
-    const eotp = await eotpBuilder({ otp, otp2, rand, wallet, layers })
+    const eotp = await eotpBuilder({ otp, otp2, rand, wallet, nonce, layers })
+    message.debug(`eotp=${ONEUtil.hexString(eotp)} index=${index}`)
+    return { eotp, index, layers }
+  },
+  commitReveal: async ({
+    otp, otp2, eotpBuilder = EotpBuilders.fromOtp, wallet,
+    commitHashGenerator, commitHashArgs, revealAPI, revealArgs,
+
+    recoverRandomness = null, prepareProof = null, prepareProofFailed = null,
+    index = null,
+    eotp = null,
+    committer = Committer.legacy,
+    layers = null,
+    beforeCommit = null, afterCommit = null, onCommitError = null, onCommitFailure = null,
+    onRevealFailure = null, onRevealSuccess = null, onRevealError = null, onRevealAttemptFailed = null,
+    beforeReveal = null,
+    maxTransferAttempts = 3, checkCommitInterval = 4000,
+    message = messager,
+    overrideVersion = false,
+  }) => {
+    const { address, majorVersion, minorVersion } = wallet
+    if (!eotp) {
+      const derived = await Flows.deriveEOTP({
+        otp,
+        otp2,
+        eotpBuilder,
+        recoverRandomness,
+        prepareProof,
+        prepareProofFailed,
+        wallet,
+        layers,
+        index,
+        message })
+      eotp = derived?.eotp
+      index = index || derived?.index
+      layers = layers || derived?.layers
+    }
     if (!eotp) {
       message.error('Local state verification failed.')
       return
