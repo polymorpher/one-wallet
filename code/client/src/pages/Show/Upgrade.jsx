@@ -152,8 +152,8 @@ const Upgrade = ({ address, onClose }) => {
       revealAPI: api.relayer.revealForward,
       revealArgs: { dest: newAddress },
       ...helpers,
-      onRevealSuccess: async (txId) => {
-        onRevealSuccess(txId)
+      onRevealSuccess: async (txId, messages) => {
+        onRevealSuccess(txId, messages)
         setStage(-1)
         resetOtp()
         resetWorker()

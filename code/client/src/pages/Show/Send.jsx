@@ -113,8 +113,8 @@ const Send = ({
         onRevealFailure,
         onRevealError,
         onRevealAttemptFailed,
-        onRevealSuccess: (txId) => {
-          onRevealSuccess(txId)
+        onRevealSuccess: (txId, messages) => {
+          onRevealSuccess(txId, messages)
           onSuccess && onSuccess(txId)
           Chaining.refreshBalance(dispatch, intersection(Object.keys(wallets), [dest, address]))
         }
@@ -138,8 +138,8 @@ const Send = ({
         onRevealFailure,
         onRevealError,
         onRevealAttemptFailed,
-        onRevealSuccess: (txId) => {
-          onRevealSuccess(txId)
+        onRevealSuccess: (txId, messages) => {
+          onRevealSuccess(txId, messages)
           onSuccess && onSuccess(txId)
           Chaining.refreshTokenBalance({ dispatch, address, token: selectedToken })
         }

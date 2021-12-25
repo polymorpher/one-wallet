@@ -82,7 +82,6 @@ const Create = ({ expertMode, showRecovery }) => {
   const [showRecoveryDetail, setShowRecoveryDetail] = useState(false)
   const code = useSelector(state => state.cache.code[network])
 
-
   const defaultRecoveryAddress = { value: ONEConstants.TreasuryAddress, label: WalletConstants.defaultRecoveryAddressLabel }
 
   const [lastResortAddress, setLastResortAddress] = useState(defaultRecoveryAddress)

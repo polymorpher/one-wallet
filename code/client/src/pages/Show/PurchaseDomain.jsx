@@ -142,8 +142,8 @@ const PurchaseDomain = ({ address, onClose }) => {
       onRevealFailure,
       onRevealError,
       onRevealAttemptFailed,
-      onRevealSuccess: async (txId) => {
-        onRevealSuccess(txId)
+      onRevealSuccess: async (txId, messages) => {
+        onRevealSuccess(txId, messages)
         setTimeout(async () => {
           setStage(-1)
           resetOtp()
