@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Button, Row, Space, Typography, Input, Checkbox, Tooltip, Slider } from 'antd'
-import { CheckCircleOutlined, CloseOutlined, LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+import { CloseOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import { Hint, Label, Warning } from '../../components/Text'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
@@ -21,7 +21,6 @@ const { TextArea } = Input
 
 const Sign = ({
   address,
-  show,
   onClose, // optional
   onSuccess, // optional
   prefillMessageInput, // optional string, the message itself
@@ -107,8 +106,7 @@ const Sign = ({
   if (!(wallet.majorVersion > 10)) {
     return (
       <AnimatedSection
-        style={{ maxWidth: 720 }}
-        show={show} title={<Title level={2}>Sign Message</Title>} extra={[
+        style={{ maxWidth: 720 }} title={<Title level={2}>Sign Message</Title>} extra={[
           <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
         ]}
       >
@@ -165,7 +163,7 @@ const Sign = ({
   return (
     <AnimatedSection
       style={{ maxWidth: 720 }}
-      show={show} title={<Title level={2}>Sign Message</Title>} extra={[
+      title={<Title level={2}>Sign Message</Title>} extra={[
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
       ]}
     >

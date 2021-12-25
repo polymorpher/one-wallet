@@ -312,14 +312,13 @@ const Extend = ({
     setSeed2(null)
   }
 
-  const Subsection = useCallback(({ show, children }) => {
+  const Subsection = useCallback(({ children }) => {
     return (
-      <AnimatedSection
-        show={show} title={
-          <Space direction='vertical'>
-            <Title level={3}>Renew Wallet</Title>
-            <WalletAddress showLabel alwaysShowOptions address={address} addressStyle={{ padding: 0 }} />
-          </Space>
+      <AnimatedSection title={
+        <Space direction='vertical'>
+          <Title level={3}>Renew Wallet</Title>
+          <WalletAddress showLabel alwaysShowOptions address={address} addressStyle={{ padding: 0 }} />
+        </Space>
         }
       >
         {children}
@@ -331,9 +330,8 @@ const Extend = ({
   }, [address])
 
   if (majorVersion < 14) {
-    console.log(majorVersion, name)
     return (
-      <Subsection show onClose={onClose}>
+      <Subsection onClose={onClose}>
         <Warning>Your wallet is too old to use this feature. Please use a wallet that is at least version 14.1</Warning>
       </Subsection>
     )
@@ -341,86 +339,90 @@ const Extend = ({
 
   return (
     <>
-      <Subsection onClose={onClose} show={section === Subsections.init}>
-        <AverageRow>
-          <Title level={3}>Set up a new authenticator code?</Title>
-        </AverageRow>
-        <AverageRow gutter={24}>
-          <Col span={isMobile ? 24 : 12}>
-            <Space direction='vertical' size='large' style={{ width: '100%' }} align='center'>
-              <Button shape='round' type='primary' onClick={() => setMethod('scan')}>Use the same</Button>
-              <Hint>You will need to export the Google Authenticator QR Code and scan it using a camera</Hint>
-            </Space>
-          </Col>
-          <Col span={isMobile ? 24 : 12}>
-            <Space direction='vertical' size='large' style={{ width: '100%' }} align='center'>
-              <Button shape='round' type='primary' onClick={() => setMethod('new')}>Setup a new one</Button>
-              <Hint>You will setup a new authenticator code. Both your new and old authenticator code work simultaneously.</Hint>
-            </Space>
-          </Col>
-        </AverageRow>
-      </Subsection>
-      <Subsection onClose={onClose} show={section === Subsections.scan}>
-        {!confirmName &&
-          <Space direction='vertical'>
-            <ScanGASteps />
-            <QrCodeScanner shouldInit={section === Subsections.scan} onScan={onScan} />
-          </Space>}
-        {confirmName &&
-          <Space direction='vertical'>
-            <AverageRow>
-              <Text>You scanned a code for wallet <b>{confirmName}</b>, but your wallet's name is <b>{wallet.name}</b>. This means you might have scanned the wrong code.</Text>
-            </AverageRow>
-            <AverageRow>
-              <Text style={{ color: 'red' }}> Are you sure to allow using this code from now on for this wallet?</Text>
-            </AverageRow>
-            <AverageRow justify='space-between'>
-              <Button shape='round' onClick={cancelUseName}>Scan again</Button>
-              <Button shape='round' type='primary' onClick={confirmUseName}>Yes, I understand</Button>
-            </AverageRow>
-          </Space>}
+      {section === Subsections.init &&
+        <Subsection onClose={onClose}>
+          <AverageRow>
+            <Title level={3}>Set up a new authenticator code?</Title>
+          </AverageRow>
+          <AverageRow gutter={24}>
+            <Col span={isMobile ? 24 : 12}>
+              <Space direction='vertical' size='large' style={{ width: '100%' }} align='center'>
+                <Button shape='round' type='primary' onClick={() => setMethod('scan')}>Use the same</Button>
+                <Hint>You will need to export the Google Authenticator QR Code and scan it using a camera</Hint>
+              </Space>
+            </Col>
+            <Col span={isMobile ? 24 : 12}>
+              <Space direction='vertical' size='large' style={{ width: '100%' }} align='center'>
+                <Button shape='round' type='primary' onClick={() => setMethod('new')}>Setup a new one</Button>
+                <Hint>You will setup a new authenticator code. Both your new and old authenticator code work simultaneously.</Hint>
+              </Space>
+            </Col>
+          </AverageRow>
+        </Subsection>}
+      {section === Subsections.scan &&
+        <Subsection onClose={onClose}>
+          {!confirmName &&
+            <Space direction='vertical'>
+              <ScanGASteps />
+              <QrCodeScanner shouldInit={section === Subsections.scan} onScan={onScan} />
+            </Space>}
+          {confirmName &&
+            <Space direction='vertical'>
+              <AverageRow>
+                <Text>You scanned a code for wallet <b>{confirmName}</b>, but your wallet's name is <b>{wallet.name}</b>. This means you might have scanned the wrong code.</Text>
+              </AverageRow>
+              <AverageRow>
+                <Text style={{ color: 'red' }}> Are you sure to allow using this code from now on for this wallet?</Text>
+              </AverageRow>
+              <AverageRow justify='space-between'>
+                <Button shape='round' onClick={cancelUseName}>Scan again</Button>
+                <Button shape='round' type='primary' onClick={confirmUseName}>Yes, I understand</Button>
+              </AverageRow>
+            </Space>}
 
-      </Subsection>
-      <Subsection onClose={onClose} show={section === Subsections.new}>
-        <Space direction='vertical' align='center' style={{ width: '100%' }}>
-          <Hint>Scan or tap the QR code to setup a new authenticator code</Hint>
-          {!showSecondCode &&
-            <>
-              {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData })}
-              <OtpSetup isMobile={isMobile} otpRef={validationOtpRef} otpValue={validationOtp} setOtpValue={setValidationOtp} name={name} />
-              {(dev || expert) && <TwoCodeOption isMobile={isMobile} setDoubleOtp={setDoubleOtp} doubleOtp={doubleOtp} />}
-            </>}
-          {showSecondCode &&
-            <>
-              {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData: secondOtpQrCodeData })}
-              <OtpSetup isMobile={isMobile} otpRef={validationOtpRef} otpValue={validationOtp} setOtpValue={setValidationOtp} name={getSecondCodeName(name)} />
-            </>}
-        </Space>
-      </Subsection>
-      <Subsection onClose={onClose} show={section === Subsections.confirm}>
-        <AverageRow>
-          <Hint>If you have this wallet on other devices, the wallet can only be used up until its original expiry time on those devices. To fix that, open the wallet on those devices, follow the instructions, delete and "Restore" the wallet there. </Hint>
-        </AverageRow>
-        <AverageRow>
-          {method === 'new' &&
-            <Text style={{ color: 'red' }}>
-              Both your new and old authenticator codes will work for this wallet from now on. Use your old authenticator code to confirm this operation.
-            </Text>}
-        </AverageRow>
-        {!root && <WalletCreateProgress title='Computing security parameters...' progress={progress} isMobile={isMobile} progressStage={progressStage} />}
-        <AverageRow align='middle'>
-          <Col span={24}>
-            <OtpStack
-              isDisabled={!root}
-              walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)}
-              otpState={otpState}
-              onComplete={doReplace}
-              action={`confirm ${method === 'new' ? '[using old authenticator code]' : ''}`}
-            />
-          </Col>
-        </AverageRow>
-        <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
-      </Subsection>
+        </Subsection>}
+      {section === Subsections.new &&
+        <Subsection onClose={onClose}>
+          <Space direction='vertical' align='center' style={{ width: '100%' }}>
+            <Hint>Scan or tap the QR code to setup a new authenticator code</Hint>
+            {!showSecondCode &&
+              <>
+                {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData })}
+                <OtpSetup isMobile={isMobile} otpRef={validationOtpRef} otpValue={validationOtp} setOtpValue={setValidationOtp} name={name} />
+                {(dev || expert) && <TwoCodeOption isMobile={isMobile} setDoubleOtp={setDoubleOtp} doubleOtp={doubleOtp} />}
+              </>}
+            {showSecondCode &&
+              <>
+                {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData: secondOtpQrCodeData })}
+                <OtpSetup isMobile={isMobile} otpRef={validationOtpRef} otpValue={validationOtp} setOtpValue={setValidationOtp} name={getSecondCodeName(name)} />
+              </>}
+          </Space>
+        </Subsection>}
+      {section === Subsections.confirm &&
+        <Subsection onClose={onClose}>
+          <AverageRow>
+            <Hint>If you have this wallet on other devices, the wallet can only be used up until its original expiry time on those devices. To fix that, open the wallet on those devices, follow the instructions, delete and "Restore" the wallet there. </Hint>
+          </AverageRow>
+          <AverageRow>
+            {method === 'new' &&
+              <Text style={{ color: 'red' }}>
+                Both your new and old authenticator codes will work for this wallet from now on. Use your old authenticator code to confirm this operation.
+              </Text>}
+          </AverageRow>
+          {!root && <WalletCreateProgress title='Computing security parameters...' progress={progress} isMobile={isMobile} progressStage={progressStage} />}
+          <AverageRow align='middle'>
+            <Col span={24}>
+              <OtpStack
+                isDisabled={!root}
+                walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)}
+                otpState={otpState}
+                onComplete={doReplace}
+                action={`confirm ${method === 'new' ? '[using old authenticator code]' : ''}`}
+              />
+            </Col>
+          </AverageRow>
+          <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
+        </Subsection>}
     </>
 
   )
