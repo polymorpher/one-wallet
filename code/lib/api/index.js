@@ -1,6 +1,6 @@
 const axios = require('axios')
 const config = require('../config/provider').getConfig()
-const { isEqual, range } = require('lodash')
+const { isEqual } = require('lodash')
 const contract = require('@truffle/contract')
 const { TruffleProvider } = require('@harmony-js/core')
 const Web3 = require('web3')
@@ -50,8 +50,9 @@ let base = axios.create({
 const initAPI = (store) => {
   store.subscribe(() => {
     const state = store.getState()
-    const { relayer: relayerId, network, relayerSecret: secret, wallets, selected } = state.wallet
-    const { majorVersion, minorVersion } = wallets?.[selected] || {}
+    const { relayer: relayerId, network, relayerSecret: secret, selectedWallet } = state.global
+    const wallets = state.wallet
+    const { majorVersion, minorVersion } = wallets?.[selectedWallet] || {}
     let relayer = relayerId
     if (relayer && !relayer.startsWith('http')) {
       relayer = config.relayers[relayer]?.url
@@ -141,8 +142,8 @@ const initBlockchain = (store) => {
   switchNetwork()
   store.subscribe(() => {
     const state = store.getState()
-    const { network } = state.wallet
-    if (network !== activeNetwork) {
+    const { network } = state.global
+    if (network && network !== activeNetwork) {
       if (config.debug) console.log(`Switching blockchain provider: from ${activeNetwork} to ${network}`)
       activeNetwork = network
       switchNetwork()
@@ -210,40 +211,32 @@ const api = {
   },
   blockchain: {
     getOldInfos: async ({ address, raw }) => {
-      const c = await one.at(address)
+      const c = new one(address)
       const res = await c.getOldInfos()
-      const ret = []
-      for (let info of res) {
-        const [root, height, interval, t0, lifespan, maxOperationsPerInterval] = range(6).map(k => info[k])
-        const intervalMs = new BN(interval).toNumber() * 1000
-        ret.push(raw ? {
-          root,
-          height: new BN(height).toNumber(),
-          interval: new BN(interval).toNumber(),
-          t0: new BN(t0).toNumber(),
-          lifespan: new BN(lifespan).toNumber(),
-          maxOperationsPerInterval: new BN(maxOperationsPerInterval).toNumber(),
-        } : {
-          root: root.slice(2),
-          effectiveTime: new BN(t0).toNumber() * intervalMs,
-          duration: new BN(lifespan).toNumber() * intervalMs,
-          slotSize: new BN(maxOperationsPerInterval).toNumber(),
-        })
-      }
-      return ret
+      return res.map(e => ONEUtil.processCore(e, raw))
+    },
+    getInnerCores: async ({ address, raw }) => {
+      const c = new one(address)
+      const res = await c.getInnerCores()
+      return res.map(e => ONEUtil.processCore(e, raw))
+    },
+    getIdentificationKeys: async ({ address }) => {
+      const c = new one(address)
+      const res = await c.getIdentificationKeys()
+      return res
     },
     getLastOperationTime: async ({ address }) => {
-      const c = await one.at(address)
+      const c = new one(address)
       const t = await c.lastOperationTime() // BN but convertible to uint32
       return t.toNumber()
     },
     getNonce: async ({ address }) => {
-      const c = await one.at(address)
+      const c = new one(address)
       const nonce = await c.getNonce()
       return nonce.toNumber()
     },
     getSpending: async ({ address }) => {
-      const c = await one.at(address)
+      const c = new one(address)
       let spendingLimit, spendingAmount, lastSpendingInterval, spendingInterval
       const r = await c.getCurrentSpendingState()
       spendingLimit = new BN(r[0])
@@ -256,10 +249,10 @@ const api = {
      * Require contract >= v2
      * @param address
      * @param raw
-     * @returns {Promise<{duration: number, address, slotSize, effectiveTime: number, root, dailyLimit: string, majorVersion: (number|number), minorVersion: (number|number), lastResortAddress: *}|{maxOperationsPerInterval, lifespan, root: *, dailyLimit: string, interval, t0, majorVersion: (number|number), minorVersion: (number|number), lastResortAddress: *, height}>}
+     * @returns {Promise<{address, slotSize, highestSpendingLimit: string, effectiveTime: number, majorVersion: (number|number), lastSpendingInterval: number, spendingAmount: string, duration: number, spendingLimit: string, lastLimitAdjustmentTime: number, root, minorVersion: (number|number), spendingInterval: number, lastResortAddress: *}|{maxOperationsPerInterval, highestSpendingLimit: BN, lifespan, majorVersion: (number|number), spendingAmount: BN, lastSpendingInterval: BN, spendingLimit: BN, lastLimitAdjustmentTime: BN, root: *, dailyLimit: string, interval, t0, minorVersion: (number|number), spendingInterval: BN, lastResortAddress: *, height}>}
      */
     getWallet: async ({ address, raw }) => {
-      const c = await one.at(address)
+      const c = new one(address)
       const result = await c.getInfo()
       let majorVersion = new BN(0)
       let minorVersion = new BN(0)
@@ -307,12 +300,12 @@ const api = {
           dailyLimit: dailyLimit.toString(10),
           majorVersion: majorVersion ? majorVersion.toNumber() : 0,
           minorVersion: minorVersion ? minorVersion.toNumber() : 0,
-          spendingAmount,
-          lastSpendingInterval,
-          spendingLimit,
-          spendingInterval,
-          lastLimitAdjustmentTime,
-          highestSpendingLimit,
+          spendingAmount: spendingAmount.toString(),
+          lastSpendingInterval: lastSpendingInterval.toNumber(),
+          spendingLimit: spendingLimit.toString(),
+          spendingInterval: spendingInterval.toNumber(),
+          lastLimitAdjustmentTime: lastLimitAdjustmentTime.toNumber(),
+          highestSpendingLimit: highestSpendingLimit.toString(),
         }
       }
       const intervalMs = interval.toNumber() * 1000
@@ -348,7 +341,7 @@ const api = {
      * @returns {Promise<*[]>}
      */
     getCommitsV3: async ({ address }) => {
-      const c = await one.at(address)
+      const c = new one(address)
       const result = await c.getCommits()
       const [hashes, paramsHashes, timestamps, completed] = Object.keys(result).map(k => result[k])
       const commits = []
@@ -364,9 +357,8 @@ const api = {
      * @returns {Promise<*[]>}
      */
     getCommits: async ({ address }) => {
-      const c = await one.at(address)
+      const c = new one(address)
       const result = await c.getAllCommits()
-      console.log('v7', result)
       return parseCommits(result)
     },
     /**
@@ -375,7 +367,7 @@ const api = {
      * @returns {Promise<void>}
      */
     findCommitV6: async ({ address, commitHash }) => {
-      const c = await one.at(address)
+      const c = new one(address)
       const result = await c.findCommit(commitHash)
       const [hash, paramsHash, timestamp, completed] = Object.keys(result).map(k => result[k])
       return { hash, paramsHash, timestamp: new BN(timestamp).toNumber(), completed }
@@ -386,7 +378,7 @@ const api = {
      * @returns {Promise<void>}
      */
     findCommit: async ({ address, commitHash }) => {
-      const c = await one.at(address)
+      const c = new one(address)
       const result = await c.lookupCommit(commitHash)
       return parseCommits(result)
     },
@@ -396,7 +388,7 @@ const api = {
      * @returns {Promise<*[]>}
      */
     getTrackedTokens: async ({ address }) => {
-      const c = await one.at(address)
+      const c = new one(address)
       const result = await c.getTrackedTokens()
       const [tokenTypes, contracts, tokenIds] = Object.keys(result).map(k => result[k])
       const tt = []
@@ -447,7 +439,7 @@ const api = {
     },
 
     getBacklinks: async ({ address }) => {
-      const c = await one.at(address)
+      const c = new one(address)
       try {
         const backlinks = await c.getBacklinks()
         return backlinks
@@ -458,7 +450,7 @@ const api = {
     },
 
     getForwardAddress: async ({ address }) => {
-      const c = await one.at(address)
+      const c = new one(address)
       try {
         const forwardAddress = await c.getForwardAddress()
         return forwardAddress
@@ -568,12 +560,36 @@ const api = {
   },
 
   relayer: {
-    create: async ({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, spendingInterval, backlinks = [], oldCores = [], innerCores, identificationKeys }) => {
-      const { data } = await base.post('/new', { root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, spendingInterval, backlinks, oldCores, innerCores, identificationKeys })
+    create: async ({
+      root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, // classic
+      spendingInterval, spentAmount = 0, lastSpendingInterval = 0, // v12
+      backlinks = [], // v9
+      oldCores = [], // v14
+      innerCores, identificationKeys, lastLimitAdjustmentTime = 0, highestSpendingLimit = spendingLimit, // v15
+    }) => {
+      const { data } = await base.post('/new', {
+        root,
+        height,
+        interval,
+        t0,
+        lifespan,
+        slotSize,
+        lastResortAddress,
+        spendingLimit, // ^classic
+        spendingInterval,
+        spentAmount,
+        lastSpendingInterval, // ^v12
+        backlinks, // v9
+        oldCores, // v14
+        innerCores,
+        identificationKeys,
+        lastLimitAdjustmentTime,
+        highestSpendingLimit, // ^v15
+      })
       return data
     },
-    commit: async ({ address, hash, paramsHash, verificationHash }) => {
-      const { data } = await base.post('/commit', { address, hash, paramsHash, verificationHash })
+    commit: async ({ address, hash, paramsHash, verificationHash, majorVersion, minorVersion }) => {
+      const { data } = await base.post('/commit', { address, hash, paramsHash, verificationHash, majorVersion, minorVersion })
       return data
     },
     revealTransfer: async ({ neighbors, index, eotp, dest, amount, address }) => {

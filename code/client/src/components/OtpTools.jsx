@@ -5,8 +5,9 @@ import util, { OSType } from '../util'
 import React from 'react'
 import config from '../config'
 import ONEUtil from '../../../lib/util'
-const OAUTH_OTP_PATTERN = /otpauth:\/\/totp\/(.+)(%3A|:)(.+)\?.+/
+const OAUTH_OTP_PATTERN = /otpauth:\/\/totp\/([a-zA-Z0-9]+)(%3A|:)(.+)\?.+/
 export const parseOAuthOTP = (url) => {
+  // console.log(url)
   const m = url.match(OAUTH_OTP_PATTERN)
   if (!m) {
     message.error('Invalid account transfer QR code')
@@ -21,7 +22,8 @@ export const parseOAuthOTP = (url) => {
       message.error('Invalid issuer of the recovery QR code. Expecting `1wallet` or `Harmony`')
       return null
     }
-    return { name: decodeURIComponent(m[3]), secret }
+    // return { name: decodeURIComponent(m[3]), secret }
+    return { name: decodeURIComponent(m[3]), secret: ONEUtil.processOtpSeed(secret) }
   } catch (ex) {
     message.error('Unable to parse URL contained in QR code')
     console.error(ex)
@@ -40,14 +42,17 @@ export const parseMigrationPayload = url => {
   }
   let secret2
   if (filteredParams.length === 2) {
-    const names = filteredParams.map(e => e.name.split('-')[0].trim()).map(e => e.split('(')[0].trim())
+    const names = filteredParams.map(e => e.name.split(' -')[0].trim()).map(e => e.split('(')[0].trim())
     if (names[0] !== names[1]) {
       message.error('You selected two 1wallets with different names. If you want to select two entries belonging to the same wallet, make sure they have the same name and the second one has "- 2nd" in the end')
       return undefined
     }
-    secret2 = filteredParams[1]?.secret
+    secret2 = new Uint8Array(filteredParams[1]?.secret)
+    // secret2 = ONEUtil.base32Encode(filteredParams[1]?.secret)
   }
-  const secret = filteredParams[0]?.secret
+  const secret = new Uint8Array(filteredParams[0]?.secret)
+  // const secret = ONEUtil.base32Encode(filteredParams[0]?.secret)
+  // console.log(secret.constructor.name)
   const name = filteredParams[0]?.name
   return { secret, secret2, name }
 }
@@ -115,7 +120,7 @@ export const buildQRCodeComponent = ({ seed, name, os, isMobile, qrCodeData }) =
 
 export const getSecondCodeName = (name) => `${name} - 2nd`
 
-export const NAME_ADDRESS_COMBINED_PATTERN = /([A-Za-z ]+)\[([a-z0-9]+)\]/
+export const NAME_ADDRESS_COMBINED_PATTERN = /([A-Za-z ]+)([0-9\- :]+)\[([a-z0-9]+)\]/
 
 // input is assumed to be already gone through decodeURIComponent
 export const parseAuthAccountName = (rawName) => {
@@ -124,7 +129,7 @@ export const parseAuthAccountName = (rawName) => {
     if (!m) {
       return null
     }
-    return { name: m[1].trim(), address: m[2].trim() }
+    return { name: m[1].trim(), time: m[2].trim(), address: m[3].trim() }
   }
   return { name: rawName.trim() }
 }

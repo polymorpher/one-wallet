@@ -45,14 +45,6 @@ const { Text, Link } = Typography
 //   length: 1
 // })
 
-const genName = (existingNames) => {
-  const name = `${ONENames.randomWord()} ${ONENames.randomWord()} ${ONENames.randomWord()}`
-  if (existingNames && existingNames.includes(name)) {
-    return genName()
-  }
-  return name
-}
-
 const getGoogleAuthenticatorAppLink = (os) => {
   let link = 'https://apps.apple.com/us/app/google-authenticator/id388497605'
   if (os === OSType.Android) {
@@ -75,9 +67,12 @@ const Create = ({ expertMode, showRecovery }) => {
   const { isMobile, os } = useWindowDimensions()
   const dispatch = useDispatch()
   const history = useHistory()
-  const network = useSelector(state => state.wallet.network)
-  const wallets = useSelector(state => state.wallet.wallets)
-  const generateNewOtpName = () => genName(Object.keys(wallets).map(k => wallets[k].name))
+  const network = useSelector(state => state.global.network)
+  const wallets = useSelector(state => state.wallet)
+
+  const [effectiveTime, setEffectiveTime] = useState()
+
+  const generateNewOtpName = () => ONENames.genName(Object.keys(wallets).map(k => wallets[k].name))
   const [name, setName] = useState(generateNewOtpName())
   // eslint-disable-next-line no-unused-vars
   const [seed, setSeed] = useState(generateOtpSeed())
@@ -86,8 +81,7 @@ const Create = ({ expertMode, showRecovery }) => {
   const [duration, setDuration] = useState(WalletConstants.defaultDuration)
   const [showRecoveryDetail, setShowRecoveryDetail] = useState(false)
   const code = useSelector(state => state.cache.code[network])
-  const needCodeUpdate = useSelector(state => state.cache.needCodeUpdate)
-  const clientVersion = useSelector(state => state.cache.clientVersion[network])
+
 
   const defaultRecoveryAddress = { value: ONEConstants.TreasuryAddress, label: WalletConstants.defaultRecoveryAddressLabel }
 
@@ -104,7 +98,7 @@ const Create = ({ expertMode, showRecovery }) => {
   const [progress, setProgress] = useState(0)
   const [progressStage, setProgressStage] = useState(0)
   const [address, setAddress] = useState() // '0x12345678901234567890'
-  const [effectiveTime, setEffectiveTime] = useState()
+
   const [doubleOtp, setDoubleOtp] = useState(false)
 
   const [durationVisible, setDurationVisible] = useState(false)
@@ -123,33 +117,24 @@ const Create = ({ expertMode, showRecovery }) => {
   })
 
   useEffect(() => {
-    dispatch(cacheActions.fetchVersion({ network }))
-    // dispatch(cacheActions.clearCode())
-  }, [])
-  useEffect(() => {
-    if (needCodeUpdate || clientVersion !== config.version) {
-      dispatch(cacheActions.updateClientVersion(config.version))
-      dispatch(cacheActions.fetchCode({ network }))
-    }
-  }, [needCodeUpdate, clientVersion])
-
-  useEffect(() => {
-    if (!code || !name) {
+    if (!code || !name || !effectiveTime) {
       return
     }
     (async function () {
       const deployerAddress = config.networks[network].deploy.factory
       const address = ONEUtil.predictAddress({ seed, deployerAddress, code: ONEUtil.hexStringToBytes(code) })
+      message.debug(`Predicting wallet address ${address} using parameters: ${JSON.stringify({ seed: ONEUtil.base32Encode(seed), deployerAddress })}; code keccak hash=${ONEUtil.hexView(ONEUtil.keccak(code))}`)
       const oneAddress = util.safeOneAddress(address)
-      const otpDisplayName = `${name} [${oneAddress}]`
+      const otpDisplayName = `${ONENames.nameWithTime(name, effectiveTime)} [${oneAddress}]`
+      const otpDisplayName2 = `${ONENames.nameWithTime(getSecondCodeName(name), effectiveTime)} [${oneAddress}]`
       const otpUri = getQRCodeUri(seed, otpDisplayName, OTPUriMode.MIGRATION)
-      const secondOtpUri = getQRCodeUri(seed2, getSecondCodeName(otpDisplayName), OTPUriMode.MIGRATION)
+      const secondOtpUri = getQRCodeUri(seed2, otpDisplayName2, OTPUriMode.MIGRATION)
       const otpQrCodeData = await qrcode.toDataURL(otpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       const secondOtpQrCodeData = await qrcode.toDataURL(secondOtpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       setQRCodeData(otpQrCodeData)
       setSecondOtpQrCodeData(secondOtpQrCodeData)
     })()
-  }, [name, code, network])
+  }, [name, code, network, effectiveTime])
 
   useEffect(() => {
     if (section === sectionViews.setupOtp && worker) {
@@ -230,6 +215,7 @@ const Create = ({ expertMode, showRecovery }) => {
     setOtp('')
     if (code.padStart(6, '0') !== otp.padStart(6, '0')) {
       message.error('Code is incorrect. Please try again.')
+      message.debug(`Correct code is ${code.padStart(6, '0')}`)
       otpRef?.current?.focusInput(0)
     } else if (doubleOtp && !settingUpSecondOtp) {
       setSection(sectionViews.setupSecondOtp)
@@ -301,6 +287,8 @@ const Create = ({ expertMode, showRecovery }) => {
         spendingInterval: spendingInterval * 1000,
         majorVersion: ONEConstants.MajorVersion,
         minorVersion: ONEConstants.MinorVersion,
+        identificationKeys,
+        localIdentificationKey: identificationKeys[0],
         network,
         doubleOtp,
         innerRoots: innerTrees.map(({ root }) => ONEUtil.hexView(root)),
@@ -349,166 +337,171 @@ const Create = ({ expertMode, showRecovery }) => {
 
   return (
     <>
-      <AnimatedSection show={section === sectionViews.setupWalletDetails}>
-        <Heading>What do you want to call your wallet?</Heading>
-        <Hint>This is only stored on your computer to distinguish your wallets.</Hint>
-        <Row align='middle' style={{ marginBottom: 32, marginTop: 16 }}>
-          <Space size='large'>
-            <InputBox
-              prefix={<Button type='text' onClick={() => setName(genName())} style={{ }}><RedoOutlined /></Button>}
-              value={name} onChange={({ target: { value } }) => setName(value)}
-              style={{ padding: 0 }}
-            />
-            <Button type='primary' shape='round' size='large' onClick={() => setSection(sectionViews.setupOtp)}>Next</Button>
-          </Space>
-        </Row>
-        <Space direction='vertical'>
-          <Hint>Next, we will set up a 1wallet that expires in a year. When the wallet expires, you may create a new wallet and transfer the funds. The funds can also be recovered to an address you set later.</Hint>
-          <Link onClick={() => setDurationVisible(true)}>Need more time?</Link>
-          {durationVisible &&
-            <Space>
-              <Slider
-                style={{ width: 200 }}
-                value={duration} tooltipVisible={false} onChange={(v) => setDuration(v)}
-                min={WalletConstants.minDuration} max={WalletConstants.maxDuration}
+      {section === sectionViews.setupWalletDetails &&
+        <AnimatedSection>
+          <Heading>What do you want to call your wallet?</Heading>
+          <Hint>This is only stored on your computer to distinguish your wallets.</Hint>
+          <Row align='middle' style={{ marginBottom: 32, marginTop: 16 }}>
+            <Space size='large'>
+              <InputBox
+                prefix={<Button type='text' onClick={() => setName(generateNewOtpName())} style={{ }}><RedoOutlined /></Button>}
+                value={name} onChange={({ target: { value } }) => setName(value)}
+                style={{ padding: 0 }}
               />
-              <Hint>{humanizeDuration(duration, { units: ['y', 'mo'], round: true })}</Hint>
-            </Space>}
-        </Space>
-      </AnimatedSection>
-      <AnimatedSection show={section === sectionViews.setupOtp}>
-        <Row>
+              <Button type='primary' shape='round' size='large' onClick={() => setSection(sectionViews.setupOtp)}>Next</Button>
+            </Space>
+          </Row>
           <Space direction='vertical'>
-            {/* <Heading>Now, scan the QR code with your Google Authenticator</Heading> */}
-            <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
-            {!isMobile && <Hint>Scan the QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use the wallet </Hint>}
-            {isMobile && <Hint>Tap QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use the wallet</Hint>}
-            {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData })}
-          </Space>
-        </Row>
-        <Row style={{ marginTop: 16 }}>
-          <Space direction='vertical' size='large' align='center' style={{ width: '100%' }}>
-            <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={name} />
-            {expertMode && <TwoCodeOption isMobile={isMobile} setDoubleOtp={setDoubleOtp} doubleOtp={doubleOtp} />}
-            {expertMode && <Hint>You can adjust spending limit in the next step</Hint>}
-          </Space>
-        </Row>
-      </AnimatedSection>
-      <AnimatedSection show={section === sectionViews.setupSecondOtp}>
-        <Row>
-          <Space direction='vertical'>
-            <Heading>Create Your 1wallet (second code)</Heading>
-            <Hint align='center'>{isMobile ? 'Tap' : 'Scan'} to setup the <b>second</b> code</Hint>
-            {buildQRCodeComponent({ seed: seed2, name: getSecondCodeName(name), os, isMobile, qrCodeData: secondOtpQrCodeData })}
-          </Space>
-        </Row>
-        <Row>
-          <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={getSecondCodeName(name)} />
-        </Row>
-      </AnimatedSection>
-      <AnimatedSection show={section === sectionViews.prepareWallet}>
-        <Row>
-          <Space direction='vertical'>
-            <Heading>Prepare Your 1wallet</Heading>
-          </Space>
-        </Row>
-        {expertMode &&
-          <Row style={{ marginBottom: 16 }}>
-            <Space direction='vertical' size='small'>
-              <Hint>Set up a spending limit:</Hint>
-              <Space align='baseline' direction={isMobile ? 'vertical' : 'horizontal'}>
-                <InputBox
-                  $num
-                  margin={16} width={160} value={spendingLimit}
-                  onChange={({ target: { value } }) => setSpendingLimit(parseInt(value || 0))} suffix='ONE'
+            <Hint>Next, we will set up a 1wallet that expires in a year. When the wallet expires, you may create a new wallet and transfer the funds. The funds can also be recovered to an address you set later.</Hint>
+            <Link onClick={() => setDurationVisible(true)}>Need more time?</Link>
+            {durationVisible &&
+              <Space>
+                <Slider
+                  style={{ width: 200 }}
+                  value={duration} tooltipVisible={false} onChange={(v) => setDuration(v)}
+                  min={WalletConstants.minDuration} max={WalletConstants.maxDuration}
                 />
-                <Space align='baseline'>
-                  <Hint>per</Hint>
+                <Hint>{humanizeDuration(duration, { units: ['y', 'mo'], round: true })}</Hint>
+              </Space>}
+          </Space>
+        </AnimatedSection>}
+      {section === sectionViews.setupOtp &&
+        <AnimatedSection>
+          <Row>
+            <Space direction='vertical'>
+              {/* <Heading>Now, scan the QR code with your Google Authenticator</Heading> */}
+              <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
+              {!isMobile && <Hint>Scan the QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use the wallet </Hint>}
+              {isMobile && <Hint>Tap QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use the wallet</Hint>}
+              {buildQRCodeComponent({ seed, name: ONENames.nameWithTime(name, effectiveTime), os, isMobile, qrCodeData })}
+            </Space>
+          </Row>
+          <Row style={{ marginTop: 16 }}>
+            <Space direction='vertical' size='large' align='center' style={{ width: '100%' }}>
+              <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={ONENames.nameWithTime(name, effectiveTime)} />
+              {expertMode && <TwoCodeOption isMobile={isMobile} setDoubleOtp={setDoubleOtp} doubleOtp={doubleOtp} />}
+              {expertMode && <Hint>You can adjust spending limit in the next step</Hint>}
+            </Space>
+          </Row>
+        </AnimatedSection>}
+      {section === sectionViews.setupSecondOtp &&
+        <AnimatedSection>
+          <Row>
+            <Space direction='vertical'>
+              <Heading>Create Your 1wallet (second code)</Heading>
+              <Hint align='center'>{isMobile ? 'Tap' : 'Scan'} to setup the <b>second</b> code</Hint>
+              {buildQRCodeComponent({ seed: seed2, name: ONENames.nameWithTime(getSecondCodeName(name), effectiveTime), os, isMobile, qrCodeData: secondOtpQrCodeData })}
+            </Space>
+          </Row>
+          <Row>
+            <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={ONENames.nameWithTime(getSecondCodeName(name), effectiveTime)} />
+          </Row>
+        </AnimatedSection>}
+      {section === sectionViews.prepareWallet &&
+        <AnimatedSection>
+          <Row>
+            <Space direction='vertical'>
+              <Heading>Prepare Your 1wallet</Heading>
+            </Space>
+          </Row>
+          {expertMode &&
+            <Row style={{ marginBottom: 16 }}>
+              <Space direction='vertical' size='small'>
+                <Hint>Set up a spending limit:</Hint>
+                <Space align='baseline' direction={isMobile ? 'vertical' : 'horizontal'}>
                   <InputBox
                     $num
-                    margin={16} width={128} value={spendingInterval}
-                    onChange={({ target: { value } }) => setSpendingInterval(parseInt(value || 0))}
+                    margin={16} width={160} value={spendingLimit}
+                    onChange={({ target: { value } }) => setSpendingLimit(parseInt(value || 0))} suffix='ONE'
                   />
-                  <Hint>seconds</Hint>
+                  <Space align='baseline'>
+                    <Hint>per</Hint>
+                    <InputBox
+                      $num
+                      margin={16} width={128} value={spendingInterval}
+                      onChange={({ target: { value } }) => setSpendingInterval(parseInt(value || 0))}
+                    />
+                    <Hint>seconds</Hint>
+                  </Space>
                 </Space>
+                <Row justify='end'>
+                  <Hint>≈ {humanizeDuration(spendingInterval * 1000, { largest: 2, round: true })}</Hint>
+                </Row>
+
               </Space>
-              <Row justify='end'>
-                <Hint>≈ {humanizeDuration(spendingInterval * 1000, { largest: 2, round: true })}</Hint>
-              </Row>
+            </Row>}
+          {showRecovery &&
+            <Row style={{ marginBottom: 24 }}>
+              {!showRecoveryDetail &&
+                <Space>
+                  <Button style={{ padding: 0 }} type='link' onClick={() => setShowRecoveryDetail(true)}>Set up a recovery address?</Button>
+                  <Tooltip title={'It is where you could send your money to if you lost the authenticator. You don\'t have to configure this. By default it goes to 1wallet DAO'}>
+                    <QuestionCircleOutlined />
+                  </Tooltip>
 
+                </Space>}
+              {showRecoveryDetail &&
+                <Space direction='vertical' size='small' style={{ width: '100%' }}>
+                  <Hint>Set up a fund recovery address (it's public):</Hint>
+                  <AddressInput
+                    addressValue={lastResortAddress}
+                    setAddressCallback={setLastResortAddress}
+                    extraSelectOptions={[{
+                      address: ONEConstants.TreasuryAddress,
+                      label: WalletConstants.defaultRecoveryAddressLabel
+                    }]}
+                  />
+                  <Hint>
+                    {!util.isDefaultRecoveryAddress(lastResortAddress.value) && <span style={{ color: 'red' }}>This is permanent. </span>}
+                    If you lost access, you can still send your assets there or use <Link href='https://github.com/polymorpher/one-wallet/releases/tag/v0.2' target='_blank' rel='noreferrer'>auto-recovery</Link>
+                  </Hint>
+                  {util.isDefaultRecoveryAddress(lastResortAddress.value) &&
+                    <Warning style={{ marginTop: 24 }}>
+                      1wallet DAO can be a last resort to recover your assets. You can also use your own address.
+                    </Warning>}
+                </Space>}
+            </Row>}
+          <Row style={{ marginBottom: 32 }}>
+            <Space direction='vertical'>
+              {showRecovery &&
+                <Space>
+                  <FlashyButton
+                    disabled={!root || deploying} type='primary' shape='round' size='large'
+                    onClick={() => deploy()}
+                  >Confirm: Create Now
+                  </FlashyButton>
+                  {deploying && <LoadingOutlined />}
+                </Space>}
+              {!showRecovery &&
+                <TallRow>
+                  {(deploying || !root) && <Space><Text>Working on your 1wallet...</Text><LoadingOutlined /></Space>}
+                  {(!deploying && root && deployed) && <Text>Your 1wallet is ready!</Text>}
+                  {(!deploying && root && deployed === false) && <Text>There was an issue deploying your 1wallet. <Button type='link' onClick={() => (location.href = Paths.create)}>Try again</Button>?</Text>}
+                </TallRow>}
+              {!expertMode && <Hint>In beta, you can only spend {WalletConstants.defaultSpendingLimit} ONE per day</Hint>}
+              {!expertMode && <Button type='link' onClick={() => enableExpertMode(true)} style={{ padding: 0 }}>I want to create a higher limit wallet instead</Button>}
+              {!root && <WalletCreateProgress progress={progress} isMobile={isMobile} progressStage={progressStage} />}
             </Space>
-          </Row>}
-        {showRecovery &&
-          <Row style={{ marginBottom: 24 }}>
-            {!showRecoveryDetail &&
-              <Space>
-                <Button style={{ padding: 0 }} type='link' onClick={() => setShowRecoveryDetail(true)}>Set up a recovery address?</Button>
-                <Tooltip title={'It is where you could send your money to if you lost the authenticator. You don\'t have to configure this. By default it goes to 1wallet DAO'}>
-                  <QuestionCircleOutlined />
-                </Tooltip>
-
-              </Space>}
-            {showRecoveryDetail &&
-              <Space direction='vertical' size='small' style={{ width: '100%' }}>
-                <Hint>Set up a fund recovery address (it's public):</Hint>
-                <AddressInput
-                  addressValue={lastResortAddress}
-                  setAddressCallback={setLastResortAddress}
-                  extraSelectOptions={[{
-                    address: ONEConstants.TreasuryAddress,
-                    label: WalletConstants.defaultRecoveryAddressLabel
-                  }]}
-                />
-                <Hint>
-                  {!util.isDefaultRecoveryAddress(lastResortAddress.value) && <span style={{ color: 'red' }}>This is permanent. </span>}
-                  If you lost access, you can still send your assets there or use <Link href='https://github.com/polymorpher/one-wallet/releases/tag/v0.2' target='_blank' rel='noreferrer'>auto-recovery</Link>
-                </Hint>
-                {util.isDefaultRecoveryAddress(lastResortAddress.value) &&
-                  <Warning style={{ marginTop: 24 }}>
-                    1wallet DAO can be a last resort to recover your assets. You can also use your own address.
-                  </Warning>}
-              </Space>}
-          </Row>}
-        <Row style={{ marginBottom: 32 }}>
+          </Row>
+          <Row>
+            <Space direction='vertical'>
+              <Hint>No private key. No mnemonic.</Hint>
+              <Hint>Simple and Secure.</Hint>
+              <Hint>To learn more, visit <Link href='https://github.com/polymorpher/one-wallet/wiki'>1wallet Wiki</Link></Hint>
+            </Space>
+          </Row>
+        </AnimatedSection>}
+      {section === sectionViews.walletSetupDone &&
+        <AnimatedSection>
           <Space direction='vertical'>
-            {showRecovery &&
-              <Space>
-                <FlashyButton
-                  disabled={!root || deploying} type='primary' shape='round' size='large'
-                  onClick={() => deploy()}
-                >Confirm: Create Now
-                </FlashyButton>
-                {deploying && <LoadingOutlined />}
-              </Space>}
-            {!showRecovery &&
-              <TallRow>
-                {(deploying || !root) && <Space><Text>Working on your 1wallet...</Text><LoadingOutlined /></Space>}
-                {(!deploying && root && deployed) && <Text>Your 1wallet is ready!</Text>}
-                {(!deploying && root && deployed === false) && <Text>There was an issue deploying your 1wallet. <Button type='link' onClick={() => (location.href = Paths.create)}>Try again</Button>?</Text>}
-              </TallRow>}
-            {!expertMode && <Hint>In beta, you can only spend {WalletConstants.defaultSpendingLimit} ONE per day</Hint>}
-            {!expertMode && <Button type='link' onClick={() => enableExpertMode(true)} style={{ padding: 0 }}>I want to create a higher limit wallet instead</Button>}
-            {!root && <WalletCreateProgress progress={progress} isMobile={isMobile} progressStage={progressStage} />}
+            <Heading>You are all set!</Heading>
+            <Space direction='vertical' size='small'>
+              <Hint>Wallet Address</Hint>
+              <Text>{address && getAddress(address).bech32}</Text>
+            </Space>
+            <Button style={{ marginTop: 32 }} disabled={!address} type='primary' shape='round' size='large' onClick={() => history.push(Paths.showAddress(address))}>Go to My Wallet</Button>
           </Space>
-        </Row>
-        <Row>
-          <Space direction='vertical'>
-            <Hint>No private key. No mnemonic.</Hint>
-            <Hint>Simple and Secure.</Hint>
-            <Hint>To learn more, visit <Link href='https://github.com/polymorpher/one-wallet/wiki'>1wallet Wiki</Link></Hint>
-          </Space>
-        </Row>
-      </AnimatedSection>
-      <AnimatedSection show={section === sectionViews.walletSetupDone}>
-        <Space direction='vertical'>
-          <Heading>You are all set!</Heading>
-          <Space direction='vertical' size='small'>
-            <Hint>Wallet Address</Hint>
-            <Text>{address && getAddress(address).bech32}</Text>
-          </Space>
-          <Button style={{ marginTop: 32 }} disabled={!address} type='primary' shape='round' size='large' onClick={() => history.push(Paths.showAddress(address))}>Go to My Wallet</Button>
-        </Space>
-      </AnimatedSection>
+        </AnimatedSection>}
     </>
   )
 }

@@ -29,6 +29,7 @@ import { balanceActions } from '../../state/modules/balance'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import { uniqBy } from 'lodash'
 import styled from 'styled-components'
+import ONENames from '../../../../lib/names'
 const { Text, Title } = Typography
 
 const tokenIconUrl = (token) => {
@@ -149,8 +150,8 @@ const isTrivialSwap = (tokenFrom, tokenTo) => {
  */
 const Swap = ({ address }) => {
   const { isMobile } = useWindowDimensions()
-  const wallets = useSelector(state => state.wallet.wallets)
-  const network = useSelector(state => state.wallet.network)
+  const wallets = useSelector(state => state.wallet)
+  const network = useSelector(state => state.global.network)
   const wallet = wallets[address] || {}
   const dispatch = useDispatch()
   const [stage, setStage] = useState(-1)
@@ -165,8 +166,8 @@ const Swap = ({ address }) => {
     label: <TokenLabel token={harmonyToken} selected />
   }
 
-  const balances = useSelector(state => state.balance)
-  const { balance = 0, tokenBalances = {} } = balances[address]
+  const balances = useSelector(state => state.balance || {})
+  const { balance = 0, tokenBalances = {} } = balances[address] || {}
 
   const [pairs, setPairs] = useState([])
   const [tokens, setTokens] = useState({})
@@ -716,7 +717,7 @@ const Swap = ({ address }) => {
         </TallRow>}
 
       <TallRow>
-        <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={tokenApproved ? confirmSwap : approveToken} action={tokenApproved ? 'approve' : 'confirm'} />
+        <OtpStack walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)} doubleOtp={doubleOtp} otpState={otpState} onComplete={tokenApproved ? confirmSwap : approveToken} action={tokenApproved ? 'approve' : 'confirm'} />
       </TallRow>
       <TallRow justify='start' align='baseline'>
         <Space size='large' align='top'>

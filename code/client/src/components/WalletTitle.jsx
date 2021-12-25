@@ -14,13 +14,13 @@ const { Title, Text } = Typography
 const WalletTitle = ({ address, onQrCodeClick, onScanClick, noWarning }) => {
   const dispatch = useDispatch()
   const history = useHistory()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const { isMobile } = useWindowDimensions()
   const [domain, setDomain] = useState(wallet.domain)
   const [doubleLinked, setDoubleLinked] = useState(null)
   const hasDomainName = domain && domain !== ''
-  const balances = useSelector(state => state.balance)
+  const balances = useSelector(state => state.balance || {})
   const balance = new BN(balances[address]?.balance || 0)
   useEffect(() => {
     const f = async () => {

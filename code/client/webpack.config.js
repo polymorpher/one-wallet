@@ -4,6 +4,7 @@ const webpack = require('webpack')
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
+const Dotenv = require('dotenv-webpack')
 
 module.exports = {
   devServer: {
@@ -105,6 +106,7 @@ module.exports = {
     }
   },
   plugins: [
+    new Dotenv(),
     new webpack.EnvironmentPlugin({
       PUBLIC_URL: '',
       NETWORK: '',
@@ -114,7 +116,7 @@ module.exports = {
       MIN_WALLET_VERSION: 0,
       SENTRY_DSN: '', // dev
       LOCAL_RELAYER_URL: '',
-      ROOT_URL: ''
+      ROOT_URL: '',
     }),
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],

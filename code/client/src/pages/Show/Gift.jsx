@@ -2,13 +2,11 @@ import { useSelector } from 'react-redux'
 import React, { useEffect, useState } from 'react'
 import { Button, Row, Space, Typography, Select, Image, Tooltip } from 'antd'
 import {
-  CloseOutlined,
   CloseCircleOutlined,
   PlusCircleOutlined, QuestionCircleOutlined,
 } from '@ant-design/icons'
 import { Hint, InputBox, Label } from '../../components/Text'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
-import AnimatedSection from '../../components/AnimatedSection'
 import util, { generateOtpSeed, useWindowDimensions } from '../../util'
 import BN from 'bn.js'
 import ShowUtils from './show-util'
@@ -27,6 +25,7 @@ import { handleAPIError } from '../../handler'
 import WalletCreateProgress from '../../components/WalletCreateProgress'
 import config from '../../config'
 import qrcode from 'qrcode'
+import ONENames from '../../../../lib/names'
 const { Title, Text, Link } = Typography
 
 const Share = ({ seed, redPacketAddress, address, network, isMobile, onClose, message, randomFactor }) => {
@@ -92,9 +91,9 @@ const Gift = ({
 }) => {
   const { isMobile } = useWindowDimensions()
   const price = useSelector(state => state.global.price)
-  const network = useSelector(state => state.wallet.network)
-  const wallets = useSelector(state => state.wallet.wallets)
-  const balances = useSelector(state => state.balance)
+  const network = useSelector(state => state.global.network)
+  const wallets = useSelector(state => state.wallet)
+  const balances = useSelector(state => state.balance || {})
   const wallet = wallets[address] || {}
   const [stage, setStage] = useState(-1)
   const doubleOtp = wallet.doubleOtp
@@ -402,7 +401,7 @@ const Gift = ({
           {redPacketAddress &&
             <>
               <TallRow>
-                <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={createRedPacket} action='confirm transfer assets' />
+                <OtpStack walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)} doubleOtp={doubleOtp} otpState={otpState} onComplete={createRedPacket} action='confirm transfer assets' />
               </TallRow>
             </>}
           <Hint>
@@ -420,28 +419,3 @@ const Gift = ({
 }
 
 export default Gift
-
-export const GiftModule = ({
-  address,
-  show,
-  onClose, // optional
-  onSuccess, // optional
-  prefilledTotalAmount, // string, ONE
-  prefilledClaimLimit, // string, ONE
-  prefilledClaimInterval // int, non-zero
-}) => {
-  return (
-    <AnimatedSection
-      style={{ maxWidth: 720 }}
-      show={show} title={<Title level={2}>Send Gift</Title>} extra={[
-        <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-      ]}
-    >
-      <Gift
-        address={address}
-        prefilledTotalAmount={prefilledTotalAmount} prefilledClaimLimit={prefilledClaimLimit} prefilledClaimInterval={prefilledClaimInterval}
-        onSuccess={onSuccess}
-      />
-    </AnimatedSection>
-  )
-}

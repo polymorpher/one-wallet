@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Button, Row, Space, Typography, Input, Checkbox, Tooltip, Slider } from 'antd'
-import { CheckCircleOutlined, CloseOutlined, LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+import { CloseOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import { Hint, Label, Warning } from '../../components/Text'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
@@ -15,12 +15,12 @@ import ONEConstants from '../../../../lib/constants'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
 import humanizeDuration from 'humanize-duration'
+import ONENames from '../../../../lib/names'
 const { Title } = Typography
 const { TextArea } = Input
 
 const Sign = ({
   address,
-  show,
   onClose, // optional
   onSuccess, // optional
   prefillMessageInput, // optional string, the message itself
@@ -29,9 +29,9 @@ const Sign = ({
   shouldAutoFocus,
   headless,
 }) => {
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
 
   const doubleOtp = wallet.doubleOtp
   const { state: otpState } = useOtpState()
@@ -106,8 +106,7 @@ const Sign = ({
   if (!(wallet.majorVersion > 10)) {
     return (
       <AnimatedSection
-        style={{ maxWidth: 720 }}
-        show={show} title={<Title level={2}>Sign Message</Title>} extra={[
+        style={{ maxWidth: 720 }} title={<Title level={2}>Sign Message</Title>} extra={[
           <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
         ]}
       >
@@ -150,7 +149,7 @@ const Sign = ({
             />
             <Hint>{humanizeDuration(duration, { largest: 2, round: true })}</Hint>
           </Space>}
-        <OtpStack shouldAutoFocus={shouldAutoFocus} wideLabel walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={doSign} action='confirm' />
+        <OtpStack shouldAutoFocus={shouldAutoFocus} wideLabel walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)} doubleOtp={doubleOtp} otpState={otpState} onComplete={doSign} action='confirm' />
       </Space>
       <Row justify='start' style={{ marginTop: 24 }}>
         <Button size='large' type='text' onClick={onClose} danger>Cancel</Button>
@@ -164,7 +163,7 @@ const Sign = ({
   return (
     <AnimatedSection
       style={{ maxWidth: 720 }}
-      show={show} title={<Title level={2}>Sign Message</Title>} extra={[
+      title={<Title level={2}>Sign Message</Title>} extra={[
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
       ]}
     >

@@ -182,15 +182,22 @@ library Reveal {
         // first, we check whether the operation requires high-security
         if (op.operationType == Enums.OperationType.FORWARD) {
             if (!Recovery.isRecoveryAddressSet(recoveryAddress)) {
+                // if innerCores are empty, this operation (in this case) is doomed to fail. Client should check for innerCores first before allowing the user to do this.
                 authenticateCores(innerCores[0], innerCores, commitState, auth, op, false, true);
             } else {
                 authenticateCores(core, oldCores, commitState, auth, op, false, false);
             }
         } else if (op.operationType == Enums.OperationType.DISPLACE) {
-            authenticateCores(innerCores[0], innerCores, commitState, auth, op, false, true);
+            if (innerCores.length == 0) {
+                // authorize this operation using low security setting (only one core). After this operation is done, innerCores will no longer be empty
+                authenticateCores(core, oldCores, commitState, auth, op, false, false);
+            } else {
+                authenticateCores(innerCores[0], innerCores, commitState, auth, op, false, true);
+            }
         } else if (op.operationType == Enums.OperationType.RECOVER) {
             authenticateCores(core, oldCores, commitState, auth, op, true, true);
         } else if (op.operationType == Enums.OperationType.JUMP_SPENDING_LIMIT) {
+            // if innerCores are empty, this operation (in this case) is doomed to fail. This is intended. Client should warn the user not to lower the limit too much if the wallet has no innerCores (use Extend to set first innerCores). Client should also advise the user the use Recovery feature to get their assets out, if they are stuck with very low limit and do not want to wait to double them each spendInterval.
             authenticateCores(innerCores[0], innerCores, commitState, auth, op, false, true);
         } else {
             authenticateCores(core, oldCores, commitState, auth, op, false, false);

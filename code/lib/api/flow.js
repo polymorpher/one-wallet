@@ -16,7 +16,7 @@ const EotpBuilders = {
     return ONE.computeEOTP({ otp: encodedOtp, otp2: encodedOtp2, rand, nonce, hseed: ONEUtil.hexToBytes(hseed) })
   },
   restore: async ({ otp }) => {
-    return ONE.computeInnerEOTP({ otps: otp })
+    return ONE.computeInnerEOTP({ otps: otp.map(e => ONEUtil.encodeNumericalOtp(e)) })
   },
   recovery: async ({ wallet, layers }) => {
     // eslint-disable-next-line no-unused-vars
@@ -60,22 +60,36 @@ const Committer = {
 }
 
 const Flows = {
-  commitReveal: async ({
-    otp, otp2, eotpBuilder = EotpBuilders.fromOtp,
-    committer = Committer.legacy,
-    recoverRandomness,
-    wallet, layers, commitHashGenerator, commitHashArgs, prepareProof, prepareProofFailed,
-    beforeCommit, afterCommit, onCommitError, onCommitFailure,
-    revealAPI, revealArgs, onRevealFailure, onRevealSuccess, onRevealError, onRevealAttemptFailed,
-    beforeReveal, index,
-    maxTransferAttempts = 3, checkCommitInterval = 4000,
+  deriveEOTP: async ({
+    otp, otp2, wallet, eotpBuilder = EotpBuilders.fromOtp,
+    recoverRandomness = null, prepareProof = null, prepareProofFailed = null,
+    layers = null, index = null,
     message = messager,
   }) => {
-    const { oldInfos, address, randomness, hseed, hasher } = wallet
+    const { oldInfos, randomness, hseed, hasher, identificationKeys, localIdentificationKey } = wallet
     let { effectiveTime, root } = wallet
     if (!layers) {
-      layers = await storage.getItem(root)
+      if (localIdentificationKey && identificationKeys) {
+        const idKeyIndex = identificationKeys.filter(e => e.length >= 130).findIndex(e => e === localIdentificationKey)
+        if (idKeyIndex === -1) {
+          message.debug('Cannot identify tree to use because of identification key mismatch. Falling back to brute force search')
+          layers = await storage.getItem(root)
+        } else {
+          message.debug(`Identified tree via localIdentificationKey=${localIdentificationKey}`)
+          if (idKeyIndex === identificationKeys.length - 1) {
+            layers = await storage.getItem(root)
+          } else {
+            const info = oldInfos[idKeyIndex]
+            layers = await storage.getItem(info.root)
+            effectiveTime = info.effectiveTime
+            root = info.root
+          }
+        }
+      } else {
+        layers = await storage.getItem(root)
+      }
       if (!layers) {
+        message.debug(`Did not find root ${root}. Looking up storage for old roots`)
         // look for old roots
         for (let info of oldInfos) {
           if (info.root && (info.effectiveTime + info.duration > Date.now())) {
@@ -91,8 +105,11 @@ const Flows = {
           message.error('Cannot find pre-computed proofs for this wallet. Storage might be corrupted. Please restore the wallet from Google Authenticator.')
           return
         }
+      } else {
+        message.debug(`Found root ${root}`)
       }
     }
+
     prepareProof && prepareProof()
     index = index || ONEUtil.timeToIndex({ effectiveTime })
     if (index < 0) {
@@ -121,10 +138,46 @@ const Flows = {
       if (rand === null) {
         message.error('Validation error. Code might be incorrect')
         prepareProofFailed && prepareProofFailed()
-        return
+        return {}
       }
     }
-    const eotp = await eotpBuilder({ otp, otp2, rand, wallet, layers })
+    const eotp = await eotpBuilder({ otp, otp2, rand, wallet, nonce, layers })
+    message.debug(`eotp=${ONEUtil.hexString(eotp)} index=${index}`)
+    return { eotp, index, layers }
+  },
+  commitReveal: async ({
+    otp, otp2, eotpBuilder = EotpBuilders.fromOtp, wallet,
+    commitHashGenerator, commitHashArgs, revealAPI, revealArgs,
+
+    recoverRandomness = null, prepareProof = null, prepareProofFailed = null,
+    index = null,
+    eotp = null,
+    committer = Committer.legacy,
+    layers = null,
+    beforeCommit = null, afterCommit = null, onCommitError = null, onCommitFailure = null,
+    onRevealFailure = null, onRevealSuccess = null, onRevealError = null, onRevealAttemptFailed = null,
+    beforeReveal = null,
+    maxTransferAttempts = 3, checkCommitInterval = 4000,
+    message = messager,
+    overrideVersion = false,
+  }) => {
+    const { address, majorVersion, minorVersion } = wallet
+    if (!eotp) {
+      const derived = await Flows.deriveEOTP({
+        otp,
+        otp2,
+        eotpBuilder,
+        recoverRandomness,
+        prepareProof,
+        prepareProofFailed,
+        wallet,
+        layers,
+        index,
+        message })
+      eotp = derived?.eotp
+      index = index || derived?.index
+      layers = layers || derived?.layers
+    }
     if (!eotp) {
       message.error('Local state verification failed.')
       return
@@ -142,7 +195,8 @@ const Flows = {
         address,
         hash: ONEUtil.hexString(commitHash),
         paramsHash: paramsHash && ONEUtil.hexString(paramsHash),
-        verificationHash: verificationHash && ONEUtil.hexString(verificationHash)
+        verificationHash: verificationHash && ONEUtil.hexString(verificationHash),
+        ...(overrideVersion ? { majorVersion, minorVersion } : {})
       })
       if (!success) {
         onCommitFailure && await onCommitFailure(error)
@@ -164,6 +218,7 @@ const Flows = {
           index,
           eotp: ONEUtil.hexString(eotp),
           address,
+          ...(overrideVersion ? { majorVersion, minorVersion } : {}),
           ...(typeof revealArgs === 'function' ? revealArgs({ neighbor, index, eotp }) : revealArgs)
         })
         if (!success) {

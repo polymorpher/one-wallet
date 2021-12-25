@@ -3,6 +3,15 @@ import { Progress, Space, Timeline } from 'antd'
 import React from 'react'
 
 const WalletCreateProgress = ({ progress, progressStage, isMobile, title, subtitle }) => {
+  const getColor = (expected) => {
+    if (progressStage === expected) {
+      return 'blue'
+    }
+    if (progressStage < expected) {
+      return 'grey'
+    }
+    return 'green'
+  }
   return (
     <Space direction='vertical'>
       <Hint>{title || 'One moment... we are still preparing your wallet'}</Hint>
@@ -17,9 +26,9 @@ const WalletCreateProgress = ({ progress, progressStage, isMobile, title, subtit
         />
         <Space direction='vertical'>
           <Timeline pending={progressStage < 3 && (subtitle || 'Securing your keyless 1wallet')}>
-            <Timeline.Item color={progressStage < 1 ? 'grey' : 'green'}>Encrypting codes</Timeline.Item>
-            <Timeline.Item color={progressStage < 2 ? 'grey' : 'green'}>Preparing recovery</Timeline.Item>
-            <Timeline.Item color={progressStage < 3 ? 'grey' : 'green'}>Creating signatures</Timeline.Item>
+            <Timeline.Item color={getColor(0)}>Encrypting authenticator code</Timeline.Item>
+            <Timeline.Item color={getColor(1)}>Securing future transactions</Timeline.Item>
+            <Timeline.Item color={getColor(2)}>Making wallet recoverable</Timeline.Item>
           </Timeline>
         </Space>
       </Space>

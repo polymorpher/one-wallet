@@ -19,11 +19,11 @@ import ONEConstants from '../../../../lib/constants'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
 import { AverageRow } from '../../components/Grid'
+import ONENames from '../../../../lib/names'
 const { Title, Link } = Typography
 
 const Send = ({
   address,
-  show,
   onClose, // optional
   onSuccess, // optional
   overrideToken, // optional
@@ -31,9 +31,9 @@ const Send = ({
   prefillDest, // string, hex format
 }) => {
   const dispatch = useDispatch()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
   const { isMobile } = useWindowDimensions()
 
   const doubleOtp = wallet.doubleOtp
@@ -45,9 +45,9 @@ const Send = ({
 
   const { resetWorker, recoverRandomness } = useRandomWorker()
 
-  const balances = useSelector(state => state.balance)
+  const balances = useSelector(state => state.balance || {})
   const price = useSelector(state => state.global.price)
-  const { balance = 0, tokenBalances = {} } = balances[address]
+  const { balance = 0, tokenBalances = {} } = balances[address] || {}
   const selectedToken = overrideToken || wallet?.selectedToken || HarmonyONE
   const selectedTokenBalance = selectedToken.key === 'one' ? balance : (tokenBalances[selectedToken.key] || 0)
   const selectedTokenDecimals = selectedToken.decimals
@@ -150,7 +150,6 @@ const Send = ({
   return (
     <AnimatedSection
       style={{ maxWidth: 720 }}
-      show={show}
       title={
         <Title level={isMobile ? 5 : 2}>
           {
@@ -224,7 +223,7 @@ const Send = ({
       <Row align='middle'>
         <Col span={24}>
           <OtpStack
-            walletName={wallet.name}
+            walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)}
             doubleOtp={doubleOtp}
             otpState={otpState}
             onComplete={doSend}

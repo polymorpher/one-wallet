@@ -11,10 +11,13 @@ export const useOtpState = () => {
   const [otp2Input, setOtp2Input] = useState('')
   const otpRef = useRef()
   const otp2Ref = useRef()
-  const resetOtp = () => {
+  const resetOtp = (skipFocus) => {
     setOtpInput('')
     setOtp2Input('')
-    otpRef?.current?.focusInput(0)
+    if (!skipFocus) {
+      otpRef?.current?.focusNextInput()
+      setTimeout(() => otpRef?.current?.focusInput(0), 0)
+    }
   }
   return { state: { otpRef, otp2Ref, otpInput, otp2Input, setOtpInput, setOtp2Input, resetOtp } }
 }
@@ -60,9 +63,10 @@ export const OtpStack = ({ isDisabled, shouldAutoFocus, wideLabel, walletName, o
           isDisabled={isDisabled}
         />
         <Space direction='vertical' align='center'>
-          <Tooltip title={`from your Google Authenticator, i.e. ${walletName}`}>
-            <QuestionCircleOutlined />
-          </Tooltip>
+          {walletName &&
+            <Tooltip title={`from your Google Authenticator, i.e. ${walletName}`}>
+              <QuestionCircleOutlined />
+            </Tooltip>}
           {isMobile && <Button type='default' shape='round' icon={<SnippetsOutlined />} onClick={() => { navigator.clipboard.readText().then(t => setOtpInput(t)) }} />}
         </Space>
       </Space>
@@ -79,9 +83,10 @@ export const OtpStack = ({ isDisabled, shouldAutoFocus, wideLabel, walletName, o
             isDisabled={isDisabled}
           />
           <Space direction='vertical' align='center'>
-            <Tooltip title={`from your Google Authenticator, i.e. ${walletName} (2nd)`}>
-              <QuestionCircleOutlined />
-            </Tooltip>
+            {walletName &&
+              <Tooltip title={`from your Google Authenticator, i.e. ${walletName} (2nd)`}>
+                <QuestionCircleOutlined />
+              </Tooltip>}
             {isMobile && <Button type='default' shape='round' icon={<SnippetsOutlined />} onClick={() => { navigator.clipboard.readText().then(t => setOtp2Input(t)) }} />}
           </Space>
         </Space>}

@@ -67,7 +67,7 @@ const initCachedContracts = async () => {
             if (!factoryContracts[libName]) {
               libraries[network][libName] = instance
             } else {
-              c.defaults({ from: account.address })
+              c.defaults({ from: account.address, gas: config.gasLimit, gasPrice: config.gasPrice })
               factories[network][libName] = instance
             }
             continue
@@ -116,6 +116,7 @@ const initCachedContracts = async () => {
             // console.log(`factories[${network}][${libName}] = ${instance.address}`)
             factories[network][libName] = instance
           }
+          console.log(`[${network}][${libName}] Deployed at ${instance.address}`)
           await fs.writeFile(fp, `${instance.address},${expectedHash}`, { encoding: 'utf-8' })
         }, {
           retry: (ex, n) => {

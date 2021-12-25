@@ -162,6 +162,11 @@ const util = {
     return !wallet.majorVersion || !(wallet.majorVersion >= config.minWalletVersion)
   },
 
+  /**
+   *
+   * @param {string} otpInput
+   * @returns {null|number}
+   */
   parseOtp: otpInput => {
     const parsedOtp = parseInt(otpInput)
     if (!isInteger(parsedOtp) || !(parsedOtp < 1000000)) {
@@ -374,4 +379,5 @@ export const useWaitExecution = (func, runCondition, wait, dependencies) => {
 if (window) {
   window.ONEWallet = window.ONEWallet || {}
   window.ONEWallet.util = util
+  window.ONEWallet.ONEUtil = ONEUtil
 }

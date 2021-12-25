@@ -12,12 +12,12 @@ const { Title, Text } = Typography
 const Balance = ({ address }) => {
   const history = useHistory()
   const oneAddress = util.safeOneAddress(address)
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
-  const network = useSelector(state => state.wallet.network)
-  const balances = useSelector(state => state.balance)
+  const network = useSelector(state => state.global.network)
+  const balances = useSelector(state => state.balance || {})
   const price = useSelector(state => state.global.price)
-  const { balance = 0, tokenBalances = {} } = balances[address]
+  const { balance = 0, tokenBalances = {} } = balances[address] || {}
   const selectedToken = wallet?.selectedToken || HarmonyONE
   const selectedTokenBech32Address = util.safeOneAddress(selectedToken.contractAddress)
   const selectedTokenBalance = selectedToken.key === 'one' ? balance : (tokenBalances[selectedToken.key] || 0)

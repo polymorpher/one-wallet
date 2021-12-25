@@ -138,13 +138,13 @@ const GridItem = ({ style, children, icon, name, symbol, tokenKey, contractAddre
 
 export const ERC20Grid = ({ address }) => {
   const dispatch = useDispatch()
-  const wallet = useSelector(state => state.wallet.wallets[address])
-  const network = useSelector(state => state.wallet.network)
+  const wallet = useSelector(state => state.wallet[address])
+  const network = useSelector(state => state.global.network)
   const { selectedToken } = wallet
   const trackedTokens = (wallet.trackedTokens || []).filter(e => e.tokenType === ONEConstants.TokenType.ERC20)
   const untrackedTokenKeys = (wallet.untrackedTokens || [])
-  const balances = useSelector(state => state.balance)
-  const { balance = 0, tokenBalances = {} } = balances[address]
+  const balances = useSelector(state => state.balance || {})
+  const { balance = 0, tokenBalances = {} } = balances[address] || {}
   const { formatted } = util.computeBalance(balance)
   const walletOutdated = !util.canWalletSupportToken(wallet)
   const defaultTrackedTokens = withKeys(DefaultTrackedERC20(network))

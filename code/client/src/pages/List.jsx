@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector, useDispatch, batch } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
 import { balanceActions } from '../state/modules/balance'
 import { values, omit } from 'lodash'
 import { Card, Row, Space, Typography, Col, Tag } from 'antd'
 import message from '../message'
 import util, { useWindowDimensions } from '../util'
-import { useHistory, useLocation } from 'react-router'
+import { useHistory } from 'react-router'
 import Paths from '../constants/paths'
 import BN from 'bn.js'
 import { getAddress } from '@harmony-js/crypto'
 import ONEConstants from '../../../lib/constants'
 import * as Sentry from '@sentry/browser'
-import { deleteWalletLocally } from '../storage/util'
+import { cleanStorage, deleteWalletLocally } from '../storage/util'
 const { Text, Title } = Typography
 
 const walletShortName = (fullName) => {
@@ -27,19 +27,12 @@ const walletShortName = (fullName) => {
 const WalletCard = ({ wallet }) => {
   const { isMobile } = useWindowDimensions()
   const history = useHistory()
-  const location = useLocation()
   const { address, name } = wallet
-  const oneAddress = getAddress(address).bech32
-  const dispatch = useDispatch()
-  const walletBalance = useSelector(state => state.balance[address] || {})
+  const oneAddress = util.safeOneAddress(address)
+  const walletBalance = useSelector(state => state?.balance[address] || {})
   const price = useSelector(state => state.global.price)
   const { formatted, fiatFormatted } = util.computeBalance(walletBalance.balance || 0, price)
   const walletOutdated = util.isWalletOutdated(wallet)
-
-  useEffect(() => {
-    dispatch(balanceActions.fetchBalance({ address }))
-    dispatch(walletActions.fetchWallet({ address }))
-  }, [location.pathname])
 
   return (
     <Card
@@ -80,10 +73,10 @@ const WalletCard = ({ wallet }) => {
 
 const List = () => {
   const { isMobile } = useWindowDimensions()
-  const wallets = useSelector(state => state.wallet.wallets)
-  const balances = useSelector(state => state.balance)
+  const wallets = useSelector(state => state.wallet)
+  const balances = useSelector(state => state.balance || {})
   const price = useSelector(state => state.global.price)
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
   const dispatch = useDispatch()
   const totalBalance = Object.keys(balances)
     .filter(a => wallets[a] && wallets[a].network === network && !wallets[a].temp)
@@ -101,31 +94,50 @@ const List = () => {
     deleteWalletLocally({ wallet, wallets, dispatch, silent: true })
   }
   useEffect(() => {
-    if (purged || !wallets || wallets.length === 0) {
+    if (purged || !wallets || Object.keys(wallets).length === 0) {
       return
     }
-    const now = Date.now()
-    setPurged(true)
-    Object.keys(wallets || {}).forEach((address) => {
-      const wallet = wallets[address]
-      if (!wallet) {
-        return
-      }
-      if (
-        (wallet?.temp && wallet.temp < now) ||
-        address === ONEConstants.EmptyAddress ||
-        !wallet.network
-      ) {
-        purge(wallet)
-      }
-    })
+    async function scanWalletsForPurge () {
+      await cleanStorage({ wallets })
+      const now = Date.now()
+      setPurged(true)
+      Object.keys(wallets || {}).forEach((address) => {
+        const wallet = wallets[address]
+        if (!wallet) {
+          return
+        }
+        if (address === 'undefined') {
+          // leftover stale wallet due to buggy code
+          dispatch(walletActions.deleteWallet('undefined'))
+          return
+        }
+        if (
+          (wallet?.temp && wallet.temp < now) ||
+          address === ONEConstants.EmptyAddress ||
+          !wallet.network
+        ) {
+          purge(wallet)
+        }
+      })
+    }
+    scanWalletsForPurge()
   }, [wallets])
+
+  useEffect(() => {
+    batch(() => {
+      values(wallets).filter(w => isMatchingWallet(w)).forEach(({ address }) => {
+        dispatch(walletActions.fetchWallet({ address }))
+        dispatch(balanceActions.fetchBalance({ address }))
+      })
+    })
+  }, [])
 
   const isMatchingWallet = (w) => {
     return w.network === network &&
       !w.temp &&
       w.address !== ONEConstants.EmptyAddress
   }
+  // console.log(wallets)
 
   return (
     <Space direction='vertical' style={{ width: '100%' }}>

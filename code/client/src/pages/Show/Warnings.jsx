@@ -1,5 +1,5 @@
 import { Warning } from '../../components/Text'
-import util, { useWindowDimensions } from '../../util'
+import util from '../../util'
 import ONEUtil from '../../../../lib/util'
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -12,7 +12,7 @@ const { Link, Text } = Typography
 const Warnings = ({ address }) => {
   const history = useHistory()
   const dispatch = useDispatch()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const walletOutdated = util.isWalletOutdated(wallet)
 

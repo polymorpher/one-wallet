@@ -19,11 +19,11 @@ import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
 import querystring from 'query-string'
 import { useLocation } from 'react-router'
+import ONENames from '../../../../lib/names'
 const { Title, Text } = Typography
 
 const Reclaim = ({
   address,
-  show,
   onClose, // optional
   onSuccess = onClose, // optional
   prefillFrom,
@@ -31,10 +31,10 @@ const Reclaim = ({
   const location = useLocation()
 
   const { isMobile } = useWindowDimensions()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const { majorVersion } = wallet
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
 
   const doubleOtp = wallet.doubleOtp
   const { state: otpState } = useOtpState()
@@ -169,7 +169,7 @@ const Reclaim = ({
     return (
       <AnimatedSection
         style={{ maxWidth: 720 }}
-        show={show} title={<Title level={2}>Reclaim Assets</Title>} extra={[
+        title={<Title level={2}>Reclaim Assets</Title>} extra={[
           <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
         ]}
       >
@@ -181,7 +181,7 @@ const Reclaim = ({
   return (
     <AnimatedSection
       style={{ maxWidth: 720 }}
-      show={show} title={<Title level={2}>Reclaim Assets</Title>} extra={[
+      title={<Title level={2}>Reclaim Assets</Title>} extra={[
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
       ]}
     >
@@ -212,7 +212,7 @@ const Reclaim = ({
         <Col span={24}>
           <OtpStack
             shouldAutoFocus
-            walletName={wallet.name}
+            walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)}
             doubleOtp={doubleOtp}
             otpState={otpState}
             onComplete={doReclaim}

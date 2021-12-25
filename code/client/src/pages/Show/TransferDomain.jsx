@@ -15,14 +15,15 @@ import ShowUtils from './show-util'
 import { useDispatch, useSelector } from 'react-redux'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
+import ONENames from '../../../../lib/names'
 const { Title } = Typography
 
-const TransferDomain = ({ address, onClose, show }) => {
+const TransferDomain = ({ address, onClose }) => {
   const dispatch = useDispatch()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const domain = wallet.domain || ''
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
   const [stage, setStage] = useState(-1)
   const [transferTo, setTransferTo] = useState({ value: '', label: '' })
   const { resetWorker, recoverRandomness } = useRandomWorker()
@@ -82,7 +83,7 @@ const TransferDomain = ({ address, onClose, show }) => {
   return (
     <AnimatedSection
       style={{ maxWidth: 720 }}
-      show={show} title={<Title level={2}>Transfer Domain</Title>} extra={[
+      title={<Title level={2}>Transfer Domain</Title>} extra={[
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
       ]}
     >
@@ -96,7 +97,7 @@ const TransferDomain = ({ address, onClose, show }) => {
             currentWallet={wallet}
           />
         </Space>
-        <OtpStack walletName={wallet.name} otpState={otpState} doubleOtp={wallet.doubleOtp} onComplete={doTransferDomain} action='confirm' />
+        <OtpStack walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)} otpState={otpState} doubleOtp={wallet.doubleOtp} onComplete={doTransferDomain} action='confirm' />
       </Space>
       {!domain &&
         <Row justify='center' style={{ margin: 12 }}>
