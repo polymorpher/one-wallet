@@ -55,7 +55,7 @@ export default {
 
     const onRevealSuccess = (txId, messages = []) => {
       setStage(3)
-      if(messages.length) {
+      if (messages.length) {
         messages.forEach(m => message[m.type](<Text>{m.message}</Text>))
       }
 
