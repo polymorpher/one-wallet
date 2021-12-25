@@ -170,7 +170,7 @@ const RestoreByScan = ({ isActive, onComplete, onCancel }) => {
       const expectedIdKey = ONEUtil.getIdentificationKey(ONEUtil.processOtpSeed(secret), true)
       const allRoots = [...oldCores.map(e => ONEUtil.hexStringToBytes(e.root)), ONEUtil.hexToBytes(walletInfo.root)]
       let idKeyIndex = -1
-      if (identificationKeys.length > 0) {
+      if (identificationKeys.filter(e => e.length >= 130).length > 0) {
         idKeyIndex = identificationKeys.findIndex(e => e === expectedIdKey)
         if (idKeyIndex === -1) {
           message.error('Seed QR code does not match 1wallet identification key at the address. If this is unexpected, please report this bug to us.')
