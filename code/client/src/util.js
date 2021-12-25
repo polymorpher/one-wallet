@@ -162,6 +162,11 @@ const util = {
     return !wallet.majorVersion || !(wallet.majorVersion >= config.minWalletVersion)
   },
 
+  /**
+   *
+   * @param {string} otpInput
+   * @returns {null|number}
+   */
   parseOtp: otpInput => {
     const parsedOtp = parseInt(otpInput)
     if (!isInteger(parsedOtp) || !(parsedOtp < 1000000)) {
