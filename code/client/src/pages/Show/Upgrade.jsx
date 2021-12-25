@@ -10,7 +10,7 @@ import message from '../../message'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
 import ShowUtils from './show-util'
-import { SmartFlows } from '../../../../lib/api/flow'
+import { Flows, SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import { api } from '../../../../lib/api'
 import { walletActions } from '../../state/modules/wallet'
@@ -60,12 +60,22 @@ const Upgrade = ({ address, onClose }) => {
   const [stage, setStage] = useState(-1)
   const { resetWorker, recoverRandomness } = useRandomWorker()
 
-  const { prepareValidation, onRevealSuccess, ...helpers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
+  const { prepareValidation, prepareProofFailed, onRevealSuccess, ...helpers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
 
   const doUpgrade = async () => {
     if (stage >= 0) {
       return
     }
+    const { otp, otp2, invalidOtp2, invalidOtp } = prepareValidation({ state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp }, checkAmount: false, checkDest: false }) || {}
+
+    if (invalidOtp || invalidOtp2) return
+
+    const { eotp, index, layers } = await Flows.deriveEOTP({ otp, otp2, wallet, prepareProofFailed })
+    if (!eotp) {
+      return
+    }
+    message.info('Retrieving latest information for the wallet...')
+
     setStage(0)
     const {
       root,
@@ -91,6 +101,9 @@ const Upgrade = ({ address, onClose }) => {
     if (majorVersion >= 14) {
       oldCores = await api.blockchain.getOldInfos({ address, raw: true })
     }
+    // TODO: always add a new identification key, computed using keccak(eotp) or similar. This key will be used for address prediction and contract verification only. It will be automatically ignored for other purposes (due to shorter length)
+
+    const upgradeIdentificationKey = ONEUtil.hexString(ONEUtil.keccak(new Uint8Array([...eotp, ...new Uint8Array(new Uint32Array([index]).buffer)])))
     let identificationKeys = []; let innerCores = [] // v15
     if (majorVersion >= 15) {
       [innerCores, identificationKeys] = await Promise.all([
@@ -98,6 +111,7 @@ const Upgrade = ({ address, onClose }) => {
         api.blockchain.getIdentificationKeys({ address }),
       ])
     }
+    identificationKeys.unshift(upgradeIdentificationKey)
     const transformedLastResortAddress = util.isDefaultRecoveryAddress(lastResortAddress) ? ONEConstants.TreasuryAddress : lastResortAddress
     const { address: newAddress } = await api.relayer.create({
       root,
@@ -122,12 +136,14 @@ const Upgrade = ({ address, onClose }) => {
       innerCores,
       identificationKeys, // ^v15
     })
-    const { otp, otp2, invalidOtp2, invalidOtp } = prepareValidation({ state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp }, checkAmount: false, checkDest: false }) || {}
-    if (invalidOtp || invalidOtp2) return
+
     SmartFlows.commitReveal({
       wallet,
       otp,
       otp2,
+      eotp,
+      index,
+      layers,
       recoverRandomness,
       commitHashGenerator: ONE.computeForwardHash,
       commitHashArgs: { address: newAddress },
