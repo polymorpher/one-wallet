@@ -116,6 +116,7 @@ const initCachedContracts = async () => {
             // console.log(`factories[${network}][${libName}] = ${instance.address}`)
             factories[network][libName] = instance
           }
+          console.log(`[${network}][${libName}] Deployed at ${instance.address}`)
           await fs.writeFile(fp, `${instance.address},${expectedHash}`, { encoding: 'utf-8' })
         }, {
           retry: (ex, n) => {
