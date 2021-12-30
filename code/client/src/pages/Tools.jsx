@@ -13,7 +13,7 @@ import { KnownERC20 } from '../components/TokenAssets'
 import ONEUtil from '../../../lib/util'
 import ONEConstants from '../../../lib/constants'
 import { TallRow } from '../components/Grid'
-import { matchPath, useHistory, useLocation, useRouteMatch } from 'react-router'
+import { matchPath, useHistory, useLocation } from 'react-router'
 import Paths from '../constants/paths'
 import MetaMaskAdd from '../../assets/metamask-add.png'
 import MetaMaskSwitch from '../../assets/metamask-switch.png'
@@ -30,11 +30,6 @@ const ToolMap = {
   '': true,
   'metamask-add': true,
 }
-
-const SectionConfig = {
-  style: { minHeight: 320, maxWidth: 720 }
-}
-
 const SushiSwapEncoder = ({ onClose }) => {
   const [inputAmount, setInputAmount] = useState('')
   const [input, setInput] = useState(new BN())
@@ -195,8 +190,6 @@ const Tools = () => {
 
   const history = useHistory()
   const location = useLocation()
-  const match = useRouteMatch(Paths.toolLink)
-  const { tool } = match ? match.params : {}
 
   useEffect(() => {
     const m = matchPath(location.pathname, { path: Paths.toolLink })
