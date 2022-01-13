@@ -104,16 +104,16 @@ const initBlockchain = (store) => {
 
   Object.keys(providers).forEach(k => {
     Contract.setProvider(providers[k])
-    const c = new Contract(ONEWalletContractAbi)
+    const c = (address) => new Contract(ONEWalletContractAbi, address)
     contractWithProvider[k] = c
     Object.keys(tokenContractsWithProvider).forEach(t => {
-      tokenContractsWithProvider[t][k] = new Contract(tokenContractTemplates[t])
-      tokenMetadataWithProvider[t][k] = new Contract(tokenMetadataTemplates[t])
+      tokenContractsWithProvider[t][k] = (address) => new Contract(tokenContractTemplates[t], address)
+      tokenMetadataWithProvider[t][k] = (address) => new Contract(tokenMetadataTemplates[t], address)
     })
     if (k === 'harmony-mainnet') {
-      resolverWithProvider = new Contract(Resolver)
-      reverseResolverWithProvider = new Contract(ReverseResolver)
-      registrarWithProvider = new Contract(Registrar)
+      resolverWithProvider = (address) => new Contract(Resolver, address)
+      reverseResolverWithProvider = (address) => new Contract(ReverseResolver, address)
+      registrarWithProvider = (address) => new Contract(Registrar, address)
     }
   })
   const switchNetwork = () => {
@@ -206,34 +206,34 @@ const api = {
   },
   blockchain: {
     getOldInfos: async ({ address, raw }) => {
-      const c = new one(address)
-      const res = await c.getOldInfos()
+      const c = one(address)
+      const res = await c.methods.getOldInfos().call()
       return res.map(e => ONEUtil.processCore(e, raw))
     },
     getInnerCores: async ({ address, raw }) => {
-      const c = new one(address)
-      const res = await c.getInnerCores()
+      const c = one(address)
+      const res = await c.getInnerCores().call()
       return res.map(e => ONEUtil.processCore(e, raw))
     },
     getIdentificationKeys: async ({ address }) => {
-      const c = new one(address)
-      const res = await c.getIdentificationKeys()
+      const c = one(address)
+      const res = await c.methods.getIdentificationKeys().call()
       return res
     },
     getLastOperationTime: async ({ address }) => {
-      const c = new one(address)
-      const t = await c.lastOperationTime() // BN but convertible to uint32
+      const c = one(address)
+      const t = await c.methods.lastOperationTime().call() // BN but convertible to uint32
       return t.toNumber()
     },
     getNonce: async ({ address }) => {
-      const c = new one(address)
-      const nonce = await c.getNonce()
+      const c = one(address)
+      const nonce = await c.methods.getNonce().call()
       return nonce.toNumber()
     },
     getSpending: async ({ address }) => {
-      const c = new one(address)
+      const c = one(address)
       let spendingLimit, spendingAmount, lastSpendingInterval, spendingInterval
-      const r = await c.getCurrentSpendingState()
+      const r = await c.methods.getCurrentSpendingState().call()
       spendingLimit = new BN(r[0])
       spendingAmount = new BN(r[1])
       lastSpendingInterval = new BN(r[2])
@@ -247,12 +247,12 @@ const api = {
      * @returns {Promise<{address, slotSize, highestSpendingLimit: string, effectiveTime: number, majorVersion: (number|number), lastSpendingInterval: number, spendingAmount: string, duration: number, spendingLimit: string, lastLimitAdjustmentTime: number, root, minorVersion: (number|number), spendingInterval: number, lastResortAddress: *}|{maxOperationsPerInterval, highestSpendingLimit: BN, lifespan, majorVersion: (number|number), spendingAmount: BN, lastSpendingInterval: BN, spendingLimit: BN, lastLimitAdjustmentTime: BN, root: *, dailyLimit: string, interval, t0, minorVersion: (number|number), spendingInterval: BN, lastResortAddress: *, height}>}
      */
     getWallet: async ({ address, raw }) => {
-      const c = new one(address)
-      const result = await c.getInfo()
+      const c = one(address)
+      const result = await c.methods.getInfo().call()
       let majorVersion = new BN(0)
       let minorVersion = new BN(0)
       try {
-        const versionResult = await c.getVersion()
+        const versionResult = await c.methods.getVersion().call()
         majorVersion = versionResult[0]
         minorVersion = versionResult[1]
       } catch (ex) {
@@ -262,7 +262,7 @@ const api = {
       let spendingLimit; let spendingAmount; let lastSpendingInterval; let spendingInterval
       let lastLimitAdjustmentTime = new BN(0); let highestSpendingLimit = new BN(0)
       if (majorVersion >= 15) {
-        const r = await c.getSpendingState()
+        const r = await c.methods.getSpendingState()
         spendingLimit = r[0]
         spendingAmount = r[1]
         lastSpendingInterval = new BN(r[2])
@@ -270,13 +270,13 @@ const api = {
         lastLimitAdjustmentTime = new BN(r[4])
         highestSpendingLimit = new BN(r[5])
       } else if (majorVersion >= 12) {
-        const r = await c.getCurrentSpendingState()
+        const r = await c.methods.getCurrentSpendingState()
         spendingLimit = new BN(r[0])
         spendingAmount = new BN(r[1])
         lastSpendingInterval = new BN(r[2])
         spendingInterval = new BN(r[3])
       } else {
-        const r = await c.getCurrentSpending()
+        const r = await c.methods.getCurrentSpending()
         spendingAmount = new BN(r[0])
         lastSpendingInterval = new BN(r[1])
         spendingLimit = new BN(dailyLimit)
@@ -336,8 +336,8 @@ const api = {
      * @returns {Promise<*[]>}
      */
     getCommitsV3: async ({ address }) => {
-      const c = new one(address)
-      const result = await c.getCommits()
+      const c = one(address)
+      const result = await c.methods.getCommits().call()
       const [hashes, paramsHashes, timestamps, completed] = Object.keys(result).map(k => result[k])
       const commits = []
       for (let i = 0; i < hashes.length; i += 1) {
@@ -352,8 +352,8 @@ const api = {
      * @returns {Promise<*[]>}
      */
     getCommits: async ({ address }) => {
-      const c = new one(address)
-      const result = await c.getAllCommits()
+      const c = one(address)
+      const result = await c.methods.getAllCommits().call()
       return parseCommits(result)
     },
     /**
@@ -362,8 +362,8 @@ const api = {
      * @returns {Promise<void>}
      */
     findCommitV6: async ({ address, commitHash }) => {
-      const c = new one(address)
-      const result = await c.findCommit(commitHash)
+      const c = one(address)
+      const result = await c.methods.findCommit(commitHash).call()
       const [hash, paramsHash, timestamp, completed] = Object.keys(result).map(k => result[k])
       return { hash, paramsHash, timestamp: new BN(timestamp).toNumber(), completed }
     },
@@ -373,8 +373,8 @@ const api = {
      * @returns {Promise<void>}
      */
     findCommit: async ({ address, commitHash }) => {
-      const c = new one(address)
-      const result = await c.lookupCommit(commitHash)
+      const c = one(address)
+      const result = await c.methods.lookupCommit(commitHash).call()
       return parseCommits(result)
     },
     /**
@@ -383,8 +383,8 @@ const api = {
      * @returns {Promise<*[]>}
      */
     getTrackedTokens: async ({ address }) => {
-      const c = new one(address)
-      const result = await c.getTrackedTokens()
+      const c = one(address)
+      const result = await c.methods.getTrackedTokens().call()
       const [tokenTypes, contracts, tokenIds] = Object.keys(result).map(k => result[k])
       const tt = []
       for (let i = 0; i < tokenTypes.length; i++) {
@@ -434,9 +434,9 @@ const api = {
     },
 
     getBacklinks: async ({ address }) => {
-      const c = new one(address)
+      const c = one(address)
       try {
-        const backlinks = await c.getBacklinks()
+        const backlinks = await c.methods.getBacklinks().call()
         return backlinks
       } catch (ex) {
         console.debug(ex)
@@ -445,9 +445,9 @@ const api = {
     },
 
     getForwardAddress: async ({ address }) => {
-      const c = new one(address)
+      const c = one(address)
       try {
-        const forwardAddress = await c.getForwardAddress()
+        const forwardAddress = await c.methods.getForwardAddress().call()
         return forwardAddress
       } catch (ex) {
         console.debug(ex)
