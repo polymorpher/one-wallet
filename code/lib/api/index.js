@@ -264,7 +264,7 @@ const api = {
       let spendingLimit; let spendingAmount; let lastSpendingInterval; let spendingInterval
       let lastLimitAdjustmentTime = new BN(0); let highestSpendingLimit = new BN(0)
       if (majorVersion >= 15) {
-        const r = await c.methods.getSpendingState()
+        const r = await c.methods.getSpendingState().call()
         spendingLimit = r[0]
         spendingAmount = r[1]
         lastSpendingInterval = new BN(r[2])
@@ -288,15 +288,15 @@ const api = {
       if (raw) {
         return {
           root,
-          height: height.toNumber(),
-          interval: interval.toNumber(),
-          t0: t0.toNumber(),
-          lifespan: lifespan.toNumber(),
-          maxOperationsPerInterval: maxOperationsPerInterval.toNumber(),
+          height: Number(height),
+          interval: Number(interval),
+          t0: Number(t0),
+          lifespan: Number(lifespan),
+          maxOperationsPerInterval: Number(maxOperationsPerInterval),
           lastResortAddress,
           dailyLimit: dailyLimit.toString(10),
-          majorVersion: majorVersion ? majorVersion.toNumber() : 0,
-          minorVersion: minorVersion ? minorVersion.toNumber() : 0,
+          majorVersion: majorVersion ? Number(majorVersion) : 0,
+          minorVersion: minorVersion ? Number(minorVersion) : 0,
           spendingAmount: spendingAmount.toString(),
           lastSpendingInterval: lastSpendingInterval.toNumber(),
           spendingLimit: spendingLimit.toString(),
@@ -305,17 +305,17 @@ const api = {
           highestSpendingLimit: highestSpendingLimit.toString(),
         }
       }
-      const intervalMs = interval.toNumber() * 1000
+      const intervalMs = Number(interval) * 1000
       // TODO: use smart contract interval value, after we fully support 60 second interval in client (and Android Google Authenticator supports that too)
       return {
         address,
         root: root.slice(2),
-        effectiveTime: t0.toNumber() * intervalMs,
-        duration: lifespan.toNumber() * intervalMs,
-        slotSize: maxOperationsPerInterval.toNumber(),
+        effectiveTime: Number(t0) * intervalMs,
+        duration: Number(lifespan) * intervalMs,
+        slotSize: Number(maxOperationsPerInterval),
         lastResortAddress,
-        majorVersion: majorVersion ? majorVersion.toNumber() : 0,
-        minorVersion: minorVersion ? minorVersion.toNumber() : 0,
+        majorVersion: majorVersion ? Number(majorVersion) : 0,
+        minorVersion: minorVersion ? Number(minorVersion) : 0,
         spendingLimit: spendingLimit.toString(),
         lastSpendingInterval: lastSpendingInterval.toNumber(),
         spendingAmount: spendingAmount.toString(),
