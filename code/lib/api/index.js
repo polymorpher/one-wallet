@@ -103,8 +103,10 @@ const initBlockchain = (store) => {
   })
 
   Object.keys(providers).forEach(k => {
-    Contract.setProvider(providers[k])
-    const c = (address) => new Contract(ONEWalletContractAbi, address)
+    const c = (address) => {
+      Contract.setProvider(providers[k])
+      return new Contract(ONEWalletContractAbi, address)
+    }
     contractWithProvider[k] = c
     Object.keys(tokenContractsWithProvider).forEach(t => {
       tokenContractsWithProvider[t][k] = (address) => new Contract(tokenContractTemplates[t], address)
