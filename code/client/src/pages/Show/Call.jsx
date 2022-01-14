@@ -215,7 +215,7 @@ const Call = ({
       <AverageRow align='middle'>
         <Col span={24}>
           <OtpStack
-            walletName={autoWalletNameHint(wallet))}
+            walletName={autoWalletNameHint(wallet)}
             doubleOtp={doubleOtp}
             otpState={otpState}
             onComplete={doCall}
