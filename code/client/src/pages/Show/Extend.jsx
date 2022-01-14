@@ -9,7 +9,7 @@ import { Hint, Warning } from '../../components/Text'
 import { AverageRow } from '../../components/Grid'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
-import { generateOtpSeed } from '../../util'
+import { autoWalletNameHint, generateOtpSeed } from '../../util'
 import ShowUtils from './show-util'
 import { useSelector } from 'react-redux'
 import { SmartFlows } from '../../../../lib/api/flow'
@@ -418,7 +418,7 @@ const Extend = ({
             <Col span={24}>
               <OtpStack
                 isDisabled={!root}
-                walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)}
+                walletName={autoWalletNameHint(wallet)}
                 otpState={otpState}
                 onComplete={doReplace}
                 action={`confirm ${method === 'new' ? '[using old authenticator code]' : ''}`}

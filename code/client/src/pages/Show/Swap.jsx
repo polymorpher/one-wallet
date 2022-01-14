@@ -12,7 +12,7 @@ import message from '../../message'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import ONEConstants from '../../../../lib/constants'
-import util, { useWindowDimensions } from '../../util'
+import util, { autoWalletNameHint, useWindowDimensions } from '../../util'
 import { DefaultTrackedERC20, HarmonyONE, withKeys } from '../../components/TokenAssets'
 import api from '../../api'
 import { Hint, InputBox, Warning } from '../../components/Text'
@@ -723,7 +723,7 @@ const Swap = ({ address }) => {
         </TallRow>}
 
       <TallRow>
-        <OtpStack walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)} doubleOtp={doubleOtp} otpState={otpState} onComplete={tokenApproved ? confirmSwap : approveToken} action={tokenApproved ? 'approve' : 'confirm'} />
+        <OtpStack walletName={autoWalletNameHint(wallet)} doubleOtp={doubleOtp} otpState={otpState} onComplete={tokenApproved ? confirmSwap : approveToken} action={tokenApproved ? 'approve' : 'confirm'} />
       </TallRow>
       <TallRow justify='start' align='baseline'>
         <Space size='large' align='top'>

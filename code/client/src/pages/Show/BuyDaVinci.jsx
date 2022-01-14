@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import util, { useWindowDimensions } from '../../util'
+import util, { autoWalletNameHint, useWindowDimensions } from '../../util'
 import Button from 'antd/es/button'
 import Col from 'antd/es/col'
 import Row from 'antd/es/row'
@@ -171,7 +171,7 @@ const BuyDaVinci = ({ address, onSuccess, onClose }) => {
               </Space>
             </Col>
           </Row>
-          <OtpStack shouldAutoFocus walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)} doubleOtp={wallet.doubleOtp} otpState={otpState} onComplete={doBuy} action='buy now' />
+          <OtpStack shouldAutoFocus walletName={autoWalletNameHint(wallet)} doubleOtp={wallet.doubleOtp} otpState={otpState} onComplete={doBuy} action='buy now' />
           <TallRow justify='space-between' style={{ marginTop: 24 }}>
             <Button size='large' type='text' onClick={reset} danger>Cancel</Button>
           </TallRow>

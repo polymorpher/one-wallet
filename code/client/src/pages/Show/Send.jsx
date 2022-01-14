@@ -8,7 +8,7 @@ import { Hint, InputBox, Label, Warning } from '../../components/Text'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
-import util, { useWindowDimensions } from '../../util'
+import util, { autoWalletNameHint, useWindowDimensions } from '../../util'
 import BN from 'bn.js'
 import ShowUtils from './show-util'
 import { useDispatch, useSelector } from 'react-redux'
@@ -226,7 +226,7 @@ const Send = ({
       <Row align='middle'>
         <Col span={24}>
           <OtpStack
-            walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)}
+            walletName={autoWalletNameHint(wallet)}
             doubleOtp={doubleOtp}
             otpState={otpState}
             onComplete={doSend}

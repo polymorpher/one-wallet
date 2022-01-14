@@ -12,7 +12,7 @@ import PlusCircleOutlined from '@ant-design/icons/PlusCircleOutlined'
 import QuestionCircleOutlined from '@ant-design/icons/QuestionCircleOutlined'
 import { Hint, InputBox, Label } from '../../components/Text'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
-import util, { generateOtpSeed, useWindowDimensions } from '../../util'
+import util, { autoWalletNameHint, generateOtpSeed, useWindowDimensions } from '../../util'
 import BN from 'bn.js'
 import ShowUtils from './show-util'
 import { SmartFlows } from '../../../../lib/api/flow'
@@ -406,7 +406,7 @@ const Gift = ({
           {redPacketAddress &&
             <>
               <TallRow>
-                <OtpStack walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)} doubleOtp={doubleOtp} otpState={otpState} onComplete={createRedPacket} action='confirm transfer assets' />
+                <OtpStack walletName={autoWalletNameHint(wallet)} doubleOtp={doubleOtp} otpState={otpState} onComplete={createRedPacket} action='confirm transfer assets' />
               </TallRow>
             </>}
           <Hint>

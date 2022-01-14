@@ -2,7 +2,7 @@ import { batch, useDispatch, useSelector } from 'react-redux'
 import React, { useState } from 'react'
 import ONEConstants from '../../../../lib/constants'
 import ONEUtil from '../../../../lib/util'
-import util, { useWindowDimensions } from '../../util'
+import util, { autoWalletNameHint, useWindowDimensions } from '../../util'
 import config from '../../config'
 import BN from 'bn.js'
 import Button from 'antd/es/button'
@@ -258,7 +258,7 @@ const Upgrade = ({ address, onClose }) => {
               </>}
             {!needSetRecoveryAddressFirst &&
               <>
-                <OtpStack shouldAutoFocus walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)} doubleOtp={doubleOtp} otpState={otpState} onComplete={doUpgrade} action='confirm upgrade' />
+                <OtpStack shouldAutoFocus walletName={autoWalletNameHint(wallet)} doubleOtp={doubleOtp} otpState={otpState} onComplete={doUpgrade} action='confirm upgrade' />
 
                 <Title level={3}>
                   How upgrade works:

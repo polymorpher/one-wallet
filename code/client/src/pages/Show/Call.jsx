@@ -11,7 +11,7 @@ import { AverageRow, TallRow } from '../../components/Grid'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
-import util, { useWindowDimensions } from '../../util'
+import util, { autoWalletNameHint, useWindowDimensions } from '../../util'
 import BN from 'bn.js'
 import ShowUtils from './show-util'
 import { useSelector } from 'react-redux'
@@ -215,7 +215,7 @@ const Call = ({
       <AverageRow align='middle'>
         <Col span={24}>
           <OtpStack
-            walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)}
+            walletName={autoWalletNameHint(wallet))}
             doubleOtp={doubleOtp}
             otpState={otpState}
             onComplete={doCall}
