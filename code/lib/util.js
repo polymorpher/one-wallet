@@ -396,7 +396,7 @@ const utils = {
 
   // core retrieved from blockchain
   processCore: (info, raw) => {
-    const [root, height, interval, t0, lifespan, maxOperationsPerInterval] = range(6).map(k => info[k])
+    const [root, height, interval, t0, lifespan, maxOperationsPerInterval] = range(0, 6).map(k => info[k])
     const intervalMs = new BN(interval).toNumber() * 1000
     return raw ? {
       root,
