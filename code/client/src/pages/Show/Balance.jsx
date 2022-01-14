@@ -11,6 +11,9 @@ import { HarmonyONE } from '../../components/TokenAssets'
 import Paths from '../../constants/paths'
 import { useHistory } from 'react-router'
 import BuyButton from '../../components/BuyButton'
+import humanizeDuration from 'humanize-duration'
+import BN from 'bn.js'
+import { AverageRow, TallRow } from '../../components/Grid'
 const { Title, Text } = Typography
 
 const Balance = ({ address }) => {
@@ -28,6 +31,16 @@ const Balance = ({ address }) => {
   const selectedTokenDecimals = selectedToken.decimals
   const { formatted, fiatFormatted } = util.computeBalance(selectedTokenBalance, price, selectedTokenDecimals)
   const { isMobile } = useWindowDimensions()
+
+  const { spendingLimit, spendingInterval = 1 } = wallet
+  const { formatted: spendingLimitFormatted, fiatFormatted: spendingLimitFiatFormatted } = util.computeBalance(spendingLimit, price)
+  const spendLimitRemaining = util.getMaxSpending(wallet)
+  const { formatted: spendLimitRemainingFormatted, fiatFormatted: spendLimitRemainingFiatFormatted } = util.computeBalance(spendLimitRemaining.toString(), price)
+  let nextSpendTimeText = '...'
+  if (spendingInterval > 1) {
+    nextSpendTimeText = humanizeDuration(spendingInterval - (Date.now() % spendingInterval), { largest: 2, round: true })
+  }
+
   const showTransfer = () => { history.push(Paths.showAddress(oneAddress, 'transfer')) }
   return (
     <>
@@ -57,12 +70,53 @@ const Balance = ({ address }) => {
         <Row style={{ textAlign: isMobile ? 'center' : undefined }}>
           {!isMobile && <Col span={isMobile ? 24 : 12} />}
           <Col span={isMobile ? 24 : 12}>
+
             <Space>
               <Title level={4}>≈ ${fiatFormatted}</Title>
               <Text type='secondary'>USD</Text>
             </Space>
+
           </Col>
         </Row>}
+      {selectedToken.key === 'one' &&
+        <TallRow align='start'>
+          <Col span={isMobile ? 24 : 12}>
+            <Title level={3}>Spend Limit</Title>
+          </Col>
+          <Col>
+            <Row>
+              <Space>
+                <Text>{spendingLimitFormatted}</Text>
+                <Text type='secondary'>ONE</Text>
+                <Text>(≈ ${spendingLimitFiatFormatted}</Text>
+                <Text type='secondary'>USD)</Text>
+              </Space>
+            </Row>
+            <Row>
+              <Space>
+                <Text type='secondary'>per {humanizeDuration(spendingInterval, { largest: 2, round: true })}</Text>
+                <Button type='link' onClick={() => history.push(Paths.showAddress(address, 'limit'))}>(adjust limit)</Button>
+              </Space>
+            </Row>
+          </Col>
+        </TallRow>}
+      {selectedToken.key === 'one' && spendLimitRemaining.lt(spendingLimit) &&
+        <TallRow align='start'>
+          <Col span={isMobile ? 24 : 12}> <Title level={3}>Remaining Limit</Title></Col>
+          <Col>
+            <Row>
+              <Space>
+                <Text>{spendLimitRemainingFormatted}</Text>
+                <Text type='secondary'>ONE</Text>
+                <Text>(≈ ${spendLimitRemainingFiatFormatted}</Text>
+                <Text type='secondary'>USD)</Text>
+              </Space>
+            </Row>
+            <Row>
+              <Text type='secondary'>reset in {nextSpendTimeText}</Text>
+            </Row>
+          </Col>
+        </TallRow>}
       <Row style={{ marginTop: 16, textAlign: isMobile ? 'center' : undefined }}>
         <Col span={isMobile ? 24 : 12} />
         <Col span={isMobile ? 24 : undefined}>

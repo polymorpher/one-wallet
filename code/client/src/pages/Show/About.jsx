@@ -23,6 +23,7 @@ const { Title, Text } = Typography
 
 const About = ({ address }) => {
   const dispatch = useDispatch()
+  const price = useSelector(state => state.global.price)
   const history = useHistory()
   const { isMobile } = useWindowDimensions()
   const wallets = useSelector(state => state.wallet)
@@ -30,7 +31,6 @@ const About = ({ address }) => {
   const wallet = wallets[address] || {}
   const backlinks = wallet.backlinks || []
   const { spendingLimit, spendingInterval } = wallet
-  const price = useSelector(state => state.global.price)
   const { formatted: spendingLimitFormatted, fiatFormatted: spendingLimitFiatFormatted } = util.computeBalance(spendingLimit, price)
   const [selectedLink, setSelectedLink] = useState()
   const [inspecting, setInspecting] = useState()
@@ -72,22 +72,7 @@ const About = ({ address }) => {
           </Space>
         </Col>
       </TallRow>
-      <TallRow align='baseline'>
-        <Col span={isMobile ? 24 : 12}> <Title level={3}>Spend Limit</Title></Col>
-        <Col>
-          <Row>
-            <Space>
-              <Text>{spendingLimitFormatted}</Text>
-              <Text type='secondary'>ONE</Text>
-              <Text>(≈ ${spendingLimitFiatFormatted}</Text>
-              <Text type='secondary'>USD)</Text>
-            </Space>
-          </Row>
-          <Row>
-            <Text type='secondary'>per {humanizeDuration(spendingInterval, { largest: 2, round: true })}</Text>
-          </Row>
-        </Col>
-      </TallRow>
+
       {wallet.majorVersion &&
         <TallRow align='middle'>
           <Col span={isMobile ? 24 : 12}> <Title level={3}>Wallet Version</Title></Col>
