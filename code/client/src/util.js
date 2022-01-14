@@ -7,6 +7,7 @@ import ONEConstants from '../../lib/constants'
 import { AddressError } from './constants/errors'
 import BN from 'bn.js'
 import config from './config'
+import ONENames from '../../lib/names'
 
 const util = {
   // TODO: rewrite using BN to achieve 100% precision
@@ -276,9 +277,20 @@ const util = {
 
   callArgs: ({ dest, amount }) => {
     return { amount, operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: dest, tokenId: 0, dest: ONEConstants.EmptyAddress }
-  }
+  },
 }
+
 export default util
+
+export const autoWalletNameHint = (wallet) => {
+  if (!wallet) {
+    return ''
+  }
+  if (wallet.majorVersion < 15) {
+    return wallet.name
+  }
+  return ONENames.nameWithTime(wallet.name, wallet.effectiveTime)
+}
 
 export const updateQRCodeState = (newValue, state) => {
   if (!newValue || (newValue === state.last && (Date.now() - state.lastTime) < 5000)) {
