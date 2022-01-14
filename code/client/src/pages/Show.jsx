@@ -36,6 +36,7 @@ import NFTDashboard from './Show/NFTDashboard'
 import Reclaim from './Show/Reclaim'
 import Extend from './Show/Extend'
 import CheckRoots from './Show/CheckRoots'
+import Limit from './Show/Limit'
 
 const tabList = [
   { key: 'coins', tab: 'Coins' },
@@ -140,6 +141,7 @@ const Show = () => {
         </AnimatedSection>}
 
       {section === 'transfer' && <Send address={address} onClose={showStartScreen} />}
+      {section === 'limit' && <Limit address={address} onClose={showStartScreen} />}
       {section === 'recover' && <DoRecover address={address} onClose={showStartScreen} />}
       {section === 'setRecoveryAddress' && <SetRecovery address={address} onClose={showStartScreen} />}
       {section === 'domain' && <PurchaseDomain address={address} onClose={showStartScreen} />}

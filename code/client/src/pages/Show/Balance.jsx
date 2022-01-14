@@ -95,7 +95,7 @@ const Balance = ({ address }) => {
             <Row>
               <Space>
                 <Text type='secondary'>per {humanizeDuration(spendingInterval, { largest: 2, round: true })}</Text>
-                <Button type='link' onClick={() => history.push(Paths.showAddress(address, 'limit'))}>(adjust limit)</Button>
+                <Button type='link' onClick={() => history.push(Paths.showAddress(address, 'limit'))}>(change limit)</Button>
               </Space>
             </Row>
           </Col>
