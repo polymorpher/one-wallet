@@ -123,7 +123,10 @@ export default {
       resetWorker && resetWorker()
     }
 
-    return { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed, restart }
+    const prepareProof = () => setStage(0)
+    const beforeCommit = () => setStage(1)
+    const afterCommit = () => setStage(2)
+    return { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed, restart, prepareProof, beforeCommit, afterCommit }
   }
 }
 
