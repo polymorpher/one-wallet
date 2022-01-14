@@ -1,5 +1,6 @@
 import config from './config'
-import { cloneDeep, merge } from 'lodash'
+import cloneDeep from 'lodash/fp/cloneDeep'
+import mergeAll from 'lodash/fp/merge'
 const state = {
   wallet: {
     relayer: config.defaults.relayer,
@@ -9,4 +10,4 @@ const state = {
 }
 
 export const getState = () => cloneDeep(state)
-export const mergeState = (newState) => merge(state, newState)
+export const mergeState = (newState) => mergeAll(state, newState)

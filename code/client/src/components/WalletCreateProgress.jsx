@@ -1,5 +1,7 @@
 import { Hint } from './Text'
-import { Progress, Space, Timeline } from 'antd'
+import Progress from 'antd/es/progress'
+import Space from 'antd/es/space'
+import Timeline from 'antd/es/timeline'
 import React from 'react'
 
 const WalletCreateProgress = ({ progress, progressStage, isMobile, title, subtitle }) => {

@@ -1,4 +1,6 @@
-import { Button, Space, Row } from 'antd'
+import Button from 'antd/es/button'
+import Space from 'antd/es/space'
+import Row from 'antd/es/row'
 import { Text, Title, Paragraph } from '../../components/Text'
 import { OtpSuperStack } from '../../components/OtpSuperStack'
 import React, { useEffect, useState } from 'react'

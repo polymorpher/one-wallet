@@ -2,14 +2,19 @@ import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch, batch } from 'react-redux'
 import walletActions from '../state/modules/wallet/actions'
 import { balanceActions } from '../state/modules/balance'
-import { values, omit } from 'lodash'
-import { Card, Row, Space, Typography, Col, Tag } from 'antd'
+import values from 'lodash/fp/values'
+import omit from 'lodash/fp/omit'
+import Card from 'antd/es/card'
+import Row from 'antd/es/row'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
+import Col from 'antd/es/col'
+import Tag from 'antd/es/tag'
 import message from '../message'
 import util, { useWindowDimensions } from '../util'
 import { useHistory } from 'react-router'
 import Paths from '../constants/paths'
 import BN from 'bn.js'
-import { getAddress } from '@harmony-js/crypto'
 import ONEConstants from '../../../lib/constants'
 import * as Sentry from '@sentry/browser'
 import { cleanStorage, deleteWalletLocally } from '../storage/util'
@@ -88,7 +93,7 @@ const List = () => {
 
   const purge = (wallet) => {
     Sentry.withScope(scope => {
-      scope.setContext('wallet', omit(wallet, ['hseed']))
+      scope.setContext('wallet', omit(['hseed'], wallet))
       Sentry.captureMessage('purge1')
     })
     deleteWalletLocally({ wallet, wallets, dispatch, silent: true })

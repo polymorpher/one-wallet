@@ -1,4 +1,4 @@
-import { Steps } from 'antd'
+import Steps from 'antd/es/steps'
 import React from 'react'
 const { Step } = Steps
 

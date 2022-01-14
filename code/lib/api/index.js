@@ -1,6 +1,6 @@
 const axios = require('axios')
 const config = require('../config/provider').getConfig()
-const { isEqual } = require('lodash')
+const isEqual = require('lodash/fp/isEqual')
 const contract = require('@truffle/contract')
 const { TruffleProvider } = require('@harmony-js/core')
 const Web3 = require('web3')

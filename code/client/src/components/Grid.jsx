@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { Row } from 'antd'
+import Row from 'antd/es/row'
 
 export const TallRow = styled(Row)`
   margin-top: 32px;

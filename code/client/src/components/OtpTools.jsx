@@ -1,6 +1,7 @@
 import message from '../message'
 import { MigrationPayload } from '../proto/oauthMigration'
-import { Image, Row } from 'antd'
+import Image from 'antd/es/image'
+import Row from 'antd/es/row'
 import util, { OSType } from '../util'
 import React from 'react'
 import config from '../config'

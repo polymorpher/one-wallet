@@ -1,9 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Button, Row, Select, Upload } from 'antd'
+import Button from 'antd/es/button'
+import Row from 'antd/es/row'
+import Select from 'antd/es/select'
+import Upload from 'antd/es/upload'
 import message from '../message'
 import QrReader from 'react-qr-reader'
 import { useWindowDimensions } from '../util'
-import { LoadingOutlined, UploadOutlined } from '@ant-design/icons'
+import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
+import UploadOutlined from '@ant-design/icons/UploadOutlined'
 import jsQR from 'jsqr'
 
 const QrCodeScanner = ({ onScan, shouldInit, style }) => {

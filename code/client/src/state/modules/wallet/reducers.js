@@ -1,6 +1,7 @@
 import { handleActions } from 'redux-actions'
 import walletActions from './actions'
-import { omit, uniq } from 'lodash'
+import uniq from 'lodash/fp/uniq'
+import omit from 'lodash/fp/omit'
 
 // address -> wallet
 export const initialState = {
@@ -23,11 +24,11 @@ const reducer = handleActions(
 
     [walletActions.updateWallet]: (state, action) => ({
       ...state,
-      [action.payload.address]: action.payload._merge ? omit({ ...state[action.payload.address], ...action.payload }, ['_merge']) : action.payload
+      [action.payload.address]: action.payload._merge ? omit(['_merge'], { ...state[action.payload.address], ...action.payload }) : action.payload
     }),
 
     [walletActions.deleteWallet]: (state, action) => ({
-      ...omit(state, [action.payload]),
+      ...omit([action.payload], state),
     }),
 
     [walletActions.trackTokens]: (state, action) => ({

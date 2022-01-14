@@ -1,8 +1,11 @@
 import React, { useState } from 'react'
 import message from '../message'
 import storage from '../storage'
-import { Button, Modal, Typography } from 'antd'
-import { ExportOutlined, LoadingOutlined } from '@ant-design/icons'
+import Button from 'antd/es/button'
+import Modal from 'antd/es/modal'
+import Typography from 'antd/es/typography'
+import ExportOutlined from '@ant-design/icons/ExportOutlined'
+import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import { SimpleWalletExport, InnerTree } from '../proto/wallet'
 import util from '../util'
 const { Text, Link, Paragraph } = Typography
