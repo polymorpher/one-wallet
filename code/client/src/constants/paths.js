@@ -5,6 +5,7 @@ export default {
   create: base + '/create', // simplified, mobile oriented
   create1: base + '/create1', // desktop mode
   create2: base + '/create2', // expert mode
+  connect: base + '/connect', // wallconnect
   wallets: base + '/wallets',
   restore: base + '/restore',
   address: base + '/contacts/:address',

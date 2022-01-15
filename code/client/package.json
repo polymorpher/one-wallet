@@ -81,6 +81,7 @@
     "@sentry/react": "^6.8.0",
     "@sentry/tracing": "^6.8.0",
     "@transak/transak-sdk": "^1.0.31",
+    "@walletconnect/client": "^1.7.1",
     "antd": "^4.16.2",
     "axios": "^0.21.1",
     "bn.js": "^5.2.0",
