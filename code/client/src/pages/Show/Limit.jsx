@@ -13,7 +13,7 @@ import AnimatedSection from '../../components/AnimatedSection'
 import Button from 'antd/es/button'
 import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import Col from 'antd/es/col'
-import { WideLabel } from '../../components/Text'
+import { Warning, WideLabel } from '../../components/Text'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import { AverageRow, TallRow } from '../../components/Grid'
 import humanizeDuration from 'humanize-duration'
@@ -50,37 +50,45 @@ const Limit = ({
   const { resetWorker, recoverRandomness } = useRandomWorker()
 
   const { spendingLimit, spendingInterval = 1, doubleOtp, highestSpendingLimit, lastLimitAdjustmentTime } = wallet
+  const spendingIntervalText = humanizeDuration(spendingInterval, { largest: 2, round: true })
+  const currentSpendingLimit = new BN(spendingLimit)
   const { formatted: spendingLimitFormatted, fiatFormatted: spendingLimitFiatFormatted } = util.computeBalance(spendingLimit, price)
   const [targetSpendingLimitONE, setTargetSpendingLimitONE] = useState(parseFloat(spendingLimitFormatted))
   const targetSpendingLimit = ONEUtil.toFraction(targetSpendingLimitONE)
   const { fiatFormatted: targetSpendingLimitFiatFormatted } = util.computeBalance(targetSpendingLimit.toString(), price)
 
-  const maxNormalTargetSpendingLimit = new BN(spendingLimit).muln(2).add(ONEUtil.toFraction(1))
+  const historicalHighSpendingLimit = new BN(highestSpendingLimit)
+  const maxNormalTargetSpendingLimit = currentSpendingLimit.muln(2).add(ONEUtil.toFraction(1))
   const { formatted: maxNormalTargetSpendingLimitFormatted } = util.computeBalance(maxNormalTargetSpendingLimit.toString(), price)
-  const { formatted: highestSpendingLimitFormatted } = util.computeBalance(highestSpendingLimit.toString(), price)
+  const { formatted: highestSpendingLimitFormatted, fiatFormatted: highestSpendingLimitFiatFormatted } = util.computeBalance(historicalHighSpendingLimit.toString(), price)
   const maxSliderValue = Math.max(parseFloat(highestSpendingLimitFormatted), parseFloat(maxNormalTargetSpendingLimitFormatted))
   // console.log({ targetSpendingLimit, maxSliderValue, highestSpendingLimitFormatted, maxNormalTargetSpendingLimitFormatted })
-  const marks = {
-    0: '0 ONE',
-    [parseFloat(maxNormalTargetSpendingLimitFormatted)]: `${maxNormalTargetSpendingLimitFormatted} ONE`,
-    ...(new BN(highestSpendingLimit).gt(maxNormalTargetSpendingLimit)
-      ? {
-          [parseFloat(highestSpendingLimitFormatted)]: {
-            style: {
-              color: '#f00'
-            },
-            label: `${highestSpendingLimitFormatted} ONE`
-          }
-        }
-      : {}),
-    [maxSliderValue]: `${maxSliderValue} ONE`
-  }
-  // console.log(marks)
-  const moreAuthRequired = targetSpendingLimit.gt(maxNormalTargetSpendingLimit)
+
   const now = Date.now()
-  const canAdjustNow = true || lastLimitAdjustmentTime === 0 || (Math.floor(now / spendingInterval) > Math.floor(lastLimitAdjustmentTime / spendingInterval))
+  const canUseRegularAdjust = lastLimitAdjustmentTime === 0 || (Math.floor(now / spendingInterval) > Math.floor(lastLimitAdjustmentTime / spendingInterval))
   const waitTimeForAdjustment = spendingInterval - (now % spendingInterval)
   const waitTimeForAdjustmentText = humanizeDuration(waitTimeForAdjustment, { largest: 2, round: true })
+
+  const moreAuthRequired = targetSpendingLimit.gt(maxNormalTargetSpendingLimit) || (!canUseRegularAdjust && targetSpendingLimit.gt(currentSpendingLimit))
+  const impossibleToAdjust = (!canUseRegularAdjust && targetSpendingLimit.gt(historicalHighSpendingLimit)) ||
+    (targetSpendingLimit.gt(BN.max(maxNormalTargetSpendingLimit, historicalHighSpendingLimit)))
+
+  const marks = {
+    0: '0 ONE',
+    [spendingLimitFormatted]: {
+      style: { color: 'green' },
+      label: `${spendingLimitFormatted} ONE`
+    },
+    [maxSliderValue]: `${maxSliderValue} ONE`
+  }
+  if (!canUseRegularAdjust || historicalHighSpendingLimit.gt(maxNormalTargetSpendingLimit)) {
+    marks[parseFloat(highestSpendingLimitFormatted)] = {
+      style: { color: '#f00' },
+      label: `${highestSpendingLimitFormatted} ONE`
+    }
+  }
+
+  console.log(marks)
 
   const resetOtps = () => {
     for (let i = otpStates.length - 1; i >= 0; i--) {
@@ -144,71 +152,77 @@ const Limit = ({
       <AverageRow>
         <Space direction='vertical' size='small'>
           <Title level={4}>Increase spending limit</Title>
-          <Text>- up to double the current limit + 1 ONE, or</Text>
-          <Text>- to wallet historical highest, but requires 36-digits auth codes (6 each time) </Text>
+          <Text>- up to double the current limit + 1 ONE (once per {spendingIntervalText})</Text>
+          <Text>- up to all-time-high limit, with 6x6 auth codes (anytime) </Text>
           <Divider />
           <Title level={4}>Decrease spending limit</Title>
-          <Text>- to any amount below the current limit, even to 0 ONE (i.e. freeze the wallet)</Text>
-          <Text>- you can later restore to the highest limit you set before</Text>
-          <Text>- but it may require more auth codes (see above) </Text>
-          <Divider />
-          <Text>
-            You can only adjust limit once per {humanizeDuration(spendingInterval, { largest: 2, round: true })} for this wallet
-          </Text>
+          <Text>- to any amount below the current limit (anytime)</Text>
+          <Text>- tips: decrease to 0 ONE to freeze wallet if you suspect hacks</Text>
+          <Text>- tips: you can restore back to all-time-high later with 6x6 auth codes</Text>
+        </Space>
+      </AverageRow>
+      <Divider />
+      <AverageRow>
+        <Space>
+          <WideLabel><b>Current limit</b></WideLabel>
+          <Text style={{ color: 'green' }}>{spendingLimitFormatted} ONE (≈ ${spendingLimitFiatFormatted} USD) per {spendingIntervalText} </Text>
         </Space>
       </AverageRow>
       <AverageRow>
         <Space>
-          <WideLabel><b>Current limit</b></WideLabel>
-          <Text type='secondary'>{spendingLimitFormatted} ONE (≈ ${spendingLimitFiatFormatted} USD) per {humanizeDuration(spendingInterval, { largest: 2, round: true })} </Text>
+          <WideLabel><b>All time high</b></WideLabel>
+          <Text style={{ color: 'red' }}>{highestSpendingLimitFormatted} ONE (≈ ${highestSpendingLimitFiatFormatted} USD) </Text>
         </Space>
       </AverageRow>
-      {!canAdjustNow &&
-        <Text color='red'>You cannot adjust limit now. You have to wait for {waitTimeForAdjustmentText}</Text>}
-      {canAdjustNow &&
-        <>
-          <AverageRow>
-            <Space>
-              <WideLabel><b>New limit</b></WideLabel>
-              <Text type='secondary'>{targetSpendingLimitONE} ONE (≈ ${targetSpendingLimitFiatFormatted} USD)</Text>
-            </Space>
-          </AverageRow>
-          <TallRow justify='center'>
-            <Slider
-              min={0}
-              max={maxSliderValue}
-              style={{ width: '100%', margin: '0 16px' }} step={1}
-              value={targetSpendingLimitONE}
-              onChange={(v) => setTargetSpendingLimitONE(v)}
-              tooltipVisible={false}
-              marks={marks}
-            />
-          </TallRow>
-          <TallRow align='middle'>
-            <Col span={24}>
-              {!moreAuthRequired &&
-                <OtpStack
-                  walletName={autoWalletNameHint(wallet)}
-                  doubleOtp={doubleOtp}
-                  otpState={otpState}
-                  onComplete={doAdjust}
-                  shouldAutoFocus={!moreAuthRequired}
-                  action='change limit now'
-                />}
-              {moreAuthRequired &&
-                <OtpSuperStack
-                  otpStates={otpStates}
-                  action='submit for validation'
-                  wideLabel={isMobile}
-                  shouldAutoFocus={moreAuthRequired}
-                  onComplete={doAdjust}
-                  isDisabled={stage >= 0}
-                />}
-            </Col>
-          </TallRow>
-          <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
-        </>}
+      <AverageRow>
+        <Space>
+          <WideLabel><b>Last Change</b></WideLabel>
+          <Text type='secondary'>{new Date(lastLimitAdjustmentTime).toLocaleString()} ({humanizeDuration(Date.now() - lastLimitAdjustmentTime, { largest: 2, round: true })} ago) </Text>
+        </Space>
+      </AverageRow>
 
+      <AverageRow>
+        <Space>
+          <WideLabel><b>New limit</b></WideLabel>
+          <Text style={{ color: 'steelblue' }}>{targetSpendingLimitONE} ONE (≈ ${targetSpendingLimitFiatFormatted} USD)</Text>
+        </Space>
+      </AverageRow>
+      <TallRow justify='center'>
+        <Slider
+          min={0}
+          max={maxSliderValue}
+          style={{ width: '100%', margin: '0 16px' }} step={1}
+          value={targetSpendingLimitONE}
+          onChange={(v) => setTargetSpendingLimitONE(v)}
+          tooltipVisible={false}
+          marks={marks}
+        />
+      </TallRow>
+      <TallRow align='middle'>
+        {impossibleToAdjust && <Warning style={{ marginTop: 48 }}>You cannot increase limit that much at the moment. You have to wait for {waitTimeForAdjustmentText}</Warning>}
+        {!impossibleToAdjust &&
+          <Col span={24}>
+            {!moreAuthRequired &&
+              <OtpStack
+                walletName={autoWalletNameHint(wallet)}
+                doubleOtp={doubleOtp}
+                otpState={otpState}
+                onComplete={doAdjust}
+                shouldAutoFocus={!moreAuthRequired}
+                action='change limit now'
+              />}
+            {moreAuthRequired &&
+              <OtpSuperStack
+                otpStates={otpStates}
+                action='submit for validation'
+                wideLabel={isMobile}
+                shouldAutoFocus={moreAuthRequired}
+                onComplete={doAdjust}
+                isDisabled={stage >= 0}
+              />}
+          </Col>}
+      </TallRow>
+      <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
     </AnimatedSection>
   )
 }
