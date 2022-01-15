@@ -7,6 +7,7 @@ const { api } = require('./index')
 const EventMessage = require('../event-message')
 const EventMaps = require('../events-map.json')
 const BN = require('bn.js')
+const WalletConstants = require('../../client/src/constants/wallet')
 
 const EotpBuilders = {
   fromOtp: async ({ otp, otp2, rand, nonce, wallet }) => {
@@ -245,7 +246,7 @@ const Flows = {
       }
     }, checkCommitInterval)
     return tryReveal()
-  }
+  },
 }
 
 const SecureFlows = {
@@ -372,6 +373,41 @@ const SmartFlows = {
     return Flows.commitReveal({
       ...args, wallet, committer: Committer.legacy
     })
+  },
+
+  deriveSuperOTP: async ({ otps, wallet, setStage, innerCores = null, innerTrees = null, message = messager }) => {
+    const { innerRoots } = wallet
+    innerCores = innerCores || wallet.innerCores
+    innerTrees = innerTrees || (await Promise.all(innerRoots.map(r => storage.getItem(r))))
+    const eotp = await EotpBuilders.restore({ otp: otps })
+    const expectedLeaf = ONEUtil.sha256(eotp)
+    // console.log({ expectedLeaf, eotp })
+    const maxIndex = ONEUtil.timeToIndex({ effectiveTime: innerCores[0].effectiveTime, interval: WalletConstants.interval6 })
+    // const treeIndex = ONEUtil.timeToIndex({ effectiveTime: wallet.effectiveTime }) % innerTrees.length
+    let index = null
+    let treeIndex = null
+    setStage && setStage(0)
+    const maxIndexAcrossTrees = Math.max(...innerTrees.map(t => t[0].length / 32))
+    message.debug(`maxIndex:${maxIndex}, maxIndexAcrossTrees:${maxIndexAcrossTrees} }`)
+    for (let i = Math.min(maxIndexAcrossTrees - 1, maxIndex + 1); i >= 0; i--) {
+      // for (let i = 0; i < maxIndexAcrossTrees; i++) {
+      for (const [ind, innerTree] of innerTrees.entries()) {
+        const layer = innerTree[0]
+        const b = new Uint8Array(layer.subarray(i * 32, i * 32 + 32))
+        if (ONEUtil.bytesEqual(b, expectedLeaf)) {
+          index = i
+          treeIndex = ind
+          console.log(`Matching tree index ${treeIndex} at position ${index}`)
+          break
+          // console.log(`Matching index: ${ind} (expected ${treeIndex}), at ${i} (expected ${index})`)
+        }
+      }
+      if (index !== null && treeIndex !== null) {
+        break
+      }
+    }
+    const layers = innerTrees[treeIndex]
+    return { index, layers }
   }
 }
 
