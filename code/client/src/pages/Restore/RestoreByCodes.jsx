@@ -89,7 +89,11 @@ const RestoreByCodes = ({ isActive, name, wallet, innerTrees, innerCores, newLoc
     const otps = otpStates.map(({ otpInput }) => parseInt(otpInput))
 
     const { index, layers } = await SmartFlows.deriveSuperOTP({ otps, wallet, setStage, innerCores, innerTrees })
-
+    if (index === null || layers === null) {
+      message.error('Code is incorrect. Please start over.')
+      resetOtps()
+      return
+    }
     SmartFlows.commitReveal({
       wallet,
       otp: otps,
