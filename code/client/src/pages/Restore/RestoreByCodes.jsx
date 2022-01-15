@@ -7,7 +7,7 @@ import React, { useEffect, useState } from 'react'
 import { useWindowDimensions } from '../../util'
 import ShowUtils from '../Show/show-util'
 import ONEConstants from '../../../../lib/constants'
-import { EotpBuilders, SmartFlows } from '../../../../lib/api/flow'
+import { EotpBuilders, EOTPDerivation, SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import ONEUtil from '../../../../lib/util'
 import { api } from '../../../../lib/api'
@@ -88,18 +88,12 @@ const RestoreByCodes = ({ isActive, name, wallet, innerTrees, innerCores, newLoc
     const data = ONE.encodeDisplaceDataHex({ core: coreRaw, innerCores: newInnerCoresRaw, identificationKey: identificationKeys[0] })
     const otps = otpStates.map(({ otpInput }) => parseInt(otpInput))
 
-    const { index, layers } = await SmartFlows.deriveSuperOTP({ otps, wallet, setStage, innerCores, innerTrees })
-    if (index === null || layers === null) {
-      message.error('Code is incorrect. Please start over.')
-      resetOtps()
-      return
-    }
     SmartFlows.commitReveal({
       wallet,
       otp: otps,
-      eotpBuilder: EotpBuilders.restore,
-      index,
-      layers,
+      deriver: EOTPDerivation.deriveSuperEOTP,
+      effectiveTime: innerCores[0].effectiveTime,
+      innerTrees,
       commitHashGenerator: ONE.computeDataHash,
       commitHashArgs: { data: ONEUtil.hexStringToBytes(data) },
       revealAPI: api.relayer.reveal,

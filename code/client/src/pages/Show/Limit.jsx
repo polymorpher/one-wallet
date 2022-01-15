@@ -5,28 +5,21 @@ import React, { useState } from 'react'
 import { useRandomWorker } from './randomWorker'
 import BN from 'bn.js'
 import ShowUtils from './show-util'
-import { SmartFlows } from '../../../../lib/api/flow'
+import { EOTPDerivation, SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import { api } from '../../../../lib/api'
-import { Chaining } from '../../api/flow'
-import intersection from 'lodash/fp/intersection'
 import ONEConstants from '../../../../lib/constants'
 import AnimatedSection from '../../components/AnimatedSection'
 import Button from 'antd/es/button'
 import CloseOutlined from '@ant-design/icons/CloseOutlined'
-import Row from 'antd/es/row'
 import Col from 'antd/es/col'
-import { Hint, InputBox, Label, Warning, WideLabel } from '../../components/Text'
-import AddressInput from '../../components/AddressInput'
-import ONENames from '../../../../lib/names'
+import { WideLabel } from '../../components/Text'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import { AverageRow, TallRow } from '../../components/Grid'
 import humanizeDuration from 'humanize-duration'
 import Title from 'antd/es/typography/Title'
-import Link from 'antd/es/typography/Link'
 import Text from 'antd/es/typography/Text'
 import Slider from 'antd/es/slider'
-import WalletConstants from '../../constants/wallet'
 import Space from 'antd/es/space'
 import Paths from '../../constants/paths'
 import ONEUtil from '../../../../lib/util'
@@ -85,7 +78,7 @@ const Limit = ({
   // console.log(marks)
   const moreAuthRequired = targetSpendingLimit.gt(maxNormalTargetSpendingLimit)
   const now = Date.now()
-  const canAdjustNow = lastLimitAdjustmentTime === 0 || (Math.floor(now / spendingInterval) > Math.floor(lastLimitAdjustmentTime / spendingInterval))
+  const canAdjustNow = true || lastLimitAdjustmentTime === 0 || (Math.floor(now / spendingInterval) > Math.floor(lastLimitAdjustmentTime / spendingInterval))
   const waitTimeForAdjustment = spendingInterval - (now % spendingInterval)
   const waitTimeForAdjustmentText = humanizeDuration(waitTimeForAdjustment, { largest: 2, round: true })
 
@@ -113,35 +106,27 @@ const Limit = ({
       return
     }
     const { otp, otp2, invalidOtp2, invalidOtp, amount } = prepareValidation({
-      state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp, transferAmount: targetSpendingLimit }, checkDest: false,
+      state: { otpInput, otp2Input, doubleOtp: wallet.doubleOtp, transferAmount: targetSpendingLimit }, checkDest: false, checkOtp: !moreAuthRequired
     }) || {}
     if (!amount) {
       message.error('Invalid amount')
       return
     }
-
-    let index = null; let layers = null
-    if (moreAuthRequired) {
-      const otps = otpStates.map(({ otpInput }) => parseInt(otpInput))
-      const r = await SmartFlows.deriveSuperOTP({ otps, wallet, setStage })
-      index = r.index
-      layers = r.layers
-      if (index === null || layers === null) {
-        message.error('Code is incorrect. Please start over.')
-        resetOtps()
-        return
-      }
-    } else {
+    if (!moreAuthRequired) {
       if (invalidOtp || invalidOtp2) return
     }
-
     SmartFlows.commitReveal({
       wallet,
-      otp,
-      otp2,
-      index,
-      layers,
-      recoverRandomness,
+      ...(moreAuthRequired
+        ? {
+            deriver: EOTPDerivation.deriveSuperEOTP,
+            otp: otpStates.map(({ otpInput }) => parseInt(otpInput)),
+          }
+        : {
+            otp,
+            otp2,
+            recoverRandomness,
+          }),
       commitHashGenerator: ONE.computeAmountHash,
       commitHashArgs: { amount },
       revealAPI: api.relayer.reveal,
