@@ -30,8 +30,6 @@ const About = ({ address }) => {
   const dev = useSelector(state => state.global.dev)
   const wallet = wallets[address] || {}
   const backlinks = wallet.backlinks || []
-  const { spendingLimit, spendingInterval } = wallet
-  const { formatted: spendingLimitFormatted, fiatFormatted: spendingLimitFiatFormatted } = util.computeBalance(spendingLimit, price)
   const [selectedLink, setSelectedLink] = useState()
   const [inspecting, setInspecting] = useState()
   const oldInfos = wallet.oldInfos || []
@@ -68,7 +66,7 @@ const About = ({ address }) => {
         <Col>
           <Space>
             <Text>{humanizeDuration(wallet.duration + wallet.effectiveTime - Date.now(), { units: ['y', 'mo', 'd'], round: true })}</Text>
-            {(dev || util.canRenew(wallet)) && <Button shape='round' onClick={() => history.push(Paths.showAddress(address, 'extend'))}>Renew</Button>}
+            {(dev || util.canRenew(wallet)) && <Button type='link' onClick={() => history.push(Paths.showAddress(address, 'extend'))}>(renew now?)</Button>}
           </Space>
         </Col>
       </TallRow>
