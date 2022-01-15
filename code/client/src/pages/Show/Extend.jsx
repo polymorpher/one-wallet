@@ -6,7 +6,7 @@ import Typography from 'antd/es/typography'
 import Col from 'antd/es/col'
 import message from '../../message'
 import { Hint, Warning } from '../../components/Text'
-import { AverageRow } from '../../components/Grid'
+import { AverageRow, TallRow } from '../../components/Grid'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
 import { autoWalletNameHint, generateOtpSeed } from '../../util'
@@ -38,7 +38,8 @@ import qrcode from 'qrcode'
 import { OtpSetup, TwoCodeOption } from '../../components/OtpSetup'
 import WalletAddress from '../../components/WalletAddress'
 import { useHistory } from 'react-router'
-import ONENames from '../../../../lib/names'
+import Divider from 'antd/es/divider'
+import humanizeDuration from 'humanize-duration'
 const { Title, Text } = Typography
 
 const Subsections = {
@@ -326,9 +327,10 @@ const Extend = ({
         }
       >
         {children}
-        <Row justify='start' style={{ marginTop: 48 }}>
+        <AverageRow justify='start'>
+          <Divider />
           <Button size='large' type='link' onClick={onClose} danger style={{ padding: 0 }}>Cancel</Button>
-        </Row>
+        </AverageRow>
       </AnimatedSection>
     )
   }, [address])
@@ -345,23 +347,30 @@ const Extend = ({
     <>
       {section === Subsections.init &&
         <Subsection onClose={onClose}>
-          <AverageRow>
+          <TallRow>
+            <Space direction='vertical'>
+              <Text>Renewing a wallet extends its expiry time by another {humanizeDuration(WalletConstants.defaultDuration, { largest: 1, round: true })}, and gives you an opportunity to bind a new authenticator code to the wallet.</Text>
+              {(!wallet.innerRoots || !wallet.innerRoots.length) && <Text>Since your wallet was created prior to v15, renewing the wallet also unlocks many v15 features for your wallet</Text>}
+            </Space>
+          </TallRow>
+          <Divider />
+          <TallRow>
             <Title level={3}>Set up a new authenticator code?</Title>
-          </AverageRow>
-          <AverageRow gutter={24}>
-            <Col span={isMobile ? 24 : 12}>
-              <Space direction='vertical' size='large' style={{ width: '100%' }} align='center'>
-                <Button shape='round' type='primary' onClick={() => setMethod('scan')}>Use the same</Button>
-                <Hint>You will need to export the Google Authenticator QR Code and scan it using a camera</Hint>
-              </Space>
-            </Col>
-            <Col span={isMobile ? 24 : 12}>
-              <Space direction='vertical' size='large' style={{ width: '100%' }} align='center'>
-                <Button shape='round' type='primary' onClick={() => setMethod('new')}>Setup a new one</Button>
-                <Hint>You will setup a new authenticator code. Both your new and old authenticator code work simultaneously.</Hint>
-              </Space>
-            </Col>
-          </AverageRow>
+          </TallRow>
+          <TallRow>
+            <Space direction='vertical' size='large' style={{ width: '100%' }} align='center'>
+              <Button shape='round' size='large' type='primary' onClick={() => setMethod('scan')}>Use the same</Button>
+              <Hint>(Google or Aegis Authenticator only) Export and scan seed QR Code</Hint>
+            </Space>
+
+          </TallRow>
+          <Divider><Hint>Or</Hint></Divider>
+          <TallRow>
+            <Space direction='vertical' size='large' style={{ width: '100%' }} align='center'>
+              <Button shape='round' size='large' type='primary' onClick={() => setMethod('new')}>Setup new code</Button>
+              <Hint>If you have the wallet on other devices, your old auth code will still work.</Hint>
+            </Space>
+          </TallRow>
         </Subsection>}
       {section === Subsections.scan &&
         <Subsection onClose={onClose}>
