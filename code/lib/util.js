@@ -168,6 +168,12 @@ const utils = {
     return codes
   },
 
+  genOTPStr: ({ seed, interval = 30000, counter = Math.floor(Date.now() / interval), n = 1 }) => {
+    const otps = utils.genOTP({ seed, interval, counter, n })
+    const nums = new Array(6).fill(0).map((a, i) => new Uint8Array(otps.slice(i * 4, (i + 1) * 4))).map(utils.decodeOtp)
+    return nums.map(i => i.toString().padStart(6, '0'))
+  },
+
   encodeNumericalOtp: (otp) => {
     const b = new DataView(new ArrayBuffer(4))
     b.setUint32(0, otp, false)
