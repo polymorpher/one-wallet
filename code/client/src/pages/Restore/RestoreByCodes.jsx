@@ -87,40 +87,9 @@ const RestoreByCodes = ({ isActive, name, wallet, innerTrees, innerCores, newLoc
     }
     const data = ONE.encodeDisplaceDataHex({ core: coreRaw, innerCores: newInnerCoresRaw, identificationKey: identificationKeys[0] })
     const otps = otpStates.map(({ otpInput }) => parseInt(otpInput))
-    const eotp = await EotpBuilders.restore({ otp: otps })
-    const expectedLeaf = ONEUtil.sha256(eotp)
-    // console.log({ expectedLeaf, eotp })
-    const maxIndex = ONEUtil.timeToIndex({ effectiveTime: innerCores[0].effectiveTime, interval: WalletConstants.interval6 })
-    // const treeIndex = ONEUtil.timeToIndex({ effectiveTime: wallet.effectiveTime }) % innerTrees.length
 
-    let index = null
-    let treeIndex = null
-    setStage(0)
-    const maxIndexAcrossTrees = Math.max(...innerTrees.map(t => t[0].length / 32))
-    console.log({ maxIndex, maxIndexAcrossTrees })
-    for (let i = Math.min(maxIndexAcrossTrees - 1, maxIndex + 1); i >= 0; i--) {
-    // for (let i = 0; i < maxIndexAcrossTrees; i++) {
-      for (const [ind, innerTree] of innerTrees.entries()) {
-        const layer = innerTree[0]
-        const b = new Uint8Array(layer.subarray(i * 32, i * 32 + 32))
-        if (ONEUtil.bytesEqual(b, expectedLeaf)) {
-          index = i
-          treeIndex = ind
-          console.log(`Matching tree index ${treeIndex} at position ${index}`)
-          break
-          // console.log(`Matching index: ${ind} (expected ${treeIndex}), at ${i} (expected ${index})`)
-        }
-      }
-      if (index !== null && treeIndex !== null) {
-        break
-      }
-    }
-    if (index === null || treeIndex === null) {
-      message.error('Code is incorrect. Please start over.')
-      resetOtps()
-      return
-    }
-    const layers = innerTrees[treeIndex]
+    const { index, layers } = await SmartFlows.deriveSuperOTP({ otps, wallet, setStage, innerCores, innerTrees })
+
     SmartFlows.commitReveal({
       wallet,
       otp: otps,
@@ -129,9 +98,6 @@ const RestoreByCodes = ({ isActive, name, wallet, innerTrees, innerCores, newLoc
       layers,
       commitHashGenerator: ONE.computeDataHash,
       commitHashArgs: { data: ONEUtil.hexStringToBytes(data) },
-      prepareProof: () => setStage(0),
-      beforeCommit: () => setStage(1),
-      afterCommit: () => setStage(2),
       revealAPI: api.relayer.reveal,
       revealArgs: { ...ONEConstants.NullOperationParams, data, operationType: ONEConstants.OperationType.DISPLACE },
       overrideVersion: true,
