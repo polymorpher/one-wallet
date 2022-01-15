@@ -34,6 +34,7 @@ const Balance = ({ address }) => {
 
   const { spendingLimit, spendingInterval = 1 } = wallet
   const { formatted: spendingLimitFormatted, fiatFormatted: spendingLimitFiatFormatted } = util.computeBalance(spendingLimit, price)
+  const currentSpendingLimit = new BN(spendingLimit)
   const spendLimitRemaining = util.getMaxSpending(wallet)
   const { formatted: spendLimitRemainingFormatted, fiatFormatted: spendLimitRemainingFiatFormatted } = util.computeBalance(spendLimitRemaining.toString(), price)
   let nextSpendTimeText = '...'
@@ -100,7 +101,7 @@ const Balance = ({ address }) => {
             </Row>
           </Col>
         </TallRow>}
-      {selectedToken.key === 'one' && spendLimitRemaining.lt(spendingLimit) &&
+      {selectedToken.key === 'one' && spendLimitRemaining.lt(currentSpendingLimit) &&
         <TallRow align='start'>
           <Col span={isMobile ? 24 : 12}> <Title level={3}>Remaining Limit</Title></Col>
           <Col>
