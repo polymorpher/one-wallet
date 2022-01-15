@@ -55,8 +55,12 @@ export default {
 
     const onRevealSuccess = (txId, messages = []) => {
       setStage(3)
-      if (messages.length) {
+      if (messages.length > 0) {
         messages.forEach(m => message[m.type](<Text>{m.message}</Text>))
+        if (messages.filter(m => m.abort).length > 0) {
+          setTimeout(() => restart(), 1500)
+          return
+        }
       }
 
       if (config.networks[network].explorer) {
@@ -102,7 +106,7 @@ export default {
       }
 
       if (checkOtp && (invalidOtp || invalidOtp2)) {
-        message.error('Google Authenticator code is not valid', 10)
+        message.error('Authenticator code is not valid', 10)
         resetOtp && resetOtp()
         return
       }
