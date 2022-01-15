@@ -38,8 +38,8 @@ module.exports = {
   'SignatureAuthorized': undefined,
   'SignatureRevoked': undefined,
   'SignatureExpired': undefined,
-  'ExceedSpendingLimit': { type: 'error', message: 'Aborted: spending limit exceeded.' },
-  'InsufficientFund': { type: 'error', message: 'Aborted: insufficient funds.' },
+  'ExceedSpendingLimit': { type: 'error', message: 'Aborted: spending limit exceeded', abort: true },
+  'InsufficientFund': { type: 'error', message: 'Aborted: insufficient funds', abort: true },
   'ReceivedToken': undefined,
   'ForwardedToken': undefined,
   'TokenTransferFailed': undefined,
@@ -56,6 +56,6 @@ module.exports = {
   'ONEWalletDeploySuccess': undefined,
   'SpendingLimitChanged': undefined,
   'HighestSpendingLimitChanged': undefined,
-  'SpendingLimitChangeFailed': undefined,
+  'SpendingLimitChangeFailed': { type: 'error', message: 'Aborted: Failed to change spend limit', abort: true },
   'SpendingLimitJumped': undefined
 }
