@@ -136,7 +136,7 @@ const Create = ({ expertMode, showRecovery }) => {
   }, [name, code, network, effectiveTime])
 
   useEffect(() => {
-    if (section === sectionViews.setupOtp && worker) {
+    if (section === sectionViews.setupOtp && worker && seed) {
       // console.log('Posting to worker. Security parameters:', securityParameters)
       const t = Math.floor(Date.now() / WalletConstants.interval6) * WalletConstants.interval6
       const salt = ONEUtil.hexView(generateOtpSeed())
