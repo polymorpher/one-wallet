@@ -22,9 +22,15 @@ async function recoverRandomness ({ randomness, hseed, otp, otp2, nonce, leaf, h
   }
 }
 
+const sessions = {}
+
 onmessage = async function (event) {
   const { salt, seed, seed2, effectiveTime, duration, slotSize, interval, randomness, hasher, action, buildInnerTrees } = event.data
-
+  if (sessions[salt]) {
+    console.error(`[worker] received identical message for salt=${salt}. ignored`)
+    return
+  }
+  sessions[salt] = true
   if (action === 'recoverRandomness') {
     return recoverRandomness(event.data)
   }
@@ -59,6 +65,7 @@ onmessage = async function (event) {
       }
     })
     console.log('worker: done')
+    sessions[salt] = false
     postMessage({
       status: 'done',
       salt,
