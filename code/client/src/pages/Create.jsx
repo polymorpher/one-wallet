@@ -150,7 +150,7 @@ const Create = ({ expertMode, showRecovery }) => {
         worker.onmessage = (event) => {
           const { status, current, total, stage, result, salt: workerSalt } = event.data
           if (workerSalt && workerSalt !== salt) {
-            // console.log(`Discarding outdated worker result (salt=${workerSalt}, expected=${salt})`)
+            message.debug(`Discarding outdated worker result (salt=${workerSalt}, expected=${salt})`)
             return
           }
           if (status === 'working') {

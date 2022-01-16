@@ -262,14 +262,14 @@ const Extend = ({
   }, [])
 
   useEffect(() => {
-    if (!seed || !worker) {
+    if (!seed || !worker || method !== 'new') {
       return
     }
     const salt = ONEUtil.hexView(generateOtpSeed())
     worker.onmessage = (event) => {
       const { status, current, total, stage, result, salt: workerSalt } = event.data
       if (workerSalt && workerSalt !== salt) {
-        // console.log(`[Extend] Discarding outdated worker result (salt=${workerSalt}, expected=${salt})`)
+        message.debug(`[Extend] Discarding outdated worker result (salt=${workerSalt}, expected=${salt})`)
         return
       }
       if (status === 'working') {
