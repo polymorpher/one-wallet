@@ -66,7 +66,7 @@ const Upgrade = ({ address, onClose }) => {
   const [stage, setStage] = useState(-1)
   const { resetWorker, recoverRandomness } = useRandomWorker()
 
-  const { prepareValidation, prepareProofFailed, onRevealSuccess, ...helpers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
+  const { prepareValidation, prepareProof, prepareProofFailed, onRevealSuccess, ...helpers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
 
   const doUpgrade = async () => {
     if (stage >= 0) {
@@ -76,13 +76,13 @@ const Upgrade = ({ address, onClose }) => {
 
     if (invalidOtp || invalidOtp2) return
 
+    prepareProof && prepareProof()
     const { eotp, index, layers } = await EOTPDerivation.deriveEOTP({ otp, otp2, wallet, prepareProofFailed })
     if (!eotp) {
       return
     }
-    message.info('Retrieving latest information for the wallet...')
 
-    setStage(0)
+    message.info('Retrieving latest information for the wallet...')
     const {
       root,
       height,
