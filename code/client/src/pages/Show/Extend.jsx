@@ -124,7 +124,7 @@ const Extend = ({
       return
     }
     setIdentificationKey(ONEUtil.getIdentificationKey(seed, true))
-  })
+  }, [seed])
   useEffect(() => {
     if (!seed || method !== 'new') {
       return
