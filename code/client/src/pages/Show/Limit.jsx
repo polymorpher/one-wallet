@@ -144,6 +144,25 @@ const Limit = ({
     })
   }
 
+  const upgrade = () => {
+    dispatch(walletActions.userSkipVersion({ address, version: null }))
+    history.push(Paths.showAddress(address))
+  }
+
+  if (!(wallet.majorVersion >= 15)) {
+    return (
+      <AnimatedSection
+        style={{ maxWidth: 720 }}
+        title={<Title level={isMobile ? 5 : 2}>Change Spending Limit</Title>}
+        extra={[<Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />]}
+      >
+        <Warning>
+          Your wallet needs to be at least v15 to change spending limit. Please <Link onClick={upgrade}>upgrade your wallet</Link>.
+        </Warning>
+      </AnimatedSection>
+    )
+  }
+
   return (
     <AnimatedSection
       style={{ maxWidth: 720 }}
