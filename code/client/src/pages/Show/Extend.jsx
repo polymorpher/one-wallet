@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react'
 import Button from 'antd/es/button'
-import Row from 'antd/es/row'
 import Space from 'antd/es/space'
 import Typography from 'antd/es/typography'
 import Col from 'antd/es/col'
@@ -9,22 +8,22 @@ import { Hint, Warning } from '../../components/Text'
 import { AverageRow, TallRow } from '../../components/Grid'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
-import { autoWalletNameHint, generateOtpSeed } from '../../util'
+import util, { autoWalletNameHint, generateOtpSeed } from '../../util'
 import ShowUtils from './show-util'
 import { useSelector } from 'react-redux'
-import { SmartFlows } from '../../../../lib/api/flow'
+import { EOTPDerivation, SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import ONEUtil from '../../../../lib/util'
 import { api } from '../../../../lib/api'
 import ONEConstants from '../../../../lib/constants'
 import { OtpStack } from '../../components/OtpStack'
-import { useOps } from '../../components/Common'
+import { useOpsCombo } from '../../components/Common'
 import QrCodeScanner from '../../components/QrCodeScanner'
 import ScanGASteps from '../../components/ScanGASteps'
 import {
   buildQRCodeComponent,
   getQRCodeUri, getSecondCodeName,
-  OTPUriMode,
+  OTPUriMode, parseAuthAccountName,
   parseMigrationPayload,
   parseOAuthOTP
 } from '../../components/OtpTools'
@@ -40,6 +39,8 @@ import WalletAddress from '../../components/WalletAddress'
 import { useHistory } from 'react-router'
 import Divider from 'antd/es/divider'
 import humanizeDuration from 'humanize-duration'
+import { OtpSuperStack } from '../../components/OtpSuperStack'
+import ONENames from '../../../../lib/names'
 const { Title, Text } = Typography
 
 const Subsections = {
@@ -55,21 +56,27 @@ const Extend = ({
 }) => {
   const history = useHistory()
   const {
-    dispatch, wallet, network, stage, setStage,
-    resetWorker, recoverRandomness, otpState, isMobile, os
-  } = useOps({ address })
+    dispatch, wallet, network, stage, setStage, resetOtps,
+    resetWorker, recoverRandomness, otpState, otpStates, isMobile, os
+  } = useOpsCombo({ address })
+
+  const moreAuthRequired = !!(wallet?.innerRoots?.length)
+
   const dev = useSelector(state => state.global.dev)
   const { majorVersion, name, expert } = wallet
   const [method, setMethod] = useState()
   const [seed, setSeed] = useState()
   const [seed2, setSeed2] = useState()
+  const [identificationKey, setIdentificationKey] = useState()
 
   const [section, setSection] = useState(Subsections.init)
 
   const [root, setRoot] = useState() // Uint8Array
-  const [effectiveTime, setEffectiveTime] = useState()
+  const [effectiveTime, setEffectiveTime] = useState(Math.floor(Date.now() / WalletConstants.interval6) * WalletConstants.interval6)
   const [hseed, setHseed] = useState()
   const [layers, setLayers] = useState()
+  const [innerTrees, setInnerTrees] = useState([])
+
   const [doubleOtp, setDoubleOtp] = useState(false)
   const [progress, setProgress] = useState(0)
   const [progressStage, setProgressStage] = useState(0)
@@ -92,6 +99,7 @@ const Extend = ({
     setHseed(null)
     setRoot(null)
     setLayers(null)
+    setInnerTrees([])
     setEffectiveTime(0)
     setProgressStage(0)
     setProgress(0)
@@ -112,11 +120,20 @@ const Extend = ({
   }
 
   useEffect(() => {
+    if (!seed) {
+      setIdentificationKey(null)
+      return
+    }
+    setIdentificationKey(ONEUtil.getIdentificationKey(seed, true))
+  })
+  useEffect(() => {
     if (!seed || method !== 'new') {
       return
     }
     const f = async function () {
-      const otpUri = getQRCodeUri(seed, name, OTPUriMode.MIGRATION)
+      const oneAddress = util.safeOneAddress(wallet?.address)
+      const otpDisplayName = `${ONENames.nameWithTime(name, effectiveTime)} [${oneAddress}]`
+      const otpUri = getQRCodeUri(seed, otpDisplayName, OTPUriMode.MIGRATION)
       const otpQrCodeData = await qrcode.toDataURL(otpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       setQRCodeData(otpQrCodeData)
     }
@@ -127,7 +144,9 @@ const Extend = ({
       return
     }
     const f = async function () {
-      const secondOtpUri = getQRCodeUri(seed2, getSecondCodeName(name), OTPUriMode.MIGRATION)
+      const oneAddress = util.safeOneAddress(wallet?.address)
+      const otpDisplayName2 = `${ONENames.nameWithTime(getSecondCodeName(name), effectiveTime)} [${oneAddress}]`
+      const secondOtpUri = getQRCodeUri(seed2, otpDisplayName2, OTPUriMode.MIGRATION)
       const secondOtpQrCodeData = await qrcode.toDataURL(secondOtpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       setSecondOtpQrCodeData(secondOtpQrCodeData)
     }
@@ -138,10 +157,15 @@ const Extend = ({
     setStage,
     otpState,
     network,
+    resetOtp: moreAuthRequired ? resetOtps : otpState.resetOtp,
     resetWorker,
-    onSuccess: () => {
+    onSuccess: async () => {
       const rootHexView = ONEUtil.hexView(root)
-      storage.setItem(rootHexView, layers)
+      const promises = [storage.setItem(rootHexView, layers)]
+      for (const { layers: innerLayers, root: innerRoot } of innerTrees) {
+        promises.push(storage.setItem(ONEUtil.hexView(innerRoot), innerLayers))
+      }
+      await Promise.all(promises)
       // TODO: validate tx receipt log events and remove old root/layers from storage
       const newWallet = {
         _merge: true,
@@ -153,6 +177,9 @@ const Extend = ({
         doubleOtp,
         network,
         acknowledgedNewRoot: rootHexView,
+        identificationKeys: [identificationKey],
+        localIdentificationKey: identificationKey,
+        innerRoots: innerTrees.map(({ root }) => ONEUtil.hexView(root)),
         ...securityParameters,
       }
       dispatch(walletActions.updateWallet(newWallet))
@@ -162,44 +189,45 @@ const Extend = ({
   })
 
   const doReplace = async () => {
+    if (stage >= 0) {
+      return
+    }
     const { otp, otp2, invalidOtp2, invalidOtp } = prepareValidation({
-      state: { ...otpState }, checkAmount: false, checkDest: false,
+      state: { ...otpState }, checkAmount: false, checkDest: false, checkOtp: !moreAuthRequired
     }) || {}
 
-    if (invalidOtp || invalidOtp2) return
+    if (!moreAuthRequired) {
+      if (invalidOtp || invalidOtp2) return
+    }
 
-    if (!root) {
+    if (!root || !innerTrees?.length || !identificationKey) {
       console.error('Root is not set')
       return
     }
 
-    // struct CoreSetting {
-    //   /// Some variables can be immutable, but doing so would increase contract size. We are at threshold at the moment (~24KiB) so until we separate the contracts, we will do everything to minimize contract size
-    //   bytes32 root;
-    //   uint8 height; // including the root. e.g. for a tree with 4 leaves, the height is 3.
-    //   uint8 interval; // otp interval in seconds, default is 30
-    //   uint32 t0; // starting time block (effectiveTime (in ms) / interval)
-    //   uint32 lifespan;  // in number of block (e.g. 1 block per [interval] seconds)
-    //   uint8 maxOperationsPerInterval; // number of transactions permitted per OTP interval. Each transaction shall have a unique nonce. The nonce is auto-incremented within each interval
-    // }
-    const tuple = [
-      ONEUtil.hexString(root), layers.length, WalletConstants.interval / 1000, Math.floor(effectiveTime / WalletConstants.interval), Math.floor(duration / WalletConstants.interval), slotSize
-    ]
-    const encodedData = ONEUtil.abi.encodeParameters(['tuple(bytes32,uint8,uint8,uint32,uint32,uint8)'], [tuple])
+    const newInnerCores = ONEUtil.makeInnerCores({ innerTrees, effectiveTime, duration, slotSize, interval: WalletConstants.interval })
+    const newCore = ONEUtil.makeCore({ effectiveTime, duration, interval: WalletConstants.interval, height: layers.length, slotSize, root })
+    console.log({ newCore, newInnerCores, identificationKey })
+    const encodedData = ONEUtil.abi.encodeParameters(['tuple(bytes32,uint8,uint8,uint32,uint32,uint8)', 'tuple[](bytes32,uint8,uint8,uint32,uint32,uint8)', 'bytes'], [newCore, newInnerCores, identificationKey])
     const args = { ...ONEConstants.NullOperationParams, data: encodedData, operationType: ONEConstants.OperationType.DISPLACE }
-    await SmartFlows.commitReveal({
+
+    SmartFlows.commitReveal({
       wallet,
-      otp,
-      otp2,
-      recoverRandomness,
+      ...(moreAuthRequired
+        ? {
+            deriver: EOTPDerivation.deriveSuperEOTP,
+            otp: otpStates.map(({ otpInput }) => parseInt(otpInput)),
+          }
+        : {
+            otp,
+            otp2,
+            recoverRandomness,
+          }),
       commitHashGenerator: ONE.computeDataHash,
       commitHashArgs: { ...args, data: ONEUtil.hexStringToBytes(encodedData) },
-      prepareProof: () => setStage(0),
-      beforeCommit: () => setStage(1),
-      afterCommit: () => setStage(2),
       revealAPI: api.relayer.reveal,
       revealArgs: { ...args, data: encodedData },
-      ...handlers
+      ...handlers,
     })
   }
 
@@ -227,7 +255,6 @@ const Extend = ({
       return
     }
     const worker = new Worker('/ONEWalletWorker.js')
-    const effectiveTime = Date.now()
     const salt = ONEUtil.hexView(generateOtpSeed())
     worker.onmessage = (event) => {
       const { status, current, total, stage, result, salt: workerSalt } = event.data
@@ -240,12 +267,12 @@ const Extend = ({
         setProgressStage(stage)
       }
       if (status === 'done') {
-        const { hseed, root, layers, doubleOtp } = result
+        const { hseed, root, layers, innerTrees, doubleOtp } = result
         setHseed(hseed)
         setRoot(root)
         setLayers(layers)
         setDoubleOtp(doubleOtp)
-        setEffectiveTime(effectiveTime)
+        setInnerTrees(innerTrees)
         setComputeInProgress(false)
       }
     }
@@ -261,6 +288,9 @@ const Extend = ({
       ...securityParameters
     })
     setComputeInProgress(true)
+    return () => {
+      worker.terminate()
+    }
   }, [seed, method, doubleOtp])
 
   useEffect(() => {
@@ -269,6 +299,7 @@ const Extend = ({
       setSeed(generateOtpSeed())
       setSeed2(generateOtpSeed())
       setSection(Subsections.new)
+      setEffectiveTime(Math.floor(Date.now() / WalletConstants.interval6) * WalletConstants.interval6)
     } else if (method === 'scan') {
       setSeed(null)
       setSeed2(null)
@@ -289,8 +320,19 @@ const Extend = ({
         if (!parsed) {
           return
         }
-        // console.log(parsed)
-        const { secret2, secret, name } = parsed
+        message.debug(`Scanned: ${JSON.stringify(parsed)}`)
+        const { secret2, secret, name: rawName } = parsed
+        const bundle = parseAuthAccountName(rawName)
+        if (!bundle) {
+          message.error('Bad authenticator account name. Expecting name, followed by time and address (optional)')
+          return
+        }
+        const { name, address: oneAddress } = bundle
+        const inferredAddress = util.safeNormalizedAddress(oneAddress)
+        if (inferredAddress !== address && wallet?.backlinks?.includes(inferredAddress)) {
+          message.error('Address of scanned account does not match this wallet, and is not an address this wallet upgraded from')
+          return
+        }
         setSeed(secret)
         if (secret2) {
           setSeed2(secret2)
@@ -327,9 +369,10 @@ const Extend = ({
         }
       >
         {children}
-        <AverageRow justify='start'>
+        <AverageRow justify='space-between'>
           <Divider />
           <Button size='large' type='link' onClick={onClose} danger style={{ padding: 0 }}>Cancel</Button>
+          {section === Subsections.confirm && moreAuthRequired && <Button size='large' type='default' shape='round' onClick={resetOtps}>Reset</Button>}
         </AverageRow>
       </AnimatedSection>
     )
@@ -368,14 +411,14 @@ const Extend = ({
           <TallRow>
             <Space direction='vertical' size='large' style={{ width: '100%' }} align='center'>
               <Button shape='round' size='large' type='primary' onClick={() => setMethod('new')}>Setup new code</Button>
-              <Hint>If you have the wallet on other devices, your old auth code will still work.</Hint>
+              <Hint>If you have the wallet on other devices, your old auth code may still work on other devices.</Hint>
             </Space>
           </TallRow>
         </Subsection>}
       {section === Subsections.scan &&
         <Subsection onClose={onClose}>
           {!confirmName &&
-            <Space direction='vertical'>
+            <Space direction='vertical' style={{ width: '100%' }}>
               <ScanGASteps />
               <QrCodeScanner shouldInit={section === Subsections.scan} onScan={onScan} />
             </Space>}
@@ -401,37 +444,57 @@ const Extend = ({
             {!showSecondCode &&
               <>
                 {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData })}
-                <OtpSetup isMobile={isMobile} otpRef={validationOtpRef} otpValue={validationOtp} setOtpValue={setValidationOtp} name={name} />
+                <OtpSetup isMobile={isMobile} otpRef={validationOtpRef} otpValue={validationOtp} setOtpValue={setValidationOtp} name={ONENames.nameWithTime(name, effectiveTime)} />
                 {(dev || expert) && <TwoCodeOption isMobile={isMobile} setDoubleOtp={setDoubleOtp} doubleOtp={doubleOtp} />}
               </>}
             {showSecondCode &&
               <>
                 {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData: secondOtpQrCodeData })}
-                <OtpSetup isMobile={isMobile} otpRef={validationOtpRef} otpValue={validationOtp} setOtpValue={setValidationOtp} name={getSecondCodeName(name)} />
+                <OtpSetup isMobile={isMobile} otpRef={validationOtpRef} otpValue={validationOtp} setOtpValue={setValidationOtp} name={ONENames.nameWithTime(getSecondCodeName(name), effectiveTime)} />
               </>}
           </Space>
         </Subsection>}
       {section === Subsections.confirm &&
         <Subsection onClose={onClose}>
           <AverageRow>
-            <Hint>If you have this wallet on other devices, the wallet can only be used up until its original expiry time on those devices. To fix that, open the wallet on those devices, follow the instructions, delete and "Restore" the wallet there. </Hint>
+            <Hint>If you use the wallet on multiple devices, you may need to renew it on each device, or delete then restore them on other devices.</Hint>
           </AverageRow>
           <AverageRow>
             {method === 'new' &&
-              <Text style={{ color: 'red' }}>
-                Both your new and old authenticator codes will work for this wallet from now on. Use your old authenticator code to confirm this operation.
-              </Text>}
+              <Space direction='vertical'>
+                <Text style={{ color: 'red' }}>You should use new auth code from now on, but your old auth code may still work for this wallet on other devices.</Text>
+                <Text>Use your old auth codes to confirm this operation. </Text>
+                <Text>- {autoWalletNameHint(wallet)}</Text>
+                {
+                  wallet?.oldInfos?.length &&
+                    <>
+                      <Text style={{ marginTop: 24 }}>This wallet was renewed before. Your old auth code account could also be one of the followings:</Text>
+                      {name.split(' ').length >= 3 && <Text>- {ONENames.nameWithTime(name)}</Text>}
+                      {wallet.oldInfos.map(o => o.effectiveTime).map(t => ONENames.nameWithTime(name, t)).map(str => <Text key={str}>- {str}</Text>)}
+                    </>
+                }
+              </Space>}
           </AverageRow>
           {!root && <WalletCreateProgress title='Computing security parameters...' progress={progress} isMobile={isMobile} progressStage={progressStage} />}
           <AverageRow align='middle'>
             <Col span={24}>
-              <OtpStack
-                isDisabled={!root}
-                walletName={autoWalletNameHint(wallet)}
-                otpState={otpState}
-                onComplete={doReplace}
-                action={`confirm ${method === 'new' ? '[using old authenticator code]' : ''}`}
-              />
+              {moreAuthRequired &&
+                <OtpSuperStack
+                  otpStates={otpStates}
+                  action={`confirm ${method === 'new' ? 'using old auth codes' : ''}`}
+                  wideLabel={isMobile}
+                  shouldAutoFocus
+                  onComplete={doReplace}
+                  isDisabled={stage >= 0}
+                />}
+              {!moreAuthRequired &&
+                <OtpStack
+                  isDisabled={!root}
+                  walletName={autoWalletNameHint(wallet)}
+                  otpState={otpState}
+                  onComplete={doReplace}
+                  action={`confirm ${method === 'new' ? 'using old auth code' : ''}`}
+                />}
             </Col>
           </AverageRow>
           <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
