@@ -48,7 +48,7 @@ export const OtpStack = ({ isDisabled, shouldAutoFocus, wideLabel, walletName, o
   }, [otp2Input])
 
   useEffect(() => {
-    resetOtp && resetOtp() // Reset TOP input boxes on location change to make sure the input boxes are cleared.
+    (otpInput || otp2Input) && resetOtp && resetOtp() // Reset TOP input boxes on location change to make sure the input boxes are cleared.
   }, [location])
 
   return (
