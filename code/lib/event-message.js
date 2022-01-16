@@ -51,7 +51,7 @@ module.exports = {
   'TokenUntracked': undefined,
   'TokenNotFound': undefined,
   'CoreDisplaced': { type: 'success', message: 'Renewal complete!' },
-  'CoreDisplacementFailed': { type: 'error', message: 'Renewal failed' },
+  'CoreDisplacementFailed': { type: 'error', message: 'Renewal / Restore failed', abort: true },
   'ONEWalletDeployFailed': undefined,
   'ONEWalletDeploySuccess': undefined,
   'SpendingLimitChanged': undefined,
