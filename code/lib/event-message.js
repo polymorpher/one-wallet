@@ -50,12 +50,12 @@ module.exports = {
   'TokenTracked': undefined,
   'TokenUntracked': undefined,
   'TokenNotFound': undefined,
-  'CoreDisplaced': undefined,
-  'CoreDisplacementFailed': undefined,
+  'CoreDisplaced': { type: 'success', message: 'Renewal complete!' },
+  'CoreDisplacementFailed': { type: 'error', message: 'Renewal failed' },
   'ONEWalletDeployFailed': undefined,
   'ONEWalletDeploySuccess': undefined,
   'SpendingLimitChanged': undefined,
   'HighestSpendingLimitChanged': undefined,
   'SpendingLimitChangeFailed': { type: 'error', message: 'Aborted: Failed to change spend limit', abort: true },
-  'SpendingLimitJumped': undefined
+  'SpendingLimitJumped': undefined,
 }
