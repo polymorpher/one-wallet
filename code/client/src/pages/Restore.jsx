@@ -90,7 +90,7 @@ const Restore = () => {
             onCancel={() => setSection(Sections.Choose)}
           />
         </AnimatedSection>}
-      {section === Sections.SetupNewCode &&
+      {(section === Sections.SetupNewCode || section === Sections.RecoveryCode) &&
         <AnimatedSection>
           <SetupNewCode
             wallet={walletInfo}

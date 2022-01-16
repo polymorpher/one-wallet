@@ -1,13 +1,13 @@
 import Button from 'antd/es/button'
 import Space from 'antd/es/space'
 import Row from 'antd/es/row'
-import { Text, Title, Paragraph } from '../../components/Text'
+import { Title, Paragraph } from '../../components/Text'
 import { OtpSuperStack } from '../../components/OtpSuperStack'
 import React, { useEffect, useState } from 'react'
 import { useWindowDimensions } from '../../util'
 import ShowUtils from '../Show/show-util'
 import ONEConstants from '../../../../lib/constants'
-import { EotpBuilders, EOTPDerivation, SmartFlows } from '../../../../lib/api/flow'
+import { EOTPDerivation, SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import ONEUtil from '../../../../lib/util'
 import { api } from '../../../../lib/api'
@@ -17,7 +17,6 @@ import message from '../../message'
 import WalletCreateProgress from '../../components/WalletCreateProgress'
 import storage from '../../storage'
 import walletActions from '../../state/modules/wallet/actions'
-import WalletConstants from '../../constants/wallet'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import ONENames from '../../../../lib/names'
 
@@ -52,9 +51,9 @@ const RestoreByCodes = ({ isActive, name, wallet, innerTrees, innerCores, newLoc
         promises.push(storage.setItem(hex, innerLayers))
       }
       await Promise.all(promises)
-      console.log(`${promises.length} innerTrees stored`)
+      // console.log(`${promises.length} innerTrees stored`)
       const root = core[0].slice(2)
-      console.log(`Storing tree ${root}`)
+      // console.log(`Storing tree ${root}`)
       await storage.setItem(root, layers)
       const newWallet = {
         _merge: true,
