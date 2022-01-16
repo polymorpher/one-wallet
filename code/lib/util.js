@@ -396,6 +396,9 @@ const utils = {
 
   makeCore: ({ effectiveTime, duration, height, slotSize = 1, interval = 30000, root }) => {
     const t0 = effectiveTime / interval
+    if (t0 !== Math.floor(t0)) {
+      throw new Error(`effectiveTime [${effectiveTime}] is not a multiple of interval ${interval}, please check parameter validity`)
+    }
     const lifespan = duration / interval
     return [utils.hexString(root), height, interval / 1000, t0, lifespan, slotSize]
   },
