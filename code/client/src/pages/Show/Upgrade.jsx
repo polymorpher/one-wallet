@@ -166,6 +166,8 @@ const Upgrade = ({ address, onClose }) => {
         const newWallet = {
           ...wallet,
           address: newAddress,
+          innerRoots: wallet.innerRoots || [],
+          identificationKeys: wallet.identificationKeys || [],
           backlinks,
           _merge: true
         }

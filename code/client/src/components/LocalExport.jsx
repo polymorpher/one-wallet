@@ -40,7 +40,7 @@ const LocalExport = ({ wallet }) => {
 
       const filename = `${wallet.name.toLowerCase().split(' ').join('-')}-${oneAddress}.1wallet`
 
-      const innerTrees = await Promise.all(wallet.innerRoots.map(r => storage.getItem(r)))
+      const innerTrees = await Promise.all((wallet.innerRoots || []).map(r => storage.getItem(r)))
       if (innerTrees.filter(e => e).length !== innerTrees.length) {
         message.error('Storage is corrupted. Please restore the wallet using some other way')
         return
