@@ -64,7 +64,7 @@ const SyncRecoveryFile = ({ onSynced, onCancel }) => {
       >
         <Button shape='round' size='large' icon={uploading ? <LoadingOutlined /> : <UploadOutlined />}>Select your wallet recovery file</Button>
       </Upload>
-      <Hint>Your wallet recovery file ends with file extension <Text style={{ color: 'red' }}>.recovery.1wallet</Text></Hint>
+      <Hint>Your wallet recovery file ends with file extension <Text style={{ color: 'red' }}>.recover1wallet</Text></Hint>
       <Button size='large' type='text' onClick={onCancel} danger>Cancel</Button>
     </Space>
   )
