@@ -1,4 +1,4 @@
-import { Text, Hint, Title } from '../../components/Text'
+import { Text, Hint, Title, Link } from '../../components/Text'
 import Button from 'antd/es/button'
 import Col from 'antd/es/col'
 import Row from 'antd/es/row'
@@ -100,7 +100,7 @@ const Recovery = ({ address }) => {
           <Button type='primary' size='large' shape='round' onClick={exportRecovery} disabled={!isRecoveryFileSupported}> Download </Button>
         </Col>
       </Row>
-      {!isRecoveryFileSupported && <Text style={{ color: 'red' }}>Recovery file is only available to wallets created from v15, or upgraded to v15 and extended its lifespan for at least once</Text>}
+      {!isRecoveryFileSupported && <Text style={{ color: 'red' }}>Recovery file is only available to wallets created from v15, or wallets upgraded to v15 then renewed. <Link onClick={() => history.push(Paths.showAddress(address, 'extend'))}>(renew now)</Link></Text>}
       <Hint>You can use the recovery file and your authenticator to restore your wallet on any device. You do not need to keep this file confidential, because it cannot be used without your authenticator - the correct 6-digit authenticator code is required for six consecutive times. Feel free to upload this file in any personal or public storage, such as Google Drive, iCloud, IPFS, Keybase.</Hint>
     </Space>
   )
