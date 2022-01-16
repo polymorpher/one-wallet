@@ -91,7 +91,7 @@ const Restore = () => {
           />
         </AnimatedSection>}
       {(section === Sections.SetupNewCode || section === Sections.RecoveryCode) &&
-        <AnimatedSection>
+        <AnimatedSection show={section === Sections.SetupNewCode}>
           <SetupNewCode
             wallet={walletInfo}
             name={name}
