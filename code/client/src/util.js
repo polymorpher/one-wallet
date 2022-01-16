@@ -121,7 +121,7 @@ const util = {
 
   isBlacklistedAddress: address =>{
     return ONEConstants.BlacklistedAddresses.includes(address)
-  }
+  },
 
   isRecoveryAddressSet: address => {
     return !exports.default.isEmptyAddress(address) && !exports.default.isDefaultRecoveryAddress(address)
