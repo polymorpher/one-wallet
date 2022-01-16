@@ -162,7 +162,7 @@ const EOTPDerivation = {
   deriveSuperEOTP: async ({ otp, wallet, effectiveTime = null, innerTrees = null, prepareProof, prepareProofFailed, message = messager }) => {
     const { innerRoots } = wallet
     prepareProof && prepareProof()
-    const effectiveTimes = effectiveTime ? [effectiveTime] : [wallet.effectiveTime, ...wallet?.oldInfos?.map(o => o.effectiveTime) ]
+    const effectiveTimes = effectiveTime ? [effectiveTime] : [ wallet.effectiveTime, ...wallet?.oldInfos?.map(o => o.effectiveTime) ]
     innerTrees = innerTrees || (await Promise.all(innerRoots.map(r => storage.getItem(r))))
     if (!innerTrees || innerTrees.includes(null)) {
       message.error('Wallet storage is inconsistent. Please delete this wallet then restore it.')

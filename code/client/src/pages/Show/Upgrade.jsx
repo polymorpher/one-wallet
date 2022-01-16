@@ -16,7 +16,7 @@ import message from '../../message'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
 import ShowUtils from './show-util'
-import { Flows, SmartFlows } from '../../../../lib/api/flow'
+import { EOTPDerivation, Flows, SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import { api } from '../../../../lib/api'
 import { walletActions } from '../../state/modules/wallet'
@@ -76,7 +76,7 @@ const Upgrade = ({ address, onClose }) => {
 
     if (invalidOtp || invalidOtp2) return
 
-    const { eotp, index, layers } = await Flows.deriveEOTP({ otp, otp2, wallet, prepareProofFailed })
+    const { eotp, index, layers } = await EOTPDerivation.deriveEOTP({ otp, otp2, wallet, prepareProofFailed })
     if (!eotp) {
       return
     }
