@@ -20,8 +20,8 @@ const config = {
     },
     'harmony-mainnet': {
       key: process.env.HARMONY_MAINNET_KEY || '',
-      url: process.env.MAINNET_RPC || 'https://api.s0.t.hmny.io',
-      // url: process.env.MAINNET_RPC || 'https://api.harmony.one',
+      // url: process.env.MAINNET_RPC || 'https://api.s0.t.hmny.io',
+      url: process.env.MAINNET_RPC || 'https://api.harmony.one',
       chainId: 1,
       skip: process.env.SKIP_MAINNET,
     },
