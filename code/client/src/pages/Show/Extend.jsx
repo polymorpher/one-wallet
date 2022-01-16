@@ -70,6 +70,7 @@ const Extend = ({
   const [identificationKey, setIdentificationKey] = useState()
 
   const [section, setSection] = useState(Subsections.init)
+  const [worker, setWorker] = useState()
 
   const [root, setRoot] = useState() // Uint8Array
   const [effectiveTime, setEffectiveTime] = useState(Math.floor(Date.now() / WalletConstants.interval6) * WalletConstants.interval6)
@@ -81,8 +82,6 @@ const Extend = ({
   const [progress, setProgress] = useState(0)
   const [progressStage, setProgressStage] = useState(0)
   const securityParameters = ONEUtil.securityParameters(wallet)
-  // eslint-disable-next-line no-unused-vars
-  const [computeInProgress, setComputeInProgress] = useState(false)
 
   const [confirmName, setConfirmName] = useState()
 
@@ -251,10 +250,21 @@ const Extend = ({
   }, [validationOtp])
 
   useEffect(() => {
-    if (!seed) {
+    if (!worker) {
+      const worker = new Worker('/ONEWalletWorker.js')
+      setWorker(worker)
+    }
+    return () => {
+      if (worker) {
+        worker.terminate()
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!seed || !worker) {
       return
     }
-    const worker = new Worker('/ONEWalletWorker.js')
     const salt = ONEUtil.hexView(generateOtpSeed())
     worker.onmessage = (event) => {
       const { status, current, total, stage, result, salt: workerSalt } = event.data
@@ -274,7 +284,6 @@ const Extend = ({
         setLayers(layers)
         setDoubleOtp(doubleOtp)
         setInnerTrees(innerTrees)
-        setComputeInProgress(false)
       }
     }
     message.debug(`[Extend] Posting to worker salt=${salt}`)
@@ -288,11 +297,7 @@ const Extend = ({
       interval: WalletConstants.interval,
       ...securityParameters
     })
-    setComputeInProgress(true)
-    return () => {
-      worker.terminate()
-    }
-  }, [seed, method, doubleOtp])
+  }, [worker, seed, method, doubleOtp])
 
   useEffect(() => {
     reset()
