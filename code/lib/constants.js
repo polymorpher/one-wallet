@@ -72,6 +72,7 @@ module.exports = {
   EmptyBech32Address: 'one1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqquzw7vz',
   TreasuryAddress: '0x7534978F9fa903150eD429C486D1f42B7fDB7a61',
   OldTreasuryAddresses: ['0x02F2cF45DD4bAcbA091D78502Dba3B2F431a54D3'],
+  BlacklistedAddresses: ['0x36571a32c08de564a4cc94ed087c27d3c58f7470'],
   MajorVersion: 15,
   MinorVersion: 1,
   DefaultSpendingInterval: 86400, // 3600 * 24

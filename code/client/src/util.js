@@ -119,6 +119,10 @@ const util = {
     return address === ONEConstants.TreasuryAddress || ONEConstants.OldTreasuryAddresses.includes(address)
   },
 
+  isBlacklistedAddress: address =>{
+    return ONEConstants.BlacklistedAddresses.includes(address)
+  }
+
   isRecoveryAddressSet: address => {
     return !exports.default.isEmptyAddress(address) && !exports.default.isDefaultRecoveryAddress(address)
   },

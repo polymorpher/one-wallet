@@ -118,7 +118,7 @@ const Upgrade = ({ address, onClose }) => {
       ])
     }
     identificationKeys.unshift(upgradeIdentificationKey)
-    const transformedLastResortAddress = util.isDefaultRecoveryAddress(lastResortAddress) ? ONEConstants.TreasuryAddress : lastResortAddress
+    const transformedLastResortAddress = util.isDefaultRecoveryAddress(lastResortAddress) || util.isBlacklistedAddress(lastResortAddress) ? ONEConstants.TreasuryAddress : lastResortAddress
     const { address: newAddress } = await api.relayer.create({
       root,
       height,
