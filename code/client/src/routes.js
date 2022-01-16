@@ -75,7 +75,6 @@ const LocalRoutes = () => {
             <Route path={Paths.create1} render={() => <CreatePage showRecovery />} />
             <Route path={Paths.create2} render={() => <CreatePage expertMode showRecovery />} />
             <Route path={Paths.wallets} component={ListPage} />
-            <Route path={Paths.connect} component={Connect} />
             <Route path={Paths.restore} component={RestorePage} />
             <Route path={Paths.address} component={AddressDetailPage} exact />
             <Route path={Paths.show} component={ShowPage} />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import WalletConnect from '@walletconnect/client'
+import * as WalletConnectClient from '@walletconnect/client'
 import { InputBox, Text } from '../components/Text'
 import Image from 'antd/es/image'
 import { Row } from 'antd/es/grid'
@@ -8,17 +8,18 @@ import Button from 'antd/es/button'
 import cacheActions from '../state/modules/cache/actions'
 import AnimatedSection from '../components/AnimatedSection'
 import Spin from 'antd/es/spin'
-import Select from 'antd/es/select'
 import util from '../util'
+import { WalletSelector } from './Common'
 
-const Connect = () => {
+const WalletConnect = () => {
   const dispatch = useDispatch()
   const wallets = useSelector(state => state.wallet)
   const walletConnectSession = useSelector(state => state.cache.walletConnectSession)
   const walletList = Object.keys(wallets).filter(addr => util.safeNormalizedAddress(addr))
-  const [wallet, setWallet] = useState(walletList[0])
+  const [selectedAddress, setSelectedAddress] = useState({ value: walletList[0] })
   const [connected, setConnected] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [useHex, setUseHex] = useState(false)
   const [uri, setUri] = useState('')
   const [connector, setConnector] = useState(null)
   const [peerMeta, setPeerMeta] = useState(null)
@@ -95,7 +96,7 @@ const Connect = () => {
 
   useEffect(() => {
     if (walletConnectSession) {
-      const connector = new WalletConnect({ session: walletConnectSession })
+      const connector = new WalletConnectClient({ session: walletConnectSession })
       subscribeToEvents(connector)
     }
   }, [])
@@ -104,7 +105,7 @@ const Connect = () => {
     setLoading(true)
 
     try {
-      const connector = new WalletConnect({
+      const connector = new WalletConnectClient({
         uri,
         clientMeta: {
           description: '1Wallet',
@@ -129,7 +130,7 @@ const Connect = () => {
   const approveSession = () => {
     console.log('ACTION', 'approveSession')
     if (connector) {
-      connector.approveSession({ chainId: connector.chainId, accounts: [wallet] })
+      connector.approveSession({ chainId: connector.chainId, accounts: [selectedAddress.value] })
     }
   }
 
@@ -183,15 +184,7 @@ const Connect = () => {
               </>)
             : (
               <>
-                <Select defaultValue={wallet} onChange={(value) => setWallet(value)}>
-                  {walletList.map((wallet, key) => (
-                    <Select.Option key={key} value={wallet} style={{ padding: 0 }}>
-                      <Row align='left'>
-                        {wallet}
-                      </Row>
-                    </Select.Option>)
-                  )}
-                </Select>
+                <WalletSelector onAddressSelected={setSelectedAddress} filter={e => e.majorVersion >= 10} showOlderVersions={false} useHex={useHex} />
                 <InputBox margin='auto' width={440} value={uri} onChange={({ target: { value } }) => setUri(value)} placeholder='Paste wc: uri...' />
               </>))
         : (
@@ -207,4 +200,4 @@ const Connect = () => {
   )
 }
 
-export default Connect
+export default WalletConnect
