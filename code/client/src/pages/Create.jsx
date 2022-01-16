@@ -128,11 +128,11 @@ const Create = ({ expertMode, showRecovery }) => {
 
   useEffect(() => {
     if (section === sectionViews.setupOtp && worker && seed) {
-      // console.log('Posting to worker. Security parameters:', securityParameters)
       const t = Math.floor(Date.now() / WalletConstants.interval6) * WalletConstants.interval6
       const salt = ONEUtil.hexView(generateOtpSeed())
       setEffectiveTime(t)
       if (worker) {
+        message.debug(`[Create] posting to worker salt=${salt}`)
         worker.postMessage({
           salt,
           seed,
@@ -159,6 +159,7 @@ const Create = ({ expertMode, showRecovery }) => {
             setProgressStage(stage)
           }
           if (status === 'done') {
+            message.debug(`[Create] done salt=${salt}`)
             const { hseed, root, layers, maxOperationsPerInterval, innerTrees } = result
             setRoot(root)
             setHseed(hseed)

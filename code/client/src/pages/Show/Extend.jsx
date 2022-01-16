@@ -207,7 +207,7 @@ const Extend = ({
 
     const newInnerCores = ONEUtil.makeInnerCores({ innerTrees, effectiveTime, duration, slotSize, interval: WalletConstants.interval })
     const newCore = ONEUtil.makeCore({ effectiveTime, duration, interval: WalletConstants.interval, height: layers.length, slotSize, root })
-    console.log({ newCore, newInnerCores, identificationKey })
+    // console.log({ newCore, newInnerCores, identificationKey })
     const encodedData = ONEUtil.abi.encodeParameters(['tuple(bytes32,uint8,uint8,uint32,uint32,uint8)', 'tuple[](bytes32,uint8,uint8,uint32,uint32,uint8)', 'bytes'], [newCore, newInnerCores, identificationKey])
     const args = { ...ONEConstants.NullOperationParams, data: encodedData, operationType: ONEConstants.OperationType.DISPLACE }
 
@@ -267,6 +267,7 @@ const Extend = ({
         setProgressStage(stage)
       }
       if (status === 'done') {
+        message.debug(`[Extend] done salt=${salt}`)
         const { hseed, root, layers, innerTrees, doubleOtp } = result
         setHseed(hseed)
         setRoot(root)
@@ -276,7 +277,7 @@ const Extend = ({
         setComputeInProgress(false)
       }
     }
-    console.log('[Extend] Posting to worker')
+    message.debug(`[Extend] Posting to worker salt=${salt}`)
     worker && worker.postMessage({
       seed,
       salt,

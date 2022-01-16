@@ -123,6 +123,7 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
         onProgressUpdate && onProgressUpdate({ progress, stage })
       }
       if (status === 'done') {
+        message.debug(`[SetupNewCode] done salt=${salt}`)
         const { root, layers, doubleOtp, innerTrees, hseed } = result
         setHseed(hseed)
         setRoot(root)
@@ -132,7 +133,7 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
         onProgressUpdate && onProgressUpdate({ computing: false })
       }
     }
-    console.log('[Extend] Posting to worker')
+    message.debug(`[SetupNewCode] Posting to worker salt=${salt}`)
     worker && worker.postMessage({
       seed,
       salt,
