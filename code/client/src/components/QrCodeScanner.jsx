@@ -151,7 +151,7 @@ const QrCodeScanner = ({ onScan, shouldInit, style }) => {
           beforeUpload={beforeUpload}
           onChange={onQrcodeChange}
         >
-          <Button icon={qrCodeImageUploading ? <LoadingOutlined /> : <UploadOutlined />}>Upload QR Code Image Instead</Button>
+          <Button shape='round' icon={qrCodeImageUploading ? <LoadingOutlined /> : <UploadOutlined />}>Use Image Instead</Button>
         </Upload>
       </Row>
     </>
