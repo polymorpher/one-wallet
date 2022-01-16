@@ -89,7 +89,7 @@ const Limit = ({
     }
   }
 
-  console.log(marks)
+  // console.log(marks)
 
   const resetOtps = () => {
     for (let i = otpStates.length - 1; i >= 0; i--) {
