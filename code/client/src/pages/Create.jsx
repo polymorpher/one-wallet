@@ -6,7 +6,6 @@ import api from '../api'
 import ONEUtil from '../../../lib/util'
 import ONEConstants from '../../../lib/constants'
 import ONENames from '../../../lib/names'
-// import { uniqueNamesGenerator, colors, animals } from 'unique-names-generator'
 import Row from 'antd/es/row'
 import Slider from 'antd/es/slider'
 import Tooltip from 'antd/es/tooltip'
@@ -23,7 +22,6 @@ import qrcode from 'qrcode'
 import storage from '../storage'
 import walletActions from '../state/modules/wallet/actions'
 import { balanceActions } from '../state/modules/balance'
-import cacheActions from '../state/modules/cache/actions'
 import WalletConstants from '../constants/wallet'
 import util, { useWindowDimensions, OSType, generateOtpSeed } from '../util'
 import { handleAPIError, handleAddressError } from '../handler'
@@ -37,13 +35,6 @@ import { buildQRCodeComponent, getQRCodeUri, getSecondCodeName, OTPUriMode } fro
 import { OtpSetup, TwoCodeOption } from '../components/OtpSetup'
 import config from '../config'
 const { Text, Link } = Typography
-
-// const genName = () => uniqueNamesGenerator({
-//   dictionaries: [colors, animals],
-//   style: 'capital',
-//   separator: ' ',
-//   length: 1
-// })
 
 const getGoogleAuthenticatorAppLink = (os) => {
   let link = 'https://apps.apple.com/us/app/google-authenticator/id388497605'
