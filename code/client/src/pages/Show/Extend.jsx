@@ -285,7 +285,7 @@ const Extend = ({
   }, [])
 
   useEffect(() => {
-    if (!seed || !worker || method !== 'new') {
+    if (!seed || !worker) {
       return
     }
     const salt = ONEUtil.hexView(generateOtpSeed())
