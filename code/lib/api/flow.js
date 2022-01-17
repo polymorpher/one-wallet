@@ -8,7 +8,6 @@ const EventMessage = require('../event-message')
 const EventMaps = require('../events-map.json')
 const BN = require('bn.js')
 const WalletConstants = require('../../client/src/constants/wallet')
-const message = require('../../client/src/message')
 
 const EotpBuilders = {
   fromOtp: async ({ otp, otp2, rand, nonce, wallet }) => {
@@ -174,30 +173,30 @@ const EOTPDerivation = {
     // console.log({ expectedLeaf, eotp })
     let index = null
     let treeIndex = null
-    for (const [eind, effectiveTime] of effectiveTimes.entries()) {
-      const maxIndex = ONEUtil.timeToIndex({ effectiveTime, interval: WalletConstants.interval6 })
-      // const treeIndex = ONEUtil.timeToIndex({ effectiveTime: wallet.effectiveTime }) % innerTrees.length
-
-      const maxIndexAcrossTrees = Math.max(...innerTrees.map(t => t[0].length / 32))
-      message.debug(`[eind=${eind} effectiveTime=${effectiveTime}] maxIndex:${maxIndex}, maxIndexAcrossTrees:${maxIndexAcrossTrees} }`)
-      for (let i = Math.min(maxIndexAcrossTrees - 1, maxIndex + 1); i >= 0; i--) {
-        // for (let i = 0; i < maxIndexAcrossTrees; i++) {
-        for (const [ind, innerTree] of innerTrees.entries()) {
-          const layer = innerTree[0]
-          const b = new Uint8Array(layer.subarray(i * 32, i * 32 + 32))
-          if (ONEUtil.bytesEqual(b, expectedLeaf)) {
-            index = i
-            treeIndex = ind
-            console.log(`Matching tree index ${treeIndex} at position ${index}`)
-            break
-            // console.log(`Matching index: ${ind} (expected ${treeIndex}), at ${i} (expected ${index})`)
+    const search = () => {
+      for (const [eind, effectiveTime] of effectiveTimes.entries()) {
+        const maxIndex = ONEUtil.timeToIndex({ effectiveTime, interval: WalletConstants.interval6 })
+        // const treeIndex = ONEUtil.timeToIndex({ effectiveTime: wallet.effectiveTime }) % innerTrees.length
+        const maxIndexAcrossTrees = Math.max(...innerTrees.map(t => t[0].length / 32))
+        message.debug(`[eind=${eind} effectiveTime=${effectiveTime}] maxIndex:${maxIndex}, maxIndexAcrossTrees:${maxIndexAcrossTrees} }`)
+        for (let i = Math.min(maxIndexAcrossTrees - 1, maxIndex + 1); i >= 0; i--) {
+          // for (let i = 0; i < maxIndexAcrossTrees; i++) {
+          for (const [ind, innerTree] of innerTrees.entries()) {
+            const layer = innerTree[0]
+            const b = new Uint8Array(layer.subarray(i * 32, i * 32 + 32))
+            if (ONEUtil.bytesEqual(b, expectedLeaf)) {
+              index = i
+              treeIndex = ind
+              console.log(`Matching tree index ${treeIndex} at position ${index}`)
+              return
+              // console.log(`Matching index: ${ind} (expected ${treeIndex}), at ${i} (expected ${index})`)
+            }
           }
-        }
-        if (index !== null && treeIndex !== null) {
-          break
         }
       }
     }
+    search()
+
     if (index === null || treeIndex === null) {
       message.error('Code is incorrect. Please start over.')
       prepareProofFailed && prepareProofFailed()
