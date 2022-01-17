@@ -113,12 +113,12 @@ const Extend = ({
   const [validationOtp, setValidationOtp] = useState()
   const validationOtpRef = useRef()
   const [showSecondCode, setShowSecondCode] = useState()
-  const duration = WalletConstants.defaultDuration
+  const duration = wallet.duration || WalletConstants.defaultDuration
   const slotSize = wallet.slotSize
 
   const reset = () => {
     setNewCoreParams({ root: null, hseed: null, layers: null, innerTrees: [] })
-    setEffectiveTime(0)
+    setEffectiveTime(Math.floor(Date.now() / WalletConstants.interval6) * WalletConstants.interval6)
     setProgressStage(0)
     setProgress(0)
     setOtpComplete(false)
@@ -219,6 +219,7 @@ const Extend = ({
   }
 
   useEffect(() => {
+    console.log(effectiveTime)
     tryStartReplace()
   }, [otpComplete, newCoreParams])
 
@@ -241,7 +242,7 @@ const Extend = ({
 
     const newInnerCores = ONEUtil.makeInnerCores({ innerTrees: newCoreParams.innerTrees, effectiveTime, duration, slotSize, interval: WalletConstants.interval })
     const newCore = ONEUtil.makeCore({ effectiveTime, duration, interval: WalletConstants.interval, height: newCoreParams.layers.length, slotSize, root: newCoreParams.root })
-    // console.log({ newCore, newInnerCores, identificationKey })
+    console.log({ effectiveTime, newCore, newInnerCores, identificationKey })
     const encodedData = ONEUtil.abi.encodeParameters(['tuple(bytes32,uint8,uint8,uint32,uint32,uint8)', 'tuple[](bytes32,uint8,uint8,uint32,uint32,uint8)', 'bytes'], [newCore, newInnerCores, identificationKey])
     const args = { ...ONEConstants.NullOperationParams, data: encodedData, operationType: ONEConstants.OperationType.DISPLACE }
 
@@ -340,7 +341,6 @@ const Extend = ({
       setSeed(generateOtpSeed())
       setSeed2(generateOtpSeed())
       setSection(Subsections.new)
-      setEffectiveTime(Math.floor(Date.now() / WalletConstants.interval6) * WalletConstants.interval6)
     } else if (method === 'scan') {
       setSeed(null)
       setSeed2(null)
