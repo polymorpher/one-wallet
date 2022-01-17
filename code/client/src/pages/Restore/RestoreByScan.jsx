@@ -106,8 +106,8 @@ const RestoreByScan = ({ isActive, onComplete, onCancel }) => {
         if (!parsed) {
           return
         }
-        message.debug(`Scanned: ${JSON.stringify(parsed)}`)
         const { secret2, secret, name: rawName } = parsed
+        message.debug(`Scanned name: ${rawName} | secret: ${secret && ONEUtil.base32Encode(secret)} | secret2: ${secret2 && ONEUtil.base32Encode(secret2)}`)
         const bundle = parseAuthAccountName(rawName)
         if (!bundle) {
           message.error('Bad authenticator account name. Expecting name, followed by time and address (optional)')
