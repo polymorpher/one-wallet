@@ -1,9 +1,12 @@
 import { Warning } from '../../components/Text'
-import util, { useWindowDimensions } from '../../util'
+import util from '../../util'
 import ONEUtil from '../../../../lib/util'
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Button, Space, Typography, Row } from 'antd'
+import Button from 'antd/es/button'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
+import Row from 'antd/es/row'
 import { walletActions } from '../../state/modules/wallet'
 import { useHistory } from 'react-router'
 import Paths from '../../constants/paths'
@@ -12,7 +15,7 @@ const { Link, Text } = Typography
 const Warnings = ({ address }) => {
   const history = useHistory()
   const dispatch = useDispatch()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const walletOutdated = util.isWalletOutdated(wallet)
 

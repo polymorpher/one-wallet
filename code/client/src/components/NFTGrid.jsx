@@ -1,7 +1,17 @@
-import { Card, Image, Row, Space, Typography, Col, Button, Carousel, Popconfirm, Spin } from 'antd'
+import Card from 'antd/es/card'
+import Image from 'antd/es/image'
+import Row from 'antd/es/row'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
+import Col from 'antd/es/col'
+import Button from 'antd/es/button'
+import Carousel from 'antd/es/carousel'
+import Spin from 'antd/es/spin'
 import message from '../message'
-import { unionWith, differenceBy } from 'lodash'
+import unionWith from 'lodash/fp/unionWith'
+import differenceBy from 'lodash/fp/differenceBy'
 import walletActions from '../state/modules/wallet/actions'
+import { balanceActions } from '../state/modules/balance'
 import React, { useState, useEffect } from 'react'
 import { AverageRow, TallRow } from './Grid'
 import { api } from '../../../lib/api'
@@ -12,7 +22,10 @@ import { useDispatch, useSelector } from 'react-redux'
 import ONEConstants from '../../../lib/constants'
 import { FallbackImage } from '../constants/ui'
 import styled from 'styled-components'
-import { DeleteOutlined, LeftOutlined, PlusCircleOutlined, RightOutlined } from '@ant-design/icons'
+import DeleteOutlined from '@ant-design/icons/DeleteOutlined'
+import LeftOutlined from '@ant-design/icons/LeftOutlined'
+import PlusCircleOutlined from '@ant-design/icons/PlusCircleOutlined'
+import RightOutlined from '@ant-design/icons/RightOutlined'
 import Paths from '../constants/paths'
 import { useHistory } from 'react-router'
 import ReactPlayer from 'react-player'
@@ -228,7 +241,7 @@ export const NFTGridItem = ({
 }
 
 export const useNFTs = ({ address, withDefault }) => {
-  const wallet = useSelector(state => state.wallet.wallets[address] || {})
+  const wallet = useSelector(state => state.wallet[address] || {})
   const walletOutdated = !util.canWalletSupportToken(wallet)
   const trackedTokens = (wallet?.trackedTokens || []).filter(util.isNFT)
   const untrackedTokenKeys = (wallet.untrackedTokens || [])
@@ -253,7 +266,7 @@ export const useNFTs = ({ address, withDefault }) => {
       }
       tts = tts.filter(util.isNFT)
       tts = withKeys(tts)
-      tts = unionWith(tts, trackedTokens, (a, b) => a.key === b.key)
+      tts = unionWith((a, b) => a.key === b.key, tts, trackedTokens)
       await Promise.all(tts.map(async tt => {
         // if (tt.name && tt.symbol && tt.uri) { return }
         try {
@@ -285,7 +298,7 @@ export const useTokenBalanceTracker = ({ tokens, address }) => {
     }
     (tokens || []).forEach(tt => {
       const { tokenType, tokenId, contractAddress, key } = tt
-      dispatch(walletActions.fetchTokenBalance({ address, tokenType, tokenId, contractAddress, key }))
+      dispatch(balanceActions.fetchTokenBalance({ address, tokenType, tokenId, contractAddress, key }))
     })
   }, [tokens, address])
 }
@@ -293,9 +306,10 @@ export const useTokenBalanceTracker = ({ tokens, address }) => {
 export const NFTGrid = ({ address, onTrackNew }) => {
   const history = useHistory()
   const dispatch = useDispatch()
-  const wallet = useSelector(state => state.wallet.wallets[address])
+  const wallet = useSelector(state => state.wallet[address])
+  const walletBalance = useSelector(state => state?.balance[address] || {})
   const selectedToken = util.isNFT(wallet.selectedToken) && wallet.selectedToken
-  const tokenBalances = wallet.tokenBalances || {}
+  const tokenBalances = walletBalance.tokenBalances || {}
   const trackedTokens = (wallet.trackedTokens || []).filter(util.isNFT)
   const [showTrackNew, setShowTrackNew] = useState(false)
 
@@ -332,7 +346,7 @@ export const NFTGrid = ({ address, onTrackNew }) => {
   }
 
   useEffect(() => {
-    const newTokens = differenceBy(currentTrackedTokens, trackedTokens, e => e.key)
+    const newTokens = differenceBy(e => e.key, currentTrackedTokens, trackedTokens)
     dispatch(walletActions.trackTokens({ address, tokens: newTokens }))
   }, [currentTrackedTokens])
 

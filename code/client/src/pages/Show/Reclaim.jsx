@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Space, Typography, Col } from 'antd'
+import Button from 'antd/es/button'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
+import Col from 'antd/es/col'
 import message from '../../message'
-import { CloseOutlined } from '@ant-design/icons'
+import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import { Warning, LabeledRow } from '../../components/Text'
 import { AverageRow } from '../../components/Grid'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
-import util, { useWindowDimensions } from '../../util'
+import util, { autoWalletNameHint, useWindowDimensions } from '../../util'
 import ShowUtils from './show-util'
 import { useSelector } from 'react-redux'
 import { SmartFlows } from '../../../../lib/api/flow'
@@ -19,11 +22,11 @@ import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
 import querystring from 'query-string'
 import { useLocation } from 'react-router'
+import ONENames from '../../../../lib/names'
 const { Title, Text } = Typography
 
 const Reclaim = ({
   address,
-  show,
   onClose, // optional
   onSuccess = onClose, // optional
   prefillFrom,
@@ -31,10 +34,10 @@ const Reclaim = ({
   const location = useLocation()
 
   const { isMobile } = useWindowDimensions()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const { majorVersion } = wallet
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
 
   const doubleOtp = wallet.doubleOtp
   const { state: otpState } = useOtpState()
@@ -169,7 +172,7 @@ const Reclaim = ({
     return (
       <AnimatedSection
         style={{ maxWidth: 720 }}
-        show={show} title={<Title level={2}>Reclaim Assets</Title>} extra={[
+        title={<Title level={2}>Reclaim Assets</Title>} extra={[
           <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
         ]}
       >
@@ -181,7 +184,7 @@ const Reclaim = ({
   return (
     <AnimatedSection
       style={{ maxWidth: 720 }}
-      show={show} title={<Title level={2}>Reclaim Assets</Title>} extra={[
+      title={<Title level={2}>Reclaim Assets</Title>} extra={[
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
       ]}
     >
@@ -212,7 +215,7 @@ const Reclaim = ({
         <Col span={24}>
           <OtpStack
             shouldAutoFocus
-            walletName={wallet.name}
+            walletName={autoWalletNameHint(wallet)}
             doubleOtp={doubleOtp}
             otpState={otpState}
             onComplete={doReclaim}

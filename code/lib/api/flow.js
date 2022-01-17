@@ -4,7 +4,10 @@ const config = require('../config/provider').getConfig()
 const storage = require('./storage').getStorage()
 const messager = require('./message').getMessage()
 const { api } = require('./index')
+const EventMessage = require('../event-message')
+const EventMaps = require('../events-map.json')
 const BN = require('bn.js')
+const WalletConstants = require('../../client/src/constants/wallet')
 
 const EotpBuilders = {
   fromOtp: async ({ otp, otp2, rand, nonce, wallet }) => {
@@ -12,6 +15,9 @@ const EotpBuilders = {
     const encodedOtp = ONEUtil.encodeNumericalOtp(otp)
     const encodedOtp2 = otp2 ? ONEUtil.encodeNumericalOtp(otp2) : undefined
     return ONE.computeEOTP({ otp: encodedOtp, otp2: encodedOtp2, rand, nonce, hseed: ONEUtil.hexToBytes(hseed) })
+  },
+  restore: async ({ otp }) => {
+    return ONE.computeInnerEOTP({ otps: otp.map(e => ONEUtil.encodeNumericalOtp(e)) })
   },
   recovery: async ({ wallet, layers }) => {
     // eslint-disable-next-line no-unused-vars
@@ -54,23 +60,37 @@ const Committer = {
   }
 }
 
-const Flows = {
-  commitReveal: async ({
-    otp, otp2, eotpBuilder = EotpBuilders.fromOtp,
-    committer = Committer.legacy,
-    recoverRandomness,
-    wallet, layers, commitHashGenerator, commitHashArgs, prepareProof, prepareProofFailed,
-    beforeCommit, afterCommit, onCommitError, onCommitFailure,
-    revealAPI, revealArgs, onRevealFailure, onRevealSuccess, onRevealError, onRevealAttemptFailed,
-    beforeReveal, index,
-    maxTransferAttempts = 3, checkCommitInterval = 4000,
+const EOTPDerivation = {
+  deriveEOTP: async ({
+    otp, otp2, wallet, eotpBuilder = EotpBuilders.fromOtp,
+    recoverRandomness = null, prepareProof = null, prepareProofFailed = null,
+    layers = null, index = null,
     message = messager,
   }) => {
-    const { oldInfos, address, randomness, hseed, hasher } = wallet
+    const { oldInfos, randomness, hseed, hasher, identificationKeys, localIdentificationKey } = wallet
     let { effectiveTime, root } = wallet
     if (!layers) {
-      layers = await storage.getItem(root)
+      if (localIdentificationKey && identificationKeys) {
+        const idKeyIndex = identificationKeys.filter(e => e.length >= 130).findIndex(e => e === localIdentificationKey)
+        if (idKeyIndex === -1) {
+          message.debug('Cannot identify tree to use because of identification key mismatch. Falling back to brute force search')
+          layers = await storage.getItem(root)
+        } else {
+          message.debug(`Identified tree via localIdentificationKey=${localIdentificationKey}`)
+          if (idKeyIndex === identificationKeys.length - 1) {
+            layers = await storage.getItem(root)
+          } else {
+            const info = oldInfos[idKeyIndex]
+            layers = await storage.getItem(info.root)
+            effectiveTime = info.effectiveTime
+            root = info.root
+          }
+        }
+      } else {
+        layers = await storage.getItem(root)
+      }
       if (!layers) {
+        message.debug(`Did not find root ${root}. Looking up storage for old roots`)
         // look for old roots
         for (let info of oldInfos) {
           if (info.root && (info.effectiveTime + info.duration > Date.now())) {
@@ -86,8 +106,11 @@ const Flows = {
           message.error('Cannot find pre-computed proofs for this wallet. Storage might be corrupted. Please restore the wallet from Google Authenticator.')
           return
         }
+      } else {
+        message.debug(`Found root ${root}`)
       }
     }
+
     prepareProof && prepareProof()
     index = index || ONEUtil.timeToIndex({ effectiveTime })
     if (index < 0) {
@@ -116,10 +139,110 @@ const Flows = {
       if (rand === null) {
         message.error('Validation error. Code might be incorrect')
         prepareProofFailed && prepareProofFailed()
-        return
+        return {}
       }
     }
-    const eotp = await eotpBuilder({ otp, otp2, rand, wallet, layers })
+    const eotp = await eotpBuilder({ otp, otp2, rand, wallet, nonce, layers })
+    message.debug(`eotp=${ONEUtil.hexString(eotp)} index=${index}`)
+    return { eotp, index, layers }
+  },
+
+  // otp,
+  // otp2,
+  // eotpBuilder,
+  // recoverRandomness,
+  // prepareProof,
+  // prepareProofFailed,
+  // wallet,
+  // layers,
+  // index,
+  // message
+
+  deriveSuperEOTP: async ({ otp, wallet, effectiveTime = null, innerTrees = null, prepareProof, prepareProofFailed, message = messager }) => {
+    const { innerRoots } = wallet
+    prepareProof && prepareProof()
+    const effectiveTimes = effectiveTime ? [effectiveTime] : [ wallet.effectiveTime, ...wallet?.oldInfos?.map(o => o.effectiveTime) ]
+    innerTrees = innerTrees || (await Promise.all(innerRoots.map(r => storage.getItem(r))))
+    if (!innerTrees || innerTrees.includes(null)) {
+      message.error('Wallet storage is inconsistent. Please delete this wallet then restore it.')
+      prepareProofFailed && prepareProofFailed()
+      return
+    }
+    const eotp = await EotpBuilders.restore({ otp })
+    const expectedLeaf = ONEUtil.sha256(eotp)
+    // console.log({ expectedLeaf, eotp })
+    let index = null
+    let treeIndex = null
+    const search = () => {
+      for (const [eind, effectiveTime] of effectiveTimes.entries()) {
+        const maxIndex = ONEUtil.timeToIndex({ effectiveTime, interval: WalletConstants.interval6 })
+        // const treeIndex = ONEUtil.timeToIndex({ effectiveTime: wallet.effectiveTime }) % innerTrees.length
+        const maxIndexAcrossTrees = Math.max(...innerTrees.map(t => t[0].length / 32))
+        message.debug(`[eind=${eind} effectiveTime=${effectiveTime}] maxIndex:${maxIndex}, maxIndexAcrossTrees:${maxIndexAcrossTrees} }`)
+        for (let i = Math.min(maxIndexAcrossTrees - 1, maxIndex + 1); i >= 0; i--) {
+          // for (let i = 0; i < maxIndexAcrossTrees; i++) {
+          for (const [ind, innerTree] of innerTrees.entries()) {
+            const layer = innerTree[0]
+            const b = new Uint8Array(layer.subarray(i * 32, i * 32 + 32))
+            if (ONEUtil.bytesEqual(b, expectedLeaf)) {
+              index = i
+              treeIndex = ind
+              console.log(`Matching tree index ${treeIndex} at position ${index}`)
+              return
+              // console.log(`Matching index: ${ind} (expected ${treeIndex}), at ${i} (expected ${index})`)
+            }
+          }
+        }
+      }
+    }
+    search()
+
+    if (index === null || treeIndex === null) {
+      message.error('Code is incorrect. Please start over.')
+      prepareProofFailed && prepareProofFailed()
+      return
+    }
+    const layers = innerTrees[treeIndex]
+    return { index, layers, eotp }
+  }
+}
+
+const Flows = {
+  commitReveal: async ({
+    otp, otp2, eotpBuilder = EotpBuilders.fromOtp, wallet,
+    commitHashGenerator, commitHashArgs, revealAPI, revealArgs,
+    deriver = EOTPDerivation.deriveEOTP, effectiveTime = null, innerTrees = null,
+    recoverRandomness = null, prepareProof = null, prepareProofFailed = null,
+    index = null,
+    eotp = null,
+    committer = Committer.legacy,
+    layers = null,
+    beforeCommit = null, afterCommit = null, onCommitError = null, onCommitFailure = null,
+    onRevealFailure = null, onRevealSuccess = null, onRevealError = null, onRevealAttemptFailed = null,
+    beforeReveal = null,
+    maxTransferAttempts = 3, checkCommitInterval = 4000,
+    message = messager,
+    overrideVersion = false,
+  }) => {
+    const { address, majorVersion, minorVersion } = wallet
+    if (!eotp) {
+      const derived = await deriver({
+        otp,
+        otp2,
+        eotpBuilder,
+        recoverRandomness,
+        prepareProof,
+        prepareProofFailed,
+        wallet,
+        layers,
+        index,
+        effectiveTime,
+        innerTrees,
+        message })
+      eotp = derived?.eotp
+      index = index || derived?.index
+      layers = layers || derived?.layers
+    }
     if (!eotp) {
       message.error('Local state verification failed.')
       return
@@ -137,7 +260,8 @@ const Flows = {
         address,
         hash: ONEUtil.hexString(commitHash),
         paramsHash: paramsHash && ONEUtil.hexString(paramsHash),
-        verificationHash: verificationHash && ONEUtil.hexString(verificationHash)
+        verificationHash: verificationHash && ONEUtil.hexString(verificationHash),
+        ...(overrideVersion ? { majorVersion, minorVersion } : {})
       })
       if (!success) {
         onCommitFailure && await onCommitFailure(error)
@@ -154,11 +278,12 @@ const Flows = {
         beforeReveal && await beforeReveal(commitHash, paramsHash, verificationHash)
         // TODO: should reveal only when commit is confirmed and viewable on-chain. This should be fixed before releasing it to 1k+ users
         // TODO: Prevent transfer more than maxOperationsPerInterval per interval (30 seconds)
-        const { success, txId, error } = await revealAPI({
+        const { success, tx, txId, error } = await revealAPI({
           neighbors: neighbors.map(n => ONEUtil.hexString(n)),
           index,
           eotp: ONEUtil.hexString(eotp),
           address,
+          ...(overrideVersion ? { majorVersion, minorVersion } : {}),
           ...(typeof revealArgs === 'function' ? revealArgs({ neighbor, index, eotp }) : revealArgs)
         })
         if (!success) {
@@ -170,7 +295,8 @@ const Flows = {
           onRevealFailure && await onRevealFailure(error)
           return
         }
-        onRevealSuccess && await onRevealSuccess(txId)
+        const messages = tx?.receipt?.rawLogs.flatMap(l => l.topics.map(t => EventMessage?.[EventMaps?.[t]])).filter(Boolean)
+        onRevealSuccess && await onRevealSuccess(txId, messages)
         return true
       } catch (ex) {
         // console.trace(ex)
@@ -184,7 +310,7 @@ const Flows = {
       }
     }, checkCommitInterval)
     return tryReveal()
-  }
+  },
 }
 
 const SecureFlows = {
@@ -311,7 +437,7 @@ const SmartFlows = {
     return Flows.commitReveal({
       ...args, wallet, committer: Committer.legacy
     })
-  }
+  },
 }
 
 module.exports = {
@@ -319,4 +445,5 @@ module.exports = {
   SecureFlows,
   Flows,
   SmartFlows,
+  EOTPDerivation
 }

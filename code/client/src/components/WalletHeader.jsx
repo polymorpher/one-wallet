@@ -1,16 +1,26 @@
 // eslint-disable-next-line no-unused-vars
 import React, { useEffect, useState } from 'react'
 // import styled from 'styled-components'
-import { PageHeader, Select, Divider, Modal, Input, Typography, Space, Button } from 'antd'
+import PageHeader from 'antd/es/page-header'
+import Select from 'antd/es/select'
+import Divider from 'antd/es/divider'
+import Modal from 'antd/es/modal'
+import Input from 'antd/es/input'
+import Button from 'antd/es/button'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
 import { useRouteMatch, useHistory } from 'react-router'
 import { titleCase } from 'title-case'
 import { useSelector, useDispatch } from 'react-redux'
-import walletActions from '../state/modules/wallet/actions'
-import { SearchOutlined, LockOutlined, CloseOutlined, SettingOutlined } from '@ant-design/icons'
+import SearchOutlined from '@ant-design/icons/SearchOutlined'
+import LockOutlined from '@ant-design/icons/LockOutlined'
+import CloseOutlined from '@ant-design/icons/CloseOutlined'
+import SettingOutlined from '@ant-design/icons/SettingOutlined'
 import config from '../config'
 import util, { useWindowDimensions } from '../util'
 import { Hint } from '../components/Text'
 import WalletAddress from './WalletAddress'
+import { globalActions } from '../state/modules/global'
 // import Paths from '../constants/paths'
 const { Text, Link } = Typography
 
@@ -18,11 +28,11 @@ const { Text, Link } = Typography
 //   margin: 16px;
 // `
 const NetworkSelector = () => {
-  const networkId = useSelector(state => state.wallet.network)
+  const networkId = useSelector(state => state.global.network)
   const dispatch = useDispatch()
   const networks = config.networks
   const onChange = (v) => {
-    dispatch(walletActions.setNetwork(v))
+    dispatch(globalActions.setNetwork(v))
   }
   return (
     <>
@@ -38,12 +48,12 @@ const NetworkSelector = () => {
 }
 
 const RelayerSelector = () => {
-  const relayer = useSelector(state => state.wallet.relayer)
+  const relayer = useSelector(state => state.global.relayer)
   const [input, setInput] = useState('')
   const dispatch = useDispatch()
   const relayers = config.relayers
   const onChange = (v) => {
-    dispatch(walletActions.setRelayer(v))
+    dispatch(globalActions.setRelayer(v))
   }
   return (
     <>
@@ -65,10 +75,10 @@ const RelayerSelector = () => {
 
 const SecretSettings = ({ visible, onClose }) => {
   const dispatch = useDispatch()
-  const relayerSecret = useSelector(state => state.wallet.relayerSecret)
+  const relayerSecret = useSelector(state => state.global.relayerSecret)
   const [secret, setSecret] = useState(relayerSecret)
   const onSubmit = () => {
-    dispatch(walletActions.setRelayerSecret(secret))
+    dispatch(globalActions.setRelayerSecret(secret))
     onClose && onClose()
   }
   return (
@@ -91,7 +101,7 @@ const WalletHeader = () => {
   const match = useRouteMatch('/:action/:address?')
   const { action, address: routeAddress } = match ? match.params : {}
   const address = routeAddress && util.safeNormalizedAddress(routeAddress) || ''
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const subtitle = address && <>{wallet.name && <Hint style={{ marginRight: 32 }}>{wallet.name}</Hint>}<WalletAddress address={address} shorten={false} alwaysShowOptions /></>
   const [settingsVisible, setSettingsVisible] = useState(false)

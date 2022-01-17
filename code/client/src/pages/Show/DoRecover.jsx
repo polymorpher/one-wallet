@@ -1,5 +1,8 @@
-import { Button, Row, Space, Typography } from 'antd'
-import { CloseOutlined } from '@ant-design/icons'
+import Button from 'antd/es/button'
+import Row from 'antd/es/row'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
+import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
 import React, { useState } from 'react'
@@ -12,11 +15,11 @@ import ShowUtils from './show-util'
 import { walletActions } from '../../state/modules/wallet'
 const { Title, Text } = Typography
 const DoRecover = ({ address, show, onClose }) => {
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const { lastResortAddress } = wallet
   const [stage, setStage] = useState(-1)
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
   const dispatch = useDispatch()
 
   const helpers = ShowUtils.buildHelpers({
@@ -52,7 +55,6 @@ const DoRecover = ({ address, show, onClose }) => {
   }
   return (
     <AnimatedSection
-      show={show}
       style={{ maxWidth: 720 }}
       title={<Title level={2}>Recover</Title>} extra={[
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />

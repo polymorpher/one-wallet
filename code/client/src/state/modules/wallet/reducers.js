@@ -1,156 +1,89 @@
 import { handleActions } from 'redux-actions'
 import walletActions from './actions'
-import config from '../../../config'
-import { omit, uniq } from 'lodash'
+import uniq from 'lodash/fp/uniq'
+import omit from 'lodash/fp/omit'
 
+// address -> wallet
 export const initialState = {
-  wallets: {},
-  balances: {}, // address => amount in wei
-  selected: undefined, // address in hex string, matching a key in wallets
-  network: config.defaults.network,
-  relayer: config.defaults.relayer,
-  relayerSecret: config.defaults.relayerSecret,
 }
 
 const reducer = handleActions(
   {
+    // Auto-migrate for old structure: `{wallets: {address: wallet}}`
+    [walletActions.autoMigrateWallets]: (state) => {
+      const currentEntries = Object.entries(state)
+      const oldWalletEntries = Object.entries(state.wallets || {})
+      const validEntries = oldWalletEntries.concat(currentEntries).filter(([_, wallet]) => wallet.root && wallet.address)
+      return Object.fromEntries(validEntries)
+    },
+
     [walletActions.fetchWalletSuccess]: (state, action) => ({
       ...state,
-      wallets: { ...state.wallets, [action.payload.address]: { ...state.wallets[action.payload.address], ...action.payload } },
-    }),
-
-    [walletActions.fetchBalanceSuccess]: (state, action) => ({
-      ...state,
-      balances: { ...state.balances, [action.payload.address]: action.payload.balance },
-    }),
-
-    [walletActions.fetchPriceSuccess]: (state, action) => ({
-      ...state,
-      price: action.payload,
+      [action.payload.address]: { ...state[action.payload.address], ...action.payload },
     }),
 
     [walletActions.updateWallet]: (state, action) => ({
       ...state,
-      wallets: { ...state.wallets, [action.payload.address]: action.payload._merge ? omit({ ...state.wallets[action.payload.address], ...action.payload }, ['_merge']) : action.payload }
-    }),
-
-    [walletActions.selectWallet]: (state, action) => ({
-      ...state,
-      selected: action.payload,
+      [action.payload.address]: action.payload._merge ? omit(['_merge'], { ...state[action.payload.address], ...action.payload }) : action.payload
     }),
 
     [walletActions.deleteWallet]: (state, action) => ({
-      ...state,
-      wallets: omit(state.wallets, [action.payload]),
-      balances: omit(state.balances, [action.payload])
+      ...omit([action.payload], state),
     }),
+
     [walletActions.trackTokens]: (state, action) => ({
       ...state,
-      wallets: {
-        ...state.wallets,
-        [action.payload.address]: {
-          ...state.wallets[action.payload.address],
-          trackedTokens: [...(state.wallets?.[action.payload.address]?.trackedTokens || []), ...action.payload.tokens],
-          untrackedTokens: (state.wallets?.[action.payload.address]?.untrackedTokens || []).filter(k => (action.payload.tokens || []).find(t => t.key === k) === undefined)
-        }
+      [action.payload.address]: {
+        ...state[action.payload.address],
+        trackedTokens: [...(state[action.payload.address]?.trackedTokens || []), ...action.payload.tokens],
+        untrackedTokens: (state[action.payload.address]?.untrackedTokens || []).filter(k => (action.payload.tokens || []).find(t => t.key === k) === undefined)
       }
     }),
     [walletActions.untrackTokens]: (state, action) => ({
       ...state,
-      wallets: {
-        ...state.wallets,
-        [action.payload.address]: {
-          ...state.wallets[action.payload.address],
-          trackedTokens: (state.wallets?.[action.payload.address]?.trackedTokens || []).filter(e => action.payload.keys.find(k => k === e.key) === undefined),
-          untrackedTokens: uniq([...(state.wallets?.[action.payload.address]?.untrackedTokens || []), ...action.payload.keys])
-        }
+      [action.payload.address]: {
+        ...state[action.payload.address],
+        trackedTokens: (state[action.payload.address]?.trackedTokens || []).filter(e => action.payload.keys.find(k => k === e.key) === undefined),
+        untrackedTokens: uniq([...(state[action.payload.address]?.untrackedTokens || []), ...action.payload.keys])
       }
     }),
     [walletActions.setSelectedToken]: (state, action) => ({
       ...state,
-      wallets: {
-        ...state.wallets,
-        [action.payload.address]: {
-          ...state.wallets[action.payload.address],
-          selectedToken: action.payload.token
-        }
+      [action.payload.address]: {
+        ...state[action.payload.address],
+        selectedToken: action.payload.token
       }
-    }),
-
-    [walletActions.fetchTokenBalance]: (state, action) => ({
-      ...state,
-    }),
-
-    [walletActions.fetchTokenBalanceSuccess]: (state, action) => ({
-      ...state,
-      wallets: {
-        ...state.wallets,
-        [action.payload.address]: {
-          ...state.wallets[action.payload.address],
-          tokenBalances: {
-            ...state.wallets?.[action.payload.address]?.tokenBalances,
-            [action.payload.key]: action.payload.balance
-          }
-        }
-      }
-    }),
-
-    [walletActions.setRelayer]: (state, action) => ({
-      ...state,
-      relayer: action.payload,
-    }),
-
-    [walletActions.setRelayerSecret]: (state, action) => ({
-      ...state,
-      relayerSecret: action.payload,
-    }),
-
-    [walletActions.setNetwork]: (state, action) => ({
-      ...state,
-      network: action.payload,
     }),
 
     [walletActions.bindDomain]: (state, action) => ({
       ...state,
-      wallets: {
-        ...state.wallets,
-        [action.payload.address]: {
-          ...state.wallets[action.payload.address],
-          domain: action.payload.domain
-        }
+      [action.payload.address]: {
+        ...state[action.payload.address],
+        domain: action.payload.domain
       }
     }),
 
     [walletActions.userAcknowledgedToSaveAddress]: (state, action) => ({
       ...state,
-      wallets: {
-        ...state.wallets,
-        [action.payload.address]: {
-          ...state.wallets[action.payload.address],
-          acknowledgedToSaveAddress: true
-        }
+      [action.payload.address]: {
+        ...state[action.payload.address],
+        acknowledgedToSaveAddress: true
       }
     }),
 
     [walletActions.userAcknowledgedNewRoot]: (state, action) => ({
       ...state,
-      wallets: {
-        ...state.wallets,
-        [action.payload.address]: {
-          ...state.wallets[action.payload.address],
-          acknowledgedNewRoot: action.payload.root
-        }
+      [action.payload.address]: {
+        ...state[action.payload.address],
+        acknowledgedNewRoot: action.payload.root
       }
     }),
 
     [walletActions.userSkipVersion]: (state, action) => ({
       ...state,
-      wallets: {
-        ...state.wallets,
-        [action.payload.address]: {
-          ...state.wallets[action.payload.address],
-          skipVersion: action.payload.version
-        }
+      [action.payload.address]: {
+        ...state[action.payload.address],
+        skipVersion: action.payload.version
       }
     }),
   },

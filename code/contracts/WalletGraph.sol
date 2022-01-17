@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.4;
 
+import "./Enums.sol";
 import "./IONEWallet.sol";
 import "./DomainManager.sol";
 
@@ -9,6 +10,8 @@ library WalletGraph {
     event InvalidBackLinkIndex(uint256 index);
     event CommandDispatched(address backlink, bytes commandData); // omitting the rest of the parameters, since it would be the same compared to the parameters in the method call
     event CommandFailed(address backlink, string reason, bytes commandData);
+    event BackLinkUpdated(address dest, address backlink);
+    event BackLinkUpdateError(address dest, address backlink, string error);
 
     function findBacklink(IONEWallet[] storage backlinkAddresses, address backlink) public view returns (uint32){
         for (uint32 i = 0; i < backlinkAddresses.length; i++) {
@@ -94,6 +97,18 @@ library WalletGraph {
             emit CommandFailed(backlink, reason, commandData);
         }catch {
             emit CommandFailed(backlink, "", commandData);
+        }
+    }
+
+    function batchUpdateForwardAddress(IONEWallet[] storage backlinkAddresses, address payable dest) public {
+        for (uint32 i = 0; i < backlinkAddresses.length; i++) {
+            try backlinkAddresses[i].reveal(IONEWallet.AuthParams(new bytes32[](0), 0, bytes32(0)), IONEWallet.OperationParams(Enums.OperationType.FORWARD, Enums.TokenType.NONE, address(0), 0, dest, 0, bytes(""))){
+                emit BackLinkUpdated(dest, address(backlinkAddresses[i]));
+            } catch Error(string memory reason){
+                emit BackLinkUpdateError(dest, address(backlinkAddresses[i]), reason);
+            } catch {
+                emit BackLinkUpdateError(dest, address(backlinkAddresses[i]), "");
+            }
         }
     }
 }

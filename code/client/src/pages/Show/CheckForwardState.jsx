@@ -2,14 +2,20 @@ import { useDispatch, useSelector } from 'react-redux'
 import React, { useEffect, useState } from 'react'
 import ONEConstants from '../../../../lib/constants'
 import util, { useWindowDimensions } from '../../util'
-import { Button, Card, Typography, Space, Row, Spin, Popconfirm } from 'antd'
+import Button from 'antd/es/button'
+import Card from 'antd/es/card'
+import Typography from 'antd/es/typography'
+import Space from 'antd/es/space'
+import Row from 'antd/es/row'
+import Spin from 'antd/es/spin'
+import Popconfirm from 'antd/es/popconfirm'
 import message from '../../message'
 import { api } from '../../../../lib/api'
 import { walletActions } from '../../state/modules/wallet'
 import { useHistory } from 'react-router'
 import Paths from '../../constants/paths'
 import WalletAddress from '../../components/WalletAddress'
-import { DeleteOutlined } from '@ant-design/icons'
+import DeleteOutlined from '@ant-design/icons/DeleteOutlined'
 import { deleteWalletLocally } from '../../storage/util'
 const { Title, Text } = Typography
 
@@ -29,7 +35,7 @@ const CheckForwardState = ({ address, onClose }) => {
   const { isMobile } = useWindowDimensions()
   const history = useHistory()
   const dispatch = useDispatch()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const [skip, setSkip] = useState(false)
   const [isPostRecovery, setIsPostRecovery] = useState(false)

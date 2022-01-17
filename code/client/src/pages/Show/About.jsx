@@ -1,7 +1,14 @@
 import { TallRow } from '../../components/Grid'
-import { Button, Col, Popconfirm, Row, Space, Tooltip, Typography } from 'antd'
+import Button from 'antd/es/button'
+import Col from 'antd/es/col'
+import Popconfirm from 'antd/es/popconfirm'
+import Row from 'antd/es/row'
+import Space from 'antd/es/space'
+import Tooltip from 'antd/es/tooltip'
+import Typography from 'antd/es/typography'
 import humanizeDuration from 'humanize-duration'
-import { DeleteOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+import DeleteOutlined from '@ant-design/icons/DeleteOutlined'
+import QuestionCircleOutlined from '@ant-design/icons/QuestionCircleOutlined'
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import util, { useWindowDimensions } from '../../util'
@@ -16,15 +23,13 @@ const { Title, Text } = Typography
 
 const About = ({ address }) => {
   const dispatch = useDispatch()
+  const price = useSelector(state => state.global.price)
   const history = useHistory()
   const { isMobile } = useWindowDimensions()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const dev = useSelector(state => state.global.dev)
   const wallet = wallets[address] || {}
   const backlinks = wallet.backlinks || []
-  const { spendingLimit, spendingInterval } = wallet
-  const price = useSelector(state => state.wallet.price)
-  const { formatted: spendingLimitFormatted, fiatFormatted: spendingLimitFiatFormatted } = util.computeBalance(spendingLimit, price)
   const [selectedLink, setSelectedLink] = useState()
   const [inspecting, setInspecting] = useState()
   const oldInfos = wallet.oldInfos || []
@@ -61,26 +66,11 @@ const About = ({ address }) => {
         <Col>
           <Space>
             <Text>{humanizeDuration(wallet.duration + wallet.effectiveTime - Date.now(), { units: ['y', 'mo', 'd'], round: true })}</Text>
-            {(dev || util.canRenew(wallet)) && <Button shape='round' onClick={() => history.push(Paths.showAddress(address, 'extend'))}>Renew</Button>}
+            {(dev || util.canRenew(wallet)) && <Button type='link' onClick={() => history.push(Paths.showAddress(address, 'extend'))}>(renew now?)</Button>}
           </Space>
         </Col>
       </TallRow>
-      <TallRow align='baseline'>
-        <Col span={isMobile ? 24 : 12}> <Title level={3}>Spend Limit</Title></Col>
-        <Col>
-          <Row>
-            <Space>
-              <Text>{spendingLimitFormatted}</Text>
-              <Text type='secondary'>ONE</Text>
-              <Text>(≈ ${spendingLimitFiatFormatted}</Text>
-              <Text type='secondary'>USD)</Text>
-            </Space>
-          </Row>
-          <Row>
-            <Text type='secondary'>per {humanizeDuration(spendingInterval, { largest: 2, round: true })}</Text>
-          </Row>
-        </Col>
-      </TallRow>
+
       {wallet.majorVersion &&
         <TallRow align='middle'>
           <Col span={isMobile ? 24 : 12}> <Title level={3}>Wallet Version</Title></Col>

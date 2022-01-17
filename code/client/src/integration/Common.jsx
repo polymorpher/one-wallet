@@ -1,7 +1,13 @@
 import { AverageRow } from '../components/Grid'
-import { Button, Col, Row, Select, Space, Tooltip, Typography } from 'antd'
+import Button from 'antd/es/button'
+import Col from 'antd/es/col'
+import Row from 'antd/es/row'
+import Select from 'antd/es/select'
+import Space from 'antd/es/space'
+import Tooltip from 'antd/es/tooltip'
+import Typography from 'antd/es/typography'
 import WalletAddress from '../components/WalletAddress'
-import { SearchOutlined } from '@ant-design/icons'
+import SearchOutlined from '@ant-design/icons/SearchOutlined'
 import util from '../util'
 import ONEUtil from '../../../lib/util'
 import React, { useEffect, useState } from 'react'
@@ -13,8 +19,8 @@ export const WALLET_OUTDATED_DISABLED_TEXT = 'This wallet cannot be used for thi
 
 export const WalletSelector = ({ from, onAddressSelected, filter = e => e, disabledText, useHex, showOlderVersions }) => {
   const dispatch = useDispatch()
-  const network = useSelector(state => state.wallet.network)
-  const wallets = useSelector(state => state.wallet.wallets)
+  const network = useSelector(state => state.global.network)
+  const wallets = useSelector(state => state.wallet)
   const walletList = Object.keys(wallets).map(e => wallets[e]).filter(e => e.network === network && (showOlderVersions ? (!e.temp || !util.isEmptyAddress(e.forwardAddress)) : !e.temp))
   console.log(wallets, walletList)
   from = util.safeNormalizedAddress(from)

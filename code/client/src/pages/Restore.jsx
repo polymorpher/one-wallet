@@ -1,278 +1,130 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
+import ScanOutlined from '@ant-design/icons/ScanOutlined'
+import FieldBinaryOutlined from '@ant-design/icons/FieldBinaryOutlined'
 import { useHistory } from 'react-router'
 import { Heading, Hint } from '../components/Text'
 import AnimatedSection from '../components/AnimatedSection'
-import { Space, Progress, Timeline, Row, Divider } from 'antd'
+import Space from 'antd/es/space'
+import Button from 'antd/es/button'
+import Divider from 'antd/es/divider'
 import message from '../message'
-import api from '../api'
-import ONEUtil from '../../../lib/util'
-import WalletConstants from '../constants/wallet'
-import storage from '../storage'
-import { useDispatch, useSelector } from 'react-redux'
-import walletActions from '../state/modules/wallet/actions'
-import util from '../util'
-import { handleAddressError } from '../handler'
 import Paths from '../constants/paths'
-import * as Sentry from '@sentry/browser'
-import AddressInput from '../components/AddressInput'
-import QrCodeScanner from '../components/QrCodeScanner'
-import ScanGASteps from '../components/ScanGASteps'
-import { parseOAuthOTP, parseMigrationPayload } from '../components/OtpTools'
+import RestoreByCodes from './Restore/RestoreByCodes'
+import SyncRecoveryFile from './Restore/SyncRecoveryFile'
+import SetupNewCode from './Restore/SetupNewCode'
 import LocalImport from '../components/LocalImport'
+import RestoreByScan from './Restore/RestoreByScan'
+import { retrieveWalletInfoFromAddress } from './Restore/Common'
+import { api } from '../../../lib/api'
+
+const Sections = {
+  Choose: 0,
+  ScanQR: 1,
+  SyncRecoveryFile: 2,
+  SetupNewCode: 3,
+  RecoveryCode: 4,
+}
 
 const Restore = () => {
   const history = useHistory()
-  const [section, setSection] = useState(1)
-  const network = useSelector(state => state.wallet.network)
-  const wallets = useSelector(state => state.wallet.wallets)
-  const dispatch = useDispatch()
-  const [secret, setSecret] = useState()
-  const [secret2, setSecret2] = useState()
-  const [name, setName] = useState()
-  const [majorVersion, setMajorVersion] = useState()
-  const [minorVersion, setMinorVersion] = useState()
+  const [section, setSection] = useState(Sections.Choose)
 
-  const onScan = (e) => {
-    if (e && !secret) {
-      try {
-        let parsed
-        if (e.startsWith('otpauth://totp')) {
-          parsed = parseOAuthOTP(e)
-        } else {
-          parsed = parseMigrationPayload(e)
-        }
-        if (!parsed) {
-          return
-        }
-        const { secret2, secret, name } = parsed
-        setSecret2(secret2)
-        setSecret(secret)
-        setName(name)
-      } catch (ex) {
-        Sentry.captureException(ex)
-        console.error(ex)
-        message.error(`Failed to parse QR code. Error: ${ex.toString()}`)
-      }
-    }
-  }
-
-  const [addressInput, setAddressInput] = useState({ value: '', label: '' })
-  const [address, setAddress] = useState()
-  const [root, setRoot] = useState()
-  const [effectiveTime, setEffectiveTime] = useState()
-  const [duration, setDuration] = useState()
-  const [slotSize, setSlotSize] = useState()
-  const [lastResortAddress, setLastResortAddress] = useState()
-  const [spendingLimit, setSpendingLimit] = useState()
-  const [spendingInterval, setSpendingInterval] = useState()
+  const [walletInfo, setWalletInfo] = useState()
 
   const [progress, setProgress] = useState(0)
   const [progressStage, setProgressStage] = useState(0)
+  const [innerTrees, setInnerTrees] = useState()
+  const [innerCores, setInnerCores] = useState()
+  const [expert, setExpert] = useState()
+  const [name, setName] = useState()
+  const [newLocalParams, setNewLocalParams] = useState()
+  const [address, setAddress] = useState()
 
-  const onRestore = async (ignoreDoubleOtp) => {
-    if (!root) {
-      console.error('Root is not set. Abort.')
-      return
-    }
+  const onSynced = async ({ name, address: retrievalAddress, innerTrees, expert }) => {
     try {
-      const securityParameters = ONEUtil.securityParameters({ majorVersion, minorVersion })
-      const worker = new Worker('ONEWalletWorker.js')
-      worker.onmessage = (event) => {
-        const { status, current, total, stage, result } = event.data
-        if (status === 'working') {
-          setProgress(Math.round(current / total * 100))
-          setProgressStage(stage)
-        }
-        if (status === 'done') {
-          const { hseed, root: computedRoot, layers, doubleOtp } = result
-          if (!ONEUtil.bytesEqual(ONEUtil.hexToBytes(root), computedRoot)) {
-            console.error('Roots are not equal', root, ONEUtil.hexString(computedRoot))
-            // console.error('Roots are not equal', root, ONEUtil.hexString(computedRoot), {
-            //   hseed,
-            //   doubleOtp,
-            //   secret,
-            //   secret2,
-            //   ignoreDoubleOtp,
-            //   ...securityParameters,
-            //   majorVersion,
-            //   minorVersion,
-            //   effectiveTime,
-            //   duration,
-            //   slotSize,
-            // })
-            if (!ignoreDoubleOtp && doubleOtp) {
-              message.error('Verification failed. Retrying using single authenticator code...')
-              onRestore(true)
-              return
-            }
-            message.error('Verification failed. Your authenticator QR code might correspond to a different contract address.')
-            return
-          }
-          storage.setItem(root, layers)
-          const wallet = {
-            _merge: true,
-            name,
-            address,
-            root,
-            duration,
-            effectiveTime,
-            lastResortAddress,
-            hseed: ONEUtil.hexView(hseed),
-            majorVersion,
-            minorVersion,
-            doubleOtp,
-            network,
-            ...securityParameters,
-            spendingLimit,
-            spendingInterval
-          }
-          dispatch(walletActions.updateWallet(wallet))
-          dispatch(walletActions.fetchBalance({ address }))
-          console.log('Completed wallet restoration', wallet)
-          message.success(`Wallet ${name} (${address}) is restored!`)
-          setTimeout(() => history.push(Paths.showAddress(address)), 1500)
-        }
-      }
-      console.log('[Restore] Posting to worker')
-      worker && worker.postMessage({
-        seed: secret,
-        seed2: !ignoreDoubleOtp && secret2,
-        effectiveTime,
-        duration,
-        slotSize,
-        interval: WalletConstants.interval,
-        ...securityParameters
-      })
+      const { wallet } = await retrieveWalletInfoFromAddress(retrievalAddress)
+      const innerCores = await api.blockchain.getInnerCores({ address: retrievalAddress })
+      setInnerCores(innerCores)
+      setName(name)
+      setAddress(retrievalAddress)
+      setWalletInfo(wallet)
+      setExpert(expert)
+      setInnerTrees(innerTrees)
+      setSection(Sections.SetupNewCode)
     } catch (ex) {
-      Sentry.captureException(ex)
       console.error(ex)
-      message.error(`Unexpected error during restoration: ${ex.toString()}`)
+      message.error('Please reselect recovery file and try again.')
     }
   }
 
-  useEffect(() => {
-    const f = async () => {
-      try {
-        if (!addressInput.value || addressInput.value.length < 42) {
-          return
-        }
-        const address = util.safeExec(util.normalizedAddress, [addressInput.value], handleAddressError)
-        if (!address) {
-          return
-        }
-        if (wallets[address]) {
-          message.error(`Wallet ${address} already exists locally`)
-          return
-        }
-        const {
-          root,
-          effectiveTime,
-          duration,
-          slotSize,
-          lastResortAddress,
-          majorVersion,
-          minorVersion,
-          spendingLimit,
-          spendingInterval
-        } = await api.blockchain.getWallet({ address })
-        console.log('Retrieved wallet:', {
-          root,
-          effectiveTime,
-          duration,
-          slotSize,
-          lastResortAddress,
-          majorVersion,
-          minorVersion,
-          spendingLimit,
-          spendingInterval
-        })
-        setAddress(address)
-        setRoot(root)
-        setEffectiveTime(effectiveTime)
-        setDuration(duration)
-        setSlotSize(slotSize)
-        setLastResortAddress(lastResortAddress)
-        setSpendingLimit(spendingLimit)
-        setSpendingInterval(spendingInterval)
-        setSection(2)
-        setMajorVersion(majorVersion)
-        setMinorVersion(minorVersion)
-      } catch (ex) {
-        Sentry.captureException(ex)
-
-        console.error(ex)
-
-        const errorMessage = ex.toString()
-
-        if (errorMessage.includes('no code at address')) {
-          message.error('This is a wallet, but is not a 1wallet address')
-        } else if (errorMessage.includes('Returned values aren\'t valid')) {
-          message.error('This is a smart contract, but is not a 1wallet address')
-        } else {
-          message.error(`Cannot retrieve wallet at address ${address}. Error: ${ex.toString()}`)
-        }
-      }
-    }
-    f()
-  }, [addressInput])
-
-  useEffect(() => {
-    if (secret && name) {
-      onRestore()
-    }
-  }, [secret, name])
-
   return (
     <>
-      <AnimatedSection show={section === 1}>
-        <Space direction='vertical' size='large'>
-          <Heading>Import a wallet file</Heading>
-          <LocalImport />
-          <Hint>This is the file that you exported under "About" tab. This option lets you share 1wallets across multiple devices, without having to export the seed from Google Authenticator as QR code.</Hint>
-        </Space>
-        <Divider><Hint>Or</Hint></Divider>
-
-        <Space direction='vertical' size='large'>
-          <Heading>Provide your wallet's address</Heading>
-          <AddressInput
-            addressValue={addressInput}
-            setAddressCallback={setAddressInput}
+      {section === Sections.Choose &&
+        <AnimatedSection>
+          <Space direction='vertical' size='large' style={{ width: '100%' }}>
+            <Heading>Scan authenticator seed QR code</Heading>
+            <Button shape='round' size='large' type='primary' onClick={() => setSection(Sections.ScanQR)} icon={<ScanOutlined />}>Scan Now</Button>
+            <Hint>Classic restore method. Requires webcam. Scan seed QR code exported from your authenticator (Google and Aegis Authenticator only)</Hint>
+          </Space>
+          <Divider><Hint>Or</Hint></Divider>
+          <Space direction='vertical' size='large' style={{ width: '100%' }}>
+            <Heading>Use auth codes + recovery file</Heading>
+            <Button shape='round' size='large' type='primary' onClick={() => setSection(Sections.SyncRecoveryFile)} icon={<FieldBinaryOutlined />}>Begin</Button>
+            <Hint>New method. Works with all authenticators. You need (1) wallet recovery file (2) your authenticator. Provide 6-digit auth code for 6 times (30 seconds each time). Setup a new authenticator code after that.</Hint>
+          </Space>
+          <Divider><Hint>Or</Hint></Divider>
+          <Space direction='vertical' size='large'>
+            <Heading>Sync 1wallet across devices</Heading>
+            <LocalImport />
+            <Hint>Requires the same 1wallet from another device. Does not require authenticator. To use this, you need to export .1wallet file under "About" tab from another device. For best security, you should delete the .1wallet file after that.</Hint>
+          </Space>
+        </AnimatedSection>}
+      {section === Sections.ScanQR &&
+        <AnimatedSection>
+          <RestoreByScan isActive={section === Sections.ScanQR} onCancel={() => setSection(Sections.Choose)} />
+        </AnimatedSection>}
+      {section === Sections.SyncRecoveryFile &&
+        <AnimatedSection>
+          <SyncRecoveryFile
+            onSynced={onSynced}
+            onCancel={() => setSection(Sections.Choose)}
           />
-          <Hint>After you provide your address, in the next page you will need to scan the QR Code exported from Google Authenticator (not the QR code which you previously saved to let others transfer assets to you). To do that, you need to grant webcam permission.</Hint>
-        </Space>
-
-      </AnimatedSection>
-      <AnimatedSection show={section === 2}>
-        <Space direction='vertical' size='large'>
-          <Heading>Restore your wallet from Google Authenticator</Heading>
-          {!secret &&
-            <>
-              <ScanGASteps />
-              <QrCodeScanner shouldInit={section === 2} onScan={onScan} />
-            </>}
-          {secret &&
-            <>
-              <Hint>Restoring your wallet...</Hint>
-              <Space size='large'>
-                <Progress
-                  type='circle'
-                  strokeColor={{
-                    '0%': '#108ee9',
-                    '100%': '#87d068',
-                  }}
-                  percent={progress}
-                />
-                <Space direction='vertical'>
-                  <Timeline pending={progressStage < 2 && 'Rebuilding your 1wallet'}>
-                    <Timeline.Item color={progressStage < 1 ? 'grey' : 'green'}>Recomputing proofs for each time interval</Timeline.Item>
-                    <Timeline.Item color={progressStage < 2 ? 'grey' : 'green'}>Preparing hashes for verification</Timeline.Item>
-                  </Timeline>
-                </Space>
-              </Space>
-            </>}
-        </Space>
-
-      </AnimatedSection>
+        </AnimatedSection>}
+      {(section === Sections.SetupNewCode || section === Sections.RecoveryCode) &&
+        <AnimatedSection show={section === Sections.SetupNewCode}>
+          <SetupNewCode
+            wallet={walletInfo}
+            name={name}
+            expert={expert}
+            active={section === Sections.SetupNewCode}
+            onComplete={() => setSection(Sections.RecoveryCode)}
+            onCancel={() => setSection(Sections.Choose)}
+            onProgressUpdate={({ progress, stage }) => { setProgress(progress); setProgressStage(stage) }}
+            onComputeLocalParams={e => {
+              // console.log(e)
+              setNewLocalParams(e)
+            }}
+          />
+        </AnimatedSection>}
+      {section === Sections.RecoveryCode &&
+        <AnimatedSection>
+          <RestoreByCodes
+            name={name}
+            progress={progress}
+            expert={expert}
+            progressStage={progressStage}
+            isActive={section === Sections.RecoveryCode}
+            onComplete={() => {
+              message.info('Redirecting to your wallet in 2 seconds...')
+              setTimeout(() => history.push(Paths.showAddress(address)), 2000)
+            }}
+            onCancel={() => setSection(Sections.Choose)}
+            newLocalParams={newLocalParams}
+            wallet={walletInfo}
+            innerTrees={innerTrees}
+            innerCores={innerCores}
+          />
+        </AnimatedSection>}
     </>
   )
 }

@@ -4,6 +4,7 @@ import "./Enums.sol";
 
 /// we will slowly move commit-reveal related stuff from ONEWallet to here
 library CommitManager {
+    uint32 constant MAX_COMMIT_SIZE = 120;
     uint32 constant REVEAL_MAX_DELAY = 60;
 
     struct Commit {
@@ -128,7 +129,7 @@ library CommitManager {
     }
 
     /// Remove old commits from storage, where the commit's timestamp is older than block.timestamp - REVEAL_MAX_DELAY. The purpose is to remove dangling data from blockchain, and prevent commits grow unbounded. This is executed at commit time. The committer pays for the gas of this cleanup. Therefore, any attacker who intend to spam commits would be disincentivized. The attacker would not succeed in preventing any normal operation by the user.
-    function cleanupCommits(CommitState storage commitState) external {
+    function cleanupCommits(CommitState storage commitState) public {
         uint32 timelyIndex = 0;
         uint32 bt = uint32(block.timestamp);
         // go through past commits chronologically, starting from the oldest, and find the first commit that is not older than block.timestamp - REVEAL_MAX_DELAY.
@@ -212,6 +213,14 @@ library CommitManager {
             reducedArray[i] = nonZeroNonces[i];
         }
         cs.nonceTracker = reducedArray;
+    }
+
+    function commit(CommitState storage cs, bytes32 hash, bytes32 paramsHash, bytes32 verificationHash) public {
+        cleanupCommits(cs);
+        Commit memory nc = Commit(paramsHash, verificationHash, uint32(block.timestamp), false);
+        require(cs.commits.length < MAX_COMMIT_SIZE, "Too many");
+        cs.commits.push(hash);
+        cs.commitLocker[hash].push(nc);
     }
 
 }

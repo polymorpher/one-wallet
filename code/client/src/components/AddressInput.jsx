@@ -1,14 +1,24 @@
-import { CloseOutlined, ScanOutlined, EditOutlined } from '@ant-design/icons'
-import { Select, Button, Tooltip, Row, Col, Spin, Typography, Space } from 'antd'
+import CloseOutlined from '@ant-design/icons/CloseOutlined'
+import ScanOutlined from '@ant-design/icons/ScanOutlined'
+import EditOutlined from '@ant-design/icons/EditOutlined'
+import Select from 'antd/es/select'
+import Button from 'antd/es/button'
+import Tooltip from 'antd/es/tooltip'
+import Row from 'antd/es/row'
+import Col from 'antd/es/col'
+import Spin from 'antd/es/spin'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
 import message from '../message'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Paths from '../constants/paths'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch, useSelector, batch } from 'react-redux'
 import { globalActions } from '../state/modules/global'
 import util, { useWaitExecution, useWindowDimensions, updateQRCodeState } from '../util'
 import WalletConstants from '../constants/wallet'
 import api from '../api'
-import { isEmpty, trim } from 'lodash'
+import trim from 'lodash/fp/trim'
+import isEmpty from 'lodash/fp/isEmpty'
 import ONEConstants from '../../../lib/constants'
 import QrCodeScanner from './QrCodeScanner'
 import { useHistory } from 'react-router'
@@ -43,12 +53,12 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
   const [searchingAddress, setSearchingAddress] = useState(false)
   const [searchValue, setSearchValue] = useState('')
   const [showQrCodeScanner, setShowQrCodeScanner] = useState('')
-  const walletsMap = useSelector(state => state.wallet.wallets)
+  const walletsMap = useSelector(state => state.wallet)
   const wallets = Object.keys(walletsMap).map((k) => walletsMap[k])
   const knownAddresses = useSelector(state =>
     state.global.knownAddresses || {}
   )
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
   const { isMobile } = useWindowDimensions()
   const deleteKnownAddress = useCallback((address) => {
     setAddressCallback({ value: '', label: '' })
@@ -163,39 +173,53 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
 
       const unlabelledWalletAddress = wallets.filter(w => existingKnownAddresses.find(a => !a.label && !a.domain?.name && a.address === w.address && (!w.temp || allowTemp)))
 
-      // Init the known address entries for existing wallets.
-      walletsNotInKnownAddresses.forEach((wallet) => {
-        dispatch(globalActions.setKnownAddress({
-          label: wallet.name,
-          address: wallet.address,
-          network: wallet.network,
-          creationTime: wallet.effectiveTime,
-          numUsed: 0
-        }))
+      batch(() => {
+        // Init the known address entries for existing wallets.
+        walletsNotInKnownAddresses.forEach((wallet) => {
+          dispatch(globalActions.setKnownAddress({
+            label: wallet.name,
+            address: wallet.address,
+            network: wallet.network,
+            creationTime: wallet.effectiveTime,
+            numUsed: 0
+          }))
+        })
+
+        unlabelledWalletAddress.forEach((w) => {
+          dispatch(globalActions.setKnownAddress({
+            ...knownAddresses[w],
+            label: w.name,
+          }))
+        })
       })
 
-      unlabelledWalletAddress.forEach((w) => {
-        dispatch(globalActions.setKnownAddress({
-          ...knownAddresses[w],
-          label: w.name,
-        }))
-      })
-
-      await Promise.all(knownAddressesWithoutDomain.map(async (knownAddress) => {
+      // Batch these separately since these promise may take a while to resolve.
+      const domainWalletAddresses = await Promise.all(knownAddressesWithoutDomain.map(async (knownAddress) => {
         const domainName = await api.blockchain.domain.reverseLookup({ address: knownAddress.address })
         const nowInMillis = new Date().valueOf()
 
         if (!isEmpty(domainName)) {
-          dispatch(globalActions.setKnownAddress({
+          return {
             ...knownAddress,
             domain: {
               ...knownAddress.domain,
               name: domainName,
               lookupTime: nowInMillis
             }
-          }))
+          }
         }
+        return null
       }))
+
+      batch(() => {
+        domainWalletAddresses.forEach(dwa => {
+          if (dwa) {
+            dispatch(globalActions.setKnownAddress({
+              ...dwa
+            }))
+          }
+        })
+      })
     }
 
     initKnownAddresses()

@@ -1,5 +1,5 @@
 import styled, { keyframes } from 'styled-components'
-import { Button } from 'antd'
+import Button from 'antd/es/button'
 
 const flashAnimation = keyframes`
   0% {opacity: 0.6;}

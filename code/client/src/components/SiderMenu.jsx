@@ -1,19 +1,31 @@
 import React, { useState, useEffect } from 'react'
 import { useHistory, useRouteMatch } from 'react-router'
-import { Layout, Image, Menu, Row, Typography, Tag, Divider, Spin } from 'antd'
-import { PlusCircleOutlined, UnorderedListOutlined, HistoryOutlined, AuditOutlined, GithubOutlined, InfoCircleOutlined, DollarOutlined, ToolOutlined } from '@ant-design/icons'
+import Layout from 'antd/es/layout'
+import Image from 'antd/es/image'
+import Row from 'antd/es/row'
+import Menu from 'antd/es/menu'
+import Typography from 'antd/es/typography'
+import Divider from 'antd/es/divider'
+import Tag from 'antd/es/tag'
+import Spin from 'antd/es/spin'
+import PlusCircleOutlined from '@ant-design/icons/PlusCircleOutlined'
+import UnorderedListOutlined from '@ant-design/icons/UnorderedListOutlined'
+import HistoryOutlined from '@ant-design/icons/HistoryOutlined'
+import AuditOutlined from '@ant-design/icons/AuditOutlined'
+import GithubOutlined from '@ant-design/icons/GithubOutlined'
+import InfoCircleOutlined from '@ant-design/icons/InfoCircleOutlined'
+import DollarOutlined from '@ant-design/icons/DollarOutlined'
+import ToolOutlined from '@ant-design/icons/ToolOutlined'
 import HarmonyLogo from '../assets/harmony.svg'
 import HarmonyIcon from '../assets/harmony-icon.svg'
 import config from '../config'
 import Paths from '../constants/paths'
 import styled from 'styled-components'
 import { useWindowDimensions } from '../util'
-import api from '../api'
 import abbr from '../abbr'
-import * as Sentry from '@sentry/browser'
 import { useDispatch, useSelector } from 'react-redux'
 import WalletConstants from '../constants/wallet'
-import { globalActions } from '../state/modules/global'
+import { cacheActions } from '../state/modules/cache'
 const { Link } = Typography
 
 const SiderLink = styled(Link).attrs((e) => ({
@@ -48,25 +60,14 @@ const SiderMenu = ({ ...args }) => {
   const nav = ({ key }) => {
     history.push(Paths[key])
   }
-  const statsCached = useSelector(state => state.global.stats)
+  const statsCached = useSelector(state => state.cache.global.stats)
   const [stats, setStats] = useState(null)
   const dispatch = useDispatch()
 
   useEffect(() => {
     const { timeUpdated } = statsCached || {}
-
-    async function refreshStats () {
-      try {
-        const statsData = await api.walletStats.getStats()
-        setStats(statsData)
-        dispatch(globalActions.updateStats({ ...statsData, timeUpdated: Date.now() }))
-      } catch (ex) {
-        Sentry.captureException(ex)
-        console.error(ex)
-      }
-    }
     if (!timeUpdated || (Date.now() - timeUpdated > WalletConstants.globalStatsCacheDuration)) {
-      refreshStats()
+      dispatch(cacheActions.fetchGlobalStats())
     } else {
       setStats(statsCached)
     }

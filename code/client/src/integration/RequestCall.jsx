@@ -1,4 +1,7 @@
-import { Button, Space, Typography, Divider } from 'antd'
+import Button from 'antd/es/button'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
+import Divider from 'antd/es/divider'
 import message from '../message'
 import BN from 'bn.js'
 import AnimatedSection from '../components/AnimatedSection'
@@ -15,8 +18,8 @@ import { WALLET_OUTDATED_DISABLED_TEXT, WalletSelector } from './Common'
 const { Title, Paragraph } = Typography
 const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amount, from, verbose }) => {
   dest = util.safeNormalizedAddress(dest)
-  const balances = useSelector(state => state.wallet.balances)
-  const price = useSelector(state => state.wallet.price)
+  const balances = useSelector(state => state.balance || {})
+  const price = useSelector(state => state.global.price)
   const { isMobile } = useWindowDimensions()
   const [selectedAddress, setSelectedAddress] = useState({})
   const { formatted: amountFormatted, fiatFormatted: amountFiatFormatted } = util.computeBalance(amount || 0, price)
@@ -157,7 +160,7 @@ const RequestCall = ({ caller, callback, dest, calldata: calldataB64Encoded, amo
         <Call
           shouldAutoFocus
           minimal={!showDetails}
-          address={selectedAddress.value} show={showCall} onClose={onCallClose} onSuccess={onSuccess}
+          address={selectedAddress.value} onClose={onCallClose} onSuccess={onSuccess}
           prefillHex={calldata.hex}
           prefillAmount={amountFormatted} prefillDest={dest} prefillData={(calldata.parameters || []).map(e => e.value)} prefillMethod={calldata.method}
         />}

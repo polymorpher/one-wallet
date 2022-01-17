@@ -26,19 +26,19 @@ router.use((req, res, next) => {
   if (!blockchain.getNetworks().includes(network)) {
     return res.status(StatusCodes.NOT_IMPLEMENTED).json({ error: `Unsupported network ${network}` })
   }
-  const majorVersion = req.header('X-MAJOR-VERSION')
-  const minorVersion = req.header('X-MINOR-VERSION')
+  const majorVersion = req?.body?.majorVersion || req.header('X-MAJOR-VERSION')
+  const minorVersion = req?.body?.minorVersion || req.header('X-MINOR-VERSION')
   req.network = network
   req.majorVersion = parseInt(majorVersion || 0)
   req.minorVersion = parseInt(minorVersion || 0)
   console.log(`Address: ${req.body.address}; network: ${req.network}; majorVersion: ${req.majorVersion}; minorVersion: ${req.minorVersion}`)
   // TODO: differentiate <v5 and >=v6 contracts
   if (!(req.majorVersion >= 6)) {
-    req.contract = blockchain.getContractV5(network)
+    req.contract = blockchain.getWalletContract(network, 5)
   } else if (req.majorVersion === 6) {
-    req.contract = blockchain.getContractV6(network)
+    req.contract = blockchain.getWalletContract(network, 6)
   } else {
-    req.contract = blockchain.getContract(network)
+    req.contract = blockchain.getWalletContract(network)
   }
   req.provider = blockchain.getProvider(network)
   next()
@@ -47,7 +47,8 @@ router.use((req, res, next) => {
 // TODO: rate limiting + fingerprinting + delay with backoff
 
 router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), globalLimiter({ max: 250 }), async (req, res) => {
-  let { root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, backlinks, spendingInterval, oldCores } = req.body
+  let { root, height, interval, t0, lifespan, slotSize, lastResortAddress,
+    spendingLimit, spentAmount, lastSpendingInterval, spendingInterval, lastLimitAdjustmentTime, highestSpendingLimit, backlinks, oldCores, innerCores, identificationKeys } = req.body
   // root is hex string, 32 bytes
   height = parseInt(height)
   interval = parseInt(interval)
@@ -58,13 +59,42 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
   backlinks = backlinks || []
   lastResortAddress = lastResortAddress || config.nullAddress
   oldCores = oldCores || []
+  spentAmount = spentAmount || 0
+  lastSpendingInterval = lastSpendingInterval || 0
+  lastLimitAdjustmentTime = lastLimitAdjustmentTime || 0
+  highestSpendingLimit = highestSpendingLimit || spendingLimit
   // lastResortAddress is hex string, 20 bytes
   // dailyLimit is a BN in string form
   if (config.debug || config.verbose) {
-    console.log(`[/new] `, { core: { root, height, interval, t0, lifespan, slotSize }, spending: { spendingLimit, spendingInterval }, lastResortAddress, backlinks, oldCores })
+    console.log(`[/new] `, { core: { root, height, interval, t0, lifespan, slotSize },
+      spending: { spendingLimit, spentAmount, lastSpendingInterval, spendingInterval, lastLimitAdjustmentTime, highestSpendingLimit },
+      lastResortAddress,
+      identificationKeys,
+      backlinks,
+      oldCores,
+      innerCores,
+    })
   }
 
-  if (!checkParams({ root, height, interval, t0, lifespan, slotSize, lastResortAddress, spendingLimit, spendingInterval, backlinks, oldCores }, res)) {
+  if (!checkParams({
+    root,
+    height,
+    interval,
+    t0,
+    lifespan,
+    slotSize,
+    lastResortAddress,
+    spendingLimit,
+    spentAmount,
+    lastSpendingInterval,
+    spendingInterval,
+    lastLimitAdjustmentTime,
+    highestSpendingLimit,
+    identificationKeys,
+    backlinks,
+    oldCores,
+    innerCores
+  }, res)) {
     return
   }
   if (spendingLimit === 0) {
@@ -79,17 +109,38 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
       return res.status(StatusCodes.BAD_REQUEST).json({ error: `old core has empty root: ${JSON.stringify(oldCore)}` })
     }
   }
+  const innerCoreTransformed = []
+  for (let innerCore of innerCores) {
+    if (innerCore.length > 0) {
+      innerCoreTransformed.push([...innerCore])
+      continue
+    }
+    const { root: innerRoot, height: innerHeight, interval: innerInterval, t0: innerT0, lifespan: innertLifespan, slotSize: innerSlotSize } = innerCore
+    innerCoreTransformed.push([innerRoot, innerHeight, innerInterval, innerT0, innertLifespan, innerSlotSize])
+    if (!innerRoot) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: `inner core has empty root: ${JSON.stringify(innerCore)}` })
+    }
+  }
   // TODO parameter verification
   try {
-    const wallet = await blockchain.getContract(req.network).new(
+    const initArgs = [
       [root, height, interval, t0, lifespan, slotSize],
-      [ new BN(spendingLimit, 10), 0, 0, new BN(spendingInterval, 10) ],
+      [ new BN(spendingLimit), new BN(spentAmount), new BN(lastSpendingInterval), new BN(spendingInterval), new BN(lastLimitAdjustmentTime), new BN(highestSpendingLimit) ],
       lastResortAddress,
       backlinks,
-      oldCoreTransformed
-    )
-    console.log('/new', wallet?.address)
-    return res.json({ success: true, address: wallet.address })
+      oldCoreTransformed,
+      innerCoreTransformed,
+      identificationKeys,
+    ]
+    const receipt = await blockchain.getFactory(req.network).deploy(initArgs)
+    console.log(JSON.stringify(receipt, null, 2))
+    const { logs } = receipt
+    const successLog = logs.find(log => log.event === 'ONEWalletDeploySuccess')
+    if (!successLog) {
+      return res.status(StatusCodes.NOT_ACCEPTABLE).json(receipt)
+    }
+    const address = successLog.args['addr']
+    return res.json({ success: true, address, receipt })
   } catch (ex) {
     console.error(ex)
     const { code, error, success } = parseError(ex)
@@ -119,7 +170,8 @@ router.post('/commit', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
     }
   }
   try {
-    const wallet = await req.contract.at(address)
+    // eslint-disable-next-line new-cap
+    const wallet = new req.contract(address)
     let tx
     if (req.majorVersion >= 7) {
       tx = await wallet.commit(hash, paramsHash, verificationHash)
@@ -139,16 +191,14 @@ router.post('/commit', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
 })
 
 router.post('/reveal', generalLimiter({ max: 240 }), walletAddressLimiter({ max: 240 }), async (req, res) => {
-  let { neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data, majorVersion, minorVersion } = req.body
-  majorVersion = majorVersion || req.majorVersion
-  minorVersion = majorVersion || req.minorVersion
+  let { neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data } = req.body
   if (!checkParams({ neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data }, res)) {
     return
   }
   if (config.debug || config.verbose) {
     console.log(`[/reveal] `, { neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
   }
-  if (!(majorVersion >= 6)) {
+  if (!(req.majorVersion >= 6)) {
     operationType = parseInt(operationType || -1)
     if (!(operationType > 0)) {
       return res.status(StatusCodes.BAD_REQUEST).json(`Bad operationType: ${operationType}`)
@@ -165,16 +215,17 @@ router.post('/reveal', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
   }
   // TODO parameter verification
   try {
-    const wallet = await req.contract.at(address)
+    // eslint-disable-next-line new-cap
+    const wallet = new req.contract(address)
     // console.log({ neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
     let tx = null
-    if (!(majorVersion >= 14)) {
+    if (!(req.majorVersion >= 14)) {
       tx = await wallet.reveal(neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data)
     } else {
       tx = await wallet.reveal([neighbors, index, eotp], [operationType, tokenType, contractAddress, tokenId, dest, amount, data])
     }
     const parsedTx = parseTx(tx)
-    console.log('/reveal', parsedTx)
+    console.log('/reveal', JSON.stringify(parsedTx, null, 2))
     return res.json(parsedTx)
   } catch (ex) {
     console.error(ex)
@@ -192,6 +243,7 @@ router.post('/retire', generalLimiter({ max: 6 }), walletAddressLimiter({ max: 6
   try {
     const wallet = await req.contract.at(address)
     const tx = await wallet.retire()
+    console.log('/retire', JSON.stringify(parseTx(tx), null, 2))
     return res.json(parseTx(tx))
   } catch (ex) {
     console.error(ex)

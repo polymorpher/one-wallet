@@ -1,5 +1,6 @@
-import { notification } from 'antd'
+import notification from 'antd/es/notification'
 import { isMobile } from './util'
+import clientConfig from './config'
 
 const show = ({ content, duration, icon, type, ...config }) => {
   const m = isMobile()
@@ -26,6 +27,13 @@ const message = {
   },
   warning: (content, duration, config) => {
     return show({ content, duration, type: 'warning', ...config })
+  },
+  debug: (content, duration, config) => {
+    if (!clientConfig.debug) {
+      return
+    }
+    console.log('[DEBUG]', content)
+    return show({ content, duration, type: 'info', ...config })
   }
 }
 

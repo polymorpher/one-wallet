@@ -38,7 +38,9 @@ module.exports = {
     dev: {
       // host: '127.0.0.1',
       // port: 7545,
-      // network_id: '*',
+      network_id: '*',
+      // host: process.env.GANACHE_RPC || '127.0.0.1',
+      // port: process.env.GANACHE_PORT || 7545,
       gas: config.gasLimit,
       gasPrice: config.gasPrice,
       provider: () => config.eth.ganache && BuildProvider(config.eth.ganache, true)

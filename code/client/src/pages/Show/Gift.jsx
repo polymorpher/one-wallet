@@ -1,15 +1,18 @@
 import { useSelector } from 'react-redux'
 import React, { useEffect, useState } from 'react'
-import { Button, Row, Space, Typography, Select, Image, Tooltip } from 'antd'
-import {
-  CloseOutlined,
-  CloseCircleOutlined,
-  PlusCircleOutlined, QuestionCircleOutlined,
-} from '@ant-design/icons'
+import Button from 'antd/es/button'
+import Row from 'antd/es/row'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
+import Select from 'antd/es/select'
+import Image from 'antd/es/image'
+import Tooltip from 'antd/es/tooltip'
+import CloseCircleOutlined from '@ant-design/icons/CloseCircleOutlined'
+import PlusCircleOutlined from '@ant-design/icons/PlusCircleOutlined'
+import QuestionCircleOutlined from '@ant-design/icons/QuestionCircleOutlined'
 import { Hint, InputBox, Label } from '../../components/Text'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
-import AnimatedSection from '../../components/AnimatedSection'
-import util, { generateOtpSeed, useWindowDimensions } from '../../util'
+import util, { autoWalletNameHint, generateOtpSeed, useWindowDimensions } from '../../util'
 import BN from 'bn.js'
 import ShowUtils from './show-util'
 import { SmartFlows } from '../../../../lib/api/flow'
@@ -27,6 +30,7 @@ import { handleAPIError } from '../../handler'
 import WalletCreateProgress from '../../components/WalletCreateProgress'
 import config from '../../config'
 import qrcode from 'qrcode'
+import ONENames from '../../../../lib/names'
 const { Title, Text, Link } = Typography
 
 const Share = ({ seed, redPacketAddress, address, network, isMobile, onClose, message, randomFactor }) => {
@@ -91,9 +95,10 @@ const Gift = ({
   prefilledClaimInterval // int, non-zero
 }) => {
   const { isMobile } = useWindowDimensions()
-  const price = useSelector(state => state.wallet.price)
-  const network = useSelector(state => state.wallet.network)
-  const wallets = useSelector(state => state.wallet.wallets)
+  const price = useSelector(state => state.global.price)
+  const network = useSelector(state => state.global.network)
+  const wallets = useSelector(state => state.wallet)
+  const balances = useSelector(state => state.balance || {})
   const wallet = wallets[address] || {}
   const [stage, setStage] = useState(-1)
   const doubleOtp = wallet.doubleOtp
@@ -104,7 +109,7 @@ const Gift = ({
   const [editingSetting, setEditingSetting] = useState(false)
   const [randomFactor, setRandomFactor] = useState(2)
   const [message, setMessage] = useState()
-  const tokenBalances = wallet.tokenBalances || {}
+  const { tokenBalances = {} } = balances[address]
 
   const [totalAmountInput, setTotalAmountInput] = useState(prefilledTotalAmount || 3) // ONEs, string
   const [claimLimitInput, setClaimLimitInput] = useState(prefilledClaimLimit || 1) // ONEs, string
@@ -254,8 +259,8 @@ const Gift = ({
       revealAPI: api.relayer.reveal,
       revealArgs: { ...args, data: hexData },
       ...handlers,
-      onRevealSuccess: (txId) => {
-        onRevealSuccess(txId)
+      onRevealSuccess: (txId, messages) => {
+        onRevealSuccess(txId, messages)
         setSection(sections.share)
       }
     })
@@ -401,7 +406,7 @@ const Gift = ({
           {redPacketAddress &&
             <>
               <TallRow>
-                <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={createRedPacket} action='confirm transfer assets' />
+                <OtpStack walletName={autoWalletNameHint(wallet)} doubleOtp={doubleOtp} otpState={otpState} onComplete={createRedPacket} action='confirm transfer assets' />
               </TallRow>
             </>}
           <Hint>
@@ -419,28 +424,3 @@ const Gift = ({
 }
 
 export default Gift
-
-export const GiftModule = ({
-  address,
-  show,
-  onClose, // optional
-  onSuccess, // optional
-  prefilledTotalAmount, // string, ONE
-  prefilledClaimLimit, // string, ONE
-  prefilledClaimInterval // int, non-zero
-}) => {
-  return (
-    <AnimatedSection
-      style={{ maxWidth: 720 }}
-      show={show} title={<Title level={2}>Send Gift</Title>} extra={[
-        <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-      ]}
-    >
-      <Gift
-        address={address}
-        prefilledTotalAmount={prefilledTotalAmount} prefilledClaimLimit={prefilledClaimLimit} prefilledClaimInterval={prefilledClaimInterval}
-        onSuccess={onSuccess}
-      />
-    </AnimatedSection>
-  )
-}

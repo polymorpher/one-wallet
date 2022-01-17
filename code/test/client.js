@@ -37,7 +37,7 @@ contract('ONEWallet', (accounts) => {
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
       lastResortAddress: ONEConstants.EmptyAddress,
-      dailyLimit: ONE_ETH,
+      spendingLimit: ONE_ETH,
       randomness: 16,
     })
     Logger.debug({
@@ -61,7 +61,7 @@ contract('ONEWallet', (accounts) => {
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
       lastResortAddress: ONEConstants.EmptyAddress,
-      dailyLimit: ONE_ETH,
+      spendingLimit: ONE_ETH,
       randomness: 16,
     })
     for (let i = 0; i < randomnessResults.length; i++) {
@@ -99,7 +99,7 @@ contract('ONEWallet', (accounts) => {
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
       lastResortAddress: ONEConstants.EmptyAddress,
-      dailyLimit: ONE_ETH,
+      spendingLimit: ONE_ETH,
       randomness: 16,
       doubleOtp: true,
     })
@@ -125,7 +125,7 @@ contract('ONEWallet', (accounts) => {
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
       lastResortAddress: ONEConstants.EmptyAddress,
-      dailyLimit: ONE_ETH,
+      spendingLimit: ONE_ETH,
       randomness: 16,
     })
     for (let i = 0; i < randomnessResults.length; i++) {
@@ -163,7 +163,7 @@ contract('ONEWallet', (accounts) => {
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
       lastResortAddress: ONEConstants.EmptyAddress,
-      dailyLimit: ONE_ETH,
+      spendingLimit: ONE_ETH,
       randomness: 16,
       hasher: ONEUtil.argon2
     })
@@ -188,7 +188,7 @@ contract('ONEWallet', (accounts) => {
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
       lastResortAddress: ONEConstants.EmptyAddress,
-      dailyLimit: ONE_ETH,
+      spendingLimit: ONE_ETH,
       randomness: 16,
       hasher: ONEUtil.argon2
     })
@@ -228,7 +228,7 @@ contract('ONEWallet', (accounts) => {
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
       lastResortAddress: ONEConstants.EmptyAddress,
-      dailyLimit: ONE_ETH,
+      spendingLimit: ONE_ETH,
       randomness,
       hasher,
       doubleOtp: true,

@@ -2,8 +2,15 @@
 pragma solidity ^0.8.4;
 
 library Enums {
+    // This list is extended in almost every version. Some of them are now redundant. We should simplify it some time.
     enum OperationType {
-        TRACK, UNTRACK, TRANSFER_TOKEN, OVERRIDE_TRACK, TRANSFER, SET_RECOVERY_ADDRESS, RECOVER,
+        TRACK,
+        UNTRACK,
+        TRANSFER_TOKEN,
+        OVERRIDE_TRACK,
+        TRANSFER,
+        SET_RECOVERY_ADDRESS,
+        RECOVER,
         DISPLACE, // reserved, not implemented yet. This is for replacing the root and set up new parameters (t0, lifespan)
         FORWARD, // This is for forwarding this contract to another contract and submitting all control to that control (daily limit would still be in effect)
         RECOVER_SELECTED_TOKENS,
@@ -19,7 +26,10 @@ library Enums {
         SIGN, // produce signature verifiable by eip-1271
         REVOKE, // revoke a signature
         CALL, // call arbitrary external contract function and optionally send funds to that function, or making multiple calls in one go
-        BATCH
+        BATCH, // execute multiple operations in a single auth
+        NOOP, // indicates no operation should be performed. This is useful to store pending ops
+        CHANGE_SPENDING_LIMIT, // adjust daily spend limit to a value between [0, 2s] where s is the current spending limit
+        JUMP_SPENDING_LIMIT // adjust daily spend limit to a value between [0, h] where h is the highest spending limit used so far
     }
     enum TokenType{
         ERC20, ERC721, ERC1155, NONE

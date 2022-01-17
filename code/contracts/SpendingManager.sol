@@ -5,12 +5,18 @@ pragma solidity ^0.8.4;
 library SpendingManager {
     event ExceedSpendingLimit(uint256 amount, uint256 limit, uint256 current, uint256 spendingInterval, address dest);
     event InsufficientFund(uint256 amount, uint256 balance, address dest);
+    event SpendingLimitChanged(uint256 newLimit);
+    event HighestSpendingLimitChanged(uint256 newLimit);
+    event SpendingLimitChangeFailed(uint256 newLimit, string reason);
+    event SpendingLimitJumped(uint256 newLimit);
 
     struct SpendingState {
-        uint256 spendingLimit; // maximum amount of wei allowed to be spent per interval
+        uint256 spendingLimit; // current maximum amount of wei allowed to be spent per interval
         uint256 spentAmount; // amount spent for the current time interval
         uint32 lastSpendingInterval; // last time interval when spending of ONE occurred (block.timestamp / spendingInterval)
         uint32 spendingInterval; // number of seconds per interval of spending, e.g. when this equals 86400, the spending limit represents a daily spending limit
+        uint32 lastLimitAdjustmentTime; // last time when spend limit was adjusted
+        uint256 highestSpendingLimit; // the highest spending limit the wallet ever got. Should be set to equal `spendingLimit` initially (by the client)
     }
 
     function getRemainingAllowance(SpendingState storage ss) view public returns (uint256) {
@@ -61,8 +67,29 @@ library SpendingManager {
         ss.spentAmount = ss.spentAmount + amount;
     }
 
-    function getState(SpendingState storage ss) external view returns (uint256, uint256, uint32, uint32){
-        return (ss.spendingLimit, ss.spentAmount, ss.lastSpendingInterval, ss.spendingInterval);
+    function changeSpendLimit(SpendingState storage ss, uint256 newLimit) external {
+        if (ss.lastLimitAdjustmentTime + ss.spendingInterval > block.timestamp && newLimit > ss.spendingLimit) {
+            emit SpendingLimitChangeFailed(newLimit, "Too early");
+            return;
+        }
+        if (newLimit > (ss.spendingLimit) * 2 + (1 ether)) {
+            emit SpendingLimitChangeFailed(newLimit, "Too much");
+            return;
+        }
+        ss.lastLimitAdjustmentTime = uint32(block.timestamp);
+        ss.spendingLimit = newLimit;
+        emit SpendingLimitChanged(newLimit);
+        if (newLimit > ss.highestSpendingLimit) {
+            ss.highestSpendingLimit = newLimit;
+            emit HighestSpendingLimitChanged(newLimit);
+        }
     }
 
+    function jumpSpendLimit(SpendingState storage ss, uint256 newLimit) external {
+        if (newLimit > ss.highestSpendingLimit) {
+            emit SpendingLimitChangeFailed(newLimit, "Too high");
+            return;
+        }
+        ss.spendingLimit = newLimit;
+    }
 }

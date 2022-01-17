@@ -1,6 +1,6 @@
 import baseConfig from '../../lib/config/common'
-import { merge } from 'lodash'
-const config = merge({}, baseConfig, {
+import mergeAll from 'lodash/fp/mergeAll'
+const config = mergeAll({}, baseConfig, {
   priceRefreshInterval: 60 * 1000,
   defaults: {
     sentryDsn: process.env.SENTRY_DSN
@@ -37,7 +37,8 @@ const config = merge({}, baseConfig, {
       'RO'
     ]
 
-  }
+  },
+  scanDelay: 250,
 })
 
 export default config

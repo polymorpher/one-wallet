@@ -1,6 +1,10 @@
 import React, { useState } from 'react'
-import util, { useWindowDimensions } from '../../util'
-import { Button, Col, Row, Space, Typography } from 'antd'
+import util, { autoWalletNameHint, useWindowDimensions } from '../../util'
+import Button from 'antd/es/button'
+import Col from 'antd/es/col'
+import Row from 'antd/es/row'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
 import message from '../../message'
 import { api } from '../../../../lib/api'
 import { InputBox } from '../../components/Text'
@@ -14,18 +18,19 @@ import ONEUtil from '../../../../lib/util'
 import { SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
+import ONENames from '../../../../lib/names'
 const { Title, Text } = Typography
 
 const DAVINCI_URL_PATTERN = /\/\/davinci.gallery\/view\/(0x[a-zA-Z0-9]+)/
 const DAVINCI_CONTRACT = '0x1d89bc60cd482ddfae8208e6a14d6c185c2095a1'
 const BuyDaVinci = ({ address, onSuccess, onClose }) => {
-  const network = useSelector(state => state.wallet.network)
-  const wallets = useSelector(state => state.wallet.wallets)
+  const network = useSelector(state => state.global.network)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const { isMobile } = useWindowDimensions()
   const [url, setUrl] = useState('')
   const [pendingToken, setPendingToken] = useState(null)
-  const price = useSelector(state => state.wallet.price)
+  const price = useSelector(state => state.global.price)
   const { formatted, fiatFormatted } = util.computeBalance(pendingToken?.price?.toString() || 0, price)
 
   const { state: otpState } = useOtpState()
@@ -166,7 +171,7 @@ const BuyDaVinci = ({ address, onSuccess, onClose }) => {
               </Space>
             </Col>
           </Row>
-          <OtpStack shouldAutoFocus walletName={wallet.name} doubleOtp={wallet.doubleOtp} otpState={otpState} onComplete={doBuy} action='buy now' />
+          <OtpStack shouldAutoFocus walletName={autoWalletNameHint(wallet)} doubleOtp={wallet.doubleOtp} otpState={otpState} onComplete={doBuy} action='buy now' />
           <TallRow justify='space-between' style={{ marginTop: 24 }}>
             <Button size='large' type='text' onClick={reset} danger>Cancel</Button>
           </TallRow>

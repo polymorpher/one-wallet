@@ -1,4 +1,9 @@
-import { Button, Space, Typography, Row, Spin, Tooltip } from 'antd'
+import Button from 'antd/es/button'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
+import Row from 'antd/es/row'
+import Spin from 'antd/es/spin'
+import Tooltip from 'antd/es/tooltip'
 import WalletAddress from './WalletAddress'
 import util, { useWindowDimensions } from '../util'
 import React, { useEffect, useState } from 'react'
@@ -7,21 +12,23 @@ import { useHistory } from 'react-router'
 import api from '../api'
 import { useDispatch, useSelector } from 'react-redux'
 import { walletActions } from '../state/modules/wallet'
-import { QrcodeOutlined, ScanOutlined, WarningTwoTone } from '@ant-design/icons'
+import QrcodeOutlined from '@ant-design/icons/QrcodeOutlined'
+import ScanOutlined from '@ant-design/icons/ScanOutlined'
+import WarningTwoTone from '@ant-design/icons/WarningTwoTone'
 import { Warning } from './Text'
 import BN from 'bn.js'
 const { Title, Text } = Typography
 const WalletTitle = ({ address, onQrCodeClick, onScanClick, noWarning }) => {
   const dispatch = useDispatch()
   const history = useHistory()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const { isMobile } = useWindowDimensions()
   const [domain, setDomain] = useState(wallet.domain)
   const [doubleLinked, setDoubleLinked] = useState(null)
   const hasDomainName = domain && domain !== ''
-  const balances = useSelector(state => state.wallet.balances)
-  const balance = new BN(balances[address] || 0)
+  const balances = useSelector(state => state.balance || {})
+  const balance = new BN(balances[address]?.balance || 0)
   useEffect(() => {
     const f = async () => {
       setDoubleLinked(null)

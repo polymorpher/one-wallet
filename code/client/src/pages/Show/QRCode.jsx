@@ -2,7 +2,11 @@ import qrcode from 'qrcode'
 import React, { useEffect, useState, useRef } from 'react'
 import config from '../../config'
 import html2canvas from 'html2canvas'
-import { Button, Image, Row, Space, Typography } from 'antd'
+import Button from 'antd/es/button'
+import Image from 'antd/es/image'
+import Row from 'antd/es/row'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
 import util from '../../util'
 import { walletActions } from '../../state/modules/wallet'
 import { useDispatch } from 'react-redux'
@@ -45,6 +49,7 @@ const QRCode = ({ address, name }) => {
       <Row style={{ width: '100%', marginTop: 16 }} justify='center'>
         <Space direction='vertical' style={{ textAlign: 'center' }}>
           <Text>Others can scan your QR code to send you assets</Text>
+          <Text>(This QR code cannot be used to restore your wallet)</Text>
           <div ref={ref} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <Image
               src={qrCodeData}

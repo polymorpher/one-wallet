@@ -1,4 +1,6 @@
-import { Button, Space, Typography } from 'antd'
+import Button from 'antd/es/button'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
 import message from '../message'
 import BN from 'bn.js'
 import AnimatedSection from '../components/AnimatedSection'
@@ -15,8 +17,8 @@ import { WalletSelector } from './Common'
 const { Title, Paragraph } = Typography
 const RequestPayment = ({ caller, callback, amount, dest, from }) => {
   dest = util.safeNormalizedAddress(dest)
-  const balances = useSelector(state => state.wallet.balances)
-  const price = useSelector(state => state.wallet.price)
+  const balances = useSelector(state => state.balance || {})
+  const price = useSelector(state => state.global.price)
   const [selectedAddress, setSelectedAddress] = useState({})
   const { formatted: amountFormatted, fiatFormatted: amountFiatFormatted } = util.computeBalance(amount, price)
 
@@ -74,7 +76,7 @@ const RequestPayment = ({ caller, callback, amount, dest, from }) => {
       </AnimatedSection>
       {showSend &&
         <Send
-          address={selectedAddress.value} show={showSend} onClose={onSendClose} onSuccess={onSuccess}
+          address={selectedAddress.value} onClose={onSendClose} onSuccess={onSuccess}
           prefillAmount={amount && amountFormatted} prefillDest={dest} overrideToken={HarmonyONE}
         />}
     </>

@@ -4,9 +4,30 @@ pragma solidity ^0.8.4;
 import "./Enums.sol";
 import "./IONEWallet.sol";
 import "./CommitManager.sol";
+import "./Recovery.sol";
 
 library Reveal {
     using CommitManager for CommitManager.CommitState;
+
+    function isDataOnlyOperation(Enums.OperationType op) pure internal returns (bool){
+        return op == Enums.OperationType.BACKLINK_ADD ||
+        op == Enums.OperationType.BACKLINK_DELETE ||
+        op == Enums.OperationType.BACKLINK_OVERRIDE ||
+        op == Enums.OperationType.DISPLACE ||
+        op == Enums.OperationType.RECOVER;
+        // Data does not contain parameters. It is used for privacy reasons
+    }
+
+    function isDestOnlyOperation(Enums.OperationType op) pure internal returns (bool){
+        return op == Enums.OperationType.SET_RECOVERY_ADDRESS ||
+        op == Enums.OperationType.FORWARD;
+    }
+
+    function isAmountOnlyOperation(Enums.OperationType op) pure internal returns (bool){
+        return op == Enums.OperationType.CHANGE_SPENDING_LIMIT ||
+        op == Enums.OperationType.JUMP_SPENDING_LIMIT;
+    }
+
     /// Provides commitHash, paramsHash, and verificationHash given the parameters
     function getRevealHash(IONEWallet.AuthParams memory auth, IONEWallet.OperationParams memory op) pure public returns (bytes32, bytes32) {
         bytes32 hash = keccak256(bytes.concat(auth.neighbors[0], bytes32(bytes4(auth.indexWithNonce)), auth.eotp));
@@ -14,16 +35,12 @@ library Reveal {
         // Perhaps a better way to do this is simply using the general paramsHash (in else branch) to handle all cases. We are holding off from doing that because that would be a drastic change and it would result in a lot of work for backward compatibility reasons.
         if (op.operationType == Enums.OperationType.TRANSFER) {
             paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(op.dest))), bytes32(op.amount)));
-        } else if (op.operationType == Enums.OperationType.RECOVER) {
+        } else if (isAmountOnlyOperation(op.operationType)) {
+            paramsHash = keccak256(bytes.concat(bytes32(op.amount)));
+        } else if (isDataOnlyOperation(op.operationType)) {
             paramsHash = keccak256(op.data);
-        } else if (op.operationType == Enums.OperationType.SET_RECOVERY_ADDRESS) {
+        } else if (isDestOnlyOperation(op.operationType)) {
             paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(op.dest)))));
-        } else if (op.operationType == Enums.OperationType.FORWARD) {
-            paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(op.dest)))));
-        } else if (op.operationType == Enums.OperationType.BACKLINK_ADD || op.operationType == Enums.OperationType.BACKLINK_DELETE || op.operationType == Enums.OperationType.BACKLINK_OVERRIDE) {
-            paramsHash = keccak256(op.data);
-        } else if (op.operationType == Enums.OperationType.DISPLACE) {
-            paramsHash = keccak256(op.data);
         } else if (op.operationType == Enums.OperationType.RECOVER_SELECTED_TOKENS) {
             paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(op.dest))), op.data));
         } else {
@@ -107,24 +124,27 @@ library Reveal {
 
 
     /// This function verifies that the first valid entry with respect to the given `eotp` in `commitState.commitLocker[hash]` matches the provided `paramsHash` and `verificationHash`. An entry is valid with respect to `eotp` iff `h3(entry.paramsHash . eotp)` equals `entry.verificationHash`. It returns the index of first valid entry in the array of commits, with respect to the commit hash
-    function verifyReveal(IONEWallet.CoreSetting storage core, CommitManager.CommitState storage commitState, bytes32 hash, uint32 indexWithNonce, bytes32 paramsHash, bytes32 eotp, Enums.OperationType operationType) view public returns (uint32)
+    function verifyReveal(IONEWallet.CoreSetting storage core, CommitManager.CommitState storage commitState, bytes32 hash, uint32 indexWithNonce, bytes32 paramsHash, bytes32 eotp,
+        bool skipIndexVerification, bool skipNonceVerification) view public returns (uint32)
     {
-        uint32 index = indexWithNonce / core.maxOperationsPerInterval;
-        uint8 nonce = uint8(indexWithNonce % core.maxOperationsPerInterval);
         CommitManager.Commit[] storage cc = commitState.commitLocker[hash];
         require(cc.length > 0, "No commit found");
         for (uint32 i = 0; i < cc.length; i++) {
             CommitManager.Commit storage c = cc[i];
-            bytes32 expectedVerificationHash = keccak256(bytes.concat(c.paramsHash, eotp));
-            if (c.verificationHash != expectedVerificationHash) {
+            if (c.verificationHash != keccak256(bytes.concat(c.paramsHash, eotp))) {
                 // Invalid entry. Ignore
                 continue;
             }
             require(c.paramsHash == paramsHash, "Param mismatch");
-            if (operationType != Enums.OperationType.RECOVER) {
-                uint32 counter = c.timestamp / core.interval;
+            uint32 counter = 0;
+            if (!skipIndexVerification) {
+                uint32 index = indexWithNonce / core.maxOperationsPerInterval;
+                counter = c.timestamp / core.interval;
                 uint32 t = counter - core.t0;
                 require(t == index || t - 1 == index, "Time mismatch");
+            }
+            if (!skipNonceVerification) {
+                uint8 nonce = uint8(indexWithNonce % core.maxOperationsPerInterval);
                 uint8 expectedNonce = commitState.nonces[counter];
                 require(nonce >= expectedNonce, "Nonce too low");
             }
@@ -136,13 +156,13 @@ library Reveal {
         revert("No commit");
     }
 
-    function completeReveal(IONEWallet.CoreSetting storage core, CommitManager.CommitState storage commitState, bytes32 commitHash, uint32 commitIndex, Enums.OperationType operationType) public {
+    function completeReveal(IONEWallet.CoreSetting storage core, CommitManager.CommitState storage commitState, bytes32 commitHash, uint32 commitIndex, bool skipNonceVerification) public {
         CommitManager.Commit[] storage cc = commitState.commitLocker[commitHash];
         assert(cc.length > 0);
         assert(cc.length > commitIndex);
         CommitManager.Commit storage c = cc[commitIndex];
         assert(c.timestamp > 0);
-        if (operationType != Enums.OperationType.RECOVER) {
+        if (!skipNonceVerification) {
             uint32 absoluteIndex = uint32(c.timestamp) / core.interval;
             commitState.incrementNonce(absoluteIndex);
             commitState.cleanupNonces(core.interval);
@@ -150,8 +170,50 @@ library Reveal {
         c.completed = true;
     }
 
+    function authenticate(
+        IONEWallet.CoreSetting storage core,
+        IONEWallet.CoreSetting[] storage oldCores,
+        IONEWallet.CoreSetting[] storage innerCores,
+        address payable recoveryAddress,
+        CommitManager.CommitState storage commitState,
+        IONEWallet.AuthParams memory auth,
+        IONEWallet.OperationParams memory op
+    ) public {
+        // first, we check whether the operation requires high-security
+        if (op.operationType == Enums.OperationType.FORWARD) {
+            if (!Recovery.isRecoveryAddressSet(recoveryAddress)) {
+                // if innerCores are empty, this operation (in this case) is doomed to fail. Client should check for innerCores first before allowing the user to do this.
+                authenticateCores(innerCores[0], innerCores, commitState, auth, op, false, true);
+            } else {
+                authenticateCores(core, oldCores, commitState, auth, op, false, false);
+            }
+        } else if (op.operationType == Enums.OperationType.DISPLACE) {
+            if (innerCores.length == 0) {
+                // authorize this operation using low security setting (only one core). After this operation is done, innerCores will no longer be empty
+                authenticateCores(core, oldCores, commitState, auth, op, false, false);
+            } else {
+                authenticateCores(innerCores[0], innerCores, commitState, auth, op, false, true);
+            }
+        } else if (op.operationType == Enums.OperationType.RECOVER) {
+            authenticateCores(core, oldCores, commitState, auth, op, true, true);
+        } else if (op.operationType == Enums.OperationType.JUMP_SPENDING_LIMIT) {
+            // if innerCores are empty, this operation (in this case) is doomed to fail. This is intended. Client should warn the user not to lower the limit too much if the wallet has no innerCores (use Extend to set first innerCores). Client should also advise the user the use Recovery feature to get their assets out, if they are stuck with very low limit and do not want to wait to double them each spendInterval.
+            authenticateCores(innerCores[0], innerCores, commitState, auth, op, false, true);
+        } else {
+            authenticateCores(core, oldCores, commitState, auth, op, false, false);
+        }
+    }
+
     /// Validate `auth` is correct based on settings in `core` (plus `oldCores`, for reocvery operations) and the given operation `op`. Revert if `auth` is not correct. Modify wallet's commit state based on `auth` (increment nonce, mark commit as completed, etc.) if `auth` is correct.
-    function authenticate(IONEWallet.CoreSetting storage core, IONEWallet.CoreSetting[] storage oldCores, CommitManager.CommitState storage commitState, IONEWallet.AuthParams memory auth, IONEWallet.OperationParams memory op) public {
+    function authenticateCores(
+        IONEWallet.CoreSetting storage core,
+        IONEWallet.CoreSetting[] storage oldCores,
+        CommitManager.CommitState storage commitState,
+        IONEWallet.AuthParams memory auth,
+        IONEWallet.OperationParams memory op,
+        bool skipIndexVerification,
+        bool skipNonceVerification
+    ) public {
         uint32 coreIndex = 0;
         if (op.operationType == Enums.OperationType.RECOVER) {
             coreIndex = isCorrectRecoveryProof(core, oldCores, auth);
@@ -163,11 +225,12 @@ library Reveal {
             // - the last slot's leaf is used in recovery, but the same leaf is not used for an operation at the last slot, instead its neighbor's leaf is used
             // - doesn't help much with security anyway, since the data is already expoed even if the transaction is reverted
             // isNonRecoveryLeaf(core, oldCores, auth.indexWithNonce, coreIndex);
-            // TODO: use a separate hash to authenticate recovery operations, instead of relying on last leaf of the tree
+            // TODO: use a separate hash to authenticate recovery operations, instead of relying on last leaf of the tree.
+            // v15 note: On a second thought, using leaf is not a bad idea since it makes implementation much simpler and more unified (making everything go through `authenticate`). But instead of last leaf, the first leaf seems a better choice. I added comments under `function _recover()` in `ONEWallet.sol`
         }
         IONEWallet.CoreSetting storage coreUsed = coreIndex == 0 ? core : oldCores[coreIndex - 1];
         (bytes32 commitHash, bytes32 paramsHash) = getRevealHash(auth, op);
-        uint32 commitIndex = verifyReveal(coreUsed, commitState, commitHash, auth.indexWithNonce, paramsHash, auth.eotp, op.operationType);
-        completeReveal(coreUsed, commitState, commitHash, commitIndex, op.operationType);
+        uint32 commitIndex = verifyReveal(coreUsed, commitState, commitHash, auth.indexWithNonce, paramsHash, auth.eotp, skipIndexVerification, skipNonceVerification);
+        completeReveal(coreUsed, commitState, commitHash, commitIndex, skipNonceVerification);
     }
 }

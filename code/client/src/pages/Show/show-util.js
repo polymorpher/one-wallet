@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/browser'
-import { Typography } from 'antd'
+import Typography from 'antd/es/typography'
 import message from '../../message'
 import config from '../../config'
 import util from '../../util'
@@ -7,6 +7,8 @@ import React from 'react'
 import { handleAddressError } from '../../handler'
 import BN from 'bn.js'
 import { api } from '../../../../lib/api'
+import { walletActions } from '../../state/modules/wallet'
+import Paths from '../../constants/paths'
 const { Text, Link } = Typography
 
 export default {
@@ -53,13 +55,21 @@ export default {
       message.error(`Failed to finalize transaction. Trying ${numAttemptsRemaining} more time`)
     }
 
-    const onRevealSuccess = (txId) => {
+    const onRevealSuccess = (txId, messages = []) => {
       setStage(3)
+      if (messages.length > 0) {
+        messages.forEach(m => message[m.type](<Text>{m.message}</Text>))
+        if (messages.filter(m => m.abort).length > 0) {
+          setTimeout(() => restart(), 1500)
+          return
+        }
+      }
+
       if (config.networks[network].explorer) {
         const link = config.networks[network].explorer.replace(/{{txId}}/, txId)
-        message.success(<Text>Done! View transaction <Link href={link} target='_blank' rel='noreferrer'>{util.ellipsisAddress(txId)}</Link></Text>, 10)
+        message[messages.length ? 'info' : 'success'](<Text>Done! View transaction <Link href={link} target='_blank' rel='noreferrer'>{util.ellipsisAddress(txId)}</Link></Text>, 10)
       } else {
-        message.success(<Text>Done! Copy transaction id: <Text copyable={{ text: txId }}>{util.ellipsisAddress(txId)} </Text></Text>, 10)
+        message[messages.length ? 'info' : 'success'](<Text>Done! Copy transaction id: <Text copyable={{ text: txId }}>{util.ellipsisAddress(txId)} </Text></Text>, 10)
       }
       setTimeout(() => restart(), 3000)
       onSuccess && onSuccess(txId)
@@ -98,7 +108,7 @@ export default {
       }
 
       if (checkOtp && (invalidOtp || invalidOtp2)) {
-        message.error('Google Authenticator code is not valid', 10)
+        message.error('Authenticator code is not valid', 10)
         resetOtp && resetOtp()
         return
       }
@@ -119,7 +129,10 @@ export default {
       resetWorker && resetWorker()
     }
 
-    return { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed, restart }
+    const prepareProof = () => setStage(0)
+    const beforeCommit = () => setStage(1)
+    const afterCommit = () => setStage(2)
+    return { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed, restart, prepareProof, beforeCommit, afterCommit }
   }
 }
 
@@ -132,4 +145,9 @@ export const doRetire = async ({ address, network, error }) => {
     console.error(ex)
     message.error(error || `Failed to transfer assets to recovery address. Error: ${ex.toString()}`)
   }
+}
+
+export const retryUpgrade = ({ dispatch, history, address }) => {
+  dispatch(walletActions.userSkipVersion({ address, version: null }))
+  history.push(Paths.showAddress(address, 'upgrade'))
 }

@@ -1,6 +1,14 @@
 import React, { useState } from 'react'
-import { Button, Row, Space, Typography, Input, Checkbox, Tooltip, Slider } from 'antd'
-import { CheckCircleOutlined, CloseOutlined, LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+import Row from 'antd/es/row'
+import Slider from 'antd/es/slider'
+import Tooltip from 'antd/es/tooltip'
+import Input from 'antd/es/input'
+import Checkbox from 'antd/es/checkbox'
+import Button from 'antd/es/button'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
+import CloseOutlined from '@ant-design/icons/CloseOutlined'
+import QuestionCircleOutlined from '@ant-design/icons/QuestionCircleOutlined'
 import { Hint, Label, Warning } from '../../components/Text'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
@@ -15,12 +23,13 @@ import ONEConstants from '../../../../lib/constants'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
 import humanizeDuration from 'humanize-duration'
+import ONENames from '../../../../lib/names'
+import { autoWalletNameHint } from '../../util'
 const { Title } = Typography
 const { TextArea } = Input
 
 const Sign = ({
   address,
-  show,
   onClose, // optional
   onSuccess, // optional
   prefillMessageInput, // optional string, the message itself
@@ -29,9 +38,9 @@ const Sign = ({
   shouldAutoFocus,
   headless,
 }) => {
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
 
   const doubleOtp = wallet.doubleOtp
   const { state: otpState } = useOtpState()
@@ -96,8 +105,8 @@ const Sign = ({
       afterCommit: () => setStage(2),
       revealAPI: api.relayer.reveal,
       revealArgs,
-      onRevealSuccess: (txId) => {
-        onRevealSuccess(txId)
+      onRevealSuccess: (txId, messages) => {
+        onRevealSuccess(txId, messages)
         onSuccess && onSuccess(txId, { hash, signature })
       },
       ...handlers
@@ -106,8 +115,7 @@ const Sign = ({
   if (!(wallet.majorVersion > 10)) {
     return (
       <AnimatedSection
-        style={{ maxWidth: 720 }}
-        show={show} title={<Title level={2}>Sign Message</Title>} extra={[
+        style={{ maxWidth: 720 }} title={<Title level={2}>Sign Message</Title>} extra={[
           <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
         ]}
       >
@@ -150,7 +158,7 @@ const Sign = ({
             />
             <Hint>{humanizeDuration(duration, { largest: 2, round: true })}</Hint>
           </Space>}
-        <OtpStack shouldAutoFocus={shouldAutoFocus} wideLabel walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={doSign} action='confirm' />
+        <OtpStack shouldAutoFocus={shouldAutoFocus} wideLabel walletName={autoWalletNameHint(wallet)} doubleOtp={doubleOtp} otpState={otpState} onComplete={doSign} action='confirm' />
       </Space>
       <Row justify='start' style={{ marginTop: 24 }}>
         <Button size='large' type='text' onClick={onClose} danger>Cancel</Button>
@@ -164,7 +172,7 @@ const Sign = ({
   return (
     <AnimatedSection
       style={{ maxWidth: 720 }}
-      show={show} title={<Title level={2}>Sign Message</Title>} extra={[
+      title={<Title level={2}>Sign Message</Title>} extra={[
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
       ]}
     >

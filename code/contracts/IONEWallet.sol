@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "./Enums.sol";
+import "./SpendingManager.sol";
 
 interface IONEWallet {
     struct CoreSetting {
@@ -30,6 +31,16 @@ interface IONEWallet {
         bytes data;
     }
 
+    struct InitParams {
+        CoreSetting core; // the most recent core (root, time, etc.) to validate EOTPs against, for normal operations of the wallet
+        SpendingManager.SpendingState spendingState;
+        address payable recoveryAddress; // an address where funds should go to, when the user triggers recovery. The `recoveryAddress` may send 1.0 ONE to the 1wallet address to trigger auto-recovery, provided that the wallet has been inactive (that no operation has been performed by the user) for 14 days. Merely receiving funds does not make an inactive wallet become active.
+        IONEWallet[] backlinkAddresses;
+        CoreSetting[] oldCores; // for cores used previously to validate EOTPs. They are inserted by "displaceCore" method. In this method, a new core is assigned to `core`, and the old core is inserted here in `oldCores`. Each core in `oldCore` provides the same level of authorization compared to the current core. Essentially, each oldCore can be considered as authorizing a new authenticator account (where it could be the same compared to an old authenticator account, and the differences in root hash only arises from differences in start time and duration of the OTP Merkle Tree).
+        CoreSetting[] innerCores; // for validating an EOTP constructed from N-consecutive OTPs against recovery roots. Since there are N possible offsets, for N consecutive OTPs, we need N roots as well. Therefore, the interval of each innerCore is N times the interval of core or oldCores (assuming they have the same interval, which is 30 seconds by default)
+        bytes[] identificationKeys; // 64 bytes each. ECDSA secp256k1 uncompressed public key of the 32-byte seed (as private key) with leading byte (0x04) removed; Since identificationKeys can be computed instantly as soon as we have the seed, we know the wallet address instantly and we can store the full address in the Google Authenticator entry. Contracts can also use identificationKeys[0] to verify the integrity of the code on the contract, therefore identifying whether a contract is legit ONEWallet or not. In the future we may allow some operations authorized by signatures produced from the seed when OTP becomes no longer available, such as renewing the wallet after the wallet is already expired.
+    }
+
     event TransferError(address dest, bytes error);
     event LastResortAddressNotSet();
     event RecoveryAddressUpdated(address dest);
@@ -39,15 +50,20 @@ interface IONEWallet {
     event AutoRecoveryTriggered(address from);
     event AutoRecoveryTriggeredPrematurely(address from, uint256 requiredTime);
     event RecoveryFailure();
+    event RecoveryTriggered();
+    event Retired();
+    event ForwardedBalance(bool success);
     event ForwardAddressUpdated(address dest);
     event ForwardAddressAlreadySet(address dest);
     event ForwardAddressInvalid(address dest);
-    event BackLinkUpdated(address dest, address backlink);
-    event BackLinkUpdateError(address dest, address backlink, string error);
     event ExternalCallCompleted(address contractAddress, uint256 amount, bytes data, bytes ret);
     event ExternalCallFailed(address contractAddress, uint256 amount, bytes data, bytes ret);
-    event CoreDisplaced(CoreSetting oldCore, CoreSetting newCore);
-    event CoreDisplacementFailed(CoreSetting newCore, string reason);
+
+
+    function identificationKey() external view returns (bytes memory);
+    function getIdentificationKeys() external view returns (bytes[] memory);
+
+    function initialize(InitParams memory initParams) external;
 
     function getForwardAddress() external view returns (address payable);
 
@@ -58,6 +74,8 @@ interface IONEWallet {
 
     function getOldInfos() external view returns (CoreSetting[] memory);
 
+    function getInnerCores() external view returns (CoreSetting[] memory);
+
     // returns the first root assigned to this contract
     function getRootKey() external view returns (bytes32);
 
@@ -66,7 +84,10 @@ interface IONEWallet {
     // DEPRECATED
     function getCurrentSpending() external view returns (uint256, uint256);
 
+    // DEPRECATED
     function getCurrentSpendingState() external view returns (uint256, uint256, uint32, uint32);
+
+    function getSpendingState() external view returns (SpendingManager.SpendingState memory);
 
     function getNonce() external view returns (uint8);
 

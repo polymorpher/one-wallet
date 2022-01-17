@@ -10,6 +10,9 @@ const STANDARD_DECIMAL = 18
 const PERMIT_DEPRECATED_METHOD = process.env.PERMIT_DEPRECATED_METHOD
 const uts46 = require('idna-uts46')
 const abi = require('web3-eth-abi')
+const web3utils = require('web3-utils')
+const elliptic = require('elliptic')
+const range = require('lodash/fp/range')
 
 const utils = {
   hexView: (bytes) => {
@@ -21,6 +24,22 @@ const utils = {
   },
 
   sha256,
+
+  // input bytes are divided into units of `unitSize`, each consecutive `window` number of units will be hashed and provided in the output
+  // e.g. for unit size = 2, window size = 3, the input [a1, a2, a3, a4, a5, a6, a7, a8] where each a represents a byte, will produce output
+  // [sha256(a1 . a2 . a3 . a4 . a5 . a6), sha256(a3 . a4 . a5 . a6 . a7. a8)]
+  sha256Interlaced: (input, { progressObserver, unitSize = 4, window = 6 } = {}) => {
+    const n = input.length / unitSize - window + 1
+    const output = new Uint8Array(n * 32)
+    for (let i = 0; i < n; i++) {
+      const r = sha256(input.subarray(i * unitSize, i * unitSize + window * unitSize))
+      output.set(r, i * 32)
+      if (progressObserver) {
+        progressObserver(i, n)
+      }
+    }
+    return output
+  },
 
   // batched sha256
   sha256b: async (input, { progressObserver, batchSize = 32 } = {}) => {
@@ -57,6 +76,11 @@ const utils = {
 
   // assume Buffer is poly-filled or loaded from https://github.com/feross/buffer
   // accepts string as well
+  /**
+   *
+   * @param {string | Buffer} bytes
+   * @returns {Uint8Array}
+   */
   keccak: (bytes) => {
     const k = createKeccakHash('keccak256')
     // assume Buffer is poly-filled or loaded from https://github.com/feross/buffer
@@ -92,15 +116,31 @@ const utils = {
   processOtpSeed: (seed) => {
     if (seed.constructor.name !== 'Uint8Array') {
       if (typeof seed !== 'string') {
-        throw new Error('otpSeed must be either string (Base32 encoded) or Uint8Array')
+        throw new Error('otpSeed must be either string (Base32 encoded without padding) or Uint8Array')
       }
       const bn = base32.decode.asBytes(seed)
       seed = new Uint8Array(bn)
     }
-    seed = seed.slice(0, 20)
+    seed = new Uint8Array(seed.slice(0, 32))
     return seed
   },
-
+  base32Decode: (str, asStr) => {
+    const decoded = base32.decode(str)
+    if (!asStr) {
+      return utils.stringToBytes(decoded)
+    }
+    return decoded
+  },
+  base32Encode: (otpSeed) => {
+    const encoded = base32.encode(otpSeed)
+    let len
+    for (len = encoded.length - 1; len >= 0; len--) {
+      if (encoded[len] !== '=') {
+        break
+      }
+    }
+    return encoded.substr(0, len + 1)
+  },
   genOTP: ({ seed, interval = 30000, counter = Math.floor(Date.now() / interval), n = 1, progressObserver }) => {
     const codes = new Uint8Array(n * 4)
     const v = new DataView(codes.buffer)
@@ -126,6 +166,12 @@ const utils = {
       }
     }
     return codes
+  },
+
+  genOTPStr: ({ seed, interval = 30000, counter = Math.floor(Date.now() / interval), n = 1 }) => {
+    const otps = utils.genOTP({ seed, interval, counter, n })
+    const nums = new Array(6).fill(0).map((a, i) => new Uint8Array(otps.slice(i * 4, (i + 1) * 4))).map(utils.decodeOtp)
+    return nums.map(i => i.toString().padStart(6, '0'))
   },
 
   encodeNumericalOtp: (otp) => {
@@ -278,6 +324,106 @@ const utils = {
       r.push({ name: params[i], value: decoded[i] })
     }
     return r
-  }
+  },
+
+  // seed: Uint8Array[32]
+  getIdentificationKey: (seed, str) => {
+    // eslint-disable-next-line new-cap
+    const ec = new elliptic.ec('secp256k1')
+    const key = ec.keyFromPrivate(seed)
+    try {
+      const publicKey = new Uint8Array(key.getPublic().encode().slice(1))
+      if (str) {
+        return utils.hexString(publicKey)
+      }
+      return publicKey
+    } catch (ex) {
+      console.error(ex)
+      return null
+    }
+  },
+
+  // uint256 spendingLimit; // current maximum amount of wei allowed to be spent per interval
+  // uint256 spentAmount; // amount spent for the current time interval
+  // uint32 lastSpendingInterval; // last time interval when spending of ONE occurred (block.timestamp / spendingInterval)
+  // uint32 spendingInterval; // number of seconds per interval of spending, e.g. when this equals 86400, the spending limit represents a daily spending limit
+  // uint32 lastLimitAdjustmentTime; // last time when spend limit was adjusted
+  // uint256 highestSpendingLimit; // the highest spending limit the wallet ever got. Should be set to equal `spendingLimit` initially (by the client)
+
+  getDefaultSpendingState: (limit, interval) => {
+    return {
+      spendingLimit: new BN(limit).toString(),
+      spentAmount: 0,
+      lastSpendingInterval: 0,
+      spendingInterval: interval,
+      lastLimitAdjustmentTime: 0,
+      highestSpendingLimit: new BN(limit).toString(),
+    }
+  },
+
+  predictAddress: ({ seed, identificationKey, deployerAddress, code }) => {
+    // console.log({ seed, identificationKey, deployerAddress, code })
+    const bytes = new Uint8Array(1 + 20 + 32 + 32) // bytes.concat(bytes1(0xff), bytes20(address(this)), bytes32(salt), keccak256(code));
+    if (!identificationKey) {
+      identificationKey = utils.getIdentificationKey(seed, true)
+      if (!identificationKey) {
+        return null
+      }
+    }
+    bytes.set(new Uint8Array([255]))
+    bytes.set(utils.hexStringToBytes(deployerAddress), 1)
+    bytes.set(utils.keccak(utils.hexStringToBytes(identificationKey)), 21)
+    bytes.set(utils.keccak(code), 53)
+    const hash = utils.keccak(bytes)
+    return web3utils.toChecksumAddress(utils.hexString(hash.slice(12)))
+  },
+
+  makeInnerCores: ({ innerTrees, effectiveTime, duration, interval = 30000, slotSize = 1 }) => {
+    const innerCores = []
+    for (let innerTree of innerTrees) {
+      const { root: innerRoot, layers: innerLayers } = innerTree
+      const innerInterval = interval * 6
+      const innerLifespan = Math.floor(duration / innerInterval)
+      const innerT0 = Math.floor(effectiveTime / innerInterval)
+      innerCores.push([utils.hexString(innerRoot), innerLayers.length, innerInterval / 1000, innerT0, innerLifespan, slotSize])
+
+      if (!innerRoot) {
+        throw new Error(`inner core has empty root: ${JSON.stringify(innerTree)}`)
+      }
+    }
+    return innerCores
+  },
+
+  makeCore: ({ effectiveTime, duration, height, slotSize = 1, interval = 30000, root }) => {
+    const t0 = effectiveTime / interval
+    if (t0 !== Math.floor(t0)) {
+      throw new Error(`effectiveTime [${effectiveTime}] is not a multiple of interval ${interval}, please check parameter validity`)
+    }
+    const lifespan = duration / interval
+    return [utils.hexString(root), height, interval / 1000, t0, lifespan, slotSize]
+  },
+
+  // core retrieved from blockchain
+  processCore: (info, raw) => {
+    const [root, height, interval, t0, lifespan, maxOperationsPerInterval] = range(0, 6).map(k => info[k])
+    const intervalMs = new BN(interval).toNumber() * 1000
+    return raw ? {
+      root,
+      height: new BN(height).toNumber(),
+      interval: new BN(interval).toNumber(),
+      t0: new BN(t0).toNumber(),
+      lifespan: new BN(lifespan).toNumber(),
+      maxOperationsPerInterval: new BN(maxOperationsPerInterval).toNumber(),
+    } : {
+      root: root.slice(2),
+      effectiveTime: new BN(t0).toNumber() * intervalMs,
+      duration: new BN(lifespan).toNumber() * intervalMs,
+      slotSize: new BN(maxOperationsPerInterval).toNumber(),
+    }
+  },
+
+  // get
+
+  web3utils
 }
 module.exports = utils

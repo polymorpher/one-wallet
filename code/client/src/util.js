@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { HarmonyAddress } from '@harmony-js/crypto'
-import { isInteger, values, keys } from 'lodash'
+import isInteger from 'lodash/fp/isInteger'
+import values from 'lodash/fp/values'
 import ONEUtil from '../../lib/util'
 import ONEConstants from '../../lib/constants'
 import { AddressError } from './constants/errors'
-import WalletConstants from './constants/wallet'
 import BN from 'bn.js'
 import config from './config'
+import ONENames from '../../lib/names'
 
 const util = {
   // TODO: rewrite using BN to achieve 100% precision
@@ -118,6 +119,10 @@ const util = {
     return address === ONEConstants.TreasuryAddress || ONEConstants.OldTreasuryAddresses.includes(address)
   },
 
+  isBlacklistedAddress: address =>{
+    return ONEConstants.BlacklistedAddresses.includes(address)
+  },
+
   isRecoveryAddressSet: address => {
     return !exports.default.isEmptyAddress(address) && !exports.default.isDefaultRecoveryAddress(address)
   },
@@ -163,6 +168,11 @@ const util = {
     return !wallet.majorVersion || !(wallet.majorVersion >= config.minWalletVersion)
   },
 
+  /**
+   *
+   * @param {string} otpInput
+   * @returns {null|number}
+   */
   parseOtp: otpInput => {
     const parsedOtp = parseInt(otpInput)
     if (!isInteger(parsedOtp) || !(parsedOtp < 1000000)) {
@@ -271,9 +281,20 @@ const util = {
 
   callArgs: ({ dest, amount }) => {
     return { amount, operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: dest, tokenId: 0, dest: ONEConstants.EmptyAddress }
-  }
+  },
 }
+
 export default util
+
+export const autoWalletNameHint = (wallet) => {
+  if (!wallet) {
+    return ''
+  }
+  if (wallet.majorVersion < 15) {
+    return wallet.name
+  }
+  return ONENames.nameWithTime(wallet.name, wallet.effectiveTime)
+}
 
 export const updateQRCodeState = (newValue, state) => {
   if (!newValue || (newValue === state.last && (Date.now() - state.lastTime) < 5000)) {
@@ -285,7 +306,7 @@ export const updateQRCodeState = (newValue, state) => {
 }
 
 export const generateOtpSeed = () => {
-  const otpSeedBuffer = new Uint8Array(20)
+  const otpSeedBuffer = new Uint8Array(32)
   return window.crypto.getRandomValues(otpSeedBuffer)
 }
 
@@ -375,4 +396,5 @@ export const useWaitExecution = (func, runCondition, wait, dependencies) => {
 if (window) {
   window.ONEWallet = window.ONEWallet || {}
   window.ONEWallet.util = util
+  window.ONEWallet.ONEUtil = ONEUtil
 }

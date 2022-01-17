@@ -1,4 +1,8 @@
-import { Button, Space, Typography, Divider, Tooltip } from 'antd'
+import Button from 'antd/es/button'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
+import Divider from 'antd/es/divider'
+import Tooltip from 'antd/es/tooltip'
 import AnimatedSection from '../components/AnimatedSection'
 import { AverageRow } from '../components/Grid'
 import { Hint } from '../components/Text'
@@ -9,7 +13,7 @@ import humanizeDuration from 'humanize-duration'
 import { WALLET_OUTDATED_DISABLED_TEXT, WalletSelector } from './Common'
 import ONEUtil from '../../../lib/util'
 import Sign from '../pages/Show/Sign'
-import { QuestionCircleOutlined } from '@ant-design/icons'
+import QuestionCircleOutlined from '@ant-design/icons/QuestionCircleOutlined'
 const { Title, Paragraph } = Typography
 const RequestSignature = ({ caller, callback, messageB64Encoded, raw, duration, from, commentB64Encoded }) => {
   const [message, setMessage] = useState('')
@@ -92,7 +96,7 @@ const RequestSignature = ({ caller, callback, messageB64Encoded, raw, duration, 
       </AnimatedSection>
       {showSign &&
         <Sign
-          address={selectedAddress.value} show={showSign} onClose={onCallClose} onSuccess={onSuccess}
+          address={selectedAddress.value} onClose={onCallClose} onSuccess={onSuccess}
           prefillMessageInput={message}
           prefillUseRawMessage={raw}
           prefillDuration={duration}

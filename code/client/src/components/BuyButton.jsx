@@ -1,8 +1,14 @@
 import { useSelector } from 'react-redux'
 import React, { useCallback, useState } from 'react'
 import util, { useWindowDimensions } from '../util'
-import { Button, Typography, Modal, Select, Space, Row, Col } from 'antd'
-import { SearchOutlined } from '@ant-design/icons'
+import Button from 'antd/es/button'
+import Typography from 'antd/es/typography'
+import Modal from 'antd/es/modal'
+import Space from 'antd/es/space'
+import Select from 'antd/es/select'
+import Row from 'antd/es/row'
+import Col from 'antd/es/col'
+import SearchOutlined from '@ant-design/icons/SearchOutlined'
 import message from '../message'
 import TransakSDK from '@transak/transak-sdk'
 import config from '../config'
@@ -55,7 +61,7 @@ export const CurrencyChooser = ({ visible, confirm, onClose }) => {
 
 export const useBuyCrypto = ({ address }) => {
   const { isMobile } = useWindowDimensions()
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
   const buy = useCallback((currency) => {
     return new Promise((resolve, reject) => {
       const isTest = !config.networks[network]?.production

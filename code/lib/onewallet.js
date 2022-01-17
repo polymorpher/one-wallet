@@ -1,9 +1,29 @@
 // eslint-disable-next-line no-unused-vars
-const { hexView, hexString, genOTP, hexStringToBytes, keccak, bytesEqual, sha256: fastSHA256, sha256b, processOtpSeed, namehash, DEPRECATED, stringToBytes } = require('./util')
+const Util = require('./util')
 const ONEConstants = require('./constants')
 const BN = require('bn.js')
 const AES = require('aes-js')
 const abi = require('web3-eth-abi')
+const { hexString, genOTP, hexStringToBytes, keccak, bytesEqual, sha256: fastSHA256, sha256Interlaced, sha256b, processOtpSeed, namehash } = Util
+
+const buildMerkleTree = ({ leaves, height, width, progressObserver }) => {
+  const layers = [leaves]
+  let count = 0
+  for (let j = 1; j < height; j++) {
+    const layer = new Uint8Array(width / (2 ** j) * 32)
+    const lastLayer = layers[j - 1]
+    for (let i = 0; i < width / (2 ** j); i += 1) {
+      const d = lastLayer.subarray(2 * i * 32, 2 * i * 32 + 64)
+      const h = fastSHA256(d)
+      // console.log(`layer=${j}, index=${i}`)
+      layer.set(h, i * 32)
+      progressObserver(count)
+      count += 1
+    }
+    layers.push(layer)
+  }
+  return layers
+}
 
 const computeMerkleTree = async ({
   otpSeed, // Uint8Array or b32 encoded string
@@ -13,19 +33,25 @@ const computeMerkleTree = async ({
   progressObserver = () => {}, otpInterval = 30000,
   maxOperationsPerInterval = 1,
   randomness = 0, // number of bits for Controlled Randomness. 17 bits is recommended for the best balance between user experience and security. It maps to 2^17 = 131072 possibilities.
-  hasher = sha256b // must be a batch hasher
-
+  hasher = sha256b, // must be a batch hasher
+  buildInnerTrees = true,
+  reportInterval,
 }) => {
   maxOperationsPerInterval = 2 ** Math.ceil(Math.log2(maxOperationsPerInterval))
   maxOperationsPerInterval = Math.min(16, maxOperationsPerInterval)
   const height = Math.ceil(Math.log2(duration / otpInterval * maxOperationsPerInterval)) + 1
   const n = Math.pow(2, height - 1)
-  const reportInterval = Math.floor(n / 100)
-  const counter = Math.floor(effectiveTime / otpInterval)
+  const n0 = Math.ceil(duration / otpInterval)
+  if (n < 16) {
+    buildInnerTrees = false
+  }
+  reportInterval = reportInterval || Math.floor(n / 100)
+  const counter = buildInnerTrees ? Math.floor(effectiveTime / (otpInterval * 6)) * 6 : Math.floor(effectiveTime / otpInterval)
   const seed = processOtpSeed(otpSeed)
   const seed2 = otpSeed2 && processOtpSeed(otpSeed2)
-  // console.log('Generating Wallet with parameters', { seed, seed2, height, otpInterval, effectiveTime, randomness, hasher, maxOperationsPerInterval })
-  const buildProgressObserver = (max, stage, offset) => (i, n) => (i + (offset || 0)) % reportInterval === 0 && progressObserver(i + (offset || 0), max || n, stage || 0)
+  // console.log('Generating Wallet with parameters', { seed, seed2, height, otpInterval, effectiveTime, duration, randomness, hasher, maxOperationsPerInterval })
+  const buildProgressObserver = (max, stage, offset) => (i, n = 0) => ((i + (offset || 0)) % reportInterval === 0) && progressObserver(i + (offset || 0), max || n, stage || 0)
+  // prepare OTPs - stage 0
   const otps = genOTP({ seed, counter, n, progressObserver: buildProgressObserver(seed2 ? n * 2 : n, 0, 0) })
   const otps2 = seed2 && genOTP({ seed: seed2, counter, n, progressObserver: buildProgressObserver(n * 2, 0, n) })
   // legacy mode: no randomness, no seed2: 26 bytes for seed hash, 2 bytes for nonce, 4 bytes for OTP
@@ -70,25 +96,63 @@ const computeMerkleTree = async ({
       input.set(rbuffer, offset + 28)
     }
   }
+  // prepare merkle tree - stage 1
   // TODO: parallelize this
-  const eotps = await hasher(input, { progressObserver: buildProgressObserver(n * maxOperationsPerInterval * 2, 1) })
-  const leaves = await sha256b(eotps, { progressObserver: buildProgressObserver(n * maxOperationsPerInterval * 2, 1, n * maxOperationsPerInterval) })
-  const layers = []
-  layers.push(leaves)
-  for (let j = 1; j < height; j += 1) {
-    const layer = new Uint8Array(n / (2 ** j) * 32)
-    const lastLayer = layers[j - 1]
-    for (let i = 0; i < n / (2 ** j); i += 1) {
-      const d = lastLayer.subarray(2 * i * 32, 2 * i * 32 + 64)
-      const h = fastSHA256(d)
-      // console.log(`layer=${j}, index=${i}`)
-      layer.set(h, i * 32)
-    }
-    layers.push(layer)
-  }
+  const eotps = await hasher(input, { progressObserver:
+      buildProgressObserver(n * maxOperationsPerInterval * 3 - 1, 1)
+  })
+  const leaves = await sha256b(eotps, { progressObserver:
+      buildProgressObserver(n * maxOperationsPerInterval * 3 - 1, 1, n * maxOperationsPerInterval)
+  })
+  const layers = buildMerkleTree({
+    leaves,
+    width: n,
+    height,
+    progressObserver: buildProgressObserver(n * maxOperationsPerInterval * 3 - 1, 1, n * maxOperationsPerInterval * 2)
+  })
   const root = layers[height - 1]
+
+  // prepare inner trees - stage 2
+
+  const perTreeHeight = Math.ceil(Math.log2(Math.ceil((n0 - 6 + 1) / 6))) + 1 // (n - 6 + 1) == interlaced.length / 32
+  const perTreeWidth = 2 ** (perTreeHeight - 1) // number of leaves for each innerCore tree
+  const totalNumOps = (n0 - 6 + 1) + perTreeWidth * 6 + (perTreeWidth - 1) * 6
+
+  const innerTrees = []
+  if (buildInnerTrees) {
+    // i.e. eotps for inner trees
+    const interlaced = sha256Interlaced(otps, {
+      progressObserver: buildProgressObserver(totalNumOps, 2), unitSize: 4, window: 6
+    })
+    const observerInnerLeaves = buildProgressObserver(totalNumOps, 2, n0 - 6 + 1)
+    for (let i = 0; i < 6; i++) {
+      const leaves = new Uint8Array(perTreeWidth * 32)
+      for (let j = 0; j < perTreeWidth; j++) {
+        // say given a sequence of eotps, [e1, e2, e3, e4, e5, e6, e7, ...]
+        // we want to pick e1, e7, e13.... as the leaves of tree 1
+        // e2, e8, e14 ... as the leaves of tree 2
+        const index = i * 32 + j * 6 * 32
+        // keep zero assignment for indices beyond generated otp lifespan. We can do the same during eotp computation
+        // This means each individual tree may have a good number of leaves filled with zero, but in practice we won't use those leaves anyway.
+        // Because the time range they correspond to would go beyond the time range of generated oto lifespan.
+        if (index < interlaced.length) {
+          const leaf = fastSHA256(interlaced.subarray(index, index + 32))
+          leaves.set(leaf, j * 32)
+        }
+        observerInnerLeaves(j + i * perTreeWidth + i * (perTreeWidth - 1))
+      }
+      const layers = buildMerkleTree({
+        leaves,
+        width: perTreeWidth,
+        height: perTreeHeight,
+        progressObserver: count => observerInnerLeaves(count + i * perTreeWidth + i * (perTreeWidth - 1) + perTreeWidth)
+      })
+      innerTrees.push({ layers, root: layers[perTreeHeight - 1] })
+    }
+  }
+
   if (progressObserver) {
-    progressObserver(1, 1, 2)
+    progressObserver(1, 1, 3)
   }
   // console.log(`root: 0x${hexView(root)} tree height: ${layers.length}; leaves length: ${leaves.length}`)
   return {
@@ -101,6 +165,7 @@ const computeMerkleTree = async ({
     leaves, // = layers[0]
     root, // = layers[height - 1]
     layers,
+    innerTrees,
     maxOperationsPerInterval,
   }
 }
@@ -178,6 +243,14 @@ const computeEOTP = async ({ otp, otp2, rand = null, hseed, nonce = 0, hasher = 
     buffer.set(rb, 28)
   }
   return hasher(buffer)
+}
+
+const computeInnerEOTP = async ({ otps }) => {
+  const buffer = new Uint8Array(otps.length * 4)
+  for (let i = 0; i < otps.length; i++) {
+    buffer.set(otps[i], i * 4)
+  }
+  return fastSHA256(buffer)
 }
 
 const computeRecoveryHash = ({ randomSeed, hseed }) => {
@@ -288,6 +361,13 @@ const computeDataHash = ({ data }) => {
   return { hash: keccak(input), bytes: input }
 }
 
+const computeAmountHash = ({ amount }) => {
+  const amountBytes = new BN(amount).toArrayLike(Uint8Array, 'be', 32)
+  const input = new Uint8Array(32)
+  input.set(amountBytes)
+  return { hash: keccak(input), bytes: amountBytes }
+}
+
 // address, hex string
 const computeVerificationHash = ({ paramsHash, eotp }) => {
   const input = new Uint8Array(64)
@@ -345,22 +425,43 @@ const computeTransferDomainHash = ({
 
 const computeForwardHash = ({ address }) => computeSetRecoveryAddressHash({ address })
 
+const encodeDisplaceDataHex = ({ core, innerCores, identificationKey }) => {
+  return Util.abi.encodeParameters(['tuple(bytes32,uint8,uint8,uint32,uint32,uint8)', 'tuple[](bytes32,uint8,uint8,uint32,uint32,uint8)', 'bytes'], [core, innerCores, identificationKey])
+}
+
+// TODO: organize this and make it hierarchical
 module.exports = {
-  computeCommitHash,
+  // creation
   computeMerkleTree,
+
+  // operation
+  computeEOTP,
+  selectMerkleNeighbors,
+  computeInnerEOTP,
+  recoverRandomness,
+
+  // commit - core
+  computeCommitHash,
+  computeVerificationHash,
+
+  // commit - general operations
+  computeGeneralOperationHash,
+  computeDataHash,
+
+  // commit - specific operations
   computeTransferHash,
   computeRecoveryHash,
   computeSetRecoveryAddressHash,
-  selectMerkleNeighbors,
-  computeEOTP,
-  bruteforceEOTP,
-  computeTokenKey,
-  computeGeneralOperationHash,
-  computeDataHash,
-  computeVerificationHash,
-  recoverRandomness,
-  encodeBuyDomainData,
   computeBuyDomainCommitHash,
   computeForwardHash,
-  computeTransferDomainHash
+  computeTransferDomainHash,
+  computeAmountHash,
+
+  // operation - encoders
+  encodeBuyDomainData,
+  encodeDisplaceDataHex,
+  computeTokenKey,
+
+  // deprecated
+  bruteforceEOTP,
 }

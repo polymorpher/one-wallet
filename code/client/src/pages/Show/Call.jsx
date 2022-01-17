@@ -1,13 +1,17 @@
 import React, { useState } from 'react'
-import { Button, Row, Space, Typography, Input, Col } from 'antd'
+import Button from 'antd/es/button'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
+import Input from 'antd/es/input'
+import Col from 'antd/es/col'
 import message from '../../message'
-import { CloseOutlined } from '@ant-design/icons'
+import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import { Hint, InputBox, Label, Warning } from '../../components/Text'
 import { AverageRow, TallRow } from '../../components/Grid'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
-import util, { useWindowDimensions } from '../../util'
+import util, { autoWalletNameHint, useWindowDimensions } from '../../util'
 import BN from 'bn.js'
 import ShowUtils from './show-util'
 import { useSelector } from 'react-redux'
@@ -18,12 +22,12 @@ import { api } from '../../../../lib/api'
 import ONEConstants from '../../../../lib/constants'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
+import ONENames from '../../../../lib/names'
 const { Title } = Typography
 const { TextArea } = Input
 
 const Call = ({
   address,
-  show,
   minimal, // optional
   onClose, // optional
   onSuccess, // optional
@@ -36,10 +40,10 @@ const Call = ({
   headless,
 }) => {
   const { isMobile } = useWindowDimensions()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const { majorVersion, minorVersion } = wallet
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
 
   const doubleOtp = wallet.doubleOtp
   const { state: otpState } = useOtpState()
@@ -50,9 +54,9 @@ const Call = ({
 
   const { resetWorker, recoverRandomness } = useRandomWorker()
 
-  const balances = useSelector(state => state.wallet.balances)
-  const price = useSelector(state => state.wallet.price)
-  const { balance, formatted } = util.computeBalance(balances[address] || 0, price)
+  const balances = useSelector(state => state.balance || {})
+  const price = useSelector(state => state.global.price)
+  const { balance, formatted } = util.computeBalance(balances[address]?.balance || 0, price)
 
   const [transferTo, setTransferTo] = useState({ value: prefillDest || '', label: prefillDest ? util.oneAddress(prefillDest) : '' })
   const [inputAmount, setInputAmount] = useState(prefillAmount || '')
@@ -132,7 +136,7 @@ const Call = ({
     return (
       <AnimatedSection
         style={{ maxWidth: 720 }}
-        show={show} title={<Title level={2}>Call Contract Function</Title>} extra={[
+        title={<Title level={2}>Call Contract Function</Title>} extra={[
           <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
         ]}
       >
@@ -211,7 +215,7 @@ const Call = ({
       <AverageRow align='middle'>
         <Col span={24}>
           <OtpStack
-            walletName={wallet.name}
+            walletName={autoWalletNameHint(wallet)}
             doubleOtp={doubleOtp}
             otpState={otpState}
             onComplete={doCall}
@@ -233,7 +237,7 @@ const Call = ({
   return (
     <AnimatedSection
       style={{ maxWidth: 720 }}
-      show={show} title={!minimal && <Title level={2}>Call Contract Function</Title>} extra={!minimal && [
+      title={!minimal && <Title level={2}>Call Contract Function</Title>} extra={!minimal && [
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
       ]}
     >

@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Space, Tooltip, Typography } from 'antd'
+import Button from 'antd/es/button'
+import Space from 'antd/es/space'
+import Tooltip from 'antd/es/tooltip'
+import Typography from 'antd/es/typography'
 import util from '../util'
 import WalletConstants from '../constants/wallet'
-import { FieldBinaryOutlined, DeploymentUnitOutlined } from '@ant-design/icons'
+import FieldBinaryOutlined from '@ant-design/icons/FieldBinaryOutlined'
+import DeploymentUnitOutlined from '@ant-design/icons/DeploymentUnitOutlined'
 import { useSelector } from 'react-redux'
 const { Text, Link } = Typography
 
@@ -50,7 +54,7 @@ const MOUSE_HOVER_DETECTION_DELAY = 1000
  * Provides the ability to copy the address and link to wallet explorer.
  */
 const WalletAddress = ({ showLabel, labelOverride, address, shorten, onToggle, addressStyle, alwaysShowOptions, onClick, itemStyle, useHex }) => {
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
   const knownAddresses = useSelector(state => state.global.knownAddresses)
   const [showAddressOptions, setShowAddressOptions] = useState(false)
   const [showAddressOptionsLocked, setShowAddressOptionsLocked] = useState(alwaysShowOptions || false)

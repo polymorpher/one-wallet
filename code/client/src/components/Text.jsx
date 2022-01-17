@@ -1,11 +1,17 @@
 // eslint-disable-next-line no-unused-vars
 import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
-import { Input, Typography, Card, Col, Spin } from 'antd'
+import Input from 'antd/es/input'
+import Typography from 'antd/es/typography'
+import Card from 'antd/es/card'
+import Col from 'antd/es/col'
+import Spin from 'antd/es/spin'
 import util from '../util'
 import { AverageRow } from './Grid'
 
 const { Text, Title, Link, Paragraph } = Typography
+
+export { Text, Title, Link, Paragraph }
 
 export const Heading = styled(Title).attrs((props) => ({ level: 2, ...props }))`
   //font-size: 24px;

@@ -1,6 +1,9 @@
-import { Button, Row, Space, Typography } from 'antd'
+import Button from 'antd/es/button'
+import Row from 'antd/es/row'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
 import message from '../../message'
-import { CloseOutlined } from '@ant-design/icons'
+import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import { Hint, Label, Warning } from '../../components/Text'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
@@ -15,14 +18,16 @@ import ShowUtils from './show-util'
 import { useDispatch, useSelector } from 'react-redux'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
+import ONENames from '../../../../lib/names'
+import { autoWalletNameHint } from '../../util'
 const { Title } = Typography
 
-const TransferDomain = ({ address, onClose, show }) => {
+const TransferDomain = ({ address, onClose }) => {
   const dispatch = useDispatch()
-  const wallets = useSelector(state => state.wallet.wallets)
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const domain = wallet.domain || ''
-  const network = useSelector(state => state.wallet.network)
+  const network = useSelector(state => state.global.network)
   const [stage, setStage] = useState(-1)
   const [transferTo, setTransferTo] = useState({ value: '', label: '' })
   const { resetWorker, recoverRandomness } = useRandomWorker()
@@ -60,8 +65,8 @@ const TransferDomain = ({ address, onClose, show }) => {
       onRevealFailure,
       onRevealError,
       onRevealAttemptFailed,
-      onRevealSuccess: async (txId) => {
-        onRevealSuccess(txId)
+      onRevealSuccess: async (txId, messages) => {
+        onRevealSuccess(txId, messages)
         const resolved = await api.blockchain.domain.resolve({ domain })
         if (resolved === dest) {
           message.success(`Domain ${domain} is transferred to ${dest}`)
@@ -82,7 +87,7 @@ const TransferDomain = ({ address, onClose, show }) => {
   return (
     <AnimatedSection
       style={{ maxWidth: 720 }}
-      show={show} title={<Title level={2}>Transfer Domain</Title>} extra={[
+      title={<Title level={2}>Transfer Domain</Title>} extra={[
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
       ]}
     >
@@ -96,7 +101,7 @@ const TransferDomain = ({ address, onClose, show }) => {
             currentWallet={wallet}
           />
         </Space>
-        <OtpStack walletName={wallet.name} otpState={otpState} doubleOtp={wallet.doubleOtp} onComplete={doTransferDomain} action='confirm' />
+        <OtpStack walletName={autoWalletNameHint(wallet)} otpState={otpState} doubleOtp={wallet.doubleOtp} onComplete={doTransferDomain} action='confirm' />
       </Space>
       {!domain &&
         <Row justify='center' style={{ margin: 12 }}>

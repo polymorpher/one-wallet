@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Row, Space, Spin, Typography } from 'antd'
+import Button from 'antd/es/button'
+import Row from 'antd/es/row'
+import Space from 'antd/es/space'
+import Spin from 'antd/es/spin'
+import Typography from 'antd/es/typography'
 import message from '../../message'
 import api from '../../api'
-import util, { useWaitExecution, useWindowDimensions } from '../../util'
+import util, { autoWalletNameHint, useWaitExecution, useWindowDimensions } from '../../util'
 import ONEUtil from '../../../../lib/util'
 import ONENames from '../../../../lib/names'
 import { useDispatch, useSelector } from 'react-redux'
 import { AutoResizeInputBox, Warning, Hint } from '../../components/Text'
 import { walletActions } from '../../state/modules/wallet'
 import AnimatedSection from '../../components/AnimatedSection'
-import { CloseOutlined } from '@ant-design/icons'
+import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import BN from 'bn.js'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
@@ -92,13 +96,13 @@ const { balance: PAYMENT_EXCESS_BUFFER } = util.toBalance(0.1)
 /**
  * Renders Purchase Domain section that enables users to purchase an available domain for their selected wallet using selected token.
  */
-const PurchaseDomain = ({ show, address, onClose }) => {
+const PurchaseDomain = ({ address, onClose }) => {
   const dispatch = useDispatch()
-  const balances = useSelector(state => state.wallet.balances)
-  const wallets = useSelector(state => state.wallet.wallets)
+  const balances = useSelector(state => state.balance || {})
+  const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
-  const network = useSelector(state => state.wallet.network)
-  const oneBalance = balances[address] || 0
+  const network = useSelector(state => state.global.network)
+  const oneBalance = balances[address]?.balance || 0
   const [subdomain, setSubdomain] = useState(prepareName(wallet.name))
   const [purchaseOnePrice, setPurchaseOnePrice] = useState({ value: '', formatted: '' })
   const [domainFiatPrice, setDomainFiatPrice] = useState(0)
@@ -106,7 +110,7 @@ const PurchaseDomain = ({ show, address, onClose }) => {
   const [enoughBalance, setEnoughBalance] = useState(false)
   const [domainAvailable, setDomainAvailable] = useState(false)
   const [checkingAvailability, setCheckingAvailability] = useState(true)
-  const price = useSelector(state => state.wallet.price)
+  const price = useSelector(state => state.global.price)
   const validatedSubdomain = validateSubdomain(subdomain)
 
   const [stage, setStage] = useState(-1)
@@ -142,8 +146,8 @@ const PurchaseDomain = ({ show, address, onClose }) => {
       onRevealFailure,
       onRevealError,
       onRevealAttemptFailed,
-      onRevealSuccess: async (txId) => {
-        onRevealSuccess(txId)
+      onRevealSuccess: async (txId, messages) => {
+        onRevealSuccess(txId, messages)
         setTimeout(async () => {
           setStage(-1)
           resetOtp()
@@ -193,8 +197,7 @@ const PurchaseDomain = ({ show, address, onClose }) => {
   const titleLevel = isMobile ? 4 : 3
   return (
     <AnimatedSection
-      style={{ maxWidth: 720 }}
-      show={show} title={<Title level={2}>Buy Domain</Title>} extra={[
+      style={{ maxWidth: 720 }} title={<Title level={2}>Buy Domain</Title>} extra={[
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
       ]}
     >
@@ -230,7 +233,7 @@ const PurchaseDomain = ({ show, address, onClose }) => {
           validatedDomain={validatedSubdomain}
         />
       </Row>
-      {available && <OtpStack walletName={wallet.name} doubleOtp={doubleOtp} otpState={otpState} onComplete={doPurchase} action='buy now' />}
+      {available && <OtpStack walletName={autoWalletNameHint(wallet)} doubleOtp={doubleOtp} otpState={otpState} onComplete={doPurchase} action='buy now' />}
       <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
     </AnimatedSection>
   )

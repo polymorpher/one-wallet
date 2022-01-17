@@ -2060,4 +2060,25 @@ const randomWord = (numWords = 1, delim = ' ') => {
   return words.join(delim)
 }
 
-module.exports = { randomWord }
+const genName = (existingNames) => {
+  const name = `${randomWord()} ${randomWord()}`
+  if (existingNames && existingNames.includes(name)) {
+    return genName()
+  }
+  return name
+}
+
+const genTimeString = (effectiveTime) => {
+  if (!effectiveTime) {
+    return ''
+  }
+  const offset = (new Date()).getTimezoneOffset() * 60000
+  const localISOTime = (new Date(effectiveTime - offset)).toISOString().slice(2, -8)
+  return localISOTime.replace('T', ' ')
+}
+
+const nameWithTime = (name, effectiveTime) => {
+  return (name + ' ' + genTimeString(effectiveTime)).trim()
+}
+
+module.exports = { randomWord, genName, genTimeString, nameWithTime }

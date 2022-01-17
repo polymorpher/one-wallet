@@ -26,7 +26,7 @@ try {
   console.error(ex)
   process.exit(1)
 }
-console.log('config', config)
+// console.log('config', config)
 let httpServer, httpsServer
 
 let httpsOptions = {

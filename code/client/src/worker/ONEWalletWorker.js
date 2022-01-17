@@ -22,19 +22,22 @@ async function recoverRandomness ({ randomness, hseed, otp, otp2, nonce, leaf, h
   }
 }
 
-onmessage = async function (event) {
-  const { salt, seed, seed2, effectiveTime, duration, slotSize, interval, randomness, hasher, action } = event.data
+const sessions = {}
 
+onmessage = async function (event) {
+  const { salt, seed, seed2, effectiveTime, duration, slotSize, interval, randomness, hasher, action, buildInnerTrees } = event.data
   if (action === 'recoverRandomness') {
     return recoverRandomness(event.data)
   }
-
   if (!seed) {
-    // console.log('worker: received event but it has no valid data', event)
+    return
+  }
+  if (sessions[salt]) {
+    console.error(`[worker] received identical message for salt=${salt}. ignored`)
     return
   }
   // console.log('worker: generating wallet:', event.data)
-
+  sessions[salt] = true
   try {
     const {
       hseed,
@@ -42,6 +45,7 @@ onmessage = async function (event) {
       leaves,
       root,
       layers,
+      innerTrees,
       maxOperationsPerInterval,
     } = await ONE.computeMerkleTree({
       otpSeed: seed,
@@ -52,11 +56,12 @@ onmessage = async function (event) {
       hasher: ONEUtil.getHasher(hasher),
       maxOperationsPerInterval: slotSize,
       otpInterval: interval,
+      buildInnerTrees,
       progressObserver: (current, total, stage) => {
         postMessage({ status: 'working', current: current, total: total, stage, salt })
       }
     })
-    console.log('worker: done')
+    console.log('[worker] done')
     postMessage({
       status: 'done',
       salt,
@@ -66,11 +71,14 @@ onmessage = async function (event) {
         leaves,
         root,
         layers,
+        innerTrees,
         maxOperationsPerInterval,
       }
     })
   } catch (ex) {
     console.error(ex)
     postMessage({ status: 'error', result: { error: ex.toString() } })
+  } finally {
+    sessions[salt] = false
   }
 }
