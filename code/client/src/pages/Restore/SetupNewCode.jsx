@@ -33,7 +33,7 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
   const [effectiveTime, setEffectiveTime] = useState()
   const [layers, setLayers] = useState()
   const securityParameters = wallet ? ONEUtil.securityParameters(wallet) : {}
-  const duration = WalletConstants.defaultDuration
+  const duration = wallet.duration || WalletConstants.defaultDuration
 
   useEffect(() => {
     setWorker(new Worker('/ONEWalletWorker.js'))
