@@ -50,6 +50,25 @@ const Subsections = {
   confirm: 'confirm' // authorize with old authenticator code, confirm, finalize; show progress circle
 }
 
+const Subsection = ({ children, section, moreAuthRequired, address, resetOtps, onClose }) => {
+  return (
+    <AnimatedSection title={
+      <Space direction='vertical'>
+        <Title level={3}>Renew Wallet</Title>
+        <WalletAddress showLabel alwaysShowOptions address={address} addressStyle={{ padding: 0 }} />
+      </Space>
+  }
+    >
+      {children}
+      <AverageRow justify='space-between'>
+        <Divider />
+        <Button size='large' type='link' onClick={onClose} danger style={{ padding: 0 }}>Cancel</Button>
+        {section === Subsections.confirm && moreAuthRequired && <Button size='large' type='default' shape='round' onClick={resetOtps}>Reset</Button>}
+      </AverageRow>
+    </AnimatedSection>
+  )
+}
+
 const Extend = ({
   address,
   onClose: onCloseOuter,
@@ -103,7 +122,11 @@ const Extend = ({
     setProgressStage(0)
     setProgress(0)
   }
+
   const onClose = () => {
+    if (stage >= 0) {
+      return message.info('Processing an existing renewal request... Please wait, or refresh the page to cancel.')
+    }
     reset()
     setSection(Subsections.init)
     setSeed(null)
@@ -300,6 +323,9 @@ const Extend = ({
   }, [worker, seed, method, doubleOtp])
 
   useEffect(() => {
+    if (stage >= 0) {
+      return message.info('Processing an existing renewal request... Please try again later or refresh the page')
+    }
     reset()
     if (method === 'new') {
       setSeed(generateOtpSeed())
@@ -365,28 +391,11 @@ const Extend = ({
     setSeed2(null)
   }
 
-  const Subsection = useCallback(({ children }) => {
-    return (
-      <AnimatedSection title={
-        <Space direction='vertical'>
-          <Title level={3}>Renew Wallet</Title>
-          <WalletAddress showLabel alwaysShowOptions address={address} addressStyle={{ padding: 0 }} />
-        </Space>
-        }
-      >
-        {children}
-        <AverageRow justify='space-between'>
-          <Divider />
-          <Button size='large' type='link' onClick={onClose} danger style={{ padding: 0 }}>Cancel</Button>
-          {section === Subsections.confirm && moreAuthRequired && <Button size='large' type='default' shape='round' onClick={resetOtps}>Reset</Button>}
-        </AverageRow>
-      </AnimatedSection>
-    )
-  }, [address])
+  const subargs = { section, moreAuthRequired, address, resetOtps, onClose }
 
   if (majorVersion < 14) {
     return (
-      <Subsection onClose={onClose}>
+      <Subsection {...subargs}>
         <Warning>Your wallet is too old to use this feature. Please use a wallet that is at least version 14.1</Warning>
       </Subsection>
     )
@@ -395,7 +404,7 @@ const Extend = ({
   return (
     <>
       {section === Subsections.init &&
-        <Subsection onClose={onClose}>
+        <Subsection {...subargs}>
           <TallRow>
             <Space direction='vertical'>
               <Text>Renewing a wallet extends its expiry time by another {humanizeDuration(WalletConstants.defaultDuration, { largest: 1, round: true })}, and gives you an opportunity to bind a new authenticator code to the wallet.</Text>
@@ -422,7 +431,7 @@ const Extend = ({
           </TallRow>
         </Subsection>}
       {section === Subsections.scan &&
-        <Subsection onClose={onClose}>
+        <Subsection {...subargs}>
           {!confirmName &&
             <Space direction='vertical' style={{ width: '100%' }}>
               <ScanGASteps />
@@ -444,7 +453,7 @@ const Extend = ({
 
         </Subsection>}
       {section === Subsections.new &&
-        <Subsection onClose={onClose}>
+        <Subsection {...subargs}>
           <Space direction='vertical' align='center' style={{ width: '100%' }}>
             <Hint>Scan or tap the QR code to setup a new authenticator code</Hint>
             {!showSecondCode &&
@@ -461,7 +470,7 @@ const Extend = ({
           </Space>
         </Subsection>}
       {section === Subsections.confirm &&
-        <Subsection onClose={onClose}>
+        <Subsection {...subargs}>
           <AverageRow>
             <Hint>If you use the wallet on multiple devices, you may need to renew it on each device, or delete then restore them on other devices.</Hint>
           </AverageRow>
