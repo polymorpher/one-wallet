@@ -30,7 +30,6 @@ onmessage = async function (event) {
     return recoverRandomness(event.data)
   }
   if (!seed) {
-    console.error('[worker] received event but it has no valid data', event)
     return
   }
   if (sessions[salt]) {
