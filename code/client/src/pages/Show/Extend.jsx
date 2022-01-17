@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import Button from 'antd/es/button'
 import Space from 'antd/es/space'
 import Typography from 'antd/es/typography'
@@ -91,11 +91,12 @@ const Extend = ({
   const [section, setSection] = useState(Subsections.init)
   const [worker, setWorker] = useState()
 
-  const [root, setRoot] = useState() // Uint8Array
   const [effectiveTime, setEffectiveTime] = useState(Math.floor(Date.now() / WalletConstants.interval6) * WalletConstants.interval6)
-  const [hseed, setHseed] = useState()
-  const [layers, setLayers] = useState()
-  const [innerTrees, setInnerTrees] = useState([])
+  const [newCoreParams, setNewCoreParams] = useState({ root: null, hseed: null, layers: null, innerTrees: [] })
+  // const [root, setRoot] = useState() // Uint8Array
+  // const [hseed, setHseed] = useState()
+  // const [layers, setLayers] = useState()
+  // const [innerTrees, setInnerTrees] = useState([])
 
   const [doubleOtp, setDoubleOtp] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -107,6 +108,8 @@ const Extend = ({
   const [qrCodeData, setQRCodeData] = useState()
   const [secondOtpQrCodeData, setSecondOtpQrCodeData] = useState()
 
+  const [otpComplete, setOtpComplete] = useState(false)
+
   const [validationOtp, setValidationOtp] = useState()
   const validationOtpRef = useRef()
   const [showSecondCode, setShowSecondCode] = useState()
@@ -114,13 +117,11 @@ const Extend = ({
   const slotSize = wallet.slotSize
 
   const reset = () => {
-    setHseed(null)
-    setRoot(null)
-    setLayers(null)
-    setInnerTrees([])
+    setNewCoreParams({ root: null, hseed: null, layers: null, innerTrees: [] })
     setEffectiveTime(0)
     setProgressStage(0)
     setProgress(0)
+    setOtpComplete(false)
   }
 
   const onClose = () => {
@@ -182,9 +183,9 @@ const Extend = ({
     resetOtp: moreAuthRequired ? resetOtps : otpState.resetOtp,
     resetWorker,
     onSuccess: async () => {
-      const rootHexView = ONEUtil.hexView(root)
-      const promises = [storage.setItem(rootHexView, layers)]
-      for (const { layers: innerLayers, root: innerRoot } of innerTrees) {
+      const rootHexView = ONEUtil.hexView(newCoreParams.root)
+      const promises = [storage.setItem(rootHexView, newCoreParams.layers)]
+      for (const { layers: innerLayers, root: innerRoot } of newCoreParams.innerTrees) {
         promises.push(storage.setItem(ONEUtil.hexView(innerRoot), innerLayers))
       }
       await Promise.all(promises)
@@ -195,13 +196,13 @@ const Extend = ({
         root: rootHexView,
         duration,
         effectiveTime,
-        hseed: ONEUtil.hexView(hseed),
+        hseed: ONEUtil.hexView(newCoreParams.hseed),
         doubleOtp,
         network,
         acknowledgedNewRoot: rootHexView,
         identificationKeys: [identificationKey],
         localIdentificationKey: identificationKey,
-        innerRoots: innerTrees.map(({ root }) => ONEUtil.hexView(root)),
+        innerRoots: newCoreParams.innerTrees.map(({ root }) => ONEUtil.hexView(root)),
         ...securityParameters,
       }
       dispatch(walletActions.updateWallet(newWallet))
@@ -209,6 +210,17 @@ const Extend = ({
       setTimeout(() => history.push(Paths.showAddress(address)), 1500)
     }
   })
+
+  const tryStartReplace = () => {
+    if (otpComplete && stage < 0 && newCoreParams.root && (!(majorVersion >= 15) || newCoreParams.innerTrees.length >= 1)) {
+      setOtpComplete(false)
+      doReplace()
+    }
+  }
+
+  useEffect(() => {
+    tryStartReplace()
+  }, [otpComplete, newCoreParams])
 
   const doReplace = async () => {
     if (stage >= 0) {
@@ -222,13 +234,13 @@ const Extend = ({
       if (invalidOtp || invalidOtp2) return
     }
 
-    if (!root || !innerTrees?.length || !identificationKey) {
+    if (!newCoreParams.root || (majorVersion >= 15 && !newCoreParams.innerTrees?.length) || !identificationKey) {
       console.error('Root is not set')
       return
     }
 
-    const newInnerCores = ONEUtil.makeInnerCores({ innerTrees, effectiveTime, duration, slotSize, interval: WalletConstants.interval })
-    const newCore = ONEUtil.makeCore({ effectiveTime, duration, interval: WalletConstants.interval, height: layers.length, slotSize, root })
+    const newInnerCores = ONEUtil.makeInnerCores({ innerTrees: newCoreParams.innerTrees, effectiveTime, duration, slotSize, interval: WalletConstants.interval })
+    const newCore = ONEUtil.makeCore({ effectiveTime, duration, interval: WalletConstants.interval, height: newCoreParams.layers.length, slotSize, root: newCoreParams.root })
     // console.log({ newCore, newInnerCores, identificationKey })
     const encodedData = ONEUtil.abi.encodeParameters(['tuple(bytes32,uint8,uint8,uint32,uint32,uint8)', 'tuple[](bytes32,uint8,uint8,uint32,uint32,uint8)', 'bytes'], [newCore, newInnerCores, identificationKey])
     const args = { ...ONEConstants.NullOperationParams, data: encodedData, operationType: ONEConstants.OperationType.DISPLACE }
@@ -301,12 +313,8 @@ const Extend = ({
       }
       if (status === 'done') {
         message.debug(`[Extend] done salt=${salt}`)
-        const { hseed, root, layers, innerTrees, doubleOtp } = result
-        setHseed(hseed)
-        setRoot(root)
-        setLayers(layers)
-        setDoubleOtp(doubleOtp)
-        setInnerTrees(innerTrees)
+        const { hseed, root, layers, innerTrees } = result
+        setNewCoreParams({ hseed, root, layers, innerTrees })
       }
     }
     message.debug(`[Extend] Posting to worker salt=${salt}`)
@@ -317,6 +325,7 @@ const Extend = ({
       effectiveTime,
       duration,
       slotSize,
+      buildInnerTrees: majorVersion >= 15,
       interval: WalletConstants.interval,
       ...securityParameters
     })
@@ -490,7 +499,7 @@ const Extend = ({
                 }
               </Space>}
           </AverageRow>
-          {!root && <WalletCreateProgress title='Computing security parameters...' progress={progress} isMobile={isMobile} progressStage={progressStage} />}
+          {!newCoreParams.root && <WalletCreateProgress title='Computing security parameters...' progress={progress} isMobile={isMobile} progressStage={progressStage} />}
           <AverageRow align='middle'>
             <Col span={24}>
               {moreAuthRequired &&
@@ -499,15 +508,15 @@ const Extend = ({
                   action={`confirm ${method === 'new' ? 'using old auth codes' : ''}`}
                   wideLabel={isMobile}
                   shouldAutoFocus
-                  onComplete={doReplace}
+                  onComplete={() => setOtpComplete(true)}
                   isDisabled={stage >= 0}
                 />}
               {!moreAuthRequired &&
                 <OtpStack
-                  isDisabled={!root}
+                  isDisabled={stage >= 0}
                   walletName={autoWalletNameHint(wallet)}
                   otpState={otpState}
-                  onComplete={doReplace}
+                  onComplete={() => setOtpComplete(true)}
                   action={`confirm ${method === 'new' ? 'using old auth code' : ''}`}
                 />}
             </Col>
