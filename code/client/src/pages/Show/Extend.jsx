@@ -219,7 +219,7 @@ const Extend = ({
   }
 
   useEffect(() => {
-    console.log(effectiveTime)
+    // console.log(effectiveTime)
     tryStartReplace()
   }, [otpComplete, newCoreParams])
 
@@ -242,7 +242,7 @@ const Extend = ({
 
     const newInnerCores = ONEUtil.makeInnerCores({ innerTrees: newCoreParams.innerTrees, effectiveTime, duration, slotSize, interval: WalletConstants.interval })
     const newCore = ONEUtil.makeCore({ effectiveTime, duration, interval: WalletConstants.interval, height: newCoreParams.layers.length, slotSize, root: newCoreParams.root })
-    console.log({ effectiveTime, newCore, newInnerCores, identificationKey })
+    // console.log({ effectiveTime, newCore, newInnerCores, identificationKey })
     const encodedData = ONEUtil.abi.encodeParameters(['tuple(bytes32,uint8,uint8,uint32,uint32,uint8)', 'tuple[](bytes32,uint8,uint8,uint32,uint32,uint8)', 'bytes'], [newCore, newInnerCores, identificationKey])
     const args = { ...ONEConstants.NullOperationParams, data: encodedData, operationType: ONEConstants.OperationType.DISPLACE }
 
