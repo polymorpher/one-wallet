@@ -51,6 +51,21 @@ const tabList = [
   { key: 'scan' }
 ]
 
+const SectionList = [
+  'transfer',
+  'limit',
+  'recover',
+  'setRecoveryAddress',
+  'domain',
+  'domainTransfer',
+  'reclaim',
+  'extend',
+]
+
+const SpecialCommands = [
+  'upgrade'
+]
+
 const Show = () => {
   const history = useHistory()
   const location = useLocation()
@@ -64,6 +79,7 @@ const Show = () => {
   const selectedAddress = useSelector(state => state.global.selectedWallet)
   const wallet = wallets[address] || {}
   const [section, setSection] = useState(action)
+  const [command, setCommand] = useState(action)
   const network = useSelector(state => state.global.network)
   const [activeTab, setActiveTab] = useState('coins')
   const { expert } = wallet
@@ -95,12 +111,20 @@ const Show = () => {
     if (action !== 'nft' && action !== 'transfer' && selectedToken.key !== 'one' && selectedToken.tokenType !== ONEConstants.TokenType.ERC20) {
       dispatch(walletActions.setSelectedToken({ token: null, address }))
     }
+    if (SpecialCommands.includes(action)) {
+      setCommand(action)
+    } else {
+      setCommand('')
+    }
     if (tabList.find(t => t.key === action)) {
       setSection(undefined)
       setActiveTab(action)
       return
+    } else if (SectionList.includes(action)) {
+      setSection(action)
+      return
     }
-    setSection(action)
+    setSection('')
   }, [location])
 
   const showTab = (tab) => { history.push(Paths.showAddress(oneAddress, tab)) }
@@ -135,7 +159,7 @@ const Show = () => {
           {activeTab === 'scan' && <Scan address={address} />}
           {activeTab === 'call' && <Call address={address} headless />}
           {activeTab === 'sign' && <Sign address={address} headless />}
-          <Upgrade address={address} />
+          <Upgrade address={address} prompt={command === 'upgrade'} onClose={showStartScreen} />
           <CheckForwardState address={address} onClose={() => history.push(Paths.wallets)} />
           <CheckRoots address={address} onClose={() => history.push(Paths.wallets)} />
         </AnimatedSection>}

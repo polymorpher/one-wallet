@@ -149,5 +149,5 @@ export const doRetire = async ({ address, network, error }) => {
 
 export const retryUpgrade = ({ dispatch, history, address }) => {
   dispatch(walletActions.userSkipVersion({ address, version: null }))
-  history.push(Paths.showAddress(address))
+  history.push(Paths.showAddress(address, 'upgrade'))
 }

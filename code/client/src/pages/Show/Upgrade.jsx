@@ -1,5 +1,5 @@
 import { batch, useDispatch, useSelector } from 'react-redux'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import ONEConstants from '../../../../lib/constants'
 import ONEUtil from '../../../../lib/util'
 import util, { autoWalletNameHint, useWindowDimensions } from '../../util'
@@ -38,7 +38,7 @@ const CardStyle = {
   WebkitBackdropFilter: 'blur(10px)'
 }
 
-const Upgrade = ({ address, onClose }) => {
+const Upgrade = ({ address, prompt, onClose }) => {
   const history = useHistory()
   const dispatch = useDispatch()
   const network = useSelector(state => state.global.network)
@@ -65,6 +65,12 @@ const Upgrade = ({ address, onClose }) => {
   const resetOtp = otpState.resetOtp
   const [stage, setStage] = useState(-1)
   const { resetWorker, recoverRandomness } = useRandomWorker()
+
+  useEffect(() => {
+    if (prompt) {
+      setSkipUpdate(false)
+    }
+  }, [prompt])
 
   const { prepareValidation, prepareProof, prepareProofFailed, onRevealSuccess, ...helpers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
 

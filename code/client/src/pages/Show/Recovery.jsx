@@ -104,7 +104,7 @@ const Recovery = ({ address }) => {
       {!isRecoveryFileSupported &&
         <Text style={{ color: 'red' }}>
           Recovery file is only available to wallets created from v15, or wallets upgraded to v15 then renewed.
-          {majorVersion >= 15 ? <Link onClick={() => history.push(Paths.showAddress(address, 'extend'))}>(renew now)</Link> : <Link onClick={() => retryUpgrade({ dispatch, history, address })}>(upgrade now, then renew)</Link>}
+          {majorVersion >= 15 ? <Link onClick={() => history.push(Paths.showAddress(address, 'extend'))}>(renew now)</Link> : <Link onClick={() => retryUpgrade({ dispatch, history, address })}> (upgrade now, then renew)</Link>}
         </Text>}
       <Hint>You can use the recovery file and your authenticator to restore your wallet on any device. You do not need to keep this file confidential, because it cannot be used without your authenticator - the correct 6-digit authenticator code is required for six consecutive times. Feel free to upload this file in any personal or public storage, such as Google Drive, iCloud, IPFS, Keybase.</Hint>
     </Space>
