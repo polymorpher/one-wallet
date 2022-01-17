@@ -35,7 +35,7 @@ const LocalRoutes = () => {
 
   useEffect(() => {
     dispatch(cacheActions.fetchVersion({ network }))
-    dispatch(cacheActions.clearCode())
+    // dispatch(cacheActions.clearCode())
   }, [])
   useEffect(() => {
     if (needCodeUpdate || clientVersion !== config.version) {
