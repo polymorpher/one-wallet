@@ -7,6 +7,8 @@ import React from 'react'
 import { handleAddressError } from '../../handler'
 import BN from 'bn.js'
 import { api } from '../../../../lib/api'
+import { walletActions } from '../../state/modules/wallet'
+import Paths from '../../constants/paths'
 const { Text, Link } = Typography
 
 export default {
@@ -143,4 +145,9 @@ export const doRetire = async ({ address, network, error }) => {
     console.error(ex)
     message.error(error || `Failed to transfer assets to recovery address. Error: ${ex.toString()}`)
   }
+}
+
+export const retryUpgrade = ({ dispatch, history, address }) => {
+  dispatch(walletActions.userSkipVersion({ address, version: null }))
+  history.push(Paths.showAddress(address))
 }

@@ -7,14 +7,16 @@ import util, { useWindowDimensions } from '../../util'
 import WalletAddress from '../../components/WalletAddress'
 import WarningOutlined from '@ant-design/icons/WarningOutlined'
 import React from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import Paths from '../../constants/paths'
 import { useHistory } from 'react-router'
 import { SimpleWalletExport, InnerTree } from '../../proto/wallet'
 import message from '../../message'
 import storage from '../../storage'
+import { retryUpgrade } from './show-util'
 
 const Recovery = ({ address }) => {
+  const dispatch = useDispatch()
   const history = useHistory()
   const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
@@ -64,7 +66,6 @@ const Recovery = ({ address }) => {
       if (element.href) URL.revokeObjectURL(element.href)
       if (element) {
         document.body.removeChild(element)
-        element = undefined
       }
     }
   }
@@ -100,7 +101,11 @@ const Recovery = ({ address }) => {
           <Button type='primary' size='large' shape='round' onClick={exportRecovery} disabled={!isRecoveryFileSupported}> Download </Button>
         </Col>
       </Row>
-      {!isRecoveryFileSupported && <Text style={{ color: 'red' }}>Recovery file is only available to wallets created from v15, or wallets upgraded to v15 then renewed. <Link onClick={() => history.push(Paths.showAddress(address, 'extend'))}>(renew now)</Link></Text>}
+      {!isRecoveryFileSupported &&
+        <Text style={{ color: 'red' }}>
+          Recovery file is only available to wallets created from v15, or wallets upgraded to v15 then renewed.
+          {majorVersion >= 15 ? <Link onClick={() => history.push(Paths.showAddress(address, 'extend'))}>(renew now)</Link> : <Link onClick={() => retryUpgrade({ dispatch, history, address })}>(upgrade now, then renew)</Link>}
+        </Text>}
       <Hint>You can use the recovery file and your authenticator to restore your wallet on any device. You do not need to keep this file confidential, because it cannot be used without your authenticator - the correct 6-digit authenticator code is required for six consecutive times. Feel free to upload this file in any personal or public storage, such as Google Drive, iCloud, IPFS, Keybase.</Hint>
     </Space>
   )

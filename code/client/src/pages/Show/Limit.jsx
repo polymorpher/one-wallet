@@ -4,7 +4,7 @@ import { OtpStack, useOtpState } from '../../components/OtpStack'
 import React, { useState } from 'react'
 import { useRandomWorker } from './randomWorker'
 import BN from 'bn.js'
-import ShowUtils from './show-util'
+import ShowUtils, { retryUpgrade } from './show-util'
 import { EOTPDerivation, SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import { api } from '../../../../lib/api'
@@ -144,11 +144,6 @@ const Limit = ({
     })
   }
 
-  const upgrade = () => {
-    dispatch(walletActions.userSkipVersion({ address, version: null }))
-    history.push(Paths.showAddress(address))
-  }
-
   if (!(wallet.majorVersion >= 15)) {
     return (
       <AnimatedSection
@@ -157,7 +152,7 @@ const Limit = ({
         extra={[<Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />]}
       >
         <Warning>
-          Your wallet needs to be at least v15 to change spending limit. Please <Link onClick={upgrade}>upgrade your wallet</Link>.
+          Your wallet needs to be at least v15 to change spending limit. Please <Link onClick={() => retryUpgrade({ dispatch, history, address })}>upgrade your wallet</Link>.
         </Warning>
       </AnimatedSection>
     )
