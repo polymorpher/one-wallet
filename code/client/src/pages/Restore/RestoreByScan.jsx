@@ -89,7 +89,7 @@ const RestoreByScan = ({ isActive, onComplete, onCancel }) => {
     f()
   }, [addressInput])
 
-  const onScan = async (e) => {
+  const onScan = async (e, isJson) => {
     if (e && !secret) {
       const now = performance.now()
       if (!(now - control.lastScan > config.scanDelay)) {
@@ -98,7 +98,9 @@ const RestoreByScan = ({ isActive, onComplete, onCancel }) => {
       control.lastScan = now
       try {
         let parsed
-        if (e.startsWith('otpauth://totp')) {
+        if (isJson) {
+          parsed = e
+        } else if (e.startsWith('otpauth://totp')) {
           parsed = parseOAuthOTP(e)
         } else {
           parsed = parseMigrationPayload(e)

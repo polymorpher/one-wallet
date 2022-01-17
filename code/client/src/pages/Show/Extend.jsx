@@ -348,16 +348,17 @@ const Extend = ({
     }
   }, [method])
 
-  const onScan = (e) => {
+  const onScan = (e, isJson) => {
     if (e && !seed) {
       try {
         let parsed
-        if (e.startsWith('otpauth://totp')) {
+        if (isJson) {
+          parsed = e
+        } if (e.startsWith('otpauth://totp')) {
           parsed = parseOAuthOTP(e)
         } else {
           parsed = parseMigrationPayload(e)
         }
-
         if (!parsed) {
           return
         }
