@@ -220,7 +220,7 @@ const Flows = {
     beforeCommit = null, afterCommit = null, onCommitError = null, onCommitFailure = null,
     onRevealFailure = null, onRevealSuccess = null, onRevealError = null, onRevealAttemptFailed = null,
     beforeReveal = null,
-    maxTransferAttempts = 3, checkCommitInterval = 4000,
+    maxTransferAttempts = 5, checkCommitInterval = 4000,
     message = messager,
     overrideVersion = false,
   }) => {
@@ -308,7 +308,7 @@ const Flows = {
         numAttemptsRemaining -= 1
         return tryReveal()
       }
-    }, checkCommitInterval)
+    }, (maxTransferAttempts - numAttemptsRemaining + 1) * 5000)
     return tryReveal()
   },
 }
