@@ -1,19 +1,25 @@
 import { TallRow } from '../../components/Grid'
-import { Col, Typography, Select, Image, Button, Row, Tooltip, Input, Space } from 'antd'
+import Row from 'antd/es/row'
+import Col from 'antd/es/col'
+import Tooltip from 'antd/es/tooltip'
+import Image from 'antd/es/image'
+import Input from 'antd/es/input'
+import Select from 'antd/es/select'
+import Button from 'antd/es/button'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
 import message from '../../message'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import ONEConstants from '../../../../lib/constants'
-import util, { useWindowDimensions } from '../../util'
+import util, { autoWalletNameHint, useWindowDimensions } from '../../util'
 import { DefaultTrackedERC20, HarmonyONE, withKeys } from '../../components/TokenAssets'
 import api from '../../api'
 import { Hint, InputBox, Warning } from '../../components/Text'
 import BN from 'bn.js'
-import {
-  PercentageOutlined,
-  QuestionCircleOutlined,
-  SwapOutlined
-} from '@ant-design/icons'
+import PercentageOutlined from '@ant-design/icons/PercentageOutlined'
+import QuestionCircleOutlined from '@ant-design/icons/QuestionCircleOutlined'
+import SwapOutlined from '@ant-design/icons/SwapOutlined'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { FallbackImage } from '../../constants/ui'
 import ShowUtils from './show-util'
@@ -27,7 +33,7 @@ import { Chaining } from '../../api/flow'
 import walletActions from '../../state/modules/wallet/actions'
 import { balanceActions } from '../../state/modules/balance'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
-import { uniqBy } from 'lodash'
+import uniqBy from 'lodash/fp/uniqBy'
 import styled from 'styled-components'
 import ONENames from '../../../../lib/names'
 const { Text, Title } = Typography
@@ -230,7 +236,7 @@ const Swap = ({ address }) => {
         dispatch(balanceActions.fetchTokenBalance({ address, tokenType, tokenId, contractAddress, key }))
       }
     })
-    const filteredTrackedTokens = uniqBy(trackedTokens, e => e.address)
+    const filteredTrackedTokens = uniqBy(e => e.address, trackedTokens)
 
     const updateFromTokens = async () => {
       const trackedTokensUpdated = await api.tokens.batchGetMetadata(filteredTrackedTokens)
@@ -717,7 +723,7 @@ const Swap = ({ address }) => {
         </TallRow>}
 
       <TallRow>
-        <OtpStack walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)} doubleOtp={doubleOtp} otpState={otpState} onComplete={tokenApproved ? confirmSwap : approveToken} action={tokenApproved ? 'approve' : 'confirm'} />
+        <OtpStack walletName={autoWalletNameHint(wallet)} doubleOtp={doubleOtp} otpState={otpState} onComplete={tokenApproved ? confirmSwap : approveToken} action={tokenApproved ? 'approve' : 'confirm'} />
       </TallRow>
       <TallRow justify='start' align='baseline'>
         <Space size='large' align='top'>

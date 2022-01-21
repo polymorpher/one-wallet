@@ -1,9 +1,7 @@
-import { Button, Card, Popconfirm, Row, Space, Typography } from 'antd'
-import { AverageRow } from './Grid'
-import { deleteWalletLocally } from '../storage/util'
-import { DeleteOutlined } from '@ant-design/icons'
 import React from 'react'
-const { Text, Title, Link, Paragraph } = Typography
+import Card from 'antd/es/card'
+import Row from 'antd/es/row'
+import Space from 'antd/es/space'
 
 const CardStyle = {
   backgroundColor: 'rgba(0,0,0,0.15)',

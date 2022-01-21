@@ -1,11 +1,13 @@
-import { Button, Space, Row } from 'antd'
-import { Text, Title, Paragraph } from '../../components/Text'
+import Button from 'antd/es/button'
+import Space from 'antd/es/space'
+import Row from 'antd/es/row'
+import { Title, Paragraph } from '../../components/Text'
 import { OtpSuperStack } from '../../components/OtpSuperStack'
 import React, { useEffect, useState } from 'react'
 import { useWindowDimensions } from '../../util'
 import ShowUtils from '../Show/show-util'
 import ONEConstants from '../../../../lib/constants'
-import { EotpBuilders, SmartFlows } from '../../../../lib/api/flow'
+import { EOTPDerivation, SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import ONEUtil from '../../../../lib/util'
 import { api } from '../../../../lib/api'
@@ -15,7 +17,6 @@ import message from '../../message'
 import WalletCreateProgress from '../../components/WalletCreateProgress'
 import storage from '../../storage'
 import walletActions from '../../state/modules/wallet/actions'
-import WalletConstants from '../../constants/wallet'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import ONENames from '../../../../lib/names'
 
@@ -50,9 +51,9 @@ const RestoreByCodes = ({ isActive, name, wallet, innerTrees, innerCores, newLoc
         promises.push(storage.setItem(hex, innerLayers))
       }
       await Promise.all(promises)
-      console.log(`${promises.length} innerTrees stored`)
+      // console.log(`${promises.length} innerTrees stored`)
       const root = core[0].slice(2)
-      console.log(`Storing tree ${root}`)
+      // console.log(`Storing tree ${root}`)
       await storage.setItem(root, layers)
       const newWallet = {
         _merge: true,
@@ -85,51 +86,15 @@ const RestoreByCodes = ({ isActive, name, wallet, innerTrees, innerCores, newLoc
     }
     const data = ONE.encodeDisplaceDataHex({ core: coreRaw, innerCores: newInnerCoresRaw, identificationKey: identificationKeys[0] })
     const otps = otpStates.map(({ otpInput }) => parseInt(otpInput))
-    const eotp = await EotpBuilders.restore({ otp: otps })
-    const expectedLeaf = ONEUtil.sha256(eotp)
-    // console.log({ expectedLeaf, eotp })
-    const maxIndex = ONEUtil.timeToIndex({ effectiveTime: innerCores[0].effectiveTime, interval: WalletConstants.interval6 })
-    // const treeIndex = ONEUtil.timeToIndex({ effectiveTime: wallet.effectiveTime }) % innerTrees.length
 
-    let index = null
-    let treeIndex = null
-    setStage(0)
-    const maxIndexAcrossTrees = Math.max(...innerTrees.map(t => t[0].length / 32))
-    console.log({ maxIndex, maxIndexAcrossTrees })
-    for (let i = Math.min(maxIndexAcrossTrees - 1, maxIndex + 1); i >= 0; i--) {
-    // for (let i = 0; i < maxIndexAcrossTrees; i++) {
-      for (const [ind, innerTree] of innerTrees.entries()) {
-        const layer = innerTree[0]
-        const b = new Uint8Array(layer.subarray(i * 32, i * 32 + 32))
-        if (ONEUtil.bytesEqual(b, expectedLeaf)) {
-          index = i
-          treeIndex = ind
-          console.log(`Matching tree index ${treeIndex} at position ${index}`)
-          break
-          // console.log(`Matching index: ${ind} (expected ${treeIndex}), at ${i} (expected ${index})`)
-        }
-      }
-      if (index !== null && treeIndex !== null) {
-        break
-      }
-    }
-    if (index === null || treeIndex === null) {
-      message.error('Code is incorrect. Please start over.')
-      resetOtps()
-      return
-    }
-    const layers = innerTrees[treeIndex]
     SmartFlows.commitReveal({
       wallet,
       otp: otps,
-      eotpBuilder: EotpBuilders.restore,
-      index,
-      layers,
+      deriver: EOTPDerivation.deriveSuperEOTP,
+      effectiveTime: innerCores[0].effectiveTime,
+      innerTrees,
       commitHashGenerator: ONE.computeDataHash,
       commitHashArgs: { data: ONEUtil.hexStringToBytes(data) },
-      prepareProof: () => setStage(0),
-      beforeCommit: () => setStage(1),
-      afterCommit: () => setStage(2),
       revealAPI: api.relayer.reveal,
       revealArgs: { ...ONEConstants.NullOperationParams, data, operationType: ONEConstants.OperationType.DISPLACE },
       overrideVersion: true,

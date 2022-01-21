@@ -3,7 +3,9 @@ import { useSelector, useDispatch } from 'react-redux'
 import { Route, Switch, Redirect } from 'react-router-dom'
 import { persistStore } from 'redux-persist'
 import Paths from './constants/paths'
-import { Layout, Row, Spin } from 'antd'
+import Layout from 'antd/es/layout'
+import Row from 'antd/es/row'
+import Spin from 'antd/es/spin'
 import SiderMenu from './components/SiderMenu'
 import WalletHeader from './components/WalletHeader'
 import CreatePage from './pages/Create'
@@ -33,7 +35,7 @@ const LocalRoutes = () => {
 
   useEffect(() => {
     dispatch(cacheActions.fetchVersion({ network }))
-    dispatch(cacheActions.clearCode())
+    // dispatch(cacheActions.clearCode())
   }, [])
   useEffect(() => {
     if (needCodeUpdate || clientVersion !== config.version) {

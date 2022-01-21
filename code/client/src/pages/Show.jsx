@@ -36,6 +36,7 @@ import NFTDashboard from './Show/NFTDashboard'
 import Reclaim from './Show/Reclaim'
 import Extend from './Show/Extend'
 import CheckRoots from './Show/CheckRoots'
+import Limit from './Show/Limit'
 
 const tabList = [
   { key: 'coins', tab: 'Coins' },
@@ -48,6 +49,21 @@ const tabList = [
   { key: 'sign', tab: 'Sign', dev: true, expert: true },
   { key: 'qr' },
   { key: 'scan' }
+]
+
+const SectionList = [
+  'transfer',
+  'limit',
+  'recover',
+  'setRecoveryAddress',
+  'domain',
+  'domainTransfer',
+  'reclaim',
+  'extend',
+]
+
+const SpecialCommands = [
+  'upgrade'
 ]
 
 const Show = () => {
@@ -63,6 +79,7 @@ const Show = () => {
   const selectedAddress = useSelector(state => state.global.selectedWallet)
   const wallet = wallets[address] || {}
   const [section, setSection] = useState(action)
+  const [command, setCommand] = useState(action)
   const network = useSelector(state => state.global.network)
   const [activeTab, setActiveTab] = useState('coins')
   const { expert } = wallet
@@ -94,12 +111,20 @@ const Show = () => {
     if (action !== 'nft' && action !== 'transfer' && selectedToken.key !== 'one' && selectedToken.tokenType !== ONEConstants.TokenType.ERC20) {
       dispatch(walletActions.setSelectedToken({ token: null, address }))
     }
+    if (SpecialCommands.includes(action)) {
+      setCommand(action)
+    } else {
+      setCommand('')
+    }
     if (tabList.find(t => t.key === action)) {
       setSection(undefined)
       setActiveTab(action)
       return
+    } else if (SectionList.includes(action)) {
+      setSection(action)
+      return
     }
-    setSection(action)
+    setSection('')
   }, [location])
 
   const showTab = (tab) => { history.push(Paths.showAddress(oneAddress, tab)) }
@@ -134,12 +159,13 @@ const Show = () => {
           {activeTab === 'scan' && <Scan address={address} />}
           {activeTab === 'call' && <Call address={address} headless />}
           {activeTab === 'sign' && <Sign address={address} headless />}
-          <Upgrade address={address} />
+          <Upgrade address={address} prompt={command === 'upgrade'} onClose={showStartScreen} />
           <CheckForwardState address={address} onClose={() => history.push(Paths.wallets)} />
           <CheckRoots address={address} onClose={() => history.push(Paths.wallets)} />
         </AnimatedSection>}
 
       {section === 'transfer' && <Send address={address} onClose={showStartScreen} />}
+      {section === 'limit' && <Limit address={address} onClose={showStartScreen} />}
       {section === 'recover' && <DoRecover address={address} onClose={showStartScreen} />}
       {section === 'setRecoveryAddress' && <SetRecovery address={address} onClose={showStartScreen} />}
       {section === 'domain' && <PurchaseDomain address={address} onClose={showStartScreen} />}

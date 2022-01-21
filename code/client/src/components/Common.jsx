@@ -14,12 +14,27 @@ export const useWallet = ({ address }) => {
   }
 }
 
-export const useOps = ({ address }) => {
+const useOpsBase = ({ address }) => {
   const { dispatch, wallets, wallet, network } = useWallet({ address })
   const [stage, setStage] = useState(-1)
+  const { isMobile, os } = useWindowDimensions()
+  return {
+    dispatch,
+    wallets,
+    wallet,
+    network,
+    stage,
+    setStage,
+    isMobile,
+    os
+  }
+}
+
+export const useOps = ({ address }) => {
+  const { dispatch, wallets, wallet, network, stage, setStage, isMobile, os } = useOpsBase({ address })
   const { resetWorker, recoverRandomness } = useRandomWorker()
   const { state: otpState } = useOtpState()
-  const { isMobile, os } = useWindowDimensions()
+
   return {
     dispatch,
     wallets,
@@ -35,6 +50,58 @@ export const useOps = ({ address }) => {
   }
 }
 
+export const useSuperOps = ({ address }) => {
+  const { dispatch, wallets, wallet, network, stage, setStage, isMobile, os } = useOpsBase({ address })
+  const otpStates = new Array(6).fill(0).map(() => useOtpState().state)
+  const resetOtps = () => {
+    for (let i = otpStates.length - 1; i >= 0; i--) {
+      otpStates[i].resetOtp(i > 0)
+    }
+    setStage(-1)
+  }
+
+  return {
+    dispatch,
+    wallets,
+    wallet,
+    network,
+    resetOtps,
+    stage,
+    setStage,
+    otpStates,
+    isMobile,
+    os
+  }
+}
+
+export const useOpsCombo = ({ address }) => {
+  const { dispatch, wallets, wallet, network, stage, setStage, isMobile, os } = useOpsBase({ address })
+  const otpStates = new Array(6).fill(0).map(() => useOtpState().state)
+  const { resetWorker, recoverRandomness } = useRandomWorker()
+  const { state: otpState } = useOtpState()
+  const resetOtps = () => {
+    for (let i = otpStates.length - 1; i >= 0; i--) {
+      otpStates[i].resetOtp(i > 0)
+    }
+    setStage(-1)
+  }
+  return {
+    dispatch,
+    wallets,
+    wallet,
+    network,
+    stage,
+    setStage,
+    resetWorker,
+    recoverRandomness,
+    resetOtps,
+    otpState: { doubleOtp: wallet.doubleOtp, ...otpState },
+    otpStates,
+    isMobile,
+    os
+  }
+}
+
 export const getDataFromFile = file =>
   new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -42,3 +109,17 @@ export const getDataFromFile = file =>
     reader.addEventListener('error', () => reject(reader.error))
     reader.readAsArrayBuffer(file)
   })
+
+export const getTextFromFile = file =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.addEventListener('load', () => resolve(reader.result))
+    reader.addEventListener('error', () => reject(reader.error))
+    reader.readAsText(file)
+  })
+
+export const getDataURLFromFile = (img) => new Promise((resolve) => {
+  const reader = new FileReader()
+  reader.addEventListener('load', () => resolve(reader.result))
+  reader.readAsDataURL(img)
+})

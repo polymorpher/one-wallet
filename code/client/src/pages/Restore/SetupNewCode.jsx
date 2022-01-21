@@ -1,4 +1,5 @@
-import { Button, Space } from 'antd'
+import Button from 'antd/es/button'
+import Space from 'antd/es/space'
 import { Hint, Title } from '../../components/Text'
 import { buildQRCodeComponent, getQRCodeUri, getSecondCodeName, OTPUriMode } from '../../components/OtpTools'
 import { OtpSetup, TwoCodeOption } from '../../components/OtpSetup'
@@ -32,7 +33,7 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
   const [effectiveTime, setEffectiveTime] = useState()
   const [layers, setLayers] = useState()
   const securityParameters = wallet ? ONEUtil.securityParameters(wallet) : {}
-  const duration = WalletConstants.defaultDuration
+  const duration = wallet.duration || WalletConstants.defaultDuration
 
   useEffect(() => {
     setWorker(new Worker('/ONEWalletWorker.js'))
@@ -122,6 +123,7 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
         onProgressUpdate && onProgressUpdate({ progress, stage })
       }
       if (status === 'done') {
+        message.debug(`[SetupNewCode] done salt=${salt}`)
         const { root, layers, doubleOtp, innerTrees, hseed } = result
         setHseed(hseed)
         setRoot(root)
@@ -131,7 +133,7 @@ const SetupNewCode = ({ name, expert, active, wallet, onComplete, onCancel, onCo
         onProgressUpdate && onProgressUpdate({ computing: false })
       }
     }
-    console.log('[Extend] Posting to worker')
+    message.debug(`[SetupNewCode] Posting to worker salt=${salt}`)
     worker && worker.postMessage({
       seed,
       salt,

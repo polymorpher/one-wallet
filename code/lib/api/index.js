@@ -1,7 +1,7 @@
 const axios = require('axios')
 const config = require('../config/provider').getConfig()
-const { isEqual } = require('lodash')
 const Contract = require('web3-eth-contract')
+const isEqual = require('lodash/fp/isEqual')
 const { TruffleProvider } = require('@harmony-js/core')
 const Web3 = require('web3')
 const ONEWalletContractAbi = require('../../build/abi/IONEWallet.json')
@@ -41,10 +41,12 @@ const headers = ({ secret, network, majorVersion, minorVersion }) => ({
   'X-MINOR-VERSION': minorVersion,
 })
 
+const TIMEOUT = 60000
+
 let base = axios.create({
   baseURL: config.defaults.relayer,
   headers: headers(apiConfig.secret, apiConfig.network),
-  timeout: 15000,
+  timeout: TIMEOUT,
 })
 
 const initAPI = (store) => {
@@ -64,7 +66,7 @@ const initAPI = (store) => {
       base = axios.create({
         baseURL: relayer,
         headers: headers({ secret, network, majorVersion, minorVersion }),
-        timeout: 15000,
+        timeout: TIMEOUT,
       })
     }
     // console.log('api update: ', { relayer, network, secret })

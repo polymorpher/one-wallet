@@ -10,6 +10,8 @@ import { globalActions } from '../state/modules/global'
 import RequestCall from './RequestCall'
 import AnimatedSection from '../components/AnimatedSection'
 import RequestSignature from './RequestSignature'
+import message from '../message'
+import { Text } from '../components/Text'
 
 const WalletAuth = () => {
   const dispatch = useDispatch()
@@ -22,7 +24,7 @@ const WalletAuth = () => {
   const caller = qs.caller
   const network = qs.network
   const { amount, dest, from, calldata } = qs
-  const { message, raw, duration, comment } = qs
+  const { message: msg, raw, duration, comment } = qs
   // if (!action || !callback || !caller) {
   //   return <Redirect to={Paths.wallets} />
   // }
@@ -56,7 +58,7 @@ const WalletAuth = () => {
       {action === 'connect' && <ConnectWallet caller={caller} callback={callback} />}
       {action === 'pay' && <RequestPayment caller={caller} callback={callback} amount={amount} dest={dest} from={from} />}
       {action === 'call' && <RequestCall caller={caller} callback={callback} amount={amount} calldata={calldata} from={from} dest={dest} />}
-      {action === 'sign' && <RequestSignature caller={caller} callback={callback} messageB64Encoded={message} commentB64Encoded={comment} raw={raw} duration={duration} from={from} />}
+      {action === 'sign' && <RequestSignature caller={caller} callback={callback} messageB64Encoded={msg} commentB64Encoded={comment} raw={raw} duration={duration} from={from} />}
     </>
   )
 }

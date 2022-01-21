@@ -225,7 +225,7 @@ router.post('/reveal', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
       tx = await wallet.reveal([neighbors, index, eotp], [operationType, tokenType, contractAddress, tokenId, dest, amount, data])
     }
     const parsedTx = parseTx(tx)
-    console.log('/reveal', parsedTx)
+    console.log('/reveal', JSON.stringify(parsedTx, null, 2))
     return res.json(parsedTx)
   } catch (ex) {
     console.error(ex)
@@ -243,6 +243,7 @@ router.post('/retire', generalLimiter({ max: 6 }), walletAddressLimiter({ max: 6
   try {
     const wallet = await req.contract.at(address)
     const tx = await wallet.retire()
+    console.log('/retire', JSON.stringify(parseTx(tx), null, 2))
     return res.json(parseTx(tx))
   } catch (ex) {
     console.error(ex)

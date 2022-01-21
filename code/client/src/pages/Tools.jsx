@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import AnimatedSection from '../components/AnimatedSection'
-import { Typography, Divider, Button, Space, Image, Row } from 'antd'
+import Typography from 'antd/es/typography'
+import Divider from 'antd/es/divider'
+import Button from 'antd/es/button'
+import Space from 'antd/es/space'
+import Image from 'antd/es/image'
+import Row from 'antd/es/row'
 import message from '../message'
 import { useSelector } from 'react-redux'
 import { Hint, InputBox, LabeledRow } from '../components/Text'
@@ -151,7 +156,7 @@ const addHarmonyNetwork = async () => {
   try {
     await window.ethereum.request({
       method: 'wallet_switchEthereumChain',
-      params: [{ chainId: '0x63564C40' }],
+      params: [{ chainId: 1666600000 }],
     })
     message.success('Switched to Harmony Network on MetaMask')
   } catch (ex) {
@@ -164,7 +169,7 @@ const addHarmonyNetwork = async () => {
       await window.ethereum.request({
         method: 'wallet_addEthereumChain',
         params: [{
-          chainId: '0x63564C40', // A 0x-prefixed hexadecimal string
+          chainId: 1666600000, // A 0x-prefixed hexadecimal string
           chainName: 'Harmony Mainnet Shard 0',
           nativeCurrency: {
             name: 'ONE',
@@ -172,7 +177,7 @@ const addHarmonyNetwork = async () => {
             decimals: 18
           },
           rpcUrls: ['https://api.harmony.one'],
-          blockExplorerUrls: ['https://www.harmony.one/']
+          blockExplorerUrls: ['https://explorer.harmony.one/']
         }]
       })
       message.success('Added Harmony Network on MetaMask')

@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Row, Space, Spin, Typography } from 'antd'
+import Button from 'antd/es/button'
+import Row from 'antd/es/row'
+import Space from 'antd/es/space'
+import Spin from 'antd/es/spin'
+import Typography from 'antd/es/typography'
 import message from '../../message'
 import api from '../../api'
-import util, { useWaitExecution, useWindowDimensions } from '../../util'
+import util, { autoWalletNameHint, useWaitExecution, useWindowDimensions } from '../../util'
 import ONEUtil from '../../../../lib/util'
 import ONENames from '../../../../lib/names'
 import { useDispatch, useSelector } from 'react-redux'
 import { AutoResizeInputBox, Warning, Hint } from '../../components/Text'
 import { walletActions } from '../../state/modules/wallet'
 import AnimatedSection from '../../components/AnimatedSection'
-import { CloseOutlined } from '@ant-design/icons'
+import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import BN from 'bn.js'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
@@ -229,7 +233,7 @@ const PurchaseDomain = ({ address, onClose }) => {
           validatedDomain={validatedSubdomain}
         />
       </Row>
-      {available && <OtpStack walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)} doubleOtp={doubleOtp} otpState={otpState} onComplete={doPurchase} action='buy now' />}
+      {available && <OtpStack walletName={autoWalletNameHint(wallet)} doubleOtp={doubleOtp} otpState={otpState} onComplete={doPurchase} action='buy now' />}
       <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
     </AnimatedSection>
   )

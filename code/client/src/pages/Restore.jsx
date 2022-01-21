@@ -1,9 +1,12 @@
 import React, { useState } from 'react'
-import { ScanOutlined, FieldBinaryOutlined } from '@ant-design/icons'
+import ScanOutlined from '@ant-design/icons/ScanOutlined'
+import FieldBinaryOutlined from '@ant-design/icons/FieldBinaryOutlined'
 import { useHistory } from 'react-router'
 import { Heading, Hint } from '../components/Text'
 import AnimatedSection from '../components/AnimatedSection'
-import { Space, Button, Divider } from 'antd'
+import Space from 'antd/es/space'
+import Button from 'antd/es/button'
+import Divider from 'antd/es/divider'
 import message from '../message'
 import Paths from '../constants/paths'
 import RestoreByCodes from './Restore/RestoreByCodes'
@@ -87,8 +90,8 @@ const Restore = () => {
             onCancel={() => setSection(Sections.Choose)}
           />
         </AnimatedSection>}
-      {section === Sections.SetupNewCode &&
-        <AnimatedSection>
+      {(section === Sections.SetupNewCode || section === Sections.RecoveryCode) &&
+        <AnimatedSection show={section === Sections.SetupNewCode}>
           <SetupNewCode
             wallet={walletInfo}
             name={name}

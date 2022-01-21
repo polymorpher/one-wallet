@@ -1,8 +1,11 @@
 import React, { useState } from 'react'
 import message from '../message'
 import storage from '../storage'
-import { Button, Modal, Typography } from 'antd'
-import { ExportOutlined, LoadingOutlined } from '@ant-design/icons'
+import Button from 'antd/es/button'
+import Modal from 'antd/es/modal'
+import Typography from 'antd/es/typography'
+import ExportOutlined from '@ant-design/icons/ExportOutlined'
+import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import { SimpleWalletExport, InnerTree } from '../proto/wallet'
 import util from '../util'
 const { Text, Link, Paragraph } = Typography
@@ -37,7 +40,7 @@ const LocalExport = ({ wallet }) => {
 
       const filename = `${wallet.name.toLowerCase().split(' ').join('-')}-${oneAddress}.1wallet`
 
-      const innerTrees = await Promise.all(wallet.innerRoots.map(r => storage.getItem(r)))
+      const innerTrees = await Promise.all((wallet.innerRoots || []).map(r => storage.getItem(r)))
       if (innerTrees.filter(e => e).length !== innerTrees.length) {
         message.error('Storage is corrupted. Please restore the wallet using some other way')
         return

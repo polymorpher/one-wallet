@@ -1,13 +1,17 @@
 import React, { useState } from 'react'
-import { Button, Space, Typography, Input, Col } from 'antd'
+import Button from 'antd/es/button'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
+import Input from 'antd/es/input'
+import Col from 'antd/es/col'
 import message from '../../message'
-import { CloseOutlined } from '@ant-design/icons'
+import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import { Hint, InputBox, Label, Warning } from '../../components/Text'
 import { AverageRow, TallRow } from '../../components/Grid'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
-import util, { useWindowDimensions } from '../../util'
+import util, { autoWalletNameHint, useWindowDimensions } from '../../util'
 import BN from 'bn.js'
 import ShowUtils from './show-util'
 import { useSelector } from 'react-redux'
@@ -211,7 +215,7 @@ const Call = ({
       <AverageRow align='middle'>
         <Col span={24}>
           <OtpStack
-            walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)}
+            walletName={autoWalletNameHint(wallet)}
             doubleOtp={doubleOtp}
             otpState={otpState}
             onComplete={doCall}

@@ -1,16 +1,22 @@
 import { batch, useDispatch, useSelector } from 'react-redux'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import ONEConstants from '../../../../lib/constants'
 import ONEUtil from '../../../../lib/util'
-import util, { useWindowDimensions } from '../../util'
+import util, { autoWalletNameHint, useWindowDimensions } from '../../util'
 import config from '../../config'
 import BN from 'bn.js'
-import { Button, Card, Typography, Space, Row, Steps, Timeline } from 'antd'
+import Button from 'antd/es/button'
+import Card from 'antd/es/card'
+import Typography from 'antd/es/typography'
+import Space from 'antd/es/space'
+import Row from 'antd/es/row'
+import Steps from 'antd/es/steps'
+import Timeline from 'antd/es/timeline'
 import message from '../../message'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
 import ShowUtils from './show-util'
-import { Flows, SmartFlows } from '../../../../lib/api/flow'
+import { EOTPDerivation, Flows, SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import { api } from '../../../../lib/api'
 import { walletActions } from '../../state/modules/wallet'
@@ -32,7 +38,7 @@ const CardStyle = {
   WebkitBackdropFilter: 'blur(10px)'
 }
 
-const Upgrade = ({ address, onClose }) => {
+const Upgrade = ({ address, prompt, onClose }) => {
   const history = useHistory()
   const dispatch = useDispatch()
   const network = useSelector(state => state.global.network)
@@ -60,7 +66,13 @@ const Upgrade = ({ address, onClose }) => {
   const [stage, setStage] = useState(-1)
   const { resetWorker, recoverRandomness } = useRandomWorker()
 
-  const { prepareValidation, prepareProofFailed, onRevealSuccess, ...helpers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
+  useEffect(() => {
+    if (prompt) {
+      setSkipUpdate(false)
+    }
+  }, [prompt])
+
+  const { prepareValidation, prepareProof, prepareProofFailed, onRevealSuccess, ...helpers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
 
   const doUpgrade = async () => {
     if (stage >= 0) {
@@ -70,13 +82,13 @@ const Upgrade = ({ address, onClose }) => {
 
     if (invalidOtp || invalidOtp2) return
 
-    const { eotp, index, layers } = await Flows.deriveEOTP({ otp, otp2, wallet, prepareProofFailed })
+    prepareProof && prepareProof()
+    const { eotp, index, layers } = await EOTPDerivation.deriveEOTP({ otp, otp2, wallet, prepareProofFailed })
     if (!eotp) {
       return
     }
-    message.info('Retrieving latest information for the wallet...')
 
-    setStage(0)
+    message.info('Retrieving latest information for the wallet...')
     const {
       root,
       height,
@@ -112,7 +124,7 @@ const Upgrade = ({ address, onClose }) => {
       ])
     }
     identificationKeys.unshift(upgradeIdentificationKey)
-    const transformedLastResortAddress = util.isDefaultRecoveryAddress(lastResortAddress) ? ONEConstants.TreasuryAddress : lastResortAddress
+    const transformedLastResortAddress = util.isDefaultRecoveryAddress(lastResortAddress) || util.isBlacklistedAddress(lastResortAddress) ? ONEConstants.TreasuryAddress : lastResortAddress
     const { address: newAddress } = await api.relayer.create({
       root,
       height,
@@ -160,6 +172,8 @@ const Upgrade = ({ address, onClose }) => {
         const newWallet = {
           ...wallet,
           address: newAddress,
+          innerRoots: wallet.innerRoots || [],
+          identificationKeys: wallet.identificationKeys || [],
           backlinks,
           _merge: true
         }
@@ -252,7 +266,7 @@ const Upgrade = ({ address, onClose }) => {
               </>}
             {!needSetRecoveryAddressFirst &&
               <>
-                <OtpStack shouldAutoFocus walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)} doubleOtp={doubleOtp} otpState={otpState} onComplete={doUpgrade} action='confirm upgrade' />
+                <OtpStack shouldAutoFocus walletName={autoWalletNameHint(wallet)} doubleOtp={doubleOtp} otpState={otpState} onComplete={doUpgrade} action='confirm upgrade' />
 
                 <Title level={3}>
                   How upgrade works:

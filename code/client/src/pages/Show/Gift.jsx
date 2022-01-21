@@ -1,13 +1,18 @@
 import { useSelector } from 'react-redux'
 import React, { useEffect, useState } from 'react'
-import { Button, Row, Space, Typography, Select, Image, Tooltip } from 'antd'
-import {
-  CloseCircleOutlined,
-  PlusCircleOutlined, QuestionCircleOutlined,
-} from '@ant-design/icons'
+import Button from 'antd/es/button'
+import Row from 'antd/es/row'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
+import Select from 'antd/es/select'
+import Image from 'antd/es/image'
+import Tooltip from 'antd/es/tooltip'
+import CloseCircleOutlined from '@ant-design/icons/CloseCircleOutlined'
+import PlusCircleOutlined from '@ant-design/icons/PlusCircleOutlined'
+import QuestionCircleOutlined from '@ant-design/icons/QuestionCircleOutlined'
 import { Hint, InputBox, Label } from '../../components/Text'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
-import util, { generateOtpSeed, useWindowDimensions } from '../../util'
+import util, { autoWalletNameHint, generateOtpSeed, useWindowDimensions } from '../../util'
 import BN from 'bn.js'
 import ShowUtils from './show-util'
 import { SmartFlows } from '../../../../lib/api/flow'
@@ -401,7 +406,7 @@ const Gift = ({
           {redPacketAddress &&
             <>
               <TallRow>
-                <OtpStack walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)} doubleOtp={doubleOtp} otpState={otpState} onComplete={createRedPacket} action='confirm transfer assets' />
+                <OtpStack walletName={autoWalletNameHint(wallet)} doubleOtp={doubleOtp} otpState={otpState} onComplete={createRedPacket} action='confirm transfer assets' />
               </TallRow>
             </>}
           <Hint>

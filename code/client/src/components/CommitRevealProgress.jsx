@@ -1,4 +1,6 @@
-import { Row, Spin, Steps } from 'antd'
+import Row from 'antd/es/row'
+import Spin from 'antd/es/spin'
+import Steps from 'antd/es/steps'
 import React from 'react'
 import { useWindowDimensions } from '../util'
 const { Step } = Steps

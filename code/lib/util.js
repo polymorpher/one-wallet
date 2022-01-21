@@ -12,7 +12,7 @@ const uts46 = require('idna-uts46')
 const abi = require('web3-eth-abi')
 const web3utils = require('web3-utils')
 const elliptic = require('elliptic')
-const { range } = require('lodash')
+const range = require('lodash/fp/range')
 
 const utils = {
   hexView: (bytes) => {
@@ -166,6 +166,12 @@ const utils = {
       }
     }
     return codes
+  },
+
+  genOTPStr: ({ seed, interval = 30000, counter = Math.floor(Date.now() / interval), n = 1 }) => {
+    const otps = utils.genOTP({ seed, interval, counter, n })
+    const nums = new Array(6).fill(0).map((a, i) => new Uint8Array(otps.slice(i * 4, (i + 1) * 4))).map(utils.decodeOtp)
+    return nums.map(i => i.toString().padStart(6, '0'))
   },
 
   encodeNumericalOtp: (otp) => {
@@ -390,13 +396,16 @@ const utils = {
 
   makeCore: ({ effectiveTime, duration, height, slotSize = 1, interval = 30000, root }) => {
     const t0 = effectiveTime / interval
+    if (t0 !== Math.floor(t0)) {
+      throw new Error(`effectiveTime [${effectiveTime}] is not a multiple of interval ${interval}, please check parameter validity`)
+    }
     const lifespan = duration / interval
     return [utils.hexString(root), height, interval / 1000, t0, lifespan, slotSize]
   },
 
   // core retrieved from blockchain
   processCore: (info, raw) => {
-    const [root, height, interval, t0, lifespan, maxOperationsPerInterval] = range(6).map(k => info[k])
+    const [root, height, interval, t0, lifespan, maxOperationsPerInterval] = range(0, 6).map(k => info[k])
     const intervalMs = new BN(interval).toNumber() * 1000
     return raw ? {
       root,

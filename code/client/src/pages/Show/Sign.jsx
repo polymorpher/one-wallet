@@ -1,6 +1,14 @@
 import React, { useState } from 'react'
-import { Button, Row, Space, Typography, Input, Checkbox, Tooltip, Slider } from 'antd'
-import { CloseOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+import Row from 'antd/es/row'
+import Slider from 'antd/es/slider'
+import Tooltip from 'antd/es/tooltip'
+import Input from 'antd/es/input'
+import Checkbox from 'antd/es/checkbox'
+import Button from 'antd/es/button'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
+import CloseOutlined from '@ant-design/icons/CloseOutlined'
+import QuestionCircleOutlined from '@ant-design/icons/QuestionCircleOutlined'
 import { Hint, Label, Warning } from '../../components/Text'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
@@ -16,6 +24,7 @@ import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
 import humanizeDuration from 'humanize-duration'
 import ONENames from '../../../../lib/names'
+import { autoWalletNameHint } from '../../util'
 const { Title } = Typography
 const { TextArea } = Input
 
@@ -149,7 +158,7 @@ const Sign = ({
             />
             <Hint>{humanizeDuration(duration, { largest: 2, round: true })}</Hint>
           </Space>}
-        <OtpStack shouldAutoFocus={shouldAutoFocus} wideLabel walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)} doubleOtp={doubleOtp} otpState={otpState} onComplete={doSign} action='confirm' />
+        <OtpStack shouldAutoFocus={shouldAutoFocus} wideLabel walletName={autoWalletNameHint(wallet)} doubleOtp={doubleOtp} otpState={otpState} onComplete={doSign} action='confirm' />
       </Space>
       <Row justify='start' style={{ marginTop: 24 }}>
         <Button size='large' type='text' onClick={onClose} danger>Cancel</Button>

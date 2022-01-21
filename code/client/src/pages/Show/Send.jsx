@@ -1,11 +1,14 @@
 import React, { useState } from 'react'
-import { Button, Col, Row, Typography } from 'antd'
-import { CloseOutlined } from '@ant-design/icons'
+import Button from 'antd/es/button'
+import Col from 'antd/es/col'
+import Row from 'antd/es/row'
+import Typography from 'antd/es/typography'
+import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import { Hint, InputBox, Label, Warning } from '../../components/Text'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
-import util, { useWindowDimensions } from '../../util'
+import util, { autoWalletNameHint, useWindowDimensions } from '../../util'
 import BN from 'bn.js'
 import ShowUtils from './show-util'
 import { useDispatch, useSelector } from 'react-redux'
@@ -14,7 +17,7 @@ import { SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import { api } from '../../../../lib/api'
 import { Chaining } from '../../api/flow'
-import { intersection } from 'lodash'
+import intersection from 'lodash/fp/intersection'
 import ONEConstants from '../../../../lib/constants'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
@@ -223,7 +226,7 @@ const Send = ({
       <Row align='middle'>
         <Col span={24}>
           <OtpStack
-            walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)}
+            walletName={autoWalletNameHint(wallet)}
             doubleOtp={doubleOtp}
             otpState={otpState}
             onComplete={doSend}

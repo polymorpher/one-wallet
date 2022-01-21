@@ -1,5 +1,5 @@
 import React from 'react'
-import { Space } from 'antd'
+import Space from 'antd/es/space'
 import { useOtpState, OtpStack } from './OtpStack'
 
 // a stack of 6 otps
@@ -27,9 +27,9 @@ export const OtpSuperStack = ({
           onComplete={() => handleOnComplete(i)}
           wideLabel={wideLabel}
           walletName={walletName}
-          shouldAutoFocus={i === 0 && shouldAutoFocus}
+          shouldAutoFocus={shouldAutoFocus && (i === 0)}
           isDisabled={isDisabled}
-          action={i === 5 && action}
+          action={(i === 5) && action}
         />
       )}
     </Space>

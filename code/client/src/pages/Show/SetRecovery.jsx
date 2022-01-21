@@ -1,6 +1,8 @@
-import { Button, Space, Typography } from 'antd'
+import Button from 'antd/es/button'
+import Space from 'antd/es/space'
+import Typography from 'antd/es/typography'
 import message from '../../message'
-import { CloseOutlined } from '@ant-design/icons'
+import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import { Hint, Label } from '../../components/Text'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
@@ -14,7 +16,7 @@ import ShowUtils from './show-util'
 import { useDispatch, useSelector } from 'react-redux'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
-import { useWindowDimensions } from '../../util'
+import { autoWalletNameHint, useWindowDimensions } from '../../util'
 import ONENames from '../../../../lib/names'
 const { Title } = Typography
 
@@ -92,7 +94,7 @@ const SetRecovery = ({ address, onClose }) => {
             currentWallet={wallet}
           />
         </Space>
-        <OtpStack walletName={ONENames.nameWithTime(wallet.name, wallet.effectiveTime)} otpState={otpState} doubleOtp={wallet.doubleOtp} onComplete={doSetRecoveryAddress} action='confirm' />
+        <OtpStack walletName={autoWalletNameHint(wallet)} otpState={otpState} doubleOtp={wallet.doubleOtp} onComplete={doSetRecoveryAddress} action='confirm' />
       </Space>
       <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
     </AnimatedSection>

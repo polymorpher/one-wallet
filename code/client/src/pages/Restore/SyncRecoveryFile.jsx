@@ -1,6 +1,9 @@
 import { Hint, Text, Title } from '../../components/Text'
-import { Button, Upload, Space } from 'antd'
-import { LoadingOutlined, UploadOutlined } from '@ant-design/icons'
+import Button from 'antd/es/button'
+import Upload from 'antd/es/upload'
+import Space from 'antd/es/space'
+import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
+import UploadOutlined from '@ant-design/icons/UploadOutlined'
 import React, { useState } from 'react'
 import message from '../../message'
 import { SimpleWalletExport } from '../../proto/wallet'
@@ -61,7 +64,7 @@ const SyncRecoveryFile = ({ onSynced, onCancel }) => {
       >
         <Button shape='round' size='large' icon={uploading ? <LoadingOutlined /> : <UploadOutlined />}>Select your wallet recovery file</Button>
       </Upload>
-      <Hint>Your wallet recovery file ends with file extension <Text style={{ color: 'red' }}>.recovery.1wallet</Text></Hint>
+      <Hint>Your wallet recovery file ends with file extension <Text style={{ color: 'red' }}>.recover1wallet</Text></Hint>
       <Button size='large' type='text' onClick={onCancel} danger>Cancel</Button>
     </Space>
   )

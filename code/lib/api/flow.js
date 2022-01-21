@@ -7,6 +7,7 @@ const { api } = require('./index')
 const EventMessage = require('../event-message')
 const EventMaps = require('../events-map.json')
 const BN = require('bn.js')
+const WalletConstants = require('../../client/src/constants/wallet')
 
 const EotpBuilders = {
   fromOtp: async ({ otp, otp2, rand, nonce, wallet }) => {
@@ -59,7 +60,7 @@ const Committer = {
   }
 }
 
-const Flows = {
+const EOTPDerivation = {
   deriveEOTP: async ({
     otp, otp2, wallet, eotpBuilder = EotpBuilders.fromOtp,
     recoverRandomness = null, prepareProof = null, prepareProofFailed = null,
@@ -145,10 +146,72 @@ const Flows = {
     message.debug(`eotp=${ONEUtil.hexString(eotp)} index=${index}`)
     return { eotp, index, layers }
   },
+
+  // otp,
+  // otp2,
+  // eotpBuilder,
+  // recoverRandomness,
+  // prepareProof,
+  // prepareProofFailed,
+  // wallet,
+  // layers,
+  // index,
+  // message
+
+  deriveSuperEOTP: async ({ otp, wallet, effectiveTime = null, innerTrees = null, prepareProof, prepareProofFailed, message = messager }) => {
+    const { innerRoots } = wallet
+    prepareProof && prepareProof()
+    const effectiveTimes = effectiveTime ? [effectiveTime] : [ wallet.effectiveTime, ...wallet?.oldInfos?.map(o => o.effectiveTime) ]
+    innerTrees = innerTrees || (await Promise.all(innerRoots.map(r => storage.getItem(r))))
+    if (!innerTrees || innerTrees.includes(null)) {
+      message.error('Wallet storage is inconsistent. Please delete this wallet then restore it.')
+      prepareProofFailed && prepareProofFailed()
+      return
+    }
+    const eotp = await EotpBuilders.restore({ otp })
+    const expectedLeaf = ONEUtil.sha256(eotp)
+    // console.log({ expectedLeaf, eotp })
+    let index = null
+    let treeIndex = null
+    const search = () => {
+      for (const [eind, effectiveTime] of effectiveTimes.entries()) {
+        const maxIndex = ONEUtil.timeToIndex({ effectiveTime, interval: WalletConstants.interval6 })
+        // const treeIndex = ONEUtil.timeToIndex({ effectiveTime: wallet.effectiveTime }) % innerTrees.length
+        const maxIndexAcrossTrees = Math.max(...innerTrees.map(t => t[0].length / 32))
+        message.debug(`[eind=${eind} effectiveTime=${effectiveTime}] maxIndex:${maxIndex}, maxIndexAcrossTrees:${maxIndexAcrossTrees} }`)
+        for (let i = Math.min(maxIndexAcrossTrees - 1, maxIndex + 1); i >= 0; i--) {
+          // for (let i = 0; i < maxIndexAcrossTrees; i++) {
+          for (const [ind, innerTree] of innerTrees.entries()) {
+            const layer = innerTree[0]
+            const b = new Uint8Array(layer.subarray(i * 32, i * 32 + 32))
+            if (ONEUtil.bytesEqual(b, expectedLeaf)) {
+              index = i
+              treeIndex = ind
+              console.log(`Matching tree index ${treeIndex} at position ${index}`)
+              return
+              // console.log(`Matching index: ${ind} (expected ${treeIndex}), at ${i} (expected ${index})`)
+            }
+          }
+        }
+      }
+    }
+    search()
+
+    if (index === null || treeIndex === null) {
+      message.error('Code is incorrect. Please start over.')
+      prepareProofFailed && prepareProofFailed()
+      return
+    }
+    const layers = innerTrees[treeIndex]
+    return { index, layers, eotp }
+  }
+}
+
+const Flows = {
   commitReveal: async ({
     otp, otp2, eotpBuilder = EotpBuilders.fromOtp, wallet,
     commitHashGenerator, commitHashArgs, revealAPI, revealArgs,
-
+    deriver = EOTPDerivation.deriveEOTP, effectiveTime = null, innerTrees = null,
     recoverRandomness = null, prepareProof = null, prepareProofFailed = null,
     index = null,
     eotp = null,
@@ -157,13 +220,13 @@ const Flows = {
     beforeCommit = null, afterCommit = null, onCommitError = null, onCommitFailure = null,
     onRevealFailure = null, onRevealSuccess = null, onRevealError = null, onRevealAttemptFailed = null,
     beforeReveal = null,
-    maxTransferAttempts = 3, checkCommitInterval = 4000,
+    maxTransferAttempts = 5, checkCommitInterval = 4000,
     message = messager,
     overrideVersion = false,
   }) => {
     const { address, majorVersion, minorVersion } = wallet
     if (!eotp) {
-      const derived = await Flows.deriveEOTP({
+      const derived = await deriver({
         otp,
         otp2,
         eotpBuilder,
@@ -173,6 +236,8 @@ const Flows = {
         wallet,
         layers,
         index,
+        effectiveTime,
+        innerTrees,
         message })
       eotp = derived?.eotp
       index = index || derived?.index
@@ -243,9 +308,9 @@ const Flows = {
         numAttemptsRemaining -= 1
         return tryReveal()
       }
-    }, checkCommitInterval)
+    }, (maxTransferAttempts - numAttemptsRemaining + 1) * 5000)
     return tryReveal()
-  }
+  },
 }
 
 const SecureFlows = {
@@ -372,7 +437,7 @@ const SmartFlows = {
     return Flows.commitReveal({
       ...args, wallet, committer: Committer.legacy
     })
-  }
+  },
 }
 
 module.exports = {
@@ -380,4 +445,5 @@ module.exports = {
   SecureFlows,
   Flows,
   SmartFlows,
+  EOTPDerivation
 }

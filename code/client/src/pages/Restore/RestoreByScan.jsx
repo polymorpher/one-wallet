@@ -4,7 +4,8 @@ import * as Sentry from '@sentry/browser'
 import { Heading, Hint, Text } from '../../components/Text'
 import ScanGASteps from '../../components/ScanGASteps'
 import QrCodeScanner from '../../components/QrCodeScanner'
-import { Button, Space } from 'antd'
+import Button from 'antd/es/button'
+import Space from 'antd/es/space'
 import AddressInput from '../../components/AddressInput'
 import WalletCreateProgress from '../../components/WalletCreateProgress'
 import React, { useEffect, useState, useRef } from 'react'
@@ -88,7 +89,7 @@ const RestoreByScan = ({ isActive, onComplete, onCancel }) => {
     f()
   }, [addressInput])
 
-  const onScan = async (e) => {
+  const onScan = async (e, isJson) => {
     if (e && !secret) {
       const now = performance.now()
       if (!(now - control.lastScan > config.scanDelay)) {
@@ -97,7 +98,9 @@ const RestoreByScan = ({ isActive, onComplete, onCancel }) => {
       control.lastScan = now
       try {
         let parsed
-        if (e.startsWith('otpauth://totp')) {
+        if (isJson) {
+          parsed = e
+        } else if (e.startsWith('otpauth://totp')) {
           parsed = parseOAuthOTP(e)
         } else {
           parsed = parseMigrationPayload(e)
@@ -105,8 +108,8 @@ const RestoreByScan = ({ isActive, onComplete, onCancel }) => {
         if (!parsed) {
           return
         }
-        message.debug(`Scanned: ${JSON.stringify(parsed)}`)
         const { secret2, secret, name: rawName } = parsed
+        message.debug(`Scanned name: ${rawName} | secret: ${secret && ONEUtil.base32Encode(secret)} | secret2: ${secret2 && ONEUtil.base32Encode(secret2)}`)
         const bundle = parseAuthAccountName(rawName)
         if (!bundle) {
           message.error('Bad authenticator account name. Expecting name, followed by time and address (optional)')

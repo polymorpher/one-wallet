@@ -1,7 +1,10 @@
-import { Button, Space, Tooltip } from 'antd'
+import Button from 'antd/es/button'
+import Space from 'antd/es/space'
+import Tooltip from 'antd/es/tooltip'
 import { Hint, Label } from './Text'
 import OtpBox from './OtpBox'
-import { QuestionCircleOutlined, SnippetsOutlined } from '@ant-design/icons'
+import QuestionCircleOutlined from '@ant-design/icons/QuestionCircleOutlined'
+import SnippetsOutlined from '@ant-design/icons/SnippetsOutlined'
 import React, { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router'
 import { useWindowDimensions } from '../util'
@@ -45,7 +48,7 @@ export const OtpStack = ({ isDisabled, shouldAutoFocus, wideLabel, walletName, o
   }, [otp2Input])
 
   useEffect(() => {
-    resetOtp && resetOtp() // Reset TOP input boxes on location change to make sure the input boxes are cleared.
+    (otpInput || otp2Input) && resetOtp && resetOtp() // Reset TOP input boxes on location change to make sure the input boxes are cleared.
   }, [location])
 
   return (
