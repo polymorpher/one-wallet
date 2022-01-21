@@ -216,7 +216,7 @@ const api = {
     },
     getInnerCores: async ({ address, raw }) => {
       const c = one(address)
-      const res = await c.getInnerCores().call()
+      const res = await c.methods.getInnerCores().call()
       return res.map(e => ONEUtil.processCore(e, raw))
     },
     getIdentificationKeys: async ({ address }) => {
