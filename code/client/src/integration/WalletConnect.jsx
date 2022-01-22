@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import * as WalletConnectClient from '@walletconnect/client'
+import WalletConnectClient from '@walletconnect/client'
 import { InputBox, Text } from '../components/Text'
 import Image from 'antd/es/image'
 import { Row } from 'antd/es/grid'
 import Button from 'antd/es/button'
 import cacheActions from '../state/modules/cache/actions'
 import AnimatedSection from '../components/AnimatedSection'
+import message from '../message'
 import Spin from 'antd/es/spin'
-import util from '../util'
+import util, { checkCamera } from '../util'
+import QrCodeScanner from '../components/QrCodeScanner'
 import { WalletSelector } from './Common'
 
-const WalletConnect = () => {
+const WalletConnect = ({ wc }) => {
   const dispatch = useDispatch()
   const wallets = useSelector(state => state.wallet)
   const walletConnectSession = useSelector(state => state.cache.walletConnectSession)
@@ -19,10 +21,27 @@ const WalletConnect = () => {
   const [selectedAddress, setSelectedAddress] = useState({ value: walletList[0] })
   const [connected, setConnected] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [useHex, setUseHex] = useState(false)
+  // Default to QR unless wc provided.
+  const [isScanMode, setScanMode] = useState(!wc)
+  const [hasCamera, setHasCamera] = useState(false)
   const [uri, setUri] = useState('')
   const [connector, setConnector] = useState(null)
   const [peerMeta, setPeerMeta] = useState(null)
+
+  useEffect(() => {
+    const f = async () => {
+      const [hasCamera] = await checkCamera()
+      setHasCamera(hasCamera)
+    }
+
+    f()
+  }, [])
+
+  useEffect(() => {
+    if (wc) {
+      initWalletConnect(wc)
+    }
+  }, [wc])
 
   const subscribeToEvents = (connector) => {
     console.log('ACTION', 'subscribeToEvents')
@@ -101,7 +120,7 @@ const WalletConnect = () => {
     }
   }, [])
 
-  const initWalletConnect = async (uri) => {
+  const initWalletConnect = async (uri, reportOnError = true) => {
     setLoading(true)
 
     try {
@@ -123,6 +142,9 @@ const WalletConnect = () => {
 
       subscribeToEvents(connector)
     } catch (error) {
+      if (reportOnError) {
+        message.error('Failed to connect.', 15)
+      }
       setLoading(false)
     }
   }
@@ -146,6 +168,10 @@ const WalletConnect = () => {
     if (connector) {
       connector.killSession()
     }
+  }
+
+  const onScan = (uri) => {
+    initWalletConnect(uri, /* reportOnError= */ false)
   }
 
   useEffect(() => {
@@ -184,8 +210,14 @@ const WalletConnect = () => {
               </>)
             : (
               <>
-                <WalletSelector onAddressSelected={setSelectedAddress} filter={e => e.majorVersion >= 10} showOlderVersions={false} useHex={useHex} />
-                <InputBox margin='auto' width={440} value={uri} onChange={({ target: { value } }) => setUri(value)} placeholder='Paste wc: uri...' />
+                <WalletSelector onAddressSelected={setSelectedAddress} filter={e => e.majorVersion >= 10} showOlderVersions={false} useHex={false} />
+                {!isScanMode && (
+                  <>
+                    <InputBox margin='auto' width={440} value={uri} onChange={({ target: { value } }) => setUri(value)} placeholder='Paste wc: uri...' />
+                    {hasCamera && <Button onClick={() => setScanMode(true)}>Scan</Button>}
+                  </>)}
+                {/* TODO: disable text upload mode, it's used for dev debugging only. */}
+                {isScanMode && hasCamera && <QrCodeScanner shouldInit supportedNonImgFiles={['text/plain']} btnText='Use Image or Text Instead' onScan={onScan} />}
               </>))
         : (
           <>

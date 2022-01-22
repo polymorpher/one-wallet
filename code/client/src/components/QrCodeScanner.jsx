@@ -5,13 +5,13 @@ import Select from 'antd/es/select'
 import Upload from 'antd/es/upload'
 import message from '../message'
 import QrReader from 'react-qr-reader'
-import { useWindowDimensions } from '../util'
+import { useWindowDimensions, checkCamera } from '../util'
 import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import UploadOutlined from '@ant-design/icons/UploadOutlined'
 import jsQR from 'jsqr'
 import { getDataURLFromFile, getTextFromFile } from './Common'
 
-const QrCodeScanner = ({ onScan, shouldInit, style }) => {
+const QrCodeScanner = ({ onScan, shouldInit, style, supportedNonImgFiles = ['application/json'], btnText = 'Use Image or JSON Instead' }) => {
   const ref = useRef()
   const { isMobile } = useWindowDimensions()
   const [videoDevices, setVideoDevices] = useState([])
@@ -21,10 +21,9 @@ const QrCodeScanner = ({ onScan, shouldInit, style }) => {
   useEffect(() => {
     const numAttempts = 0
     const f = async () => {
-      const d = await navigator.mediaDevices.enumerateDevices()
-      const cams = d.filter(e => e.kind === 'videoinput')
-      if (cams.length <= 0) {
-        return message.error('Restore requires a camera to scan the QR code. Please use a device that has a camera.', 15)
+      const [hasCamera, cams] = await checkCamera()
+      if (!hasCamera) {
+        return message.error('QR scan requires a camera. Please use a device that has a camera.', 15)
       }
       if (cams.length === 1 && !cams[0].label && numAttempts < 5) {
         setTimeout(() => f(), 2500)
@@ -90,7 +89,14 @@ const QrCodeScanner = ({ onScan, shouldInit, style }) => {
           const jsonData = await getTextFromFile(info.file.originFileObj)
           message.debug(jsonData)
           const parsed = JSON.parse(jsonData)
-          onScan(parsed, true)
+          onScan(parsed, { isJson: true })
+          return
+        }
+
+        if (info.file?.name?.endsWith('.txt')) {
+          const data = await getTextFromFile(info.file.originFileObj)
+          message.debug(data)
+          onScan(data, { isText: true })
           return
         }
         const imageUri = await getDataURLFromFile(info.file.originFileObj)
@@ -111,13 +117,11 @@ const QrCodeScanner = ({ onScan, shouldInit, style }) => {
   }
 
   const beforeUpload = (file) => {
-    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png'
-    const isJson = file.type === 'application/json'
-    // message.debug(`File type: ${file.type}`)
-    if (!isJpgOrPng && !isJson) {
-      message.error('You can only upload JSON or JPG/PNG file')
+    const isSupported = ['image/jpeg', 'image/png', ...supportedNonImgFiles].includes(file.type)
+    if (!isSupported) {
+      message.error(`You can only upload JPG/PNG ${supportedNonImgFiles.length ? `or ${supportedNonImgFiles.join(',')} ` : ''}file`)
     }
-    return isJpgOrPng || isJson
+    return true
   }
 
   return (
@@ -160,7 +164,7 @@ const QrCodeScanner = ({ onScan, shouldInit, style }) => {
           beforeUpload={beforeUpload}
           onChange={onQrcodeChange}
         >
-          <Button shape='round' icon={qrCodeImageUploading ? <LoadingOutlined /> : <UploadOutlined />}>Use Image or JSON Instead</Button>
+          <Button shape='round' icon={qrCodeImageUploading ? <LoadingOutlined /> : <UploadOutlined />}>{btnText}</Button>
         </Upload>
       </Row>
     </>

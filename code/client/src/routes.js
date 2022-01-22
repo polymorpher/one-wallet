@@ -21,7 +21,6 @@ import config from './config'
 import util, { useWindowDimensions } from './util'
 import Unwrap from './pages/Unwrap'
 import cacheActions from './state/modules/cache/actions'
-import Connect from './pages/Connect'
 
 const LocalRoutes = () => {
   const dispatch = useDispatch()

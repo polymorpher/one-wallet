@@ -304,6 +304,16 @@ export const generateOtpSeed = () => {
   return window.crypto.getRandomValues(otpSeedBuffer)
 }
 
+export const checkCamera = async () => {
+  try {
+    const d = await navigator.mediaDevices.enumerateDevices()
+    const cams = d.filter(e => e.kind === 'videoinput')
+    return [cams.length > 0, cams]
+  } catch (e) {
+    return [false, []]
+  }
+}
+
 export function getWindowDimensions () {
   const { innerWidth: width, innerHeight: height } = window
   return {

@@ -22,7 +22,6 @@ export const WalletSelector = ({ from, onAddressSelected, filter = e => e, disab
   const network = useSelector(state => state.global.network)
   const wallets = useSelector(state => state.wallet)
   const walletList = Object.keys(wallets).map(e => wallets[e]).filter(e => e.network === network && (showOlderVersions ? (!e.temp || !util.isEmptyAddress(e.forwardAddress)) : !e.temp))
-  console.log(wallets, walletList)
   from = util.safeNormalizedAddress(from)
   const selectedWallet = from && wallets[from]
   // console.log('selectedWallet', from, selectedWallet)
