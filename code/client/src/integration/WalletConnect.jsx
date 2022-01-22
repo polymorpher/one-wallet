@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import WalletConnectClient from '@walletconnect/client'
-import { InputBox, Text } from '../components/Text'
+import { InputBox, Link, Text } from '../components/Text'
 import Image from 'antd/es/image'
 import { Row } from 'antd/es/grid'
 import Button from 'antd/es/button'
@@ -44,24 +44,17 @@ const WalletConnect = ({ wc }) => {
   }, [wc])
 
   const subscribeToEvents = (connector) => {
-    console.log('ACTION', 'subscribeToEvents')
-
     if (connector) {
       connector.on('session_request', (error, payload) => {
-        console.log('EVENT', 'session_request')
-
         if (error) {
           throw error
         }
-        console.log('SESSION_REQUEST', payload.params)
         //  dispatch(cacheActions.fetchVersion({ network }))
         const { peerMeta } = payload.params[0]
         setPeerMeta(peerMeta)
       })
 
       connector.on('session_update', error => {
-        console.log('EVENT', 'session_update')
-
         if (error) {
           throw error
         }
@@ -71,8 +64,6 @@ const WalletConnect = ({ wc }) => {
 
       connector.on('call_request', async (error, payload) => {
         console.log('EVENT', 'call_request', 'method', payload.method)
-        console.log('EVENT', 'call_request', 'params', payload.params)
-
         if (error) {
           throw error
         }
@@ -81,8 +72,6 @@ const WalletConnect = ({ wc }) => {
       })
 
       connector.on('connect', (error, payload) => {
-        console.log('EVENT', 'connect')
-
         if (error) {
           throw error
         }
@@ -92,8 +81,6 @@ const WalletConnect = ({ wc }) => {
       })
 
       connector.on('disconnect', (error, payload) => {
-        console.log('EVENT', 'disconnect')
-
         if (error) {
           throw error
         }
@@ -150,23 +137,22 @@ const WalletConnect = ({ wc }) => {
   }
 
   const approveSession = () => {
-    console.log('ACTION', 'approveSession')
     if (connector) {
       connector.approveSession({ chainId: connector.chainId, accounts: [selectedAddress.value] })
     }
   }
 
   const rejectSession = () => {
-    console.log('ACTION', 'rejectSession')
     if (connector) {
       connector.rejectSession()
+      setUri('')
     }
   }
 
   const disconnect = () => {
-    console.log('ACTION', 'killSession')
     if (connector) {
       connector.killSession()
+      setUri('')
     }
   }
 
@@ -192,7 +178,7 @@ const WalletConnect = ({ wc }) => {
             ? (
               <>
                 <Row type='flex' justify='center' align='middle'>
-                  <Image src={peerMeta.icons[0]} alt={peerMeta.name} />
+                  <Image style={{ maxWidth: '100px' }} src={peerMeta.icons[0]} alt={peerMeta.name} />
                 </Row>
                 <Row type='flex' justify='center' align='middle'>
                   <Text>{peerMeta.name}</Text>
@@ -201,17 +187,17 @@ const WalletConnect = ({ wc }) => {
                   <Text>{peerMeta.description}</Text>
                 </Row>
                 <Row type='flex' justify='center' align='middle'>
-                  <Text>{peerMeta.url}</Text>
+                  <Link target='_blank' href={peerMeta.url} rel='noreferrer'>{peerMeta.url}</Link>
                 </Row>
-                <Row type='flex' justify='center' align='middle'>
-                  <Button onClick={approveSession}>Approve</Button>
+                <Row type='flex' justify='center' align='middle' style={{ marginTop: '24px' }}>
+                  <Button style={{ marginRight: '24px' }} onClick={approveSession}>Approve</Button>
                   <Button onClick={rejectSession}>Reject</Button>
                 </Row>
               </>)
             : (
               <>
                 <WalletSelector onAddressSelected={setSelectedAddress} filter={e => e.majorVersion >= 10} showOlderVersions={false} useHex={false} />
-                {!isScanMode && (
+                {(!isScanMode || !hasCamera) && (
                   <>
                     <InputBox margin='auto' width={440} value={uri} onChange={({ target: { value } }) => setUri(value)} placeholder='Paste wc: uri...' />
                     {hasCamera && <Button onClick={() => setScanMode(true)}>Scan</Button>}
