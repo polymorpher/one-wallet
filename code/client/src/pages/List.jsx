@@ -157,7 +157,7 @@ const List = () => {
         style={{ maxWidth: 720 }}
       >
         <Hint>
-          No wallet found on this device, you can either{' '}
+          No wallet found on this device for the selected network, you can either{' '}
           <Button type='link' onClick={() => history.push(Paths.create)} style={{ padding: 0 }}>create one</Button>
           {' '}now or{' '}
           <Button type='link' onClick={() => history.push(Paths.restore)} style={{ padding: 0 }}> restore one </Button>
