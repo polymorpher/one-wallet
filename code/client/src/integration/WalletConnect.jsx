@@ -12,6 +12,7 @@ import Spin from 'antd/es/spin'
 import util, { checkCamera } from '../util'
 import QrCodeScanner from '../components/QrCodeScanner'
 import { WalletSelector } from './Common'
+import List from 'antd/es/list'
 
 const WalletConnect = ({ wc }) => {
   const dispatch = useDispatch()
@@ -27,6 +28,7 @@ const WalletConnect = ({ wc }) => {
   const [uri, setUri] = useState('')
   const [connector, setConnector] = useState(null)
   const [peerMeta, setPeerMeta] = useState(null)
+  const [requests, setRequests] = useState([])
 
   useEffect(() => {
     const f = async () => {
@@ -68,7 +70,7 @@ const WalletConnect = ({ wc }) => {
           throw error
         }
 
-        // call request
+        setRequests(requests => ([...requests, payload]))
       })
 
       connector.on('connect', (error, payload) => {
@@ -149,6 +151,24 @@ const WalletConnect = ({ wc }) => {
     }
   }
 
+  const approveRequest = (request) => {
+    if (connector) {
+      // TODO: Handle requests based on methods
+      // connector.approveRequest({
+      //   id: request.id,
+      //   result
+      // })
+      // setRequests(requests.filter(r => r.id !== request.id))
+    }
+  }
+
+  const rejectRequest = (request) => {
+    if (connector) {
+      connector.rejectRequest({ id: request.id, error: { message: 'User rejected the requets.' } })
+      setRequests(requests.filter(r => r.id !== request.id))
+    }
+  }
+
   const disconnect = () => {
     if (connector) {
       connector.killSession()
@@ -213,6 +233,19 @@ const WalletConnect = ({ wc }) => {
             <Row type='flex' justify='center' align='middle'>
               <Button onClick={disconnect}>Disconnect</Button>
             </Row>
+            {requests.length > 0 && (
+              <List
+                style={{ marginTop: '24px' }}
+                size='small'
+                header={<div>All pending requests</div>}
+                bordered
+                dataSource={requests}
+                renderItem={item => (
+                  <List.Item
+                    actions={[<Button key='request-list-action-approve' onClick={() => approveRequest(item)}>Approve</Button>, <Button key='request-list-action-reject' onClick={() => rejectRequest(item)}>Reject</Button>]}
+                  >{item.method}
+                  </List.Item>)}
+              />)}
           </>)}
     </AnimatedSection>
   )
