@@ -274,13 +274,13 @@ const api = {
         lastLimitAdjustmentTime = new BN(r[4])
         highestSpendingLimit = new BN(r[5])
       } else if (majorVersion >= 12) {
-        const r = await c.methods.getCurrentSpendingState()
+        const r = await c.methods.getCurrentSpendingState().call()
         spendingLimit = new BN(r[0])
         spendingAmount = new BN(r[1])
         lastSpendingInterval = new BN(r[2])
         spendingInterval = new BN(r[3])
       } else {
-        const r = await c.methods.getCurrentSpending()
+        const r = await c.methods.getCurrentSpending().call()
         spendingAmount = new BN(r[0])
         lastSpendingInterval = new BN(r[1])
         spendingLimit = new BN(dailyLimit)
