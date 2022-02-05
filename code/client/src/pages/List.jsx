@@ -18,6 +18,9 @@ import BN from 'bn.js'
 import ONEConstants from '../../../lib/constants'
 import * as Sentry from '@sentry/browser'
 import { cleanStorage, deleteWalletLocally } from '../storage/util'
+import AnimatedSection from '../components/AnimatedSection'
+import Button from 'antd/es/button'
+import { Hint } from '../components/Text'
 const { Text, Title } = Typography
 
 const walletShortName = (fullName) => {
@@ -77,6 +80,7 @@ const WalletCard = ({ wallet }) => {
 }
 
 const List = () => {
+  const history = useHistory()
   const { isMobile } = useWindowDimensions()
   const wallets = useSelector(state => state.wallet)
   const balances = useSelector(state => state.balance || {})
@@ -98,6 +102,7 @@ const List = () => {
     })
     deleteWalletLocally({ wallet, wallets, dispatch, silent: true })
   }
+
   useEffect(() => {
     if (purged || !wallets || Object.keys(wallets).length === 0) {
       return
@@ -142,12 +147,30 @@ const List = () => {
       !w.temp &&
       w.address !== ONEConstants.EmptyAddress
   }
-  // console.log(wallets)
+
+  const matchedWallets = values(wallets).filter(w => isMatchingWallet(w))
+
+  if (!matchedWallets.length) {
+    return (
+      <AnimatedSection
+        show
+        style={{ maxWidth: 720 }}
+      >
+        <Hint>
+          No wallet found on this device for the selected network, you can either{' '}
+          <Button type='link' onClick={() => history.push(Paths.create)} style={{ padding: 0 }}>create one</Button>
+          {' '}now or{' '}
+          <Button type='link' onClick={() => history.push(Paths.restore)} style={{ padding: 0 }}> restore one </Button>
+          {' '}you had before.
+        </Hint>
+      </AnimatedSection>
+    )
+  }
 
   return (
     <Space direction='vertical' style={{ width: '100%' }}>
       <Row gutter={[24, 24]}>
-        {values(wallets).filter(w => isMatchingWallet(w)).map((w, i) => <Col span={isMobile && 24} key={`${w.address}-${i}`}><WalletCard wallet={w} /></Col>)}
+        {matchedWallets.map((w, i) => <Col span={isMobile && 24} key={`${w.address}-${i}`}><WalletCard wallet={w} /></Col>)}
       </Row>
       <Row style={{ marginTop: 36 }}>
         <Space direction='vertical'>
