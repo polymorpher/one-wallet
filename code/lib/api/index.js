@@ -79,8 +79,8 @@ let activeNetwork = config.defaults.network
 let web3
 let oneWallet
 
-let tokens = { erc20: null, erc721: null, erc1155: null }
-let tokenMetadata = { erc20: null, erc721: null, erc1155: null }
+let getTokenContract = { erc20: null, erc721: null, erc1155: null }
+let getTokenMetadataContract = { erc20: null, erc721: null, erc1155: null }
 let resolver, reverseResolver, registrar
 
 const initBlockchain = (store) => {
@@ -109,16 +109,22 @@ const initBlockchain = (store) => {
     }
   })
 
-  Object.keys(providers).forEach(k => {
-    getOneWalletContractWithProvider[k] = (address) => {
-      Contract.setProvider(providers[k])
+  Object.keys(providers).forEach(network => {
+    getOneWalletContractWithProvider[network] = (address) => {
+      Contract.setProvider(providers[network])
       return new Contract(ONEWalletContractAbi, address)
     }
     Object.keys(tokenContractsWithProvider).forEach(t => {
-      tokenContractsWithProvider[t][k] = (address) => new Contract(tokenContractTemplates[t], address)
-      tokenMetadataWithProvider[t][k] = (address) => new Contract(tokenMetadataTemplates[t], address)
+      tokenContractsWithProvider[t][network] = (address) => {
+        Contract.setProvider(providers[network])
+        return new Contract(tokenContractTemplates[t], address)
+      }
+      tokenMetadataWithProvider[t][network] = (address) => {
+        Contract.setProvider(providers[network])
+        return new Contract(tokenMetadataTemplates[t], address)
+      }
     })
-    if (k === 'harmony-mainnet') {
+    if (network === 'harmony-mainnet') {
       resolverWithProvider = (address) => new Contract(Resolver, address)
       reverseResolverWithProvider = (address) => new Contract(ReverseResolver, address)
       registrarWithProvider = (address) => new Contract(Registrar, address)
@@ -127,9 +133,9 @@ const initBlockchain = (store) => {
   const switchNetwork = () => {
     web3 = web3instances[activeNetwork]
     oneWallet = getOneWalletContractWithProvider[activeNetwork]
-    Object.keys(tokens).forEach(t => {
-      tokens[t] = tokenContractsWithProvider[t][activeNetwork]
-      tokenMetadata[t] = tokenMetadataWithProvider[t][activeNetwork]
+    Object.keys(getTokenContract).forEach(t => {
+      getTokenContract[t] = tokenContractsWithProvider[t][activeNetwork]
+      getTokenMetadataContract[t] = tokenMetadataWithProvider[t][activeNetwork]
     })
     if (activeNetwork === 'harmony-mainnet') {
       resolver = resolverWithProvider
@@ -140,7 +146,6 @@ const initBlockchain = (store) => {
       reverseResolver = null
       registrar = null
     }
-    // console.log(`Set`, { resolver, reverseResolver, registrar })
   }
   switchNetwork()
   store.subscribe(() => {
@@ -411,15 +416,14 @@ const api = {
       if (!ct) {
         throw new Error(`Unknown token type: ${tokenType}`)
       }
-      const c = await tokens[ct.toLowerCase()].at(contractAddress)
+      const c = await getTokenContract[ct.toLowerCase()](contractAddress)
       if (tokenType === ONEConstants.TokenType.ERC20) {
-        return c.balanceOf(address)
+        return c.methods.balanceOf(address).call()
       } else if (tokenType === ONEConstants.TokenType.ERC721) {
         const owner = await c.ownerOf(tokenId)
-        // console.log(owner)
         return owner === address ? new BN(1) : new BN(0)
       } else if (tokenType === ONEConstants.TokenType.ERC1155) {
-        return c.balanceOf(address, tokenId)
+        return c.methods.balanceOf(address, tokenId).call()
       }
     },
 
@@ -428,14 +432,14 @@ const api = {
       if (!ct) {
         throw new Error(`Unknown token type: ${tokenType}`)
       }
-      const c = await tokenMetadata[ct.toLowerCase()].at(contractAddress)
+      const c = await getTokenMetadataContract[ct.toLowerCase()](contractAddress)
       let name, symbol, uri, decimals
       if (tokenType === ONEConstants.TokenType.ERC20) {
-        [name, symbol, decimals] = await Promise.all([c.name(), c.symbol(), c.decimals()])
+        [name, symbol, decimals] = await Promise.all([c.methods.name().call(), c.methods.symbol().call(), c.methods.decimals().call()])
       } else if (tokenType === ONEConstants.TokenType.ERC721) {
-        [name, symbol, uri] = await Promise.all([c.name(), c.symbol(), c.tokenURI(tokenId)])
+        [name, symbol, uri] = await Promise.all([c.methods.name().call(), c.methods.symbol().call(), c.methods.tokenURI(tokenId).call()])
       } else if (tokenType === ONEConstants.TokenType.ERC1155) {
-        uri = await c.uri(tokenId)
+        uri = await c.methods.uri(tokenId).call()
       }
       // console.log({ tokenType, contractAddress, tokenId, name, symbol, uri })
       return { name, symbol, uri, decimals: decimals && decimals.toNumber() }
@@ -468,9 +472,9 @@ const api = {
         if (!resolver) {
           return ONEConstants.EmptyAddress
         }
-        const c = await resolver.at(ONEConstants.Domain.DEFAULT_RESOLVER)
+        const c = await resolver(ONEConstants.Domain.DEFAULT_RESOLVER)
         const node = ONEUtil.hexString(ONEUtil.namehash(name))
-        const address = await c.addr(node)
+        const address = await c.methods.addr(node).call()
         return address
       },
       reverseLookup: async ({ address }) => {
@@ -487,8 +491,8 @@ const api = {
         const node = ONEUtil.keccak(buffer)
         const nodeHex = ONEUtil.hexString(node)
         // console.log(nodeHex)
-        const c = await reverseResolver.at(ONEConstants.Domain.DEFAULT_REVERSE_RESOLVER)
-        const name = await c.name(nodeHex)
+        const c = await reverseResolver(ONEConstants.Domain.DEFAULT_REVERSE_RESOLVER)
+        const name = await c.methods.name(nodeHex).call()
         return name
       },
 
@@ -497,8 +501,8 @@ const api = {
           // throw new Error('Unsupported network')
           return new BN(0)
         }
-        const c = await registrar.at(ONEConstants.Domain.DEFAULT_SUBDOMAIN_REGISTRAR)
-        const price = await c.rentPrice(name, ONEConstants.Domain.DEFAULT_RENT_DURATION)
+        const c = await registrar(ONEConstants.Domain.DEFAULT_SUBDOMAIN_REGISTRAR)
+        const price = await c.methods.rentPrice(name, ONEConstants.Domain.DEFAULT_RENT_DURATION).call()
         return price // This is a BN
       },
 
@@ -507,9 +511,9 @@ const api = {
           // throw new Error('Unsupported network')
           return false
         }
-        const c = await registrar.at(ONEConstants.Domain.DEFAULT_SUBDOMAIN_REGISTRAR)
+        const c = await registrar(ONEConstants.Domain.DEFAULT_SUBDOMAIN_REGISTRAR)
         const label = ONEUtil.hexString(ONEUtil.keccak(ONEConstants.Domain.DEFAULT_PARENT_LABEL))
-        const ret = await c.query(label, name)
+        const ret = await c.methods.query(label, name).call()
         return !!ret[0]
       }
     },
