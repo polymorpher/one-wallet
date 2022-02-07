@@ -73,6 +73,10 @@ const SiderMenu = ({ ...args }) => {
     }
   }, [])
 
+  useEffect(() => {
+    setStats(statsCached)
+  }, [statsCached])
+
   return (
     <>
       {
