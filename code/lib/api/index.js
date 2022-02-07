@@ -74,20 +74,25 @@ const initAPI = (store) => {
 }
 
 // TODO: cleanup this mess after switching to w3
-const providers = {}; const contractWithProvider = {}; const networks = []; const web3instances = {}
+
 let activeNetwork = config.defaults.network
-let web3; let one
-let tokenContractTemplates = { erc20: IERC20, erc721: IERC721, erc1155: IERC1155 }
-let tokenMetadataTemplates = { erc20: IERC20Metadata, erc721: IERC721Metadata, erc1155: IERC1155MetadataURI }
-let tokenContractsWithProvider = { erc20: {}, erc721: {}, erc1155: {} }
-let tokenMetadataWithProvider = { erc20: {}, erc721: {}, erc1155: {} }
+let web3
+let oneWallet
+
 let tokens = { erc20: null, erc721: null, erc1155: null }
 let tokenMetadata = { erc20: null, erc721: null, erc1155: null }
-
-let resolverWithProvider, reverseResolverWithProvider, registrarWithProvider
 let resolver, reverseResolver, registrar
 
 const initBlockchain = (store) => {
+  const web3instances = {}
+  const providers = {}
+  const networks = []
+  let resolverWithProvider, reverseResolverWithProvider, registrarWithProvider
+  let tokenContractTemplates = { erc20: IERC20, erc721: IERC721, erc1155: IERC1155 }
+  let tokenMetadataTemplates = { erc20: IERC20Metadata, erc721: IERC721Metadata, erc1155: IERC1155MetadataURI }
+  let tokenContractsWithProvider = { erc20: {}, erc721: {}, erc1155: {} }
+  let tokenMetadataWithProvider = { erc20: {}, erc721: {}, erc1155: {} }
+  const getOneWalletContractWithProvider = {}
   Object.keys(config.networks).forEach(k => {
     const n = config.networks[k]
     try {
@@ -105,11 +110,10 @@ const initBlockchain = (store) => {
   })
 
   Object.keys(providers).forEach(k => {
-    const c = (address) => {
+    getOneWalletContractWithProvider[k] = (address) => {
       Contract.setProvider(providers[k])
       return new Contract(ONEWalletContractAbi, address)
     }
-    contractWithProvider[k] = c
     Object.keys(tokenContractsWithProvider).forEach(t => {
       tokenContractsWithProvider[t][k] = (address) => new Contract(tokenContractTemplates[t], address)
       tokenMetadataWithProvider[t][k] = (address) => new Contract(tokenMetadataTemplates[t], address)
@@ -122,7 +126,7 @@ const initBlockchain = (store) => {
   })
   const switchNetwork = () => {
     web3 = web3instances[activeNetwork]
-    one = contractWithProvider[activeNetwork]
+    oneWallet = getOneWalletContractWithProvider[activeNetwork]
     Object.keys(tokens).forEach(t => {
       tokens[t] = tokenContractsWithProvider[t][activeNetwork]
       tokenMetadata[t] = tokenMetadataWithProvider[t][activeNetwork]
@@ -210,32 +214,32 @@ const api = {
   },
   blockchain: {
     getOldInfos: async ({ address, raw }) => {
-      const c = one(address)
+      const c = oneWallet(address)
       const res = await c.methods.getOldInfos().call()
       return res.map(e => ONEUtil.processCore(e, raw))
     },
     getInnerCores: async ({ address, raw }) => {
-      const c = one(address)
+      const c = oneWallet(address)
       const res = await c.methods.getInnerCores().call()
       return res.map(e => ONEUtil.processCore(e, raw))
     },
     getIdentificationKeys: async ({ address }) => {
-      const c = one(address)
+      const c = oneWallet(address)
       const res = await c.methods.getIdentificationKeys().call()
       return res
     },
     getLastOperationTime: async ({ address }) => {
-      const c = one(address)
+      const c = oneWallet(address)
       const t = await c.methods.lastOperationTime().call() // BN but convertible to uint32
       return t.toNumber()
     },
     getNonce: async ({ address }) => {
-      const c = one(address)
+      const c = oneWallet(address)
       const nonce = await c.methods.getNonce().call()
       return nonce.toNumber()
     },
     getSpending: async ({ address }) => {
-      const c = one(address)
+      const c = oneWallet(address)
       let spendingLimit, spendingAmount, lastSpendingInterval, spendingInterval
       const r = await c.methods.getCurrentSpendingState().call()
       spendingLimit = new BN(r[0])
@@ -251,7 +255,7 @@ const api = {
      * @returns {Promise<{address, slotSize, highestSpendingLimit: string, effectiveTime: number, majorVersion: (number|number), lastSpendingInterval: number, spendingAmount: string, duration: number, spendingLimit: string, lastLimitAdjustmentTime: number, root, minorVersion: (number|number), spendingInterval: number, lastResortAddress: *}|{maxOperationsPerInterval, highestSpendingLimit: BN, lifespan, majorVersion: (number|number), spendingAmount: BN, lastSpendingInterval: BN, spendingLimit: BN, lastLimitAdjustmentTime: BN, root: *, dailyLimit: string, interval, t0, minorVersion: (number|number), spendingInterval: BN, lastResortAddress: *, height}>}
      */
     getWallet: async ({ address, raw }) => {
-      const c = one(address)
+      const c = oneWallet(address)
       const result = await c.methods.getInfo().call()
       let majorVersion = new BN(0)
       let minorVersion = new BN(0)
@@ -340,7 +344,7 @@ const api = {
      * @returns {Promise<*[]>}
      */
     getCommitsV3: async ({ address }) => {
-      const c = one(address)
+      const c = oneWallet(address)
       const result = await c.methods.getCommits().call()
       const [hashes, paramsHashes, timestamps, completed] = Object.keys(result).map(k => result[k])
       const commits = []
@@ -356,7 +360,7 @@ const api = {
      * @returns {Promise<*[]>}
      */
     getCommits: async ({ address }) => {
-      const c = one(address)
+      const c = oneWallet(address)
       const result = await c.methods.getAllCommits().call()
       return parseCommits(result)
     },
@@ -366,7 +370,7 @@ const api = {
      * @returns {Promise<void>}
      */
     findCommitV6: async ({ address, commitHash }) => {
-      const c = one(address)
+      const c = oneWallet(address)
       const result = await c.methods.findCommit(commitHash).call()
       const [hash, paramsHash, timestamp, completed] = Object.keys(result).map(k => result[k])
       return { hash, paramsHash, timestamp: new BN(timestamp).toNumber(), completed }
@@ -377,7 +381,7 @@ const api = {
      * @returns {Promise<void>}
      */
     findCommit: async ({ address, commitHash }) => {
-      const c = one(address)
+      const c = oneWallet(address)
       const result = await c.methods.lookupCommit(commitHash).call()
       return parseCommits(result)
     },
@@ -387,7 +391,7 @@ const api = {
      * @returns {Promise<*[]>}
      */
     getTrackedTokens: async ({ address }) => {
-      const c = one(address)
+      const c = oneWallet(address)
       const result = await c.methods.getTrackedTokens().call()
       const [tokenTypes, contracts, tokenIds] = Object.keys(result).map(k => result[k])
       const tt = []
@@ -438,7 +442,7 @@ const api = {
     },
 
     getBacklinks: async ({ address }) => {
-      const c = one(address)
+      const c = oneWallet(address)
       try {
         const backlinks = await c.methods.getBacklinks().call()
         return backlinks
@@ -449,7 +453,7 @@ const api = {
     },
 
     getForwardAddress: async ({ address }) => {
-      const c = one(address)
+      const c = oneWallet(address)
       try {
         const forwardAddress = await c.methods.getForwardAddress().call()
         return forwardAddress
