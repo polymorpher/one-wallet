@@ -276,8 +276,8 @@ const api = {
       let lastLimitAdjustmentTime = new BN(0); let highestSpendingLimit = new BN(0)
       if (majorVersion >= 15) {
         const r = await c.methods.getSpendingState().call()
-        spendingLimit = r[0]
-        spendingAmount = r[1]
+        spendingLimit = new BN(r[0])
+        spendingAmount = new BN(r[1])
         lastSpendingInterval = new BN(r[2])
         spendingInterval = new BN(r[3])
         lastLimitAdjustmentTime = new BN(r[4])
@@ -308,9 +308,9 @@ const api = {
           dailyLimit: dailyLimit,
           majorVersion: majorVersion ? Number(majorVersion) : 0,
           minorVersion: minorVersion ? Number(minorVersion) : 0,
-          spendingAmount: spendingAmount,
+          spendingAmount: spendingAmount.toString(),
           lastSpendingInterval: lastSpendingInterval.toNumber(),
-          spendingLimit: spendingLimit,
+          spendingLimit: spendingLimit.toString(),
           spendingInterval: spendingInterval.toNumber(),
           lastLimitAdjustmentTime: lastLimitAdjustmentTime.toNumber(),
           highestSpendingLimit: highestSpendingLimit.toString(),
@@ -327,9 +327,9 @@ const api = {
         lastResortAddress,
         majorVersion: majorVersion ? Number(majorVersion) : 0,
         minorVersion: minorVersion ? Number(minorVersion) : 0,
-        spendingLimit: spendingLimit,
+        spendingLimit: spendingLimit.toString(),
         lastSpendingInterval: lastSpendingInterval.toNumber(),
-        spendingAmount: spendingAmount,
+        spendingAmount: spendingAmount.toString(),
         spendingInterval: spendingInterval.toNumber() * 1000,
         lastLimitAdjustmentTime: lastLimitAdjustmentTime.toNumber() * 1000,
         highestSpendingLimit: highestSpendingLimit.toString(),
