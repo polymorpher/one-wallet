@@ -305,12 +305,12 @@ const api = {
           lifespan: Number(lifespan),
           maxOperationsPerInterval: Number(maxOperationsPerInterval),
           lastResortAddress,
-          dailyLimit: dailyLimit.toString(10),
+          dailyLimit: dailyLimit,
           majorVersion: majorVersion ? Number(majorVersion) : 0,
           minorVersion: minorVersion ? Number(minorVersion) : 0,
-          spendingAmount: spendingAmount.toString(),
+          spendingAmount: spendingAmount,
           lastSpendingInterval: lastSpendingInterval.toNumber(),
-          spendingLimit: spendingLimit.toString(),
+          spendingLimit: spendingLimit,
           spendingInterval: spendingInterval.toNumber(),
           lastLimitAdjustmentTime: lastLimitAdjustmentTime.toNumber(),
           highestSpendingLimit: highestSpendingLimit.toString(),
@@ -327,9 +327,9 @@ const api = {
         lastResortAddress,
         majorVersion: majorVersion ? Number(majorVersion) : 0,
         minorVersion: minorVersion ? Number(minorVersion) : 0,
-        spendingLimit: spendingLimit.toString(),
+        spendingLimit: spendingLimit,
         lastSpendingInterval: lastSpendingInterval.toNumber(),
-        spendingAmount: spendingAmount.toString(),
+        spendingAmount: spendingAmount,
         spendingInterval: spendingInterval.toNumber() * 1000,
         lastLimitAdjustmentTime: lastLimitAdjustmentTime.toNumber() * 1000,
         highestSpendingLimit: highestSpendingLimit.toString(),
@@ -442,7 +442,7 @@ const api = {
         uri = await c.methods.uri(tokenId).call()
       }
       // console.log({ tokenType, contractAddress, tokenId, name, symbol, uri })
-      return { name, symbol, uri, decimals: decimals && decimals.toNumber() }
+      return { name, symbol, uri, decimals: decimals && Number(decimals) }
     },
 
     getBacklinks: async ({ address }) => {
@@ -503,7 +503,7 @@ const api = {
         }
         const c = await registrar(ONEConstants.Domain.DEFAULT_SUBDOMAIN_REGISTRAR)
         const price = await c.methods.rentPrice(name, ONEConstants.Domain.DEFAULT_RENT_DURATION).call()
-        return price // This is a BN
+        return new BN(price) // This is a BN
       },
 
       available: async ({ name }) => {
