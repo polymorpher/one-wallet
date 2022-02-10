@@ -236,12 +236,12 @@ const api = {
     getLastOperationTime: async ({ address }) => {
       const c = oneWallet(address)
       const t = await c.methods.lastOperationTime().call() // BN but convertible to uint32
-      return t.toNumber()
+      return new BN(t).toNumber()
     },
     getNonce: async ({ address }) => {
       const c = oneWallet(address)
       const nonce = await c.methods.getNonce().call()
-      return nonce.toNumber()
+      return new BN(nonce).toNumber()
     },
     getSpending: async ({ address }) => {
       const c = oneWallet(address)
@@ -266,12 +266,19 @@ const api = {
       let minorVersion = new BN(0)
       try {
         const versionResult = await c.methods.getVersion().call()
-        majorVersion = versionResult[0]
-        minorVersion = versionResult[1]
+        majorVersion = new BN(versionResult[0])
+        minorVersion = new BN(versionResult[1])
       } catch (ex) {
         if (config.debug) console.log(`Failed to get wallet version. Wallet might be too old. Error: ${ex.toString()}`)
       }
-      const [root, height, interval, t0, lifespan, maxOperationsPerInterval, lastResortAddress, dailyLimit] = Object.keys(result).map(k => result[k])
+      const root = result[0]
+      const height = new BN(result[1])
+      const interval = new BN(result[2])
+      const t0 = new BN(result[3])
+      const lifespan = new BN(result[4])
+      const maxOperationsPerInterval = new BN(result[5])
+      const lastResortAddress = result[6]
+      const dailyLimit = new BN(result[7])
       let spendingLimit; let spendingAmount; let lastSpendingInterval; let spendingInterval
       let lastLimitAdjustmentTime = new BN(0); let highestSpendingLimit = new BN(0)
       if (majorVersion >= 15) {
@@ -292,22 +299,22 @@ const api = {
         const r = await c.methods.getCurrentSpending().call()
         spendingAmount = new BN(r[0])
         lastSpendingInterval = new BN(r[1])
-        spendingLimit = new BN(dailyLimit)
+        spendingLimit = dailyLimit
         spendingInterval = new BN(ONEConstants.DefaultSpendingInterval) // default value for pre-v12 wallets i.e. dailyLimit
       }
 
       if (raw) {
         return {
           root,
-          height: Number(height),
-          interval: Number(interval),
-          t0: Number(t0),
-          lifespan: Number(lifespan),
-          maxOperationsPerInterval: Number(maxOperationsPerInterval),
+          height: height.toNumber(),
+          interval: interval.toNumber(),
+          t0: t0.toNumber(),
+          lifespan: lifespan.toNumber(),
+          maxOperationsPerInterval: maxOperationsPerInterval.toNumber(),
           lastResortAddress,
-          dailyLimit: dailyLimit,
-          majorVersion: majorVersion ? Number(majorVersion) : 0,
-          minorVersion: minorVersion ? Number(minorVersion) : 0,
+          dailyLimit: dailyLimit.toString(10),
+          majorVersion: majorVersion ? majorVersion.toNumber() : 0,
+          minorVersion: minorVersion ? minorVersion.toNumber() : 0,
           spendingAmount: spendingAmount.toString(),
           lastSpendingInterval: lastSpendingInterval.toNumber(),
           spendingLimit: spendingLimit.toString(),
@@ -316,17 +323,17 @@ const api = {
           highestSpendingLimit: highestSpendingLimit.toString(),
         }
       }
-      const intervalMs = Number(interval) * 1000
+      const intervalMs = interval.toNumber() * 1000
       // TODO: use smart contract interval value, after we fully support 60 second interval in client (and Android Google Authenticator supports that too)
       return {
         address,
         root: root.slice(2),
-        effectiveTime: Number(t0) * intervalMs,
-        duration: Number(lifespan) * intervalMs,
-        slotSize: Number(maxOperationsPerInterval),
+        effectiveTime: t0.toNumber() * intervalMs,
+        duration: lifespan.toNumber() * intervalMs,
+        slotSize: maxOperationsPerInterval.toNumber(),
         lastResortAddress,
-        majorVersion: majorVersion ? Number(majorVersion) : 0,
-        minorVersion: minorVersion ? Number(minorVersion) : 0,
+        majorVersion: majorVersion ? majorVersion.toNumber() : 0,
+        minorVersion: minorVersion ? minorVersion.toNumber() : 0,
         spendingLimit: spendingLimit.toString(),
         lastSpendingInterval: lastSpendingInterval.toNumber(),
         spendingAmount: spendingAmount.toString(),
@@ -442,7 +449,7 @@ const api = {
         uri = await c.methods.uri(tokenId).call()
       }
       // console.log({ tokenType, contractAddress, tokenId, name, symbol, uri })
-      return { name, symbol, uri, decimals: decimals && Number(decimals) }
+      return { name, symbol, uri, decimals: decimals && new BN(decimals).toNumber() }
     },
 
     getBacklinks: async ({ address }) => {
