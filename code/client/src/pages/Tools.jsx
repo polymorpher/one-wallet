@@ -156,7 +156,7 @@ const addHarmonyNetwork = async () => {
   try {
     await window.ethereum.request({
       method: 'wallet_switchEthereumChain',
-      params: [{ chainId: 1666600000 }],
+      params: [{ chainId: '0x63564C40' }],
     })
     message.success('Switched to Harmony Network on MetaMask')
   } catch (ex) {
@@ -169,7 +169,7 @@ const addHarmonyNetwork = async () => {
       await window.ethereum.request({
         method: 'wallet_addEthereumChain',
         params: [{
-          chainId: 1666600000, // A 0x-prefixed hexadecimal string
+          chainId: '0x63564C40', // A 0x-prefixed hexadecimal string
           chainName: 'Harmony Mainnet Shard 0',
           nativeCurrency: {
             name: 'ONE',
