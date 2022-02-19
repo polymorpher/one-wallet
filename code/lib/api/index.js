@@ -819,19 +819,19 @@ const api = {
         params: [
           {
             address,
-            order: "DESC",
-            txType: "ALL",
+            order: 'DESC',
+            txType: 'ALL',
             pageSize,
             pageIndex
           }
         ],
         id: 1
-    })
+      })
       return data?.result?.transactions || []
     },
 
     getTransaction: async (hash) => {
-      const { data }= await axios.post('https://api.s0.t.hmny.io', {
+      const { data } = await axios.post('https://api.s0.t.hmny.io', {
         jsonrpc: '2.0',
         method: 'hmyv2_getTransactionByHash',
         params: [hash],

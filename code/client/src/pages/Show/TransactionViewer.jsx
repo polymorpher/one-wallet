@@ -13,6 +13,8 @@ import util from '../../util'
 
 const { Text, Link } = Typography
 
+const PAGE_SIZE = 10
+
 const TransactionViewer = ({ address }) => {
   const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
@@ -20,6 +22,59 @@ const TransactionViewer = ({ address }) => {
   const [loading, setLoading] = useState(true)
   const network = wallet.network
   const searchInput = useRef()
+  const fetchPageOptions = useRef({ pageSize: 10, pageIndex: 0 }).current
+  const [hasMore, setHasMore] = useState(true)
+  const [currentPage, setCurrentPage] = useState(0)
+  const [showFooter, setShowFooter] = useState(false)
+
+  useEffect(() => {
+    if (!address) return
+    loadData()
+  }, [address])
+
+  useEffect(() => {
+    const totalPages = Math.ceil(txList.length / PAGE_SIZE)
+    setShowFooter(!loading && hasMore && currentPage === totalPages)
+  }, [loading, hasMore, currentPage])
+
+  function onChange (pagination) {
+    setCurrentPage(pagination.current)
+  }
+
+  function footerRenderer () {
+    return (
+      <Space style={{ display: 'flex', justifyContent: 'center' }}>
+        <Button type='link' onClick={loadMore} size='small' style={{ width: 90 }}>
+          Load more
+        </Button>
+      </Space>
+    )
+  }
+
+  async function loadData () {
+    setLoading(true)
+    try {
+      const txHashes = await api.explorer.getTransactionHistory(address, fetchPageOptions.pageSize, fetchPageOptions.pageIndex)
+      if (txHashes.length < fetchPageOptions.pageSize) {
+        setHasMore(false)
+      }
+      const allTxs = await Promise.all(txHashes.map(txHash => api.explorer.getTransaction(txHash)))
+      const oneAddress = util.safeOneAddress(address)
+      setTxList(list => list.concat(allTxs.map(tx => ({
+        key: tx.hash,
+        type: tx.to === oneAddress ? 'Receive' : tx.from === oneAddress ? 'Send' : 'Unknown',
+        date: new Date(tx.timestamp * 1000).toLocaleDateString(),
+        value: tx.value,
+        txId: tx.hash
+      }))))
+    } catch (e) {}
+    setLoading(false)
+  }
+
+  function loadMore () {
+    fetchPageOptions.pageIndex++
+    loadData()
+  }
 
   function getColumnSearchProps (dataIndex) {
     return {
@@ -47,15 +102,6 @@ const TransactionViewer = ({ address }) => {
               <Button onClick={() => clearFilters()} size='small' style={{ width: 90 }}>
                 Reset
               </Button>
-              <Button
-                type='link'
-                size='small'
-                onClick={() => {
-                  confirm({ closeDropdown: false })
-                }}
-              >
-                Filter
-              </Button>
             </Space>
           </div>
         )
@@ -73,25 +119,6 @@ const TransactionViewer = ({ address }) => {
       },
     }
   }
-
-  useEffect(() => {
-    if (!address) return
-    async function run () {
-      const txHashes = await api.explorer.getTransactionHistory(address)
-      const allTxs = await Promise.all(txHashes.map(txHash => api.explorer.getTransaction(txHash)))
-      const oneAddress = util.safeOneAddress(address)
-      setTxList(allTxs.map(tx => ({
-        key: tx.hash,
-        type: tx.to === oneAddress ? 'Receive' : tx.from === oneAddress ? 'Send' : 'Unknown',
-        date: new Date(tx.timestamp * 1000).toLocaleDateString(),
-        value: tx.value,
-        txId: tx.hash
-      })))
-    }
-    run().finally(() => {
-      setLoading(false)
-    })
-  }, [address])
 
   const columns = [
     {
@@ -131,7 +158,9 @@ const TransactionViewer = ({ address }) => {
       <Text>No transaction found for this wallet.</Text>
     )}
     >
-      <Table dataSource={txList} columns={columns} pagination={{ pageSize: 10, hideOnSinglePage: true }} loading={loading} />
+      <Table
+        dataSource={txList} columns={columns} pagination={{ pageSize: PAGE_SIZE, hideOnSinglePage: true }} loading={loading} onChange={onChange} footer={showFooter ? footerRenderer : undefined}
+      />
     </ConfigProvider>
   )
 }
