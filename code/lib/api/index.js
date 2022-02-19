@@ -807,10 +807,22 @@ const api = {
     }
   },
   explorer: {
-    decodeMethod: (hash) => {
-      const { data } = axios.get(`https://explorer-v2-api.hmny.io/v0/signature/hash/${hash.slice(10)}`)
+    decodeMethod: async (hash) => {
+      const { data } = await axios.get(`https://explorer-v2-api.hmny.io/v0/signature/hash/${hash.slice(10)}`)
       return data || []
-    }
+    },
+
+    getTransactionHistory: async (address) => {
+      const { data }= await axios.post('https://api.s0.t.hmny.io', {jsonrpc: '2.0', method: 'hmyv2_getTransactionsHistory', params: [
+        {address, order: "ASC", txType: "ALL",}
+      ], id: 1})
+      return data?.result?.transactions || []
+    },
+
+    getTransaction: async (hash) => {
+      const { data }= await axios.post('https://api.s0.t.hmny.io', {jsonrpc: '2.0', method: 'hmyv2_getTransactionByHash', params: [hash], id: 1})
+      return data?.result || {}
+    },
   }
 }
 
