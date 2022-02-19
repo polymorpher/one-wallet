@@ -812,15 +812,31 @@ const api = {
       return data || []
     },
 
-    getTransactionHistory: async (address) => {
-      const { data }= await axios.post('https://api.s0.t.hmny.io', {jsonrpc: '2.0', method: 'hmyv2_getTransactionsHistory', params: [
-        {address, order: "ASC", txType: "ALL",}
-      ], id: 1})
+    getTransactionHistory: async (address, pageSize = 50, pageIndex = 0) => {
+      const { data } = await axios.post('https://api.s0.t.hmny.io', {
+        jsonrpc: '2.0',
+        method: 'hmyv2_getTransactionsHistory',
+        params: [
+          {
+            address,
+            order: "DESC",
+            txType: "ALL",
+            pageSize,
+            pageIndex
+          }
+        ],
+        id: 1
+    })
       return data?.result?.transactions || []
     },
 
     getTransaction: async (hash) => {
-      const { data }= await axios.post('https://api.s0.t.hmny.io', {jsonrpc: '2.0', method: 'hmyv2_getTransactionByHash', params: [hash], id: 1})
+      const { data }= await axios.post('https://api.s0.t.hmny.io', {
+        jsonrpc: '2.0',
+        method: 'hmyv2_getTransactionByHash',
+        params: [hash],
+        id: 1
+      })
       return data?.result || {}
     },
   }

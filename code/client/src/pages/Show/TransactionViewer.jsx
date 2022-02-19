@@ -1,10 +1,14 @@
 import Table from 'antd/es/table'
 import ConfigProvider from 'antd/es/config-provider'
 import Typography from 'antd/es/typography'
-import React, { useEffect, useState } from 'react'
+import Button from 'antd/es/button'
+import Input from 'antd/es/input'
+import Space from 'antd/es/space'
+import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { api } from '../../../../lib/api'
 import config from '../../config'
+import SearchOutlined from '@ant-design/icons/SearchOutlined'
 import util from '../../util'
 
 const { Text, Link } = Typography
@@ -15,6 +19,60 @@ const TransactionViewer = ({ address }) => {
   const [txList, setTxList] = useState([])
   const [loading, setLoading] = useState(true)
   const network = wallet.network
+  const searchInput = useRef()
+
+  function getColumnSearchProps (dataIndex) {
+    return {
+      filterDropdown ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) {
+        return (
+          <div style={{ padding: 8 }}>
+            <Input
+              ref={searchInput}
+              placeholder={`Search ${dataIndex}`}
+              value={selectedKeys[0]}
+              onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+              onPressEnter={() => confirm()}
+              style={{ marginBottom: 8, display: 'block' }}
+            />
+            <Space>
+              <Button
+                type='primary'
+                onClick={() => confirm()}
+                icon={<SearchOutlined />}
+                size='small'
+                style={{ width: 90 }}
+              >
+                Search
+              </Button>
+              <Button onClick={() => clearFilters()} size='small' style={{ width: 90 }}>
+                Reset
+              </Button>
+              <Button
+                type='link'
+                size='small'
+                onClick={() => {
+                  confirm({ closeDropdown: false })
+                }}
+              >
+                Filter
+              </Button>
+            </Space>
+          </div>
+        )
+      },
+      filterIcon (filtered) { return <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} /> },
+      onFilter (value, record) {
+        return record[dataIndex]
+          ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
+          : ''
+      },
+      onFilterDropdownVisibleChange (visible) {
+        if (visible) {
+          setTimeout(() => searchInput.current.select(), 100)
+        }
+      },
+    }
+  }
 
   useEffect(() => {
     if (!address) return
@@ -40,16 +98,19 @@ const TransactionViewer = ({ address }) => {
       title: 'Date',
       dataIndex: 'date',
       key: 'date',
+      ...getColumnSearchProps('date'),
     },
     {
       title: 'Type',
       dataIndex: 'type',
       key: 'type',
+      ...getColumnSearchProps('type'),
     },
     {
       title: 'Value',
       dataIndex: 'value',
       key: 'value',
+      ...getColumnSearchProps('value'),
     },
     {
       title: 'TransactionId',
@@ -60,7 +121,8 @@ const TransactionViewer = ({ address }) => {
           const link = config.networks[network].explorer.replace(/{{txId}}/, txId)
           return <Link target='_blank' href={link} rel='noreferrer'>{txId.substr(0, 8)}</Link>
         }
-      }
+      },
+      ...getColumnSearchProps('txId'),
     },
   ]
 
