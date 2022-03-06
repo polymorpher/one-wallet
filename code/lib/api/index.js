@@ -807,13 +807,17 @@ const api = {
     }
   },
   explorer: {
+    getApi: () => {
+      return activeNetwork === 'harmony-testnet' ? 'https://api.s0.b.hmny.io' : 'https://api.s0.t.hmny.io'
+    },
+
     decodeMethod: async (hash) => {
       const { data } = await axios.get(`https://explorer-v2-api.hmny.io/v0/signature/hash/${hash.slice(10)}`)
       return data || []
     },
 
     getTransactionHistory: async (address, pageSize = 50, pageIndex = 0) => {
-      const { data } = await axios.post('https://api.s0.t.hmny.io', {
+      const { data } = await axios.post(api.explorer.getApi(), {
         jsonrpc: '2.0',
         method: 'hmyv2_getTransactionsHistory',
         params: [
@@ -831,7 +835,7 @@ const api = {
     },
 
     getTransaction: async (hash) => {
-      const { data } = await axios.post('https://api.s0.t.hmny.io', {
+      const { data } = await axios.post(api.explorer.getApi(), {
         jsonrpc: '2.0',
         method: 'hmyv2_getTransactionByHash',
         params: [hash],
