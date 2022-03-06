@@ -808,7 +808,24 @@ const api = {
   },
   explorer: {
     getApi: () => {
-      return activeNetwork === 'harmony-testnet' ? 'https://api.s0.b.hmny.io' : 'https://api.s0.t.hmny.io'
+      return activeNetwork === 'harmony-testnet' ? 'https://rpc.s0.b.hmny.io' : 'https://rpc.s0.t.hmny.io'
+    },
+
+    getNetworkId: () => {
+      return {
+        blockchain: 'Harmony',
+        network: activeNetwork ? 'Testnet' : 'Mainnet',
+        sub_network_identifier: {
+          network: 'shard 0',
+          metadata: {
+            is_beacon: true
+          }
+        }
+      }
+    },
+
+    getRosettaApi: () => {
+      return activeNetwork === 'harmony-testnet' ? 'https://rosetta.s0.b.hmny.io' : 'https://rosetta.s0.t.hmny.io'
     },
 
     decodeMethod: async (hash) => {
@@ -825,6 +842,7 @@ const api = {
             address,
             order: 'DESC',
             txType: 'ALL',
+            fullTx: true,
             pageSize,
             pageIndex
           }
@@ -834,14 +852,18 @@ const api = {
       return data?.result?.transactions || []
     },
 
-    getTransaction: async (hash) => {
-      const { data } = await axios.post(api.explorer.getApi(), {
-        jsonrpc: '2.0',
-        method: 'hmyv2_getTransactionByHash',
-        params: [hash],
-        id: 1
+    getTransaction: async (tx) => {
+      const { data } = await axios.post(`${api.explorer.getRosettaApi()}/block/transaction`, {
+        network_identifier: api.explorer.getNetworkId(),
+        transaction_identifier: {
+          hash: tx.hash
+        },
+        block_identifier: {
+          index: tx.blockNumber,
+          hash: tx.blockHash
+        }
       })
-      return data?.result || {}
+      return { ...tx, ...data?.transaction }
     },
   }
 }
