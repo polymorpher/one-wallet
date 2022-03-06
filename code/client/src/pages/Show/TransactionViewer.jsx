@@ -5,6 +5,7 @@ import Button from 'antd/es/button'
 import Input from 'antd/es/input'
 import Space from 'antd/es/space'
 import React, { useEffect, useRef, useState } from 'react'
+import { Warning } from '../../components/Text'
 import { useSelector } from 'react-redux'
 import { api } from '../../../../lib/api'
 import config from '../../config'
@@ -76,6 +77,7 @@ const TransactionViewer = ({ address }) => {
   const [hasMore, setHasMore] = useState(true)
   const [currentPage, setCurrentPage] = useState(0)
   const [showFooter, setShowFooter] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (!address) return
@@ -103,6 +105,7 @@ const TransactionViewer = ({ address }) => {
 
   async function loadData () {
     setLoading(true)
+    setError('')
     try {
       // TODO: right now some transactions are not returned from this API, like those internal ones.
       const txs = await api.explorer.getTransactionHistory(address, fetchPageOptions.pageSize, fetchPageOptions.pageIndex)
@@ -111,6 +114,7 @@ const TransactionViewer = ({ address }) => {
       }
       const allTxs = await Promise.all(txs.map(tx => api.explorer.getTransaction(tx).catch(e => {
         console.error(e)
+        setError('Some error occured while fetching transactions, you may only see partial data here.')
         return tx
       })))
       setTxList(list => list.concat(allTxs.map(tx => {
@@ -125,6 +129,7 @@ const TransactionViewer = ({ address }) => {
       })))
     } catch (e) {}
     setLoading(false)
+    setError('Some error occured while parsing transactions.')
   }
 
   function loadMore () {
@@ -217,6 +222,7 @@ const TransactionViewer = ({ address }) => {
       <Table
         dataSource={txList} columns={columns} pagination={{ pageSize: PAGE_SIZE, hideOnSinglePage: true }} loading={loading} onChange={onChange} footer={showFooter ? footerRenderer : undefined}
       />
+      {error && <Warning style={{ marginTop: '16px' }}>{error}</Warning>}
     </ConfigProvider>
   )
 }
