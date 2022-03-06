@@ -75,9 +75,11 @@ const TransactionViewer = ({ address }) => {
   const searchInput = useRef()
   const fetchPageOptions = useRef({ pageSize: 10, pageIndex: 0 }).current
   const [hasMore, setHasMore] = useState(true)
-  const [currentPage, setCurrentPage] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
   const [showFooter, setShowFooter] = useState(false)
   const [error, setError] = useState('')
+  const [fetchedAddresses, setFetchedAddresses] = useState([])
+  const [fetchingAddress, setFetchingAddress] = useState(address)
 
   useEffect(() => {
     if (!address) return
@@ -103,14 +105,22 @@ const TransactionViewer = ({ address }) => {
     )
   }
 
+  // TODO: add proper cache
   async function loadData () {
     setLoading(true)
     setError('')
     try {
       // TODO: right now some transactions are not returned from this API, like those internal ones.
-      const txs = await api.explorer.getTransactionHistory(address, fetchPageOptions.pageSize, fetchPageOptions.pageIndex)
+      const txs = await api.explorer.getTransactionHistory(fetchingAddress, fetchPageOptions.pageSize, fetchPageOptions.pageIndex)
       if (txs.length < fetchPageOptions.pageSize) {
-        setHasMore(false)
+        // Check if any previous addresses not yet have been fetched, if none, set as all loaded.
+        const unfetchedAddress = wallet.backlinks?.find(link => !fetchedAddresses.includes(link))
+        setFetchedAddresses([...fetchedAddresses, fetchingAddress])
+        if (unfetchedAddress) {
+          setFetchingAddress(unfetchedAddress)
+        } else {
+          setHasMore(false)
+        }
       }
       const allTxs = await Promise.all(txs.map(tx => api.explorer.getTransaction(tx).catch(e => {
         console.error(e)

@@ -814,7 +814,7 @@ const api = {
     getNetworkId: () => {
       return {
         blockchain: 'Harmony',
-        network: activeNetwork ? 'Testnet' : 'Mainnet',
+        network: activeNetwork === 'harmony-testnet' ? 'Testnet' : 'Mainnet',
         sub_network_identifier: {
           network: 'shard 0',
           metadata: {
