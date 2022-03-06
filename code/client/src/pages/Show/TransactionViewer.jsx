@@ -127,9 +127,11 @@ const TransactionViewer = ({ address }) => {
           txId: tx.hash
         }
       })))
-    } catch (e) {}
+    } catch (e) {
+      console.error(e)
+      setError('Some error occured while parsing transactions.')
+    }
     setLoading(false)
-    setError('Some error occured while parsing transactions.')
   }
 
   function loadMore () {
