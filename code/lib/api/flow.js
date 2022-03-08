@@ -1,4 +1,5 @@
 const ONEUtil = require('../util')
+const ONEConstants = require('../constants')
 const ONE = require('../onewallet')
 const config = require('../config/provider').getConfig()
 const storage = require('./storage').getStorage()
@@ -7,7 +8,6 @@ const { api } = require('./index')
 const EventMessage = require('../event-message')
 const EventMaps = require('../events-map.json')
 const BN = require('bn.js')
-const WalletConstants = require('../../client/src/constants/wallet')
 
 const EotpBuilders = {
   fromOtp: async ({ otp, otp2, rand, nonce, wallet }) => {
@@ -175,7 +175,7 @@ const EOTPDerivation = {
     let treeIndex = null
     const search = () => {
       for (const [eind, effectiveTime] of effectiveTimes.entries()) {
-        const maxIndex = ONEUtil.timeToIndex({ effectiveTime, interval: WalletConstants.interval6 })
+        const maxIndex = ONEUtil.timeToIndex({ effectiveTime, interval: ONEConstants.INTERVAL6 })
         // const treeIndex = ONEUtil.timeToIndex({ effectiveTime: wallet.effectiveTime }) % innerTrees.length
         const maxIndexAcrossTrees = Math.max(...innerTrees.map(t => t[0].length / 32))
         message.debug(`[eind=${eind} effectiveTime=${effectiveTime}] maxIndex:${maxIndex}, maxIndexAcrossTrees:${maxIndexAcrossTrees} }`)

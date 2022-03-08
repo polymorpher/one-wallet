@@ -1,7 +1,7 @@
 const ONEConstants = require('../../../lib/constants')
 export default {
-  interval: 30 * 1000,
-  interval6: 30 * 1000 * 6,
+  interval: ONEConstants.INTERVAL,
+  interval6: ONEConstants.INTERVAL6,
   // defaultDuration: 3600 * 1000 * 24 * 364,
   defaultDuration: 3600 * 1000 * 24 * 272, // 272 days corresponds to a life span of 2**17 * 6 (multiply by 30 seconds, divide by 3600 * 24 * 1000 to get the number of days: 273.06)
   defaultSpendingLimit: 1000, // ONEs
