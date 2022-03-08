@@ -7,23 +7,23 @@
   "immutableReferences": {},
   "generatedSources": [],
   "deployedGeneratedSources": [],
-  "sourceMap": "64:1732:14:-:0;;;;;;;;;;;;;;;-1:-1:-1;;;64:1732:14;;;;;;;;;;;;;;;;;",
-  "deployedSourceMap": "64:1732:14:-:0;;;;;;;;",
+  "sourceMap": "64:1732:25:-:0;;;;;;;;;;;;;;;-1:-1:-1;;;64:1732:25;;;;;;;;;;;;;;;;;",
+  "deployedSourceMap": "64:1732:25:-:0;;;;;;;;",
   "source": "// SPDX-License-Identifier: Apache-2.0\npragma solidity ^0.8.4;\n\nlibrary Enums {\n    // This list is extended in almost every version. Some of them are now redundant. We should simplify it some time.\n    enum OperationType {\n        TRACK,\n        UNTRACK,\n        TRANSFER_TOKEN,\n        OVERRIDE_TRACK,\n        TRANSFER,\n        SET_RECOVERY_ADDRESS,\n        RECOVER,\n        DISPLACE, // reserved, not implemented yet. This is for replacing the root and set up new parameters (t0, lifespan)\n        FORWARD, // This is for forwarding this contract to another contract and submitting all control to that control (daily limit would still be in effect)\n        RECOVER_SELECTED_TOKENS,\n        BUY_DOMAIN,\n        COMMAND, // command a backlinked wallet to perform an operation\n        BACKLINK_ADD, // backlink a 1wallet\n        BACKLINK_DELETE, // remove backlink of a backlinked 1wallet\n        BACKLINK_OVERRIDE, // override the list of backlinked 1wallet\n        RENEW_DOMAIN,\n        TRANSFER_DOMAIN,\n        RECLAIM_REVERSE_DOMAIN,\n        RECLAIM_DOMAIN_FROM_BACKLINK,\n        SIGN, // produce signature verifiable by eip-1271\n        REVOKE, // revoke a signature\n        CALL, // call arbitrary external contract function and optionally send funds to that function, or making multiple calls in one go\n        BATCH, // execute multiple operations in a single auth\n        NOOP, // indicates no operation should be performed. This is useful to store pending ops\n        CHANGE_SPENDING_LIMIT, // adjust daily spend limit to a value between [0, 2s] where s is the current spending limit\n        JUMP_SPENDING_LIMIT // adjust daily spend limit to a value between [0, h] where h is the highest spending limit used so far\n    }\n    enum TokenType{\n        ERC20, ERC721, ERC1155, NONE\n    }\n}\n\n",
-  "sourcePath": "/Users/polymorpher/git/one-wallet/code/contracts/Enums.sol",
+  "sourcePath": "/Users/john/one-wallet/one-wallet/code/contracts/Enums.sol",
   "ast": {
     "absolutePath": "project:/contracts/Enums.sol",
     "exportedSymbols": {
       "Enums": [
-        2824
+        5908
       ]
     },
-    "id": 2825,
+    "id": 5909,
     "license": "Apache-2.0",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 2791,
+        "id": 5875,
         "literals": [
           "solidity",
           "^",
@@ -31,7 +31,7 @@
           ".4"
         ],
         "nodeType": "PragmaDirective",
-        "src": "39:23:14"
+        "src": "39:23:25"
       },
       {
         "abstract": false,
@@ -39,265 +39,265 @@
         "contractDependencies": [],
         "contractKind": "library",
         "fullyImplemented": true,
-        "id": 2824,
+        "id": 5908,
         "linearizedBaseContracts": [
-          2824
+          5908
         ],
         "name": "Enums",
-        "nameLocation": "72:5:14",
+        "nameLocation": "72:5:25",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "canonicalName": "Enums.OperationType",
-            "id": 2818,
+            "id": 5902,
             "members": [
               {
-                "id": 2792,
+                "id": 5876,
                 "name": "TRACK",
-                "nameLocation": "232:5:14",
+                "nameLocation": "232:5:25",
                 "nodeType": "EnumValue",
-                "src": "232:5:14"
+                "src": "232:5:25"
               },
               {
-                "id": 2793,
+                "id": 5877,
                 "name": "UNTRACK",
-                "nameLocation": "247:7:14",
+                "nameLocation": "247:7:25",
                 "nodeType": "EnumValue",
-                "src": "247:7:14"
+                "src": "247:7:25"
               },
               {
-                "id": 2794,
+                "id": 5878,
                 "name": "TRANSFER_TOKEN",
-                "nameLocation": "264:14:14",
+                "nameLocation": "264:14:25",
                 "nodeType": "EnumValue",
-                "src": "264:14:14"
+                "src": "264:14:25"
               },
               {
-                "id": 2795,
+                "id": 5879,
                 "name": "OVERRIDE_TRACK",
-                "nameLocation": "288:14:14",
+                "nameLocation": "288:14:25",
                 "nodeType": "EnumValue",
-                "src": "288:14:14"
+                "src": "288:14:25"
               },
               {
-                "id": 2796,
+                "id": 5880,
                 "name": "TRANSFER",
-                "nameLocation": "312:8:14",
+                "nameLocation": "312:8:25",
                 "nodeType": "EnumValue",
-                "src": "312:8:14"
+                "src": "312:8:25"
               },
               {
-                "id": 2797,
+                "id": 5881,
                 "name": "SET_RECOVERY_ADDRESS",
-                "nameLocation": "330:20:14",
+                "nameLocation": "330:20:25",
                 "nodeType": "EnumValue",
-                "src": "330:20:14"
+                "src": "330:20:25"
               },
               {
-                "id": 2798,
+                "id": 5882,
                 "name": "RECOVER",
-                "nameLocation": "360:7:14",
+                "nameLocation": "360:7:25",
                 "nodeType": "EnumValue",
-                "src": "360:7:14"
+                "src": "360:7:25"
               },
               {
-                "id": 2799,
+                "id": 5883,
                 "name": "DISPLACE",
-                "nameLocation": "377:8:14",
+                "nameLocation": "377:8:25",
                 "nodeType": "EnumValue",
-                "src": "377:8:14"
+                "src": "377:8:25"
               },
               {
-                "id": 2800,
+                "id": 5884,
                 "name": "FORWARD",
-                "nameLocation": "501:7:14",
+                "nameLocation": "501:7:25",
                 "nodeType": "EnumValue",
-                "src": "501:7:14"
+                "src": "501:7:25"
               },
               {
-                "id": 2801,
+                "id": 5885,
                 "name": "RECOVER_SELECTED_TOKENS",
-                "nameLocation": "660:23:14",
+                "nameLocation": "660:23:25",
                 "nodeType": "EnumValue",
-                "src": "660:23:14"
+                "src": "660:23:25"
               },
               {
-                "id": 2802,
+                "id": 5886,
                 "name": "BUY_DOMAIN",
-                "nameLocation": "693:10:14",
+                "nameLocation": "693:10:25",
                 "nodeType": "EnumValue",
-                "src": "693:10:14"
+                "src": "693:10:25"
               },
               {
-                "id": 2803,
+                "id": 5887,
                 "name": "COMMAND",
-                "nameLocation": "713:7:14",
+                "nameLocation": "713:7:25",
                 "nodeType": "EnumValue",
-                "src": "713:7:14"
+                "src": "713:7:25"
               },
               {
-                "id": 2804,
+                "id": 5888,
                 "name": "BACKLINK_ADD",
-                "nameLocation": "785:12:14",
+                "nameLocation": "785:12:25",
                 "nodeType": "EnumValue",
-                "src": "785:12:14"
+                "src": "785:12:25"
               },
               {
-                "id": 2805,
+                "id": 5889,
                 "name": "BACKLINK_DELETE",
-                "nameLocation": "829:15:14",
+                "nameLocation": "829:15:25",
                 "nodeType": "EnumValue",
-                "src": "829:15:14"
+                "src": "829:15:25"
               },
               {
-                "id": 2806,
+                "id": 5890,
                 "name": "BACKLINK_OVERRIDE",
-                "nameLocation": "897:17:14",
+                "nameLocation": "897:17:25",
                 "nodeType": "EnumValue",
-                "src": "897:17:14"
+                "src": "897:17:25"
               },
               {
-                "id": 2807,
+                "id": 5891,
                 "name": "RENEW_DOMAIN",
-                "nameLocation": "967:12:14",
+                "nameLocation": "967:12:25",
                 "nodeType": "EnumValue",
-                "src": "967:12:14"
+                "src": "967:12:25"
               },
               {
-                "id": 2808,
+                "id": 5892,
                 "name": "TRANSFER_DOMAIN",
-                "nameLocation": "989:15:14",
+                "nameLocation": "989:15:25",
                 "nodeType": "EnumValue",
-                "src": "989:15:14"
+                "src": "989:15:25"
               },
               {
-                "id": 2809,
+                "id": 5893,
                 "name": "RECLAIM_REVERSE_DOMAIN",
-                "nameLocation": "1014:22:14",
+                "nameLocation": "1014:22:25",
                 "nodeType": "EnumValue",
-                "src": "1014:22:14"
+                "src": "1014:22:25"
               },
               {
-                "id": 2810,
+                "id": 5894,
                 "name": "RECLAIM_DOMAIN_FROM_BACKLINK",
-                "nameLocation": "1046:28:14",
+                "nameLocation": "1046:28:25",
                 "nodeType": "EnumValue",
-                "src": "1046:28:14"
+                "src": "1046:28:25"
               },
               {
-                "id": 2811,
+                "id": 5895,
                 "name": "SIGN",
-                "nameLocation": "1084:4:14",
+                "nameLocation": "1084:4:25",
                 "nodeType": "EnumValue",
-                "src": "1084:4:14"
+                "src": "1084:4:25"
               },
               {
-                "id": 2812,
+                "id": 5896,
                 "name": "REVOKE",
-                "nameLocation": "1142:6:14",
+                "nameLocation": "1142:6:25",
                 "nodeType": "EnumValue",
-                "src": "1142:6:14"
+                "src": "1142:6:25"
               },
               {
-                "id": 2813,
+                "id": 5897,
                 "name": "CALL",
-                "nameLocation": "1180:4:14",
+                "nameLocation": "1180:4:25",
                 "nodeType": "EnumValue",
-                "src": "1180:4:14"
+                "src": "1180:4:25"
               },
               {
-                "id": 2814,
+                "id": 5898,
                 "name": "BATCH",
-                "nameLocation": "1318:5:14",
+                "nameLocation": "1318:5:25",
                 "nodeType": "EnumValue",
-                "src": "1318:5:14"
+                "src": "1318:5:25"
               },
               {
-                "id": 2815,
+                "id": 5899,
                 "name": "NOOP",
-                "nameLocation": "1381:4:14",
+                "nameLocation": "1381:4:25",
                 "nodeType": "EnumValue",
-                "src": "1381:4:14"
+                "src": "1381:4:25"
               },
               {
-                "id": 2816,
+                "id": 5900,
                 "name": "CHANGE_SPENDING_LIMIT",
-                "nameLocation": "1478:21:14",
+                "nameLocation": "1478:21:25",
                 "nodeType": "EnumValue",
-                "src": "1478:21:14"
+                "src": "1478:21:25"
               },
               {
-                "id": 2817,
+                "id": 5901,
                 "name": "JUMP_SPENDING_LIMIT",
-                "nameLocation": "1602:19:14",
+                "nameLocation": "1602:19:25",
                 "nodeType": "EnumValue",
-                "src": "1602:19:14"
+                "src": "1602:19:25"
               }
             ],
             "name": "OperationType",
-            "nameLocation": "208:13:14",
+            "nameLocation": "208:13:25",
             "nodeType": "EnumDefinition",
-            "src": "203:1528:14"
+            "src": "203:1528:25"
           },
           {
             "canonicalName": "Enums.TokenType",
-            "id": 2823,
+            "id": 5907,
             "members": [
               {
-                "id": 2819,
+                "id": 5903,
                 "name": "ERC20",
-                "nameLocation": "1760:5:14",
+                "nameLocation": "1760:5:25",
                 "nodeType": "EnumValue",
-                "src": "1760:5:14"
+                "src": "1760:5:25"
               },
               {
-                "id": 2820,
+                "id": 5904,
                 "name": "ERC721",
-                "nameLocation": "1767:6:14",
+                "nameLocation": "1767:6:25",
                 "nodeType": "EnumValue",
-                "src": "1767:6:14"
+                "src": "1767:6:25"
               },
               {
-                "id": 2821,
+                "id": 5905,
                 "name": "ERC1155",
-                "nameLocation": "1775:7:14",
+                "nameLocation": "1775:7:25",
                 "nodeType": "EnumValue",
-                "src": "1775:7:14"
+                "src": "1775:7:25"
               },
               {
-                "id": 2822,
+                "id": 5906,
                 "name": "NONE",
-                "nameLocation": "1784:4:14",
+                "nameLocation": "1784:4:25",
                 "nodeType": "EnumValue",
-                "src": "1784:4:14"
+                "src": "1784:4:25"
               }
             ],
             "name": "TokenType",
-            "nameLocation": "1741:9:14",
+            "nameLocation": "1741:9:25",
             "nodeType": "EnumDefinition",
-            "src": "1736:58:14"
+            "src": "1736:58:25"
           }
         ],
-        "scope": 2825,
-        "src": "64:1732:14",
+        "scope": 5909,
+        "src": "64:1732:25",
         "usedErrors": []
       }
     ],
-    "src": "39:1759:14"
+    "src": "39:1759:25"
   },
   "legacyAST": {
     "absolutePath": "project:/contracts/Enums.sol",
     "exportedSymbols": {
       "Enums": [
-        2824
+        5908
       ]
     },
-    "id": 2825,
+    "id": 5909,
     "license": "Apache-2.0",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 2791,
+        "id": 5875,
         "literals": [
           "solidity",
           "^",
@@ -305,7 +305,7 @@
           ".4"
         ],
         "nodeType": "PragmaDirective",
-        "src": "39:23:14"
+        "src": "39:23:25"
       },
       {
         "abstract": false,
@@ -313,259 +313,259 @@
         "contractDependencies": [],
         "contractKind": "library",
         "fullyImplemented": true,
-        "id": 2824,
+        "id": 5908,
         "linearizedBaseContracts": [
-          2824
+          5908
         ],
         "name": "Enums",
-        "nameLocation": "72:5:14",
+        "nameLocation": "72:5:25",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "canonicalName": "Enums.OperationType",
-            "id": 2818,
+            "id": 5902,
             "members": [
               {
-                "id": 2792,
+                "id": 5876,
                 "name": "TRACK",
-                "nameLocation": "232:5:14",
+                "nameLocation": "232:5:25",
                 "nodeType": "EnumValue",
-                "src": "232:5:14"
+                "src": "232:5:25"
               },
               {
-                "id": 2793,
+                "id": 5877,
                 "name": "UNTRACK",
-                "nameLocation": "247:7:14",
+                "nameLocation": "247:7:25",
                 "nodeType": "EnumValue",
-                "src": "247:7:14"
+                "src": "247:7:25"
               },
               {
-                "id": 2794,
+                "id": 5878,
                 "name": "TRANSFER_TOKEN",
-                "nameLocation": "264:14:14",
+                "nameLocation": "264:14:25",
                 "nodeType": "EnumValue",
-                "src": "264:14:14"
+                "src": "264:14:25"
               },
               {
-                "id": 2795,
+                "id": 5879,
                 "name": "OVERRIDE_TRACK",
-                "nameLocation": "288:14:14",
+                "nameLocation": "288:14:25",
                 "nodeType": "EnumValue",
-                "src": "288:14:14"
+                "src": "288:14:25"
               },
               {
-                "id": 2796,
+                "id": 5880,
                 "name": "TRANSFER",
-                "nameLocation": "312:8:14",
+                "nameLocation": "312:8:25",
                 "nodeType": "EnumValue",
-                "src": "312:8:14"
+                "src": "312:8:25"
               },
               {
-                "id": 2797,
+                "id": 5881,
                 "name": "SET_RECOVERY_ADDRESS",
-                "nameLocation": "330:20:14",
+                "nameLocation": "330:20:25",
                 "nodeType": "EnumValue",
-                "src": "330:20:14"
+                "src": "330:20:25"
               },
               {
-                "id": 2798,
+                "id": 5882,
                 "name": "RECOVER",
-                "nameLocation": "360:7:14",
+                "nameLocation": "360:7:25",
                 "nodeType": "EnumValue",
-                "src": "360:7:14"
+                "src": "360:7:25"
               },
               {
-                "id": 2799,
+                "id": 5883,
                 "name": "DISPLACE",
-                "nameLocation": "377:8:14",
+                "nameLocation": "377:8:25",
                 "nodeType": "EnumValue",
-                "src": "377:8:14"
+                "src": "377:8:25"
               },
               {
-                "id": 2800,
+                "id": 5884,
                 "name": "FORWARD",
-                "nameLocation": "501:7:14",
+                "nameLocation": "501:7:25",
                 "nodeType": "EnumValue",
-                "src": "501:7:14"
+                "src": "501:7:25"
               },
               {
-                "id": 2801,
+                "id": 5885,
                 "name": "RECOVER_SELECTED_TOKENS",
-                "nameLocation": "660:23:14",
+                "nameLocation": "660:23:25",
                 "nodeType": "EnumValue",
-                "src": "660:23:14"
+                "src": "660:23:25"
               },
               {
-                "id": 2802,
+                "id": 5886,
                 "name": "BUY_DOMAIN",
-                "nameLocation": "693:10:14",
+                "nameLocation": "693:10:25",
                 "nodeType": "EnumValue",
-                "src": "693:10:14"
+                "src": "693:10:25"
               },
               {
-                "id": 2803,
+                "id": 5887,
                 "name": "COMMAND",
-                "nameLocation": "713:7:14",
+                "nameLocation": "713:7:25",
                 "nodeType": "EnumValue",
-                "src": "713:7:14"
+                "src": "713:7:25"
               },
               {
-                "id": 2804,
+                "id": 5888,
                 "name": "BACKLINK_ADD",
-                "nameLocation": "785:12:14",
+                "nameLocation": "785:12:25",
                 "nodeType": "EnumValue",
-                "src": "785:12:14"
+                "src": "785:12:25"
               },
               {
-                "id": 2805,
+                "id": 5889,
                 "name": "BACKLINK_DELETE",
-                "nameLocation": "829:15:14",
+                "nameLocation": "829:15:25",
                 "nodeType": "EnumValue",
-                "src": "829:15:14"
+                "src": "829:15:25"
               },
               {
-                "id": 2806,
+                "id": 5890,
                 "name": "BACKLINK_OVERRIDE",
-                "nameLocation": "897:17:14",
+                "nameLocation": "897:17:25",
                 "nodeType": "EnumValue",
-                "src": "897:17:14"
+                "src": "897:17:25"
               },
               {
-                "id": 2807,
+                "id": 5891,
                 "name": "RENEW_DOMAIN",
-                "nameLocation": "967:12:14",
+                "nameLocation": "967:12:25",
                 "nodeType": "EnumValue",
-                "src": "967:12:14"
+                "src": "967:12:25"
               },
               {
-                "id": 2808,
+                "id": 5892,
                 "name": "TRANSFER_DOMAIN",
-                "nameLocation": "989:15:14",
+                "nameLocation": "989:15:25",
                 "nodeType": "EnumValue",
-                "src": "989:15:14"
+                "src": "989:15:25"
               },
               {
-                "id": 2809,
+                "id": 5893,
                 "name": "RECLAIM_REVERSE_DOMAIN",
-                "nameLocation": "1014:22:14",
+                "nameLocation": "1014:22:25",
                 "nodeType": "EnumValue",
-                "src": "1014:22:14"
+                "src": "1014:22:25"
               },
               {
-                "id": 2810,
+                "id": 5894,
                 "name": "RECLAIM_DOMAIN_FROM_BACKLINK",
-                "nameLocation": "1046:28:14",
+                "nameLocation": "1046:28:25",
                 "nodeType": "EnumValue",
-                "src": "1046:28:14"
+                "src": "1046:28:25"
               },
               {
-                "id": 2811,
+                "id": 5895,
                 "name": "SIGN",
-                "nameLocation": "1084:4:14",
+                "nameLocation": "1084:4:25",
                 "nodeType": "EnumValue",
-                "src": "1084:4:14"
+                "src": "1084:4:25"
               },
               {
-                "id": 2812,
+                "id": 5896,
                 "name": "REVOKE",
-                "nameLocation": "1142:6:14",
+                "nameLocation": "1142:6:25",
                 "nodeType": "EnumValue",
-                "src": "1142:6:14"
+                "src": "1142:6:25"
               },
               {
-                "id": 2813,
+                "id": 5897,
                 "name": "CALL",
-                "nameLocation": "1180:4:14",
+                "nameLocation": "1180:4:25",
                 "nodeType": "EnumValue",
-                "src": "1180:4:14"
+                "src": "1180:4:25"
               },
               {
-                "id": 2814,
+                "id": 5898,
                 "name": "BATCH",
-                "nameLocation": "1318:5:14",
+                "nameLocation": "1318:5:25",
                 "nodeType": "EnumValue",
-                "src": "1318:5:14"
+                "src": "1318:5:25"
               },
               {
-                "id": 2815,
+                "id": 5899,
                 "name": "NOOP",
-                "nameLocation": "1381:4:14",
+                "nameLocation": "1381:4:25",
                 "nodeType": "EnumValue",
-                "src": "1381:4:14"
+                "src": "1381:4:25"
               },
               {
-                "id": 2816,
+                "id": 5900,
                 "name": "CHANGE_SPENDING_LIMIT",
-                "nameLocation": "1478:21:14",
+                "nameLocation": "1478:21:25",
                 "nodeType": "EnumValue",
-                "src": "1478:21:14"
+                "src": "1478:21:25"
               },
               {
-                "id": 2817,
+                "id": 5901,
                 "name": "JUMP_SPENDING_LIMIT",
-                "nameLocation": "1602:19:14",
+                "nameLocation": "1602:19:25",
                 "nodeType": "EnumValue",
-                "src": "1602:19:14"
+                "src": "1602:19:25"
               }
             ],
             "name": "OperationType",
-            "nameLocation": "208:13:14",
+            "nameLocation": "208:13:25",
             "nodeType": "EnumDefinition",
-            "src": "203:1528:14"
+            "src": "203:1528:25"
           },
           {
             "canonicalName": "Enums.TokenType",
-            "id": 2823,
+            "id": 5907,
             "members": [
               {
-                "id": 2819,
+                "id": 5903,
                 "name": "ERC20",
-                "nameLocation": "1760:5:14",
+                "nameLocation": "1760:5:25",
                 "nodeType": "EnumValue",
-                "src": "1760:5:14"
+                "src": "1760:5:25"
               },
               {
-                "id": 2820,
+                "id": 5904,
                 "name": "ERC721",
-                "nameLocation": "1767:6:14",
+                "nameLocation": "1767:6:25",
                 "nodeType": "EnumValue",
-                "src": "1767:6:14"
+                "src": "1767:6:25"
               },
               {
-                "id": 2821,
+                "id": 5905,
                 "name": "ERC1155",
-                "nameLocation": "1775:7:14",
+                "nameLocation": "1775:7:25",
                 "nodeType": "EnumValue",
-                "src": "1775:7:14"
+                "src": "1775:7:25"
               },
               {
-                "id": 2822,
+                "id": 5906,
                 "name": "NONE",
-                "nameLocation": "1784:4:14",
+                "nameLocation": "1784:4:25",
                 "nodeType": "EnumValue",
-                "src": "1784:4:14"
+                "src": "1784:4:25"
               }
             ],
             "name": "TokenType",
-            "nameLocation": "1741:9:14",
+            "nameLocation": "1741:9:25",
             "nodeType": "EnumDefinition",
-            "src": "1736:58:14"
+            "src": "1736:58:25"
           }
         ],
-        "scope": 2825,
-        "src": "64:1732:14",
+        "scope": 5909,
+        "src": "64:1732:25",
         "usedErrors": []
       }
     ],
-    "src": "39:1759:14"
+    "src": "39:1759:25"
   },
   "compiler": {
     "name": "solc",
     "version": "0.8.4+commit.c7e474f2.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.4.2",
-  "updatedAt": "2021-12-21T09:09:50.744Z",
+  "schemaVersion": "3.4.3",
+  "updatedAt": "2022-03-08T00:51:56.814Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
