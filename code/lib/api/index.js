@@ -770,7 +770,7 @@ const api = {
       }))
     },
     getNFTType: async (contractAddress) => {
-      const c = new web3.eth.Contract(IERC165.abi, contractAddress)
+      const c = new web3.eth.Contract(IERC165, contractAddress)
       const is721 = await c.methods.supportsInterface(ONEConstants.TokenInterfaces.ERC721).call()
       if (is721) {
         return ONEConstants.TokenType.ERC721
