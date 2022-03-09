@@ -11,6 +11,10 @@ import UploadOutlined from '@ant-design/icons/UploadOutlined'
 import jsQR from 'jsqr'
 import { getDataURLFromFile, getTextFromFile } from './Common'
 
+const SupportedNonImgFileLabels = {
+  'application/json': 'JSON files (.json)',
+  'text/plain': 'Plain Text files',
+}
 const QrCodeScanner = ({ onScan, shouldInit, style, supportedNonImgFiles = ['application/json'], btnText = 'Use Image or JSON Instead' }) => {
   const ref = useRef()
   const { isMobile } = useWindowDimensions()
@@ -119,7 +123,7 @@ const QrCodeScanner = ({ onScan, shouldInit, style, supportedNonImgFiles = ['app
   const beforeUpload = (file) => {
     const isSupported = ['image/jpeg', 'image/png', ...supportedNonImgFiles].includes(file.type)
     if (!isSupported) {
-      message.error(`You can only upload JPG/PNG ${supportedNonImgFiles.length ? `or ${supportedNonImgFiles.join(',')} ` : ''}file`)
+      message.error(`You can only upload JPG/PNG ${supportedNonImgFiles.length ? `or one of the followings: ${supportedNonImgFiles.map(e => SupportedNonImgFileLabels[e]).join(',')} ` : ''}`)
     }
     return true
   }

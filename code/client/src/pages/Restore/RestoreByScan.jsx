@@ -89,7 +89,7 @@ const RestoreByScan = ({ isActive, onComplete, onCancel }) => {
     f()
   }, [addressInput])
 
-  const onScan = async (e, { isJson }) => {
+  const onScan = async (e, { isJson = false } = {}) => {
     if (e && !secret) {
       const now = performance.now()
       if (!(now - control.lastScan > config.scanDelay)) {
