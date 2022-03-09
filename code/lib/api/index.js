@@ -409,7 +409,7 @@ const api = {
       const tt = []
       for (let i = 0; i < tokenTypes.length; i++) {
         tt.push({
-          tokenType: tokenTypes[i].toNumber(),
+          tokenType: new BN(tokenTypes[i]).toNumber(),
           contractAddress: contracts[i],
           tokenId: tokenIds[i].toString()
         })
