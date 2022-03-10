@@ -1,4 +1,5 @@
 const TestUtil = require('./util')
+const CheckUtil = require('./checkUtil')
 const unit = require('ethjs-unit')
 const ONEUtil = require('../lib/util')
 const ONEDebugger = require('../lib/debug')
@@ -25,6 +26,7 @@ contract('ONEWallet', (accounts) => {
   it('Wallet_Create: must create wallet with expected parameters', async () => {
     const purse = web3.eth.accounts.create()
     const {
+      wallet,
       seed,
       hseed,
       address,
@@ -46,6 +48,7 @@ contract('ONEWallet', (accounts) => {
       lastResortAddress: purse.address,
       spendingLimit: ONE_ETH
     })
+    CheckUtil.checkOneWallet(wallet)
     Logger.debug({
       address,
       seed,
@@ -130,6 +133,13 @@ contract('ONEWallet', (accounts) => {
     const eotp = await ONE.computeEOTP({ otp, hseed })
     const neighbors = ONE.selectMerkleNeighbors({ layers, index })
     const neighbor = neighbors[0]
+    console.log(`layers: ${JSON.stringify(layers)}`)
+    console.log(`index: ${JSON.stringify(index)}`)
+    console.log(`neighbors: ${JSON.stringify(neighbors)}`)
+    console.log(`neighbor: ${JSON.stringify(neighbors)}`)
+    console.log(`index: ${JSON.stringify(index)}`)
+    console.log(`otp: ${JSON.stringify(otp)}`)
+    console.log(`eotp: ${JSON.stringify(eotp)}`)
     const { hash: commitHash } = ONE.computeCommitHash({ neighbor, index, eotp })
     const { hash: transferHash } = ONE.computeTransferHash({ dest: purse.address, amount: HALF_DIME })
     const { hash: verificationHash } = ONE.computeVerificationHash({ paramsHash: transferHash, eotp })
