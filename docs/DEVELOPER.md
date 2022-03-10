@@ -28,7 +28,7 @@ You can also turn on debugging locally by including it in the command line for e
 Solidity Contract documentation can be found under the solidity folder
 
 ## Contract Inheritence graph
-![Contracts Inhereitance Graph](../slither/inheritance-graph.png)
+![Contracts Inhereitance Graph](./slither/inheritance-graph.png)
 
 
 
