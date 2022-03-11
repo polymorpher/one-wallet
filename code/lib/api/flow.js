@@ -269,6 +269,7 @@ const Flows = {
       }
     } catch (ex) {
       onCommitError && await onCommitError(ex)
+      return
     }
     afterCommit && await afterCommit(commitHash)
 
