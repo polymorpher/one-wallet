@@ -9,7 +9,8 @@
     "lint": "eslint ./lib ./migrations ./test",
     "lint-fix": "eslint ./lib ./migrations ./test --fix",
     "console": "node --experimental-repl-await",
-    "flatten": "truffle-flattener contracts/ONEWallet.sol > flattened/ONEWalletFlattened.sol"
+    "flatten": "truffle-flattener contracts/ONEWallet.sol > flattened/ONEWalletFlattened.sol",
+    "soldoc": "npx solidity-docgen -i contracts -o ../docs/solidity --solc-module solc-0.8.4"
   },
   "dependencies": {
     "@harmony-js/account": "^0.1.57",

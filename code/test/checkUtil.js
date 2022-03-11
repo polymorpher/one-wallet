@@ -28,24 +28,7 @@ const checkOneWallet = async (wallet) => {
   // function lookupSignature(bytes32 hash) external view returns (bytes32, uint32, uint32);
 }
 
-// OneWallet Event testing 
-// event TransferError(address dest, bytes error);
-// event LastResortAddressNotSet();
-// event RecoveryAddressUpdated(address dest);
-// event PaymentReceived(uint256 amount, address from);
-// event PaymentSent(uint256 amount, address dest);
-// event PaymentForwarded(uint256 amount, address dest);
-// event AutoRecoveryTriggered(address from);
-// event AutoRecoveryTriggeredPrematurely(address from, uint256 requiredTime);
-// event RecoveryFailure();
-// event RecoveryTriggered();
-// event Retired();
-// event ForwardedBalance(bool success);
-// event ForwardAddressUpdated(address dest);
-// event ForwardAddressAlreadySet(address dest);
-// event ForwardAddressInvalid(address dest);
-// event ExternalCallCompleted(address contractAddress, uint256 amount, bytes data, bytes ret);
-// event ExternalCallFailed(address contractAddress, uint256 amount, bytes data, bytes ret);
+
 module.exports = {
   checkOneWallet
 }
