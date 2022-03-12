@@ -17,7 +17,7 @@ const BN = require('bn.js')
 
 const networks = []
 const providers = {}
-const nonces = {}
+const pendingNonces = {}
 const contracts = {}
 const contractsV5 = {}
 const contractsV6 = {}
@@ -226,23 +226,41 @@ const init = async () => {
     libraries,
   })
   for (const network in providers) {
-    const nonce = await rpc.getNonce({ address: providers[network].addresses[0], network })
-    nonces[network] = nonce - 1
-    console.log(`[${network}] Set nonce ${nonce}`)
+    // const nonce = await rpc.getNonce({ address: providers[network].addresses[0], network })
+    pendingNonces[network] = 0
+    // console.log(`[${network}] Set nonce ${nonce}`)
+    console.log(`[${network}] Set pending nonce = 0`)
   }
 }
 
-const incrementNonce = (network, useInt = true) => {
-  nonces[network] += 1
-  return getNonce(network, useInt)
-}
+// const incrementNonce = (network, useInt = true) => {
+//   pendingNonces[network] += 1
+//   return getNonce(network, useInt)
+// }
+//
+// const getNonce = (network, useInt = true) => {
+//   if (useInt) {
+//     return pendingNonces[network]
+//   }
+//   // return hex string
+//   return new BN(pendingNonces[network]).toString(16)
+// }
 
-const getNonce = (network, useInt = true) => {
-  if (useInt) {
-    return nonces[network]
+// basic executor that
+const prepareExecute = (network, logger) => async (f) => {
+  const latestNonce = await rpc.getNonce({ address: providers[network].addresses[0], network })
+  const nonce = latestNonce + pendingNonces[network]
+  pendingNonces[network] += 1
+  console.log(`[${network}] incremented pending nonce=${pendingNonces[network]}`)
+  try {
+    logger && logger(nonce, null, 'pending')
+    const tx = await f('0x' + new BN(nonce).toString(16))
+    logger && logger(nonce, tx, 'complete')
+    return tx
+  } finally {
+    pendingNonces[network] -= 1
+    console.log(`[${network}] decremented pending nonce=${pendingNonces[network]}`)
   }
-  // return hex string
-  return new BN(nonces[network]).toString(16)
 }
 
 module.exports = {
@@ -262,6 +280,5 @@ module.exports = {
   },
   getLibraries: (network) => libraries[network],
   getFactory: (network, name) => factories[network][name || 'ONEWalletFactoryHelper'],
-  incrementNonce,
-  getNonce
+  prepareExecute
 }
