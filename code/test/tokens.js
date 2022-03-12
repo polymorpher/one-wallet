@@ -25,9 +25,9 @@ contract('ONEWallet', (accounts) => {
   const ONE_ETH = unit.toWei('1', 'ether')
   const TEN_ETH = unit.toWei('10', 'ether')
   // Set alice and bobs lastResortAddress
-  const alice = {};
+  const alice = {}
   const aliceLastResortAddress = accounts[1]
-  const bob = new Object();
+  const bob = {}
   const bobLastResortAddress = accounts[2]
   let snapshotId
   beforeEach(async function () {
@@ -38,15 +38,15 @@ contract('ONEWallet', (accounts) => {
     let hseed
     let root
     let layers
-    {({ wallet, seed, hseed, root, client: { layers } } = await TestUtil.createWallet({
+    // eslint-disable-next-line no-lone-blocks
+    { ({ wallet, seed, hseed, root, client: { layers } } = await TestUtil.createWallet({
       salt: new BN(10),
       effectiveTime: EFFECTIVE_TIME,
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
       lastResortAddress: aliceLastResortAddress,
       spendingLimit: TEN_ETH
-    }))}
-    // alice = { wallet, seed, hseed, root, layers, aliceLastResortAddress }
+    })) }
     alice.wallet = wallet
     alice.seed = seed
     alice.hseed = hseed
@@ -54,7 +54,7 @@ contract('ONEWallet', (accounts) => {
     alice.layers = layers
     alice.lastResortAddress = aliceLastResortAddress
     // eslint-disable-next-line no-lone-blocks
-    {({ wallet, seed, hseed, root, client: { layers } } = await TestUtil.createWallet({
+    { ({ wallet, seed, hseed, root, client: { layers } } = await TestUtil.createWallet({
       salt: new BN(11),
       effectiveTime: EFFECTIVE_TIME,
       duration: DURATION,
@@ -62,7 +62,6 @@ contract('ONEWallet', (accounts) => {
       lastResortAddress: bobLastResortAddress,
       spendingLimit: TEN_ETH
     })) }
-    // bob = { wallet, seed, hseed, root, layers, bobLastResortAddress }
     bob.wallet = wallet
     bob.seed = seed
     bob.hseed = hseed
@@ -70,38 +69,27 @@ contract('ONEWallet', (accounts) => {
     bob.layers = layers
     bob.lastResortAddress = bobLastResortAddress
     // Fund alice and bobs wallet
-    // console.log(`aliceLastResortAddress: ${JSON.stringify(aliceLastResortAddress)}`)
-    // console.log(`aliceLastResortAddress Balance: ${await web3.eth.getBalance(aliceLastResortAddress)}`)
     await web3.eth.sendTransaction({
       from: alice.lastResortAddress,
       to: alice.wallet.address,
       value: TEN_ETH
     })
-    // console.log(`aliceLastResortAddress Balance: ${await web3.eth.getBalance(aliceLastResortAddress)}`)
-    // console.log(`alicWallet Balance: ${await web3.eth.getBalance(aliceWallet.address)}`)
-    // console.log(`bobLastResortAddress: ${JSON.stringify(bobLastResortAddress)}`)
-    // console.log(`bobLastResortAddress Balance: ${await web3.eth.getBalance(bobLastResortAddress)}`)
     await web3.eth.sendTransaction({
       from: bob.lastResortAddress,
       to: bob.wallet.address,
       value: TEN_ETH
     })
-    // console.log(`bobLastResortAddress Balance: ${await web3.eth.getBalance(bobLastResortAddress)}`)
-    // console.log(`bobWallet Balance: ${await web3.eth.getBalance(bobWallet.address)}`)
     // create an ERC20
     const TESTERC20 = artifacts.require('TestERC20')
     const testerc20 = await TESTERC20.new(10000000)
-    // console.log(`testerc20.symbol: ${await testerc20.symbol()}`)
     // create an ERC20Decimals9
     const TESTERC20DECIMALS9 = artifacts.require('TestERC20Decimals9')
     const testerc20decimals9 = await TESTERC20DECIMALS9.new(10000000)
-    // console.log(`testerc20.symbol: ${await testerc20decimals9.symbol()}`)
     // create an ERC721
     const TESTERC721 = artifacts.require('TestERC721')
     const tids = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     const uris = ['ipfs://test721/0', 'ipfs://test721/1', 'ipfs://test721/2', 'ipfs://test721/3', 'ipfs://test721/4', 'ipfs://test721/5', 'ipfs://test721/6', 'ipfs://test721/7', 'ipfs://test721/8', 'ipfs://test721/9']
     const testerc721 = await TESTERC721.new(tids,uris)
-    // console.log(`testerc721.tokenURI(4): ${await testerc721.tokenURI(4)}`)
     // create and ERC1155
     const TESTERC1155 = artifacts.require('TestERC1155')
     const tids1155 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -125,25 +113,15 @@ contract('ONEWallet', (accounts) => {
   // tokenTrackerState.transferToken(op.tokenType, op.contractAddress, op.tokenId, op.dest, op.amount, op.data);
 
   // Transfer Native Token
-  it('Wallet_CommitReveal: must commit and reveal a transfer successfully', async () => {
+  it('Wallet_CommitReveal: Transfer must commit and reveal successfully', async () => {
     const purse = web3.eth.accounts.create()
-    // const { wallet, seed, hseed, root, client: { layers } } = await TestUtil.createWallet({
-    //   salt: new BN(2),
-    //   effectiveTime: EFFECTIVE_TIME,
-    //   duration: DURATION,
-    //   maxOperationsPerInterval: SLOT_SIZE,
-    //   lastResortAddress: purse.address,
-    //   spendingLimit: ONE_ETH
-    // })
     const aliceInitialWalletBalance = await web3.eth.getBalance(alice.wallet.address)
     assert.equal(TEN_ETH, aliceInitialWalletBalance, 'Alice Wallet initially has correct balance')
-
     await web3.eth.sendTransaction({
       from: accounts[0],
       to: alice.wallet.address,
       value: ONE_CENT
     })
-    // console.log(`alice.layers: ${alice.layers}`)
     const layers = alice.layers
     const seed = alice.seed
     const hseed = alice.hseed
@@ -152,7 +130,7 @@ contract('ONEWallet', (accounts) => {
     const otp = ONEUtil.genOTP({ seed })
     const index = ONEUtil.timeToIndex({ effectiveTime: EFFECTIVE_TIME })
     const eotp = await ONE.computeEOTP({ otp, hseed })
-    const tx = await TestUtil.commitReveal({
+    await TestUtil.commitReveal({
       Debugger,
       layers,
       index,
@@ -162,15 +140,44 @@ contract('ONEWallet', (accounts) => {
       revealParams: { dest: purse.address, amount: ONE_CENT / 2, operationType: ONEConstants.OperationType.TRANSFER },
       wallet
     })
-    // const event = tx.receipt.logs.filter(e => e.event === 'PaymentSent')[0]
-    // console.log(`tx: ${JSON.stringify(tx)}`)
-    // const event = tx.tx.receipt.logs[0]
-    // console.log(`event: ${JSON.stringify(event.event)}`)
-    // console.log(`event args: ${JSON.stringify(event.args)}`)
     const walletBalance = await web3.eth.getBalance(alice.wallet.address)
     const purseBalance = await web3.eth.getBalance(purse.address)
     assert.equal(parseInt(aliceInitialWalletBalance) + parseInt(ONE_CENT / 2), walletBalance, 'Alice Wallet has correct balance')
     assert.equal(ONE_CENT / 2, purseBalance, 'Purse has correct balance')
+  })
+
+  // Transfer Native Token
+  it('Wallet_CommitReveal: ERC20 transfer must commit and reveal successfully', async () => {
+    // const purse = web3.eth.accounts.create()
+    const aliceInitialWalletBalance = await web3.eth.getBalance(alice.wallet.address)
+    assert.equal(TEN_ETH, aliceInitialWalletBalance, 'Alice Wallet initially has correct balance')
+    // await web3.eth.sendTransaction({
+    //   from: accounts[0],
+    //   to: alice.wallet.address,
+    //   value: ONE_CENT
+    // })
+    // const layers = alice.layers
+    // const seed = alice.seed
+    // const hseed = alice.hseed
+    // const wallet = alice.wallet
+    // Debugger.printLayers({ layers })
+    // const otp = ONEUtil.genOTP({ seed })
+    // const index = ONEUtil.timeToIndex({ effectiveTime: EFFECTIVE_TIME })
+    // const eotp = await ONE.computeEOTP({ otp, hseed })
+    // await TestUtil.commitReveal({
+    //   Debugger,
+    //   layers,
+    //   index,
+    //   eotp,
+    //   paramsHash: ONEWallet.computeTransferHash,
+    //   commitParams: { dest: purse.address, amount: ONE_CENT / 2 },
+    //   revealParams: { dest: purse.address, amount: ONE_CENT / 2, operationType: ONEConstants.OperationType.TRANSFER },
+    //   wallet
+    // })
+    // const walletBalance = await web3.eth.getBalance(alice.wallet.address)
+    // const purseBalance = await web3.eth.getBalance(purse.address)
+    // assert.equal(parseInt(aliceInitialWalletBalance) + parseInt(ONE_CENT / 2), walletBalance, 'Alice Wallet has correct balance')
+    // assert.equal(ONE_CENT / 2, purseBalance, 'Purse has correct balance')
   })
 })
 

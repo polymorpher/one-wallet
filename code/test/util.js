@@ -139,7 +139,7 @@ const createWallet = async ({
   ]
   const tx = await deploy(initArgs)
   Logger.debug('Creating ONEWallet contract with parameters', initArgs)
-  // Logger.debug(tx)
+  Logger.debug(tx)
   const successLog = tx.logs.find(log => log.event === 'ONEWalletDeploySuccess')
   if (!successLog) {
     throw new Error('Wallet deploy unsuccessful')
