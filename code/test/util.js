@@ -1,6 +1,4 @@
 const { loadContracts } = require('../extensions/loader')
-const OW = require('../lib/onewallet')
-const OWUtil = require('../lib/util')
 const config = require('../config')
 const base32 = require('hi-base32')
 const BN = require('bn.js')
@@ -46,23 +44,23 @@ const makeCores = async ({
   effectiveTime,
   duration,
   randomness = 0,
-  hasher = OWUtil.sha256b }) => {
+  hasher = ONEUtil.sha256b }) => {
   let byteSeed = seed
   if (typeof seed === 'string') {
-    byteSeed = OWUtil.stringToBytes(seed)
+    byteSeed = ONEUtil.stringToBytes(seed)
   }
-  const otpSeed = OWUtil.base32Encode(byteSeed)
-  const identificationKeys = [OWUtil.getIdentificationKey(byteSeed, true)]
+  const otpSeed = ONEUtil.base32Encode(byteSeed)
+  const identificationKeys = [ONEUtil.getIdentificationKey(byteSeed, true)]
   let otpSeed2
   let byteSeed2 = seed2
   if (doubleOtp) {
     if (typeof seed2 === 'string') {
-      byteSeed2 = OWUtil.stringToBytes(seed2)
+      byteSeed2 = ONEUtil.stringToBytes(seed2)
     }
     otpSeed2 = base32.encode(byteSeed2)
   }
   effectiveTime = Math.floor(effectiveTime / INTERVAL) * INTERVAL
-  const { seed: computedSeed, seed2: computedSeed2, hseed, root, leaves, layers, maxOperationsPerInterval: slotSize, randomnessResults, counter, innerTrees } = await OW.computeMerkleTree({
+  const { seed: computedSeed, seed2: computedSeed2, hseed, root, leaves, layers, maxOperationsPerInterval: slotSize, randomnessResults, counter, innerTrees } = await ONE.computeMerkleTree({
     otpSeed,
     otpSeed2,
     effectiveTime,
@@ -123,10 +121,11 @@ const createWallet = async ({
   spendingLimit = ONE_ETH,
   doubleOtp = false,
   randomness = 0,
-  hasher = OWUtil.sha256b,
+  hasher = ONEUtil.sha256b,
   spendingInterval = 86400,
   backlinks = []
 }) => {
+  console.log(`lastResortAddress: ${lastResortAddress}`)
   const { core, innerCores, identificationKeys, vars } = await makeCores({ salt, seed, maxOperationsPerInterval, doubleOtp, effectiveTime, duration, randomness, hasher })
   const initArgs = [
     core,
@@ -272,6 +271,7 @@ const createAccounts = async (initArgs) => {
 // Distribute Tokens (Wallet, Alice, Bob, Carol)
 
 module.exports = {
+  init,
   increaseTime,
   createWallet,
   makeCores,
