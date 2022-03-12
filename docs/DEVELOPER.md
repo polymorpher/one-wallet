@@ -165,5 +165,49 @@ Test management of spending limits and time based spending thresholds
 
 * Wallet Testing (ENS Domains)
 
+### Testing notes and TODO
+
+* Remove the need to run ganache for testing (by removing `--network=dev` )
+* Include snapshot fore tokens.js
+* Expose TestUtil.init which needs to be run after each snapshot (wallet create was not initializing the factories)
+* Update `loader.js` console.logs to use VERBOSITY environment variable
+* Create simple wallet transaction functions taking in wallet, from, to, token, amount
+* Modularize the calls in commitreveal
+  * TODO see if we can use apply https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply
+  * const newPrintLayers = Debugger.printLayers.apply(null, alice.layers)
+* Refactor to create generic init functions including wallet and tokens
+* Write check helpers for each of the contracts similar to oneWallet in checkUtil.js
+  * parameterize to parse in the objects that we want to check against
+  * change the console.log to asserts
+* Review spending limits for ERC20 tokens
+* Write Registrar tests
+* Negative use cases
+* Check for exploits
+
+#### Event testing 
+Ensure the following events are being triggered and working correctly
+```
+// OneWallet Event testing 
+// event TransferError(address dest, bytes error);
+// event LastResortAddressNotSet();
+// event RecoveryAddressUpdated(address dest);
+// event PaymentReceived(uint256 amount, address from);
+// event PaymentSent(uint256 amount, address dest);
+// event PaymentForwarded(uint256 amount, address dest);
+// event AutoRecoveryTriggered(address from);
+// event AutoRecoveryTriggeredPrematurely(address from, uint256 requiredTime);
+// event RecoveryFailure();
+// event RecoveryTriggered();
+// event Retired();
+// event ForwardedBalance(bool success);
+// event ForwardAddressUpdated(address dest);
+// event ForwardAddressAlreadySet(address dest);
+// event ForwardAddressInvalid(address dest);
+// event ExternalCallCompleted(address contractAddress, uint256 amount, bytes data, bytes ret);
+// event ExternalCallFailed(address contractAddress, uint256 amount, bytes data, bytes ret);
+```
+
+
+
 
 
