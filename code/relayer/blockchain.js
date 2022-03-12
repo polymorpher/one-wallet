@@ -159,17 +159,18 @@ const init = async () => {
     // console.log(n)
     if (n.key) {
       try {
-        if (k.startsWith('eth')) {
-          providers[k] = new HDWalletProvider({ mnemonic: n.mnemonic, privateKeys: !n.mnemonic && [n.key], providerOrUrl: n.url, sharedNonce: false })
-        } else {
-          providers[k] = HarmonyProvider({ key: n.key,
-            url: n.url,
-            chainId: n.chainId,
-            gasLimit: config.gasLimit,
-            gasPrice: config.gasPrice
-          })
-          // providers[k] = new HDWalletProvider({ privateKeys: [n.key], providerOrUrl: n.url })
-        }
+        providers[k] = new HDWalletProvider({ mnemonic: n.mnemonic, privateKeys: !n.mnemonic && [n.key], providerOrUrl: n.url, sharedNonce: false })
+        // if (k.startsWith('eth')) {
+        //   providers[k] = new HDWalletProvider({ mnemonic: n.mnemonic, privateKeys: !n.mnemonic && [n.key], providerOrUrl: n.url, sharedNonce: false })
+        // } else {
+        //   providers[k] = HarmonyProvider({ key: n.key,
+        //     url: n.url,
+        //     chainId: n.chainId,
+        //     gasLimit: config.gasLimit,
+        //     gasPrice: config.gasPrice
+        //   })
+        //   // providers[k] = new HDWalletProvider({ privateKeys: [n.key], providerOrUrl: n.url })
+        // }
         networks.push(k)
       } catch (ex) {
         console.error(ex)
