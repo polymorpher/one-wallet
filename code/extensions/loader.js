@@ -1,6 +1,14 @@
 const { factoryContractsList, factoryContracts, libraryList, dependencies, ONEWallet } = require('./contracts')
 const ONEConfig = require('../lib/config/common')
 const Contract = require('@truffle/contract')
+const config = require('../config')
+const Logger = {
+  debug: (...args) => {
+    if (config.verbose) {
+      console.log(...args)
+    }
+  }
+}
 
 const knownAddresses = {
   ONEWalletFactory: (network) => ONEConfig.networks[network]?.deploy?.factory,
@@ -18,10 +26,10 @@ const loadContracts = async () => {
     const c = Contract(lib)
     c.setProvider(web3.currentProvider)
     c.defaults({ from: accounts[0] })
-    console.log(`Deploying [${libName}]`)
+    Logger.debug(`Deploying [${libName}]`)
     if (dependencies[libName]) {
       for (let dep of dependencies[libName]) {
-        console.log(`[${libName}] Contract depends on ${dep.contractName}. Linking...`)
+        Logger.debug(`[${libName}] Contract depends on ${dep.contractName}. Linking...`)
         if (!libraries[dep.contractName]) {
           throw new Error(`[${dep.contractName}] Contract is not deployed yet`)
         }
@@ -33,15 +41,15 @@ const loadContracts = async () => {
       let args = []
       if (libName === 'ONEWalletFactoryHelper') {
         args = [factories['ONEWalletFactory'].address]
-        console.log('ONEWalletFactoryHelper', { args })
+        Logger.debug('ONEWalletFactoryHelper', { args })
       }
       const instance = await c.new(...args)
       if (!factoryContracts[libName]) {
         libraries[libName] = instance
-        console.log(`libraries ${libName} deployed at ${instance.address}`)
+        Logger.debug(`libraries ${libName} deployed at ${instance.address}`)
       } else {
         factories[libName] = instance
-        console.log(`factories ${libName} deployed at ${instance.address}`)
+        Logger.debug(`factories ${libName} deployed at ${instance.address}`)
       }
     } catch (ex) {
       console.error(`Failed to deploy ${libName}`)
