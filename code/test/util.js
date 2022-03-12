@@ -257,6 +257,20 @@ const printInnerTrees = ({ Debugger, innerTrees }) => {
   }
 }
 
+// Create Accounts Alice Bob and Carol and fund them
+const createAccounts = async (initArgs) => {
+  const accountArray = await web3.eth.getAccounts()
+  let aliceAccount = accountArray[0]
+  // let aliceAccount = await web3.eth.accounts.wallet[0]
+  let bobAccount = accountArray[1]
+  let carolAccount = accountArray[2]
+  return { aliceAccount, bobAccount, carolAccount }
+}
+
+// Create Tokens ERC20(T1,T2), ERC721(N1,N2), ERC1155(M1,M2)
+
+// Distribute Tokens (Wallet, Alice, Bob, Carol)
+
 module.exports = {
   increaseTime,
   createWallet,
@@ -267,5 +281,6 @@ module.exports = {
   printInnerTrees,
   getEOTP,
   snapshot,
-  revert
+  revert,
+  createAccounts
 }
