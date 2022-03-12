@@ -125,7 +125,6 @@ const createWallet = async ({
   spendingInterval = 86400,
   backlinks = []
 }) => {
-  console.log(`lastResortAddress: ${lastResortAddress}`)
   const { core, innerCores, identificationKeys, vars } = await makeCores({ salt, seed, maxOperationsPerInterval, doubleOtp, effectiveTime, duration, randomness, hasher })
   const initArgs = [
     core,

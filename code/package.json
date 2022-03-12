@@ -4,7 +4,7 @@
   "private": true,
   "license": "Apache-2.0",
   "scripts": {
-    "test": "VERBOSE=true truffle test --compile-none",
+    "test": "VERBOSE=true truffle test --network=dev --compile-none",
     "migrate": "truffle migrate --network=dev",
     "lint": "eslint ./lib ./migrations ./test",
     "lint-fix": "eslint ./lib ./migrations ./test --fix",

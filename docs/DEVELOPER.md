@@ -168,14 +168,8 @@ Test management of spending limits and time based spending thresholds
 ### Testing notes and TODO
 
 * Remove the need to run ganache for testing (by removing `--network=dev` )
-* Include snapshot fore tokens.js
-* Expose TestUtil.init which needs to be run after each snapshot (wallet create was not initializing the factories)
+* Use ganache when doing final testing as it is more realistic than instant seal
 * Update `loader.js` console.logs to use VERBOSITY environment variable
-* Create simple wallet transaction functions taking in wallet, from, to, token, amount
-* Modularize the calls in commitreveal
-  * TODO see if we can use apply https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply
-  * const newPrintLayers = Debugger.printLayers.apply(null, alice.layers)
-* Refactor to create generic init functions including wallet and tokens
 * Write check helpers for each of the contracts similar to oneWallet in checkUtil.js
   * parameterize to parse in the objects that we want to check against
   * change the console.log to asserts
