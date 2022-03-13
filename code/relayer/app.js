@@ -21,7 +21,11 @@ app.locals.ENV_DEVELOPMENT = env === 'development'
 
 app.set('trust proxy', true)
 try {
-  blockchain.init()
+  blockchain.init().catch(ex => {
+    console.error('Blockchain initialization failed')
+    console.error(ex)
+    process.exit(2)
+  })
 } catch (ex) {
   console.error(ex)
   process.exit(1)
