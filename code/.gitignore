@@ -118,3 +118,7 @@ trash
 secrets.js
 
 webclient/dist
+
+/env/db/*
+!/env/db/.gitkeep
+/env/ganache.sh
