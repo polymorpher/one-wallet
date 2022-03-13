@@ -169,7 +169,6 @@ Test management of spending limits and time based spending thresholds
 
 * Remove the need to run ganache for testing (by removing `--network=dev` )
 * Use ganache when doing final testing as it is more realistic than instant seal
-* Update `loader.js` console.logs to use VERBOSITY environment variable
 * Write check helpers for each of the contracts similar to oneWallet in checkUtil.js
   * parameterize to parse in the objects that we want to check against
   * change the console.log to asserts
