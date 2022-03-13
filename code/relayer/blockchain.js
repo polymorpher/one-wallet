@@ -159,7 +159,7 @@ const init = async () => {
     // console.log(n)
     if (n.key) {
       try {
-        providers[k] = new HDWalletProvider({ mnemonic: n.mnemonic, privateKeys: !n.mnemonic && [n.key], providerOrUrl: n.url, sharedNonce: false })
+        providers[k] = new HDWalletProvider({ mnemonic: n.mnemonic, privateKeys: !n.mnemonic && [n.key], providerOrUrl: n.wss || n.url, sharedNonce: false })
         // if (k.startsWith('eth')) {
         //   providers[k] = new HDWalletProvider({ mnemonic: n.mnemonic, privateKeys: !n.mnemonic && [n.key], providerOrUrl: n.url, sharedNonce: false })
         // } else {
