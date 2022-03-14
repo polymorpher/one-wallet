@@ -9,6 +9,7 @@ const Flow = require('../lib/api/flow')
 const ONEWallet = require('../lib/onewallet')
 const crypto = require('crypto')
 const BN = require('bn.js')
+const { getIdentificationKey } = require('../lib/util')
 
 const INTERVAL = 30000
 const DURATION = INTERVAL * 12
@@ -37,7 +38,7 @@ contract('ONEWallet', (accounts) => {
   // Transfer Native Token to external wallet
   it('Wallet_CommitReveal: Transfer must commit and reveal successfully', async () => {
     // Create Wallets and tokens
-    const alice = await makeWallet(1, accounts[1])
+    let alice = await makeWallet(1, accounts[1])
     const purse = web3.eth.accounts.create()
     const aliceInitialWalletBalance = await web3.eth.getBalance(alice.wallet.address)
     assert.equal(TEN_ETH, aliceInitialWalletBalance, 'Alice Wallet initially has correct balance')
@@ -54,14 +55,23 @@ contract('ONEWallet', (accounts) => {
     const purseBalance = await web3.eth.getBalance(purse.address)
     assert.equal(parseInt(aliceInitialWalletBalance) - parseInt(ONE_CENT / 2), walletBalance, 'Alice Wallet has correct balance')
     assert.equal(ONE_CENT / 2, purseBalance, 'Purse has correct balance')
+    // ONEWallet Items that have changed
+    // alice.state.spendingState.spentAmount = {}
+    console.log(`alice.state.spendingState: ${JSON.stringify(alice.state.spendingState)}`)
+    console.log(`alice.state.spendingState.spentAmount: ${alice.state.spendingState.spentAmount}`)
+    console.log(`ONE_CENT / 2: ${ONE_CENT / 2}`)
+    alice.state.spendingState.spentAmount = ONE_CENT / 2
+    console.log(`alice.state.spendingState.spentAmount: ${alice.state.spendingState.spentAmount}`)
+    console.log(`alice.state.spendingState: ${JSON.stringify(alice.state.spendingState)}`)
+    alice.state.lastSpendingInterval = '19065'
+
+    await CheckUtil.checkONEWallet(alice.wallet, alice.state)
   })
 
   // ERC20 Token Testing (Transfer, Mint, Track, SpendingLimit)
   it('Wallet_CommitReveal: ERC20(Transfer, Mint, Track) must commit and reveal successfully', async () => {
     // Create Wallets and tokens
     const alice = await makeWallet(1, accounts[1])
-    const aliceInitialWalletBalance = await web3.eth.getBalance(alice.wallet.address)
-    assert.equal(TEN_ETH, aliceInitialWalletBalance, 'Alice Wallet initially has correct balance')
     const bob = await makeWallet(2, accounts[2])
     const { testerc20 } = await makeTokens(alice.lastResortAddress)
     let aliceWalletBalanceERC20
@@ -81,13 +91,17 @@ contract('ONEWallet', (accounts) => {
         amount: 100
       }
     )
+    // OneWallet Items that have changed
     // check alice and bobs balance
     aliceWalletBalanceERC20 = await testerc20.balanceOf(alice.wallet.address)
     bobWalletBalanceERC20 = await testerc20.balanceOf(bob.wallet.address)
     assert.equal(900, aliceWalletBalanceERC20, 'Transfer of 100 ERC20 tokens from alice.wallet succesful')
     assert.equal(100, bobWalletBalanceERC20, 'Transfer of 100 ERC20 tokens to bob.wallet succesful')
     // check tokens tracked by alice and bob
+    console.log(`alice.wallet.getTrackedTokens: ${JSON.stringify(await alice.wallet.getTrackedTokens())}`)
+    console.log(`bob.wallet.getTrackedTokens: ${JSON.stringify(await bob.wallet.getTrackedTokens())}`)
   })
+
   // ERC20 Decimals 9 Testing (Transfer, Mint, Track, SpendingLimit)
   it('Wallet_CommitReveal: ERC20-9(Transfer, Mint, Track) must commit and reveal successfully', async () => {
     // Create Wallets and tokens
@@ -120,6 +134,7 @@ contract('ONEWallet', (accounts) => {
     assert.equal(100, bobWalletBalanceERC20d9, 'Transfer of 100 ERC20d9 tokens to bob.wallet succesful')
     // check tokens tracked by alice and bob
   })
+
   // ERC721 Testing (Transfer, Mint, Track)
   it('Wallet_CommitReveal: ERC721(Transfer, Mint, Track) must commit and reveal successfully', async () => {
     // Create Wallets and tokens
@@ -156,6 +171,7 @@ contract('ONEWallet', (accounts) => {
     assert.equal(bob.wallet.address, await testerc721.ownerOf(8), 'Transfer of ERC721 token 8 to bob.wallet succesful')
     // check tokens tracked by alice and bob
   })
+
   // ERC1155 Testing (Transfer, Mint, Track) 
   it('Wallet_CommitReveal: ERC1155(Transfer, Mint, Track) must commit and reveal successfully', async () => {
     const alice = await makeWallet(1, accounts[1])
@@ -214,7 +230,8 @@ const makeWallet = async (accountIndex, lastResortAddress) => {
     to: wallet.address,
     value: TEN_ETH
   })
-  return { wallet: wallet, seed: seed, hseed: hseed, root: root, layers: layers, lastResortAddress }
+  const state = await CheckUtil.getONEWalletState(wallet)
+  return { wallet, seed, hseed, root, layers, lastResortAddress, state }
 }
 
 // makeTokens makes test ERC20, ERC20Decimals9, ERC721, ERC1155
