@@ -60,14 +60,16 @@ contract('ONEWallet', (accounts) => {
   it('Wallet_CommitReveal: ERC20(Transfer, Mint, Track) must commit and reveal successfully', async () => {
     // Create Wallets and tokens
     const alice = await makeWallet(1, accounts[1])
-    const bob = await makeWallet(2, accounts[2])
-    const { testerc20, testerc20d9, testerc721, testerc1155 } = await makeTokens(alice.lastResortAddress)
     const aliceInitialWalletBalance = await web3.eth.getBalance(alice.wallet.address)
     assert.equal(TEN_ETH, aliceInitialWalletBalance, 'Alice Wallet initially has correct balance')
-    // transfer ERC20 tokens to alice
-    console.log(`testerc20.address: ${testerc20.address}`)
+    const bob = await makeWallet(2, accounts[2])
+    const { testerc20 } = await makeTokens(alice.lastResortAddress)
+    let aliceWalletBalanceERC20
+    let bobWalletBalanceERC20
+    // transfer ERC20 tokens from alice.lastResortAddress (which owns the tokens) to alices wallet
     await testerc20.transfer(alice.wallet.address, 1000, { from: alice.lastResortAddress })
-    console.log(`alice testerc20 balance: ${await testerc20.balanceOf(alice.wallet.address)}`)
+    aliceWalletBalanceERC20 = await testerc20.balanceOf(alice.wallet.address)
+    assert.equal(1000, aliceWalletBalanceERC20, 'Transfer of 1000 ERC20 tokens to alice.wallet succesful')
     // alice transfers tokens to bob
     await tokenTransfer(
       {
@@ -75,39 +77,118 @@ contract('ONEWallet', (accounts) => {
         operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
         tokenType: ONEConstants.TokenType.ERC20,
         contractAddress: testerc20.address,
-        // tokenId,
         dest: bob.wallet.address,
         amount: 100
       }
     )
-    console.log(`alice testerc20 balance: ${await testerc20.balanceOf(alice.wallet.address)}`)
-    // TODO this will use computeGeneralOperationHash
-    // which takes the parameters
-    //   bytes32(uint256(operationType)),
-    //   bytes32(uint256(tokenType)),
-    //   bytes32(bytes20(contractAddress)),
-    //   bytes32(tokenId),
-    //   bytes32(bytes20(dest)),
-    //   bytes32(amount),
-    //   data
-    // will probably need to enhance test/util.js for this
-    // an example of how this is called is here
-    // https://github.com/1wallet-dev/1wallet/blob/testing/code/client/src/pages/Show/Send.jsx#L132
-
     // check alice and bobs balance
+    aliceWalletBalanceERC20 = await testerc20.balanceOf(alice.wallet.address)
+    bobWalletBalanceERC20 = await testerc20.balanceOf(bob.wallet.address)
+    assert.equal(900, aliceWalletBalanceERC20, 'Transfer of 100 ERC20 tokens from alice.wallet succesful')
+    assert.equal(100, bobWalletBalanceERC20, 'Transfer of 100 ERC20 tokens to bob.wallet succesful')
     // check tokens tracked by alice and bob
   })
-  // ERC20 Decimals 9 Testing (Transfer, Mint, Track, SpendingLimit) 
+  // ERC20 Decimals 9 Testing (Transfer, Mint, Track, SpendingLimit)
   it('Wallet_CommitReveal: ERC20-9(Transfer, Mint, Track) must commit and reveal successfully', async () => {
-    console.log(`TODO: ERC20-9(Transfer, Mint, Track) must commit and reveal successfully`)
+    // Create Wallets and tokens
+    const alice = await makeWallet(1, accounts[1])
+    const aliceInitialWalletBalance = await web3.eth.getBalance(alice.wallet.address)
+    assert.equal(TEN_ETH, aliceInitialWalletBalance, 'Alice Wallet initially has correct balance')
+    const bob = await makeWallet(2, accounts[2])
+    const { testerc20d9 } = await makeTokens(alice.lastResortAddress)
+    let aliceWalletBalanceERC20d9
+    let bobWalletBalanceERC20d9
+    // transfer ERC20d9 tokens from alice.lastResortAddress (which owns the tokens) to alices wallet
+    await testerc20d9.transfer(alice.wallet.address, 1000, { from: alice.lastResortAddress })
+    aliceWalletBalanceERC20d9 = await testerc20d9.balanceOf(alice.wallet.address)
+    assert.equal(1000, aliceWalletBalanceERC20d9, 'Transfer of 1000 ERC20d9 tokens to alice.wallet succesful')
+    // alice transfers tokens to bob
+    await tokenTransfer(
+      {
+        wallet: alice,
+        operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
+        tokenType: ONEConstants.TokenType.ERC20,
+        contractAddress: testerc20d9.address,
+        dest: bob.wallet.address,
+        amount: 100
+      }
+    )
+    // check alice and bobs balance
+    aliceWalletBalanceERC20d9 = await testerc20d9.balanceOf(alice.wallet.address)
+    bobWalletBalanceERC20d9 = await testerc20d9.balanceOf(bob.wallet.address)
+    assert.equal(900, aliceWalletBalanceERC20d9, 'Transfer of 100 ERC20d9 tokens from alice.wallet succesful')
+    assert.equal(100, bobWalletBalanceERC20d9, 'Transfer of 100 ERC20d9 tokens to bob.wallet succesful')
+    // check tokens tracked by alice and bob
   })
-  // ERC721 Testing (Transfer, Mint, Track) 
+  // ERC721 Testing (Transfer, Mint, Track)
   it('Wallet_CommitReveal: ERC721(Transfer, Mint, Track) must commit and reveal successfully', async () => {
-    console.log(`TODO: ERC721(Transfer, Mint, Track) must commit and reveal successfully`)
+    // Create Wallets and tokens
+    const alice = await makeWallet(1, accounts[1])
+    const aliceInitialWalletBalance = await web3.eth.getBalance(alice.wallet.address)
+    assert.equal(TEN_ETH, aliceInitialWalletBalance, 'Alice Wallet initially has correct balance')
+    const bob = await makeWallet(2, accounts[2])
+    const { testerc721 } = await makeTokens(alice.lastResortAddress)
+    let aliceWalletBalanceERC721
+    let bobWalletBalanceERC721
+    assert.equal(alice.lastResortAddress, await testerc721.ownerOf(8), 'Alice.lastResortAddress owns token 8')
+    // transfer ERC721 tokens from alice.lastResortAddress (which owns the tokens) to alices wallet
+    await testerc721.transferFrom(alice.lastResortAddress, alice.wallet.address, 8, { from: alice.lastResortAddress })
+    aliceWalletBalanceERC721 = await testerc721.balanceOf(alice.wallet.address)
+    assert.equal(1, aliceWalletBalanceERC721, 'Transfer of 1 ERC721 token to alice.wallet succesful')
+    assert.equal(alice.wallet.address, await testerc721.ownerOf(8), 'Transfer of ERC721 token 8 to alice.wallet succesful')
+    // alice transfers tokens to bob
+    await tokenTransfer(
+      {
+        wallet: alice,
+        operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
+        tokenType: ONEConstants.TokenType.ERC721,
+        contractAddress: testerc721.address,
+        tokenId: 8,
+        dest: bob.wallet.address,
+        amount: 1
+      }
+    )
+    // check alice and bobs balance
+    aliceWalletBalanceERC721 = await testerc721.balanceOf(alice.wallet.address)
+    bobWalletBalanceERC721 = await testerc721.balanceOf(bob.wallet.address)
+    assert.equal(0, aliceWalletBalanceERC721, 'Transfer of 1 ERC721 token from alice.wallet succesful')
+    assert.equal(1, bobWalletBalanceERC721, 'Transfer of 1 ERC721 token to bob.wallet succesful')
+    assert.equal(bob.wallet.address, await testerc721.ownerOf(8), 'Transfer of ERC721 token 8 to bob.wallet succesful')
+    // check tokens tracked by alice and bob
   })
   // ERC1155 Testing (Transfer, Mint, Track) 
   it('Wallet_CommitReveal: ERC1155(Transfer, Mint, Track) must commit and reveal successfully', async () => {
-    console.log(`TODO: ERC1155(Transfer, Mint, Track) must commit and reveal successfully`)
+    const alice = await makeWallet(1, accounts[1])
+    const aliceInitialWalletBalance = await web3.eth.getBalance(alice.wallet.address)
+    assert.equal(TEN_ETH, aliceInitialWalletBalance, 'Alice Wallet initially has correct balance')
+    const bob = await makeWallet(2, accounts[2])
+    const { testerc1155 } = await makeTokens(alice.lastResortAddress)
+    let aliceWalletBalanceERC1155T8
+    let bobWalletBalanceERC1155T8
+    assert.equal(20, await testerc1155.balanceOf(alice.lastResortAddress, 8), 'Alice.lastResortAddress owns 20 of token 8')
+    // transfer ERC721 tokens from alice.lastResortAddress (which owns the tokens) to alices wallet
+    // TODO review the bytes value we are passing in safeTransferFrom (currently using ONEUtil.hexStringToBytes('5') )
+    await testerc1155.safeTransferFrom(alice.lastResortAddress, alice.wallet.address, 8, 8, ONEUtil.hexStringToBytes('5'), { from: alice.lastResortAddress })
+    aliceWalletBalanceERC1155T8 = await testerc1155.balanceOf(alice.wallet.address, 8)
+    assert.equal(8, aliceWalletBalanceERC1155T8, 'Transfer of 8 ERC721 token to alice.wallet succesful')
+    // alice transfers tokens to bob
+    await tokenTransfer(
+      {
+        wallet: alice,
+        operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
+        tokenType: ONEConstants.TokenType.ERC721,
+        contractAddress: testerc1155.address,
+        tokenId: 8,
+        dest: bob.wallet.address,
+        amount: 1
+      }
+    )
+    // check alice and bobs balance
+    console.log(`TODO: get ERC115 transfer using wallet working`)
+    aliceWalletBalanceERC1155T8 = await testerc1155.balanceOf(alice.wallet.address, 8)
+    bobWalletBalanceERC1155T8 = await testerc1155.balanceOf(bob.wallet.address, 8)
+    assert.equal(8, aliceWalletBalanceERC1155T8, 'Transfer of 1 ERC721 token from alice.wallet succesful')
+    assert.equal(0, bobWalletBalanceERC1155T8, 'Transfer of 1 ERC721 token to bob.wallet succesful')
   })
   // TokenTracker Testing (track, multitrack, getTrackedTokens, getBalance, recoverToken) also batch transactions
   it('Wallet_CommitReveal: TokenTracker(token management) must commit and reveal successfully', async () => {
@@ -180,16 +261,16 @@ const tokenTransfer = async ({ wallet, operationType, tokenType, contractAddress
       paramsHash = ONEWallet.computeGeneralOperationHash
       switch (tokenType) {
         case ONEConstants.TokenType.ERC20:
-          commitParams = { contractAddress, dest, amount }
-          revealParams = { contractAddress, dest, amount, operationType }
+          commitParams = { operationType, tokenType, contractAddress, dest, amount }
+          revealParams = { operationType, tokenType, contractAddress, dest, amount }
           break
         case ONEConstants.TokenType.ERC721:
-          commitParams = { contractAddress, tokenId, dest, amount }
-          revealParams = { contractAddress, tokenId, dest, amount, operationType }
+          commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount }
+          revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount }
           break
         case ONEConstants.TokenType.ERC1155:
-          commitParams = { contractAddress, tokenId, dest, amount }
-          revealParams = { contractAddress, tokenId, dest, amount, operationType }
+          commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount }
+          revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount }
           break
         default:
           console.log(`TODO: add in Token error handling`)
@@ -200,7 +281,7 @@ const tokenTransfer = async ({ wallet, operationType, tokenType, contractAddress
       console.log(`TODO: add in error handling`)
       return
   }
-  await commitReveal({
+  await TestUtil.commitReveal({
     Debugger,
     layers: wallet.layers,
     index,
@@ -210,38 +291,4 @@ const tokenTransfer = async ({ wallet, operationType, tokenType, contractAddress
     revealParams,
     wallet: wallet.wallet
   })
-}
-
-const commitReveal = async ({ layers, Debugger, index, eotp, paramsHash, commitParams, revealParams, wallet }) => {
-  const neighbors = ONE.selectMerkleNeighbors({ layers, index })
-  const neighbor = neighbors[0]
-  const { hash: commitHash } = ONE.computeCommitHash({ neighbor, index, eotp })
-  if (typeof paramsHash === 'function') {
-    const { hash } = paramsHash({ ...commitParams })
-    paramsHash = hash
-  }
-  const { hash: verificationHash } = ONE.computeVerificationHash({ paramsHash, eotp })
-  Logger.debug(`Committing`, { commitHash: ONEUtil.hexString(commitHash), paramsHash: ONEUtil.hexString(paramsHash), verificationHash: ONEUtil.hexString(verificationHash) })
-  await wallet.commit(ONEUtil.hexString(commitHash), ONEUtil.hexString(paramsHash), ONEUtil.hexString(verificationHash))
-  Logger.debug(`Committed`)
-  const neighborsEncoded = neighbors.map(ONEUtil.hexString)
-  Debugger.debugProof({ neighbors, height: layers.length, index, eotp, root: layers[layers.length - 1] })
-  const commits = await wallet.lookupCommit(ONEUtil.hexString(commitHash))
-  // console.log(commits)
-  const commitHashCommitted = commits[0][0]
-  const paramHashCommitted = commits[1][0]
-  const verificationHashCommitted = commits[2][0]
-  const timestamp = commits[3][0]
-  const completed = commits[4][0]
-  Logger.debug({ commit: { commitHashCommitted, paramHashCommitted, verificationHashCommitted, timestamp, completed }, currentTimeInSeconds: Math.floor(Date.now() / 1000) })
-  const authParams = [neighborsEncoded, index, ONEUtil.hexString(eotp)]
-  if (!revealParams.length) {
-    const { operationType, tokenType, contractAddress, tokenId, dest, amount, data } = { ...ONEConstants.NullOperationParams, ...revealParams }
-    revealParams = [operationType, tokenType, contractAddress, tokenId, dest, amount, data]
-  }
-  Logger.debug(`Revealing`, { authParams, revealParams })
-  const wouldSucceed = await wallet.reveal.call(authParams, revealParams)
-  Logger.debug(`Reveal success prediction`, !!wouldSucceed)
-  const tx = await wallet.reveal(authParams, revealParams)
-  return { tx, authParams, revealParams }
 }
