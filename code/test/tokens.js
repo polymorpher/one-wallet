@@ -42,7 +42,14 @@ contract('ONEWallet', (accounts) => {
     const aliceInitialWalletBalance = await web3.eth.getBalance(alice.wallet.address)
     assert.equal(TEN_ETH, aliceInitialWalletBalance, 'Alice Wallet initially has correct balance')
     // alice tranfers ONE CENT to the purse
-    await commitReveal(alice, ONEConstants.OperationType.TRANSFER, purse.address, (ONE_CENT / 2))
+    await tokenTransfer(
+      {
+        wallet: alice,
+        operationType: ONEConstants.OperationType.TRANSFER,
+        dest: purse.address,
+        amount: (ONE_CENT / 2)
+      }
+    )
     const walletBalance = await web3.eth.getBalance(alice.wallet.address)
     const purseBalance = await web3.eth.getBalance(purse.address)
     assert.equal(parseInt(aliceInitialWalletBalance) - parseInt(ONE_CENT / 2), walletBalance, 'Alice Wallet has correct balance')
@@ -54,19 +61,26 @@ contract('ONEWallet', (accounts) => {
     // Create Wallets and tokens
     const alice = await makeWallet(1, accounts[1])
     const bob = await makeWallet(2, accounts[2])
-    const {testerc20, testerc20d9, testerc721, testerc1155} = await makeTokens(alice.lastResortAddress)
+    const { testerc20, testerc20d9, testerc721, testerc1155 } = await makeTokens(alice.lastResortAddress)
     const aliceInitialWalletBalance = await web3.eth.getBalance(alice.wallet.address)
     assert.equal(TEN_ETH, aliceInitialWalletBalance, 'Alice Wallet initially has correct balance')
-    await web3.eth.sendTransaction({
-      from: accounts[0],
-      to: alice.wallet.address,
-      value: ONE_CENT
-    })
-    // transfer tokens to alice
+    // transfer ERC20 tokens to alice
     console.log(`testerc20.address: ${testerc20.address}`)
     await testerc20.transfer(alice.wallet.address, 1000, { from: alice.lastResortAddress })
     console.log(`alice testerc20 balance: ${await testerc20.balanceOf(alice.wallet.address)}`)
     // alice transfers tokens to bob
+    await tokenTransfer(
+      {
+        wallet: alice,
+        operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
+        tokenType: ONEConstants.TokenType.ERC20,
+        contractAddress: testerc20.address,
+        // tokenId,
+        dest: bob.wallet.address,
+        amount: 100
+      }
+    )
+    console.log(`alice testerc20 balance: ${await testerc20.balanceOf(alice.wallet.address)}`)
     // TODO this will use computeGeneralOperationHash
     // which takes the parameters
     //   bytes32(uint256(operationType)),
@@ -146,20 +160,88 @@ const makeTokens = async (owner) => {
   return { testerc20, testerc20d9, testerc721, testerc1155 }
 }
 
-// commitReveal commits and reveals a wallet transaction
-const commitReveal = async (wallet, operationType, dest, amount) => {
+// tokenTransfer commits and reveals a wallet transaction
+const tokenTransfer = async ({ wallet, operationType, tokenType, contractAddress, tokenId, dest, amount }) => {
   Debugger.printLayers({ layers: wallet.layers })
   const otp = ONEUtil.genOTP({ seed: wallet.seed })
   const index = ONEUtil.timeToIndex({ effectiveTime: EFFECTIVE_TIME })
   const eotp = await ONE.computeEOTP({ otp, hseed: wallet.hseed })
-  await TestUtil.commitReveal({
+  // Format commit and revealParams based on tokenType
+  let commitParams
+  let revealParams
+  let paramsHash
+  switch (operationType) {
+    case ONEConstants.OperationType.TRANSFER:
+      paramsHash = ONEWallet.computeTransferHash
+      commitParams = { dest, amount }
+      revealParams = { dest, amount, operationType }
+      break
+    case ONEConstants.OperationType.TRANSFER_TOKEN:
+      paramsHash = ONEWallet.computeGeneralOperationHash
+      switch (tokenType) {
+        case ONEConstants.TokenType.ERC20:
+          commitParams = { contractAddress, dest, amount }
+          revealParams = { contractAddress, dest, amount, operationType }
+          break
+        case ONEConstants.TokenType.ERC721:
+          commitParams = { contractAddress, tokenId, dest, amount }
+          revealParams = { contractAddress, tokenId, dest, amount, operationType }
+          break
+        case ONEConstants.TokenType.ERC1155:
+          commitParams = { contractAddress, tokenId, dest, amount }
+          revealParams = { contractAddress, tokenId, dest, amount, operationType }
+          break
+        default:
+          console.log(`TODO: add in Token error handling`)
+          return
+      }
+      break
+    default:
+      console.log(`TODO: add in error handling`)
+      return
+  }
+  await commitReveal({
     Debugger,
     layers: wallet.layers,
     index,
     eotp,
-    paramsHash: ONEWallet.computeTransferHash,
-    commitParams: { dest, amount },
-    revealParams: { dest, amount, operationType },
+    paramsHash,
+    commitParams,
+    revealParams,
     wallet: wallet.wallet
   })
+}
+
+const commitReveal = async ({ layers, Debugger, index, eotp, paramsHash, commitParams, revealParams, wallet }) => {
+  const neighbors = ONE.selectMerkleNeighbors({ layers, index })
+  const neighbor = neighbors[0]
+  const { hash: commitHash } = ONE.computeCommitHash({ neighbor, index, eotp })
+  if (typeof paramsHash === 'function') {
+    const { hash } = paramsHash({ ...commitParams })
+    paramsHash = hash
+  }
+  const { hash: verificationHash } = ONE.computeVerificationHash({ paramsHash, eotp })
+  Logger.debug(`Committing`, { commitHash: ONEUtil.hexString(commitHash), paramsHash: ONEUtil.hexString(paramsHash), verificationHash: ONEUtil.hexString(verificationHash) })
+  await wallet.commit(ONEUtil.hexString(commitHash), ONEUtil.hexString(paramsHash), ONEUtil.hexString(verificationHash))
+  Logger.debug(`Committed`)
+  const neighborsEncoded = neighbors.map(ONEUtil.hexString)
+  Debugger.debugProof({ neighbors, height: layers.length, index, eotp, root: layers[layers.length - 1] })
+  const commits = await wallet.lookupCommit(ONEUtil.hexString(commitHash))
+  // console.log(commits)
+  const commitHashCommitted = commits[0][0]
+  const paramHashCommitted = commits[1][0]
+  const verificationHashCommitted = commits[2][0]
+  const timestamp = commits[3][0]
+  const completed = commits[4][0]
+  Logger.debug({ commit: { commitHashCommitted, paramHashCommitted, verificationHashCommitted, timestamp, completed }, currentTimeInSeconds: Math.floor(Date.now() / 1000) })
+  const authParams = [neighborsEncoded, index, ONEUtil.hexString(eotp)]
+  if (!revealParams.length) {
+    const { operationType, tokenType, contractAddress, tokenId, dest, amount, data } = { ...ONEConstants.NullOperationParams, ...revealParams }
+    revealParams = [operationType, tokenType, contractAddress, tokenId, dest, amount, data]
+  }
+  Logger.debug(`Revealing`, { authParams, revealParams })
+  const wouldSucceed = await wallet.reveal.call(authParams, revealParams)
+  Logger.debug(`Reveal success prediction`, !!wouldSucceed)
+  const tx = await wallet.reveal(authParams, revealParams)
+  return { tx, authParams, revealParams }
 }
