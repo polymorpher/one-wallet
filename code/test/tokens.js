@@ -56,14 +56,10 @@ contract('ONEWallet', (accounts) => {
     assert.equal(parseInt(aliceInitialWalletBalance) - parseInt(ONE_CENT / 2), walletBalance, 'Alice Wallet has correct balance')
     assert.equal(ONE_CENT / 2, purseBalance, 'Purse has correct balance')
     // ONEWallet Items that have changed
-    // alice.state.spendingState.spentAmount = {}
-    console.log(`alice.state.spendingState: ${JSON.stringify(alice.state.spendingState)}`)
-    console.log(`alice.state.spendingState.spentAmount: ${alice.state.spendingState.spentAmount}`)
-    console.log(`ONE_CENT / 2: ${ONE_CENT / 2}`)
     alice.state.spendingState.spentAmount = ONE_CENT / 2
+    alice.state.spendingState.lastSpendingInterval = '19065'
     console.log(`alice.state.spendingState.spentAmount: ${alice.state.spendingState.spentAmount}`)
     console.log(`alice.state.spendingState: ${JSON.stringify(alice.state.spendingState)}`)
-    alice.state.lastSpendingInterval = '19065'
 
     await CheckUtil.checkONEWallet(alice.wallet, alice.state)
   })
