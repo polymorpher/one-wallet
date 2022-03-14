@@ -176,19 +176,18 @@ contract('ONEWallet', (accounts) => {
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
-        tokenType: ONEConstants.TokenType.ERC721,
+        tokenType: ONEConstants.TokenType.ERC1155,
         contractAddress: testerc1155.address,
         tokenId: 8,
         dest: bob.wallet.address,
-        amount: 1
+        amount: 3
       }
     )
     // check alice and bobs balance
-    console.log(`TODO: get ERC115 transfer using wallet working`)
     aliceWalletBalanceERC1155T8 = await testerc1155.balanceOf(alice.wallet.address, 8)
     bobWalletBalanceERC1155T8 = await testerc1155.balanceOf(bob.wallet.address, 8)
-    assert.equal(8, aliceWalletBalanceERC1155T8, 'Transfer of 1 ERC721 token from alice.wallet succesful')
-    assert.equal(0, bobWalletBalanceERC1155T8, 'Transfer of 1 ERC721 token to bob.wallet succesful')
+    assert.equal(5, aliceWalletBalanceERC1155T8, 'Transfer of 3 ERC1155 tokens from alice.wallet succesful')
+    assert.equal(3, bobWalletBalanceERC1155T8, 'Transfer of 3 ERC1155 token to bob.wallet succesful')
   })
   // TokenTracker Testing (track, multitrack, getTrackedTokens, getBalance, recoverToken) also batch transactions
   it('Wallet_CommitReveal: TokenTracker(token management) must commit and reveal successfully', async () => {
