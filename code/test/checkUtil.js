@@ -12,14 +12,15 @@ const getONEWalletState = async (wallet) => {
   // console.log(`wallet getInnerCores: ${await wallet.getInnerCores()}`)
   // console.log(`wallet getRootKey: ${await wallet.getRootKey()}`)
   // console.log(`wallet getVersion: ${await JSON.stringify(wallet.getVersion())}`)
-  console.log(`wallet getSpendingState: ${JSON.stringify(await wallet.getSpendingState())}`)
+  // console.log(`wallet getSpendingState: ${JSON.stringify(await wallet.getSpendingState())}`)
   // console.log(`wallet getNonce: ${await wallet.getNonce()}`)
   // console.log(`wallet lastOperationTime: ${await wallet.lastOperationTime()}`)
   // console.log(`wallet getAllCommits: ${await wallet.getAllCommits()}`)
   // console.log(`wallet getTrackedTokens: ${await JSON.stringify(wallet.getTrackedTokens())}`)
   // console.log(`wallet lastOperationTime: ${await wallet.lastOperationTime()}`)
   // console.log(`wallet getBacklinks: ${await wallet.getBacklinks()}`)
-  let state = {
+  let state = {}
+  state = {
     address: wallet.address,
     identificationKey: await wallet.identificationKey(),
     identificationKeys: await wallet.getIdentificationKeys(),
@@ -30,7 +31,7 @@ const getONEWalletState = async (wallet) => {
     rootKey: await wallet.getRootKey(),
     version: await wallet.getVersion(),
     spendingState: await wallet.getSpendingState(),
-    nonce: await wallet.getNonce(),
+    nonce: parseInt(await wallet.getNonce()),
     operationTime: await wallet.lastOperationTime(),
     allCommits: await wallet.getAllCommits(),
     trackedTokens: await wallet.getTrackedTokens(),
@@ -60,25 +61,25 @@ const checkONEWallet = async (wallet, state) => {
   // console.log(`wallet getInnerCores: ${await wallet.getInnerCores()}`)
   // console.log(`wallet getRootKey: ${await wallet.getRootKey()}`)
   // console.log(`wallet getVersion: ${await JSON.stringify(wallet.getVersion())}`)
-  console.log(`wallet getSpendingState: ${JSON.stringify(await wallet.getSpendingState())}`)
-  // console.log(`wallet getNonce: ${await wallet.getNonce()}`)
+  // console.log(`wallet getSpendingState: ${JSON.stringify(await wallet.getSpendingState())}`)
+  console.log(`wallet getNonce: ${await wallet.getNonce()}`)
   // console.log(`wallet lastOperationTime: ${await wallet.lastOperationTime()}`)
   // console.log(`wallet getAllCommits: ${await wallet.getAllCommits()}`)
   // console.log(`wallet getTrackedTokens: ${await JSON.stringify(wallet.getTrackedTokens())}`)
   // console.log(`wallet lastOperationTime: ${await wallet.lastOperationTime()}`)
   // console.log(`wallet getBacklinks: ${await wallet.getBacklinks()}`)
-  assert.equal(wallet.address, state.address, 'wallet.address is incorrect')
-  assert.equal(await wallet.identificationKey(), state.identificationKey, 'wallet.identificationKey is incorrect')
+  assert.strictEqual(wallet.address, state.address, 'wallet.address is incorrect')
+  assert.strictEqual(await wallet.identificationKey(), state.identificationKey, 'wallet.identificationKey is incorrect')
   assert.deepStrictEqual(await wallet.getIdentificationKeys(), state.identificationKeys, 'wallet.identificationKeys is incorrect')
-  assert.equal(await wallet.getForwardAddress(), state.forwardAddress, 'wallet.forwardAddress is incorrect')
+  assert.strictEqual(await wallet.getForwardAddress(), state.forwardAddress, 'wallet.forwardAddress is incorrect')
   assert.deepStrictEqual(await wallet.getInfo(), state.info, 'wallet.info is incorrect')
   assert.deepStrictEqual(await wallet.getOldInfos(), state.oldInfos, 'wallet.oldInfos is incorrect')
   assert.deepStrictEqual(await wallet.getInnerCores(), state.innerCores, 'wallet.innerCores is incorrect')
-  assert.equal(await wallet.getRootKey(), state.rootKey, 'wallet.rootKey is incorrect')
+  assert.strictEqual(await wallet.getRootKey(), state.rootKey, 'wallet.rootKey is incorrect')
   assert.deepStrictEqual(await wallet.getVersion(), state.version, 'wallet.version is incorrect')
   assert.deepStrictEqual(await wallet.getSpendingState(), state.spendingState, 'wallet.spendingState is incorrect')
   assert.equal(await wallet.getNonce(), state.nonce, 'wallet.nonce is incorrect')
-  assert.equal(await wallet.lastOperationTime(), state.lastOperationTime, 'wallet.lastOperationTime is incorrect')
+  // assert.equal(await wallet.lastOperationTime(), state.lastOperationTime, 'wallet.lastOperationTime is incorrect')
   assert.deepStrictEqual(await wallet.getAllCommits(), state.allCommits, 'wallet.allCommits is incorrect')
   assert.deepStrictEqual(await wallet.getTrackedTokens(), state.trackedTokens, 'wallet.trackedTokens is incorrect')
   assert.deepStrictEqual(await wallet.getBacklinks(), state.backlinks, 'wallet.backlinks is incorrect')

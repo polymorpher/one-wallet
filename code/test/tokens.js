@@ -55,12 +55,12 @@ contract('ONEWallet', (accounts) => {
     const purseBalance = await web3.eth.getBalance(purse.address)
     assert.equal(parseInt(aliceInitialWalletBalance) - parseInt(ONE_CENT / 2), walletBalance, 'Alice Wallet has correct balance')
     assert.equal(ONE_CENT / 2, purseBalance, 'Purse has correct balance')
-    // ONEWallet Items that have changed
+    // ONEWallet Items that have changed 
+    // TODO fix this assingment statement as it's not updating the values
     alice.state.spendingState.spentAmount = ONE_CENT / 2
     alice.state.spendingState.lastSpendingInterval = '19065'
-    console.log(`alice.state.spendingState.spentAmount: ${alice.state.spendingState.spentAmount}`)
-    console.log(`alice.state.spendingState: ${JSON.stringify(alice.state.spendingState)}`)
-
+    // console.log(`alice.state.spendingState.spentAmount: ${alice.state.spendingState.spentAmount}`)
+    // console.log(`alice.state.spendingState: ${JSON.stringify(alice.state.spendingState)}`)
     await CheckUtil.checkONEWallet(alice.wallet, alice.state)
   })
 
@@ -93,9 +93,21 @@ contract('ONEWallet', (accounts) => {
     bobWalletBalanceERC20 = await testerc20.balanceOf(bob.wallet.address)
     assert.equal(900, aliceWalletBalanceERC20, 'Transfer of 100 ERC20 tokens from alice.wallet succesful')
     assert.equal(100, bobWalletBalanceERC20, 'Transfer of 100 ERC20 tokens to bob.wallet succesful')
-    // check tokens tracked by alice and bob
-    console.log(`alice.wallet.getTrackedTokens: ${JSON.stringify(await alice.wallet.getTrackedTokens())}`)
-    console.log(`bob.wallet.getTrackedTokens: ${JSON.stringify(await bob.wallet.getTrackedTokens())}`)
+    // Alice Items that have changed - nonce, lastOperationTime, Commits, trackedTokens
+    assert.notStrictEqual(await alice.wallet.nonce, alice.state.nonce, 'alice wallet.nonce should have been changed')
+    alice.state.nonce = parseInt(alice.state.nonce) + 1
+    // TODO fix this assignment statement as it's not updating the values
+    assert.notStrictEqual(await alice.wallet.lastOperationTime(), alice.state.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
+    alice.state.lastOperationTime = await alice.wallet.lastOperationTime()
+    console.log(`alice.state.lastOperationTime: ${alice.state.lastOperationTime}`)
+    // TODO fix this to use assert.notDeepStrictEqual
+    assert.notDeepEqual(await alice.wallet.getAllCommits(), alice.state.allCommits, 'alice wallet.allCommits should have been updated')
+    alice.state.allCommits = await alice.wallet.getAllCommits()
+    assert.notDeepEqual(await alice.wallet.getTrackedTokens(), alice.state.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
+    alice.state.trackedTokens = await alice.wallet.getTrackedTokens()
+    await CheckUtil.checkONEWallet(alice.wallet, alice.state)
+    // Bob Items that have changed - nothing
+    await CheckUtil.checkONEWallet(bob.wallet, bob.state)
   })
 
   // ERC20 Decimals 9 Testing (Transfer, Mint, Track, SpendingLimit)
@@ -128,7 +140,21 @@ contract('ONEWallet', (accounts) => {
     bobWalletBalanceERC20d9 = await testerc20d9.balanceOf(bob.wallet.address)
     assert.equal(900, aliceWalletBalanceERC20d9, 'Transfer of 100 ERC20d9 tokens from alice.wallet succesful')
     assert.equal(100, bobWalletBalanceERC20d9, 'Transfer of 100 ERC20d9 tokens to bob.wallet succesful')
-    // check tokens tracked by alice and bob
+    // Alice Items that have changed - nonce, lastOperationTime, Commits, trackedTokens
+    assert.notStrictEqual(await alice.wallet.nonce, alice.state.nonce, 'alice wallet.nonce should have been changed')
+    alice.state.nonce = parseInt(alice.state.nonce) + 1
+    // TODO fix this assignment statement as it's not updating the values
+    assert.notStrictEqual(await alice.wallet.lastOperationTime(), alice.state.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
+    alice.state.lastOperationTime = await alice.wallet.lastOperationTime()
+    console.log(`alice.state.lastOperationTime: ${alice.state.lastOperationTime}`)
+    // TODO fix this to use assert.notDeepStrictEqual
+    assert.notDeepEqual(await alice.wallet.getAllCommits(), alice.state.allCommits, 'alice wallet.allCommits should have been updated')
+    alice.state.allCommits = await alice.wallet.getAllCommits()
+    assert.notDeepEqual(await alice.wallet.getTrackedTokens(), alice.state.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
+    alice.state.trackedTokens = await alice.wallet.getTrackedTokens()
+    await CheckUtil.checkONEWallet(alice.wallet, alice.state)
+    // Bob Items that have changed - nothing
+    await CheckUtil.checkONEWallet(bob.wallet, bob.state)
   })
 
   // ERC721 Testing (Transfer, Mint, Track)
@@ -165,7 +191,21 @@ contract('ONEWallet', (accounts) => {
     assert.equal(0, aliceWalletBalanceERC721, 'Transfer of 1 ERC721 token from alice.wallet succesful')
     assert.equal(1, bobWalletBalanceERC721, 'Transfer of 1 ERC721 token to bob.wallet succesful')
     assert.equal(bob.wallet.address, await testerc721.ownerOf(8), 'Transfer of ERC721 token 8 to bob.wallet succesful')
-    // check tokens tracked by alice and bob
+    // Alice Items that have changed - nonce, lastOperationTime, Commits, trackedTokens
+    assert.notStrictEqual(await alice.wallet.nonce, alice.state.nonce, 'alice wallet.nonce should have been changed')
+    alice.state.nonce = parseInt(alice.state.nonce) + 1
+    // TODO fix this assignment statement as it's not updating the values
+    assert.notStrictEqual(await alice.wallet.lastOperationTime(), alice.state.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
+    alice.state.lastOperationTime = await alice.wallet.lastOperationTime()
+    console.log(`alice.state.lastOperationTime: ${alice.state.lastOperationTime}`)
+    // TODO fix this to use assert.notDeepStrictEqual
+    assert.notDeepEqual(await alice.wallet.getAllCommits(), alice.state.allCommits, 'alice wallet.allCommits should have been updated')
+    alice.state.allCommits = await alice.wallet.getAllCommits()
+    // assert.notDeepEqual(await alice.wallet.getTrackedTokens(), alice.state.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
+    alice.state.trackedTokens = await alice.wallet.getTrackedTokens()
+    await CheckUtil.checkONEWallet(alice.wallet, alice.state)
+    // Bob Items that have changed - nothing
+    await CheckUtil.checkONEWallet(bob.wallet, bob.state)
   })
 
   // ERC1155 Testing (Transfer, Mint, Track) 
@@ -200,6 +240,21 @@ contract('ONEWallet', (accounts) => {
     bobWalletBalanceERC1155T8 = await testerc1155.balanceOf(bob.wallet.address, 8)
     assert.equal(5, aliceWalletBalanceERC1155T8, 'Transfer of 3 ERC1155 tokens from alice.wallet succesful')
     assert.equal(3, bobWalletBalanceERC1155T8, 'Transfer of 3 ERC1155 token to bob.wallet succesful')
+    // Alice Items that have changed - nonce, lastOperationTime, Commits, trackedTokens
+    assert.notStrictEqual(await alice.wallet.nonce, alice.state.nonce, 'alice wallet.nonce should have been changed')
+    alice.state.nonce = parseInt(alice.state.nonce) + 1
+    // TODO fix this assignment statement as it's not updating the values
+    assert.notStrictEqual(await alice.wallet.lastOperationTime(), alice.state.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
+    alice.state.lastOperationTime = await alice.wallet.lastOperationTime()
+    console.log(`alice.state.lastOperationTime: ${alice.state.lastOperationTime}`)
+    // TODO fix this to use assert.notDeepStrictEqual
+    assert.notDeepEqual(await alice.wallet.getAllCommits(), alice.state.allCommits, 'alice wallet.allCommits should have been updated')
+    alice.state.allCommits = await alice.wallet.getAllCommits()
+    // assert.notDeepEqual(await alice.wallet.getTrackedTokens(), alice.state.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
+    alice.state.trackedTokens = await alice.wallet.getTrackedTokens()
+    await CheckUtil.checkONEWallet(alice.wallet, alice.state)
+    // Bob Items that have changed - nothing
+    await CheckUtil.checkONEWallet(bob.wallet, bob.state)
   })
   // TokenTracker Testing (track, multitrack, getTrackedTokens, getBalance, recoverToken) also batch transactions
   it('Wallet_CommitReveal: TokenTracker(token management) must commit and reveal successfully', async () => {
