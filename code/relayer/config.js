@@ -15,23 +15,20 @@ const config = {
     'harmony-testnet': {
       key: process.env.HARMONY_TESTNET_KEY || '',
       url: process.env.TESTNET_RPC || 'https://api.s0.b.hmny.io',
+      wss: process.env.TESTNET_WSS,
       chainId: 2,
       skip: process.env.SKIP_TESTNET,
     },
     'harmony-mainnet': {
       key: process.env.HARMONY_MAINNET_KEY || '',
-      // url: process.env.MAINNET_RPC || 'https://api.s0.t.hmny.io',
-      url: process.env.MAINNET_RPC || 'https://api.harmony.one',
+      url: process.env.MAINNET_RPC || 'https://api.s0.t.hmny.io',
+      wss: process.env.MAINNET_WSS,
       chainId: 1,
       skip: process.env.SKIP_MAINNET,
     },
-    'eth-rinkeby': {
-      url: process.env.RINKEBY_RPC,
-      key: process.env.ETH_RINKEBY_KEY || '',
-      skip: process.env.SKIP_RINKEBY,
-    },
     'eth-ganache': {
       url: process.env.GANACHE_RPC || 'http://127.0.0.1:7545',
+      wss: process.env.GANACHE_WSS,
       key: process.env.ETH_GANACHE_KEY,
       mnemonic: process.env.ETH_GANACHE_MNEMONIC,
       skip: process.env.SKIP_GANACHE,

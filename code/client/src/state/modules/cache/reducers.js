@@ -31,7 +31,7 @@ const reducer = handleActions(
         ...state.version,
         [action.payload.network]: action.payload.version,
       },
-      needCodeUpdate: action.payload.version !== state.version[action.payload.network]
+      needCodeUpdate: (action.payload.version !== state.version[action.payload.network]) || action.payload.version?.endsWith('SNAPSHOT')
     }),
     [cacheActions.updateClientVersion]: (state, action) => ({
       ...state,

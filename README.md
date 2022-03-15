@@ -1,5 +1,7 @@
 # 1wallet (ONE Wallet)
 
+Telegram group: https://t.me/the1wallet
+
 1wallet is designed for people who want the best and the latest from the world of crypto, but do not want to deal with senseless "mnemonic words", "private keys", or "seed phrases". 
 
 You don't need to be technical to use 1wallet. It is:

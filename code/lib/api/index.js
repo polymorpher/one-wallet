@@ -1,21 +1,21 @@
 const axios = require('axios')
 const config = require('../config/provider').getConfig()
+const Contract = require('web3-eth-contract')
 const isEqual = require('lodash/fp/isEqual')
-const contract = require('@truffle/contract')
 const { TruffleProvider } = require('@harmony-js/core')
 const Web3 = require('web3')
-const ONEWalletContract = require('../../build/contracts/IONEWallet.json')
+const ONEWalletContractAbi = require('../../build/abi/IONEWallet.json')
 const IONEWalletFactoryHelper = require('../../build/abi/IONEWalletFactoryHelper.json')
-const IERC20 = require('../../build/contracts/IERC20.json')
-const IERC20Metadata = require('../../build/contracts/IERC20Metadata.json')
-const IERC721 = require('../../build/contracts/IERC721.json')
-const IERC165 = require('../../build/contracts/IERC165.json')
-const IERC721Metadata = require('../../build/contracts/IERC721Metadata.json')
-const IERC1155 = require('../../build/contracts/IERC1155.json')
-const IERC1155MetadataURI = require('../../build/contracts/IERC1155MetadataURI.json')
-const Resolver = require('../../build/contracts/Resolver.json')
-const ReverseResolver = require('../../build/contracts/IDefaultReverseResolver.json')
-const Registrar = require('../../build/contracts/IRegistrar.json')
+const IERC20 = require('../../build/abi/IERC20.json')
+const IERC20Metadata = require('../../build/abi/IERC20Metadata.json')
+const IERC721 = require('../../build/abi/IERC721.json')
+const IERC165 = require('../../build/abi/IERC165.json')
+const IERC721Metadata = require('../../build/abi/IERC721Metadata.json')
+const IERC1155 = require('../../build/abi/IERC1155.json')
+const IERC1155MetadataURI = require('../../build/abi/IERC1155MetadataURI.json')
+const Resolver = require('../../build/abi/Resolver.json')
+const ReverseResolver = require('../../build/abi/IDefaultReverseResolver.json')
+const Registrar = require('../../build/abi/IRegistrar.json')
 // abi only - load with web3 or ethers
 const SushiRouter = require('../../external/IUniswapV2Router02.json')
 const SushiFactory = require('../../external/IUniswapV2Factory.json')
@@ -74,20 +74,25 @@ const initAPI = (store) => {
 }
 
 // TODO: cleanup this mess after switching to w3
-const providers = {}; const contractWithProvider = {}; const networks = []; const web3instances = {}
-let activeNetwork = config.defaults.network
-let web3; let one
-let tokenContractTemplates = { erc20: IERC20, erc721: IERC721, erc1155: IERC1155 }
-let tokenMetadataTemplates = { erc20: IERC20Metadata, erc721: IERC721Metadata, erc1155: IERC1155MetadataURI }
-let tokenContractsWithProvider = { erc20: {}, erc721: {}, erc1155: {} }
-let tokenMetadataWithProvider = { erc20: {}, erc721: {}, erc1155: {} }
-let tokens = { erc20: null, erc721: null, erc1155: null }
-let tokenMetadata = { erc20: null, erc721: null, erc1155: null }
 
-let resolverWithProvider, reverseResolverWithProvider, registrarWithProvider
+let activeNetwork = config.defaults.network
+let web3
+let oneWallet
+
+let getTokenContract = { erc20: null, erc721: null, erc1155: null }
+let getTokenMetadataContract = { erc20: null, erc721: null, erc1155: null }
 let resolver, reverseResolver, registrar
 
 const initBlockchain = (store) => {
+  const web3instances = {}
+  const providers = {}
+  const networks = []
+  let resolverWithProvider, reverseResolverWithProvider, registrarWithProvider
+  let tokenContractTemplates = { erc20: IERC20, erc721: IERC721, erc1155: IERC1155 }
+  let tokenMetadataTemplates = { erc20: IERC20Metadata, erc721: IERC721Metadata, erc1155: IERC1155MetadataURI }
+  let tokenContractsWithProvider = { erc20: {}, erc721: {}, erc1155: {} }
+  let tokenMetadataWithProvider = { erc20: {}, erc721: {}, erc1155: {} }
+  const getOneWalletContractWithProvider = {}
   Object.keys(config.networks).forEach(k => {
     const n = config.networks[k]
     try {
@@ -104,31 +109,33 @@ const initBlockchain = (store) => {
     }
   })
 
-  Object.keys(providers).forEach(k => {
-    const c = contract(ONEWalletContract)
-    c.setProvider(providers[k])
-    contractWithProvider[k] = c
+  Object.keys(providers).forEach(network => {
+    getOneWalletContractWithProvider[network] = (address) => {
+      Contract.setProvider(providers[network])
+      return new Contract(ONEWalletContractAbi, address)
+    }
     Object.keys(tokenContractsWithProvider).forEach(t => {
-      tokenContractsWithProvider[t][k] = contract(tokenContractTemplates[t])
-      tokenContractsWithProvider[t][k].setProvider(providers[k])
-      tokenMetadataWithProvider[t][k] = contract(tokenMetadataTemplates[t])
-      tokenMetadataWithProvider[t][k].setProvider(providers[k])
+      tokenContractsWithProvider[t][network] = (address) => {
+        Contract.setProvider(providers[network])
+        return new Contract(tokenContractTemplates[t], address)
+      }
+      tokenMetadataWithProvider[t][network] = (address) => {
+        Contract.setProvider(providers[network])
+        return new Contract(tokenMetadataTemplates[t], address)
+      }
     })
-    if (k === 'harmony-mainnet') {
-      resolverWithProvider = contract(Resolver)
-      resolverWithProvider.setProvider(providers[k])
-      reverseResolverWithProvider = contract(ReverseResolver)
-      reverseResolverWithProvider.setProvider(providers[k])
-      registrarWithProvider = contract(Registrar)
-      registrarWithProvider.setProvider(providers[k])
+    if (network === 'harmony-mainnet') {
+      resolverWithProvider = (address) => new Contract(Resolver, address)
+      reverseResolverWithProvider = (address) => new Contract(ReverseResolver, address)
+      registrarWithProvider = (address) => new Contract(Registrar, address)
     }
   })
   const switchNetwork = () => {
     web3 = web3instances[activeNetwork]
-    one = contractWithProvider[activeNetwork]
-    Object.keys(tokens).forEach(t => {
-      tokens[t] = tokenContractsWithProvider[t][activeNetwork]
-      tokenMetadata[t] = tokenMetadataWithProvider[t][activeNetwork]
+    oneWallet = getOneWalletContractWithProvider[activeNetwork]
+    Object.keys(getTokenContract).forEach(t => {
+      getTokenContract[t] = tokenContractsWithProvider[t][activeNetwork]
+      getTokenMetadataContract[t] = tokenMetadataWithProvider[t][activeNetwork]
     })
     if (activeNetwork === 'harmony-mainnet') {
       resolver = resolverWithProvider
@@ -139,7 +146,6 @@ const initBlockchain = (store) => {
       reverseResolver = null
       registrar = null
     }
-    // console.log(`Set`, { resolver, reverseResolver, registrar })
   }
   switchNetwork()
   store.subscribe(() => {
@@ -213,34 +219,34 @@ const api = {
   },
   blockchain: {
     getOldInfos: async ({ address, raw }) => {
-      const c = new one(address)
-      const res = await c.getOldInfos()
+      const c = oneWallet(address)
+      const res = await c.methods.getOldInfos().call()
       return res.map(e => ONEUtil.processCore(e, raw))
     },
     getInnerCores: async ({ address, raw }) => {
-      const c = new one(address)
-      const res = await c.getInnerCores()
+      const c = oneWallet(address)
+      const res = await c.methods.getInnerCores().call()
       return res.map(e => ONEUtil.processCore(e, raw))
     },
     getIdentificationKeys: async ({ address }) => {
-      const c = new one(address)
-      const res = await c.getIdentificationKeys()
+      const c = oneWallet(address)
+      const res = await c.methods.getIdentificationKeys().call()
       return res
     },
     getLastOperationTime: async ({ address }) => {
-      const c = new one(address)
-      const t = await c.lastOperationTime() // BN but convertible to uint32
-      return t.toNumber()
+      const c = oneWallet(address)
+      const t = await c.methods.lastOperationTime().call() // BN but convertible to uint32
+      return new BN(t).toNumber()
     },
     getNonce: async ({ address }) => {
-      const c = new one(address)
-      const nonce = await c.getNonce()
-      return nonce.toNumber()
+      const c = oneWallet(address)
+      const nonce = await c.methods.getNonce().call()
+      return new BN(nonce).toNumber()
     },
     getSpending: async ({ address }) => {
-      const c = new one(address)
+      const c = oneWallet(address)
       let spendingLimit, spendingAmount, lastSpendingInterval, spendingInterval
-      const r = await c.getCurrentSpendingState()
+      const r = await c.methods.getCurrentSpendingState().call()
       spendingLimit = new BN(r[0])
       spendingAmount = new BN(r[1])
       lastSpendingInterval = new BN(r[2])
@@ -254,39 +260,46 @@ const api = {
      * @returns {Promise<{address, slotSize, highestSpendingLimit: string, effectiveTime: number, majorVersion: (number|number), lastSpendingInterval: number, spendingAmount: string, duration: number, spendingLimit: string, lastLimitAdjustmentTime: number, root, minorVersion: (number|number), spendingInterval: number, lastResortAddress: *}|{maxOperationsPerInterval, highestSpendingLimit: BN, lifespan, majorVersion: (number|number), spendingAmount: BN, lastSpendingInterval: BN, spendingLimit: BN, lastLimitAdjustmentTime: BN, root: *, dailyLimit: string, interval, t0, minorVersion: (number|number), spendingInterval: BN, lastResortAddress: *, height}>}
      */
     getWallet: async ({ address, raw }) => {
-      const c = new one(address)
-      const result = await c.getInfo()
+      const c = oneWallet(address)
+      const result = await c.methods.getInfo().call()
       let majorVersion = new BN(0)
       let minorVersion = new BN(0)
       try {
-        const versionResult = await c.getVersion()
-        majorVersion = versionResult[0]
-        minorVersion = versionResult[1]
+        const versionResult = await c.methods.getVersion().call()
+        majorVersion = new BN(versionResult[0])
+        minorVersion = new BN(versionResult[1])
       } catch (ex) {
         if (config.debug) console.log(`Failed to get wallet version. Wallet might be too old. Error: ${ex.toString()}`)
       }
-      const [root, height, interval, t0, lifespan, maxOperationsPerInterval, lastResortAddress, dailyLimit] = Object.keys(result).map(k => result[k])
+      const root = result[0]
+      const height = new BN(result[1])
+      const interval = new BN(result[2])
+      const t0 = new BN(result[3])
+      const lifespan = new BN(result[4])
+      const maxOperationsPerInterval = new BN(result[5])
+      const lastResortAddress = result[6]
+      const dailyLimit = new BN(result[7])
       let spendingLimit; let spendingAmount; let lastSpendingInterval; let spendingInterval
       let lastLimitAdjustmentTime = new BN(0); let highestSpendingLimit = new BN(0)
       if (majorVersion >= 15) {
-        const r = await c.getSpendingState()
-        spendingLimit = r[0]
-        spendingAmount = r[1]
+        const r = await c.methods.getSpendingState().call()
+        spendingLimit = new BN(r[0])
+        spendingAmount = new BN(r[1])
         lastSpendingInterval = new BN(r[2])
         spendingInterval = new BN(r[3])
         lastLimitAdjustmentTime = new BN(r[4])
         highestSpendingLimit = new BN(r[5])
       } else if (majorVersion >= 12) {
-        const r = await c.getCurrentSpendingState()
+        const r = await c.methods.getCurrentSpendingState().call()
         spendingLimit = new BN(r[0])
         spendingAmount = new BN(r[1])
         lastSpendingInterval = new BN(r[2])
         spendingInterval = new BN(r[3])
       } else {
-        const r = await c.getCurrentSpending()
+        const r = await c.methods.getCurrentSpending().call()
         spendingAmount = new BN(r[0])
         lastSpendingInterval = new BN(r[1])
-        spendingLimit = new BN(dailyLimit)
+        spendingLimit = dailyLimit
         spendingInterval = new BN(ONEConstants.DefaultSpendingInterval) // default value for pre-v12 wallets i.e. dailyLimit
       }
 
@@ -343,8 +356,8 @@ const api = {
      * @returns {Promise<*[]>}
      */
     getCommitsV3: async ({ address }) => {
-      const c = new one(address)
-      const result = await c.getCommits()
+      const c = oneWallet(address)
+      const result = await c.methods.getCommits().call()
       const [hashes, paramsHashes, timestamps, completed] = Object.keys(result).map(k => result[k])
       const commits = []
       for (let i = 0; i < hashes.length; i += 1) {
@@ -359,8 +372,8 @@ const api = {
      * @returns {Promise<*[]>}
      */
     getCommits: async ({ address }) => {
-      const c = new one(address)
-      const result = await c.getAllCommits()
+      const c = oneWallet(address)
+      const result = await c.methods.getAllCommits().call()
       return parseCommits(result)
     },
     /**
@@ -369,8 +382,8 @@ const api = {
      * @returns {Promise<void>}
      */
     findCommitV6: async ({ address, commitHash }) => {
-      const c = new one(address)
-      const result = await c.findCommit(commitHash)
+      const c = oneWallet(address)
+      const result = await c.methods.findCommit(commitHash).call()
       const [hash, paramsHash, timestamp, completed] = Object.keys(result).map(k => result[k])
       return { hash, paramsHash, timestamp: new BN(timestamp).toNumber(), completed }
     },
@@ -380,8 +393,8 @@ const api = {
      * @returns {Promise<void>}
      */
     findCommit: async ({ address, commitHash }) => {
-      const c = new one(address)
-      const result = await c.lookupCommit(commitHash)
+      const c = oneWallet(address)
+      const result = await c.methods.lookupCommit(commitHash).call()
       return parseCommits(result)
     },
     /**
@@ -390,13 +403,13 @@ const api = {
      * @returns {Promise<*[]>}
      */
     getTrackedTokens: async ({ address }) => {
-      const c = new one(address)
-      const result = await c.getTrackedTokens()
+      const c = oneWallet(address)
+      const result = await c.methods.getTrackedTokens().call()
       const [tokenTypes, contracts, tokenIds] = Object.keys(result).map(k => result[k])
       const tt = []
       for (let i = 0; i < tokenTypes.length; i++) {
         tt.push({
-          tokenType: tokenTypes[i].toNumber(),
+          tokenType: new BN(tokenTypes[i]).toNumber(),
           contractAddress: contracts[i],
           tokenId: tokenIds[i].toString()
         })
@@ -410,15 +423,14 @@ const api = {
       if (!ct) {
         throw new Error(`Unknown token type: ${tokenType}`)
       }
-      const c = await tokens[ct.toLowerCase()].at(contractAddress)
+      const c = await getTokenContract[ct.toLowerCase()](contractAddress)
       if (tokenType === ONEConstants.TokenType.ERC20) {
-        return c.balanceOf(address)
+        return c.methods.balanceOf(address).call()
       } else if (tokenType === ONEConstants.TokenType.ERC721) {
         const owner = await c.ownerOf(tokenId)
-        // console.log(owner)
         return owner === address ? new BN(1) : new BN(0)
       } else if (tokenType === ONEConstants.TokenType.ERC1155) {
-        return c.balanceOf(address, tokenId)
+        return c.methods.balanceOf(address, tokenId).call()
       }
     },
 
@@ -427,23 +439,23 @@ const api = {
       if (!ct) {
         throw new Error(`Unknown token type: ${tokenType}`)
       }
-      const c = await tokenMetadata[ct.toLowerCase()].at(contractAddress)
+      const c = await getTokenMetadataContract[ct.toLowerCase()](contractAddress)
       let name, symbol, uri, decimals
       if (tokenType === ONEConstants.TokenType.ERC20) {
-        [name, symbol, decimals] = await Promise.all([c.name(), c.symbol(), c.decimals()])
+        [name, symbol, decimals] = await Promise.all([c.methods.name().call(), c.methods.symbol().call(), c.methods.decimals().call()])
       } else if (tokenType === ONEConstants.TokenType.ERC721) {
-        [name, symbol, uri] = await Promise.all([c.name(), c.symbol(), c.tokenURI(tokenId)])
+        [name, symbol, uri] = await Promise.all([c.methods.name().call(), c.methods.symbol().call(), c.methods.tokenURI(tokenId).call()])
       } else if (tokenType === ONEConstants.TokenType.ERC1155) {
-        uri = await c.uri(tokenId)
+        uri = await c.methods.uri(tokenId).call()
       }
       // console.log({ tokenType, contractAddress, tokenId, name, symbol, uri })
-      return { name, symbol, uri, decimals: decimals && decimals.toNumber() }
+      return { name, symbol, uri, decimals: decimals && new BN(decimals).toNumber() }
     },
 
     getBacklinks: async ({ address }) => {
-      const c = new one(address)
+      const c = oneWallet(address)
       try {
-        const backlinks = await c.getBacklinks()
+        const backlinks = await c.methods.getBacklinks().call()
         return backlinks
       } catch (ex) {
         console.debug(ex)
@@ -452,9 +464,9 @@ const api = {
     },
 
     getForwardAddress: async ({ address }) => {
-      const c = new one(address)
+      const c = oneWallet(address)
       try {
-        const forwardAddress = await c.getForwardAddress()
+        const forwardAddress = await c.methods.getForwardAddress().call()
         return forwardAddress
       } catch (ex) {
         console.debug(ex)
@@ -467,9 +479,9 @@ const api = {
         if (!resolver) {
           return ONEConstants.EmptyAddress
         }
-        const c = await resolver.at(ONEConstants.Domain.DEFAULT_RESOLVER)
+        const c = await resolver(ONEConstants.Domain.DEFAULT_RESOLVER)
         const node = ONEUtil.hexString(ONEUtil.namehash(name))
-        const address = await c.addr(node)
+        const address = await c.methods.addr(node).call()
         return address
       },
       reverseLookup: async ({ address }) => {
@@ -486,8 +498,8 @@ const api = {
         const node = ONEUtil.keccak(buffer)
         const nodeHex = ONEUtil.hexString(node)
         // console.log(nodeHex)
-        const c = await reverseResolver.at(ONEConstants.Domain.DEFAULT_REVERSE_RESOLVER)
-        const name = await c.name(nodeHex)
+        const c = await reverseResolver(ONEConstants.Domain.DEFAULT_REVERSE_RESOLVER)
+        const name = await c.methods.name(nodeHex).call()
         return name
       },
 
@@ -496,9 +508,9 @@ const api = {
           // throw new Error('Unsupported network')
           return new BN(0)
         }
-        const c = await registrar.at(ONEConstants.Domain.DEFAULT_SUBDOMAIN_REGISTRAR)
-        const price = await c.rentPrice(name, ONEConstants.Domain.DEFAULT_RENT_DURATION)
-        return price // This is a BN
+        const c = await registrar(ONEConstants.Domain.DEFAULT_SUBDOMAIN_REGISTRAR)
+        const price = await c.methods.rentPrice(name, ONEConstants.Domain.DEFAULT_RENT_DURATION).call()
+        return new BN(price) // This is a BN
       },
 
       available: async ({ name }) => {
@@ -506,9 +518,9 @@ const api = {
           // throw new Error('Unsupported network')
           return false
         }
-        const c = await registrar.at(ONEConstants.Domain.DEFAULT_SUBDOMAIN_REGISTRAR)
+        const c = await registrar(ONEConstants.Domain.DEFAULT_SUBDOMAIN_REGISTRAR)
         const label = ONEUtil.hexString(ONEUtil.keccak(ONEConstants.Domain.DEFAULT_PARENT_LABEL))
-        const ret = await c.query(label, name)
+        const ret = await c.methods.query(label, name).call()
         return !!ret[0]
       }
     },
@@ -758,7 +770,7 @@ const api = {
       }))
     },
     getNFTType: async (contractAddress) => {
-      const c = new web3.eth.Contract(IERC165.abi, contractAddress)
+      const c = new web3.eth.Contract(IERC165, contractAddress)
       const is721 = await c.methods.supportsInterface(ONEConstants.TokenInterfaces.ERC721).call()
       if (is721) {
         return ONEConstants.TokenType.ERC721
