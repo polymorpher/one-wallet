@@ -1,9 +1,15 @@
 const fs = require('fs').promises
 const path = require('path')
-const IONEWalletFactoryHelper = require('../build/contracts/IONEWalletFactoryHelper.json')
+const contractDir = path.join(__dirname, '..', 'build', 'contracts')
+const abiDir = path.join(__dirname, '..', 'build', 'abi')
 async function main () {
-  const p = path.join('build', 'abi')
-  await fs.mkdir(p, { recursive: true })
-  await fs.writeFile('build/abi/IONEWalletFactoryHelper.json', JSON.stringify(IONEWalletFactoryHelper.abi))
+  await fs.mkdir(abiDir, { recursive: true })
+  const contractFiles = await fs.readdir(contractDir)
+  for (const f of contractFiles) {
+    const contract = require(path.join(contractDir, f))
+    if (contract.abi) {
+      await fs.writeFile(path.join(abiDir, f), JSON.stringify(contract.abi))
+    }
+  }
 }
 main()

@@ -1,4 +1,6 @@
 module.exports = {
+  INTERVAL: 30 * 1000,
+  INTERVAL6: 30 * 1000 * 6,
   TokenType: {
     0: 'ERC20',
     1: 'ERC721',

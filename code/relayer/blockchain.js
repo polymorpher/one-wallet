@@ -12,9 +12,12 @@ const fs = require('fs/promises')
 const path = require('path')
 const pick = require('lodash/fp/pick')
 const { backOff } = require('exponential-backoff')
+const { rpc } = require('./rpc')
+const BN = require('bn.js')
 
 const networks = []
 const providers = {}
+const pendingNonces = {}
 const contracts = {}
 const contractsV5 = {}
 const contractsV6 = {}
@@ -146,7 +149,7 @@ const HarmonyProvider = ({ key, url, chainId, gasLimit, gasPrice }) => {
   return truffleProvider
 }
 
-const init = () => {
+const init = async () => {
   Object.keys(config.networks).forEach(k => {
     if (config.networks[k].skip) {
       console.log(`[${k}] Skipped initialization`)
@@ -156,17 +159,18 @@ const init = () => {
     // console.log(n)
     if (n.key) {
       try {
-        if (k.startsWith('eth')) {
-          providers[k] = new HDWalletProvider({ mnemonic: n.mnemonic, privateKeys: !n.mnemonic && [n.key], providerOrUrl: n.url, sharedNonce: false })
-        } else {
-          providers[k] = HarmonyProvider({ key: n.key,
-            url: n.url,
-            chainId: n.chainId,
-            gasLimit: config.gasLimit,
-            gasPrice: config.gasPrice
-          })
-          // providers[k] = new HDWalletProvider({ privateKeys: [n.key], providerOrUrl: n.url })
-        }
+        providers[k] = new HDWalletProvider({ mnemonic: n.mnemonic, privateKeys: !n.mnemonic && [n.key], providerOrUrl: n.wss || n.url, sharedNonce: false })
+        // if (k.startsWith('eth')) {
+        //   providers[k] = new HDWalletProvider({ mnemonic: n.mnemonic, privateKeys: !n.mnemonic && [n.key], providerOrUrl: n.url, sharedNonce: false })
+        // } else {
+        //   providers[k] = HarmonyProvider({ key: n.key,
+        //     url: n.url,
+        //     chainId: n.chainId,
+        //     gasLimit: config.gasLimit,
+        //     gasPrice: config.gasPrice
+        //   })
+        //   // providers[k] = new HDWalletProvider({ privateKeys: [n.key], providerOrUrl: n.url })
+        // }
         networks.push(k)
       } catch (ex) {
         console.error(ex)
@@ -194,35 +198,70 @@ const init = () => {
   })
   console.log('init complete:', {
     networks,
-    providers: JSON.stringify(Object.keys(providers).map(k => pick(['gasLimit', 'gasPrice', 'addresses'], providers[k]))),
+    providers: JSON.stringify(Object.keys(providers).map(k => [k, pick(['gasLimit', 'gasPrice', 'addresses'], providers[k])])),
     contracts: Object.keys(contracts),
     contractsV5: Object.keys(contractsV5),
     contractsV6: Object.keys(contractsV6),
   })
-  initCachedContracts().then(async () => {
-    console.log('library initialization complete')
-    for (let network in libraries) {
-      for (let libraryName in libraries[network]) {
-        const n = await contracts[network].detectNetwork()
-        try {
-          await backOff(() => contracts[network].link(libraries[network][libraryName]), {
-            retry: (ex, n) => {
-              console.error(`[${network}] Failed to link ${libraryName} (attempted ${n}/10)`)
-            }
-          })
-        } catch (ex) {
-          console.error(`Failed to link ${libraryName} after all attempts. Exiting`)
-          process.exit(2)
-        }
-
-        console.log(`Linked ${network} (${JSON.stringify(n)}) ${libraryName} with ${libraries[network][libraryName].address}`)
+  await initCachedContracts()
+  console.log('library initialization complete')
+  for (let network in libraries) {
+    for (let libraryName in libraries[network]) {
+      const n = await contracts[network].detectNetwork()
+      try {
+        await backOff(() => contracts[network].link(libraries[network][libraryName]), {
+          retry: (ex, n) => {
+            console.error(`[${network}] Failed to link ${libraryName} (attempted ${n}/10)`)
+          }
+        })
+      } catch (ex) {
+        console.error(`Failed to link ${libraryName} after all attempts. Exiting`)
+        process.exit(2)
       }
+
+      console.log(`Linked ${network} (${JSON.stringify(n)}) ${libraryName} with ${libraries[network][libraryName].address}`)
     }
-    console.log({
-      factories,
-      libraries,
-    })
+  }
+  console.log({
+    factories,
+    libraries,
   })
+  for (const network in providers) {
+    // const nonce = await rpc.getNonce({ address: providers[network].addresses[0], network })
+    pendingNonces[network] = 0
+    // console.log(`[${network}] Set nonce ${nonce}`)
+    console.log(`[${network}] Set pending nonce = 0`)
+  }
+}
+
+// const incrementNonce = (network, useInt = true) => {
+//   pendingNonces[network] += 1
+//   return getNonce(network, useInt)
+// }
+//
+// const getNonce = (network, useInt = true) => {
+//   if (useInt) {
+//     return pendingNonces[network]
+//   }
+//   // return hex string
+//   return new BN(pendingNonces[network]).toString(16)
+// }
+
+// basic executor that
+const prepareExecute = (network, logger) => async (f) => {
+  const latestNonce = await rpc.getNonce({ address: providers[network].addresses[0], network })
+  const nonce = latestNonce + pendingNonces[network]
+  pendingNonces[network] += 1
+  console.log(`[${network}] incremented pending nonce=${pendingNonces[network]}`)
+  try {
+    logger && logger(nonce, null, 'pending')
+    const tx = await f('0x' + new BN(nonce).toString(16))
+    logger && logger(nonce, tx, 'complete')
+    return tx
+  } finally {
+    pendingNonces[network] -= 1
+    console.log(`[${network}] decremented pending nonce=${pendingNonces[network]}`)
+  }
 }
 
 module.exports = {
@@ -242,4 +281,5 @@ module.exports = {
   },
   getLibraries: (network) => libraries[network],
   getFactory: (network, name) => factories[network][name || 'ONEWalletFactoryHelper'],
+  prepareExecute
 }

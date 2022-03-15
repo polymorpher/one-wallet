@@ -3,9 +3,6 @@ const IUniswapV2Factory = require('../external/IUniswapV2Factory.json')
 const IUniswapV2Pair = require('../external/IUniswapV2Pair.json')
 // const IUniswapV2Router02 = require('../external/IUniswapV2Router02.json')
 const ONEConstants = require('../lib/constants')
-const contract = require('@truffle/contract')
-const config = require('../config')
-const { Account } = require('@harmony-js/account')
 const fs = require('fs').promises
 
 const getTokenInfo = async (t) => {
