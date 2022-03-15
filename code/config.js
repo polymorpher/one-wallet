@@ -22,7 +22,7 @@ module.exports = {
     },
     ganache: {
       url: process.env.GANACHE_RPC || 'http://127.0.0.1:7545',
-      key: process.env.ETH_GANACHE_KEY,
+      mnemonic: process.env.ETH_GANACHE_MNEMONIC,
     }
   },
   gasLimit: process.env.GAS_LIMIT,

@@ -48,7 +48,6 @@ contract('ONEWallet', (accounts) => {
       lastResortAddress: purse.address,
       spendingLimit: ONE_ETH
     })
-    CheckUtil.checkOneWallet(wallet)
     Logger.debug({
       address,
       seed,
