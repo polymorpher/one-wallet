@@ -167,13 +167,23 @@ Test management of spending limits and time based spending thresholds
 
 ### Testing notes and TODO
 
+* add token tracking tests
+* Write Registrar tests
+* Review token tracking logic
+  * ERC20 - sender tracks token
+  * ERC721 - recipient tracks token
+  * ERC1155 - both sender and receiver tracks token
+* Fix the setting of private keys and funding of accounts for ganache
+* Review intermittent reverts
+  * `Error: Returned error: VM Exception while processing transaction: revert Proof is incorrect`
+  * May be able to mitigate using `await TestUtil.increaseTime(60)`
 * Remove the need to run ganache for testing (by removing `--network=dev` )
 * Use ganache when doing final testing as it is more realistic than instant seal
 * Write check helpers for each of the contracts similar to oneWallet in checkUtil.js
   * parameterize to parse in the objects that we want to check against
   * change the console.log to asserts
-* Review spending limits for ERC20 tokens
-* Write Registrar tests
+* Review spending limits for ERC20 tokens (there are none currently)
+
 * Negative use cases
 * Check for exploits
 
