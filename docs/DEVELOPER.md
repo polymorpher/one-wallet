@@ -5,16 +5,23 @@
 ### Smart Contracts
 
 #### Network Configuration
-Network configuration is held in two places
+Network configuration is held in the following places
 * `code/truffle-config.js` used for smart contract development and testing
   * `code/config.js` is used by truffle-config and includes gas and verbosity configuration
-* `code/lib/config/common.js` used for the relayer and the client
+* `code/relayer/config.js` used by the relayer
+* `code/lib/config/common.js` used by the client
 
-Note: for smart contract testing you should also install [ganache](https://trufflesuite.com/docs/ganache/quickstart.html). Once installed you should run ganache whenever using the `dev` or `ganache` networks. These networks have been configured to use port 7545 as such you can run ganache using the command 
+#### GANACHE TESTING
+
+**The mnemonic and private keys above are for testing only and should never be used in production**
+
+For smart contract testing you should also install [ganache](https://trufflesuite.com/docs/ganache/quickstart.html). Once installed you should run ganache whenever using the `dev` or `ganache` networks. These networks have been configured to use port 7545 as such you can run ganache using the command 
 ```
 ganache --port 7545 -m 'filter group there hunt fitness junior ghost park route jar entire clown allow rifle meadow'
 ```
 by providing the mnemonic (using `-m`) you are guaranteed to receive the same mnemonic keys which you can configure in your `.env` file see `.env.sample` for an example.
+
+
 
 ### Local Relayer
 
