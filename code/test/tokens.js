@@ -34,7 +34,7 @@ contract('ONEWallet', (accounts) => {
   afterEach(async function () {
     await TestUtil.revert(snapshotId)
   })
-/*
+
   // Transfer Native Token to external wallet
   it('Wallet_CommitReveal: Native Token Transfer must commit and reveal successfully', async () => {
     // Create Wallets and tokens
@@ -297,7 +297,7 @@ contract('ONEWallet', (accounts) => {
     bob.state.trackedTokens = await bob.wallet.getTrackedTokens()
     await CheckUtil.checkONEWallet(bob.wallet, bob.state)
   })
-*/
+
   // TokenTracker Testing (track, multitrack, getTrackedTokens, getBalance, recoverToken) also batch transactions
   it('Wallet_CommitReveal: TokenTracker(token management) must commit and reveal successfully', async () => {
     const alice = await makeWallet(1, accounts[1])
