@@ -14,21 +14,6 @@ import util from '../../util'
 
 const { Text, Link } = Typography
 
-// https://api.hmny.io/#290797a1-2593-44ff-b284-6a4c06b3cb77
-const OperationType = {
-  Gas: 'Gas', // All submitted transactions will incur an implicit gas operation. However, some on-chain effects (such as undelegation payout, or cross-shard transaction payout) will not incur gas as it was paid by the submitted transaction that caused said effect.
-  NativeTransfer: 'NativeTransfer', // This operation is for transferring native ONE tokens from one account to another in the same shard. All "NativeTransfer" operations come in pairs, one operation deducting an amount from an account, and the other operation crediting said amount to an account. Moreover, the 2 operations are related in one (and only one) direction.
-  NativeCrossShardTransfer: 'NativeCrossShardTransfer', // his operation is for transferring native ONE tokens between different shards. Note that cross-shard transfer operations appear in pairs, but not in the same transaction/block. The first appearance will be on the submitted transaction on the source/from shard. The second appearance will be on the destination/to shard.
-  ContractCreation: 'ContractCreation', // This operation creates/instantiates a smart contract. All "ContractCreation" operations come in pairs, one operation deducting the native ONE tokens from the sender's account, the other operation crediting said amount to the contract's account (as dictated by the contract instantiation code).
-  Genesis: 'Genesis', // This is a special operation that is only valid for block 0. It indicates the initial funds of the shard.
-  UndelegationPayout: 'UndelegationPayout', // This is a special operation that is only present on the last block of an Epoch. It represents any delegated/locked native ONE tokens that are refunded to an account.
-  CreateValidator: 'CreateValidator', // This operation creates a validator on the Harmony network for the sender's account.
-  EditValidator: 'EditValidator', // This operation edits the sender's validator information or election status (i.e: validator name and/or being eligible for election).
-  Delegate: 'Delegate', // This operation delegates (or re-delegates from pending undelegations) native ONE tokens from the sender's account to a validator's account.
-  Undelegate: 'Undelegate', // This operation removes delegation from a validator. Note that this operation does not immediately unlock the sender's tokens.
-  CollectRewards: 'CollectRewards', // This operation credits all the staking rewards to the sender's account.
-}
-
 const PAGE_SIZE = 10
 
 function formatOneValue (val) {
@@ -37,33 +22,14 @@ function formatOneValue (val) {
 }
 
 function getOperationInfo (tx, address) {
-  if (tx.value > 0 || !tx.operations) {
-    return { value: formatOneValue(tx.value) + ' ONE', type: tx.to === address ? 'Receive' : tx.from === address ? 'Send' : 'Unknown' }
+  if (tx.value > 0) {
+    return { value: formatOneValue(tx.value) + ' ONE', type: tx.to === address ? 'PaymentReceived' : tx.from === address ? 'PaymentSent' : 'Unknown' }
   }
-  let meaningfulOp
-  for (const op of tx.operations) {
-    if (op.type === OperationType.Gas) continue
-    if (op.type === OperationType.NativeTransfer && op.account.address === address) {
-      meaningfulOp = op
-    }
+  if (!tx.logs?.length) {
+    return { value: '', type: 'Unknown' }
   }
-  let opType
-  let amount
-  if (tx.operations?.length) {
-    opType = tx.operations.find(op => op.type && op.type !== OperationType.Gas)?.type
-  }
-  if (!meaningfulOp) {
-    opType = tx.to === address ? 'Receive' : tx.from === address ? 'Send' : 'Unknown'
-    amount = { value: tx.value, currency: { symbol: 'ONE' } }
-  } else {
-    amount = meaningfulOp.amount
-  }
-  if (meaningfulOp.type === OperationType.NativeTransfer) {
-    opType = meaningfulOp.amount.value < 0 ? 'Send' : 'Receive'
-  } else {
-    opType = meaningfulOp.type
-  }
-  return { type: opType, value: `${formatOneValue(Math.abs(amount.value))} ${amount.currency.symbol}` }
+
+  return { value: tx.displayEventValue, type: tx.displayEvent }
 }
 
 const TransactionViewer = ({ address }) => {

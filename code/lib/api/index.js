@@ -24,7 +24,11 @@ const SushiPair = require('../../external/IUniswapV2Pair.json')
 
 const BN = require('bn.js')
 const ONEUtil = require('../util')
+const EventMessage = require('../event-message')
+const EventMap = require('../events-map.json')
+const EventParamsMap = require('../events-params-map.json')
 const ONEConstants = require('../constants')
+const CONTRACT_ADDRESS = ['one14ra6u2zm33pgc75lnvvw8rnnx6wynp5l3dmret']
 
 const apiConfig = {
   relayer: config.defaults.relayer,
@@ -836,10 +840,6 @@ const api = {
       }
     },
 
-    getRosettaApi: () => {
-      return activeNetwork === 'harmony-testnet' ? 'https://rosetta.s0.b.hmny.io' : 'https://rosetta.s0.t.hmny.io'
-    },
-
     decodeMethod: async (hash) => {
       const { data } = await axios.get(`https://explorer-v2-api.hmny.io/v0/signature/hash/${hash.slice(10)}`)
       return data || []
@@ -865,19 +865,49 @@ const api = {
     },
 
     getTransaction: async (tx) => {
-      const { data } = await axios.post(`${api.explorer.getRosettaApi()}/block/transaction`, {
-        network_identifier: api.explorer.getNetworkId(),
-        transaction_identifier: {
-          hash: tx.hash
-        },
-        block_identifier: {
-          index: tx.blockNumber,
-          hash: tx.blockHash
-        }
+      const { data } = await axios.post(api.explorer.getApi(), {
+        jsonrpc: '2.0',
+        method: 'hmyv2_getTransactionReceipt',
+        params: [tx.hash],
+        id: 1
       })
-      return { ...tx, ...data?.transaction }
+
+      return { ...tx, ...parseLog(data.result) }
     },
   }
+}
+
+function parseLog (tx) {
+  tx.errors = []
+  for (const log of tx.logs || []) {
+    log.eventDataMap = {}
+    for (const topic of log.topics) {
+      const eventName = EventMap[topic]
+      if (eventName) {
+        const eventDetail = EventMessage[eventName]
+        if (eventDetail?.message) {
+          tx.errors.push(eventDetail?.message)
+        }
+        log.eventDataMap[eventName] = ONEUtil.abi.decodeParameters(EventParamsMap[eventName].decodeParams, log.data)
+
+        // Use the first event encountered as the display event for the transaction.
+        if (!tx.displayEvent) {
+          tx.displayEvent = eventName
+          const amountParamIndex = EventParamsMap[eventName].amountParamIndex
+          if (amountParamIndex > -1) {
+            const bi = BigInt(log.eventDataMap[eventName][amountParamIndex]) / BigInt(10 ** 14)
+            tx.displayEventValue = `${parseInt(bi.toString()) / 10000} ONE`
+          } else {
+            // TODO: handle each event separately.
+            // fallback to use the first string value as the display value.
+            const firstStringIndex = EventParamsMap[eventName].decodeParams.findIndex(p => p === 'string')
+            tx.displayEventValue = log.eventDataMap[eventName][firstStringIndex]
+          }
+        }
+      }
+    }
+  }
+  return tx
 }
 
 if (typeof window !== 'undefined') {
