@@ -28,7 +28,6 @@ const EventMessage = require('../event-message')
 const EventMap = require('../events-map.json')
 const EventParamsMap = require('../events-params-map.json')
 const ONEConstants = require('../constants')
-const CONTRACT_ADDRESS = ['one14ra6u2zm33pgc75lnvvw8rnnx6wynp5l3dmret']
 
 const apiConfig = {
   relayer: config.defaults.relayer,
