@@ -1,1 +1,0 @@
-[{"inputs":[],"name":"AUTO_RECOVERY_MANDATORY_WAIT_TIME","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"AUTO_RECOVERY_TRIGGER_AMOUNT","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]
