@@ -93,7 +93,7 @@ library Staking {
     }
 
     function delegate(address validatorAddress, uint256 amount) public returns (bool) {
-        uint256 result = delegate(validatorAddress, amount);
+        uint256 result = _delegate(validatorAddress, amount);
         bool success = result != 0;
         if (success) {
             emit StakingSuccess(StakingAction.DELEGATE, validatorAddress, amount, result);
@@ -104,7 +104,7 @@ library Staking {
     }
 
     function undelegate(address validatorAddress, uint256 amount) public returns (bool) {
-        uint256 result = undelegate(validatorAddress, amount);
+        uint256 result = _undelegate(validatorAddress, amount);
         bool success = result != 0;
         if (success) {
             emit StakingSuccess(StakingAction.UNDELEGATE, validatorAddress, amount, result);
@@ -115,12 +115,12 @@ library Staking {
     }
 
     function collectRewards() public returns (bool) {
-        uint256 result = collectRewards();
+        uint256 result = _collectRewards();
         bool success = result != 0;
         if (success) {
-            emit StakingSuccess(StakingAction.COLLECT_REWARDS, validatorAddress, amount, result);
+            emit StakingSuccess(StakingAction.COLLECT_REWARDS, address(0), 0, result);
         } else {
-            emit StakingFailure(StakingAction.COLLECT_REWARDS, validatorAddress, amount, result);
+            emit StakingFailure(StakingAction.COLLECT_REWARDS, address(0), 0, result);
         }
         return success;
     }
