@@ -34,6 +34,7 @@ contract('ONEWallet', (accounts) => {
   afterEach(async function () {
     await TestUtil.revert(snapshotId)
   })
+
   // Transfer Native Token to external wallet
   it('Wallet_CommitReveal: Native Token Transfer must commit and reveal successfully', async () => {
     // Create Wallets and tokens
@@ -296,33 +297,12 @@ contract('ONEWallet', (accounts) => {
     bob.state.trackedTokens = await bob.wallet.getTrackedTokens()
     await CheckUtil.checkONEWallet(bob.wallet, bob.state)
   })
+
   // TokenTracker Testing (track, multitrack, getTrackedTokens, getBalance, recoverToken) also batch transactions
   it('Wallet_CommitReveal: TokenTracker(token management) must commit and reveal successfully', async () => {
     const alice = await makeWallet(1, accounts[1])
     const bob = await makeWallet(2, accounts[2])
-    const { testerc20, testerc20d9, testerc721, testerc1155, tokentracker } = await makeTokens(alice.lastResortAddress)
-    // alice tranfers ONE CENT to bob
-    // await tokenTransfer(
-    //   {
-    //     wallet: alice,
-    //     operationType: ONEConstants.OperationType.TRANSFER,
-    //     dest: bob.wallet.address,
-    //     amount: (ONE_CENT / 2)
-    //   }
-    // )
-    // console.log(`await alice.wallet.getNonce(): ${await alice.wallet.getNonce()}`)
-    // // await TestUtil.increaseTime(60)
-    // console.log(`await alice.wallet.getNonce(): ${await alice.wallet.getNonce()}`)
-    // // await TestUtil.increaseTime(60)
-    // console.log(`await alice.wallet.getNonce(): ${await alice.wallet.getNonce()}`)
-    // await tokenTransfer(
-    //   {
-    //     wallet: alice,
-    //     operationType: ONEConstants.OperationType.TRANSFER,
-    //     dest: bob.wallet.address,
-    //     amount: (ONE_CENT / 2)
-    //   }
-    // )
+    const { testerc20, testerc20d9, testerc721, testerc1155 } = await makeTokens(alice.lastResortAddress)
     // transfer ERC20 tokens from alice.lastResortAddress (which owns the tokens) to alices wallet
     await testerc20.transfer(alice.wallet.address, 1000, { from: alice.lastResortAddress })
     // alice transfers tokens to bob
@@ -338,52 +318,68 @@ contract('ONEWallet', (accounts) => {
       }
     )
     console.log(`await alice.wallet.getNonce(): ${await alice.wallet.getNonce()}`)
-    // // transfer ERC20d9 tokens from alice.lastResortAddress (which owns the tokens) to alices wallet
-    // await testerc20d9.transfer(alice.wallet.address, 1000, { from: alice.lastResortAddress })
-    // // alice transfers tokens to bob
-    // console.log(`await alice.wallet.getNonce(): ${await alice.wallet.getNonce()}`)
-    // await tokenTransfer(
-    //   {
-    //     wallet: alice,
-    //     operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
-    //     tokenType: ONEConstants.TokenType.ERC20,
-    //     contractAddress: testerc20d9.address,
-    //     dest: bob.wallet.address,
-    //     amount: 100
-    //   }
-    // )
-    // // transfer ERC721 tokens from alice.lastResortAddress (which owns the tokens) to alices wallet
-    // await testerc721.transferFrom(alice.lastResortAddress, alice.wallet.address, 8, { from: alice.lastResortAddress })
-    // assert.equal(alice.wallet.address, await testerc721.ownerOf(8), 'Transfer of ERC721 token 8 to alice.wallet succesful')
-    // // alice transfers tokens to bob
-    // console.log(`await alice.wallet.getNonce(): ${await alice.wallet.getNonce()}`)
-    // await tokenTransfer(
-    //   {
-    //     wallet: alice,
-    //     operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
-    //     tokenType: ONEConstants.TokenType.ERC721,
-    //     contractAddress: testerc721.address,
-    //     tokenId: 8,
-    //     dest: bob.wallet.address,
-    //     amount: 1
-    //   }
-    // )
-    // // transfer ERC721 tokens from alice.lastResortAddress (which owns the tokens) to alices wallet
-    // // TODO review the bytes value we are passing in safeTransferFrom (currently using ONEUtil.hexStringToBytes('5') )
-    // await testerc1155.safeTransferFrom(alice.lastResortAddress, alice.wallet.address, 8, 8, ONEUtil.hexStringToBytes('5'), { from: alice.lastResortAddress })
-    // // alice transfers tokens to bob
-    // console.log(`await alice.wallet.getNonce(): ${await alice.wallet.getNonce()}`)
-    // await tokenTransfer(
-    //   {
-    //     wallet: alice,
-    //     operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
-    //     tokenType: ONEConstants.TokenType.ERC1155,
-    //     contractAddress: testerc1155.address,
-    //     tokenId: 8,
-    //     dest: bob.wallet.address,
-    //     amount: 3
-    //   }
-    // )
+    // check tokenTracker status
+    let aliceWalletBalanceERC20 = await alice.wallet.getBalance(ONEConstants.TokenType.ERC20, testerc20.address, 0)
+    console.log(`aliceWalletBalanceERC20: ${aliceWalletBalanceERC20}`)
+    // function getTrackedTokens(TokenTrackerState storage state) public view returns (Enums.TokenType[] memory, address[] memory, uint256[] memory
+
+    // function trackToken(TokenTrackerState storage state, Enums.TokenType tokenType, address contractAddress, uint256 tokenId) public
+    // function untrackToken(TokenTrackerState storage state, Enums.TokenType tokenType, address contractAddress, uint256 tokenId) public
+    // function overrideTrack(TokenTrackerState storage state, TrackedToken[] memory newTrackedTokens) public
+    // function overrideTrackWithBytes(TokenTrackerState storage state, bytes calldata data)
+    // function multiTrack(TokenTrackerState storage state, bytes calldata data) 
+    // function multiUntrack(TokenTrackerState storage state, bytes calldata data)
+    // recoverToken(TokenTrackerState storage state, address dest, TokenTracker.TrackedToken storage t)
+    // recoverSelectedTokensEncoded(TokenTrackerState storage state, address dest, bytes memory data)
+    // recoverAllTokens(TokenTrackerState storage state, address dest)
+/*
+    // transfer ERC20d9 tokens from alice.lastResortAddress (which owns the tokens) to alices wallet
+    await testerc20d9.transfer(alice.wallet.address, 1000, { from: alice.lastResortAddress })
+    // alice transfers tokens to bob
+    console.log(`await alice.wallet.getNonce(): ${await alice.wallet.getNonce()}`)
+    await tokenTransfer(
+      {
+        wallet: alice,
+        operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
+        tokenType: ONEConstants.TokenType.ERC20,
+        contractAddress: testerc20d9.address,
+        dest: bob.wallet.address,
+        amount: 100
+      }
+    )
+    // transfer ERC721 tokens from alice.lastResortAddress (which owns the tokens) to alices wallet
+    await testerc721.transferFrom(alice.lastResortAddress, alice.wallet.address, 8, { from: alice.lastResortAddress })
+    assert.equal(alice.wallet.address, await testerc721.ownerOf(8), 'Transfer of ERC721 token 8 to alice.wallet succesful')
+    // alice transfers tokens to bob
+    console.log(`await alice.wallet.getNonce(): ${await alice.wallet.getNonce()}`)
+    await tokenTransfer(
+      {
+        wallet: alice,
+        operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
+        tokenType: ONEConstants.TokenType.ERC721,
+        contractAddress: testerc721.address,
+        tokenId: 8,
+        dest: bob.wallet.address,
+        amount: 1
+      }
+    )
+    // transfer ERC721 tokens from alice.lastResortAddress (which owns the tokens) to alices wallet
+    // TODO review the bytes value we are passing in safeTransferFrom (currently using ONEUtil.hexStringToBytes('5') )
+    await testerc1155.safeTransferFrom(alice.lastResortAddress, alice.wallet.address, 8, 8, ONEUtil.hexStringToBytes('5'), { from: alice.lastResortAddress })
+    // alice transfers tokens to bob
+    console.log(`await alice.wallet.getNonce(): ${await alice.wallet.getNonce()}`)
+    await tokenTransfer(
+      {
+        wallet: alice,
+        operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
+        tokenType: ONEConstants.TokenType.ERC1155,
+        contractAddress: testerc1155.address,
+        tokenId: 8,
+        dest: bob.wallet.address,
+        amount: 3
+      }
+    )
+*/
   })
 })
 
@@ -429,10 +425,7 @@ const makeTokens = async (owner) => {
   const amounts1155 = [10, 20, 20, 20, 20, 20, 20, 20, 20, 100]
   const uris1155 = ['ipfs://test1155/0', 'ipfs://test1155/1', 'ipfs://test1155/2', 'ipfs://test1155/3', 'ipfs://test1155/4', 'ipfs://test1155/5', 'ipfs://test1155/6', 'ipfs://test1155/7', 'ipfs://test1155/8', 'ipfs://test1155/9']
   const testerc1155 = await TESTERC1155.new(tids1155, amounts1155, uris1155, { from: owner })
-  // create a TokenTracker
-  const TOKENTRACKER = artifacts.require('TokenTracker')
-  const tokentracker = await TOKENTRACKER.new()
-  return { testerc20, testerc20d9, testerc721, testerc1155, tokentracker }
+  return { testerc20, testerc20d9, testerc721, testerc1155 }
 }
 
 // tokenTransfer commits and reveals a wallet transaction

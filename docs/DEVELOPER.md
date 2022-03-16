@@ -13,13 +13,14 @@ Network configuration is held in the following places
 
 #### GANACHE TESTING
 
-**The mnemonic and private keys above are for testing only and should never be used in production**
+Note: The mnemonic and private keys shown are for testing only and should never be used in production. There is nothing special about this mnemonic you can generate your own using a tool such as https://iancoleman.io/bip39/ and then update your `.env` file with the private keys show when starting ganache.
 
 For smart contract testing you should also install [ganache](https://trufflesuite.com/docs/ganache/quickstart.html). Once installed you should run ganache whenever using the `dev` or `ganache` networks. These networks have been configured to use port 7545 as such you can run ganache using the command 
 ```
 ganache --port 7545 -m 'filter group there hunt fitness junior ghost park route jar entire clown allow rifle meadow'
 ```
 by providing the mnemonic (using `-m`) you are guaranteed to receive the same mnemonic keys which you can configure in your `.env` file see `.env.sample` for an example.
+
 
 
 
@@ -206,6 +207,13 @@ Test management of spending limits and time based spending thresholds
 * Negative use cases
 * Check for exploits
 
+#### Issues/Clarifiactions
+* Using of Mnemonic for Ganache so we can have multiple funded unlocked accounts
+* 721 tracking (alice is not being tracked - this works for ERC1155
+* nonce too low when calling commitreveal multiple times
+* `revert Proof is incorrect` have tried `TestUtil.increaseTime(60)`
+* Enhancement - ERC20 spending limits
+
 #### Event testing 
 Ensure the following events are being triggered and working correctly
 ```
@@ -229,7 +237,46 @@ Ensure the following events are being triggered and working correctly
 // event ExternalCallFailed(address contractAddress, uint256 amount, bytes data, bytes ret);
 ```
 
+#### Commit Reveal Notes
 
+* `libs/constants.js` holds all the operation types
+* `libs/onewallet.js` computes the various hashes
+* `contracts/ONEWallet.sol` performs the commit using `commithash` `paramshash` and `verificationhash` via the `CommitManager` which is just adding the hashes to the state of the Wallet
+* `contracts/ONEWallet.sol` performs the `lookupcommit` to retrieve data from the commit e.g.
+  * `const commitHashCommitted = commits[0][0]`
+  * `const paramHashCommitted = commits[1][0]`
+  * `const verificationHashCommitted = commits[2][0]`
+  * `const timestamp = commits[3][0]`
+  * `const completed = commits[4][0]`
+* `contracts/ONEWallet.sol` performs the `reveal` which validates the auth information passed using 
+  * `core.authenticate against thecore.authenticate(oldCores, innerCores, recoveryAddress, commitState, auth, op)` and then performs
+  * `_execute(op)` which executes the transaction using the operational parameters
+* Currently ONEWallet supported operations include
+  * `TRANSFER` calls ` _transfer(op.dest, op.amount)` transfers tokens
+  * `RECOVER`calls `_recover()` recovers the wallet
+  * `SET_RECOVERY_ADDRESS` calls `_setRecoveryAddress(op.dest)` updates the recovery address
+  * `FORWARD` calls ` _forward(op.dest);` forwards a payment
+  * `CALL` based on `op.tokenId` calls the following to transfer tokens to various contracts
+    * `_callContract(op.contractAddress, op.amount, op.data);` if we have a token
+    * `_multiCall(op.data);` if no token is passed
+  * `DISPLACE` calls the following is used to update core information (one time password information)
+    * `CoreManager.displace(oldCores, innerCores, core, identificationKeys, op.data, forwardAddress);`
+  * `BATCH` handles multiple calls by recursively calling execute for each element in the batch using
+    * calls `_batch(op.data);` which loops through the op.data calling `_execute(batchParams[i]);`
+  * if none of the above are satisfied we default to calling the Executor using 
+    * ` Executor.execute(op, tokenTrackerState, backlinkAddresses, signatures, spendingState);`
+* `contracts/Executor.sol` is imported into ONEWallet and handles the execution of key functionality such as tracking of tokens, managing spending limits, domain management etc.
+Walking through this for the following
+
+
+| constants.js operation | Commit Parameters | Executed by | Method executed | Notes |
+| --- | --- | --- | --- | --- |
+| TRANSFER |`{ dest, amount }`| ONEWallet  | ` _transfer` |NATIVE TOKEN |
+| TRANSFER_TOKEN |`{ operationType, tokenType, contractAddress, dest, amount }`| Executor |` tokenTrackerState.transferToken` | tokenType ERC20 |
+| TRANSFER_TOKEN |`{ operationType, tokenType, contractAddress, tokenId, dest, amount }`|Executor|`tokenTrackerState.transferToken` |tokenType ERC721,ERC115 |
+| TRACK | |Executor |`tokenTrackerState.trackToken` | if oppdata is not passed use tokentype, address and tokenId is passed| 
+| TRACK | |Executor |`tokenTrackerState.multiTrack` |if opdata is passed |
+| BUY_DOMAIN | |Executor |` DomainManager.buyDomainEncoded` | |
 
 
 
