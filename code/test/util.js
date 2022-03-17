@@ -248,7 +248,7 @@ const commitReveal = async ({ layers, Debugger, index, eotp, paramsHash, commitP
   const { hash: verificationHash } = ONE.computeVerificationHash({ paramsHash, eotp })
   Logger.debug(`Committing`, { commitHash: ONEUtil.hexString(commitHash), paramsHash: ONEUtil.hexString(paramsHash), verificationHash: ONEUtil.hexString(verificationHash) })
   tx = await wallet.commit(ONEUtil.hexString(commitHash), ONEUtil.hexString(paramsHash), ONEUtil.hexString(verificationHash))
-  await getReceipt(tx.receipt.transactionHash)
+  // await getReceipt(tx.receipt.transactionHash)
   Logger.debug(`Committed`)
   const neighborsEncoded = neighbors.map(ONEUtil.hexString)
   Debugger.debugProof({ neighbors, height: layers.length, index, eotp, root: layers[layers.length - 1] })
@@ -266,12 +266,12 @@ const commitReveal = async ({ layers, Debugger, index, eotp, paramsHash, commitP
     revealParams = [operationType, tokenType, contractAddress, tokenId, dest, amount, data]
   }
   Logger.debug(`Revealing`, { authParams, revealParams })
-  console.log(`Revealing`, { authParams, revealParams })
+  // console.log(`Revealing`, { authParams, revealParams })
   const wouldSucceed = await wallet.reveal.call(authParams, revealParams)
   Logger.debug(`Reveal success prediction`, !!wouldSucceed)
   tx = await wallet.reveal(authParams, revealParams)
   // console.log(`tx: ${JSON.stringify(tx)}`)
-  await getReceipt(tx.receipt.transactionHash)
+  // await getReceipt(tx.receipt.transactionHash)
   return { tx, authParams, revealParams }
 }
 

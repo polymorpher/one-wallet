@@ -24,13 +24,14 @@ const SLOT_SIZE = 1
 const EFFECTIVE_TIME = Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
 
 // makeWallet uses an index and unlocked web3.eth.account and creates and funds a ONEwallet
-const makeWallet = async (accountIndex, lastResortAddress) => {
+const makeWallet = async (salt, deployer) => {
+  const lastResortAccount = web3.eth.accounts.create()
   const { wallet, seed, hseed, root, client: { layers } } = await TestUtil.createWallet({
-    salt: new BN(accountIndex),
+    salt: new BN(ONEUtil.keccak(salt)),
     effectiveTime: EFFECTIVE_TIME,
     duration: DURATION,
     maxOperationsPerInterval: SLOT_SIZE,
-    lastResortAddress: lastResortAddress,
+    lastResortAddress: lastResortAccount.address,
     spendingLimit: ONE_ETH
   })
   // Fund wallet
@@ -40,17 +41,17 @@ const makeWallet = async (accountIndex, lastResortAddress) => {
   // console.log(`ONE_ETH  : ${ONE_ETH}`)
   // console.log(`TEN_ETH  : ${TEN_ETH}`)
   let tx = await web3.eth.sendTransaction({
-    from: lastResortAddress,
+    from: deployer,
     to: wallet.address,
     value: TEN_ETH
   })
-  TestUtil.getReceipt(tx.transactionHash)
+  // TestUtil.getReceipt(tx.transactionHash)
   // const InitialWalletBalance = await web3.eth.getBalance(wallet.address)
   // console.log(`InitialWalletBalance: ${InitialWalletBalance}`)
   // console.log(`lastResortAddressBalance: ${lastResortAddressBalance}`)
   // console.log(`ONE_ETH: ${ONE_ETH}`)
   const state = await getONEWalletState(wallet)
-  return { wallet, seed, hseed, root, layers, lastResortAddress, state }
+  return { wallet, seed, hseed, root, layers, lastResortAddress: lastResortAccount.address, state }
 }
 
 // makeTokens makes test ERC20, ERC20Decimals9, ERC721, ERC1155
@@ -95,8 +96,8 @@ const assetTransfer = async ({ wallet, operationType, tokenType, contractAddress
           revealParams = { operationType, tokenType, contractAddress, dest, amount }
           break
         case ONEConstants.TokenType.ERC721:
-          commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount }
-          revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount }
+          commitParams = { operationType, tokenType, contractAddress, tokenId, dest }
+          revealParams = { operationType, tokenType, contractAddress, tokenId, dest }
           break
         case ONEConstants.TokenType.ERC1155:
           commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount }
