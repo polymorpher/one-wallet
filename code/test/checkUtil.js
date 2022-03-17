@@ -35,21 +35,11 @@ const makeWallet = async (salt, deployer) => {
     spendingLimit: ONE_ETH
   })
   // Fund wallet
-  // console.log(`ONE_CENT : ${ONE_CENT}`)
-  // console.log(`HALF_DIME: ${HALF_DIME}`)
-  // console.log(`ONE_DIME : ${ONE_DIME}`)
-  // console.log(`ONE_ETH  : ${ONE_ETH}`)
-  // console.log(`TEN_ETH  : ${TEN_ETH}`)
-  let tx = await web3.eth.sendTransaction({
+  await web3.eth.sendTransaction({
     from: deployer,
     to: wallet.address,
     value: TEN_ETH
   })
-  // TestUtil.getReceipt(tx.transactionHash)
-  // const InitialWalletBalance = await web3.eth.getBalance(wallet.address)
-  // console.log(`InitialWalletBalance: ${InitialWalletBalance}`)
-  // console.log(`lastResortAddressBalance: ${lastResortAddressBalance}`)
-  // console.log(`ONE_ETH: ${ONE_ETH}`)
   const state = await getONEWalletState(wallet)
   return { wallet, seed, hseed, root, layers, lastResortAddress: lastResortAccount.address, state }
 }
@@ -73,10 +63,12 @@ const makeTokens = async (owner) => {
 }
 
 // assetTransfer commits and reveals a wallet transaction
-const assetTransfer = async ({ wallet, operationType, tokenType, contractAddress, tokenId, dest, amount }) => {
+const assetTransfer = async ({ wallet, operationType, tokenType, contractAddress, tokenId, dest, amount, testTime }) => {
   Debugger.printLayers({ layers: wallet.layers })
   const otp = ONEUtil.genOTP({ seed: wallet.seed })
-  const index = ONEUtil.timeToIndex({ effectiveTime: EFFECTIVE_TIME })
+  if (testTime === undefined) { testTime = Date.now() }
+  const effectiveTime = Math.floor(testTime / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
+  const index = ONEUtil.timeToIndex({ effectiveTime })
   const eotp = await ONE.computeEOTP({ otp, hseed: wallet.hseed })
   // Format commit and revealParams based on tokenType
   let commitParams

@@ -38,11 +38,9 @@ const ONE_ETH = unit.toWei('1', 'ether')
 const sleep = (milliseconds) => {
   return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
-const sleep10 = async () => {
-  for (let i = 0; i < 10; i++) {
-    console.log(`sleep10`)
-    await sleep(1000)
-  }
+const wait = async (seconds) => {
+  console.log(`wait: ${seconds}`)
+  await sleep(seconds * 1000)
 }
 const getReceipt = async (transactionHash) => {
   let transactionReceipt = null
@@ -55,7 +53,16 @@ const getReceipt = async (transactionHash) => {
     console.log(`waiting`)
   }
   assert.notEqual(null, transactionReceipt, `transactionReceipt not found for ${transactionHash} after waiting 10 seconds`)
-  // if (transactionReceipt == null) {console.log(`Could not find transaction receipt for `)} 
+}
+
+const bumpTestTime = (testEffectiveTime, bumpSeconds) => {
+  testEffectiveTime = testEffectiveTime + (bumpSeconds * 1000)
+  const chainBumpSeconds = testEffectiveTime - Date.now()
+  increaseTime(chainBumpSeconds)
+  console.log(`Date.now() .    : ${Date.now()}`)
+  console.log(`testEffective   : ${testEffectiveTime}`)
+  console.log(`chainBumpSeconds: ${chainBumpSeconds}`)
+  return testEffectiveTime
 }
 
 const makeCores = async ({
@@ -237,7 +244,6 @@ const getEOTP = async ({ seed, hseed, effectiveTime, timeOffset }) => {
 }
 
 const commitReveal = async ({ layers, Debugger, index, eotp, paramsHash, commitParams, revealParams, wallet }) => {
-  let tx
   const neighbors = ONE.selectMerkleNeighbors({ layers, index })
   const neighbor = neighbors[0]
   const { hash: commitHash } = ONE.computeCommitHash({ neighbor, index, eotp })
@@ -247,13 +253,11 @@ const commitReveal = async ({ layers, Debugger, index, eotp, paramsHash, commitP
   }
   const { hash: verificationHash } = ONE.computeVerificationHash({ paramsHash, eotp })
   Logger.debug(`Committing`, { commitHash: ONEUtil.hexString(commitHash), paramsHash: ONEUtil.hexString(paramsHash), verificationHash: ONEUtil.hexString(verificationHash) })
-  tx = await wallet.commit(ONEUtil.hexString(commitHash), ONEUtil.hexString(paramsHash), ONEUtil.hexString(verificationHash))
-  // await getReceipt(tx.receipt.transactionHash)
+  await wallet.commit(ONEUtil.hexString(commitHash), ONEUtil.hexString(paramsHash), ONEUtil.hexString(verificationHash))
   Logger.debug(`Committed`)
   const neighborsEncoded = neighbors.map(ONEUtil.hexString)
   Debugger.debugProof({ neighbors, height: layers.length, index, eotp, root: layers[layers.length - 1] })
   const commits = await wallet.lookupCommit(ONEUtil.hexString(commitHash))
-  // console.log(commits)
   const commitHashCommitted = commits[0][0]
   const paramHashCommitted = commits[1][0]
   const verificationHashCommitted = commits[2][0]
@@ -266,13 +270,10 @@ const commitReveal = async ({ layers, Debugger, index, eotp, paramsHash, commitP
     revealParams = [operationType, tokenType, contractAddress, tokenId, dest, amount, data]
   }
   Logger.debug(`Revealing`, { authParams, revealParams })
-  // console.log(`Revealing`, { authParams, revealParams })
   const wouldSucceed = await wallet.reveal.call(authParams, revealParams)
   Logger.debug(`Reveal success prediction`, !!wouldSucceed)
-  tx = await wallet.reveal(authParams, revealParams)
-  // console.log(`tx: ${JSON.stringify(tx)}`)
-  // await getReceipt(tx.receipt.transactionHash)
-  return { tx, authParams, revealParams }
+  await wallet.reveal(authParams, revealParams)
+  return { authParams, revealParams }
 }
 
 const printInnerTrees = ({ Debugger, innerTrees }) => {
@@ -299,6 +300,7 @@ module.exports = {
   getEOTP,
   snapshot,
   revert,
-  sleep10,
-  getReceipt
+  wait,
+  getReceipt,
+  bumpTestTime
 }
