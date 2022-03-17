@@ -23,23 +23,6 @@ const DURATION = INTERVAL * 12
 const SLOT_SIZE = 1
 const EFFECTIVE_TIME = Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
 
-const sleep = (milliseconds) => {
-  return new Promise(resolve => setTimeout(resolve, milliseconds))
-}
-const getReceipt = async (tx) => {
-  let transactionReceipt = null
-  let i = 0
-  while (transactionReceipt == null && i < 10) { // Waiting expectedBlockTime until the transaction is mined
-    transactionReceipt = await web3.eth.getTransactionReceipt(tx.transactionHash)
-    if (transactionReceipt !== null) { break }
-    await sleep(1000)
-    i++
-    console.log(`waiting`)
-  }
-  assert.notEqual(null, transactionReceipt, `transactionReceipt not found for ${tx.transactionHash} after waiting 10 seconds`)
-  // if (transactionReceipt == null) {console.log(`Could not find transaction receipt for `)} 
-}
-
 // makeWallet uses an index and unlocked web3.eth.account and creates and funds a ONEwallet
 const makeWallet = async (accountIndex, lastResortAddress) => {
   const { wallet, seed, hseed, root, client: { layers } } = await TestUtil.createWallet({
@@ -61,7 +44,7 @@ const makeWallet = async (accountIndex, lastResortAddress) => {
     to: wallet.address,
     value: TEN_ETH
   })
-  getReceipt(tx)
+  TestUtil.getReceipt(tx.transactionHash)
   // const InitialWalletBalance = await web3.eth.getBalance(wallet.address)
   // console.log(`InitialWalletBalance: ${InitialWalletBalance}`)
   // console.log(`lastResortAddressBalance: ${lastResortAddressBalance}`)
@@ -112,8 +95,8 @@ const assetTransfer = async ({ wallet, operationType, tokenType, contractAddress
           revealParams = { operationType, tokenType, contractAddress, dest, amount }
           break
         case ONEConstants.TokenType.ERC721:
-          commitParams = { operationType, tokenType, contractAddress, tokenId, dest }
-          revealParams = { operationType, tokenType, contractAddress, tokenId, dest }
+          commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount }
+          revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount }
           break
         case ONEConstants.TokenType.ERC1155:
           commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount }
