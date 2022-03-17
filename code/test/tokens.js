@@ -317,7 +317,7 @@ contract('ONEWallet', (accounts) => {
         amount: 100
       }
     )
-    // console.log(`after ERC20 alice.wallet.getNonce(): ${await alice.wallet.getNonce()}`)
+    console.log(`after ERC20 alice.wallet.getNonce(): ${await alice.wallet.getNonce()}`)
     // check tokenTracker status
     let aliceWalletBalanceERC20 = await alice.wallet.getBalance(ONEConstants.TokenType.ERC20, testerc20.address, 0)
     // console.log(`aliceWalletBalanceERC20: ${aliceWalletBalanceERC20}`)
@@ -335,10 +335,13 @@ contract('ONEWallet', (accounts) => {
 
     // transfer ERC20d9 tokens from accounts[0] (which owns the tokens) to alices wallet
     tx = await testerc20d9.transfer(alice.wallet.address, 1000, { from: accounts[0] })
-    // console.log(`tx: ${JSON.stringify(tx)}`)
-    // await TestUtil.getReceipt(tx.receipt.transactionHash)
-    // await TestUtil.sleep10()
-    // await TestUtil.increaseTime(10)
+    console.log(`tx: ${JSON.stringify(tx)}`)
+    await TestUtil.getReceipt(tx.receipt.transactionHash)
+    await TestUtil.sleep10()
+    await TestUtil.sleep10()
+    await TestUtil.sleep10()
+    await TestUtil.sleep10()
+    // await TestUtil.increaseTime(40)
     // alice transfers tokens to bob
     // console.log('Here we go 20-9')
     await CheckUtil.assetTransfer(
@@ -355,8 +358,11 @@ contract('ONEWallet', (accounts) => {
     // transfer ERC721 tokens from accounts[0] (which owns the tokens) to alices wallet
     tx = await testerc721.transferFrom(accounts[0], alice.wallet.address, 8, { from: accounts[0] })
     // await TestUtil.getReceipt(tx.receipt.transactionHash)
-    // await TestUtil.sleep10()
-    // await TestUtil.increaseTime(10)
+    await TestUtil.sleep10()
+    await TestUtil.sleep10()
+    await TestUtil.sleep10()
+    await TestUtil.sleep10()
+    // await TestUtil.increaseTime(30)
     // console.log('Here we go 721')
     assert.equal(alice.wallet.address, await testerc721.ownerOf(8), 'Transfer of ERC721 token 8 to alice.wallet succesful')
     // alice transfers tokens to bob
@@ -375,8 +381,11 @@ contract('ONEWallet', (accounts) => {
     // TODO review the bytes value we are passing in safeTransferFrom (currently using ONEUtil.hexStringToBytes('5') )
     tx = await testerc1155.safeTransferFrom(accounts[0], alice.wallet.address, 8, 8, ONEUtil.hexStringToBytes('5'), { from: accounts[0] })
     // await TestUtil.getReceipt(tx.transactionHash)
-    // await TestUtil.sleep10()
-    // await TestUtil.increaseTime(10)
+    await TestUtil.sleep10()
+    await TestUtil.sleep10()
+    await TestUtil.sleep10()
+    await TestUtil.sleep10()
+    // await TestUtil.increaseTime(30)
     // console.log('Here we go 1155')
     // alice transfers tokens to bob
     // console.log(`await alice.wallet.getNonce(): ${await alice.wallet.getNonce()}`)
