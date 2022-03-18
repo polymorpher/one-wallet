@@ -6,7 +6,7 @@ module.exports = {
     try {
       const executor = blockchain.prepareExecute(req.network)
       const wallet = await req.contract(address)
-      const tx = await executor(nonce => wallet.revealTransfer(neighbors, index, eotp, dest, new BN(amount), { nonce }))
+      const tx = await executor(txArgs => wallet.revealTransfer(neighbors, index, eotp, dest, new BN(amount), txArgs))
       return res.json(parseTx(tx))
     } catch (ex) {
       console.error(ex)
@@ -18,7 +18,7 @@ module.exports = {
     try {
       const executor = blockchain.prepareExecute(req.network)
       const wallet = await req.contract(address)
-      const tx = await executor(nonce => wallet.revealRecovery(neighbors, index, eotp, { nonce }))
+      const tx = await executor(txArgs => wallet.revealRecovery(neighbors, index, eotp, txArgs))
       return res.json(parseTx(tx))
     } catch (ex) {
       console.error(ex)
@@ -30,7 +30,7 @@ module.exports = {
     try {
       const executor = blockchain.prepareExecute(req.network)
       const wallet = await req.contract(address)
-      const tx = await executor(nonce => wallet.revealSetLastResortAddress(neighbors, index, eotp, lastResortAddress, { nonce }))
+      const tx = await executor(txArgs => wallet.revealSetLastResortAddress(neighbors, index, eotp, lastResortAddress, txArgs))
       return res.json(parseTx(tx))
     } catch (ex) {
       console.error(ex)
@@ -43,7 +43,7 @@ module.exports = {
       const executor = blockchain.prepareExecute(req.network)
       const wallet = await req.contract(address)
 
-      const tx = await executor(nonce => wallet.revealTokenOperation(neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data, { nonce }))
+      const tx = await executor(txArgs => wallet.revealTokenOperation(neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data, txArgs))
       return res.json(parseTx(tx))
     } catch (ex) {
       console.error(ex)
