@@ -57,11 +57,11 @@ const getReceipt = async (transactionHash) => {
 
 const bumpTestTime = (testEffectiveTime, bumpSeconds) => {
   testEffectiveTime = testEffectiveTime + (bumpSeconds * 1000)
-  const chainBumpSeconds = testEffectiveTime - Date.now()
-  increaseTime(chainBumpSeconds)
+  const chainBumpMilliSeconds = testEffectiveTime - Date.now()
+  increaseTime(chainBumpMilliSeconds / 1000)
   console.log(`Date.now() .    : ${Date.now()}`)
   console.log(`testEffective   : ${testEffectiveTime}`)
-  console.log(`chainBumpSeconds: ${chainBumpSeconds}`)
+  console.log(`chainBumpSeconds: ${chainBumpMilliSeconds}`)
   return testEffectiveTime
 }
 

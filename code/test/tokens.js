@@ -268,7 +268,7 @@ contract('ONEWallet', (accounts) => {
 
   // TokenTracker Testing (track, multitrack, getTrackedTokens, getBalance, recoverToken) also batch transactions
   it('Wallet_CommitReveal: TokenTracker(token management) must commit and reveal successfully', async () => {
-    // let testTime = Date.now()
+    let testTime = Date.now()
     const alice = await CheckUtil.makeWallet('alice', accounts[0])
     const bob = await CheckUtil.makeWallet('bob', accounts[0])
     const { testerc20, testerc721, testerc1155 } = await CheckUtil.makeTokens(accounts[0])
@@ -284,18 +284,18 @@ contract('ONEWallet', (accounts) => {
         tokenType: ONEConstants.TokenType.ERC20,
         contractAddress: testerc20.address,
         dest: bob.wallet.address,
-        amount: 100
-        // testTime
+        amount: 100,
+        testTime
       }
     )
-    await CheckUtil.checkONEWallet(alice.wallet, alice.state)
+    // await CheckUtil.checkONEWallet(alice.wallet, alice.state)
     // transfer ERC721 tokens from accounts[0] (which owns the tokens) to alices wallet
     await testerc721.transferFrom(accounts[0], alice.wallet.address, 8, { from: accounts[0] })
     // await TestUtil.getReceipt(tx.receipt.transactionHash)
     assert.equal(alice.wallet.address, await testerc721.ownerOf(8), 'Transfer of ERC721 token 8 to alice.wallet succesful')
     // alice transfers tokens to bob
-    // testTime = TestUtil.bumpTestTime(testTime, 45)
-    await TestUtil.wait(45)
+    testTime = TestUtil.bumpTestTime(testTime, 45)
+    // await TestUtil.wait(45)
     await CheckUtil.assetTransfer(
       {
         wallet: alice,
@@ -303,17 +303,17 @@ contract('ONEWallet', (accounts) => {
         tokenType: ONEConstants.TokenType.ERC721,
         contractAddress: testerc721.address,
         tokenId: 8,
-        dest: bob.wallet.address
-        // testTime
+        dest: bob.wallet.address,
+        testTime
       }
     )
-    await CheckUtil.checkONEWallet(alice.wallet, alice.state)
+    // await CheckUtil.checkONEWallet(alice.wallet, alice.state)
     // transfer ERC721 tokens from accounts[0] (which owns the tokens) to alices wallet
     // TODO review the bytes value we are passing in safeTransferFrom (currently using ONEUtil.hexStringToBytes('5') )
     await testerc1155.safeTransferFrom(accounts[0], alice.wallet.address, 8, 8, ONEUtil.hexStringToBytes('5'), { from: accounts[0] })
     // alice transfers tokens to bob
-    // testTime = TestUtil.bumpTestTime(testTime, 45)
-    await TestUtil.wait(45)
+    testTime = TestUtil.bumpTestTime(testTime, 45)
+    // await TestUtil.wait(45)
     await CheckUtil.assetTransfer(
       {
         wallet: alice,
@@ -322,10 +322,10 @@ contract('ONEWallet', (accounts) => {
         contractAddress: testerc1155.address,
         tokenId: 8,
         dest: bob.wallet.address,
-        amount: 3
-        // testTime
+        amount: 3,
+        testTime
       }
     )
-    await CheckUtil.checkONEWallet(alice.wallet, alice.state)
+    // await CheckUtil.checkONEWallet(alice.wallet, alice.state)
   })
 })

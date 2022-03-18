@@ -9,7 +9,6 @@ const ONEDebugger = require('../lib/debug')
 const Logger = TestUtil.Logger
 const Debugger = ONEDebugger(Logger)
 const TestERC20 = artifacts.require('TestERC20')
-const TestERC20Decimals9 = artifacts.require('TestERC20Decimals9')
 const TestERC721 = artifacts.require('TestERC721')
 const TestERC1155 = artifacts.require('TestERC1155')
 
@@ -22,6 +21,57 @@ const INTERVAL = 30000
 const DURATION = INTERVAL * 12
 const SLOT_SIZE = 1
 const EFFECTIVE_TIME = Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
+const JSSHA = require('jssha')
+
+const utils = {
+  timeToIndex: ({
+    effectiveTime,
+    time,
+    interval = 30000,
+    nonce = 0,
+    maxOperationsPerInterval = 1
+  }) => {
+    if (time === undefined) {
+      time = Date.now()
+      console.log('Setting default time')
+    }
+    effectiveTime = Math.floor(effectiveTime / interval) * interval
+    const index = Math.floor((time - effectiveTime) / interval)
+    const indexWithNonce = index * maxOperationsPerInterval + nonce
+    return indexWithNonce
+  },
+  genOTP: ({ seed, interval = 30000, time, counter = Math.floor(Date.now() / interval), n = 1, progressObserver }) => {
+    const codes = new Uint8Array(n * 4)
+    const v = new DataView(codes.buffer)
+    const b = new DataView(new ArrayBuffer(8))
+    if (time === undefined) {
+      time = Date.now()
+      console.log('Setting default time')
+    }
+    counter = Math.floor(time / interval)
+    for (let i = 0; i < n; i += 1) {
+      const t = counter + i
+      b.setUint32(0, 0, false)
+      b.setUint32(4, t, false)
+      const jssha = new JSSHA('SHA-1', 'UINT8ARRAY')
+      jssha.setHMACKey(seed, 'UINT8ARRAY')
+      jssha.update(new Uint8Array(b.buffer))
+      const h = jssha.getHMAC('UINT8ARRAY')
+      const p = h[h.length - 1] & 0x0f
+      const x1 = (h[p] & 0x7f) << 24
+      const x2 = (h[p + 1] & 0xff) << 16
+      const x3 = (h[p + 2] & 0xff) << 8
+      const x4 = (h[p + 3] & 0xff)
+      const c = x1 | x2 | x3 | x4
+      const r = c % 1000000
+      v.setUint32(i * 4, r, false)
+      if (progressObserver) {
+        progressObserver(i, n)
+      }
+    }
+    return codes
+  },
+}
 
 // makeWallet uses an index and unlocked web3.eth.account and creates and funds a ONEwallet
 const makeWallet = async (salt, deployer) => {
@@ -63,10 +113,10 @@ const makeTokens = async (owner) => {
 // assetTransfer commits and reveals a wallet transaction
 const assetTransfer = async ({ wallet, operationType, tokenType, contractAddress, tokenId, dest, amount, testTime }) => {
   Debugger.printLayers({ layers: wallet.layers })
-  const otp = ONEUtil.genOTP({ seed: wallet.seed })
   if (testTime === undefined) { testTime = Date.now() }
+  const otp = utils.genOTP({ seed: wallet.seed, time: testTime })
   const effectiveTime = Math.floor(testTime / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
-  const index = ONEUtil.timeToIndex({ effectiveTime })
+  const index = utils.timeToIndex({ effectiveTime, time: testTime })
   const eotp = await ONE.computeEOTP({ otp, hseed: wallet.hseed })
   // Format commit and revealParams based on tokenType
   let commitParams
@@ -132,19 +182,19 @@ const getONEWalletState = async (wallet) => {
   } catch (ex) {
     console.log(`Failed to parse walletIdentificationKeys: ${ex.toString()}`)
   }
-  const forwardAddress = await wallet.getForwardAddress().toString()
+  const forwardAddress = (await wallet.getForwardAddress()).toString()
   const walletInfo = await wallet.getInfo()
   let info = {}
   try {
     info = {
       root: walletInfo[0].toString(),
-      height: new BN(walletInfo[1]),
-      interval: new BN(walletInfo[2]),
-      t0: new BN(walletInfo[3]),
-      lifespan: new BN(walletInfo[4]),
-      maxOperationsPerInterval: new BN(walletInfo[5]),
+      height: new BN(walletInfo[1]).toNumber(),
+      interval: new BN(walletInfo[2]).toNumber(),
+      t0: new BN(walletInfo[3]).toNumber(),
+      lifespan: new BN(walletInfo[4]).toNumber(),
+      maxOperationsPerInterval: new BN(walletInfo[5]).toNumber(),
       recoveryAddress: walletInfo[6].toString(),
-      extra: new BN(walletInfo[7])
+      extra: new BN(walletInfo[7]).toNumber()
     }
   } catch (ex) {
     console.log(`Failed to parse Wallet Info: ${ex.toString()}`)
@@ -156,11 +206,11 @@ const getONEWalletState = async (wallet) => {
     for (let x of walletOldInfo) {
       oldInfo[i] = {
         root: x[0].toString(),
-        height: new BN(x[1]),
-        interval: new BN(x[2]),
-        t0: new BN(x[3]),
-        lifespan: new BN(x[4]),
-        maxOperationsPerInterval: new BN(x[5])
+        height: new BN(x[1]).toNumber(),
+        interval: new BN(x[2]).toNumber(),
+        t0: new BN(x[3]).toNumber(),
+        lifespan: new BN(x[4]).toNumber(),
+        maxOperationsPerInterval: new BN(x[5]).toNumber()
       }
       i++
     }
@@ -174,11 +224,11 @@ const getONEWalletState = async (wallet) => {
     for (let x of walletInnerCores) {
       innerCores[i] = {
         root: x[0].toString(),
-        height: new BN(x[1]),
-        interval: new BN(x[2]),
-        t0: new BN(x[3]),
-        lifespan: new BN(x[4]),
-        maxOperationsPerInterval: new BN(x[5])
+        height: new BN(x[1]).toNumber(),
+        interval: new BN(x[2]).toNumber(),
+        t0: new BN(x[3]).toNumber(),
+        lifespan: new BN(x[4]).toNumber(),
+        maxOperationsPerInterval: new BN(x[5]).toNumber()
       }
       i++
     }
@@ -190,8 +240,8 @@ const getONEWalletState = async (wallet) => {
   let version = {}
   try {
     version = {
-      majorVersion: new BN(walletVersion[0]),
-      minorVersion: new BN(walletVersion[1])
+      majorVersion: new BN(walletVersion[0]).toNumber(),
+      minorVersion: new BN(walletVersion[1]).toNumber()
     }
   } catch (ex) {
     console.log(`Failed to parse walletVersion: ${ex.toString()}`)
@@ -200,19 +250,18 @@ const getONEWalletState = async (wallet) => {
   let spendingState = {}
   try {
     spendingState = {
-      spendingLimit: new BN(walletSpendingState[0]),
-      spendingAmount: new BN(walletSpendingState[1]),
-      lastSpendingInterval: new BN(walletSpendingState[2]),
-      spendingInterval: new BN(walletSpendingState[3]),
-      lastLimitAdjustmentTime: new BN(walletSpendingState[4]),
-      highestSpendingLimit: new BN(walletSpendingState[5])
+      spendingLimit: new BN(unit.fromWei(walletSpendingState[0], 'ether')).toNumber(),
+      spendingAmount: new BN(unit.fromWei(walletSpendingState[1], 'ether')).toNumber(),
+      lastSpendingInterval: new BN(walletSpendingState[2]).toNumber(),
+      spendingInterval: new BN(walletSpendingState[3]).toNumber(),
+      lastLimitAdjustmentTime: new BN(walletSpendingState[4]).toNumber(),
+      highestSpendingLimit: new BN(unit.fromWei(walletSpendingState[5], 'ether')).toNumber(),
     }
   } catch (ex) {
     console.log(`Failed to parse walletSpendingState: ${ex.toString()}`)
   }
-  // const nonce = new BN(await wallet.getNonce())
-  const nonce = (await wallet.getNonce()).toNumber()
-  const lastOperationTime = new BN(await wallet.lastOperationTime())
+  const nonce = new BN(await wallet.getNonce()).toNumber()
+  const lastOperationTime = new BN(await wallet.lastOperationTime()).toNumber()
   const walletAllCommits = await wallet.getAllCommits()
   let allCommits = {
     commitHashArray: {},
@@ -237,9 +286,9 @@ const getONEWalletState = async (wallet) => {
     tokenIdArray: {}
   }
   try {
-    trackedTokens.tokenTypeArray = walletAllCommits[0]
-    trackedTokens.contractAddressArray = walletAllCommits[1]
-    trackedTokens.tokenIdArray = walletAllCommits[2]
+    trackedTokens.tokenTypeArray = walletTrackedTokens[0]
+    trackedTokens.contractAddressArray = walletTrackedTokens[1]
+    trackedTokens.tokenIdArray = walletTrackedTokens[2]
   } catch (ex) {
     console.log(`Failed to parse walletTrackedTokens: ${ex.toString()}`)
   }
@@ -273,6 +322,7 @@ const getONEWalletState = async (wallet) => {
   }
   return state
 }
+
 
 // check OneWallet state
 const checkONEWallet = async (wallet, state) => {
