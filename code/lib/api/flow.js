@@ -309,7 +309,7 @@ const Flows = {
         numAttemptsRemaining -= 1
         return tryReveal()
       }
-    }, (maxTransferAttempts - numAttemptsRemaining + 1) * 5000)
+    }, (maxTransferAttempts - (numAttemptsRemaining + 1)) * 5000)
     return tryReveal()
   },
 }

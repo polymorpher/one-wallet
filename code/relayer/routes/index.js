@@ -132,8 +132,9 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
       innerCoreTransformed,
       identificationKeys,
     ]
-    const executor = blockchain.prepareExecute(req.network)
-    const receipt = await executor(nonce => blockchain.getFactory(req.network).deploy(initArgs, { nonce }))
+    const logger = (...args) => console.log(`[/new]`, ...args)
+    const executor = blockchain.prepareExecute(req.network, logger)
+    const receipt = await executor(txArgs => blockchain.getFactory(req.network).deploy(initArgs, txArgs))
     console.log(JSON.stringify(receipt, null, 2))
     const { logs } = receipt
     const successLog = logs.find(log => log.event === 'ONEWalletDeploySuccess')
@@ -174,16 +175,16 @@ router.post('/commit', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
     // eslint-disable-next-line new-cap
     const wallet = new req.contract(address)
     let tx
-    const logger = (nonce, tx, tag) => console.log(`/commit [${tag}][nonce=${nonce}]`, tx)
+    const logger = (...args) => console.log(`[/commit]`, ...args)
     const executor = blockchain.prepareExecute(req.network, logger)
-    tx = await executor(nonce => {
+    tx = await executor(txArgs => {
       if (req.majorVersion >= 7) {
-        return wallet.commit(hash, paramsHash, verificationHash, { nonce })
+        return wallet.commit(hash, paramsHash, verificationHash, txArgs)
         // tx = await wallet.sendTransaction(txreq)
       } else if (req.majorVersion >= 6) {
-        return wallet.commit(hash, paramsHash, { nonce })
+        return wallet.commit(hash, paramsHash, txArgs)
       } else {
-        return wallet.commit(hash, { nonce })
+        return wallet.commit(hash, txArgs)
       }
     })
     const parsedTx = parseTx(tx)
@@ -224,13 +225,17 @@ router.post('/reveal', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
     const wallet = new req.contract(address)
     // console.log({ neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
     let tx = null
-    const logger = (nonce, tx, tag) => console.log(`/reveal [${tag}][nonce=${nonce}]`, JSON.stringify(tx, null, 2))
+    const logger = (...args) => console.log(`[/reveal]`, ...args)
     const executor = blockchain.prepareExecute(req.network, logger)
-    tx = await executor(nonce => {
+    tx = await executor(txArgs => {
       if (!(req.majorVersion >= 14)) {
-        return wallet.reveal(neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data, { nonce })
+        return wallet.reveal(neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data, txArgs)
       } else {
-        return wallet.reveal([neighbors, index, eotp], [operationType, tokenType, contractAddress, tokenId, dest, amount, data], { nonce })
+        return wallet.reveal(
+          [neighbors, index, eotp],
+          [operationType, tokenType, contractAddress, tokenId, dest, amount, data],
+          txArgs
+        )
       }
     })
     const parsedTx = parseTx(tx)
@@ -250,9 +255,9 @@ router.post('/retire', generalLimiter({ max: 6 }), walletAddressLimiter({ max: 6
   // TODO parameter verification
   try {
     const wallet = await req.contract(address)
-    const logger = (nonce, tx, tag) => console.log(`/retire [${tag}][nonce=${nonce}]`, JSON.stringify(tx, null, 2))
+    const logger = (...args) => console.log(`[/retire]`, ...args)
     const executor = blockchain.prepareExecute(req.network, logger)
-    const tx = await executor(nonce => wallet.retire({ nonce }))
+    const tx = await executor(txArgs => wallet.retire(txArgs))
     return res.json(parseTx(tx))
   } catch (ex) {
     console.error(ex)
