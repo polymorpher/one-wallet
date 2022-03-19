@@ -287,7 +287,7 @@ const prepareExecute = (network, logger = console.log) => async (f) => {
       }), {
         retry: (ex, n) => {
           numAttempts = n
-          logger(`[retry]${printNonceStats()}`)
+          logger(`[retry][attempts=${n}]${printNonceStats()}`)
         }
       })
     logger(`[complete]${printNonceStats()}`, tx)
