@@ -62,10 +62,16 @@ const makeTokens = async (owner) => {
 const assetTransfer = async ({ wallet, operationType, tokenType, contractAddress, tokenId, dest, amount, testTime }) => {
   Debugger.printLayers({ layers: wallet.layers })
   if (testTime === undefined) { testTime = Date.now() }
-  const otp = ONEUtil.genOTP({ seed: wallet.seed, time: testTime })
+  // calculate counter from testTime
+  const counter = Math.floor(testTime) / INTERVAL
+  const otp = ONEUtil.genOTP({ seed: wallet.seed, counter })
+  // calculate effectiveTime from t0
   const info = await wallet.wallet.getInfo()
   const t0 = new BN(info[3]).toNumber()
-  const effectiveTime = t0 * INTERVAL
+  const walletEffectiveTime = t0 * INTERVAL
+  console.log(`walletEffectiveTime: ${walletEffectiveTime}`)
+  console.log(`DateNow: ${Date.now()}`)
+  const effectiveTime = Math.floor(walletEffectiveTime / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
   const index = ONEUtil.timeToIndex({ effectiveTime, time: testTime })
   const eotp = await ONE.computeEOTP({ otp, hseed: wallet.hseed })
   // Format commit and revealParams based on tokenType
