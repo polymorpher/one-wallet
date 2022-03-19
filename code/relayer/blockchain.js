@@ -283,7 +283,7 @@ const prepareExecute = (network, logger = console.log) => async (f) => {
       async () => f({
         from,
         nonce: '0x' + new BN(nonce).toString(16),
-        gasPrice: new BN(config.gasPrice).addn(numAttempts)
+        gasPrice: config.gasPrice.clone().addn(numAttempts)
       }), {
         retry: (ex, n) => {
           numAttempts = n
