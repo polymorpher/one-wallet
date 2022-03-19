@@ -1,5 +1,4 @@
 const TestUtil = require('./util')
-const CheckUtil = require('./checkUtil')
 const unit = require('ethjs-unit')
 const ONEUtil = require('../lib/util')
 const ONEDebugger = require('../lib/debug')
@@ -7,7 +6,6 @@ const ONE = require('../lib/onewallet')
 const ONEConstants = require('../lib/constants')
 const Flow = require('../lib/api/flow')
 const ONEWallet = require('../lib/onewallet')
-const crypto = require('crypto')
 const BN = require('bn.js')
 
 const INTERVAL = 30000
@@ -26,7 +24,6 @@ contract('ONEWallet', (accounts) => {
   it('Wallet_Create: must create wallet with expected parameters', async () => {
     const purse = web3.eth.accounts.create()
     const {
-      wallet,
       seed,
       hseed,
       address,
@@ -76,7 +73,7 @@ contract('ONEWallet', (accounts) => {
 
   it('Wallet_CommitReveal: must commit and reveal a transfer successfully', async () => {
     const purse = web3.eth.accounts.create()
-    const { wallet, seed, hseed, root, client: { layers } } = await TestUtil.createWallet({
+    const { wallet, seed, hseed, client: { layers } } = await TestUtil.createWallet({
       salt: new BN(2),
       effectiveTime: EFFECTIVE_TIME,
       duration: DURATION,

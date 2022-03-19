@@ -12,9 +12,9 @@ const TestERC20 = artifacts.require('TestERC20')
 const TestERC721 = artifacts.require('TestERC721')
 const TestERC1155 = artifacts.require('TestERC1155')
 
-const ONE_CENT = unit.toWei('0.01', 'ether')
-const HALF_DIME = unit.toWei('0.05', 'ether')
-const ONE_DIME = unit.toWei('0.1', 'ether')
+// const ONE_CENT = unit.toWei('0.01', 'ether')
+// const HALF_DIME = unit.toWei('0.05', 'ether')
+// const ONE_DIME = unit.toWei('0.1', 'ether')
 const ONE_ETH = unit.toWei('1', 'ether')
 const TEN_ETH = unit.toWei('10', 'ether')
 const INTERVAL = 30000
@@ -90,8 +90,8 @@ const makeWallet = async (salt, deployer) => {
     to: wallet.address,
     value: TEN_ETH
   })
-  const state = await getONEWalletState(wallet)
-  return { wallet, seed, hseed, root, layers, lastResortAddress: lastResortAccount.address, state }
+  const currentState = await getONEWalletState(wallet)
+  return { wallet, seed, hseed, root, layers, lastResortAddress: lastResortAccount.address, currentState }
 }
 
 // makeTokens makes test ERC20, ERC20Decimals9, ERC721, ERC1155
@@ -162,6 +162,9 @@ const assetTransfer = async ({ wallet, operationType, tokenType, contractAddress
     revealParams,
     wallet: wallet.wallet
   })
+  wallet.oldState = wallet.currentState
+  wallet.currentState = await getONEWalletState(wallet.wallet)
+  return wallet
 }
 
 // get OneWallet state
@@ -250,12 +253,12 @@ const getONEWalletState = async (wallet) => {
   let spendingState = {}
   try {
     spendingState = {
-      spendingLimit: new BN(unit.fromWei(walletSpendingState[0], 'ether')).toNumber(),
-      spendingAmount: new BN(unit.fromWei(walletSpendingState[1], 'ether')).toNumber(),
-      lastSpendingInterval: new BN(walletSpendingState[2]).toNumber(),
-      spendingInterval: new BN(walletSpendingState[3]).toNumber(),
-      lastLimitAdjustmentTime: new BN(walletSpendingState[4]).toNumber(),
-      highestSpendingLimit: new BN(unit.fromWei(walletSpendingState[5], 'ether')).toNumber(),
+      spendingLimit: walletSpendingState[0],
+      spentAmount: walletSpendingState[1],
+      lastSpendingInterval: walletSpendingState[2],
+      spendingInterval: walletSpendingState[3],
+      lastLimitAdjustmentTime: walletSpendingState[4],
+      highestSpendingLimit: walletSpendingState[5],
     }
   } catch (ex) {
     console.log(`Failed to parse walletSpendingState: ${ex.toString()}`)
@@ -323,24 +326,22 @@ const getONEWalletState = async (wallet) => {
   return state
 }
 
-
 // check OneWallet state
-const checkONEWallet = async (wallet, state) => {
-  const newState = await getONEWalletState(wallet)
-  assert.deepEqual(newState.identificationKey, state.identificationKey, 'wallet.identificationKey is incorrect')
-  assert.deepEqual(newState.identificationKeys, state.identificationKeys, 'wallet.identificationKeys is incorrect')
-  assert.deepEqual(newState.forwardAddress, state.forwardAddress, 'wallet.forwardAddress is incorrect')
-  assert.deepEqual(newState.info, state.info, 'wallet.info is incorrect')
-  assert.deepEqual(newState.oldInfo, state.oldInfo, 'wallet.oldInfos is incorrect')
-  assert.deepEqual(newState.innerCores, state.innerCores, 'wallet.innerCores is incorrect')
-  assert.deepEqual(newState.rootKey, state.rootKey, 'wallet.rootKey is incorrect')
-  assert.deepEqual(newState.version, state.version, 'wallet.version is incorrect')
-  assert.deepEqual(newState.spendingState, state.spendingState, 'wallet.spendingState is incorrect')
-  assert.deepEqual(newState.nonce, state.nonce, 'wallet.nonce is incorrect')
-  assert.deepEqual(newState.lastOperationTime, state.lastOperationTime, 'wallet.lastOperationTime is incorrect')
-  assert.deepEqual(newState.allCommits, state.allCommits, 'wallet.allCommits is incorrect')
-  assert.deepEqual(newState.trackedTokens, state.trackedTokens, 'wallet.trackedTokens is incorrect')
-  assert.deepEqual(newState.backlinks, state.backlinks, 'wallet.backlinks is incorrect')
+const checkONEWallet = async (wallet) => {
+  assert.deepEqual(wallet.currentState.identificationKey, wallet.oldState.identificationKey, 'wallet.identificationKey is incorrect')
+  assert.deepEqual(wallet.currentState.identificationKeys, wallet.oldState.identificationKeys, 'wallet.identificationKeys is incorrect')
+  assert.deepEqual(wallet.currentState.forwardAddress, wallet.oldState.forwardAddress, 'wallet.forwardAddress is incorrect')
+  assert.deepEqual(wallet.currentState.info, wallet.oldState.info, 'wallet.info is incorrect')
+  assert.deepEqual(wallet.currentState.oldInfo, wallet.oldState.oldInfo, 'wallet.oldInfos is incorrect')
+  assert.deepEqual(wallet.currentState.innerCores, wallet.oldState.innerCores, 'wallet.innerCores is incorrect')
+  assert.deepEqual(wallet.currentState.rootKey, wallet.oldState.rootKey, 'wallet.rootKey is incorrect')
+  assert.deepEqual(wallet.currentState.version, wallet.oldState.version, 'wallet.version is incorrect')
+  assert.deepEqual(wallet.currentState.spendingState, wallet.oldState.spendingState, 'wallet.spendingState is incorrect')
+  assert.deepEqual(wallet.currentState.nonce, wallet.oldState.nonce, 'wallet.nonce is incorrect')
+  assert.deepEqual(wallet.currentState.lastOperationTime, wallet.oldState.lastOperationTime, 'wallet.lastOperationTime is incorrect')
+  assert.deepEqual(wallet.currentState.allCommits, wallet.oldState.allCommits, 'wallet.allCommits is incorrect')
+  assert.deepEqual(wallet.currentState.trackedTokens, wallet.oldState.trackedTokens, 'wallet.trackedTokens is incorrect')
+  assert.deepEqual(wallet.currentState.backlinks, wallet.oldState.backlinks, 'wallet.backlinks is incorrect')
 }
 
 module.exports = {

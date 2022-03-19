@@ -2,28 +2,13 @@ const TestUtil = require('./util')
 const CheckUtil = require('./checkUtil')
 const unit = require('ethjs-unit')
 const ONEUtil = require('../lib/util')
-const ONEDebugger = require('../lib/debug')
-const ONE = require('../lib/onewallet')
 const ONEConstants = require('../lib/constants')
-const Flow = require('../lib/api/flow')
-const ONEWallet = require('../lib/onewallet')
-const crypto = require('crypto')
 const BN = require('bn.js')
-const { getIdentificationKey } = require('../lib/util')
-const { wait } = require('./util')
 
-const INTERVAL = 30000
-const DURATION = INTERVAL * 12
-const SLOT_SIZE = 1
-const EFFECTIVE_TIME = Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
 const ONE_CENT = unit.toWei('0.01', 'ether')
 // const HALF_DIME = unit.toWei('0.05', 'ether')
 // const ONE_DIME = unit.toWei('0.1', 'ether')
-const ONE_ETH = unit.toWei('1', 'ether')
 const TEN_ETH = unit.toWei('10', 'ether')
-
-const Logger = TestUtil.Logger
-const Debugger = ONEDebugger(Logger)
 
 contract('ONEWallet', (accounts) => {
   let snapshotId
@@ -38,20 +23,20 @@ contract('ONEWallet', (accounts) => {
 
   // Test creation and validation of wallet
   it('Wallet_Validate: must be able to create and validate a wallet', async () => {
-    const alice = await CheckUtil.makeWallet('alice', accounts[0])
-    await CheckUtil.checkONEWallet(alice.wallet, alice.state)
+    await CheckUtil.makeWallet('alice', accounts[0])
+    // await CheckUtil.checkONEWallet(alice.wallet, alice.oldState)
   })
 
   // Transfer Native Asset to external wallet
   it('Wallet_CommitReveal: Native Asset Transfer must commit and reveal successfully', async () => {
     // Create Wallets and fund
-    const alice = await CheckUtil.makeWallet('alice', accounts[0])
-    const bob = await CheckUtil.makeWallet('bob', accounts[0])
+    let alice = await CheckUtil.makeWallet('alice', accounts[0])
+    let bob = await CheckUtil.makeWallet('bob', accounts[0])
     const aliceInitialWalletBalance = await web3.eth.getBalance(alice.wallet.address)
     const bobInitialWalletBalance = await web3.eth.getBalance(bob.wallet.address)
     assert.equal(TEN_ETH, aliceInitialWalletBalance, 'Alice Wallet initially has correct balance')
     // alice tranfers ONE CENT to bob
-    await CheckUtil.assetTransfer(
+    alice = await CheckUtil.assetTransfer(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.TRANSFER,
@@ -63,30 +48,52 @@ contract('ONEWallet', (accounts) => {
     const bobwalletBalance = await web3.eth.getBalance(bob.wallet.address)
     assert.equal(parseInt(aliceInitialWalletBalance) - parseInt(ONE_CENT / 2), alicewalletBalance, 'Alice Wallet has correct balance')
     assert.equal(parseInt(bobInitialWalletBalance) + parseInt(ONE_CENT / 2), bobwalletBalance, 'Bob Wallet has correct balance')
-    // Alice Items that have changed - nonce, spendingState, lastOperationTime, Commits
-    assert.notStrictEqual(await alice.wallet.nonce, alice.state.nonce, 'alice wallet.nonce should have been changed')
-    // alice.state.nonce = parseInt(alice.state.nonce) + 1
-    alice.state.nonce = await alice.wallet.getNonce()
-    // spendingState
-    assert.notStrictEqual(await alice.wallet.getSpendingState(), alice.state.spendingState, 'alice spendingState should have been changed')
-    alice.state.spendingState = await alice.wallet.getSpendingState()
-    assert.equal(alice.state.spendingState.spentAmount, ONE_CENT / 2, 'alice wallet.spentAmount should have been changed')
-    assert.notStrictEqual(alice.state.spendingState.lastSpendingInterval, 0, 'alice wallet.spentAmount should have been changed')
-    // lastOperationTime
-    assert.notStrictEqual(await alice.wallet.lastOperationTime(), alice.state.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
-    alice.state.lastOperationTime = await alice.wallet.lastOperationTime()
-    // commits
-    assert.notDeepEqual(await alice.wallet.getAllCommits(), alice.state.allCommits, 'alice wallet.allCommits should have been updated')
-    alice.state.allCommits = await alice.wallet.getAllCommits()
+    // // Alice Items that have changed - nonce, spendingState, lastOperationTime, Commits
+    // const nonce = await await alice.wallet.getNonce()
+    // assert.notEqual(nonce, alice.oldState.nonce, 'alice wallet.nonce should have been changed')
+    // assert.equal(nonce.toNumber(), alice.oldState.nonce + 1, 'alice wallet.nonce should have been changed')
+    // alice.oldState.nonce = nonce.toNumber()
+    // // spendingState
+    // const spendingState = await alice.wallet.getSpendingState()
+    // assert.equal(spendingState.spentAmount, (ONE_CENT / 2).toString(), 'alice wallet.spentAmount should have been changed')
+    // alice.oldState.spendingState.spentAmount = spendingState.spentAmount
+    // assert.notEqual(spendingState.lastSpendingInterval, '0', 'alice wallet.spentAmount should have been changed')
+    // alice.oldState.spendingState.lastSpendingInterval = spendingState.lastSpendingInterval
+    // // lastOperationTime
+    // const lastOperationTime = await alice.wallet.lastOperationTime()
+    // assert.notStrictEqual(lastOperationTime, alice.oldState.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
+    // alice.oldState.lastOperationTime = lastOperationTime.toNumber()
+    // // commits
+    // const allCommits = await alice.wallet.getAllCommits()
+    // assert.notDeepEqual(allCommits, alice.oldState.allCommits, 'alice wallet.allCommits should have been updated')
+    // alice.oldState.allCommits = alice.currentState.allCommits
     // check alice
-    await CheckUtil.checkONEWallet(alice.wallet, alice.state)
+    // await CheckUtil.checkONEWallet(alice)
+
+    // Alice Items that have changed - nonce, spendingState, lastOperationTime, Commits
+    assert.notEqual(alice.currentState.nonce, alice.oldState.nonce, 'alice wallet.nonce should have been changed')
+    assert.equal(alice.currentState.nonce, alice.oldState.nonce + 1, 'alice wallet.nonce should have been changed')
+    alice.oldState.nonce = alice.currentState.nonce
+    // spendingState
+    assert.equal(alice.currentState.spendingState.spentAmount, (ONE_CENT / 2).toString(), 'alice wallet.spentAmount should have been changed')
+    alice.oldState.spendingState.spentAmount = alice.currentState.spendingState.spentAmount
+    assert.notEqual(alice.currentState.spendingState.lastSpendingInterval, '0', 'alice wallet.spentAmount should have been changed')
+    alice.oldState.spendingState.lastSpendingInterval = alice.currentState.spendingState.lastSpendingInterval
+    // lastOperationTime
+    assert.notStrictEqual(alice.currentState.lastOperationTime, alice.oldState.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
+    alice.oldState.lastOperationTime = alice.currentState.lastOperationTime
+    // commits
+    assert.notDeepEqual(alice.currentState.allCommits, alice.oldState.allCommits, 'alice wallet.allCommits should have been updated')
+    alice.oldState.allCommits = alice.currentState.allCommits
+    // check alice
+    await CheckUtil.checkONEWallet(alice)
   })
 
   // ERC20 Token Testing (Transfer, Mint, Track, SpendingLimit)
   it('Wallet_CommitReveal: ERC20(Transfer, Mint, Track) must commit and reveal successfully', async () => {
     // Create Wallets and tokens
-    const alice = await CheckUtil.makeWallet('alice', accounts[0])
-    const bob = await CheckUtil.makeWallet('bob', accounts[0])
+    let alice = await CheckUtil.makeWallet('alice', accounts[0])
+    let bob = await CheckUtil.makeWallet('bob', accounts[0])
     const { testerc20 } = await CheckUtil.makeTokens(accounts[0])
     let aliceBalanceERC20
     let aliceWalletBalanceERC20
@@ -97,7 +104,7 @@ contract('ONEWallet', (accounts) => {
     aliceWalletBalanceERC20 = await testerc20.balanceOf(alice.wallet.address)
     assert.equal(1000, aliceWalletBalanceERC20, 'Transfer of 1000 ERC20 tokens to alice.wallet succesful')
     // alice transfers tokens to bob
-    await CheckUtil.assetTransfer(
+    alice = await CheckUtil.assetTransfer(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
@@ -118,34 +125,34 @@ contract('ONEWallet', (accounts) => {
     assert.equal(100, bobWalletBalanceERC20, 'Transfer of 100 ERC20 tokens to bob.wallet succesful and wallet balance updated')
     // Check OneWallet Items that have changed
     // Alice Items that have changed - nonce, lastOperationTime, Commits, trackedTokens
-    assert.equal(await alice.wallet.getNonce(), alice.state.nonce + 1, 'alice wallet.nonce should have been changed')
-    alice.state.nonce = await alice.wallet.getNonce()
-    assert.equal((await alice.wallet.getNonce()).toNumber(), alice.state.nonce, 'alice wallet.nonce should have been changed')
+    assert.equal(await alice.wallet.getNonce(), alice.oldState.nonce + 1, 'alice wallet.nonce should have been changed')
+    alice.oldState.nonce = await alice.wallet.getNonce()
+    assert.equal((await alice.wallet.getNonce()).toNumber(), alice.oldState.nonce, 'alice wallet.nonce should have been changed')
     // lastOperationTime
-    assert.notEqual(await alice.wallet.lastOperationTime(), alice.state.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
-    alice.state.lastOperationTime = new BN(await alice.wallet.lastOperationTime())
-    assert.equal(new BN(await alice.wallet.lastOperationTime()), alice.state.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
+    assert.notEqual(await alice.wallet.lastOperationTime(), alice.oldState.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
+    alice.oldState.lastOperationTime = new BN(await alice.wallet.lastOperationTime())
+    assert.equal(new BN(await alice.wallet.lastOperationTime()), alice.oldState.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
     // commits
     let allCommits = await alice.wallet.getAllCommits()
-    assert.notDeepEqual(await alice.wallet.getAllCommits(), alice.state.allCommits, 'alice wallet.allCommits should have been updated')
+    assert.notDeepEqual(await alice.wallet.getAllCommits(), alice.oldState.allCommits, 'alice wallet.allCommits should have been updated')
     console.log(`allCommits: ${JSON.stringify(allCommits)}`)
-    console.log(`alice.state.allCommits: ${JSON.stringify(alice.state.allCommits)}`)
-    alice.state.allCommits = await alice.wallet.getAllCommits()
-    assert.deepEqual(await alice.wallet.getAllCommits(), alice.state.allCommits, 'alice wallet.allCommits should have been updated')
+    console.log(`alice.oldState.allCommits: ${JSON.stringify(alice.oldState.allCommits)}`)
+    alice.oldState.allCommits = await alice.wallet.getAllCommits()
+    assert.deepEqual(await alice.wallet.getAllCommits(), alice.oldState.allCommits, 'alice wallet.allCommits should have been updated')
     // tracked tokens
-    assert.notDeepEqual(await alice.wallet.getTrackedTokens(), alice.state.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
-    alice.state.trackedTokens = await alice.wallet.getTrackedTokens()
-    assert.deepEqual(await alice.wallet.getTrackedTokens(), alice.state.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
-    await CheckUtil.checkONEWallet(alice.wallet, alice.state)
+    assert.notDeepEqual(await alice.wallet.getTrackedTokens(), alice.oldState.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
+    alice.oldState.trackedTokens = await alice.wallet.getTrackedTokens()
+    assert.deepEqual(await alice.wallet.getTrackedTokens(), alice.oldState.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
+    await CheckUtil.checkONEWallet(alice.wallet, alice.oldState)
     // Bob Items that have changed - nothing
-    await CheckUtil.checkONEWallet(bob.wallet, bob.state)
+    await CheckUtil.checkONEWallet(bob.wallet, bob.oldState)
   })
 
   // ERC721 Testing (Transfer, Mint, Track)
   it('Wallet_CommitReveal: ERC721(Transfer, Mint, Track) must commit and reveal successfully', async () => {
     // Create Wallets and tokens
-    const alice = await CheckUtil.makeWallet('alice', accounts[0])
-    const aliceInitialWalletBalance = await web3.eth.getBalance(alice.wallet.address)
+    let alice = await CheckUtil.makeWallet('alice', accounts[0])
+    let aliceInitialWalletBalance = await web3.eth.getBalance(alice.wallet.address)
     assert.equal(TEN_ETH, aliceInitialWalletBalance, 'Alice Wallet initially has correct balance')
     const bob = await CheckUtil.makeWallet('bob', accounts[0])
     const { testerc721 } = await CheckUtil.makeTokens(accounts[0])
@@ -162,7 +169,7 @@ contract('ONEWallet', (accounts) => {
     assert.equal(alice.wallet.address, await testerc721.ownerOf(9), 'Transfer of ERC721 token 9 to alice.wallet succesful')
     // console.log(`alice.wallet.getTrackedTokens(): ${JSON.stringify(await alice.wallet.getTrackedTokens())}`)
     // alice transfers tokens to bob
-    await CheckUtil.assetTransfer(
+    alice = await CheckUtil.assetTransfer(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
@@ -179,37 +186,37 @@ contract('ONEWallet', (accounts) => {
     assert.equal(1, bobWalletBalanceERC721, 'Transfer of 1 ERC721 token to bob.wallet succesful')
     assert.equal(bob.wallet.address, await testerc721.ownerOf(8), 'Transfer of ERC721 token 8 to bob.wallet succesful')
     // Alice Items that have changed - nonce, lastOperationTime, Commits, trackedTokens
-    assert.equal(await alice.wallet.getNonce(), alice.state.nonce + 1, 'alice wallet.nonce should have been changed')
-    alice.state.nonce = await alice.wallet.getNonce()
-    assert.equal((await alice.wallet.getNonce()).toNumber(), alice.state.nonce, 'alice wallet.nonce should have been changed')
+    assert.equal(await alice.wallet.getNonce(), alice.oldState.nonce + 1, 'alice wallet.nonce should have been changed')
+    alice.oldState.nonce = await alice.wallet.getNonce()
+    assert.equal((await alice.wallet.getNonce()).toNumber(), alice.oldState.nonce, 'alice wallet.nonce should have been changed')
     // lastOperationTime
-    assert.notEqual(await alice.wallet.lastOperationTime(), alice.state.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
-    alice.state.lastOperationTime = new BN(await alice.wallet.lastOperationTime())
-    assert.equal(new BN(await alice.wallet.lastOperationTime()), alice.state.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
+    assert.notEqual(await alice.wallet.lastOperationTime(), alice.oldState.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
+    alice.oldState.lastOperationTime = new BN(await alice.wallet.lastOperationTime())
+    assert.equal(new BN(await alice.wallet.lastOperationTime()), alice.oldState.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
     // commits
     let allCommits = await alice.wallet.getAllCommits()
-    assert.notDeepEqual(await alice.wallet.getAllCommits(), alice.state.allCommits, 'alice wallet.allCommits should have been updated')
+    assert.notDeepEqual(await alice.wallet.getAllCommits(), alice.oldState.allCommits, 'alice wallet.allCommits should have been updated')
     console.log(`allCommits: ${JSON.stringify(allCommits)}`)
-    console.log(`alice.state.allCommits: ${JSON.stringify(alice.state.allCommits)}`)
-    alice.state.allCommits = await alice.wallet.getAllCommits()
-    assert.deepEqual(await alice.wallet.getAllCommits(), alice.state.allCommits, 'alice wallet.allCommits should have been updated')
+    console.log(`alice.oldState.allCommits: ${JSON.stringify(alice.oldState.allCommits)}`)
+    alice.oldState.allCommits = await alice.wallet.getAllCommits()
+    assert.deepEqual(await alice.wallet.getAllCommits(), alice.oldState.allCommits, 'alice wallet.allCommits should have been updated')
     // tracked tokens
-    assert.notDeepEqual(await alice.wallet.getTrackedTokens(), alice.state.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
-    alice.state.trackedTokens = await alice.wallet.getTrackedTokens()
-    assert.deepEqual(await alice.wallet.getTrackedTokens(), alice.state.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
-    await CheckUtil.checkONEWallet(alice.wallet, alice.state)
+    assert.notDeepEqual(await alice.wallet.getTrackedTokens(), alice.oldState.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
+    alice.oldState.trackedTokens = await alice.wallet.getTrackedTokens()
+    assert.deepEqual(await alice.wallet.getTrackedTokens(), alice.oldState.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
+    await CheckUtil.checkONEWallet(alice.wallet, alice.oldState)
     // Bob Items that have changed - tracked Tokens
     // console.log(`bob.wallet.getTrackedTokens(): ${JSON.stringify(await bob.wallet.getTrackedTokens())}`)
-    // console.log(`bob.state.trackedTokens: ${JSON.stringify(bob.state.trackedTokens)}`)
-    assert.notDeepEqual(await bob.wallet.getTrackedTokens(), bob.state.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
-    bob.state.trackedTokens = await bob.wallet.getTrackedTokens()
-    await CheckUtil.checkONEWallet(bob.wallet, bob.state)
+    // console.log(`bob.oldState.trackedTokens: ${JSON.stringify(bob.oldState.trackedTokens)}`)
+    assert.notDeepEqual(await bob.wallet.getTrackedTokens(), bob.oldState.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
+    bob.oldState.trackedTokens = await bob.wallet.getTrackedTokens()
+    await CheckUtil.checkONEWallet(bob.wallet, bob.oldState)
   })
 
   // ERC1155 Testing (Transfer, Mint, Track)
   it('Wallet_CommitReveal: ERC1155(Transfer, Mint, Track) must commit and reveal successfully', async () => {
-    const alice = await CheckUtil.makeWallet('alice', accounts[0])
-    const aliceInitialWalletBalance = await web3.eth.getBalance(alice.wallet.address)
+    let alice = await CheckUtil.makeWallet('alice', accounts[0])
+    let aliceInitialWalletBalance = await web3.eth.getBalance(alice.wallet.address)
     assert.equal(TEN_ETH, aliceInitialWalletBalance, 'Alice Wallet initially has correct balance')
     const bob = await CheckUtil.makeWallet('bob', accounts[0])
     const { testerc1155 } = await CheckUtil.makeTokens(accounts[0])
@@ -222,7 +229,7 @@ contract('ONEWallet', (accounts) => {
     aliceWalletBalanceERC1155T8 = await testerc1155.balanceOf(alice.wallet.address, 8)
     assert.equal(8, aliceWalletBalanceERC1155T8, 'Transfer of 8 ERC721 token to alice.wallet succesful')
     // alice transfers tokens to bob
-    await CheckUtil.assetTransfer(
+    alice = await CheckUtil.assetTransfer(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
@@ -239,45 +246,40 @@ contract('ONEWallet', (accounts) => {
     assert.equal(5, aliceWalletBalanceERC1155T8, 'Transfer of 3 ERC1155 tokens from alice.wallet succesful')
     assert.equal(3, bobWalletBalanceERC1155T8, 'Transfer of 3 ERC1155 token to bob.wallet succesful')
     // Alice Items that have changed - nonce, lastOperationTime, Commits, trackedTokens
-    assert.equal(await alice.wallet.getNonce(), alice.state.nonce + 1, 'alice wallet.nonce should have been changed')
-    alice.state.nonce = await alice.wallet.getNonce()
-    assert.equal((await alice.wallet.getNonce()).toNumber(), alice.state.nonce, 'alice wallet.nonce should have been changed')
+    assert.equal(await alice.wallet.getNonce(), alice.oldState.nonce + 1, 'alice wallet.nonce should have been changed')
+    alice.oldState.nonce = await alice.wallet.getNonce()
+    assert.equal((await alice.wallet.getNonce()).toNumber(), alice.oldState.nonce, 'alice wallet.nonce should have been changed')
     // lastOperationTime
-    assert.notEqual(await alice.wallet.lastOperationTime(), alice.state.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
-    alice.state.lastOperationTime = new BN(await alice.wallet.lastOperationTime())
-    assert.equal(new BN(await alice.wallet.lastOperationTime()), alice.state.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
+    assert.notEqual(await alice.wallet.lastOperationTime(), alice.oldState.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
+    alice.oldState.lastOperationTime = new BN(await alice.wallet.lastOperationTime())
+    assert.equal(new BN(await alice.wallet.lastOperationTime()), alice.oldState.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
     // commits
-    let allCommits = await alice.wallet.getAllCommits()
-    assert.notDeepEqual(await alice.wallet.getAllCommits(), alice.state.allCommits, 'alice wallet.allCommits should have been updated')
-    console.log(`allCommits: ${JSON.stringify(allCommits)}`)
-    console.log(`alice.state.allCommits: ${JSON.stringify(alice.state.allCommits)}`)
-    alice.state.allCommits = await alice.wallet.getAllCommits()
-    assert.deepEqual(await alice.wallet.getAllCommits(), alice.state.allCommits, 'alice wallet.allCommits should have been updated')
+    // let allCommits = await alice.wallet.getAllCommits()
+    assert.notDeepEqual(await alice.wallet.getAllCommits(), alice.oldState.allCommits, 'alice wallet.allCommits should have been updated')
+    alice.oldState.allCommits = await alice.wallet.getAllCommits()
+    assert.deepEqual(await alice.wallet.getAllCommits(), alice.oldState.allCommits, 'alice wallet.allCommits should have been updated')
     // tracked tokens
-    assert.notDeepEqual(await alice.wallet.getTrackedTokens(), alice.state.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
-    alice.state.trackedTokens = await alice.wallet.getTrackedTokens()
-    assert.deepEqual(await alice.wallet.getTrackedTokens(), alice.state.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
-    await CheckUtil.checkONEWallet(alice.wallet, alice.state)
-    // Bob Items that have changed - tracked Tokens
-    // console.log(`bob.wallet.getTrackedTokens(): ${JSON.stringify(await bob.wallet.getTrackedTokens())}`)
-    // console.log(`bob.state.trackedTokens: ${JSON.stringify(bob.state.trackedTokens)}`)
-    assert.notDeepEqual(await bob.wallet.getTrackedTokens(), bob.state.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
-    bob.state.trackedTokens = await bob.wallet.getTrackedTokens()
-    await CheckUtil.checkONEWallet(bob.wallet, bob.state)
+    assert.notDeepEqual(await alice.wallet.getTrackedTokens(), alice.oldState.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
+    alice.oldState.trackedTokens = await alice.wallet.getTrackedTokens()
+    assert.deepEqual(await alice.wallet.getTrackedTokens(), alice.oldState.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
+    await CheckUtil.checkONEWallet(alice.wallet, alice.oldState)
+    assert.notDeepEqual(await bob.wallet.getTrackedTokens(), bob.oldState.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
+    bob.oldState.trackedTokens = await bob.wallet.getTrackedTokens()
+    await CheckUtil.checkONEWallet(bob.wallet, bob.oldState)
   })
 
   // TokenTracker Testing (track, multitrack, getTrackedTokens, getBalance, recoverToken) also batch transactions
   it('Wallet_CommitReveal: TokenTracker(token management) must commit and reveal successfully', async () => {
     let testTime = Date.now()
-    const alice = await CheckUtil.makeWallet('alice', accounts[0])
-    const bob = await CheckUtil.makeWallet('bob', accounts[0])
+    let alice = await CheckUtil.makeWallet('alice', accounts[0])
+    let bob = await CheckUtil.makeWallet('bob', accounts[0])
     const { testerc20, testerc721, testerc1155 } = await CheckUtil.makeTokens(accounts[0])
     // transfer ERC20 tokens from accounts[0] (which owns the tokens) to alices wallet
     await testerc20.transfer(alice.wallet.address, 1000, { from: accounts[0] })
     // alice transfers tokens to bob
     // testTime = TestUtil.bumpTestTime(testTime, 45)
     // await TestUtil.wait(45)
-    await CheckUtil.assetTransfer(
+    alice = await CheckUtil.assetTransfer(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
@@ -288,7 +290,7 @@ contract('ONEWallet', (accounts) => {
         testTime
       }
     )
-    // await CheckUtil.checkONEWallet(alice.wallet, alice.state)
+    // await CheckUtil.checkONEWallet(alice.wallet, alice.oldState)
     // transfer ERC721 tokens from accounts[0] (which owns the tokens) to alices wallet
     await testerc721.transferFrom(accounts[0], alice.wallet.address, 8, { from: accounts[0] })
     // await TestUtil.getReceipt(tx.receipt.transactionHash)
@@ -296,7 +298,7 @@ contract('ONEWallet', (accounts) => {
     // alice transfers tokens to bob
     testTime = TestUtil.bumpTestTime(testTime, 45)
     // await TestUtil.wait(45)
-    await CheckUtil.assetTransfer(
+    alice = await CheckUtil.assetTransfer(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
@@ -307,14 +309,14 @@ contract('ONEWallet', (accounts) => {
         testTime
       }
     )
-    // await CheckUtil.checkONEWallet(alice.wallet, alice.state)
+    // await CheckUtil.checkONEWallet(alice.wallet, alice.oldState)
     // transfer ERC721 tokens from accounts[0] (which owns the tokens) to alices wallet
     // TODO review the bytes value we are passing in safeTransferFrom (currently using ONEUtil.hexStringToBytes('5') )
     await testerc1155.safeTransferFrom(accounts[0], alice.wallet.address, 8, 8, ONEUtil.hexStringToBytes('5'), { from: accounts[0] })
     // alice transfers tokens to bob
     testTime = TestUtil.bumpTestTime(testTime, 45)
     // await TestUtil.wait(45)
-    await CheckUtil.assetTransfer(
+    alice = await CheckUtil.assetTransfer(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
@@ -326,6 +328,6 @@ contract('ONEWallet', (accounts) => {
         testTime
       }
     )
-    // await CheckUtil.checkONEWallet(alice.wallet, alice.state)
+    // await CheckUtil.checkONEWallet(alice.wallet, alice.oldState)
   })
 })
