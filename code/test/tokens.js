@@ -10,7 +10,12 @@ const ONE_CENT = unit.toWei('0.01', 'ether')
 // const ONE_DIME = unit.toWei('0.1', 'ether')
 const TEN_ETH = unit.toWei('10', 'ether')
 
+const INTERVAL = 30000
+const DURATION = INTERVAL * 12
+// const SLOT_SIZE = 1
+
 contract('ONEWallet', (accounts) => {
+  const EFFECTIVE_TIME = Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
   let snapshotId
   beforeEach(async function () {
     snapshotId = await TestUtil.snapshot()
@@ -23,15 +28,15 @@ contract('ONEWallet', (accounts) => {
 
   // Test creation and validation of wallet
   it('Wallet_Validate: must be able to create and validate a wallet', async () => {
-    await CheckUtil.makeWallet('alice', accounts[0])
+    await CheckUtil.makeWallet('TT-WALLET-1', accounts[0], EFFECTIVE_TIME)
     // await CheckUtil.checkONEWallet(alice.wallet, alice.oldState)
   })
 
   // Transfer Native Asset to external wallet
   it('Wallet_CommitReveal: Native Asset Transfer must commit and reveal successfully', async () => {
     // Create Wallets and fund
-    let alice = await CheckUtil.makeWallet('alice', accounts[0])
-    let bob = await CheckUtil.makeWallet('bob', accounts[0])
+    let alice = await CheckUtil.makeWallet('TT-NATIVE-1', accounts[0], EFFECTIVE_TIME)
+    let bob = await CheckUtil.makeWallet('TT-NATIVE-2', accounts[0], EFFECTIVE_TIME)
     const aliceInitialWalletBalance = await web3.eth.getBalance(alice.wallet.address)
     const bobInitialWalletBalance = await web3.eth.getBalance(bob.wallet.address)
     assert.equal(TEN_ETH, aliceInitialWalletBalance, 'Alice Wallet initially has correct balance')
@@ -74,8 +79,8 @@ contract('ONEWallet', (accounts) => {
   // ERC20 Token Testing (Transfer, Mint, Track, SpendingLimit)
   it('Wallet_CommitReveal: ERC20(Transfer, Mint, Track) must commit and reveal successfully', async () => {
     // Create Wallets and tokens
-    let alice = await CheckUtil.makeWallet('alice', accounts[0])
-    let bob = await CheckUtil.makeWallet('bob', accounts[0])
+    let alice = await CheckUtil.makeWallet('TT-ERC20-1', accounts[0], EFFECTIVE_TIME)
+    let bob = await CheckUtil.makeWallet('TT-ERC20-2', accounts[0], EFFECTIVE_TIME)
     const { testerc20 } = await CheckUtil.makeTokens(accounts[0])
     let aliceBalanceERC20
     let aliceWalletBalanceERC20
@@ -134,10 +139,10 @@ contract('ONEWallet', (accounts) => {
   // ERC721 Testing (Transfer, Mint, Track)
   it('Wallet_CommitReveal: ERC721(Transfer, Mint, Track) must commit and reveal successfully', async () => {
     // Create Wallets and tokens
-    let alice = await CheckUtil.makeWallet('alice', accounts[0])
+    let alice = await CheckUtil.makeWallet('TT-ERC721-1', accounts[0], EFFECTIVE_TIME)
+    let bob = await CheckUtil.makeWallet('TT-ERC721-2', accounts[0], EFFECTIVE_TIME)
     let aliceInitialWalletBalance = await web3.eth.getBalance(alice.wallet.address)
     assert.equal(TEN_ETH, aliceInitialWalletBalance, 'Alice Wallet initially has correct balance')
-    const bob = await CheckUtil.makeWallet('bob', accounts[0])
     const { testerc721 } = await CheckUtil.makeTokens(accounts[0])
     let aliceWalletBalanceERC721
     let bobWalletBalanceERC721
@@ -160,6 +165,7 @@ contract('ONEWallet', (accounts) => {
         contractAddress: testerc721.address,
         tokenId: 8,
         dest: bob.wallet.address,
+        amount: 1
       }
     )
     // check alice and bobs balance
@@ -195,10 +201,10 @@ contract('ONEWallet', (accounts) => {
 
   // ERC1155 Testing (Transfer, Mint, Track)
   it('Wallet_CommitReveal: ERC1155(Transfer, Mint, Track) must commit and reveal successfully', async () => {
-    let alice = await CheckUtil.makeWallet('alice', accounts[0])
+    let alice = await CheckUtil.makeWallet('TT-ERC1155-1', accounts[0], EFFECTIVE_TIME)
+    let bob = await CheckUtil.makeWallet('TT-ERC1155-2', accounts[0], EFFECTIVE_TIME)
     let aliceInitialWalletBalance = await web3.eth.getBalance(alice.wallet.address)
     assert.equal(TEN_ETH, aliceInitialWalletBalance, 'Alice Wallet initially has correct balance')
-    const bob = await CheckUtil.makeWallet('bob', accounts[0])
     const { testerc1155 } = await CheckUtil.makeTokens(accounts[0])
     let aliceWalletBalanceERC1155T8
     let bobWalletBalanceERC1155T8
@@ -254,8 +260,8 @@ contract('ONEWallet', (accounts) => {
   // TokenTracker Testing (track, multitrack, getTrackedTokens, getBalance, recoverToken) also batch transactions
   it('Wallet_CommitReveal: TokenTracker(token management) must commit and reveal successfully', async () => {
     let testTime = Date.now()
-    let alice = await CheckUtil.makeWallet('alice', accounts[0])
-    let bob = await CheckUtil.makeWallet('bob', accounts[0])
+    let alice = await CheckUtil.makeWallet('TT-TOKEN-1', accounts[0], EFFECTIVE_TIME)
+    let bob = await CheckUtil.makeWallet('TT-TOKEN-2', accounts[0], EFFECTIVE_TIME)
     const { testerc20, testerc721, testerc1155 } = await CheckUtil.makeTokens(accounts[0])
     // transfer ERC20 tokens from accounts[0] (which owns the tokens) to alices wallet
     await testerc20.transfer(alice.wallet.address, 1000, { from: accounts[0] })

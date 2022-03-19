@@ -20,65 +20,13 @@ const TEN_ETH = unit.toWei('10', 'ether')
 const INTERVAL = 30000
 const DURATION = INTERVAL * 12
 const SLOT_SIZE = 1
-const EFFECTIVE_TIME = Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
-const JSSHA = require('jssha')
-
-const utils = {
-  timeToIndex: ({
-    effectiveTime,
-    time,
-    interval = 30000,
-    nonce = 0,
-    maxOperationsPerInterval = 1
-  }) => {
-    if (time === undefined) {
-      time = Date.now()
-      console.log('Setting default time')
-    }
-    effectiveTime = Math.floor(effectiveTime / interval) * interval
-    const index = Math.floor((time - effectiveTime) / interval)
-    const indexWithNonce = index * maxOperationsPerInterval + nonce
-    return indexWithNonce
-  },
-  genOTP: ({ seed, interval = 30000, time, counter = Math.floor(Date.now() / interval), n = 1, progressObserver }) => {
-    const codes = new Uint8Array(n * 4)
-    const v = new DataView(codes.buffer)
-    const b = new DataView(new ArrayBuffer(8))
-    if (time === undefined) {
-      time = Date.now()
-      console.log('Setting default time')
-    }
-    counter = Math.floor(time / interval)
-    for (let i = 0; i < n; i += 1) {
-      const t = counter + i
-      b.setUint32(0, 0, false)
-      b.setUint32(4, t, false)
-      const jssha = new JSSHA('SHA-1', 'UINT8ARRAY')
-      jssha.setHMACKey(seed, 'UINT8ARRAY')
-      jssha.update(new Uint8Array(b.buffer))
-      const h = jssha.getHMAC('UINT8ARRAY')
-      const p = h[h.length - 1] & 0x0f
-      const x1 = (h[p] & 0x7f) << 24
-      const x2 = (h[p + 1] & 0xff) << 16
-      const x3 = (h[p + 2] & 0xff) << 8
-      const x4 = (h[p + 3] & 0xff)
-      const c = x1 | x2 | x3 | x4
-      const r = c % 1000000
-      v.setUint32(i * 4, r, false)
-      if (progressObserver) {
-        progressObserver(i, n)
-      }
-    }
-    return codes
-  },
-}
 
 // makeWallet uses an index and unlocked web3.eth.account and creates and funds a ONEwallet
-const makeWallet = async (salt, deployer) => {
+const makeWallet = async (salt, deployer, effectiveTime) => {
   const lastResortAccount = web3.eth.accounts.create()
   const { wallet, seed, hseed, root, client: { layers } } = await TestUtil.createWallet({
     salt: new BN(ONEUtil.keccak(salt)),
-    effectiveTime: EFFECTIVE_TIME,
+    effectiveTime: effectiveTime,
     duration: DURATION,
     maxOperationsPerInterval: SLOT_SIZE,
     lastResortAddress: lastResortAccount.address,
@@ -114,9 +62,11 @@ const makeTokens = async (owner) => {
 const assetTransfer = async ({ wallet, operationType, tokenType, contractAddress, tokenId, dest, amount, testTime }) => {
   Debugger.printLayers({ layers: wallet.layers })
   if (testTime === undefined) { testTime = Date.now() }
-  const otp = utils.genOTP({ seed: wallet.seed, time: testTime })
-  const effectiveTime = Math.floor(testTime / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
-  const index = utils.timeToIndex({ effectiveTime, time: testTime })
+  const otp = ONEUtil.genOTP({ seed: wallet.seed, time: testTime })
+  const info = await wallet.wallet.getInfo()
+  const t0 = new BN(info[3]).toNumber()
+  const effectiveTime = t0 * INTERVAL
+  const index = ONEUtil.timeToIndex({ effectiveTime, time: testTime })
   const eotp = await ONE.computeEOTP({ otp, hseed: wallet.hseed })
   // Format commit and revealParams based on tokenType
   let commitParams
@@ -172,7 +122,9 @@ const getONEWalletState = async (wallet) => {
   let i
   const address = (wallet.address).toString()
   const identificationKey = (await wallet.identificationKey()).toString()
+  console.log(`identificationKey: ${JSON.stringify(identificationKey)}`)
   const walletIdentificationKeys = await wallet.getIdentificationKeys()
+  console.log(`walletIdentificationKeys: ${JSON.stringify(walletIdentificationKeys)}`)
   let identificationKeys = {}
   i = 0
   try {
