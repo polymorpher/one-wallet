@@ -92,6 +92,21 @@ contract('ONEWallet', (accounts) => {
     const otp = ONEUtil.genOTP({ seed })
     const index = ONEUtil.timeToIndex({ effectiveTime: EFFECTIVE_TIME })
     const eotp = await ONE.computeEOTP({ otp, hseed })
+    // check all calculations
+    console.log(`==== BASIC.JS =======`)
+    console.log(`Date.now()         : ${Date.now()}`)
+    console.log(`INTERVAL           : ${INTERVAL}`)
+    console.log(`counter default    : ${Math.floor(Date.now() / INTERVAL)}`)
+    console.log(`EFFECTIVE_TIME     : ${EFFECTIVE_TIME}`)
+    console.log(`seed               : ${seed}`)
+    console.log(`hseed              : ${hseed}`)
+    console.log(`otp                : ${otp}`)
+    // console.log(`layers             : ${JSON.stringify(layers)}`)
+    console.log(`index              : ${index}`)
+    console.log(`eotp               : ${eotp}`)
+    console.log(`paramsHash         : ${ONEWallet.computeTransferHash}`)
+    // console.log(`commitParams       : ${commitParams}`)
+    // console.log(`revealParams       : ${revealParams}`)
     await TestUtil.commitReveal({
       Debugger,
       layers,
