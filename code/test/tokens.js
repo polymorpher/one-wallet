@@ -154,9 +154,7 @@ contract('ONEWallet', (accounts) => {
     assert.equal(2, aliceWalletBalanceERC721, 'Transfer of 2 ERC721 token to alice.wallet succesful')
     assert.equal(alice.wallet.address, await testerc721.ownerOf(8), 'Transfer of ERC721 token 8 to alice.wallet succesful')
     assert.equal(alice.wallet.address, await testerc721.ownerOf(9), 'Transfer of ERC721 token 9 to alice.wallet succesful')
-    // console.log(`alice.wallet.getTrackedTokens(): ${JSON.stringify(await alice.wallet.getTrackedTokens())}`)
     // alice transfers tokens to bob
-    console.log(`Alice Transferring Tokens`)
     alice = await CheckUtil.assetTransfer(
       {
         wallet: alice,
@@ -195,7 +193,6 @@ contract('ONEWallet', (accounts) => {
     await CheckUtil.checkONEWallet(alice)
     // Bob Items that have changed - nothing
     bob.oldState = bob.currentState
-    console.log(`Getting Bobs State`)
     await CheckUtil.getONEWalletState(bob.wallet)
     await CheckUtil.checkONEWallet(bob)
   })
