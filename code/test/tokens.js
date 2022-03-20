@@ -9,10 +9,10 @@ const ONE_CENT = unit.toWei('0.01', 'ether')
 // const HALF_DIME = unit.toWei('0.05', 'ether')
 // const ONE_DIME = unit.toWei('0.1', 'ether')
 const HALF_ETH = unit.toWei('0.5', 'ether')
-
 const INTERVAL = 30000
 const DURATION = INTERVAL * 12
 // const SLOT_SIZE = 1
+const FIVE_HEX = ONEUtil.hexString('5')
 
 contract('ONEWallet', (accounts) => {
   const EFFECTIVE_TIME = Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
@@ -211,8 +211,7 @@ contract('ONEWallet', (accounts) => {
     let bobWalletBalanceERC1155T8
     assert.equal(20, await testerc1155.balanceOf(accounts[0], 8), 'Alice.lastResortAddress owns 20 of token 8')
     // transfer ERC1155 tokens from accounts[0] (which owns the tokens) to alices wallet
-    // TODO review the bytes value we are passing in safeTransferFrom (currently using ONEUtil.hexStringToBytes('5') )
-    await testerc1155.safeTransferFrom(accounts[0], alice.wallet.address, 8, 8, ONEUtil.hexStringToBytes('5'), { from: accounts[0] })
+    await testerc1155.safeTransferFrom(accounts[0], alice.wallet.address, 8, 8, FIVE_HEX, { from: accounts[0] })
     aliceWalletBalanceERC1155T8 = await testerc1155.balanceOf(alice.wallet.address, 8)
     assert.equal(8, aliceWalletBalanceERC1155T8, 'Transfer of 8 ERC721 token to alice.wallet succesful')
     // alice transfers tokens to bob
@@ -306,8 +305,7 @@ contract('ONEWallet', (accounts) => {
       }
     )
     // transfer ERC721 tokens from accounts[0] (which owns the tokens) to alices wallet
-    // TODO review the bytes value we are passing in safeTransferFrom (currently using ONEUtil.hexStringToBytes('5') )
-    await testerc1155.safeTransferFrom(accounts[0], alice.wallet.address, 8, 8, ONEUtil.hexStringToBytes('5'), { from: accounts[0] })
+    await testerc1155.safeTransferFrom(accounts[0], alice.wallet.address, 8, 8, FIVE_HEX, { from: accounts[0] })
     // alice transfers tokens to bob
     testTime = TestUtil.bumpTestTime(testTime, 45)
     alice = await CheckUtil.assetTransfer(
