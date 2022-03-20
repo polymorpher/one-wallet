@@ -2,6 +2,7 @@ const TestUtil = require('./util')
 const CheckUtil = require('./checkUtil')
 const unit = require('ethjs-unit')
 const ONEUtil = require('../lib/util')
+const Logger = TestUtil.Logger
 const ONEConstants = require('../lib/constants')
 // const BN = require('bn.js')
 
@@ -35,7 +36,7 @@ contract('ONEWallet', (accounts) => {
     assert.equal(HALF_ETH, aliceInitialBalance, 'Alice Wallet initially has correct balance')
     let testTime = Date.now()
     for (let i = 0; i < 100; i++) {
-      testTime = TestUtil.bumpTestTime(testTime, 45)
+      testTime = await TestUtil.bumpTestTime(testTime, 45)
       // alice tranfers ONE CENT to bob
       alice = await CheckUtil.assetTransfer(
         {
@@ -45,6 +46,7 @@ contract('ONEWallet', (accounts) => {
           amount: (MILLI_CENT)
         }
       )
+      Logger.debug(`TimeBump Iteration Succesfull: ${i}`)
     }
   })
 
@@ -83,88 +85,87 @@ contract('ONEWallet', (accounts) => {
         }
       )
       await TestUtil.revert(snapshotId)
-      console.log(`SnapshotLoop succesful: ${i}`)
+      Logger.debug(`SnapshotLoop succesful: ${i}`)
     }
   })
 
-  it('Snapshot Validate 1 : Check Snapshotting works', async () => {
+  it('SnapshotValidate 1 : Check Snapshotting works', async () => {
     await CheckUtil.makeWallet('IN-SNAP-1', accounts[0], EFFECTIVE_TIME)
   })
 
-  it('Snapshot Validate 2 : Check Snapshotting works', async () => {
+  it('SnapshotValidate 2 : Check Snapshotting works', async () => {
     await CheckUtil.makeWallet('IN-SNAP-2', accounts[0], EFFECTIVE_TIME)
   })
 
-  it('Snapshot Validate 3 : Check Snapshotting works', async () => {
+  it('SnapshotValidate 3 : Check Snapshotting works', async () => {
     await CheckUtil.makeWallet('IN-SNAP-3', accounts[0], EFFECTIVE_TIME)
   })
 
-  it('Snapshot Validate 4 : Check Snapshotting works', async () => {
+  it('SnapshotValidate 4 : Check Snapshotting works', async () => {
     await CheckUtil.makeWallet('IN-SNAP-4', accounts[0], EFFECTIVE_TIME)
   })
 
-  it('Snapshot Validate 5 : Check Snapshotting works', async () => {
+  it('SnapshotValidate 5 : Check Snapshotting works', async () => {
     await CheckUtil.makeWallet('IN-SNAP-5', accounts[0], EFFECTIVE_TIME)
   })
 
-  it('Snapshot Validate 6 : Check Snapshotting works', async () => {
+  it('SnapshotValidate 6 : Check Snapshotting works', async () => {
     await CheckUtil.makeWallet('IN-SNAP-7', accounts[0], EFFECTIVE_TIME)
   })
 
-  it('Snapshot Validate 7 : Check Snapshotting works', async () => {
+  it('SnapshotValidate 7 : Check Snapshotting works', async () => {
     await CheckUtil.makeWallet('IN-SNAP-7', accounts[0], EFFECTIVE_TIME)
   })
 
-  it('Snapshot Validate 8 : Check Snapshotting works', async () => {
+  it('SnapshotValidate 8 : Check Snapshotting works', async () => {
     await CheckUtil.makeWallet('IN-SNAP-7', accounts[0], EFFECTIVE_TIME)
   })
 
-  it('Snapshot Validate 9 : Check Snapshotting works', async () => {
+  it('SnapshotValidate 9 : Check Snapshotting works', async () => {
     await CheckUtil.makeWallet('IN-SNAP-7', accounts[0], EFFECTIVE_TIME)
   })
 
-  it('Snapshot Validate 10 : Check Snapshotting works', async () => {
+  it('SnapshotValidate 10 : Check Snapshotting works', async () => {
     await CheckUtil.makeWallet('IN-SNAP-7', accounts[0], EFFECTIVE_TIME)
   })
 
-  it('Snapshot Validate 11 : Check Snapshotting works', async () => {
+  it('SnapshotValidate 11 : Check Snapshotting works', async () => {
     await CheckUtil.makeWallet('IN-SNAP-7', accounts[0], EFFECTIVE_TIME)
   })
 
-  it('Snapshot Validate 12 : Check Snapshotting works', async () => {
+  it('SnapshotValidate 12 : Check Snapshotting works', async () => {
     await CheckUtil.makeWallet('IN-SNAP-7', accounts[0], EFFECTIVE_TIME)
   })
 
-  it('Snapshot Validate 13 : Check Snapshotting works', async () => {
+  it('SnapshotValidate 13 : Check Snapshotting works', async () => {
     await CheckUtil.makeWallet('IN-SNAP-7', accounts[0], EFFECTIVE_TIME)
   })
 
-  it('Snapshot Validate 14 : Check Snapshotting works', async () => {
+  it('SnapshotValidate 14 : Check Snapshotting works', async () => {
     await CheckUtil.makeWallet('IN-SNAP-7', accounts[0], EFFECTIVE_TIME)
   })
 
-  it('Snapshot Validate 15 : Check Snapshotting works', async () => {
+  it('SnapshotValidate 15 : Check Snapshotting works', async () => {
     await CheckUtil.makeWallet('IN-SNAP-7', accounts[0], EFFECTIVE_TIME)
   })
 
-  it('Snapshot Validate 16 : Check Snapshotting works', async () => {
+  it('SnapshotValidate 16 : Check Snapshotting works', async () => {
     await CheckUtil.makeWallet('IN-SNAP-7', accounts[0], EFFECTIVE_TIME)
   })
 
-  it('Snapshot Validate 17 : Check Snapshotting works', async () => {
+  it('SnapshotValidate 17 : Check Snapshotting works', async () => {
     await CheckUtil.makeWallet('IN-SNAP-7', accounts[0], EFFECTIVE_TIME)
   })
 
-  it('Snapshot Validate 18 : Check Snapshotting works', async () => {
+  it('SnapshotValidate 18 : Check Snapshotting works', async () => {
     await CheckUtil.makeWallet('IN-SNAP-7', accounts[0], EFFECTIVE_TIME)
   })
 
-  it('Snapshot Validate 19 : Check Snapshotting works', async () => {
+  it('SnapshotValidate 19 : Check Snapshotting works', async () => {
     await CheckUtil.makeWallet('IN-SNAP-7', accounts[0], EFFECTIVE_TIME)
   })
 
-  it('Snapshot Validate 20 : Check Snapshotting works', async () => {
+  it('SnapshotValidate 20 : Check Snapshotting works', async () => {
     await CheckUtil.makeWallet('IN-SNAP-7', accounts[0], EFFECTIVE_TIME)
   })
-
 })

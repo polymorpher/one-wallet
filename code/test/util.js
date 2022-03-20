@@ -55,13 +55,21 @@ const getReceipt = async (transactionHash) => {
   assert.notEqual(null, transactionReceipt, `transactionReceipt not found for ${transactionHash} after waiting 10 seconds`)
 }
 
-const bumpTestTime = (testEffectiveTime, bumpSeconds) => {
+const bumpTestTime = async (testEffectiveTime, bumpSeconds) => {
   testEffectiveTime = testEffectiveTime + (bumpSeconds * 1000)
-  const chainBumpMilliSeconds = testEffectiveTime - Date.now()
-  increaseTime(chainBumpMilliSeconds / 1000)
-  console.log(`Date.now() .    : ${Date.now()}`)
+  const blockNumber = await web3.eth.getBlockNumber()
+  const chainTime = ((await web3.eth.getBlock(blockNumber)).timestamp) * 1000
+  const chainBumpSeconds = Math.floor((testEffectiveTime - chainTime) / 1000)
+  console.log(`Date.now()      : ${Date.now()}`)
+  console.log(`blockNumber     : ${JSON.stringify(blockNumber)}`)
+  console.log(`chainTime       : ${JSON.stringify(chainTime)}`)
   console.log(`testEffective   : ${testEffectiveTime}`)
-  console.log(`chainBumpSeconds: ${chainBumpMilliSeconds}`)
+  console.log(`chainBumpSeconds: ${chainBumpSeconds}`)
+  await increaseTime(chainBumpSeconds)
+  const newBlockNumber = await web3.eth.getBlockNumber()
+  const newChainTime = ((await web3.eth.getBlock(newBlockNumber)).timestamp) * 1000
+  console.log(`newBlockNumber  : ${JSON.stringify(newBlockNumber)}`)
+  console.log(`newChainTime    : ${JSON.stringify(newChainTime)}`)
   return testEffectiveTime
 }
 
