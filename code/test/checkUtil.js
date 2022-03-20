@@ -15,8 +15,8 @@ const TestERC1155 = artifacts.require('TestERC1155')
 // const ONE_CENT = unit.toWei('0.01', 'ether')
 // const HALF_DIME = unit.toWei('0.05', 'ether')
 // const ONE_DIME = unit.toWei('0.1', 'ether')
+const HALF_ETH = unit.toWei('0.5', 'ether')
 const ONE_ETH = unit.toWei('1', 'ether')
-const TEN_ETH = unit.toWei('10', 'ether')
 const INTERVAL = 30000
 const DURATION = INTERVAL * 12
 const SLOT_SIZE = 1
@@ -36,7 +36,7 @@ const makeWallet = async (salt, deployer, effectiveTime) => {
   await web3.eth.sendTransaction({
     from: deployer,
     to: wallet.address,
-    value: TEN_ETH
+    value: HALF_ETH
   })
   const currentState = await getONEWalletState(wallet)
   return { wallet, seed, hseed, root, layers, lastResortAddress: lastResortAccount.address, currentState }
@@ -123,20 +123,16 @@ const assetTransfer = async ({ wallet, operationType, tokenType, contractAddress
 
 // get OneWallet state
 const getONEWalletState = async (wallet) => {
-  let i
+  Logger.debug(`getting State for: ${wallet.address}`)
   const address = (wallet.address).toString()
   const identificationKey = (await wallet.identificationKey()).toString()
   // console.log(`identificationKey: ${JSON.stringify(identificationKey)}`)
   const walletIdentificationKeys = await wallet.getIdentificationKeys()
   // console.log(`walletIdentificationKeys: ${JSON.stringify(walletIdentificationKeys)}`)
-  let identificationKeys = {}
-  i = 0
+  let identificationKeys = []
   try {
     for (let x of walletIdentificationKeys) {
-      identificationKeys[i] = {
-        key: x[0].toString()
-      }
-      i++
+      identificationKeys.push(x[0].toString())
     }
   } catch (ex) {
     console.log(`Failed to parse walletIdentificationKeys: ${ex.toString()}`)
@@ -159,37 +155,33 @@ const getONEWalletState = async (wallet) => {
     console.log(`Failed to parse Wallet Info: ${ex.toString()}`)
   }
   const walletOldInfo = await wallet.getOldInfos()
-  let oldInfo = {}
-  i = 0
+  let oldInfo = []
   try {
     for (let x of walletOldInfo) {
-      oldInfo[i] = {
+      oldInfo.push({
         root: x[0].toString(),
         height: new BN(x[1]).toNumber(),
         interval: new BN(x[2]).toNumber(),
         t0: new BN(x[3]).toNumber(),
         lifespan: new BN(x[4]).toNumber(),
         maxOperationsPerInterval: new BN(x[5]).toNumber()
-      }
-      i++
+      })
     }
   } catch (ex) {
     console.log(`Failed to parse Old Info: ${ex.toString()}`)
   }
   const walletInnerCores = await wallet.getInnerCores()
-  let innerCores = {}
-  i = 0
+  let innerCores = []
   try {
     for (let x of walletInnerCores) {
-      innerCores[i] = {
+      innerCores.push({
         root: x[0].toString(),
         height: new BN(x[1]).toNumber(),
         interval: new BN(x[2]).toNumber(),
         t0: new BN(x[3]).toNumber(),
         lifespan: new BN(x[4]).toNumber(),
         maxOperationsPerInterval: new BN(x[5]).toNumber()
-      }
-      i++
+      })
     }
   } catch (ex) {
     console.log(`Failed to parse walletInnerCores: ${ex.toString()}`)
@@ -209,12 +201,12 @@ const getONEWalletState = async (wallet) => {
   let spendingState = {}
   try {
     spendingState = {
-      spendingLimit: walletSpendingState[0],
-      spentAmount: walletSpendingState[1],
-      lastSpendingInterval: walletSpendingState[2],
-      spendingInterval: walletSpendingState[3],
-      lastLimitAdjustmentTime: walletSpendingState[4],
-      highestSpendingLimit: walletSpendingState[5],
+      spendingLimit: walletSpendingState[0].toString(),
+      spentAmount: walletSpendingState[1].toString(),
+      lastSpendingInterval: walletSpendingState[2].toString(),
+      spendingInterval: walletSpendingState[3].toString(),
+      lastLimitAdjustmentTime: walletSpendingState[4].toString(),
+      highestSpendingLimit: walletSpendingState[5].toString()
     }
   } catch (ex) {
     console.log(`Failed to parse walletSpendingState: ${ex.toString()}`)
@@ -223,11 +215,11 @@ const getONEWalletState = async (wallet) => {
   const lastOperationTime = new BN(await wallet.lastOperationTime()).toNumber()
   const walletAllCommits = await wallet.getAllCommits()
   let allCommits = {
-    commitHashArray: {},
-    paramHashArray: {},
-    veriFicationHashArray: {},
-    timestampArray: {},
-    completedArray: {}
+    commitHashArray: [],
+    paramHashArray: [],
+    veriFicationHashArray: [],
+    timestampArray: [],
+    completedArray: []
   }
   try {
     allCommits.commitHashArray = walletAllCommits[0]
@@ -240,9 +232,9 @@ const getONEWalletState = async (wallet) => {
   }
   const walletTrackedTokens = await wallet.getTrackedTokens()
   let trackedTokens = {
-    tokenTypeArray: {},
-    contractAddressArray: {},
-    tokenIdArray: {}
+    tokenTypeArray: [],
+    contractAddressArray: [],
+    tokenIdArray: []
   }
   try {
     trackedTokens.tokenTypeArray = walletTrackedTokens[0]
@@ -252,11 +244,12 @@ const getONEWalletState = async (wallet) => {
     console.log(`Failed to parse walletTrackedTokens: ${ex.toString()}`)
   }
   const walletBacklinks = await wallet.getBacklinks()
-  let backlinks = {
-    addressArray: {},
-  }
+  console.log(`walletBacklinks: ${walletBacklinks}`)
+  let backlinks = []
   try {
-    backlinks.addressArray = walletBacklinks[0]
+    for (let x of walletBacklinks) {
+      backlinks.push(x)
+    }
   } catch (ex) {
     console.log(`Failed to parse walletBacklinks: ${ex.toString()}`)
   }
@@ -279,6 +272,7 @@ const getONEWalletState = async (wallet) => {
     trackedTokens,
     backlinks,
   }
+  Logger.debug(`state: ${JSON.stringify(state)}`)
   return state
 }
 

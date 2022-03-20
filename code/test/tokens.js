@@ -8,7 +8,7 @@ const ONEConstants = require('../lib/constants')
 const ONE_CENT = unit.toWei('0.01', 'ether')
 // const HALF_DIME = unit.toWei('0.05', 'ether')
 // const ONE_DIME = unit.toWei('0.1', 'ether')
-const TEN_ETH = unit.toWei('10', 'ether')
+const HALF_ETH = unit.toWei('0.5', 'ether')
 
 const INTERVAL = 30000
 const DURATION = INTERVAL * 12
@@ -21,7 +21,6 @@ contract('ONEWallet', (accounts) => {
     snapshotId = await TestUtil.snapshot()
     await TestUtil.init()
   })
-
   afterEach(async function () {
     await TestUtil.revert(snapshotId)
   })
@@ -39,7 +38,7 @@ contract('ONEWallet', (accounts) => {
     let bob = await CheckUtil.makeWallet('TT-NATIVE-2', accounts[0], EFFECTIVE_TIME)
     const aliceInitialWalletBalance = await web3.eth.getBalance(alice.wallet.address)
     const bobInitialWalletBalance = await web3.eth.getBalance(bob.wallet.address)
-    assert.equal(TEN_ETH, aliceInitialWalletBalance, 'Alice Wallet initially has correct balance')
+    assert.equal(HALF_ETH, aliceInitialWalletBalance, 'Alice Wallet initially has correct balance')
     // alice tranfers ONE CENT to bob
     alice = await CheckUtil.assetTransfer(
       {
@@ -142,7 +141,7 @@ contract('ONEWallet', (accounts) => {
     let alice = await CheckUtil.makeWallet('TT-ERC721-1', accounts[0], EFFECTIVE_TIME)
     let bob = await CheckUtil.makeWallet('TT-ERC721-2', accounts[0], EFFECTIVE_TIME)
     let aliceInitialWalletBalance = await web3.eth.getBalance(alice.wallet.address)
-    assert.equal(TEN_ETH, aliceInitialWalletBalance, 'Alice Wallet initially has correct balance')
+    assert.equal(HALF_ETH, aliceInitialWalletBalance, 'Alice Wallet initially has correct balance')
     const { testerc721 } = await CheckUtil.makeTokens(accounts[0])
     let aliceWalletBalanceERC721
     let bobWalletBalanceERC721
@@ -157,6 +156,7 @@ contract('ONEWallet', (accounts) => {
     assert.equal(alice.wallet.address, await testerc721.ownerOf(9), 'Transfer of ERC721 token 9 to alice.wallet succesful')
     // console.log(`alice.wallet.getTrackedTokens(): ${JSON.stringify(await alice.wallet.getTrackedTokens())}`)
     // alice transfers tokens to bob
+    console.log(`Alice Transferring Tokens`)
     alice = await CheckUtil.assetTransfer(
       {
         wallet: alice,
@@ -195,7 +195,8 @@ contract('ONEWallet', (accounts) => {
     await CheckUtil.checkONEWallet(alice)
     // Bob Items that have changed - nothing
     bob.oldState = bob.currentState
-    CheckUtil.getONEWalletState(bob.wallet)
+    console.log(`Getting Bobs State`)
+    await CheckUtil.getONEWalletState(bob.wallet)
     await CheckUtil.checkONEWallet(bob)
   })
 
@@ -204,7 +205,7 @@ contract('ONEWallet', (accounts) => {
     let alice = await CheckUtil.makeWallet('TT-ERC1155-1', accounts[0], EFFECTIVE_TIME)
     let bob = await CheckUtil.makeWallet('TT-ERC1155-2', accounts[0], EFFECTIVE_TIME)
     let aliceInitialWalletBalance = await web3.eth.getBalance(alice.wallet.address)
-    assert.equal(TEN_ETH, aliceInitialWalletBalance, 'Alice Wallet initially has correct balance')
+    assert.equal(HALF_ETH, aliceInitialWalletBalance, 'Alice Wallet initially has correct balance')
     const { testerc1155 } = await CheckUtil.makeTokens(accounts[0])
     let aliceWalletBalanceERC1155T8
     let bobWalletBalanceERC1155T8
@@ -263,11 +264,19 @@ contract('ONEWallet', (accounts) => {
     let alice = await CheckUtil.makeWallet('TT-TOKEN-1', accounts[0], EFFECTIVE_TIME)
     let bob = await CheckUtil.makeWallet('TT-TOKEN-2', accounts[0], EFFECTIVE_TIME)
     const { testerc20, testerc721, testerc1155 } = await CheckUtil.makeTokens(accounts[0])
+    // alice tranfers ONE CENT to bob
+    alice = await CheckUtil.assetTransfer(
+      {
+        wallet: alice,
+        operationType: ONEConstants.OperationType.TRANSFER,
+        dest: bob.wallet.address,
+        amount: (ONE_CENT / 2)
+      }
+    )
     // transfer ERC20 tokens from accounts[0] (which owns the tokens) to alices wallet
     await testerc20.transfer(alice.wallet.address, 1000, { from: accounts[0] })
     // alice transfers tokens to bob
-    // testTime = TestUtil.bumpTestTime(testTime, 45)
-    // await TestUtil.wait(45)
+    testTime = TestUtil.bumpTestTime(testTime, 45)
     alice = await CheckUtil.assetTransfer(
       {
         wallet: alice,
@@ -279,14 +288,12 @@ contract('ONEWallet', (accounts) => {
         testTime
       }
     )
-    // await CheckUtil.checkONEWallet(alice.wallet, alice.oldState)
     // transfer ERC721 tokens from accounts[0] (which owns the tokens) to alices wallet
     await testerc721.transferFrom(accounts[0], alice.wallet.address, 8, { from: accounts[0] })
-    // await TestUtil.getReceipt(tx.receipt.transactionHash)
+    await testerc721.transferFrom(accounts[0], alice.wallet.address, 9, { from: accounts[0] })
     assert.equal(alice.wallet.address, await testerc721.ownerOf(8), 'Transfer of ERC721 token 8 to alice.wallet succesful')
     // alice transfers tokens to bob
     testTime = TestUtil.bumpTestTime(testTime, 45)
-    // await TestUtil.wait(45)
     alice = await CheckUtil.assetTransfer(
       {
         wallet: alice,
@@ -298,13 +305,11 @@ contract('ONEWallet', (accounts) => {
         testTime
       }
     )
-    // await CheckUtil.checkONEWallet(alice.wallet, alice.oldState)
     // transfer ERC721 tokens from accounts[0] (which owns the tokens) to alices wallet
     // TODO review the bytes value we are passing in safeTransferFrom (currently using ONEUtil.hexStringToBytes('5') )
     await testerc1155.safeTransferFrom(accounts[0], alice.wallet.address, 8, 8, ONEUtil.hexStringToBytes('5'), { from: accounts[0] })
     // alice transfers tokens to bob
     testTime = TestUtil.bumpTestTime(testTime, 45)
-    // await TestUtil.wait(45)
     alice = await CheckUtil.assetTransfer(
       {
         wallet: alice,
