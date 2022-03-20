@@ -214,37 +214,34 @@ const getONEWalletState = async (wallet) => {
   const nonce = new BN(await wallet.getNonce()).toNumber()
   const lastOperationTime = new BN(await wallet.lastOperationTime()).toNumber()
   const walletAllCommits = await wallet.getAllCommits()
-  let allCommits = {
-    commitHashArray: [],
-    paramHashArray: [],
-    veriFicationHashArray: [],
-    timestampArray: [],
-    completedArray: []
-  }
+  let allCommits = {}
   try {
-    allCommits.commitHashArray = walletAllCommits[0]
-    allCommits.paramHashArray = walletAllCommits[1]
-    allCommits.veriFicationHashArray = walletAllCommits[2]
-    allCommits.timestampArray = walletAllCommits[3]
-    allCommits.completedArray = walletAllCommits[4]
+    // commitHashArray
+    allCommits[0] = walletAllCommits[0]
+    // paramHashArray
+    allCommits[1] = walletAllCommits[1]
+    // veriFicationHashArray
+    allCommits[2] = walletAllCommits[2]
+    // timestampArray
+    allCommits[3] = walletAllCommits[3]
+    // completedArray
+    allCommits[4] = walletAllCommits[4]
   } catch (ex) {
     console.log(`Failed to parse walletAllCommits: ${ex.toString()}`)
   }
   const walletTrackedTokens = await wallet.getTrackedTokens()
-  let trackedTokens = {
-    tokenTypeArray: [],
-    contractAddressArray: [],
-    tokenIdArray: []
-  }
+  let trackedTokens = {}
   try {
-    trackedTokens.tokenTypeArray = walletTrackedTokens[0]
-    trackedTokens.contractAddressArray = walletTrackedTokens[1]
-    trackedTokens.tokenIdArray = walletTrackedTokens[2]
+    // tokenTypeArray
+    trackedTokens[0] = walletTrackedTokens[0]
+    // contractAddressArray
+    trackedTokens[1] = walletTrackedTokens[1]
+    // tokenIdArray
+    trackedTokens[2] = walletTrackedTokens[2]
   } catch (ex) {
     console.log(`Failed to parse walletTrackedTokens: ${ex.toString()}`)
   }
   const walletBacklinks = await wallet.getBacklinks()
-  console.log(`walletBacklinks: ${walletBacklinks}`)
   let backlinks = []
   try {
     for (let x of walletBacklinks) {
@@ -272,6 +269,7 @@ const getONEWalletState = async (wallet) => {
     trackedTokens,
     backlinks,
   }
+  // console.log(`state: ${JSON.stringify(state)}`)
   Logger.debug(`state: ${JSON.stringify(state)}`)
   return state
 }
