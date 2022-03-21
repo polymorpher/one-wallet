@@ -22,7 +22,7 @@ const libraryList = [...baseLibraries, ...factoryLibraries]
 const dependencies = {
   WalletGraph: [DomainManager],
   Reveal: [CommitManager],
-  Executor: [WalletGraph, SpendingManager, SignatureManager, TokenTracker, DomainManager],
+  Executor: [WalletGraph, SpendingManager, SignatureManager, TokenTracker, DomainManager, Staking],
   ONEWalletCodeHelper: baseLibraries,
   ONEWalletFactoryHelper: [...baseLibraries, ONEWalletCodeHelper],
 }
