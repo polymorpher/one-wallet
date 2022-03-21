@@ -9,12 +9,13 @@ const ONE_CENT = unit.toWei('0.01', 'ether')
 // const HALF_DIME = unit.toWei('0.05', 'ether')
 // const ONE_DIME = unit.toWei('0.1', 'ether')
 const HALF_ETH = unit.toWei('0.5', 'ether')
-const INTERVAL = 30000
-const DURATION = INTERVAL * 12
-// const SLOT_SIZE = 1
+const INTERVAL = 30000 // 30 second Intervals
+const DURATION = INTERVAL * 12 // 6 minute wallet duration
+// const SLOT_SIZE = 1 // 1 transaction per interval
 const FIVE_HEX = ONEUtil.hexString('5')
 
 contract('ONEWallet', (accounts) => {
+  // Wallets effective time is the current time minus half the duration (3 minutes ago)
   const EFFECTIVE_TIME = Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
   let snapshotId
   beforeEach(async function () {
@@ -27,15 +28,15 @@ contract('ONEWallet', (accounts) => {
 
   // Test creation and validation of wallet
   it('Wallet_Validate: must be able to create and validate a wallet', async () => {
-    await CheckUtil.makeWallet('TT-WALLET-1', accounts[0], EFFECTIVE_TIME)
+    await CheckUtil.makeWallet('TT-WALLET-1', accounts[0], EFFECTIVE_TIME, DURATION)
     // await CheckUtil.checkONEWallet(alice.wallet, alice.oldState)
   })
 
   // Transfer Native Asset to external wallet
   it('Wallet_CommitReveal: Native Asset Transfer must commit and reveal successfully', async () => {
     // Create Wallets and fund
-    let alice = await CheckUtil.makeWallet('TT-NATIVE-1', accounts[0], EFFECTIVE_TIME)
-    let bob = await CheckUtil.makeWallet('TT-NATIVE-2', accounts[0], EFFECTIVE_TIME)
+    let alice = await CheckUtil.makeWallet('TT-NATIVE-1', accounts[0], EFFECTIVE_TIME, DURATION)
+    let bob = await CheckUtil.makeWallet('TT-NATIVE-2', accounts[0], EFFECTIVE_TIME, DURATION)
     const aliceInitialBalance = await web3.eth.getBalance(alice.wallet.address)
     const bobInitialBalance = await web3.eth.getBalance(bob.wallet.address)
     assert.equal(HALF_ETH, aliceInitialBalance, 'Alice Wallet initially has correct balance')
@@ -80,8 +81,8 @@ contract('ONEWallet', (accounts) => {
   it('Wallet_CommitReveal: ERC20(Transfer, Mint, Track) must commit and reveal successfully', async () => {
     let testTime = Date.now()
     // Create Wallets and tokens
-    let alice = await CheckUtil.makeWallet('TT-ERC20-1', accounts[0], EFFECTIVE_TIME)
-    let bob = await CheckUtil.makeWallet('TT-ERC20-2', accounts[0], EFFECTIVE_TIME)
+    let alice = await CheckUtil.makeWallet('TT-ERC20-1', accounts[0], EFFECTIVE_TIME, DURATION)
+    let bob = await CheckUtil.makeWallet('TT-ERC20-2', accounts[0], EFFECTIVE_TIME, DURATION)
     const { testerc20 } = await CheckUtil.makeTokens(accounts[0])
     let aliceBalanceERC20
     let aliceWalletBalanceERC20
@@ -201,8 +202,8 @@ contract('ONEWallet', (accounts) => {
   // ERC721 Testing (Transfer, Mint, Track)
   it('Wallet_CommitReveal: ERC721(Transfer, Mint, Track) must commit and reveal successfully', async () => {
     // Create Wallets and tokens
-    let alice = await CheckUtil.makeWallet('TT-ERC721-1', accounts[0], EFFECTIVE_TIME)
-    let bob = await CheckUtil.makeWallet('TT-ERC721-2', accounts[0], EFFECTIVE_TIME)
+    let alice = await CheckUtil.makeWallet('TT-ERC721-1', accounts[0], EFFECTIVE_TIME, DURATION)
+    let bob = await CheckUtil.makeWallet('TT-ERC721-2', accounts[0], EFFECTIVE_TIME, DURATION)
     let aliceInitialWalletBalance = await web3.eth.getBalance(alice.wallet.address)
     assert.equal(HALF_ETH, aliceInitialWalletBalance, 'Alice Wallet initially has correct balance')
     const { testerc721 } = await CheckUtil.makeTokens(accounts[0])
@@ -266,8 +267,9 @@ contract('ONEWallet', (accounts) => {
 
   // ERC1155 Testing (Transfer, Mint, Track)
   it('Wallet_CommitReveal: ERC1155(Transfer, Mint, Track) must commit and reveal successfully', async () => {
-    let alice = await CheckUtil.makeWallet('TT-ERC1155-1', accounts[0], EFFECTIVE_TIME)
-    let bob = await CheckUtil.makeWallet('TT-ERC1155-2', accounts[0], EFFECTIVE_TIME)
+    const testWalletDuration = 60 * 2 * INTERVAL // 1 hour duration 
+    let alice = await CheckUtil.makeWallet('TT-ERC1155-1', accounts[0], EFFECTIVE_TIME, testWalletDuration)
+    let bob = await CheckUtil.makeWallet('TT-ERC1155-2', accounts[0], EFFECTIVE_TIME, testWalletDuration)
     let aliceInitialWalletBalance = await web3.eth.getBalance(alice.wallet.address)
     assert.equal(HALF_ETH, aliceInitialWalletBalance, 'Alice Wallet initially has correct balance')
     const { testerc1155 } = await CheckUtil.makeTokens(accounts[0])
@@ -328,8 +330,8 @@ contract('ONEWallet', (accounts) => {
   // TokenTracker Testing (track, multitrack, getTrackedTokens, getBalance, recoverToken) also batch transactions
   it('Wallet_CommitReveal: TokenTracker(token management) must commit and reveal successfully', async () => {
     let testTime = Date.now()
-    let alice = await CheckUtil.makeWallet('TT-TOKEN-1', accounts[0], EFFECTIVE_TIME)
-    let bob = await CheckUtil.makeWallet('TT-TOKEN-2', accounts[0], EFFECTIVE_TIME)
+    let alice = await CheckUtil.makeWallet('TT-TOKEN-1', accounts[0], EFFECTIVE_TIME, DURATION)
+    let bob = await CheckUtil.makeWallet('TT-TOKEN-2', accounts[0], EFFECTIVE_TIME, DURATION)
     const { testerc20, testerc721, testerc1155 } = await CheckUtil.makeTokens(accounts[0])
     // alice tranfers ONE CENT to bob
     alice = await CheckUtil.assetTransfer(

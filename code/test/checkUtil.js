@@ -22,12 +22,13 @@ const DURATION = INTERVAL * 12
 const SLOT_SIZE = 1
 
 // makeWallet uses an index and unlocked web3.eth.account and creates and funds a ONEwallet
-const makeWallet = async (salt, deployer, effectiveTime) => {
+const makeWallet = async (salt, deployer, effectiveTime, duration) => {
+  if (duration === undefined) { duration = DURATION }
   const lastResortAccount = web3.eth.accounts.create()
   const { wallet, seed, hseed, root, client: { layers } } = await TestUtil.createWallet({
     salt: new BN(ONEUtil.keccak(salt)),
-    effectiveTime: effectiveTime,
-    duration: DURATION,
+    effectiveTime,
+    duration,
     maxOperationsPerInterval: SLOT_SIZE,
     lastResortAddress: lastResortAccount.address,
     spendingLimit: ONE_ETH
