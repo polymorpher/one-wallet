@@ -45,6 +45,7 @@ module.exports = {
     DELEGATE: 26, // Harmony specific
     UNDELEGATE: 27, // Harmony specific
     COLLECT_REWARD: 28, // Harmony specific
+    CREATE: 29,
 
     0: 'TRACK',
     1: 'UNTRACK',
@@ -75,6 +76,7 @@ module.exports = {
     26: 'DELEGATE',
     27: 'UNDELEGATE',
     28: 'COLLECT_REWARD',
+    29: 'CREATE',
   },
   EmptyAddress: '0x0000000000000000000000000000000000000000',
   EmptyBech32Address: 'one1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqquzw7vz',
@@ -82,7 +84,7 @@ module.exports = {
   OldTreasuryAddresses: ['0x02F2cF45DD4bAcbA091D78502Dba3B2F431a54D3'],
   BlacklistedAddresses: ['0x36571a32c08de564a4cc94ed087c27d3c58f7470'],
   MajorVersion: 16,
-  MinorVersion: 1,
+  MinorVersion: 0,
   DefaultSpendingInterval: 86400, // 3600 * 24
   Domain: {
     DEFAULT_RENT_DURATION: 31536000, // 365 * 24 * 3600,
