@@ -36,17 +36,19 @@ contract('ONEWallet', (accounts) => {
     assert.equal(HALF_ETH, aliceInitialBalance, 'Alice Wallet initially has correct balance')
     let testTime = Date.now()
     for (let i = 0; i < 100; i++) {
-      testTime = await TestUtil.bumpTestTime(testTime, 45)
       // alice tranfers ONE CENT to bob
       alice = await CheckUtil.assetTransfer(
         {
           wallet: alice,
           operationType: ONEConstants.OperationType.TRANSFER,
           dest: bob.wallet.address,
-          amount: (MILLI_CENT)
+          amount: (MILLI_CENT),
+          testTime
         }
       )
-      Logger.debug(`TimeBump Iteration Succesfull: ${i}`)
+      testTime = await TestUtil.bumpTestTime(testTime, 45)
+      console.log(`TimeBump Iteration Succesfull: ${i}`)
+      // Logger.debug(`TimeBump Iteration Succesfull: ${i}`)
     }
   })
 
