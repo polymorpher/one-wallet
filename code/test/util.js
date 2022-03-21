@@ -70,6 +70,7 @@ const bumpTestTime = async (testEffectiveTime, bumpSeconds) => {
   const newChainTime = ((await web3.eth.getBlock(newBlockNumber)).timestamp) * 1000
   console.log(`newBlockNumber  : ${JSON.stringify(newBlockNumber)}`)
   console.log(`newChainTime    : ${JSON.stringify(newChainTime)}`)
+  console.log(`==================`)
   return testEffectiveTime
 }
 

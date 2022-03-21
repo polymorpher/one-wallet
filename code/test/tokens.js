@@ -142,13 +142,12 @@ contract('ONEWallet', (accounts) => {
     CheckUtil.getONEWalletState(bob.wallet)
     await CheckUtil.checkONEWallet(bob)
     // Transfer remaining tokens and check that alice no longer tracks this token
-    testTime = TestUtil.bumpTestTime(testTime, 45)
+    testTime = await TestUtil.bumpTestTime(testTime, 45)
     // nonce should now be back to 0 as it is per interval
     nonce = await alice.wallet.getNonce()
     console.log(`nonce: ${nonce}`)
     assert.notDeepEqual(nonce, alice.oldState.nonce, 'alice wallet.nonce should have been changed')
     alice.oldState.nonce = nonce.toNumber()
-    testTime = TestUtil.bumpTestTime(testTime, 45)
     // check that nothing else has changed for alice
     alice.oldState = alice.currentState
     await CheckUtil.getONEWalletState(alice.wallet)
@@ -322,7 +321,7 @@ contract('ONEWallet', (accounts) => {
     await CheckUtil.checkONEWallet(alice)
     // Bob Items that have changed - nothing
     bob.oldState = bob.currentState
-    CheckUtil.getONEWalletState(bob.wallet)
+    await CheckUtil.getONEWalletState(bob.wallet)
     await CheckUtil.checkONEWallet(bob)
   })
 
@@ -344,7 +343,7 @@ contract('ONEWallet', (accounts) => {
     // transfer ERC20 tokens from accounts[0] (which owns the tokens) to alices wallet
     await testerc20.transfer(alice.wallet.address, 1000, { from: accounts[0] })
     // alice transfers tokens to bob
-    testTime = TestUtil.bumpTestTime(testTime, 45)
+    testTime = await TestUtil.bumpTestTime(testTime, 45)
     alice.oldState = alice.currentState
     alice = await CheckUtil.assetTransfer(
       {
@@ -362,7 +361,7 @@ contract('ONEWallet', (accounts) => {
     await testerc721.transferFrom(accounts[0], alice.wallet.address, 9, { from: accounts[0] })
     assert.equal(alice.wallet.address, await testerc721.ownerOf(8), 'Transfer of ERC721 token 8 to alice.wallet succesful')
     // alice transfers tokens to bob
-    testTime = TestUtil.bumpTestTime(testTime, 45)
+    testTime = await TestUtil.bumpTestTime(testTime, 45)
     alice.oldState = alice.currentState
     alice = await CheckUtil.assetTransfer(
       {
@@ -378,7 +377,7 @@ contract('ONEWallet', (accounts) => {
     // transfer ERC721 tokens from accounts[0] (which owns the tokens) to alices wallet
     await testerc1155.safeTransferFrom(accounts[0], alice.wallet.address, 8, 8, FIVE_HEX, { from: accounts[0] })
     // alice transfers tokens to bob
-    testTime = TestUtil.bumpTestTime(testTime, 45)
+    testTime = await TestUtil.bumpTestTime(testTime, 45)
     alice.oldState = alice.currentState
     alice = await CheckUtil.assetTransfer(
       {
