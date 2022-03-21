@@ -39,7 +39,7 @@ const sleep = (milliseconds) => {
   return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
 const wait = async (seconds) => {
-  console.log(`wait: ${seconds}`)
+  Logger.debug(`wait: ${seconds}`)
   await sleep(seconds * 1000)
 }
 const getReceipt = async (transactionHash) => {
@@ -50,7 +50,7 @@ const getReceipt = async (transactionHash) => {
     if (transactionReceipt !== null) { break }
     await sleep(1000)
     i++
-    console.log(`waiting`)
+    Logger.debug(`waiting`)
   }
   assert.notEqual(null, transactionReceipt, `transactionReceipt not found for ${transactionHash} after waiting 10 seconds`)
 }
@@ -60,17 +60,17 @@ const bumpTestTime = async (testEffectiveTime, bumpSeconds) => {
   const blockNumber = await web3.eth.getBlockNumber()
   const chainTime = ((await web3.eth.getBlock(blockNumber)).timestamp) * 1000
   const chainBumpSeconds = Math.floor((testEffectiveTime - chainTime) / 1000)
-  console.log(`Date.now()      : ${Date.now()}`)
-  console.log(`blockNumber     : ${JSON.stringify(blockNumber)}`)
-  console.log(`chainTime       : ${JSON.stringify(chainTime)}`)
-  console.log(`testEffective   : ${testEffectiveTime}`)
-  console.log(`chainBumpSeconds: ${chainBumpSeconds}`)
+  Logger.debug(`Date.now()      : ${Date.now()}`)
+  Logger.debug(`blockNumber     : ${JSON.stringify(blockNumber)}`)
+  Logger.debug(`chainTime       : ${JSON.stringify(chainTime)}`)
+  Logger.debug(`testEffective   : ${testEffectiveTime}`)
+  Logger.debug(`chainBumpSeconds: ${chainBumpSeconds}`)
   await increaseTime(chainBumpSeconds)
   const newBlockNumber = await web3.eth.getBlockNumber()
   const newChainTime = ((await web3.eth.getBlock(newBlockNumber)).timestamp) * 1000
-  console.log(`newBlockNumber  : ${JSON.stringify(newBlockNumber)}`)
-  console.log(`newChainTime    : ${JSON.stringify(newChainTime)}`)
-  console.log(`==================`)
+  Logger.debug(`newBlockNumber  : ${JSON.stringify(newBlockNumber)}`)
+  Logger.debug(`newChainTime    : ${JSON.stringify(newChainTime)}`)
+  Logger.debug(`==================`)
   return testEffectiveTime
 }
 
