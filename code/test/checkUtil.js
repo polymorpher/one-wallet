@@ -39,8 +39,7 @@ const makeWallet = async (salt, deployer, effectiveTime, duration) => {
     to: wallet.address,
     value: HALF_ETH
   })
-  const currentState = await getONEWalletState(wallet)
-  return { wallet, seed, hseed, root, layers, lastResortAddress: lastResortAccount.address, currentState }
+  return { wallet, seed, hseed, root, layers, lastResortAddress: lastResortAccount.address }
 }
 
 // makeTokens makes test ERC20, ERC20Decimals9, ERC721, ERC1155
@@ -117,9 +116,6 @@ const assetTransfer = async ({ wallet, operationType, tokenType, contractAddress
     revealParams,
     wallet: wallet.wallet
   })
-  wallet.oldState = wallet.currentState
-  wallet.currentState = await getONEWalletState(wallet.wallet)
-  return wallet
 }
 
 // get OneWallet state
@@ -276,21 +272,21 @@ const getONEWalletState = async (wallet) => {
 }
 
 // check OneWallet state
-const checkONEWallet = async (wallet) => {
-  assert.deepEqual(wallet.currentState.identificationKey, wallet.oldState.identificationKey, 'wallet.identificationKey is incorrect')
-  assert.deepEqual(wallet.currentState.identificationKeys, wallet.oldState.identificationKeys, 'wallet.identificationKeys is incorrect')
-  assert.deepEqual(wallet.currentState.forwardAddress, wallet.oldState.forwardAddress, 'wallet.forwardAddress is incorrect')
-  assert.deepEqual(wallet.currentState.info, wallet.oldState.info, 'wallet.info is incorrect')
-  assert.deepEqual(wallet.currentState.oldInfo, wallet.oldState.oldInfo, 'wallet.oldInfos is incorrect')
-  assert.deepEqual(wallet.currentState.innerCores, wallet.oldState.innerCores, 'wallet.innerCores is incorrect')
-  assert.deepEqual(wallet.currentState.rootKey, wallet.oldState.rootKey, 'wallet.rootKey is incorrect')
-  assert.deepEqual(wallet.currentState.version, wallet.oldState.version, 'wallet.version is incorrect')
-  assert.deepEqual(wallet.currentState.spendingState, wallet.oldState.spendingState, 'wallet.spendingState is incorrect')
-  assert.deepEqual(wallet.currentState.nonce, wallet.oldState.nonce, 'wallet.nonce is incorrect')
-  assert.deepEqual(wallet.currentState.lastOperationTime, wallet.oldState.lastOperationTime, 'wallet.lastOperationTime is incorrect')
-  assert.deepEqual(wallet.currentState.allCommits, wallet.oldState.allCommits, 'wallet.allCommits is incorrect')
-  assert.deepEqual(wallet.currentState.trackedTokens, wallet.oldState.trackedTokens, 'wallet.trackedTokens is incorrect')
-  assert.deepEqual(wallet.currentState.backlinks, wallet.oldState.backlinks, 'wallet.backlinks is incorrect')
+const checkONEWalletStateChange = async (oldState, currentState) => {
+  assert.deepEqual(currentState.identificationKey, oldState.identificationKey, 'wallet.identificationKey is incorrect')
+  assert.deepEqual(currentState.identificationKeys, oldState.identificationKeys, 'wallet.identificationKeys is incorrect')
+  assert.deepEqual(currentState.forwardAddress, oldState.forwardAddress, 'wallet.forwardAddress is incorrect')
+  assert.deepEqual(currentState.info, oldState.info, 'wallet.info is incorrect')
+  assert.deepEqual(currentState.oldInfo, oldState.oldInfo, 'wallet.oldInfos is incorrect')
+  assert.deepEqual(currentState.innerCores, oldState.innerCores, 'wallet.innerCores is incorrect')
+  assert.deepEqual(currentState.rootKey, oldState.rootKey, 'wallet.rootKey is incorrect')
+  assert.deepEqual(currentState.version, oldState.version, 'wallet.version is incorrect')
+  assert.deepEqual(currentState.spendingState, oldState.spendingState, 'wallet.spendingState is incorrect')
+  assert.deepEqual(currentState.nonce, oldState.nonce, 'wallet.nonce is incorrect')
+  assert.deepEqual(currentState.lastOperationTime, oldState.lastOperationTime, 'wallet.lastOperationTime is incorrect')
+  assert.deepEqual(currentState.allCommits, oldState.allCommits, 'wallet.allCommits is incorrect')
+  assert.deepEqual(currentState.trackedTokens, oldState.trackedTokens, 'wallet.trackedTokens is incorrect')
+  assert.deepEqual(currentState.backlinks, oldState.backlinks, 'wallet.backlinks is incorrect')
 }
 
 module.exports = {
@@ -298,5 +294,5 @@ module.exports = {
   makeTokens,
   assetTransfer,
   getONEWalletState,
-  checkONEWallet
+  checkONEWalletStateChange
 }
