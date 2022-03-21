@@ -32,8 +32,8 @@ library Enums {
         JUMP_SPENDING_LIMIT, // adjust daily spend limit to a value between [0, h] where h is the highest spending limit used so far
         DELEGATE, // delegate some native asset to a Harmony validator
         UNDELEGATE, // undelegate some native asset from a Harmony validator
-        COLLECT_REWARD // collect reward accumulated through delegation on Harmony
-
+        COLLECT_REWARD, // collect reward accumulated through delegation on Harmony
+        CREATE // reserved, for creating new contract
     }
     enum TokenType{
         ERC20, ERC721, ERC1155, NONE
