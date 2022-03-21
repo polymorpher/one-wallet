@@ -9,6 +9,7 @@
     "lint": "eslint ./lib ./migrations ./test",
     "lint-fix": "eslint ./lib ./migrations ./test --fix",
     "console": "node --experimental-repl-await",
+    "abi": "node scripts/abi.js",
     "flatten": "truffle-flattener contracts/ONEWallet.sol > flattened/ONEWalletFlattened.sol"
   },
   "dependencies": {
