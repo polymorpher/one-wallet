@@ -2,8 +2,6 @@ const config = require('./config')
 const ONEConfig = require('../lib/config/common')
 const ONEUtil = require('../lib/util')
 const TruffleContract = require('@truffle/contract')
-const { TruffleProvider } = require('@harmony-js/core')
-const { Account } = require('@harmony-js/account')
 const { ONEWallet, factoryContractsList, factoryContracts, libraryList, dependencies } = require('../extensions/contracts')
 const { ONEWalletV5, ONEWalletV6 } = require('../extensions/deprecated')
 const { knownAddresses } = require('../extensions/loader')
@@ -54,11 +52,10 @@ const initCachedContracts = async () => {
       const libName = lib.contractName
       const f = [libName, network].join('-')
       const fp = path.join(p, f)
-      const key = config.networks[network].key
-      const account = new Account(key)
       const c = TruffleContract(lib)
       c.setProvider(providers[network])
-      const params = network.startsWith('eth') ? { from: account.address } : { from: account.address, gas: config.gasLimit, gasPrice: config.gasPrice }
+      const from = providers[network].addresses[0]
+      const params = { from, gas: config.gasLimit, gasPrice: config.gasPrice }
       c.defaults(params)
       const expectedHash = ONEUtil.hexString(ONEUtil.keccak(ONEUtil.hexToBytes(lib.bytecode)))
       try {
@@ -71,7 +68,7 @@ const initCachedContracts = async () => {
             if (!factoryContracts[libName]) {
               libraries[network][libName] = instance
             } else {
-              c.defaults({ from: account.address, gas: config.gasLimit, gasPrice: config.gasPrice })
+              c.defaults({ from, gas: config.gasLimit, gasPrice: config.gasPrice })
               factories[network][libName] = instance
             }
             continue
@@ -137,27 +134,14 @@ const initCachedContracts = async () => {
   }
 }
 
-const HarmonyProvider = ({ key, url, chainId, gasLimit, gasPrice }) => {
-  const truffleProvider = new TruffleProvider(
-    url,
-    {},
-    { shardID: 0, chainId },
-    gasLimit && gasPrice && { gasLimit, gasPrice },
-  )
-  truffleProvider.addByPrivateKey(key)
-  const account = new Account(key)
-  truffleProvider.setSigner(account.checksumAddress)
-  return truffleProvider
-}
-
 const init = async () => {
+  console.log(`Version=${ONEConfig.version}; LibraryVersion=${ONEConfig.lastLibraryUpdateVersion}`)
   Object.keys(config.networks).forEach(k => {
     if (config.networks[k].skip) {
       console.log(`[${k}] Skipped initialization`)
       return
     }
     const n = config.networks[k]
-    // console.log(n)
     if (n.key) {
       try {
         providers[k] = new HDWalletProvider({
@@ -168,17 +152,6 @@ const init = async () => {
           pollingInterval: config.pollingInterval,
           numberOfAddresses: n.numAccounts
         })
-        // if (k.startsWith('eth')) {
-        //   providers[k] = new HDWalletProvider({ mnemonic: n.mnemonic, privateKeys: !n.mnemonic && [n.key], providerOrUrl: n.url, sharedNonce: false })
-        // } else {
-        //   providers[k] = HarmonyProvider({ key: n.key,
-        //     url: n.url,
-        //     chainId: n.chainId,
-        //     gasLimit: config.gasLimit,
-        //     gasPrice: config.gasPrice
-        //   })
-        //   // providers[k] = new HDWalletProvider({ privateKeys: [n.key], providerOrUrl: n.url })
-        // }
         networks.push(k)
       } catch (ex) {
         console.error(ex)
@@ -193,10 +166,8 @@ const init = async () => {
     c5.setProvider(providers[k])
     const c6 = TruffleContract(ONEWalletV6)
     c6.setProvider(providers[k])
-    const key = config.networks[k].key
-    const account = new Account(key)
-    // console.log(k, account.address, account.bech32Address)
-    const params = k.startsWith('eth') ? { from: account.address } : { from: account.address, gas: config.gasLimit, gasPrice: config.gasPrice }
+    const from = providers[k].addresses[0]
+    const params = { from, gas: config.gasLimit, gasPrice: config.gasPrice }
     c.defaults(params)
     c5.defaults(params)
     c6.defaults(params)
@@ -206,7 +177,7 @@ const init = async () => {
   })
   console.log('init complete:', {
     networks,
-    providers: JSON.stringify(Object.keys(providers).map(k => [k, pick(['gasLimit', 'gasPrice', 'addresses'], providers[k])])),
+    providers: JSON.stringify(Object.keys(providers).map(k => [k, pick(['gasLimit', 'gasPrice', 'addresses'], providers[k])]), null, 2),
     contracts: Object.keys(contracts),
     contractsV5: Object.keys(contractsV5),
     contractsV6: Object.keys(contractsV6),
