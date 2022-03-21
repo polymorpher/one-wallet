@@ -209,7 +209,7 @@ contract('ONEWallet', (accounts) => {
     const { testerc721 } = await CheckUtil.makeTokens(accounts[0])
     let aliceWalletBalanceERC721
     let bobWalletBalanceERC721
-    assert.equal(accounts[0], await testerc721.ownerOf(8), 'Alice.lastResortAddress owns token 8')
+    assert.equal(accounts[0], await testerc721.ownerOf(8), 'Account 0 owns token 8')
     // transfer ERC721 tokens from accounts[0] (which owns the tokens) to alices wallet
     await testerc721.transferFrom(accounts[0], alice.wallet.address, 8, { from: accounts[0] })
     aliceWalletBalanceERC721 = await testerc721.balanceOf(alice.wallet.address)
