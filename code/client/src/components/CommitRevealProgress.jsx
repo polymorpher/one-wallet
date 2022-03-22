@@ -10,7 +10,7 @@ export const CommitRevealProgress = ({ stage, style }) => {
   return (
     <>
       {stage >= 0 && (
-        <Row style={style}>
+        <Row style={{marginTop: 32, ...style}}>
           <Steps current={stage} direction={isMobile ? 'vertical' : 'horizontal'}>
             <Step icon={stage === 0 && <Spin />} title='Prepare' description='Preparing signature' />
             <Step icon={stage === 1 && <Spin />} title='Commit' description='Locking-in operation' />

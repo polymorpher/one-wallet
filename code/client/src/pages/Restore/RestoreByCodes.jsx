@@ -128,7 +128,7 @@ const RestoreByCodes = ({ isActive, name, wallet, innerTrees, innerCores, newLoc
         isDisabled={stage >= 0}
       />
       {!newLocalParams && otpComplete && <WalletCreateProgress progress={progress} isMobile={isMobile} progressStage={progressStage} subtitle='Rebuilding your 1wallet' />}
-      {stage >= 0 && <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />}
+      {stage >= 0 && <CommitRevealProgress stage={stage} />}
       <Row justify='space-between'>
         <Button size='large' type='text' onClick={onCancel} danger>Cancel</Button>
         <Button size='large' type='default' shape='round' onClick={resetOtps}>Reset</Button>

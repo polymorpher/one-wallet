@@ -96,7 +96,7 @@ const SetRecovery = ({ address, onClose }) => {
         </Space>
         <OtpStack walletName={autoWalletNameHint(wallet)} otpState={otpState} doubleOtp={wallet.doubleOtp} onComplete={doSetRecoveryAddress} action='confirm' />
       </Space>
-      <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
+      <CommitRevealProgress stage={stage} />
     </AnimatedSection>
   )
 }
