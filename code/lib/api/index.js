@@ -96,12 +96,8 @@ const initBlockchain = (store) => {
   Object.keys(config.networks).forEach(k => {
     const n = config.networks[k]
     try {
-      if (k.startsWith('eth')) {
-        providers[k] = new Web3.providers.HttpProvider(n.url)
-      } else {
-        providers[k] = new TruffleProvider(n.url, {}, { shardId: 0, chainId: n.chainId })
-      }
-      web3instances[k] = new Web3(providers[k])
+      web3instances[k] = new Web3(n.url)
+      providers[k] = web3instances[k].currentProvider
       networks.push(k)
     } catch (ex) {
       console.error(ex)
@@ -125,6 +121,7 @@ const initBlockchain = (store) => {
       }
     })
     if (network === 'harmony-mainnet') {
+      Contract.setProvider(providers[network])
       resolverWithProvider = (address) => new Contract(Resolver, address)
       reverseResolverWithProvider = (address) => new Contract(ReverseResolver, address)
       registrarWithProvider = (address) => new Contract(Registrar, address)
@@ -606,7 +603,7 @@ const api = {
       const { data } = await base.post('/commit', { address, hash, paramsHash, verificationHash, majorVersion, minorVersion })
       return data
     },
-    revealTransfer: async ({ neighbors, index, eotp, dest, amount, address }) => {
+    revealTransferLike: async ({ neighbors, index, eotp, dest, amount, address, operationType }) => {
       return api.relayer.reveal({
         address,
         neighbors,
@@ -614,11 +611,14 @@ const api = {
         eotp,
         dest,
         amount,
-        operationType: ONEConstants.OperationType.TRANSFER,
+        operationType,
         tokenType: ONEConstants.TokenType.NONE,
         contractAddress: ONEConstants.EmptyAddress,
         tokenId: 0
       })
+    },
+    revealTransfer: async ({ neighbors, index, eotp, dest, amount, address }) => {
+      return api.relayer.revealTransferLike({ neighbors, index, eotp, dest, amount, address, operationType: ONEConstants.OperationType.TRANSFER })
     },
 
     updateTrackToken: async ({ address, neighbors, index, eotp, tokenType, contractAddress, tokenId, track }) => {
@@ -644,18 +644,7 @@ const api = {
       })
     },
     revealSetRecoveryAddress: async ({ neighbors, index, eotp, address, lastResortAddress }) => {
-      return api.relayer.reveal({
-        address,
-        neighbors,
-        index,
-        eotp,
-        operationType: ONEConstants.OperationType.SET_RECOVERY_ADDRESS,
-        tokenType: ONEConstants.TokenType.NONE,
-        contractAddress: ONEConstants.EmptyAddress,
-        tokenId: 0,
-        dest: lastResortAddress,
-        amount: 0,
-      })
+      return api.relayer.revealTransferLike({ address, neighbors, index, eotp, operationType: ONEConstants.OperationType.SET_RECOVERY_ADDRESS, dest: lastResortAddress, amount: 0, })
     },
 
     /**
@@ -669,6 +658,7 @@ const api = {
      * @param resolver - hex address of Resolver
      * @param maxPrice - string, maximum price acceptable for the domain purchase, in wei
      * @param subdomain - string, the subdomain to be purchased. For "polymorpher.crazy.one", the subdomain is "polymorpher"
+     * @param data - hex string encoded bytes
      * @returns {Promise<void>}
      */
     revealBuyDomain: async ({ neighbors, index, eotp, address,
@@ -718,18 +708,7 @@ const api = {
     },
 
     revealForward: async ({ address, neighbors, index, eotp, dest }) => {
-      return api.relayer.reveal({
-        address,
-        neighbors,
-        index,
-        eotp,
-        operationType: ONEConstants.OperationType.FORWARD,
-        tokenType: ONEConstants.TokenType.NONE,
-        contractAddress: ONEConstants.EmptyAddress,
-        tokenId: 0,
-        amount: 0,
-        dest
-      })
+      return api.relayer.revealTransferLike({ address, neighbors, index, eotp, operationType: ONEConstants.OperationType.FORWARD, amount: 0, dest })
     },
 
     reveal: async ({ address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data = '0x', majorVersion, minorVersion }) => {
