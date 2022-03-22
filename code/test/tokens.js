@@ -1,11 +1,12 @@
 /* TODO
-1. Add state to wallet create and wallet Transfer
-2. Remove CheckUtil and merge with util.js
+1. Remove CheckUtil and merge with util.js
+2. Return oldState when calling makeWallet and assetTransfer
+3. Retrieve currentState as part of checkONEWalletStateChange
 3. Remove commented lines
 4. Use batch function for token Tracker
 5. Add TRACK and UNTRACK and OVERRIDE_TRACK Tests
+6. Enhance assetTransfer to be walletTransaction (and cater for additional operations)
 */
-
 
 const TestUtil = require('./util')
 const CheckUtil = require('./checkUtil')
