@@ -1,3 +1,12 @@
+/* TODO
+1. Add state to wallet create and wallet Transfer
+2. Remove CheckUtil and merge with util.js
+3. Remove commented lines
+4. Use batch function for token Tracker
+5. Add TRACK and UNTRACK and OVERRIDE_TRACK Tests
+*/
+
+
 const TestUtil = require('./util')
 const CheckUtil = require('./checkUtil')
 const unit = require('ethjs-unit')
@@ -12,11 +21,11 @@ const HALF_ETH = unit.toWei('0.5', 'ether')
 const INTERVAL = 30000 // 30 second Intervals
 const DURATION = INTERVAL * 12 // 6 minute wallet duration
 // const SLOT_SIZE = 1 // 1 transaction per interval
+const EFFECTIVE_TIME = Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
 const FIVE_HEX = ONEUtil.hexString('5')
 
 contract('ONEWallet', (accounts) => {
   // Wallets effective time is the current time minus half the duration (3 minutes ago)
-  const EFFECTIVE_TIME = Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
   let snapshotId
   beforeEach(async function () {
     snapshotId = await TestUtil.snapshot()
