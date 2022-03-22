@@ -18,6 +18,12 @@ library Reveal {
         // Data does not contain parameters. It is used for privacy reasons
     }
 
+    function isDestAmountOnlyOperation(Enums.OperationType op) pure internal returns (bool){
+        return op.operationType == Enums.OperationType.TRANSFER ||
+        op.operationType == Enums.OperationType.DELEGATE ||
+        op.operationType == Enums.OperationType.UNDELEGATE;
+    }
+
     function isDestOnlyOperation(Enums.OperationType op) pure internal returns (bool){
         return op == Enums.OperationType.SET_RECOVERY_ADDRESS ||
         op == Enums.OperationType.FORWARD;
@@ -33,7 +39,7 @@ library Reveal {
         bytes32 hash = keccak256(bytes.concat(auth.neighbors[0], bytes32(bytes4(auth.indexWithNonce)), auth.eotp));
         bytes32 paramsHash = bytes32(0);
         // Perhaps a better way to do this is simply using the general paramsHash (in else branch) to handle all cases. We are holding off from doing that because that would be a drastic change and it would result in a lot of work for backward compatibility reasons.
-        if (op.operationType == Enums.OperationType.TRANSFER) {
+        if (isDestAmountOnlyOperation(op.operationType)) {
             paramsHash = keccak256(bytes.concat(bytes32(bytes20(address(op.dest))), bytes32(op.amount)));
         } else if (isAmountOnlyOperation(op.operationType)) {
             paramsHash = keccak256(bytes.concat(bytes32(op.amount)));
