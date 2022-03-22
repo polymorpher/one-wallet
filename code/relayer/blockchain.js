@@ -148,7 +148,7 @@ const init = async () => {
           mnemonic: n.mnemonic,
           privateKeys: !n.mnemonic && [n.key],
           providerOrUrl: n.wss || n.url,
-          sharedNonce: false,
+          sharedNonce: config.safeNonce,
           pollingInterval: config.pollingInterval,
           numberOfAddresses: n.numAccounts
         })

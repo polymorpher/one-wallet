@@ -12,6 +12,7 @@ const config = {
   },
   corsOrigins: process.env['CORS'],
   secret: process.env['SECRET'],
+  safeNonce: process.env['SAFE_NONCE'] === '1' || process.env['SAFE_NONCE'] === 'true',
   pollingInterval: parseInt(process.env.pollingInterval || 1000),
   networks: {
     'harmony-testnet': {
