@@ -19,9 +19,9 @@ library Reveal {
     }
 
     function isDestAmountOnlyOperation(Enums.OperationType op) pure internal returns (bool){
-        return op.operationType == Enums.OperationType.TRANSFER ||
-        op.operationType == Enums.OperationType.DELEGATE ||
-        op.operationType == Enums.OperationType.UNDELEGATE;
+        return op == Enums.OperationType.TRANSFER ||
+        op == Enums.OperationType.DELEGATE ||
+        op == Enums.OperationType.UNDELEGATE;
     }
 
     function isDestOnlyOperation(Enums.OperationType op) pure internal returns (bool){
