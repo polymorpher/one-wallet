@@ -11,6 +11,7 @@ const HDWalletProvider = require('@truffle/hdwallet-provider')
 const fs = require('fs/promises')
 const path = require('path')
 const pick = require('lodash/fp/pick')
+const cloneDeep = require('lodash/fp/cloneDeep')
 const { backOff } = require('exponential-backoff')
 const { rpc } = require('./rpc')
 const BN = require('bn.js')
@@ -159,7 +160,14 @@ const init = async () => {
     // console.log(n)
     if (n.key) {
       try {
-        providers[k] = new HDWalletProvider({ mnemonic: n.mnemonic, privateKeys: !n.mnemonic && [n.key], providerOrUrl: n.wss || n.url, sharedNonce: false })
+        providers[k] = new HDWalletProvider({
+          mnemonic: n.mnemonic,
+          privateKeys: !n.mnemonic && [n.key],
+          providerOrUrl: n.wss || n.url,
+          sharedNonce: false,
+          pollingInterval: config.pollingInterval,
+          numberOfAddresses: n.numAccounts
+        })
         // if (k.startsWith('eth')) {
         //   providers[k] = new HDWalletProvider({ mnemonic: n.mnemonic, privateKeys: !n.mnemonic && [n.key], providerOrUrl: n.url, sharedNonce: false })
         // } else {
@@ -227,40 +235,68 @@ const init = async () => {
     libraries,
   })
   for (const network in providers) {
+    const addresses = providers[network].addresses
     // const nonce = await rpc.getNonce({ address: providers[network].addresses[0], network })
-    pendingNonces[network] = 0
-    // console.log(`[${network}] Set nonce ${nonce}`)
-    console.log(`[${network}] Set pending nonce = 0`)
+    pendingNonces[network] = {}
+    for (const address of addresses) {
+      pendingNonces[network][address] = 0
+      console.log(`[${network}][${address}] Set pending nonce = 0`)
+    }
   }
 }
 
-// const incrementNonce = (network, useInt = true) => {
-//   pendingNonces[network] += 1
-//   return getNonce(network, useInt)
-// }
-//
-// const getNonce = (network, useInt = true) => {
-//   if (useInt) {
-//     return pendingNonces[network]
-//   }
-//   // return hex string
-//   return new BN(pendingNonces[network]).toString(16)
-// }
+const sampleExecutionAddress = (network) => {
+  const addresses = providers[network].addresses
+
+  const nonces = cloneDeep(pendingNonces[network])
+  const probs = []
+  let sum = 0
+  for (const address of addresses) {
+    const p = 1.0 / Math.exp(nonces[address])
+    probs.push(p)
+    sum += p
+  }
+  const r = Math.random() * sum
+  let s = 0
+  for (let i = 0; i < probs.length; i++) {
+    s += probs[i]
+    if (s >= r) {
+      return [i, addresses[i]]
+    }
+  }
+  return [addresses.length - 1, addresses[addresses.length - 1]]
+}
 
 // basic executor that
-const prepareExecute = (network, logger) => async (f) => {
-  const latestNonce = await rpc.getNonce({ address: providers[network].addresses[0], network })
-  const nonce = latestNonce + pendingNonces[network]
-  pendingNonces[network] += 1
-  console.log(`[${network}] incremented pending nonce=${pendingNonces[network]}`)
+const prepareExecute = (network, logger = console.log) => async (f) => {
+  const [fromIndex, from] = sampleExecutionAddress(network)
+  logger(`Sampled [${fromIndex}] ${from}`)
+  const latestNonce = await rpc.getNonce({ address: from, network })
+  const snapshotPendingNonces = pendingNonces[network][from]
+  const nonce = latestNonce + snapshotPendingNonces
+  pendingNonces[network][from] += 1
+  const printNonceStats = () => `[network=${network}][account=${fromIndex}][nonce=${nonce}][snapshot=${snapshotPendingNonces}][current=${pendingNonces[network][from]}]`
   try {
-    logger && logger(nonce, null, 'pending')
-    const tx = await f('0x' + new BN(nonce).toString(16))
-    logger && logger(nonce, tx, 'complete')
+    logger(`[pending]${printNonceStats()}`)
+    let numAttempts = 0
+    const tx = await backOff(
+      async () => f({
+        from,
+        nonce: '0x' + new BN(nonce).toString(16),
+        gasPrice: config.gasPrice.clone().addn(numAttempts)
+      }), {
+        retry: (ex, n) => {
+          numAttempts = n
+          logger(`[retry][attempts=${n}]${printNonceStats()}`)
+        }
+      })
+    logger(`[complete]${printNonceStats()}`, tx)
     return tx
+  } catch (ex) {
+    logger(`[error]${printNonceStats()}`, ex)
+    throw ex
   } finally {
-    pendingNonces[network] -= 1
-    console.log(`[${network}] decremented pending nonce=${pendingNonces[network]}`)
+    pendingNonces[network][from] -= 1
   }
 }
 
