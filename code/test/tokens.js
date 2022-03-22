@@ -159,11 +159,20 @@ contract('ONEWallet', (accounts) => {
     aliceOldState.allCommits = allCommits
     // tracked tokens
     let trackedTokens = await alice.wallet.getTrackedTokens()
+    // console.log(`trackedTokens: ${JSON.stringify(trackedTokens)}`)
     assert.notDeepEqual(trackedTokens, aliceOldState.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
-    aliceOldState.trackedTokens = aliceCurrentState.trackedTokens
+    assert.equal(trackedTokens[0][0].toString(), ONEConstants.TokenType.ERC20.toString(), 'alice.wallet.trackedTokens tracking tokens of type ERC20')
+    assert.deepEqual(trackedTokens[1][0], testerc20.address, 'alice.wallet.trackedTokens tracking testerc20')
+    assert.deepEqual(trackedTokens[2].length, 1, 'alice.wallet.trackedTokens two tokens are now tracked')
+    assert.deepEqual([ trackedTokens[2][0].toString() ], ['0'], 'alice.wallet.trackedTokens tokens 0 (ERC29 has no NFT id) is now tracked')
+    aliceOldState.trackedTokens = trackedTokens
 
     // Check alices state
     await CheckUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
+
+    // trackedTokens = await bob.wallet.getTrackedTokens()
+    // console.log(`bob trackedTokens: ${JSON.stringify(trackedTokens)}`)
+
     // Bob Items that have changed - nothing
     await CheckUtil.checkONEWalletStateChange(bobOldState, bobCurrentState)
 
@@ -322,7 +331,7 @@ contract('ONEWallet', (accounts) => {
     // Check alices state
     await CheckUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
 
-    // Bob Items that have changed - nothing
+    // Bob Items that have changed - tracked tokens
     trackedTokens = await bob.wallet.getTrackedTokens()
     assert.notDeepEqual(trackedTokens, bobOldState.trackedTokens, 'bob.wallet.trackedTokens should have been updated')
     assert.equal(trackedTokens[0][0].toString(), ONEConstants.TokenType.ERC721.toString(), 'alice.wallet.trackedTokens tracking tokens of type ERC721')
