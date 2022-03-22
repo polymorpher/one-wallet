@@ -4,25 +4,22 @@ import Col from 'antd/es/col'
 import Row from 'antd/es/row'
 import Typography from 'antd/es/typography'
 import CloseOutlined from '@ant-design/icons/CloseOutlined'
-import { Hint, InputBox, Label, Warning, Text } from '../../components/Text'
+import { Hint, InputBox, Label, Text, Warning } from '../../components/Text'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
-import util, { autoWalletNameHint, useWindowDimensions } from '../../util'
+import util, { autoWalletNameHint } from '../../util'
 import BN from 'bn.js'
-import ShowUtils from './show-util'
+import ShowUtils, { retryUpgrade } from './show-util'
 import { useDispatch, useSelector } from 'react-redux'
-import { HarmonyONE } from '../../components/TokenAssets'
 import { SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import { api } from '../../../../lib/api'
 import { Chaining } from '../../api/flow'
-import intersection from 'lodash/fp/intersection'
-import ONEConstants from '../../../../lib/constants'
 
 import { OtpStack } from '../../components/OtpStack'
-import { AverageRow } from '../../components/Grid'
 import { useOps } from '../../components/Common'
+import { useHistory } from 'react-router'
 const { Title, Link } = Typography
 
 const Stake = ({
@@ -32,6 +29,7 @@ const Stake = ({
   prefillAmount, // string, number of tokens, in whole amount (not wei)
   prefillDest, // string, hex format
 }) => {
+  const history = useHistory()
   const {
     dispatch, wallet, network, stage, setStage,
     resetWorker, recoverRandomness, otpState, isMobile,
@@ -39,14 +37,14 @@ const Stake = ({
   const doubleOtp = wallet.doubleOtp
   const { otpInput, otp2Input, resetOtp } = otpState
 
-  const balance = useSelector(state => state.balance?.[address] || 0)
+  const balance = useSelector(state => state.balance?.[address]?.balance || 0)
   const price = useSelector(state => state.global.price)
 
   const { formatted } = util.computeBalance(balance, price)
 
   const [validatorAddress, setValidatorAddress] = useState({ value: prefillDest || '', label: prefillDest ? util.oneAddress(prefillDest) : '' })
   const [inputAmount, setInputAmount] = useState(prefillAmount || '')
-
+  console.log(balance, wallet)
   const maxSpending = BN.min(new BN(balance), util.getMaxSpending(wallet))
   const { formatted: spendingLimitFormatted } = util.computeBalance(maxSpending.toString(), price)
 
@@ -98,6 +96,24 @@ const Stake = ({
     })
   }
 
+  if (!util.canStake(wallet)) {
+    return (
+      <AnimatedSection
+        style={{ maxWidth: 720 }}
+        title={
+          <Title level={isMobile ? 5 : 2}>
+            {isMobile ? '' : 'Staking '}
+          </Title>
+  }
+        extra={[
+          <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
+        ]}
+      >
+        <Warning>Staking requires wallet at least version 16. Please <Link onClick={() => retryUpgrade({ dispatch, history, address })}>upgrade</Link> your wallet</Warning>
+      </AnimatedSection>
+    )
+  }
+
   return (
     <AnimatedSection
       style={{ maxWidth: 720 }}
@@ -110,14 +126,15 @@ const Stake = ({
         <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
       ]}
     >
-      <Row align='middle' style={{ marginBottom: '10px' }}>
+      <Row align='middle' style={{ marginBottom: '32px' }}>
         <Col>
-          <Text>Stake your ONEs with a validator through delegation. You can find a list of validators
-            <Link href='https://staking.harmony.one/validators/mainnet' target='_blank' rel='noreferrer'>here</Link>. Copy the address of the validator below to stake with them.
+          <Text>Stake your ONEs with a validator through delegation. You can find a list of validators <Link href='https://staking.harmony.one/validators/mainnet' target='_blank' rel='noreferrer'>
+            here
+          </Link>. Copy the address of the validator below to stake with them.
           </Text>
         </Col>
       </Row>
-      <Row align='baseline' style={{ marginBottom: '10px' }}>
+      <Row align='baseline' style={{ marginBottom: '16px' }}>
         <Col xs={4}>
           <Label wide={!isMobile} style={{ fontSize: isMobile ? '12px' : undefined }}>
             <Hint>Validator</Hint>
@@ -181,4 +198,4 @@ const Stake = ({
   )
 }
 
-export default Send
+export default Stake
