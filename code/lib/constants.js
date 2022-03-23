@@ -55,7 +55,7 @@ module.exports = {
     5: 'SET_RECOVERY_ADDRESS',
     6: 'RECOVER',
     7: 'DISPLACE',
-    8: 'UPGRADE',
+    8: 'FORWARD',
     9: 'RECOVER_SELECTED_TOKENS',
     10: 'BUY_DOMAIN',
     11: 'COMMAND',
