@@ -68,13 +68,14 @@ const Stake = ({
     async function init () {
       const result = await api.staking.getDelegations({ address })
       const blockNumber = await api.staking.getBlockNumber()
+      const epoch = await api.staking.getEpoch()
       const networkInfo = await api.staking.getNetworkInfo()
       setDelegations(result.map((e, i) => ({ ...e, key: `${i}` })))
-      const totalReward = result.map(e => e.reward).reduce((a, b) => a.add(new BN(b)), new BN(0))
-      setReward(util.computeBalance(totalReward, price))
+      const totalReward = result.map(e => String(e.reward)).reduce((a, b) => a.add(new BN(b)), new BN(0))
+      setReward(util.computeBalance(totalReward.toString(), price))
       const undelegations = flatten(result.map(e => e.undelegations.map(({ Amount, Epoch }) => ({
         amount: Amount,
-        blocks: networkInfo.epochLastBlock - blockNumber,
+        blocks: (7 - (epoch - Epoch)) * 32768 + (networkInfo.epochLastBlock - blockNumber),
         validatorAddress: e.validatorAddress
       }))))
       setUndelegations(undelegations.map((e, i) => ({ ...e, key: `${i}` })))
@@ -145,7 +146,7 @@ const Stake = ({
       key: 'amount',
       // eslint-disable-next-line react/display-name
       render: (text, record) => {
-        return ONEUtil.toOne(String(record.amount) || 0)
+        return util.formatNumber(ONEUtil.toOne(String(record.amount) || 0))
       }
     }, {
       title: 'Reward (ONE)',
@@ -153,7 +154,7 @@ const Stake = ({
       key: 'reward',
       // eslint-disable-next-line react/display-name
       render: (text, record) => {
-        return ONEUtil.toOne(String(record.reward) || 0)
+        return util.formatNumber(ONEUtil.toOne(String(record.reward) || 0))
       }
     }, {
       title: 'Action',
@@ -190,7 +191,7 @@ const Stake = ({
       key: 'amount',
       // eslint-disable-next-line react/display-name
       render: (text, record) => {
-        return ONEUtil.toOne(String(record.amount) || 0)
+        return util.formatNumber(ONEUtil.toOne(String(record.amount) || 0))
       }
     }, {
       title: 'Complete In',
@@ -318,7 +319,7 @@ const Stake = ({
           <Space direction='vertical' size='large'>
             <Row>
               <Space>
-                <Text>{reward ? reward.formatted : <Spin />}</Text>
+                <Text>{reward ? util.formatNumber(reward.formatted) : <Spin />}</Text>
                 <Text type='secondary'>ONE</Text>
                 <Text>(≈ ${reward ? reward.fiatFormatted : <Spin />}</Text>
                 <Text type='secondary'>USD)</Text>
