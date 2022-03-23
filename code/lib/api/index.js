@@ -847,7 +847,7 @@ const api = {
         reward,
         validatorAddress: validator_address
       }))
-    }
+    },
   }
 }
 
