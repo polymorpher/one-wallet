@@ -37,8 +37,9 @@ import Reclaim from './Show/Reclaim'
 import Extend from './Show/Extend'
 import CheckRoots from './Show/CheckRoots'
 import Limit from './Show/Limit'
-import Stake from './Show/Stake'
-import Unstake from './Show/Unstake'
+import Stake from './Show/Stake/Stake'
+import Unstake from './Show/Stake/Unstake'
+import CollectStakeReward from './Show/Stake/CollectStakeReward'
 
 const tabList = [
   { key: 'coins', tab: 'Coins' },
@@ -179,6 +180,7 @@ const Show = () => {
       {section === 'extend' && <Extend address={address} onClose={showStartScreen} />}
       {section === 'stake' && <Stake address={address} onClose={showStartScreen} />}
       {section === 'unstake' && <Unstake address={address} />}
+      {section === 'collectStakeReward' && <CollectStakeReward address={address} />}
     </>
   )
 }
