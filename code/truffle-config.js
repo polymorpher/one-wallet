@@ -1,69 +1,37 @@
 const config = require('./config')
 const HDWalletProvider = require('@truffle/hdwallet-provider')
-const { TruffleProvider } = require('@harmony-js/core')
-const { Account } = require('@harmony-js/account')
-
-const HarmonyProvider = ({ key, url, chainId, gasLimit, gasPrice }) => {
-  const truffleProvider = new TruffleProvider(
-    url,
-    {},
-    { shardID: 0, chainId },
-    gasLimit && gasPrice && { gasLimit, gasPrice },
-  )
-  truffleProvider.addByPrivateKey(key)
-  const account = new Account(key)
-  truffleProvider.setSigner(account.checksumAddress)
-  return truffleProvider
-}
 
 const BuildProvider = (conf, useTruffle) => {
-  if (useTruffle) {
-    return new HDWalletProvider({
-      mnemonic: conf.mnemonic, privateKeys: !conf.mnemonic && [conf.key], providerOrUrl: conf.url, sharedNonce: false
-    })
-  } else {
-    return HarmonyProvider({ key: conf.key,
-      url: conf.url,
-      chainId: conf.chainId,
-      gasLimit: config.gasLimit,
-      gasPrice: config.gasPrice
-    })
-    // providers[k] = new HDWalletProvider({ privateKeys: [n.key], providerOrUrl: n.url })
-  }
+  return new HDWalletProvider({
+    mnemonic: conf.mnemonic,
+    privateKeys: !conf.mnemonic && [conf.key],
+    providerOrUrl: conf.url,
+    sharedNonce: false,
+    pollingInterval: config.pollingInterval,
+  })
 }
 
 module.exports = {
-  // contracts_directory: '@ensdomains/subdomain-registrar-core/contracts/interfaces/IRegistrar.sol',
   networks: {
     dev: {
-      // host: '127.0.0.1',
-      // port: 7545,
       network_id: '*',
-      // host: process.env.GANACHE_RPC || '127.0.0.1',
-      // port: process.env.GANACHE_PORT || 7545,
       gas: config.gasLimit,
       gasPrice: config.gasPrice,
-      provider: () => config.eth.ganache && BuildProvider(config.eth.ganache, true)
+      provider: () => config.networks['eth-ganache'] && BuildProvider(config.networks['eth-ganache'], true)
     },
     ganache: {
       host: '127.0.0.1',
       port: 7545,
       network_id: '*',
     },
-    rinkeby: {
-      network_id: '4',
-      gas: config.gasLimit,
-      gasPrice: config.gasPrice,
-      provider: () => config.eth.rinkeby.key && BuildProvider(config.eth.rinkeby, true)
-    },
     'harmony-testnet': {
-      provider: () => config.harmony.testnet.key && BuildProvider(config.harmony.testnet),
-      network_id: config.harmony.testnet.networkId,
+      provider: () => config.networks['harmony-testnet'].key && BuildProvider(config.networks['harmony-testnet']),
+      network_id: config.networks['harmony-testnet'].networkId,
       gas: config.gasLimit
     },
     'harmony-mainnet': {
-      provider: () => config.harmony.mainnet.key && BuildProvider(config.harmony.mainnet),
-      network_id: config.harmony.mainnet.networkId,
+      provider: () => config.networks['harmony-mainnet'].key && BuildProvider(config.networks['harmony-mainnet']),
+      network_id: config.networks['harmony-mainnet'].networkId,
       gas: config.gasLimit
     }
   },
