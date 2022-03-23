@@ -5,7 +5,7 @@ const BuildProvider = (conf, useTruffle) => {
   return new HDWalletProvider({
     mnemonic: conf.mnemonic,
     privateKeys: !conf.mnemonic && [conf.key],
-    providerOrUrl: conf.url,
+    providerOrUrl: conf.wss || conf.url,
     sharedNonce: false,
     pollingInterval: config.pollingInterval,
   })
