@@ -38,6 +38,7 @@ import Extend from './Show/Extend'
 import CheckRoots from './Show/CheckRoots'
 import Limit from './Show/Limit'
 import Stake from './Show/Stake'
+import Unstake from './Show/Unstake'
 
 const tabList = [
   { key: 'coins', tab: 'Coins' },
@@ -62,6 +63,8 @@ const SectionList = [
   'reclaim',
   'extend',
   'stake',
+  'unstake',
+  'collectStakeReward'
 ]
 
 const SpecialCommands = [
@@ -175,6 +178,7 @@ const Show = () => {
       {section === 'reclaim' && <Reclaim address={address} onClose={showStartScreen} />}
       {section === 'extend' && <Extend address={address} onClose={showStartScreen} />}
       {section === 'stake' && <Stake address={address} onClose={showStartScreen} />}
+      {section === 'unstake' && <Unstake address={address} />}
     </>
   )
 }
