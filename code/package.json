@@ -10,6 +10,7 @@
     "lint-fix": "eslint ./lib ./migrations ./test --fix",
     "console": "node --experimental-repl-await",
     "abi": "node scripts/abi.js",
+    "event-hash": "node scripts/eventhash.js",
     "flatten": "truffle-flattener contracts/ONEWallet.sol > flattened/ONEWalletFlattened.sol"
   },
   "dependencies": {
