@@ -14,8 +14,9 @@ library Reveal {
         op == Enums.OperationType.BACKLINK_DELETE ||
         op == Enums.OperationType.BACKLINK_OVERRIDE ||
         op == Enums.OperationType.DISPLACE ||
-        op == Enums.OperationType.RECOVER;
-        // Data does not contain parameters. It is used for privacy reasons
+        // Data does not contain parameters for below operations. It is used for privacy reasons
+        op == Enums.OperationType.RECOVER ||
+        op == Enums.OperationType.COLLECT_REWARD;
     }
 
     function isDestAmountOnlyOperation(Enums.OperationType op) pure internal returns (bool){
