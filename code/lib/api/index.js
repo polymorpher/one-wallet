@@ -848,6 +848,44 @@ const api = {
         validatorAddress: validator_address
       }))
     },
+    getEpoch: async () => {
+      const { data: { result } } = await rpcBase.post('', {
+        'jsonrpc': '2.0',
+        'method': 'hmy_getEpoch',
+        'params': [],
+        'id': 1
+      })
+      return new BN(result.slice(2), 16).toNumber()
+    },
+    getBlockNumber: async () => {
+      const { data: { result } } = await rpcBase.post('', {
+        'jsonrpc': '2.0',
+        'method': 'hmy_blockNumber',
+        'params': [],
+        'id': 1
+      })
+      return new BN(result.slice(2), 16).toNumber()
+    },
+    getNetworkInfo: async () => {
+      const { data: { result } } = await rpcBase.post('', {
+        'jsonrpc': '2.0',
+        'method': 'hmy_getStakingNetworkInfo',
+        'params': [],
+        'id': 1
+      })
+      const circulatingSupply = result['circulating-supply']
+      const epochLastBlock = result['epoch-last-block']
+      const medianRawStake = result['median-raw-stake']
+      const totalStaking = result['total-staking']
+      const totalSupply = result['total-supply']
+      return {
+        circulatingSupply,
+        epochLastBlock,
+        medianRawStake,
+        totalStaking,
+        totalSupply,
+      }
+    },
   }
 }
 
