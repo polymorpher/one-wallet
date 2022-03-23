@@ -67,7 +67,7 @@ const bumpTestTime = async (testEffectiveTime, bumpSeconds) => {
   Logger.debug(`chainBumpSeconds: ${chainBumpSeconds}`)
   await increaseTime(chainBumpSeconds)
   const newBlockNumber = await web3.eth.getBlockNumber()
-  const newChainTime = ((await web3.eth.getBlock(newBlockNumber)).timestamp) * 1000
+  const newChainTime = (await web3.eth.getBlock(newBlockNumber)).timestamp * 1000
   Logger.debug(`newBlockNumber  : ${JSON.stringify(newBlockNumber)}`)
   Logger.debug(`newChainTime    : ${JSON.stringify(newChainTime)}`)
   Logger.debug(`==================`)
