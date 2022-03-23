@@ -23,7 +23,7 @@ const INTERVAL = 30000 // 30 second Intervals
 const DURATION = INTERVAL * 12 // 6 minute wallet duration
 // const SLOT_SIZE = 1 // 1 transaction per interval
 const EFFECTIVE_TIME = Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
-const FIVE_HEX = ONEUtil.hexString('5')
+const DUMMY_HEX = ONEUtil.hexString('5') // Dummy Hex string for 5 i.e. 0x05
 
 contract('ONEWallet', (accounts) => {
   // Wallets effective time is the current time minus half the duration (3 minutes ago)
@@ -368,7 +368,7 @@ contract('ONEWallet', (accounts) => {
     let bobWalletBalanceERC1155T8
     assert.equal(20, await testerc1155.balanceOf(accounts[0], 8), 'Alice.lastResortAddress owns 20 of token 8')
     // transfer ERC1155 tokens from accounts[0] (which owns the tokens) to alices wallet
-    await testerc1155.safeTransferFrom(accounts[0], alice.wallet.address, 8, 8, FIVE_HEX, { from: accounts[0] })
+    await testerc1155.safeTransferFrom(accounts[0], alice.wallet.address, 8, 8, DUMMY_HEX, { from: accounts[0] })
     aliceCurrentState = await CheckUtil.getONEWalletState(alice.wallet)
     aliceWalletBalanceERC1155T8 = await testerc1155.balanceOf(alice.wallet.address, 8)
     assert.equal(8, aliceWalletBalanceERC1155T8, 'Transfer of 8 ERC721 token to alice.wallet succesful')
@@ -529,7 +529,7 @@ contract('ONEWallet', (accounts) => {
     bobCurrentState = await CheckUtil.getONEWalletState(bob.wallet)
 
     // transfer 1155 tokens from accounts[0] (which owns the tokens) to alices wallet
-    await testerc1155.safeTransferFrom(accounts[0], alice.wallet.address, 8, 8, FIVE_HEX, { from: accounts[0] })
+    await testerc1155.safeTransferFrom(accounts[0], alice.wallet.address, 8, 8, DUMMY_HEX, { from: accounts[0] })
 
     // Update alice and bob's current Sate
     aliceCurrentState = await CheckUtil.getONEWalletState(alice.wallet)

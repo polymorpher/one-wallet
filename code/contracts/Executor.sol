@@ -24,9 +24,9 @@ library Executor {
             }
         } else if (op.operationType == Enums.OperationType.UNTRACK) {
             if (op.data.length > 0) {
-                tokenTrackerState.untrackToken(op.tokenType, op.contractAddress, op.tokenId);
-            } else {
                 tokenTrackerState.multiUntrack(op.data);
+            } else {
+                tokenTrackerState.untrackToken(op.tokenType, op.contractAddress, op.tokenId);
             }
         } else if (op.operationType == Enums.OperationType.TRANSFER_TOKEN) {
             tokenTrackerState.transferToken(op.tokenType, op.contractAddress, op.tokenId, op.dest, op.amount, op.data);
