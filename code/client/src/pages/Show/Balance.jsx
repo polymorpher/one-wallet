@@ -124,6 +124,7 @@ const Balance = ({ address }) => {
           <Space>
             <Button type='primary' size='large' shape='round' onClick={showTransfer} disabled={!util.isNonZeroBalance(selectedTokenBalance)}> Send </Button>
             {selectedToken.key === 'one' && <BuyButton address={address} token={selectedToken} />}
+            {selectedToken.key === 'one' && <Button type='default' size='large' shape='round' onClick={() => history.push(Paths.showAddress(address, 'stake'))} disabled={!util.isNonZeroBalance(selectedTokenBalance)}> Stake </Button>}
           </Space>
         </Col>
       </Row>
