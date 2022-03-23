@@ -14,6 +14,7 @@ import ShowUtils, { retryUpgrade } from './show-util'
 import { useDispatch, useSelector } from 'react-redux'
 import { SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
+import ONEConstants from '../../../../lib/constants'
 import { api } from '../../../../lib/api'
 import { Chaining } from '../../api/flow'
 
@@ -73,7 +74,7 @@ const Stake = ({
     }
   })
 
-  const doSend = () => {
+  const doDelegate = () => {
     if (stage >= 0) {
       return
     }
@@ -90,8 +91,8 @@ const Stake = ({
       recoverRandomness,
       commitHashGenerator: ONE.computeTransferHash,
       commitHashArgs: { dest, amount },
-      revealAPI: api.relayer.revealTransfer,
-      revealArgs: { dest, amount },
+      revealAPI: api.relayer.revealTransferLike,
+      revealArgs: { dest, amount, operationType: ONEConstants.OperationType.DELEGATE },
       ...handlers,
     })
   }
@@ -188,7 +189,7 @@ const Stake = ({
             walletName={autoWalletNameHint(wallet)}
             doubleOtp={doubleOtp}
             otpState={otpState}
-            onComplete={doSend}
+            onComplete={doDelegate}
             action='confirm staking'
           />
         </Col>
