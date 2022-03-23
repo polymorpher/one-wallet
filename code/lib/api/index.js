@@ -647,12 +647,15 @@ const api = {
       return api.relayer.reveal({ address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
     },
     revealRecovery: async ({ neighbors, index, eotp, address, data }) => {
+      return api.relayer.revealDataBased({ address, neighbors, index, eotp, operationType: ONEConstants.OperationType.RECOVER, data })
+    },
+    revealDataBased: async ({ neighbors, index, eotp, address, data, operationType }) => {
       return api.relayer.reveal({
         address,
         neighbors,
         index,
         eotp,
-        operationType: ONEConstants.OperationType.RECOVER,
+        operationType,
         tokenType: ONEConstants.TokenType.NONE,
         contractAddress: ONEConstants.EmptyAddress,
         tokenId: 0,
