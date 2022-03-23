@@ -86,7 +86,7 @@ const initAPI = (store) => {
         majorVersion,
         minorVersion,
       })
-      console.log('api update: ', { network, secret })
+      // console.log('api update: ', { network, secret })
     }
   })
 }
@@ -839,6 +839,7 @@ const api = {
       //     "reward": 0,
       //     "validator_address": "one1x8fhymx4xsygy4dju9ea9vhs3vqg0u3ht0nz74"
       //   }]
+      // eslint-disable-next-line camelcase
       return result.map(({ Undelegations, amount, delegator_address, reward, validator_address }) => ({
         undelegations: Undelegations,
         amount,
