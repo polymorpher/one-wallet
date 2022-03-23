@@ -69,7 +69,7 @@ const Stake = ({
       setReward(util.computeBalance(totalReward, price))
     }
     init()
-  }, [])
+  }, [address])
 
   const useMaxAmount = () => {
     if (new BN(balance, 10).gt(new BN(maxSpending, 10))) {
@@ -162,15 +162,8 @@ const Stake = ({
   if (network !== 'harmony-mainnet') {
     return (
       <AnimatedSection
-        wide
-        title={
-          <Title level={isMobile ? 5 : 2}>
-            {isMobile ? '' : 'Staking '}
-          </Title>
-      }
-        extra={[
-          <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-        ]}
+        wide title={<Title level={isMobile ? 5 : 2}>Staking</Title>}
+        extra={[<Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />]}
       >
         <Warning>Staking is available only on Harmony Mainnet. Please change your network (on top right of the window)</Warning>
       </AnimatedSection>
@@ -180,17 +173,10 @@ const Stake = ({
   if (!util.canStake(wallet)) {
     return (
       <AnimatedSection
-        wide
-        title={
-          <Title level={isMobile ? 5 : 2}>
-            {isMobile ? '' : 'Staking '}
-          </Title>
-  }
-        extra={[
-          <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-        ]}
+        wide title={<Title level={isMobile ? 5 : 2}>Staking</Title>}
+        extra={[<Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />]}
       >
-        <Warning>Staking requires wallet at least version 16. Please <Link onClick={() => retryUpgrade({ dispatch, history, address })}>upgrade</Link> your wallet</Warning>
+        <Warning>Staking requires wallet version {'>='} 16. Please <Link onClick={() => retryUpgrade({ dispatch, history, address })}>upgrade your wallet</Link></Warning>
       </AnimatedSection>
     )
   }
