@@ -2,24 +2,24 @@ import React, { useEffect, useState } from 'react'
 import Button from 'antd/es/button'
 import Col from 'antd/es/col'
 import Row from 'antd/es/row'
-import CloseOutlined from '@ant-design/icons/CloseOutlined'
-import { Hint, InputBox, Label, Text, Warning, Title, Link } from '../../components/Text'
-import AddressInput from '../../components/AddressInput'
-import { CommitRevealProgress } from '../../components/CommitRevealProgress'
-import AnimatedSection from '../../components/AnimatedSection'
-import util, { autoWalletNameHint } from '../../util'
+import { Hint, InputBox, Label, Text, Title } from '../../../components/Text'
+import AddressInput from '../../../components/AddressInput'
+import { CommitRevealProgress } from '../../../components/CommitRevealProgress'
+import util, { autoWalletNameHint } from '../../../util'
 import BN from 'bn.js'
-import ShowUtils, { retryUpgrade } from './show-util'
+import ShowUtils from '../show-util'
 import { useSelector } from 'react-redux'
-import { SmartFlows } from '../../../../lib/api/flow'
-import ONE from '../../../../lib/onewallet'
-import ONEConstants from '../../../../lib/constants'
-import { api } from '../../../../lib/api'
-import Paths from '../../constants/paths'
-import { OtpStack } from '../../components/OtpStack'
-import { useOps } from '../../components/Common'
+import { SmartFlows } from '../../../../../lib/api/flow'
+import ONE from '../../../../../lib/onewallet'
+import ONEConstants from '../../../../../lib/constants'
+import { api } from '../../../../../lib/api'
+import Paths from '../../../constants/paths'
+import { OtpStack } from '../../../components/OtpStack'
+import { useOps } from '../../../components/Common'
 import { useHistory } from 'react-router'
 import querystring from 'query-string'
+import { StakeCommon } from './StakeCommon'
+import { Link } from 'react-router-dom'
 
 const Unstake = ({
   address,
@@ -34,7 +34,7 @@ const Unstake = ({
   const [maxUndelegateAmount, setMaxUndelegateAmount] = useState(new BN(0))
   const history = useHistory()
   const {
-    dispatch, wallet, network, stage, setStage,
+    wallet, network, stage, setStage,
     resetWorker, recoverRandomness, otpState, isMobile,
   } = useOps({ address })
   const doubleOtp = wallet.doubleOtp
@@ -114,36 +114,11 @@ const Unstake = ({
     })
   }
 
-  if (network !== 'harmony-mainnet') {
-    return (
-      <AnimatedSection
-        wide title={<Title level={isMobile ? 5 : 2}>Staking - Undelegate</Title>}
-        extra={[<Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />]}
-      >
-        <Warning>Staking is available only on Harmony Mainnet. Please change your network (on top right of the window)</Warning>
-      </AnimatedSection>
-    )
-  }
-
-  if (!util.canStake(wallet)) {
-    return (
-      <AnimatedSection
-        wide title={<Title level={isMobile ? 5 : 2}>Staking - Undelegate</Title>}
-        extra={[<Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />]}
-      >
-        <Warning>Staking requires wallet version {'>='} 16. Please <Link onClick={() => retryUpgrade({ dispatch, history, address })}>upgrade your wallet</Link></Warning>
-      </AnimatedSection>
-    )
-  }
-
   return (
-    <AnimatedSection
-      wide title={<Title level={isMobile ? 5 : 2}>Staking - Undelegate</Title>}
-      extra={[<Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />]}
-    >
+    <StakeCommon isMobile={isMobile} network={network} onClose={onClose} address={address} titleSuffix='Undelegate'>
       <Row align='middle' style={{ marginBottom: '32px' }}>
         <Text>
-          After you undelegate, the amount will become available for spending in your wallet after 7 epochs (about 7 days).
+          After you undelegate, the ONEs you undelegated can be re-delegated to another validator in the next epoch (about 18.2 hours). However, the funds will only become available for spending in your wallet after 7 epochs (about 5.3 days). Learn more at <Link href='https://docs.harmony.one/home/network/delegator/staking/staking-faq#9.-i-want-to-undelegate-my-token-how-long-do-i-have-to-wait' target='_blank' rel='noreferrer'>Staking FAQ</Link>.
         </Text>
       </Row>
       <Row align='baseline' style={{ marginBottom: '16px' }}>
@@ -198,12 +173,12 @@ const Unstake = ({
             doubleOtp={doubleOtp}
             otpState={otpState}
             onComplete={doUndelegate}
-            action='confirm staking'
+            action='confirm undelegation'
           />
         </Col>
       </Row>
       <CommitRevealProgress stage={stage} />
-    </AnimatedSection>
+    </StakeCommon>
   )
 }
 

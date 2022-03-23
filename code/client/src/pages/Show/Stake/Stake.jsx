@@ -2,33 +2,32 @@ import React, { useEffect, useState } from 'react'
 import Button from 'antd/es/button'
 import Col from 'antd/es/col'
 import Row from 'antd/es/row'
-import CloseOutlined from '@ant-design/icons/CloseOutlined'
-import { Hint, InputBox, Label, Text, Warning, Title, Link } from '../../components/Text'
-import AddressInput from '../../components/AddressInput'
-import { CommitRevealProgress } from '../../components/CommitRevealProgress'
-import AnimatedSection from '../../components/AnimatedSection'
-import util, { autoWalletNameHint } from '../../util'
+import { Hint, InputBox, Label, Text, Title, Link } from '../../../components/Text'
+import AddressInput from '../../../components/AddressInput'
+import { CommitRevealProgress } from '../../../components/CommitRevealProgress'
+import util, { autoWalletNameHint } from '../../../util'
 import BN from 'bn.js'
-import ShowUtils, { retryUpgrade } from './show-util'
+import ShowUtils from '../show-util'
 import { useSelector } from 'react-redux'
-import { SmartFlows } from '../../../../lib/api/flow'
-import ONE from '../../../../lib/onewallet'
-import ONEUtil from '../../../../lib/util'
-import ONEConstants from '../../../../lib/constants'
-import { api } from '../../../../lib/api'
-import { Chaining } from '../../api/flow'
-import Paths from '../../constants/paths'
-import { OtpStack } from '../../components/OtpStack'
-import { useOps } from '../../components/Common'
+import { SmartFlows } from '../../../../../lib/api/flow'
+import ONE from '../../../../../lib/onewallet'
+import ONEUtil from '../../../../../lib/util'
+import ONEConstants from '../../../../../lib/constants'
+import { api } from '../../../../../lib/api'
+import { Chaining } from '../../../api/flow'
+import Paths from '../../../constants/paths'
+import { OtpStack } from '../../../components/OtpStack'
+import { useOps } from '../../../components/Common'
 import { useHistory } from 'react-router'
 import Divider from 'antd/es/divider'
 import Table from 'antd/es/table'
-import { TallRow } from '../../components/Grid'
+import { TallRow } from '../../../components/Grid'
 import Space from 'antd/es/space'
 import Spin from 'antd/es/spin'
 import Tooltip from 'antd/es/tooltip'
 import flatten from 'lodash/fp/flatten'
 import humanizeDuration from 'humanize-duration'
+import { StakeCommon, RewardPanel } from './StakeCommon'
 
 const Stake = ({
   address,
@@ -204,40 +203,8 @@ const Stake = ({
     }
   ]
 
-  if (network !== 'harmony-mainnet') {
-    return (
-      <AnimatedSection
-        wide title={<Title level={isMobile ? 5 : 2}>Staking</Title>}
-        extra={[<Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />]}
-      >
-        <Warning>Staking is available only on Harmony Mainnet. Please change your network (on top right of the window)</Warning>
-      </AnimatedSection>
-    )
-  }
-
-  if (!util.canStake(wallet)) {
-    return (
-      <AnimatedSection
-        wide title={<Title level={isMobile ? 5 : 2}>Staking</Title>}
-        extra={[<Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />]}
-      >
-        <Warning>Staking requires wallet version {'>='} 16. Please <Link onClick={() => retryUpgrade({ dispatch, history, address })}>upgrade your wallet</Link></Warning>
-      </AnimatedSection>
-    )
-  }
-
   return (
-    <AnimatedSection
-      wide
-      title={
-        <Title level={isMobile ? 5 : 2}>
-          {isMobile ? '' : 'Staking '}
-        </Title>
-      }
-      extra={[
-        <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-      ]}
-    >
+    <StakeCommon isMobile={isMobile} network={network} onClose={onClose} address={address}>
       <Row align='middle' style={{ marginBottom: '32px' }}>
         <Text>
           <Link href='https://docs.harmony.one/home/network/validators/definitions' target='_blank' rel='noreferrer'>Staking</Link> lets you earn rewards (in ONE) over time. You cannot spend the ONEs you staked, until you unstake them (which usually take 7 days).
@@ -293,7 +260,7 @@ const Stake = ({
           >
             ≈ ${stakingFiatAmountFormatted}
           </Title>
-              &nbsp;
+          &nbsp;
           <Hint>USD</Hint>
         </Col>
       </Row>
@@ -311,38 +278,13 @@ const Stake = ({
       <CommitRevealProgress stage={stage} />
       <Divider />
       <Title level={3}>Your Stakes</Title>
-      <TallRow align='start'>
-        <Col span={isMobile ? 24 : 12}>
-          <Title level={5}>Total accumulated reward</Title>
-        </Col>
-        <Col>
-          <Space direction='vertical' size='large'>
-            <Row>
-              <Space>
-                <Text>{reward ? util.formatNumber(reward.formatted) : <Spin />}</Text>
-                <Text type='secondary'>ONE</Text>
-                <Text>(≈ ${reward ? reward.fiatFormatted : <Spin />}</Text>
-                <Text type='secondary'>USD)</Text>
-              </Space>
-            </Row>
-            <Row>
-              <Space>
-                <Button
-                  type='primary' size='large' shape='round' onClick={() => history.push(Paths.showAddress(address, 'collectStakeReward'))}
-                  disabled={!reward || new BN(reward.balance).eqn(0)}
-                > Collect Reward
-                </Button>
-              </Space>
-            </Row>
-          </Space>
-        </Col>
-      </TallRow>
+      <RewardPanel isMobile={isMobile} address={address} totalReward={reward} showCollectReward />
       <Table dataSource={delegations} columns={columns} loading={delegations === null} />
       <TallRow align='start'>
         <Title level={5}>Undelegations in progress</Title>
       </TallRow>
       <Table dataSource={undelegations} columns={undelegationColumns} loading={undelegations === null} />
-    </AnimatedSection>
+    </StakeCommon>
   )
 }
 
