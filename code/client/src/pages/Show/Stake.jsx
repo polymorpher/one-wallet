@@ -27,6 +27,8 @@ import { TallRow } from '../../components/Grid'
 import Space from 'antd/es/space'
 import Spin from 'antd/es/spin'
 import Tooltip from 'antd/es/tooltip'
+import flatten from 'lodash/fp/flatten'
+import humanizeDuration from 'humanize-duration'
 
 const Stake = ({
   address,
@@ -36,6 +38,7 @@ const Stake = ({
   prefillDest, // string, hex format
 }) => {
   const [delegations, setDelegations] = useState(null)
+  const [undelegations, setUndelegations] = useState(null)
   const [reward, setReward] = useState(null)
   const history = useHistory()
   const {
@@ -64,9 +67,17 @@ const Stake = ({
   useEffect(() => {
     async function init () {
       const result = await api.staking.getDelegations({ address })
+      const blockNumber = await api.staking.getBlockNumber()
+      const networkInfo = await api.staking.getNetworkInfo()
       setDelegations(result.map((e, i) => ({ ...e, key: `${i}` })))
       const totalReward = result.map(e => e.reward).reduce((a, b) => a.add(new BN(b)), new BN(0))
       setReward(util.computeBalance(totalReward, price))
+      const undelegations = flatten(result.map(e => e.undelegations.map(({ Amount, Epoch }) => ({
+        amount: Amount,
+        blocks: networkInfo.epochLastBlock - blockNumber,
+        validatorAddress: e.validatorAddress
+      }))))
+      setUndelegations(undelegations.map((e, i) => ({ ...e, key: `${i}` })))
     }
     init()
   }, [address])
@@ -156,6 +167,39 @@ const Stake = ({
           > Undelegate
           </Button>
         )
+    }
+  ]
+
+  const undelegationColumns = [
+    {
+      title: 'Validator',
+      dataIndex: 'validatorAddress',
+      key: 'validator',
+      // eslint-disable-next-line react/display-name
+      render: (text, record) => {
+        const oneAddress = util.safeOneAddress(record.validatorAddress)
+        return (
+          <Link href={`https://staking.harmony.one/validators/mainnet/${oneAddress}`}>
+            <Tooltip title={oneAddress}>{util.ellipsisAddress(oneAddress)}</Tooltip>
+          </Link>
+        )
+      }
+    }, {
+      title: 'Amount (ONE)',
+      dataIndex: 'amount',
+      key: 'amount',
+      // eslint-disable-next-line react/display-name
+      render: (text, record) => {
+        return ONEUtil.toOne(String(record.amount) || 0)
+      }
+    }, {
+      title: 'Complete In',
+      dataIndex: 'blocks',
+      key: 'blocks',
+      // eslint-disable-next-line react/display-name
+      render: (text, record) => {
+        return `~ ${humanizeDuration(record.blocks * 2 * 1000, { largest: 2, round: true })}`
+      }
     }
   ]
 
@@ -293,6 +337,10 @@ const Stake = ({
         </Col>
       </TallRow>
       <Table dataSource={delegations} columns={columns} loading={delegations === null} />
+      <TallRow align='start'>
+        <Title level={5}>Undelegations in progress</Title>
+      </TallRow>
+      <Table dataSource={undelegations} columns={undelegationColumns} loading={undelegations === null} />
     </AnimatedSection>
   )
 }
