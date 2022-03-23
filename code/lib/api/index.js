@@ -49,6 +49,11 @@ let base = axios.create({
   timeout: TIMEOUT,
 })
 
+let rpcBase = axios.create({
+  baseURL: config.networks[apiConfig.network].url,
+  timeout: TIMEOUT,
+})
+
 const initAPI = (store) => {
   store.subscribe(() => {
     const state = store.getState()
@@ -68,8 +73,21 @@ const initAPI = (store) => {
         headers: headers({ secret, network, majorVersion, minorVersion }),
         timeout: TIMEOUT,
       })
+      if (network !== apiConfig.network) {
+        rpcBase = axios.create({
+          baseURL: config.networks[network].url,
+          timeout: TIMEOUT,
+        })
+      }
+      Object.assign(apiConfig, {
+        relayer,
+        network,
+        secret,
+        majorVersion,
+        minorVersion,
+      })
+      console.log('api update: ', { network, secret })
     }
-    // console.log('api update: ', { relayer, network, secret })
   })
 }
 
@@ -801,6 +819,33 @@ const api = {
     decodeMethod: (hash) => {
       const { data } = axios.get(`https://explorer-v2-api.hmny.io/v0/signature/hash/${hash.slice(10)}`)
       return data || []
+    }
+  },
+  staking: {
+    getDelegations: async ({ address }) => {
+      const { data: { result } } = await rpcBase.post('', {
+        'jsonrpc': '2.0',
+        'method': 'hmy_getDelegationsByDelegator',
+        'params': [
+          address
+        ],
+        'id': 1
+      })
+      // result's form, find out more at https://docs.harmony.one/home/developers/api/methods/staking-related-methods/hmy_getdelegationsbydelegator
+      //   [{
+      //     "Undelegations": [],
+      //     "amount": 100000000000000000000,
+      //     "delegator_address": "one1f3hj4rc79ywksrlx2rvjd774agn0tsltn3pa7m",
+      //     "reward": 0,
+      //     "validator_address": "one1x8fhymx4xsygy4dju9ea9vhs3vqg0u3ht0nz74"
+      //   }]
+      return result.map(({ Undelegations, amount, delegator_address, reward, validator_address }) => ({
+        undelegations: Undelegations,
+        amount,
+        delegatorAddress: delegator_address,
+        reward,
+        validatorAddress: validator_address
+      }))
     }
   }
 }
