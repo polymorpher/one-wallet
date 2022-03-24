@@ -53,31 +53,31 @@ const CollectStateReward = ({
 
     if (invalidOtp || invalidOtp2) return
 
-    // const { hash, bytes } = ONE.computeRecoveryHash({ hseed: ONEUtil.hexToBytes(wallet.hseed) })
-    // const data = ONEUtil.hexString(bytes)
-    // SmartFlows.commitReveal({
-    //   wallet,
-    //   otp,
-    //   otp2,
-    //   recoverRandomness,
-    //   commitHashGenerator: () => ({ hash }),
-    //   revealAPI: api.relayer.revealDataBased,
-    //   revealArgs: { operationType: ONEConstants.OperationType.COLLECT_REWARD, data },
-    //   ...handlers,
-    // })
-
-    const { bytes } = ONE.computeRecoveryHash({ hseed: ONEUtil.hexToBytes(wallet.hseed) })
+    const { hash, bytes } = ONE.computeRecoveryHash({ hseed: ONEUtil.hexToBytes(wallet.hseed) })
+    const data = ONEUtil.hexString(bytes)
     SmartFlows.commitReveal({
       wallet,
       otp,
       otp2,
       recoverRandomness,
-      commitHashGenerator: ONE.computeGeneralOperationHash,
-      commitHashArgs: { ...ONEConstants.NullOperationParams, operationType: ONEConstants.OperationType.COLLECT_REWARD, data: bytes },
-      revealAPI: api.relayer.reveal,
-      revealArgs: { ...ONEConstants.NullOperationParams, operationType: ONEConstants.OperationType.COLLECT_REWARD, data: ONEUtil.hexString(bytes) },
+      commitHashGenerator: () => ({ hash }),
+      revealAPI: api.relayer.revealDataBased,
+      revealArgs: { operationType: ONEConstants.OperationType.COLLECT_REWARD, data },
       ...handlers,
     })
+
+    // const { bytes } = ONE.computeRecoveryHash({ hseed: ONEUtil.hexToBytes(wallet.hseed) })
+    // SmartFlows.commitReveal({
+    //   wallet,
+    //   otp,
+    //   otp2,
+    //   recoverRandomness,
+    //   commitHashGenerator: ONE.computeGeneralOperationHash,
+    //   commitHashArgs: { ...ONEConstants.NullOperationParams, operationType: ONEConstants.OperationType.COLLECT_REWARD, data: bytes },
+    //   revealAPI: api.relayer.reveal,
+    //   revealArgs: { ...ONEConstants.NullOperationParams, operationType: ONEConstants.OperationType.COLLECT_REWARD, data: ONEUtil.hexString(bytes) },
+    //   ...handlers,
+    // })
   }
 
   return (
