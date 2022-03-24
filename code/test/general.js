@@ -79,6 +79,12 @@ const transactionExecute = async ({ wallet, operationType, tokenType, contractAd
       commitParams = { operationType, randomSeed }
       revealParams = { operationType, randomSeed }
       break
+    case ONEConstants.OperationType.SIGN:
+    case ONEConstants.OperationType.REVOKE:
+      paramsHash = ONEWallet.computeGeneralOperationHash
+      commitParams = { operationType, contractAddress, tokenId, dest, amount }
+      revealParams = { operationType, contractAddress, tokenId, dest, amount }
+      break
     case ONEConstants.OperationType.TRANSFER_TOKEN:
       paramsHash = ONEWallet.computeGeneralOperationHash
       switch (tokenType) {
@@ -138,6 +144,7 @@ contract('ONEWallet', (accounts) => {
     let bob = await CheckUtil.makeWallet('TG-GEN-2', accounts[0], EFFECTIVE_TIME, DURATION)
     let carol = await CheckUtil.makeWallet('TG-GEN-3', accounts[0], EFFECTIVE_TIME, DURATION)
     let dora = await CheckUtil.makeWallet('TG-GEN-4', accounts[0], EFFECTIVE_TIME, DURATION)
+    let ernie = await CheckUtil.makeWallet('TG-GEN-5', accounts[0], EFFECTIVE_TIME, DURATION)
     let aliceOldState = await CheckUtil.getONEWalletState(alice.wallet)
     let aliceCurrentState = await CheckUtil.getONEWalletState(alice.wallet)
     let bobOldState = await CheckUtil.getONEWalletState(bob.wallet)
@@ -753,22 +760,112 @@ contract('ONEWallet', (accounts) => {
     // Note: Will not be implemented as part of phase1 testing
 
     // === END RECLAIM_DOMAIN_FROM_BACKLINK ===
-
+/*
     // ==== SIGN =====
-    // Test 
-    // Expected result: 
-
+    // Test Sign a transaction to authorize spending of a token by another wallet
+    // Expected result: Alice will sign a transaction to enable ernie to spend 100 tokens
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    await transactionExecute(
+      {
+        wallet: alice,
+        operationType: ONEConstants.OperationType.SIGN,
+        // tokenType: ONEConstants.TokenType.ERC20,
+        contractAddress: testerc20.address,
+        tokenId: 1,
+        dest: ernie.wallet.address,
+        amount: 100,
+        testTime
+      }
+    )
+    // Update alice and bob's current State
+    aliceCurrentState = await CheckUtil.getONEWalletState(alice.wallet)
+    // check alice and bobs balance
+    aliceBalanceERC20 = await testerc20.balanceOf(alice.wallet.address)
+    aliceWalletBalanceERC20 = await alice.wallet.getBalance(ONEConstants.TokenType.ERC20, testerc20.address, 0)
+    bobBalanceERC20 = await testerc20.balanceOf(bob.wallet.address)
+    bobWalletBalanceERC20 = await bob.wallet.getBalance(ONEConstants.TokenType.ERC20, testerc20.address, 0)
+    assert.equal(900, aliceBalanceERC20, 'Transfer of 100 ERC20 tokens from alice.wallet succesful')
+    assert.equal(900, aliceWalletBalanceERC20, 'Transfer of 100 ERC20 tokens from alice.wallet succesful and wallet balance updated')
+    assert.equal(100, bobBalanceERC20, 'Transfer of 100 ERC20 tokens to bob.wallet succesful')
+    assert.equal(100, bobWalletBalanceERC20, 'Transfer of 100 ERC20 tokens to bob.wallet succesful and wallet balance updated')
+    // Alice Items that have changed - lastOperationTime, commits, trackedTokens
+    // lastOperationTime
+    lastOperationTime = await alice.wallet.lastOperationTime()
+    assert.notStrictEqual(lastOperationTime, aliceOldState.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
+    aliceOldState.lastOperationTime = lastOperationTime.toNumber()
+    // commits
+    allCommits = await alice.wallet.getAllCommits()
+    assert.notDeepEqual(allCommits, aliceOldState.allCommits, 'alice wallet.allCommits should have been updated')
+    aliceOldState.allCommits = allCommits
+    // tracked tokens
+    // trackedTokens = await alice.wallet.getTrackedTokens()
+    // assert.notDeepEqual(trackedTokens, aliceOldState.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
+    // assert.equal(trackedTokens[0][0].toString(), ONEConstants.TokenType.ERC20.toString(), 'alice.wallet.trackedTokens tracking tokens of type ERC20')
+    // assert.deepEqual(trackedTokens[1][0], testerc20.address, 'alice.wallet.trackedTokens tracking testerc20')
+    // assert.deepEqual(trackedTokens[2].length, 1, 'alice.wallet.trackedTokens two tokens are now tracked')
+    // assert.deepEqual([ trackedTokens[2][0].toString() ], ['0'], 'alice.wallet.trackedTokens tokens 0 (ERC29 has no NFT id) is now tracked')
+    // aliceOldState.trackedTokens = trackedTokens
+    // check alice
+    await CheckUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
     // === END SIGN ===
-
-    // ==== REVOKE =====
-    // Test 
-    // Expected result: 
-
-    // === END REVOKE ===
-
+*/
     // ==== CALL =====
-    // Test 
-    // Expected result: 
+    // Test Create a signed transaction for a contract and then CALL this contract to execute it
+    // Expected result: Alice will sign a transfer for 100 ERC20 tokens to Bob the CALL will execute and alice and bobs ERC20 balances will be updated
+
+    // === END CALL ===
+/*
+    // ==== REVOKE =====
+    // Test Revoke authorization for spending of a token by another wallet
+    // Expected result: Alice will revoke the ability to spend by Ernie
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    await transactionExecute(
+      {
+        wallet: alice,
+        operationType: ONEConstants.OperationType.REVOKE,
+        // tokenType: ONEConstants.TokenType.ERC20,
+        contractAddress: testerc20.address,
+        tokenId: 1,
+        dest: ernie.wallet.address,
+        amount: 100,
+        testTime
+      }
+    )
+    // Update alice and bob's current State
+    aliceCurrentState = await CheckUtil.getONEWalletState(alice.wallet)
+    // check alice and bobs balance
+    aliceBalanceERC20 = await testerc20.balanceOf(alice.wallet.address)
+    aliceWalletBalanceERC20 = await alice.wallet.getBalance(ONEConstants.TokenType.ERC20, testerc20.address, 0)
+    bobBalanceERC20 = await testerc20.balanceOf(bob.wallet.address)
+    bobWalletBalanceERC20 = await bob.wallet.getBalance(ONEConstants.TokenType.ERC20, testerc20.address, 0)
+    assert.equal(900, aliceBalanceERC20, 'Transfer of 100 ERC20 tokens from alice.wallet succesful')
+    assert.equal(900, aliceWalletBalanceERC20, 'Transfer of 100 ERC20 tokens from alice.wallet succesful and wallet balance updated')
+    assert.equal(100, bobBalanceERC20, 'Transfer of 100 ERC20 tokens to bob.wallet succesful')
+    assert.equal(100, bobWalletBalanceERC20, 'Transfer of 100 ERC20 tokens to bob.wallet succesful and wallet balance updated')
+    // Alice Items that have changed - lastOperationTime, commits, trackedTokens
+    // lastOperationTime
+    lastOperationTime = await alice.wallet.lastOperationTime()
+    assert.notStrictEqual(lastOperationTime, aliceOldState.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
+    aliceOldState.lastOperationTime = lastOperationTime.toNumber()
+    // commits
+    allCommits = await alice.wallet.getAllCommits()
+    assert.notDeepEqual(allCommits, aliceOldState.allCommits, 'alice wallet.allCommits should have been updated')
+    aliceOldState.allCommits = allCommits
+    // tracked tokens
+    // trackedTokens = await alice.wallet.getTrackedTokens()
+    // assert.notDeepEqual(trackedTokens, aliceOldState.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
+    // assert.equal(trackedTokens[0][0].toString(), ONEConstants.TokenType.ERC20.toString(), 'alice.wallet.trackedTokens tracking tokens of type ERC20')
+    // assert.deepEqual(trackedTokens[1][0], testerc20.address, 'alice.wallet.trackedTokens tracking testerc20')
+    // assert.deepEqual(trackedTokens[2].length, 1, 'alice.wallet.trackedTokens two tokens are now tracked')
+    // assert.deepEqual([ trackedTokens[2][0].toString() ], ['0'], 'alice.wallet.trackedTokens tokens 0 (ERC29 has no NFT id) is now tracked')
+    // aliceOldState.trackedTokens = trackedTokens
+    // check alice
+    await CheckUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
+    // === END REVOKE ===
+*/
+    // ==== CALL =====
+    // Test Create a signed transaction for a contract and then CALL this contract to execute it
+    // Expected result: Alice will sign a transfer for 100 ERC20 tokens to Bob the CALL will execute and alice and bobs ERC20 balances will be updated
 
     // === END CALL ===
 
