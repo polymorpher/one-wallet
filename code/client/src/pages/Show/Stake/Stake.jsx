@@ -22,13 +22,15 @@ import { useHistory } from 'react-router'
 import Divider from 'antd/es/divider'
 import Table from 'antd/es/table'
 import { TallRow } from '../../../components/Grid'
-import Space from 'antd/es/space'
-import Spin from 'antd/es/spin'
 import Tooltip from 'antd/es/tooltip'
 import flatten from 'lodash/fp/flatten'
 import humanizeDuration from 'humanize-duration'
 import { StakeCommon, RewardPanel } from './StakeCommon'
+import Space from 'antd/es/space'
+import Spin from 'antd/es/spin'
 
+const BLOCKS_PER_EPOCH = 32768
+const UNLOCK_NUM_EPOCH = 7
 const Stake = ({
   address,
   onClose, // optional
@@ -38,6 +40,7 @@ const Stake = ({
 }) => {
   const [delegations, setDelegations] = useState(null)
   const [undelegations, setUndelegations] = useState(null)
+  const [amountRedelegatable, setAmountRedelegatable] = useState(null)
   const [reward, setReward] = useState(null)
   const history = useHistory()
   const {
@@ -50,13 +53,13 @@ const Stake = ({
   const balance = useSelector(state => state.balance?.[address]?.balance || 0)
   const price = useSelector(state => state.global.price)
 
-  const { formatted } = util.computeBalance(balance, price)
+  const { formatted, fiatFormatted } = util.computeBalance(balance, price)
 
   const [validatorAddress, setValidatorAddress] = useState({ value: prefillDest || '', label: prefillDest ? util.oneAddress(prefillDest) : '' })
   const [inputAmount, setInputAmount] = useState(prefillAmount || '')
 
-  const maxSpending = BN.min(new BN(balance), util.getMaxSpending(wallet))
-  const { formatted: spendingLimitFormatted } = util.computeBalance(maxSpending.toString(), price)
+  const maxSpending = new BN(balance).add(amountRedelegatable ? new BN(amountRedelegatable.balance) : new BN(0))
+  const { formatted: spendingLimitFormatted, fiatFormatted: spendingLimitFiatFormatted } = util.computeBalance(maxSpending.toString(), price)
 
   const {
     balance: stakingAmount,
@@ -74,20 +77,21 @@ const Stake = ({
       setReward(util.computeBalance(totalReward.toString(), price))
       const undelegations = flatten(result.map(e => e.undelegations.map(({ Amount, Epoch }) => ({
         amount: Amount,
-        blocks: (7 - (epoch - Epoch)) * 32768 + (networkInfo.epochLastBlock - blockNumber),
+        blocks: (UNLOCK_NUM_EPOCH - (epoch - Epoch)) * BLOCKS_PER_EPOCH + (networkInfo.epochLastBlock - blockNumber),
+        redelegtable: Epoch !== epoch,
         validatorAddress: e.validatorAddress
       }))))
+      const amountRedelegtable = undelegations.filter(e => e.redelegtable)
+        .map(e => new BN(String(e.amount)))
+        .reduce((a, b) => a.add(b), new BN(0))
+      setAmountRedelegatable(util.computeBalance(amountRedelegtable.toString(), price))
       setUndelegations(undelegations.map((e, i) => ({ ...e, key: `${i}` })))
     }
     init()
   }, [address])
 
   const useMaxAmount = () => {
-    if (new BN(balance, 10).gt(new BN(maxSpending, 10))) {
-      setInputAmount(spendingLimitFormatted)
-    } else {
-      setInputAmount(formatted)
-    }
+    setInputAmount(spendingLimitFormatted)
   }
 
   const { prepareValidation, ...handlers } = ShowUtils.buildHelpers({
@@ -202,6 +206,7 @@ const Stake = ({
       }
     }
   ]
+  const showStakingFundsDetail = amountRedelegatable && new BN(amountRedelegatable.balance).gtn(0)
 
   return (
     <StakeCommon isMobile={isMobile} network={network} onClose={onClose} address={address}>
@@ -216,6 +221,51 @@ const Stake = ({
           </Link> along with their expected rewards. Copy the address of the validator below to stake with them.
         </Text>
       </Row>
+      <Space direction='vertical' style={{ marginBottom: 32, width: '100%' }}>
+        {showStakingFundsDetail &&
+          <Row align='start'>
+            <Col span={isMobile ? 24 : 12}>
+              <Hint>Wallet Balance</Hint>
+            </Col>
+            <Col>
+              <Space>
+                <Text>{util.formatNumber(formatted)}</Text>
+                <Text type='secondary'>ONE</Text>
+                <Text>(≈ ${fiatFormatted}</Text>
+                <Text type='secondary'>USD)</Text>
+              </Space>
+            </Col>
+          </Row>}
+        {showStakingFundsDetail &&
+          <Row align='start'>
+            <Col span={isMobile ? 24 : 12}>
+              <Hint>+ Funds Unlocked for Redelegation</Hint>
+            </Col>
+            <Col>
+              <Space>
+                <Text>{util.formatNumber(amountRedelegatable.formatted)}</Text>
+                <Text type='secondary'>ONE</Text>
+                <Text>(≈ ${amountRedelegatable.fiatFormatted}</Text>
+                <Text type='secondary'>USD)</Text>
+              </Space>
+            </Col>
+          </Row>}
+        {showStakingFundsDetail && <Divider />}
+        <Row align='start'>
+          <Col span={isMobile ? 24 : 12}>
+            <Hint>Total Funds for Staking</Hint>
+          </Col>
+          <Col>
+            <Space>
+              <Text>{!amountRedelegatable ? <Spin /> : spendingLimitFormatted}</Text>
+              <Text type='secondary'>ONE</Text>
+              <Text>(≈ ${!amountRedelegatable ? <Spin /> : spendingLimitFiatFormatted}</Text>
+              <Text type='secondary'>USD)</Text>
+            </Space>
+          </Col>
+        </Row>
+      </Space>
+
       <Row align='baseline' style={{ marginBottom: '16px' }}>
         <Col xs={4}>
           <Label wide={!isMobile} style={{ fontSize: isMobile ? '12px' : undefined }}>
