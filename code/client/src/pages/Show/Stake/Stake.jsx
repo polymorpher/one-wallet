@@ -202,7 +202,11 @@ const Stake = ({
       key: 'blocks',
       // eslint-disable-next-line react/display-name
       render: (text, record) => {
-        return `~ ${humanizeDuration(record.blocks * 2 * 1000, { largest: 2, round: true })}`
+        const amount = `~ ${humanizeDuration(record.blocks * 2 * 1000, { largest: 2, round: true })}`
+        if (record.redelegtable) {
+          return <Text style={{ color: 'green' }}>{amount}</Text>
+        }
+        return <Text style={{ color: 'red' }}>{amount}</Text>
       }
     }
   ]
@@ -259,8 +263,8 @@ const Stake = ({
             <Space>
               <Text>{!amountRedelegatable ? <Spin /> : spendingLimitFormatted}</Text>
               <Text type='secondary'>ONE</Text>
-              <Text>(≈ ${!amountRedelegatable ? <Spin /> : spendingLimitFiatFormatted}</Text>
-              <Text type='secondary'>USD)</Text>
+              {amountRedelegatable && <Text>(≈ ${spendingLimitFiatFormatted}</Text>}
+              {amountRedelegatable && <Text type='secondary'>USD)</Text>}
             </Space>
           </Col>
         </Row>
@@ -332,6 +336,7 @@ const Stake = ({
       <Table dataSource={delegations} columns={columns} loading={delegations === null} />
       <TallRow align='start'>
         <Title level={5}>Undelegations in progress</Title>
+        <Text>Undelegated funds become available for redelegation after up to ~18.2 hours (1 epoch), and will be returned to the wallet for spending after ~5.3 days (7 epochs). Funds available for redelegation are displayed in <Text style={{ color: 'green' }}>green</Text> </Text>
       </TallRow>
       <Table dataSource={undelegations} columns={undelegationColumns} loading={undelegations === null} />
     </StakeCommon>
