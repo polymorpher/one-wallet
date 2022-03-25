@@ -822,32 +822,20 @@ const api = {
     }
   },
   explorer: {
-    getApi: () => {
-      return activeNetwork === 'harmony-testnet' ? 'https://rpc.s0.b.hmny.io' : 'https://rpc.s0.t.hmny.io'
-    },
-
-    getNetworkId: () => {
-      return {
-        blockchain: 'Harmony',
-        network: activeNetwork === 'harmony-testnet' ? 'Testnet' : 'Mainnet',
-        sub_network_identifier: {
-          network: 'shard 0',
-          metadata: {
-            is_beacon: true
-          }
-        }
-      }
-    },
-
     decodeMethod: async (hash) => {
       const { data } = await axios.get(`https://explorer-v2-api.hmny.io/v0/signature/hash/${hash.slice(10)}`)
       return data || []
     },
+  },
+  rpc: {
+    getApi: () => {
+      return activeNetwork === 'harmony-testnet' ? 'https://rpc.s0.b.hmny.io' : 'https://rpc.s0.t.hmny.io'
+    },
 
     getTransactionHistory: async (address, pageSize = 50, pageIndex = 0) => {
-      const { data } = await axios.post(api.explorer.getApi(), {
+      const { data } = await axios.post(api.rpc.getApi(), {
         jsonrpc: '2.0',
-        method: 'hmyv2_getTransactionsHistory',
+        method: 'eth_getTransactionsHistory',
         params: [
           {
             address,
@@ -864,9 +852,9 @@ const api = {
     },
 
     getTransaction: async (tx) => {
-      const { data } = await axios.post(api.explorer.getApi(), {
+      const { data } = await axios.post(api.rpc.getApi(), {
         jsonrpc: '2.0',
-        method: 'hmyv2_getTransactionReceipt',
+        method: 'eth_getTransactionReceipt',
         params: [tx.hash],
         id: 1
       })
