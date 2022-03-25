@@ -11,9 +11,13 @@ const Logger = TestUtil.Logger
 const Debugger = ONEDebugger(Logger)
 
 const ONE_CENT = unit.toWei('0.01', 'ether')
-// const HALF_DIME = unit.toWei('0.05', 'ether')
-// const ONE_DIME = unit.toWei('0.1', 'ether')
+const HALF_DIME = unit.toWei('0.05', 'ether')
+const ONE_DIME = unit.toWei('0.1', 'ether')
 const HALF_ETH = unit.toWei('0.5', 'ether')
+const ONE_ETH = unit.toWei('1', 'ether')
+const TWO_ETH = unit.toWei('2', 'ether')
+const THREE_ETH = unit.toWei('3', 'ether')
+const FOUR_ETH = unit.toWei('4', 'ether')
 const INTERVAL = 30000 // 30 second Intervals
 const DURATION = INTERVAL * 2 * 60 * 24 * 1 // 1 day wallet duration
 // const SLOT_SIZE = 1 // 1 transaction per interval
@@ -48,6 +52,7 @@ const transactionExecute = async ({ wallet, operationType, tokenType, contractAd
       break
     case ONEConstants.OperationType.OVERRIDE_TRACK:
     case ONEConstants.OperationType.RECOVER_SELECTED_TOKENS:
+    case ONEConstants.OperationType.BATCH:
       paramsHash = ONEWallet.computeDataHash
       commitParams = { operationType, data }
       revealParams = { operationType, data }
@@ -78,6 +83,13 @@ const transactionExecute = async ({ wallet, operationType, tokenType, contractAd
       paramsHash = ONEWallet.computeRecoveryHash
       commitParams = { operationType, randomSeed }
       revealParams = { operationType, randomSeed }
+      break
+    case ONEConstants.OperationType.CHANGE_SPENDING_LIMIT:
+    case ONEConstants.OperationType.JUMP_SPENDING_LIMIT:
+      console.log('Updating Spending Limit')
+      paramsHash = ONEWallet.computeAmountHash
+      commitParams = { operationType, amount }
+      revealParams = { operationType, amount }
       break
     case ONEConstants.OperationType.SIGN:
     case ONEConstants.OperationType.REVOKE:
@@ -252,9 +264,6 @@ contract('ONEWallet', (accounts) => {
     // ====== TRANSFER_TOKEN ======
     // Test transferring a token
     // Expected result the token is now tracked and alices balance has decreased and bobs increased
-    const aliceInitialBalance = await web3.eth.getBalance(alice.wallet.address)
-    const bobInitialBalance = await web3.eth.getBalance(bob.wallet.address)
-
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     await transactionExecute(
       {
@@ -307,8 +316,8 @@ contract('ONEWallet', (accounts) => {
     // Get alices current tracked tokens and override the address from testerc20 to testerc20v2
     let newTrackedTokens = await alice.wallet.getTrackedTokens()
     newTrackedTokens[1] = [testerc20v2.address]
-    let dataHex = ONEUtil.abi.encodeParameters(['uint8[]', 'address[]', 'uint8[]'], [newTrackedTokens[0], newTrackedTokens[1], newTrackedTokens[2]])
-    let data = ONEUtil.hexStringToBytes(dataHex)
+    let hexData = ONEUtil.abi.encodeParameters(['uint8[]', 'address[]', 'uint8[]'], [newTrackedTokens[0], newTrackedTokens[1], newTrackedTokens[2]])
+    let data = ONEUtil.hexStringToBytes(hexData)
     await transactionExecute(
       {
         wallet: alice,
@@ -348,6 +357,9 @@ contract('ONEWallet', (accounts) => {
     // ========= TRANSFER =========
     // Test transferring of Native Currency from alice to bob
     // Expected result: Alices balance will decrease bobs will increase, alice spendingState is updated
+    let aliceInitialBalance = await web3.eth.getBalance(alice.wallet.address)
+    let bobInitialBalance = await web3.eth.getBalance(bob.wallet.address)
+
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // alice tranfers ONE CENT to bob
     await transactionExecute(
@@ -362,8 +374,8 @@ contract('ONEWallet', (accounts) => {
     // Update alice and bob's current State
     aliceCurrentState = await CheckUtil.getONEWalletState(alice.wallet)
     // Check Balances for Alice and Bob
-    const aliceBalance = await web3.eth.getBalance(alice.wallet.address)
-    const bobBalance = await web3.eth.getBalance(bob.wallet.address)
+    let aliceBalance = await web3.eth.getBalance(alice.wallet.address)
+    let bobBalance = await web3.eth.getBalance(bob.wallet.address)
     assert.equal(parseInt(aliceInitialBalance) - parseInt(ONE_CENT / 2), aliceBalance, 'Alice Wallet has correct balance')
     assert.equal(parseInt(bobInitialBalance) + parseInt(ONE_CENT / 2), bobBalance, 'Bob Wallet has correct balance')
     // Alice Items that have changed - lastOperationTime, commits, trackedTokens
@@ -505,8 +517,8 @@ contract('ONEWallet', (accounts) => {
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // Get alices current tracked tokens and recover them
     let recoverTrackedTokens = await alice.wallet.getTrackedTokens()
-    let dataHex = ONEUtil.abi.encodeParameters(['uint8[]', 'address[]', 'uint8[]'], [recoverTrackedTokens[0], recoverTrackedTokens[1], recoverTrackedTokens[2]])
-    let data = ONEUtil.hexStringToBytes(dataHex)
+    let hexData = ONEUtil.abi.encodeParameters(['uint8[]', 'address[]', 'uint8[]'], [recoverTrackedTokens[0], recoverTrackedTokens[1], recoverTrackedTokens[2]])
+    let data = ONEUtil.hexStringToBytes(hexData)
     await transactionExecute(
       {
         wallet: alice,
@@ -556,8 +568,8 @@ contract('ONEWallet', (accounts) => {
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // Add a backlink from Alice to Carol
     let backlinkAddresses = [carol.wallet]
-    let dataHex = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
-    let data = ONEUtil.hexStringToBytes(dataHex)
+    let hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
+    let data = ONEUtil.hexStringToBytes(hexData)
     await transactionExecute(
       {
         wallet: alice,
@@ -593,8 +605,8 @@ contract('ONEWallet', (accounts) => {
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // Call
     backlinkAddresses = [carol.wallet]
-    dataHex = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
-    data = ONEUtil.hexStringToBytes(dataHex)
+    hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
+    data = ONEUtil.hexStringToBytes(hexData)
     await transactionExecute(
       {
         wallet: alice,
@@ -647,8 +659,8 @@ contract('ONEWallet', (accounts) => {
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // Get alices current tracked tokens and override the address from testerc20 to testerc20v2
     backlinkAddresses = [carol.wallet]
-    dataHex = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
-    data = ONEUtil.hexStringToBytes(dataHex)
+    hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
+    data = ONEUtil.hexStringToBytes(hexData)
     await transactionExecute(
       {
         wallet: alice,
@@ -685,8 +697,8 @@ contract('ONEWallet', (accounts) => {
     // First Link Alice to Carol
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     backlinkAddresses = [carol.wallet]
-    dataHex = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
-    data = ONEUtil.hexStringToBytes(dataHex)
+    hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
+    data = ONEUtil.hexStringToBytes(hexData)
     aliceCurrentState = await CheckUtil.getONEWalletState(alice.wallet)
     await transactionExecute(
       {
@@ -701,8 +713,8 @@ contract('ONEWallet', (accounts) => {
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // Get alices current tracked tokens and override the address from testerc20 to testerc20v2
     backlinkAddresses = [dora.wallet]
-    dataHex = ONEUtil.abi.encodeParameters(['address[]'], [[dora.wallet.address]])
-    data = ONEUtil.hexStringToBytes(dataHex)
+    hexData = ONEUtil.abi.encodeParameters(['address[]'], [[dora.wallet.address]])
+    data = ONEUtil.hexStringToBytes(hexData)
     await transactionExecute(
       {
         wallet: alice,
@@ -868,28 +880,179 @@ contract('ONEWallet', (accounts) => {
     // Expected result: Alice will sign a transfer for 100 ERC20 tokens to Bob the CALL will execute and alice and bobs ERC20 balances will be updated
 
     // === END CALL ===
-
+/*
     // ==== BATCH =====
-    // Test 
-    // Expected result: 
+    // Test batch a number of transactions and ensure they have all been processed
+    // Expected result: Alice will do two transfers to Bob and validate balances have been updated
+    aliceInitialBalance = await web3.eth.getBalance(alice.wallet.address)
+    bobInitialBalance = await web3.eth.getBalance(bob.wallet.address)
 
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    const calls = []
+    // set up transfer and destination for the batch
+    // alice tranfers ONE CENT to bob
+    let call = [
+      ONEConstants.OperationType.TRANSFER,
+      bob.wallet.address,
+      ONE_CENT
+    ]
+    calls.push(call)
+    // alice tranfers ONE HALF_DIME to bob
+    call[2] = HALF_DIME
+    calls.push(call)
+    // alice tranfers ONE DIME to bob
+    call[2] = ONE_DIME
+    calls.push(call)
+    console.log(`calls: ${JSON.stringify(calls)}`)
+    // Sample from onewallet.js 
+    // return Util.abi.encodeParameters(['tuple(bytes32,uint8,uint8,uint32,uint32,uint8)', 'tuple[](bytes32,uint8,uint8,uint32,uint32,uint8)', 'bytes'], [core, innerCores, identificationKey])
+    hexData = ONEUtil.abi.encodeParameters(['tuple[](uint8,address,uint256)'], [calls])
+    // hexData = ONEUtil.encodeMultiCall(calls)
+    // move the batch information into data
+    data = ONEUtil.hexStringToBytes(hexData)
+
+    // // Sample approache using encodeMultiCall
+    // let call = {
+    //   operationType: ONEConstants.OperationType.TRANSFER,
+    //   dest: bob.wallet.address,
+    //   amount: ONE_CENT
+    // }
+    // calls.push(call)
+    // // alice tranfers ONE HALF_DIME to bob
+    // calls.amount = HALF_DIME
+    // calls.push(call)
+    // // alice tranfers ONE DIME to bob
+    // calls.amount = ONE_DIME
+    // calls.push(call)
+    // // For examples refer to encodeMulticalls and Reclaim.jsx for standard calls and Unwrap.jsx for safeTransferFrom
+    // hexData = ONEUtil.encodeMultiCall(calls)
+    // // move the batch information into data
+    // data = ONEUtil.hexStringToBytes(hexData)
+
+    await transactionExecute(
+      {
+        wallet: alice,
+        operationType: ONEConstants.OperationType.BATCH,
+        data,
+        testTime
+      }
+    )
+    // Update alice and bob's current State
+    aliceCurrentState = await CheckUtil.getONEWalletState(alice.wallet)
+    // Check Balances for Alice and Bob
+    aliceBalance = await web3.eth.getBalance(alice.wallet.address)
+    bobBalance = await web3.eth.getBalance(bob.wallet.address)
+    assert.equal(parseInt(aliceInitialBalance) - parseInt(ONE_CENT + HALF_DIME + ONE_DIME), aliceBalance, 'Alice Wallet has correct balance')
+    assert.equal(parseInt(bobInitialBalance) + parseInt(ONE_CENT + HALF_DIME + ONE_DIME), bobBalance, 'Bob Wallet has correct balance')
+    // Alice Items that have changed - lastOperationTime, commits, trackedTokens
+    // lastOperationTime
+    lastOperationTime = await alice.wallet.lastOperationTime()
+    assert.notStrictEqual(lastOperationTime, aliceOldState.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
+    aliceOldState.lastOperationTime = lastOperationTime.toNumber()
+    // spendingState
+    spendingState = await alice.wallet.getSpendingState()
+    assert.equal(spendingState.spentAmount, (ONE_CENT + HALF_DIME + ONE_DIME).toString(), 'alice wallet.spentAmount should have been changed')
+    aliceOldState.spendingState.spentAmount = spendingState.spentAmount
+    assert.notEqual(spendingState.lastSpendingInterval, '0', 'alice wallet.spentAmount should have been changed')
+    aliceOldState.spendingState.lastSpendingInterval = spendingState.lastSpendingInterval
+    // commits
+    allCommits = await alice.wallet.getAllCommits()
+    assert.notDeepEqual(allCommits, aliceOldState.allCommits, 'alice wallet.allCommits should have been updated')
+    aliceOldState.allCommits = allCommits
+    // check alice
+    await CheckUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
     // === END BATCH ===
-
+*/
     // ==== NOOP =====
     // This operation is obsolete.
 
     // === END NOOP ===
 
     // ==== CHANGE_SPENDING_LIMIT =====
-    // Test 
-    // Expected result: 
-
+    // Test : Increase the spending limit
+    // Expected result: Will Increase Alices Spending Limit from ONE_ETH TO THREE_ETH
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    // alice tranfers ONE CENT to bob
+    await transactionExecute(
+      {
+        wallet: alice,
+        operationType: ONEConstants.OperationType.CHANGE_SPENDING_LIMIT,
+        amount: THREE_ETH,
+        testTime
+      }
+    )
+    // Update alice and bob's current State
+    aliceCurrentState = await CheckUtil.getONEWalletState(alice.wallet)
+    // Alice Items that have changed - lastOperationTime, commits, trackedTokens
+    // lastOperationTime
+    lastOperationTime = await alice.wallet.lastOperationTime()
+    assert.notStrictEqual(lastOperationTime, aliceOldState.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
+    aliceOldState.lastOperationTime = lastOperationTime.toNumber()
+    // spendingState
+    spendingState = await alice.wallet.getSpendingState()
+    assert.notEqual(spendingState.highestSpendingLimit, aliceOldState.spendingState.highestSpendingLimit, 'alice wallet.highestSpendingLimit should have been changed')
+    assert.equal(spendingState.highestSpendingLimit, THREE_ETH.toString(), 'alice wallet.highestSpendingLimit should be THREE_ETH')
+    aliceOldState.spendingState.highestSpendingLimit = spendingState.highestSpendingLimit
+    assert.notEqual(spendingState.lastLimitAdjustmentTime, aliceOldState.spendingState.lastLimitAdjustmentTime, 'alice wallet.lastLimitAdjustmentTime should have been changed')
+    aliceOldState.spendingState.lastLimitAdjustmentTime = spendingState.lastLimitAdjustmentTime
+    assert.notEqual(spendingState.spendingLimit, aliceOldState.spendingState.spendingLimit, 'alice wallet.spendingLimit should have been changed')
+    assert.equal(spendingState.spendingLimit, THREE_ETH.toString(), 'alice wallet.spendingLimit should be THREE_ETH')
+    aliceOldState.spendingState.spendingLimit = spendingState.spendingLimit
+    assert.notEqual(spendingState.lastSpendingInterval, '0', 'alice wallet.spentAmount should have been changed')
+    aliceOldState.spendingState.lastSpendingInterval = spendingState.lastSpendingInterval
+    assert.equal(spendingState.lastSpendingInterval, aliceOldState.spendingState.lastSpendingInterval, 'alice wallet.lastSpendingInterval should not have been changed')
+    assert.equal(spendingState.spendingInterval, aliceOldState.spendingState.spendingInterval, 'alice wallet.spendingInterval should not have been changed')
+    assert.equal(spendingState.spentAmount, aliceOldState.spendingState.spentAmount, 'alice wallet.spentAmount should not have been changed')
+    // commits
+    allCommits = await alice.wallet.getAllCommits()
+    assert.notDeepEqual(allCommits, aliceOldState.allCommits, 'alice wallet.allCommits should have been updated')
+    aliceOldState.allCommits = allCommits
+    // check alice
+    await CheckUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
     // === END CHANGE_SPENDING_LIMIT ===
-
+/*
     // ==== JUMP_SPENDING_LIMIT =====
-    // Test 
-    // Expected result: 
-
+    // Test jump alices spending limit jump cannot be higher than highestSpendingLimit and does not update lastLimitAdjustmentTime
+    // Expected result: will jump alices spending limit from THREE_ETH to TWO_ETH
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    // alice tranfers ONE CENT to bob
+    await transactionExecute(
+      {
+        wallet: alice,
+        operationType: ONEConstants.OperationType.JUMP_SPENDING_LIMIT,
+        amount: FOUR_ETH,
+        testTime
+      }
+    )
+    // Update alice and bob's current State
+    aliceCurrentState = await CheckUtil.getONEWalletState(alice.wallet)
+    // Alice Items that have changed - lastOperationTime, commits, trackedTokens
+    // lastOperationTime
+    lastOperationTime = await alice.wallet.lastOperationTime()
+    assert.notStrictEqual(lastOperationTime, aliceOldState.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
+    aliceOldState.lastOperationTime = lastOperationTime.toNumber()
+    // spendingState
+    spendingState = await alice.wallet.getSpendingState()
+    // assert.notEqual(spendingState.highestSpendingLimit, aliceOldState.spendingState.highestSpendingLimit, 'alice wallet.highestSpendingLimit should have been changed')
+    assert.equal(spendingState.highestSpendingLimit, THREE_ETH.toString(), 'alice wallet.highestSpendingLimit should be THREE_ETH')
+    // aliceOldState.spendingState.highestSpendingLimit = spendingState.highestSpendingLimit
+    assert.notEqual(spendingState.lastLimitAdjustmentTime, aliceOldState.spendingState.lastLimitAdjustmentTime, 'alice wallet.lastLimitAdjustmentTime should have been changed')
+    aliceOldState.spendingState.lastLimitAdjustmentTime = spendingState.lastLimitAdjustmentTime
+    assert.notEqual(spendingState.spendingLimit, aliceOldState.spendingState.spendingLimit, 'alice wallet.spendingLimit should have been changed')
+    assert.equal(spendingState.spendingLimit, TWO_ETH.toString(), 'alice wallet.spendingLimit should be TWO_ETH')
+    aliceOldState.spendingState.spendingLimit = spendingState.spendingLimit
+    assert.notEqual(spendingState.lastSpendingInterval, '0', 'alice wallet.spentAmount should have been changed')
+    aliceOldState.spendingState.lastSpendingInterval = spendingState.lastSpendingInterval
+    assert.equal(spendingState.lastSpendingInterval, aliceOldState.spendingState.lastSpendingInterval, 'alice wallet.lastSpendingInterval should not have been changed')
+    assert.equal(spendingState.spendingInterval, aliceOldState.spendingState.spendingInterval, 'alice wallet.spendingInterval should not have been changed')
+    assert.equal(spendingState.spentAmount, aliceOldState.spendingState.spentAmount, 'alice wallet.spentAmount should not have been changed')
+    // commits
+    allCommits = await alice.wallet.getAllCommits()
+    assert.notDeepEqual(allCommits, aliceOldState.allCommits, 'alice wallet.allCommits should have been updated')
+    aliceOldState.allCommits = allCommits
+    // check alice
+    await CheckUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
     // === END JUMP_SPENDING_LIMIT ===
+*/
   })
 })
