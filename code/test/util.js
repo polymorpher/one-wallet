@@ -18,6 +18,7 @@ const HALF_ETH = unit.toWei('0.5', 'ether')
 const INTERVAL = 30000
 const DURATION = INTERVAL * 12
 const SLOT_SIZE = 1
+const MAX_UINT32 = Math.pow(2, 32) - 1
 const Logger = {
   debug: (...args) => {
     if (config.verbose) {
@@ -588,6 +589,20 @@ const getONEWalletState = async (wallet) => {
   } catch (ex) {
     console.log(`Failed to parse walletBacklinks: ${ex.toString()}`)
   }
+  const walletSignatures = await wallet.listSignatures(0, MAX_UINT32)
+  let signatures = {}
+  try {
+    // Signature Tracker Hashes
+    signatures[0] = walletSignatures[0]
+    // signatures
+    signatures[1] = walletSignatures[1]
+    // timestamps
+    signatures[2] = walletSignatures[2]
+    // expiries
+    signatures[3] = walletSignatures[3]
+  } catch (ex) {
+    console.log(`Failed to parse walletSignatures: ${ex.toString()}`)
+  }
 
   let state = {}
   state = {
@@ -606,6 +621,7 @@ const getONEWalletState = async (wallet) => {
     allCommits,
     trackedTokens,
     backlinks,
+    signatures,
   }
   // console.log(`state: ${JSON.stringify(state)}`)
   Logger.debug(`state: ${JSON.stringify(state)}`)
@@ -628,6 +644,7 @@ const checkONEWalletStateChange = async (oldState, currentState) => {
   assert.deepEqual(currentState.allCommits, oldState.allCommits, 'wallet.allCommits is incorrect')
   assert.deepEqual(currentState.trackedTokens, oldState.trackedTokens, 'wallet.trackedTokens is incorrect')
   assert.deepEqual(currentState.backlinks, oldState.backlinks, 'wallet.backlinks is incorrect')
+  assert.deepEqual(currentState.signatures, oldState.signatures, 'wallet.signatures is incorrect')
 }
 
 module.exports = {
