@@ -77,7 +77,7 @@ const TransactionViewer = ({ address }) => {
     setError('')
     try {
       // TODO: right now some transactions are not returned from this API, like those internal ones.
-      const txs = await api.explorer.getTransactionHistory(fetchingAddress, fetchPageOptions.pageSize, fetchPageOptions.pageIndex)
+      const txs = await api.rpc.getTransactionHistory(fetchingAddress, fetchPageOptions.pageSize, fetchPageOptions.pageIndex)
       if (txs.length < fetchPageOptions.pageSize) {
         // Check if any previous addresses not yet have been fetched, if none, set as all loaded.
         const unfetchedAddress = wallet.backlinks?.find(link => !fetchedAddresses.includes(link))
@@ -88,7 +88,7 @@ const TransactionViewer = ({ address }) => {
           setHasMore(false)
         }
       }
-      const allTxs = await Promise.all(txs.map(tx => api.explorer.getTransaction(tx).catch(e => {
+      const allTxs = await Promise.all(txs.map(tx => api.rpc.getTransaction(tx).catch(e => {
         console.error(e)
         setError('Some error occured while fetching transactions, you may only see partial data here.')
         return tx
