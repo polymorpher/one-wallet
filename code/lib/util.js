@@ -199,6 +199,16 @@ const utils = {
     return v
   },
 
+  toBN: (numberLike) => {
+    if (typeof numberLike === 'string' && numberLike.startsWith('0x')) {
+      return new BN(numberLike.slice(2), 16)
+    }
+    if (typeof numberLike === 'number' && numberLike > 1e+14) {
+      return new BN(String(numberLike))
+    }
+    return new BN(numberLike)
+  },
+
   argon2: async (input, { salt = new Uint8Array(8), progressObserver, batchSize = 32 } = {}) => {
     const { result } = await argon2.hash({ pass: input, batchSize, salt, progressObserver })
     return result

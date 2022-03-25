@@ -8,6 +8,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Warning } from '../../components/Text'
 import { useSelector } from 'react-redux'
 import { api } from '../../../../lib/api'
+import ONEUtil from '../../../../lib/util'
 import config from '../../config'
 import SearchOutlined from '@ant-design/icons/SearchOutlined'
 import util from '../../util'
@@ -16,14 +17,12 @@ const { Text, Link } = Typography
 
 const PAGE_SIZE = 10
 
-function formatOneValue (val) {
-  const bi = BigInt(val) / BigInt(10 ** 14)
-  return parseInt(bi.toString()) / 10000
-}
-
 function getOperationInfo (tx, address) {
   if (tx.value > 0) {
-    return { value: formatOneValue(tx.value) + ' ONE', type: tx.to === address ? 'PaymentReceived' : tx.from === address ? 'PaymentSent' : 'Unknown' }
+    return {
+      value: ONEUtil.toOne(ONEUtil.toBN(tx.value || 0)) + ' ONE',
+      type: tx.to === address ? 'PaymentReceived' : tx.from === address ? 'PaymentSent' : 'Unknown'
+    }
   }
   if (!tx.logs?.length) {
     return { value: '', type: 'Unknown' }

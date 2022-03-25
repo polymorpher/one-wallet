@@ -119,7 +119,7 @@ const util = {
     return address === ONEConstants.TreasuryAddress || ONEConstants.OldTreasuryAddresses.includes(address)
   },
 
-  isBlacklistedAddress: address =>{
+  isBlacklistedAddress: address => {
     return ONEConstants.BlacklistedAddresses.includes(address)
   },
 
