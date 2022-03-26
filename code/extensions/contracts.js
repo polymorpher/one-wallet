@@ -6,6 +6,7 @@ const DomainManager = require('../build/contracts/DomainManager.json')
 const SpendingManager = require('../build/contracts/SpendingManager.json')
 const CoreManager = require('../build/contracts/CoreManager.json')
 const Executor = require('../build/contracts/Executor.json')
+const Staking = require('../build/contracts/staking.json')
 const ONEWalletFactory = require('../build/contracts/ONEWalletFactory.json')
 const ONEWalletFactoryHelper = require('../build/contracts/ONEWalletFactoryHelper.json')
 const ONEWalletCodeHelper = require('../build/contracts/ONEWalletCodeHelper.json')
@@ -13,7 +14,7 @@ const Reveal = require('../build/contracts/Reveal.json')
 const ONEWallet = require('../build/contracts/ONEWallet.json')
 const IONEWallet = require('../build/contracts/IONEWallet.json')
 
-const baseLibraries = [DomainManager, TokenTracker, WalletGraph, CommitManager, SignatureManager, SpendingManager, Reveal, CoreManager, Executor]
+const baseLibraries = [Staking, DomainManager, TokenTracker, WalletGraph, CommitManager, SignatureManager, SpendingManager, Reveal, CoreManager, Executor]
 const factoryLibraries = [ONEWalletCodeHelper]
 const factoryContractsList = [ ONEWalletFactory, ONEWalletFactoryHelper ]
 const factoryContracts = Object.fromEntries(factoryContractsList.map(e => [e.contractName, e]))
@@ -21,7 +22,7 @@ const libraryList = [...baseLibraries, ...factoryLibraries]
 const dependencies = {
   WalletGraph: [DomainManager],
   Reveal: [CommitManager],
-  Executor: [WalletGraph, SpendingManager, SignatureManager, TokenTracker, DomainManager],
+  Executor: [WalletGraph, SpendingManager, SignatureManager, TokenTracker, DomainManager, Staking],
   ONEWalletCodeHelper: baseLibraries,
   ONEWalletFactoryHelper: [...baseLibraries, ONEWalletCodeHelper],
 }
@@ -41,6 +42,7 @@ module.exports = {
   Reveal,
   ONEWallet,
   IONEWallet,
+  Staking,
 
   baseLibraries,
   factoryLibraries,

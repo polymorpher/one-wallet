@@ -6,6 +6,7 @@
   "main": "client.js",
   "scripts": {
     "dev": "DEBUG=1 webpack serve --mode=development",
+    "debug": "DEBUG=1 webpack serve --mode=development",
     "local": "webpack serve --mode=development",
     "build": "webpack --config webpack.config.js",
     "pb": "pbjs -t static-module -o ./src/proto/oauthMigration.js ./src/proto/oauth_migration.proto",

@@ -57,3 +57,5 @@ event SpendingLimitChanged(uint256 newLimit);
 event HighestSpendingLimitChanged(uint256 newLimit);
 event SpendingLimitChangeFailed(uint256 newLimit, string reason);
 event SpendingLimitJumped(uint256 newLimit);
+event StakingSuccess(uint8 action, address validatorAddress, uint256 amount, uint256 result);
+event StakingFailure(uint8 action, address validatorAddress, uint256 amount, uint256 result);

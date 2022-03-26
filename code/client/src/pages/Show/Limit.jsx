@@ -239,7 +239,7 @@ const Limit = ({
               />}
           </Col>}
       </TallRow>
-      <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
+      <CommitRevealProgress stage={stage} />
     </AnimatedSection>
   )
 }

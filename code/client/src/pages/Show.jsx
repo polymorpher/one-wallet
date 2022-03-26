@@ -37,7 +37,10 @@ import Reclaim from './Show/Reclaim'
 import Extend from './Show/Extend'
 import CheckRoots from './Show/CheckRoots'
 import Limit from './Show/Limit'
+import Stake from './Show/Stake/Stake'
+import Unstake from './Show/Stake/Unstake'
 import TransactionViewer from './Show/TransactionViewer'
+import CollectStakeReward from './Show/Stake/CollectStakeReward'
 
 const tabList = [
   { key: 'coins', tab: 'Coins' },
@@ -68,6 +71,9 @@ const SectionList = [
   'domainTransfer',
   'reclaim',
   'extend',
+  'stake',
+  'unstake',
+  'collectStakeReward'
 ]
 
 const SpecialCommands = [
@@ -181,6 +187,9 @@ const Show = () => {
       {section === 'domainTransfer' && <TransferDomain address={address} onClose={showStartScreen} />}
       {section === 'reclaim' && <Reclaim address={address} onClose={showStartScreen} />}
       {section === 'extend' && <Extend address={address} onClose={showStartScreen} />}
+      {section === 'stake' && <Stake address={address} onClose={showStartScreen} />}
+      {section === 'unstake' && <Unstake address={address} />}
+      {section === 'collectStakeReward' && <CollectStakeReward address={address} />}
     </>
   )
 }
