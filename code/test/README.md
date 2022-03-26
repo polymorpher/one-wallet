@@ -71,6 +71,10 @@ TT-SUBTEST-WALLETID e.g. `TG-OP4-1`
     assert.notEqual(nonce, aliceOldState.nonce, 'alice wallet.nonce should have been changed')
     assert.equal(nonce.toNumber(), aliceOldState.nonce + 1, 'alice wallet.nonce should have been changed')
     aliceOldState.nonce = nonce.toNumber()
+    // lastOperationTime
+    let lastOperationTime = await alice.wallet.lastOperationTime()
+    assert.notStrictEqual(lastOperationTime, aliceOldState.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
+    aliceOldState.lastOperationTime = lastOperationTime.toNumber()
     // == testing of more components here ==
     // check alice
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
@@ -84,7 +88,7 @@ TT-SUBTEST-WALLETID e.g. `TG-OP4-1`
 | 0	 | TRACK	                    | PASS    | Token    |
 | 1	 | UNTRACK 	                    | PASS	  | Token    |
 | 2	 | TRANSFER_TOKEN	            | PASS	  | Token    |
-| 3	 | OVERRIDE_TRACK	            | FAIL	  | Token    |
+| 3	 | OVERRIDE_TRACK	            | PASS	  | Token    |
 | 4	 | TRANSFER	                    | PASS	  | Token    | 
 | 5	 | SET_RECOVERY_ADDRESS	        | FAIL	  | Wallet   |
 | 6	 | RECOVER	                    | FAIL	  | Wallet   |

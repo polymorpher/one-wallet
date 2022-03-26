@@ -295,6 +295,10 @@ const transactionExecute = async ({ wallet, operationType, tokenType, contractAd
       revealParams = { operationType, tokenType, contractAddress, dest }
       break
     case ONEConstants.OperationType.OVERRIDE_TRACK:
+      paramsHash = ONEWallet.computeGeneralOperationHash
+      commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
+      revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
+      break
     case ONEConstants.OperationType.RECOVER_SELECTED_TOKENS:
     case ONEConstants.OperationType.BATCH:
       paramsHash = ONEWallet.computeDataHash

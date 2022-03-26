@@ -60,13 +60,11 @@ contract('ONEWallet', (accounts) => {
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     await TestUtil.transactionExecute(
       {
+        ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         wallet: alice,
         operationType: ONEConstants.OperationType.TRACK,
         tokenType: ONEConstants.TokenType.ERC20,
         contractAddress: testerc20.address,
-        tokenId: 1,
-        dest: alice.wallet.address,
-        amount: 1,
         testTime
       }
     )
@@ -126,13 +124,11 @@ contract('ONEWallet', (accounts) => {
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     await TestUtil.transactionExecute(
       {
+        ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         wallet: alice,
         operationType: ONEConstants.OperationType.TRACK,
         tokenType: ONEConstants.TokenType.ERC20,
         contractAddress: testerc20.address,
-        tokenId: 1,
-        dest: alice.wallet.address,
-        amount: 1,
         testTime
       }
     )
@@ -143,13 +139,11 @@ contract('ONEWallet', (accounts) => {
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     await TestUtil.transactionExecute(
       {
+        ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         wallet: alice,
         operationType: ONEConstants.OperationType.UNTRACK,
         tokenType: ONEConstants.TokenType.ERC20,
         contractAddress: testerc20.address,
-        tokenId: 1,
-        dest: alice.wallet.address,
-        amount: 1,
         testTime
       }
     )
@@ -202,6 +196,7 @@ contract('ONEWallet', (accounts) => {
 
     await TestUtil.transactionExecute(
       {
+        ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         wallet: alice,
         operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
         tokenType: ONEConstants.TokenType.ERC20,
@@ -277,6 +272,7 @@ contract('ONEWallet', (accounts) => {
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     await TestUtil.transactionExecute(
       {
+        ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         wallet: alice,
         operationType: ONEConstants.OperationType.TRACK,
         tokenType: ONEConstants.TokenType.ERC20,
@@ -294,10 +290,12 @@ contract('ONEWallet', (accounts) => {
     // Get alices current tracked tokens and override the address from testerc20 to testerc20v2
     let newTrackedTokens = await alice.wallet.getTrackedTokens()
     newTrackedTokens[1] = [testerc20v2.address]
-    let hexData = ONEUtil.abi.encodeParameters(['uint8[]', 'address[]', 'uint8[]'], [newTrackedTokens[0], newTrackedTokens[1], newTrackedTokens[2]])
+    let hexData = ONEUtil.abi.encodeParameters(['uint256[]', 'address[]', 'uint256[]'], [newTrackedTokens[0], newTrackedTokens[1], newTrackedTokens[2]])
     let data = ONEUtil.hexStringToBytes(hexData)
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
     await TestUtil.transactionExecute(
       {
+        ...ONEConstants.NullOperationParams,
         wallet: alice,
         operationType: ONEConstants.OperationType.OVERRIDE_TRACK,
         data,
@@ -306,13 +304,7 @@ contract('ONEWallet', (accounts) => {
     )
     // Update alice and bob's current State
     aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
-    // Alice Items that have changed - nonce, lastOperationTime, commits, trackedTokens
-    // nonce
-    let nonce = await alice.wallet.getNonce()
-    assert.notEqual(nonce, aliceOldState.nonce, 'alice wallet.nonce should have been changed')
-    assert.equal(nonce.toNumber(), aliceOldState.nonce + 1, 'alice wallet.nonce should have been changed')
-    aliceOldState.nonce = nonce.toNumber()
-    // lastOperationTime
+    // Alice Items that have changed - lastOperationTime, commits, trackedTokens
     let lastOperationTime = await alice.wallet.lastOperationTime()
     assert.notStrictEqual(lastOperationTime, aliceOldState.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
     aliceOldState.lastOperationTime = lastOperationTime.toNumber()
@@ -324,7 +316,7 @@ contract('ONEWallet', (accounts) => {
     let trackedTokens = await alice.wallet.getTrackedTokens()
     assert.notDeepEqual(trackedTokens, aliceOldState.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
     assert.equal(trackedTokens[0][0].toString(), ONEConstants.TokenType.ERC20.toString(), 'alice.wallet.trackedTokens tracking tokens of type ERC20')
-    assert.deepEqual(trackedTokens[1][0], testerc20.address, 'alice.wallet.trackedTokens tracking testerc20')
+    assert.deepEqual(trackedTokens[1][0], testerc20v2.address, 'alice.wallet.trackedTokens tracking testerc20')
     assert.deepEqual(trackedTokens[2].length, 1, 'alice.wallet.trackedTokens two tokens are now tracked')
     assert.deepEqual([ trackedTokens[2][0].toString() ], ['0'], 'alice.wallet.trackedTokens tokens 0 (ERC29 has no NFT id) is now tracked')
     aliceOldState.trackedTokens = trackedTokens
