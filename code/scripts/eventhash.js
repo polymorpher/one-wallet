@@ -1,8 +1,8 @@
 const fs = require('fs').promises
-const EVENT_LIST = process.env.EVENT_LIST || './events.txt'
-const EVENT_MAP_OUT = process.env.EVENT_MAP_OUT || './events-map.txt'
-const EVENT_MAP_OUT_JSON = process.env.EVENT_MAP_OUT_JSON || '../lib/events-map.json'
-const EVENT_PARAMS_MAP_OUT_JSON = process.env.EVENT_PARAMS_MAP_OUT_JSON || '../lib/events-params-map.json'
+const EVENT_LIST = process.env.EVENT_LIST || './scripts/events.txt'
+const EVENT_MAP_OUT = process.env.EVENT_MAP_OUT || './scripts/events-map.txt'
+const EVENT_MAP_OUT_JSON = process.env.EVENT_MAP_OUT_JSON || './lib/events-map.json'
+const EVENT_PARAMS_OUT_JSON = process.env.EVENT_PARAMS_OUT_JSON || './lib/events-params.json'
 const ONEUtil = require('../lib/util')
 const PATTERN = /^event ([A-Za-z0-9]+)\((.*)\);$/
 async function main () {
@@ -25,17 +25,19 @@ async function main () {
     hashMap[hash] = sig
     hashMapJson[hash] = method
     paramsMapJson[method] = {
-      decodeParams: args.split(', ').map(e => e.trim().split(' ')[0]),
-      amountParamIndex: args.split(', ').findIndex(a => a.trim().split(' ')[1] === 'amount')
+      params: args ? args.split(', ').map(e => e.trim().split(' ')[0]) : [],
+    }
+    const amountIndex = args.split(', ').findIndex(a => a.trim().split(' ')[1] === 'amount')
+    if (amountIndex >= 0) {
+      paramsMapJson[method].amountIndex = amountIndex
     }
   }
   const out = JSON.stringify(hashMap, null, 2)
   const outJSON = JSON.stringify(hashMapJson, null, 2)
   const paramsOutJSON = JSON.stringify(paramsMapJson, null, 2)
-  console.log(paramsOutJSON)
   await fs.writeFile(EVENT_MAP_OUT, out, { encoding: 'UTF-8' })
   await fs.writeFile(EVENT_MAP_OUT_JSON, outJSON, { encoding: 'UTF-8' })
-  await fs.writeFile(EVENT_PARAMS_MAP_OUT_JSON, paramsOutJSON, { encoding: 'UTF-8' })
+  await fs.writeFile(EVENT_PARAMS_OUT_JSON, paramsOutJSON, { encoding: 'UTF-8' })
 }
 
 main()
