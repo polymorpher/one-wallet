@@ -2,7 +2,6 @@ const axios = require('axios')
 const config = require('../config/provider').getConfig()
 const Contract = require('web3-eth-contract')
 const isEqual = require('lodash/fp/isEqual')
-const { TruffleProvider } = require('@harmony-js/core')
 const Web3 = require('web3')
 const ONEWalletContractAbi = require('../../build/abi/IONEWallet.json')
 const IONEWalletFactoryHelper = require('../../build/abi/IONEWalletFactoryHelper.json')
@@ -888,6 +887,37 @@ const api = {
         totalStaking,
         totalSupply,
       }
+    },
+  },
+  rpc: {
+    getTransactionHistory: async (address, pageSize = 50, pageIndex = 0) => {
+      const { data } = await rpcBase.post('', {
+        jsonrpc: '2.0',
+        method: 'hmy_getTransactionsHistory', // eth_ method is non-standard
+        params: [
+          {
+            address,
+            order: 'DESC',
+            txType: 'ALL',
+            fullTx: true,
+            pageSize,
+            pageIndex
+          }
+        ],
+        id: 1
+      })
+      return data?.result?.transactions || []
+    },
+
+    getTransactionReceipt: async (tx) => {
+      const { data: { result } } = await rpcBase.post('', {
+        jsonrpc: '2.0',
+        method: 'eth_getTransactionReceipt',
+        params: [tx.hash],
+        id: 1
+      })
+
+      return result
     },
   }
 }
