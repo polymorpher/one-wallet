@@ -119,7 +119,7 @@ const util = {
     return address === ONEConstants.TreasuryAddress || ONEConstants.OldTreasuryAddresses.includes(address)
   },
 
-  isBlacklistedAddress: address =>{
+  isBlacklistedAddress: address => {
     return ONEConstants.BlacklistedAddresses.includes(address)
   },
 
@@ -282,6 +282,11 @@ const util = {
   callArgs: ({ dest, amount }) => {
     return { amount, operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: dest, tokenId: 0, dest: ONEConstants.EmptyAddress }
   },
+
+  canStake: (wallet) => {
+    const { majorVersion } = wallet
+    return majorVersion >= 16
+  }
 }
 
 export default util

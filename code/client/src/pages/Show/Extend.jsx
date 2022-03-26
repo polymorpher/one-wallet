@@ -522,7 +522,7 @@ const Extend = ({
                 />}
             </Col>
           </AverageRow>
-          <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
+          <CommitRevealProgress stage={stage} />
         </Subsection>}
     </>
 

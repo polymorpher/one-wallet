@@ -175,7 +175,7 @@ const BuyDaVinci = ({ address, onSuccess, onClose }) => {
           <TallRow justify='space-between' style={{ marginTop: 24 }}>
             <Button size='large' type='text' onClick={reset} danger>Cancel</Button>
           </TallRow>
-          <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
+          <CommitRevealProgress stage={stage} />
         </>}
     </Space>
   )

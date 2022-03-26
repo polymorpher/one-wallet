@@ -1,29 +1,37 @@
 require('dotenv').config()
 
 module.exports = {
-  harmony: {
-    testnet: {
+  pollingInterval: 1000,
+  networks: {
+    'harmony-testnet': {
       key: process.env.HARMONY_TESTNET_KEY || '',
-      url: 'https://api.s0.b.hmny.io',
-      chainId: 2,
+      url: process.env.TESTNET_RPC || 'https://api.s0.b.hmny.io',
+      wss: process.env.TESTNET_WSS,
+      mnemonic: process.env.HARMONY_TESTNET_MNEMONIC,
+      skip: process.env.SKIP_TESTNET,
+      numAccounts: process.env.TESTNET_NUM_ACCOUNTS || 1,
+      chainId: 1666600001,
       networkId: 2
     },
-    mainnet: {
+    'harmony-mainnet': {
       key: process.env.HARMONY_MAINNET_KEY || '',
-      url: 'https://api.s0.t.hmny.io',
+      url: process.env.MAINNET_RPC || 'https://api.s0.t.hmny.io',
+      wss: process.env.MAINNET_WSS,
+      mnemonic: process.env.HARMONY_MAINNET_MNEMONIC,
+      skip: process.env.SKIP_MAINNET,
+      numAccounts: process.env.MAINNET_NUM_ACCOUNTS || 1,
       chainId: 1,
-      networkId: 1
-    }
-  },
-  eth: {
-    rinkeby: {
-      url: process.env.RINKEBY_RPC,
-      key: process.env.ETH_RINKEBY_KEY || '',
+      networkId: 1666600000,
     },
-    ganache: {
+    'eth-ganache': {
       url: process.env.GANACHE_RPC || 'http://127.0.0.1:7545',
       mnemonic: process.env.ETH_GANACHE_MNEMONIC,
-    }
+      wss: process.env.GANACHE_WSS,
+      key: process.env.ETH_GANACHE_KEY,
+      mnemonic: process.env.ETH_GANACHE_MNEMONIC,
+      skip: process.env.SKIP_GANACHE,
+      numAccounts: process.env.GANACHE_NUM_ACCOUNTS || 1,
+    },
   },
   gasLimit: process.env.GAS_LIMIT,
   gasPrice: process.env.GAS_PRICE,

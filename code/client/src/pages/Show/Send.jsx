@@ -234,7 +234,7 @@ const Send = ({
           />
         </Col>
       </Row>
-      <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
+      <CommitRevealProgress stage={stage} />
       <AverageRow>
         <Warning>
           Please do not send funds to exchange-owned addresses such as Binance and crypto.com (custody wallet). Their automated system cannot detect deposits from smart contracts at the moment. They are still <Link href='https://github.com/polymorpher/one-wallet/issues/93' target='_blank' rel='noreferrer'>working on it</Link>.
