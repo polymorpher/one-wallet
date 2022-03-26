@@ -9,6 +9,7 @@ import { Warning } from '../../components/Text'
 import { useSelector } from 'react-redux'
 import { api } from '../../../../lib/api'
 import ONEUtil from '../../../../lib/util'
+import { parseTxLog } from '../../../../lib/parser'
 import config from '../../config'
 import SearchOutlined from '@ant-design/icons/SearchOutlined'
 import util from '../../util'
@@ -39,6 +40,8 @@ const TransactionViewer = ({ address }) => {
   const network = wallet.network
   const searchInput = useRef()
   const fetchPageOptions = useRef({ pageSize: 10, pageIndex: 0 }).current
+
+  const [pageSize, setPageSize] = useState(0)
   const [hasMore, setHasMore] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [showFooter, setShowFooter] = useState(false)
@@ -52,9 +55,8 @@ const TransactionViewer = ({ address }) => {
   }, [address])
 
   useEffect(() => {
-    const totalPages = Math.ceil(txList.length / PAGE_SIZE)
-    setShowFooter(!loading && hasMore && currentPage === totalPages)
-  }, [loading, hasMore, currentPage])
+    setCurrentPage(0)
+  }, [pageSize])
 
   function onChange (pagination) {
     setCurrentPage(pagination.current)
@@ -77,17 +79,7 @@ const TransactionViewer = ({ address }) => {
     try {
       // TODO: right now some transactions are not returned from this API, like those internal ones.
       const txs = await api.rpc.getTransactionHistory(fetchingAddress, fetchPageOptions.pageSize, fetchPageOptions.pageIndex)
-      if (txs.length < fetchPageOptions.pageSize) {
-        // Check if any previous addresses not yet have been fetched, if none, set as all loaded.
-        const unfetchedAddress = wallet.backlinks?.find(link => !fetchedAddresses.includes(link))
-        setFetchedAddresses([...fetchedAddresses, fetchingAddress])
-        if (unfetchedAddress) {
-          setFetchingAddress(unfetchedAddress)
-        } else {
-          setHasMore(false)
-        }
-      }
-      const allTxs = await Promise.all(txs.map(tx => api.rpc.getTransaction(tx).catch(e => {
+      const allTxs = await Promise.all(txs.map(tx => api.rpc.getTransactionReceipt(tx).catch(e => {
         console.error(e)
         setError('Some error occured while fetching transactions, you may only see partial data here.')
         return tx
@@ -197,7 +189,12 @@ const TransactionViewer = ({ address }) => {
     )}
     >
       <Table
-        dataSource={txList} columns={columns} pagination={{ pageSize: PAGE_SIZE, hideOnSinglePage: true }} loading={loading} onChange={onChange} footer={showFooter ? footerRenderer : undefined}
+        dataSource={txList}
+        columns={columns}
+        pagination={{ pageSize: PAGE_SIZE, hideOnSinglePage: true }}
+        loading={loading}
+        onChange={onChange}
+        footer={showFooter ? footerRenderer : undefined}
       />
       {error && <Warning style={{ marginTop: '16px' }}>{error}</Warning>}
     </ConfigProvider>
