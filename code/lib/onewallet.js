@@ -214,14 +214,6 @@ const computeTransferHash = ({ dest, amount }) => {
   return { hash: keccak(input), bytes: input }
 }
 
-// address, hex string
-const computeSetRecoveryAddressHash = ({ address }) => {
-  const addressBytes = hexStringToBytes(address, 32)
-  const input = new Uint8Array(32)
-  input.set(addressBytes)
-  return { hash: keccak(input), bytes: input }
-}
-
 // dest, hex string
 const computeDestHash = ({ dest }) => {
   const destBytes = hexStringToBytes(dest, 32)
@@ -460,7 +452,6 @@ module.exports = {
   computeTransferHash,
   computeRecoveryHash,
   computeDestHash,
-  computeSetRecoveryAddressHash,
   computeBuyDomainCommitHash,
   computeForwardHash,
   computeTransferDomainHash,

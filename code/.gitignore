@@ -123,7 +123,7 @@ webclient/dist
 **/.DS_Store
 
 # Build Files
-build/*
+build/contracts
 
 # environment files
 /env/db/*

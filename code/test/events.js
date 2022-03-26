@@ -66,8 +66,8 @@ contract('ONEWallet', (accounts) => {
     let testTime = Date.now()
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
-    // let { authParams, revealParams, revealTx } = await TestUtil.transactionExecute(
-    await TestUtil.transactionExecute(
+    // let { authParams, revealParams, revealTx } = await TestUtil.executeStandardTransaction(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.TRACK,

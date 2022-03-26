@@ -50,7 +50,7 @@ contract('ONEWallet', (accounts) => {
     let testTime = Date.now()
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         wallet: alice,
@@ -114,7 +114,7 @@ contract('ONEWallet', (accounts) => {
 
     // Need to track a token before untracking
     testTime = await TestUtil.bumpTestTime(testTime, 60)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         wallet: alice,
@@ -129,7 +129,7 @@ contract('ONEWallet', (accounts) => {
     aliceOldState = aliceCurrentState
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         wallet: alice,
@@ -186,7 +186,7 @@ contract('ONEWallet', (accounts) => {
     // Begin Tests
     let testTime = Date.now()
 
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         wallet: alice,
@@ -262,7 +262,7 @@ contract('ONEWallet', (accounts) => {
 
     // First track testerc20 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         wallet: alice,
@@ -285,7 +285,7 @@ contract('ONEWallet', (accounts) => {
     let hexData = ONEUtil.abi.encodeParameters(['uint256[]', 'address[]', 'uint256[]'], [newTrackedTokens[0], newTrackedTokens[1], newTrackedTokens[2]])
     let data = ONEUtil.hexStringToBytes(hexData)
     testTime = await TestUtil.bumpTestTime(testTime, 60)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         wallet: alice,
@@ -345,7 +345,7 @@ contract('ONEWallet', (accounts) => {
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // alice tranfers ONE CENT to bob
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         wallet: alice,
@@ -413,7 +413,7 @@ contract('ONEWallet', (accounts) => {
     testTime = await TestUtil.bumpTestTime(testTime, 60)
 
     // alice tranfers ONE CENT to bob
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         wallet: alice,
@@ -475,7 +475,7 @@ contract('ONEWallet', (accounts) => {
     let randomSeed = new Uint8Array(new BigUint64Array([0n, BigInt(testTime)]).buffer)
     // recover Alices wallet
     //
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.RECOVER,
@@ -545,7 +545,7 @@ contract('ONEWallet', (accounts) => {
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // forward Alices wallet to Carol
     //
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.FORWARD,
@@ -608,7 +608,7 @@ contract('ONEWallet', (accounts) => {
     let recoverTrackedTokens = await alice.wallet.getTrackedTokens()
     let hexData = ONEUtil.abi.encodeParameters(['uint8[]', 'address[]', 'uint8[]'], [recoverTrackedTokens[0], recoverTrackedTokens[1], recoverTrackedTokens[2]])
     let data = ONEUtil.hexStringToBytes(hexData)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.OVERRIDE_TRACK,
@@ -686,7 +686,7 @@ contract('ONEWallet', (accounts) => {
     let backlinkAddresses = [carol.wallet]
     let hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
     let data = ONEUtil.hexStringToBytes(hexData)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.COMMAND,
@@ -766,7 +766,7 @@ contract('ONEWallet', (accounts) => {
     let backlinkAddresses = [carol.wallet]
     let hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
     let data = ONEUtil.hexStringToBytes(hexData)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.BACKLINK_ADD,
@@ -828,7 +828,7 @@ contract('ONEWallet', (accounts) => {
     let backlinkAddresses = [carol.wallet]
     let hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
     let data = ONEUtil.hexStringToBytes(hexData)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.BACKLINK_ADD,
@@ -846,7 +846,7 @@ contract('ONEWallet', (accounts) => {
     backlinkAddresses = [carol.wallet]
     hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
     data = ONEUtil.hexStringToBytes(hexData)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.BACKLINK_DELETE,
@@ -906,7 +906,7 @@ contract('ONEWallet', (accounts) => {
     let hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
     let data = ONEUtil.hexStringToBytes(hexData)
     aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.BACKLINK_ADD,
@@ -921,7 +921,7 @@ contract('ONEWallet', (accounts) => {
     backlinkAddresses = [dora.wallet]
     hexData = ONEUtil.abi.encodeParameters(['address[]'], [[dora.wallet.address]])
     data = ONEUtil.hexStringToBytes(hexData)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.BACKLINK_OVERRIDE,
@@ -1016,7 +1016,7 @@ contract('ONEWallet', (accounts) => {
     let testTime = Date.now()
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.SIGN,
@@ -1093,7 +1093,7 @@ contract('ONEWallet', (accounts) => {
     let testTime = Date.now()
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.REVOKE,
@@ -1218,7 +1218,7 @@ contract('ONEWallet', (accounts) => {
     // // move the batch information into data
     // data = ONEUtil.hexStringToBytes(hexData)
 
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.BATCH,
@@ -1286,7 +1286,7 @@ contract('ONEWallet', (accounts) => {
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // alice tranfers ONE CENT to bob
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.CHANGE_SPENDING_LIMIT,
@@ -1354,7 +1354,7 @@ contract('ONEWallet', (accounts) => {
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // alice tranfers ONE CENT to bob
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.JUMP_SPENDING_LIMIT,
@@ -1431,7 +1431,7 @@ contract('ONEWallet', (accounts) => {
     // Test tacking of an ERC20 token
     // Expected result the token is now tracked
     testTime = await TestUtil.bumpTestTime(testTime, 60)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.TRACK,
@@ -1476,7 +1476,7 @@ contract('ONEWallet', (accounts) => {
     // Test untracking of an ERC20 token
     // Expected result the token is no longer tracked
     testTime = await TestUtil.bumpTestTime(testTime, 60)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.UNTRACK,
@@ -1513,7 +1513,7 @@ contract('ONEWallet', (accounts) => {
     // Test transferring a token
     // Expected result the token is now tracked and alices balance has decreased and bobs increased
     testTime = await TestUtil.bumpTestTime(testTime, 60)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
@@ -1566,7 +1566,7 @@ contract('ONEWallet', (accounts) => {
     newTrackedTokens[1] = [testerc20v2.address]
     let hexData = ONEUtil.abi.encodeParameters(['uint8[]', 'address[]', 'uint8[]'], [newTrackedTokens[0], newTrackedTokens[1], newTrackedTokens[2]])
     let data = ONEUtil.hexStringToBytes(hexData)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.OVERRIDE_TRACK,
@@ -1610,7 +1610,7 @@ contract('ONEWallet', (accounts) => {
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // alice tranfers ONE CENT to bob
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.TRANSFER,
@@ -1650,7 +1650,7 @@ contract('ONEWallet', (accounts) => {
     // Expected result: alices lastResortAddress will change to bobs last Resort address
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // alice tranfers ONE CENT to bob
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.SET_RECOVERY_ADDRESS,
@@ -1688,7 +1688,7 @@ contract('ONEWallet', (accounts) => {
     let randomSeed = new Uint8Array(new BigUint64Array([0n, BigInt(testTime)]).buffer)
     // recover Alices wallet
     //
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.RECOVER,
@@ -1729,7 +1729,7 @@ contract('ONEWallet', (accounts) => {
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // forward Alices wallet to Carol
     //
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.FORWARD,
@@ -1767,7 +1767,7 @@ contract('ONEWallet', (accounts) => {
     let recoverTrackedTokens = await alice.wallet.getTrackedTokens()
     let hexData = ONEUtil.abi.encodeParameters(['uint8[]', 'address[]', 'uint8[]'], [recoverTrackedTokens[0], recoverTrackedTokens[1], recoverTrackedTokens[2]])
     let data = ONEUtil.hexStringToBytes(hexData)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.OVERRIDE_TRACK,
@@ -1818,7 +1818,7 @@ contract('ONEWallet', (accounts) => {
     let backlinkAddresses = [carol.wallet]
     let hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
     let data = ONEUtil.hexStringToBytes(hexData)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.BACKLINK_ADD,
@@ -1855,7 +1855,7 @@ contract('ONEWallet', (accounts) => {
     backlinkAddresses = [carol.wallet]
     hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
     data = ONEUtil.hexStringToBytes(hexData)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.COMMAND,
@@ -1909,7 +1909,7 @@ contract('ONEWallet', (accounts) => {
     backlinkAddresses = [carol.wallet]
     hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
     data = ONEUtil.hexStringToBytes(hexData)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.BACKLINK_DELETE,
@@ -1948,7 +1948,7 @@ contract('ONEWallet', (accounts) => {
     hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
     data = ONEUtil.hexStringToBytes(hexData)
     aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.BACKLINK_ADD,
@@ -1963,7 +1963,7 @@ contract('ONEWallet', (accounts) => {
     backlinkAddresses = [dora.wallet]
     hexData = ONEUtil.abi.encodeParameters(['address[]'], [[dora.wallet.address]])
     data = ONEUtil.hexStringToBytes(hexData)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.BACKLINK_OVERRIDE,
@@ -2025,7 +2025,7 @@ contract('ONEWallet', (accounts) => {
     // Test Sign a transaction to authorize spending of a token by another wallet
     // Expected result: Alice will sign a transaction to enable ernie to spend 100 tokens
     testTime = await TestUtil.bumpTestTime(testTime, 60)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.SIGN,
@@ -2079,7 +2079,7 @@ contract('ONEWallet', (accounts) => {
     // Test Revoke authorization for spending of a token by another wallet
     // Expected result: Alice will revoke the ability to spend by Ernie
     testTime = await TestUtil.bumpTestTime(testTime, 60)
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.REVOKE,
@@ -2177,7 +2177,7 @@ contract('ONEWallet', (accounts) => {
     // // move the batch information into data
     // data = ONEUtil.hexStringToBytes(hexData)
 
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.BATCH,
@@ -2221,7 +2221,7 @@ contract('ONEWallet', (accounts) => {
     // Expected result: Will Increase Alices Spending Limit from ONE_ETH TO THREE_ETH
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // alice tranfers ONE CENT to bob
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.CHANGE_SPENDING_LIMIT,
@@ -2264,7 +2264,7 @@ contract('ONEWallet', (accounts) => {
     // Expected result: will jump alices spending limit from THREE_ETH to TWO_ETH
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // alice tranfers ONE CENT to bob
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.JUMP_SPENDING_LIMIT,

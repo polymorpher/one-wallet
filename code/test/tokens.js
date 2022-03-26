@@ -57,7 +57,7 @@ contract('ONEWallet', (accounts) => {
     assert.equal(HALF_ETH, aliceInitialBalance, 'Alice Wallet initially has correct balance')
 
     // alice tranfers ONE CENT to bob
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.TRANSFER,
@@ -127,7 +127,7 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
 
     // alice transfers tokens to bob
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
@@ -197,7 +197,7 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
 
     // Transfer remaining tokens and check that alice no longer tracks this token
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
@@ -286,7 +286,7 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
 
     // alice transfers tokens to bob
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
@@ -371,7 +371,7 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
 
     // alice transfers tokens to bob
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
@@ -430,7 +430,7 @@ contract('ONEWallet', (accounts) => {
     let bob = await TestUtil.makeWallet('TT-TOKEN-2', accounts[0], EFFECTIVE_TIME, DURATION)
     const { testerc20, testerc721, testerc1155 } = await TestUtil.makeTokens(accounts[0])
     // alice tranfers ONE CENT to bob
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.TRANSFER,
@@ -445,7 +445,7 @@ contract('ONEWallet', (accounts) => {
     testTime = await TestUtil.bumpTestTime(testTime, 60)
 
     // ERC20 Transfer
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
@@ -465,7 +465,7 @@ contract('ONEWallet', (accounts) => {
     testTime = await TestUtil.bumpTestTime(testTime, 60)
 
     // alice transfers tokens to bob
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
@@ -484,7 +484,7 @@ contract('ONEWallet', (accounts) => {
     testTime = await TestUtil.bumpTestTime(testTime, 60)
 
     // alice transfers tokens to bob
-    await TestUtil.transactionExecute(
+    await TestUtil.executeStandardTransaction(
       {
         wallet: alice,
         operationType: ONEConstants.OperationType.TRANSFER_TOKEN,

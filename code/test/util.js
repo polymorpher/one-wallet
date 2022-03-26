@@ -4,6 +4,7 @@ const base32 = require('hi-base32')
 const BN = require('bn.js')
 const unit = require('ethjs-unit')
 const ONE = require('../lib/onewallet')
+const ONEDebugger = require('../lib/debug')
 const ONEUtil = require('../lib/util')
 const ONEConstants = require('../lib/constants')
 const ONEWallet = require('../lib/onewallet')
@@ -26,7 +27,6 @@ const Logger = {
     }
   }
 }
-const ONEDebugger = require('../lib/debug')
 const Debugger = ONEDebugger(Logger)
 let Factories
 // eslint-disable-next-line no-unused-vars
@@ -50,14 +50,14 @@ const deploy = async (initArgs) => {
 
 const ONE_ETH = unit.toWei('1', 'ether')
 
-const sleep = (milliseconds) => {
+const sleep = async (milliseconds) => {
   return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
 const wait = async (seconds) => {
   Logger.debug(`wait: ${seconds}`)
   await sleep(seconds * 1000)
 }
-const getReceipt = async (transactionHash) => {
+const waitForReceipt = async (transactionHash) => {
   let transactionReceipt = null
   let i = 0
   while (transactionReceipt == null && i < 10) { // Waiting expectedBlockTime until the transaction is mined
@@ -269,9 +269,8 @@ const getEOTP = async ({ seed, hseed, effectiveTime, timeOffset }) => {
   return { index, eotp }
 }
 
-// transactionExecute commits and reveals a wallet transaction
-const transactionExecute = async ({ wallet, operationType, tokenType, contractAddress, tokenId, dest, amount, data, address, randomSeed, backlinkAddresses, testTime }) => {
-  if (testTime === undefined) { testTime = Date.now() }
+// executeStandardTransaction commits and reveals a wallet transaction
+const executeStandardTransaction = async ({ wallet, operationType, tokenType, contractAddress, tokenId, dest, amount, data, address, randomSeed, backlinkAddresses, testTime = Date.now() }) => {
   // // calculate counter from testTime
   const counter = Math.floor(testTime / INTERVAL)
   const otp = ONEUtil.genOTP({ seed: wallet.seed, counter })
@@ -286,7 +285,7 @@ const transactionExecute = async ({ wallet, operationType, tokenType, contractAd
   let commitParams
   let revealParams
   let paramsHash
-  console.log(`operationType: ${operationType}`)
+  Logger.debug(`operationType: ${operationType}`)
   switch (operationType) {
     case ONEConstants.OperationType.TRACK:
     case ONEConstants.OperationType.UNTRACK:
@@ -666,9 +665,9 @@ module.exports = {
   snapshot,
   revert,
   wait,
-  getReceipt,
+  waitForReceipt,
   bumpTestTime,
-  transactionExecute,
+  executeStandardTransaction,
   makeWallet,
   makeTokens,
   getONEWalletState,
