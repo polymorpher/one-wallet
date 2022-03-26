@@ -1,5 +1,5 @@
-const ONEWalletV5 = require('../build/contracts/ONEWalletV5.json')
-const ONEWalletV6 = require('../build/contracts/ONEWalletV6.json')
+const ONEWalletV5 = require('../build/contracts-old/ONEWalletV5.json')
+const ONEWalletV6 = require('../build/contracts-old/ONEWalletV6.json')
 
 module.exports = {
   ONEWalletV5,

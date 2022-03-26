@@ -8,6 +8,7 @@ import "./WalletGraph.sol";
 import "./SignatureManager.sol";
 import "./TokenTracker.sol";
 import "./SpendingManager.sol";
+import "./Staking.sol";
 
 library Executor {
     using WalletGraph for IONEWallet[];
@@ -24,9 +25,9 @@ library Executor {
             }
         } else if (op.operationType == Enums.OperationType.UNTRACK) {
             if (op.data.length > 0) {
-                tokenTrackerState.untrackToken(op.tokenType, op.contractAddress, op.tokenId);
-            } else {
                 tokenTrackerState.multiUntrack(op.data);
+            } else {
+                tokenTrackerState.untrackToken(op.tokenType, op.contractAddress, op.tokenId);
             }
         } else if (op.operationType == Enums.OperationType.TRANSFER_TOKEN) {
             tokenTrackerState.transferToken(op.tokenType, op.contractAddress, op.tokenId, op.dest, op.amount, op.data);
@@ -60,6 +61,12 @@ library Executor {
             spendingState.changeSpendLimit(op.amount);
         } else if (op.operationType == Enums.OperationType.JUMP_SPENDING_LIMIT) {
             spendingState.jumpSpendLimit(op.amount);
+        } else if (op.operationType == Enums.OperationType.DELEGATE) {
+            Staking.delegate(op.dest, op.amount);
+        } else if (op.operationType == Enums.OperationType.UNDELEGATE) {
+            Staking.undelegate(op.dest, op.amount);
+        } else if (op.operationType == Enums.OperationType.COLLECT_REWARD) {
+            Staking.collectRewards();
         }
     }
 

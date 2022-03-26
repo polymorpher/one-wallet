@@ -227,7 +227,7 @@ const Call = ({
       <TallRow justify='start' style={{ marginTop: 24 }}>
         <Button size='large' type='text' onClick={onClose} danger>Cancel</Button>
       </TallRow>
-      <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
+      <CommitRevealProgress stage={stage} />
     </>
   )
 

@@ -70,7 +70,7 @@ const DoRecover = ({ address, show, onClose }) => {
           <Row justify='end' style={{ marginTop: 48 }}>
             <Button type='primary' size='large' shape='round' disabled={stage >= 0} onClick={doRecovery}>Sounds good!</Button>
           </Row>
-          <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
+          <CommitRevealProgress stage={stage} />
         </>}
       {!lastResortAddress &&
         <Space direction='vertical' size='large'>

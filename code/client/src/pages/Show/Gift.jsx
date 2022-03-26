@@ -416,7 +416,7 @@ const Gift = ({
             title='Preparing red packet...' subtitle='Encrypting your red packet'
             progress={progress} isMobile={isMobile} progressStage={progressStage}
                         />}
-          {redPacketAddress && <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />}
+          {redPacketAddress && <CommitRevealProgress stage={stage} />}
         </Space>
       </>
     )
