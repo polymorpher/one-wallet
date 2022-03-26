@@ -90,7 +90,7 @@ TT-SUBTEST-WALLETID e.g. `TG-OP4-1`
 | 2	 | TRANSFER_TOKEN	            | PASS	  | Token    |
 | 3	 | OVERRIDE_TRACK	            | PASS	  | Token    |
 | 4	 | TRANSFER	                    | PASS	  | Token    | 
-| 5	 | SET_RECOVERY_ADDRESS	        | FAIL	  | Wallet   |
+| 5	 | SET_RECOVERY_ADDRESS	        | PASS	  | Wallet   |
 | 6	 | RECOVER	                    | FAIL	  | Wallet   |
 | 7	 | DISPLACE	                    | TBD	  | Wallet   |
 | 8	 | FORWARD                      | FAIL    | Upgrade  |

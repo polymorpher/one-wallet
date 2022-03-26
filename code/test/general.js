@@ -295,7 +295,7 @@ contract('ONEWallet', (accounts) => {
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     await TestUtil.transactionExecute(
       {
-        ...ONEConstants.NullOperationParams,
+        ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         wallet: alice,
         operationType: ONEConstants.OperationType.OVERRIDE_TRACK,
         data,
@@ -355,6 +355,7 @@ contract('ONEWallet', (accounts) => {
     // alice tranfers ONE CENT to bob
     await TestUtil.transactionExecute(
       {
+        ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         wallet: alice,
         operationType: ONEConstants.OperationType.TRANSFER,
         dest: bob.wallet.address,
@@ -398,7 +399,7 @@ contract('ONEWallet', (accounts) => {
   // Expected result: alices lastResortAddress will change to bobs last Resort address
   it('OPERATION 5 SET_RECOVERY_ADDRESS: must be able to set recovery address', async () => {
     // create wallets and token contracts used througout the tests
-    let alice = await TestUtil.makeWallet('TG-OP5-1', accounts[0], EFFECTIVE_TIME, DURATION)
+    let alice = await TestUtil.makeWallet('TG-OP5-1', accounts[0], EFFECTIVE_TIME, DURATION, false)
     let carol = await TestUtil.makeWallet('TG-OP5-3', accounts[0], EFFECTIVE_TIME, DURATION)
     let aliceOldState = await TestUtil.getONEWalletState(alice.wallet)
     let aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
@@ -422,15 +423,16 @@ contract('ONEWallet', (accounts) => {
     // alice tranfers ONE CENT to bob
     await TestUtil.transactionExecute(
       {
+        ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         wallet: alice,
         operationType: ONEConstants.OperationType.SET_RECOVERY_ADDRESS,
-        address: carol.wallet.address,
+        dest: carol.wallet.address,
         testTime
       }
     )
     // Update alice and bob's current State
     aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
-    // Alice Items that have changed - nonce, lastOperationTime, commits, trackedTokens
+    // Alice Items that have changed - nonce, lastOperationTime, recoveryAddress, commits
     // nonce
     let nonce = await alice.wallet.getNonce()
     assert.notEqual(nonce, aliceOldState.nonce, 'alice wallet.nonce should have been changed')
@@ -440,12 +442,11 @@ contract('ONEWallet', (accounts) => {
     let lastOperationTime = await alice.wallet.lastOperationTime()
     assert.notStrictEqual(lastOperationTime, aliceOldState.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
     aliceOldState.lastOperationTime = lastOperationTime.toNumber()
-    // spendingState
-    let spendingState = await alice.wallet.getSpendingState()
-    assert.equal(spendingState.spentAmount, (ONE_CENT / 2).toString(), 'alice wallet.spentAmount should have been changed')
-    aliceOldState.spendingState.spentAmount = spendingState.spentAmount
-    assert.notEqual(spendingState.lastSpendingInterval, '0', 'alice wallet.spentAmount should have been changed')
-    aliceOldState.spendingState.lastSpendingInterval = spendingState.lastSpendingInterval
+    // recoveryAddress
+    let aliceGetInfo = await alice.wallet.getInfo()
+    assert.notDeepEqual(aliceGetInfo, aliceOldState.info, 'alice wallet.getInfo recoveryAddress should have been changed')
+    assert.equal(aliceGetInfo[6].toString(), carol.wallet.address, 'alice wallet.getInfo recoveryAddress should equal carol.wallet.address')
+    aliceOldState.info.recoveryAddress = aliceGetInfo[6].toString()
     // commits
     let allCommits = await alice.wallet.getAllCommits()
     assert.notDeepEqual(allCommits, aliceOldState.allCommits, 'alice wallet.allCommits should have been updated')

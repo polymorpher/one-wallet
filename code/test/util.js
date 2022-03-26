@@ -318,9 +318,9 @@ const transactionExecute = async ({ wallet, operationType, tokenType, contractAd
       revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
       break
     case ONEConstants.OperationType.SET_RECOVERY_ADDRESS:
-      paramsHash = ONEWallet.computeSetRecoveryAddressHash
-      commitParams = { operationType, address }
-      revealParams = { operationType, address }
+      paramsHash = ONEWallet.computeDestHash
+      commitParams = { operationType, dest }
+      revealParams = { operationType, dest }
       break
     case ONEConstants.OperationType.FORWARD:
       paramsHash = ONEWallet.computeForwardHash
@@ -428,15 +428,17 @@ const printInnerTrees = ({ Debugger, innerTrees }) => {
 }
 
 // makeWallet uses an index and unlocked web3.eth.account and creates and funds a ONEwallet
-const makeWallet = async (salt, deployer, effectiveTime, duration) => {
+const makeWallet = async (salt, deployer, effectiveTime, duration, setLastResortAddress) => {
   if (duration === undefined) { duration = DURATION }
-  const lastResortAccount = web3.eth.accounts.create()
+  let lastResortAccount = web3.eth.accounts.create()
+  let lastResortAddress = lastResortAccount.address
+  if (setLastResortAddress === false) { lastResortAddress = ONEConstants.EmptyAddress }
   const { wallet, seed, hseed, root, client: { layers } } = await createWallet({
     salt: new BN(ONEUtil.keccak(salt)),
     effectiveTime,
     duration,
     maxOperationsPerInterval: SLOT_SIZE,
-    lastResortAddress: lastResortAccount.address,
+    lastResortAddress: lastResortAddress,
     spendingLimit: ONE_ETH
   })
   // Fund wallet
