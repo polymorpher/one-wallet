@@ -43,7 +43,7 @@ const CollectStateReward = ({
     }
   })
 
-  const doUndelegate = () => {
+  const doCollectReward = () => {
     if (stage >= 0) {
       return
     }
@@ -94,7 +94,7 @@ const CollectStateReward = ({
             walletName={autoWalletNameHint(wallet)}
             doubleOtp={doubleOtp}
             otpState={otpState}
-            onComplete={doUndelegate}
+            onComplete={doCollectReward}
             action='confirm collecting reward'
           />
         </Col>
