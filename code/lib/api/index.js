@@ -24,9 +24,6 @@ const SushiPair = require('../../external/IUniswapV2Pair.json')
 
 const BN = require('bn.js')
 const ONEUtil = require('../util')
-const EventMessage = require('../event-message')
-const EventMap = require('../events-map.json')
-const EventParamsMap = require('../events-params-map.json')
 const ONEConstants = require('../constants')
 
 const apiConfig = {
@@ -851,50 +848,17 @@ const api = {
       return data?.result?.transactions || []
     },
 
-    getTransaction: async (tx) => {
-      const { data } = await axios.post(api.rpc.getApi(), {
+    getTransactionReceipt: async (tx) => {
+      const { data: { result } } = await axios.post(api.rpc.getApi(), {
         jsonrpc: '2.0',
         method: 'eth_getTransactionReceipt',
         params: [tx.hash],
         id: 1
       })
 
-      return { ...tx, ...parseLog(data.result) }
+      return result
     },
   }
-}
-
-function parseLog (tx) {
-  tx.errors = []
-  for (const log of tx.logs || []) {
-    log.eventDataMap = {}
-    for (const topic of log.topics) {
-      const eventName = EventMap[topic]
-      if (eventName) {
-        const eventDetail = EventMessage[eventName]
-        if (eventDetail?.message) {
-          tx.errors.push(eventDetail?.message)
-        }
-        log.eventDataMap[eventName] = ONEUtil.abi.decodeParameters(EventParamsMap[eventName].decodeParams, log.data)
-
-        // Use the first event encountered as the display event for the transaction.
-        if (!tx.displayEvent) {
-          tx.displayEvent = eventName
-          const amountParamIndex = EventParamsMap[eventName].amountParamIndex
-          if (amountParamIndex > -1) {
-            const bi = BigInt(log.eventDataMap[eventName][amountParamIndex]) / BigInt(10 ** 14)
-            tx.displayEventValue = `${parseInt(bi.toString()) / 10000} ONE`
-          } else {
-            // TODO: handle each event separately.
-            // fallback to use the first string value as the display value.
-            const firstStringIndex = EventParamsMap[eventName].decodeParams.findIndex(p => p === 'string')
-            tx.displayEventValue = log.eventDataMap[eventName][firstStringIndex]
-          }
-        }
-      }
-    }
-  }
-  return tx
 }
 
 if (typeof window !== 'undefined') {
