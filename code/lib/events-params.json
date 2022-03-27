@@ -386,5 +386,23 @@
     "params": [
       "uint256"
     ]
+  },
+  "StakingSuccess": {
+    "params": [
+      "uint8",
+      "address",
+      "uint256",
+      "uint256"
+    ],
+    "amountIndex": 2
+  },
+  "StakingFailure": {
+    "params": [
+      "uint8",
+      "address",
+      "uint256",
+      "uint256"
+    ],
+    "amountIndex": 2
   }
 }
