@@ -33,12 +33,12 @@ const TransactionViewer = ({ address }) => {
 
   const [pageSize] = useState(10)
   const [hasMore, setHasMore] = useState(true)
-  const [currentPage, setCurrentPage] = useState(1)
+  const [currentPage, setCurrentPage] = useState(0)
   const [error, setError] = useState('')
 
-  useEffect(() => {
-    setCurrentPage(0)
-  }, [pageSize])
+  // useEffect(() => {
+  //   setCurrentPage(0)
+  // }, [pageSize])
 
   const loadMore = () => {
     setCurrentPage(e => e + 1)
@@ -53,6 +53,7 @@ const TransactionViewer = ({ address }) => {
         // TODO: right now some transactions are not returned from this API, like those internal ones.
         const txs = await api.rpc.getTransactionHistory({ address, pageSize, pageIndex: currentPage, fullTx: true })
         if (txs.length === 0) {
+          console.log(currentPage, txs)
           setHasMore(false)
           return
         }
