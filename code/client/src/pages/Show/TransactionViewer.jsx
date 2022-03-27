@@ -57,24 +57,29 @@ const TransactionViewer = ({ address }) => {
           return
         }
         const parsedTxs = await Promise.all(
-          txs.map(tx =>
-            api.rpc.getTransactionReceipt(tx.hash)
+          txs.map(tx => {
+            const timestamp = ONEUtil.toBN(tx.timestamp).muln(1000).toNumber()
+            return api.rpc.getTransactionReceipt(tx.hash)
               .then(receipt => {
-                const events = parseTxLog(receipt.logs)
-                return { ...tx, events }
+                const events = parseTxLog(receipt.logs || [])
+                return { ...tx, key: tx.hash, timestamp, events, status: receipt.status }
               })
               .catch(e => {
                 console.error(tx, e)
-                return { ...tx, error: e.toString() }
-              }))
+                return { ...tx, key: tx.hash, timestamp, error: e.toString() }
+              })
+          })
         )
         setTxList(list => {
-          if (list.length < pageSize * currentPage) {
+          console.log(parsedTxs[0].hash)
+          const foundIndex = list.findIndex(e => e.hash === parsedTxs[0].hash)
+          console.log(foundIndex, list.length, parsedTxs.length)
+          if (foundIndex < 0) {
             return list.concat(parsedTxs)
           } else {
             const copy = list.slice()
-            for (let i = pageSize * currentPage; i < pageSize * currentPage + list.length; i++) {
-              copy[i] = list[i]
+            for (let i = 0; i < list.length; i++) {
+              copy[foundIndex + i] = list[i]
             }
             return copy
           }
@@ -138,8 +143,9 @@ const TransactionViewer = ({ address }) => {
       title: 'Time',
       dataIndex: 'timestamp',
       key: 'timestamp',
+      defaultSortOrder: 'descend',
       render: (text, record) => {
-        return new Date(ONEUtil.toBN(record.timestamp).muln(1000).toNumber()).toLocaleString()
+        return new Date(record.timestamp).toLocaleString()
       }
     },
     {
@@ -162,7 +168,8 @@ const TransactionViewer = ({ address }) => {
       key: 'events',
       // eslint-disable-next-line react/display-name
       render: (text, record) => {
-        const { events, error, value, status } = record
+        const { events: eventsOriginal, error, value, status, input } = record
+        const events = eventsOriginal.slice()
         if (error) {
           return <Text>(failed to parse events - try refresh?)</Text>
         }
@@ -172,7 +179,11 @@ const TransactionViewer = ({ address }) => {
           events.unshift({ eventName: 'InboundExternalTransfer', amount: bnValue, color: 'green' })
         }
         if (ONEUtil.toBN(status).eqn(0)) {
+          console.log(status, record)
           events.push({ eventName: '[Transaction Reverted]' })
+        }
+        if (input?.startsWith('0xe4e5b258')) {
+          events.unshift({ eventName: '[Commit Transaction]' })
         }
         return (
           <Space direction='vertical'>
@@ -183,7 +194,7 @@ const TransactionViewer = ({ address }) => {
               }
               if (e.amount && e.eventName.includes('Token')) {
                 displayText += ` (${e.amount} Token)`
-              } else {
+              } else if (e.amount) {
                 const oneAmount = ONEUtil.toOne(ONEUtil.toBN(e.amount))
                 displayText += ` (${oneAmount} ONE)`
               }
