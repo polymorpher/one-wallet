@@ -890,16 +890,16 @@ const api = {
     },
   },
   rpc: {
-    getTransactionHistory: async (address, pageSize = 50, pageIndex = 0) => {
+    getTransactionHistory: async ({ address, pageSize = 50, pageIndex = 0, fullTx = false }) => {
       const { data } = await rpcBase.post('', {
         jsonrpc: '2.0',
-        method: 'hmy_getTransactionsHistory', // eth_ method is non-standard
+        method: 'eth_getTransactionsHistory', // eth_ method is non-standard, but we still want to use it because it returns normalized addresses and transaction hashes
         params: [
           {
             address,
             order: 'DESC',
             txType: 'ALL',
-            fullTx: true,
+            fullTx,
             pageSize,
             pageIndex
           }
@@ -909,11 +909,11 @@ const api = {
       return data?.result?.transactions || []
     },
 
-    getTransactionReceipt: async (tx) => {
+    getTransactionReceipt: async (txHash) => {
       const { data: { result } } = await rpcBase.post('', {
         jsonrpc: '2.0',
         method: 'eth_getTransactionReceipt',
-        params: [tx.hash],
+        params: [txHash],
         id: 1
       })
 
