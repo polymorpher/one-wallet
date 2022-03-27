@@ -16,7 +16,7 @@ function parseTxLog (logs) {
       decodedEvents[eventName] = ONEUtil.abi.decodeParameters(EventParams[eventName].params, log.data)
       const event = { eventName, message: eventDetail?.message, type: eventDetail?.type }
 
-      if (EventParams[eventName].amountIndex) {
+      if (EventParams[eventName].amountIndex >= 0) {
         event.amount = decodedEvents[eventName][EventParams[eventName].amountIndex]
       }
       events.push(event)
