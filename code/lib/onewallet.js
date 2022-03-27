@@ -423,7 +423,7 @@ const computeTransferDomainHash = ({
   })
 }
 
-const computeForwardHash = ({ address }) => computeSetRecoveryAddressHash({ address })
+const computeForwardHash = ({ address }) => computeDestHash({ address })
 
 const encodeDisplaceDataHex = ({ core, innerCores, identificationKey }) => {
   return Util.abi.encodeParameters(['tuple(bytes32,uint8,uint8,uint32,uint32,uint8)', 'tuple[](bytes32,uint8,uint8,uint32,uint32,uint8)', 'bytes'], [core, innerCores, identificationKey])

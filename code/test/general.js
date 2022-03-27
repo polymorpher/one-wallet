@@ -78,7 +78,6 @@ contract('ONEWallet', (accounts) => {
     aliceOldState.allCommits = allCommits
     // tracked tokens
     let trackedTokens = await alice.wallet.getTrackedTokens()
-    // console.log(`trackedTokens: ${JSON.stringify(trackedTokens)}`)
     assert.notDeepEqual(trackedTokens, aliceOldState.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
     assert.equal(trackedTokens[0][0].toString(), ONEConstants.TokenType.ERC20.toString(), 'alice.wallet.trackedTokens tracking tokens of type ERC20')
     assert.deepEqual(trackedTokens[1][0], testerc20.address, 'alice.wallet.trackedTokens tracking testerc20')
@@ -585,12 +584,14 @@ contract('ONEWallet', (accounts) => {
   it('OPERATION 9 RECOVER_SELECTED_TOKENS: must be able to recover selected tokens', async () => {
     // create wallets and token contracts used througout the tests
     let alice = await TestUtil.makeWallet('TG-OP9-1', accounts[0], EFFECTIVE_TIME, DURATION)
-    let bob = await TestUtil.makeWallet('TG-OP9-2', accounts[0], EFFECTIVE_TIME, DURATION)
     let aliceOldState = await TestUtil.getONEWalletState(alice.wallet)
+    let carol = await TestUtil.makeWallet('TG-OP9-2', accounts[0], EFFECTIVE_TIME, DURATION)
     let aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
     const { testerc20 } = await TestUtil.makeTokens(accounts[0])
     let aliceBalanceERC20
     let aliceWalletBalanceERC20
+    let carolBalanceERC20
+    let carolWalletBalanceERC20
     // transfer ERC20 tokens from accounts[0] (which owns the tokens) to alices wallet
     await testerc20.transfer(alice.wallet.address, 1000, { from: accounts[0] })
     aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
@@ -598,37 +599,56 @@ contract('ONEWallet', (accounts) => {
     assert.equal(1000, aliceBalanceERC20, 'Transfer of 1000 ERC20 tokens to alice.wallet succesful')
     aliceWalletBalanceERC20 = await alice.wallet.getBalance(ONEConstants.TokenType.ERC20, testerc20.address, 0)
     assert.equal(1000, aliceWalletBalanceERC20, 'Transfer of 1000 ERC20 tokens to alice.wallet checked via wallet succesful')
+    carolBalanceERC20 = await testerc20.balanceOf(carol.wallet.address)
+    assert.equal(0, carolBalanceERC20, 'Carol should have 0 ERC20 tokens in carol.wallet')
+    carolWalletBalanceERC20 = await carol.wallet.getBalance(ONEConstants.TokenType.ERC20, testerc20.address, 0)
+    assert.equal(0, carolWalletBalanceERC20, 'Carol should have 0 ERC20 tokens in carol.wallet checked via wallet succesful')
     console.log('Funded ERC20')
 
     // Begin Tests
     let testTime = Date.now()
 
+    // Before we can recover we need to track testERC20
+    await TestUtil.executeStandardTransaction(
+      {
+        ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
+        wallet: alice,
+        operationType: ONEConstants.OperationType.TRACK,
+        tokenType: ONEConstants.TokenType.ERC20,
+        contractAddress: testerc20.address,
+        testTime
+      }
+    )
+    let trackedTokens = await alice.wallet.getTrackedTokens()
+    console.log(`trackedTokens: ${JSON.stringify(trackedTokens)}`)
+
     testTime = await TestUtil.bumpTestTime(testTime, 60)
-    // Get alices current tracked tokens and recover them
-    let recoverTrackedTokens = await alice.wallet.getTrackedTokens()
-    let hexData = ONEUtil.abi.encodeParameters(['uint8[]', 'address[]', 'uint8[]'], [recoverTrackedTokens[0], recoverTrackedTokens[1], recoverTrackedTokens[2]])
+    // Recover test taokens takes an array of uint32 which are the indices of the tracked tokens to recover
+    let hexData = ONEUtil.abi.encodeParameters(['uint32[]'], [[0]])
     let data = ONEUtil.hexStringToBytes(hexData)
     await TestUtil.executeStandardTransaction(
       {
+        ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         wallet: alice,
-        operationType: ONEConstants.OperationType.OVERRIDE_TRACK,
-        // tokenType: ONEConstants.TokenType.ERC20,
-        // contractAddress: testerc20.address,
-        // tokenId: 1,
-        // dest: bob.wallet.address,
-        // amount: 1,
+        operationType: ONEConstants.OperationType.RECOVER_SELECTED_TOKENS,
+        dest: carol.wallet.address,
         data,
         testTime
       }
     )
-    // Update alice and bob's current State
+    // ERC20 tokens should be recovered to carols.wallet.address
+    aliceBalanceERC20 = await testerc20.balanceOf(alice.wallet.address)
+    assert.equal(o, aliceBalanceERC20, 'Alice shoud have 0 ERC20 tokens in alice.wallet ')
+    aliceWalletBalanceERC20 = await alice.wallet.getBalance(ONEConstants.TokenType.ERC20, testerc20.address, 0)
+    assert.equal(0, aliceWalletBalanceERC20, 'Alice shoud have 0 ERC20 tokens in checked via wallet')
+    carolBalanceERC20 = await testerc20.balanceOf(carol.wallet.address)
+    assert.equal(1000, carolBalanceERC20, 'Carol should have 1000 ERC20 tokens in carol.wallet recovered from Alice')
+    carolWalletBalanceERC20 = await alice.wallet.getBalance(ONEConstants.TokenType.ERC20, testerc20.address, 0)
+    assert.equal(0, carolWalletBalanceERC20, 'Carol should have 1000 ERC20 tokens in carol.wallet recovered from Alice checked via wallet succesful')
+
+    // Update alices current State
     aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
-    // Alice Items that have changed - nonce, lastOperationTime, commits, trackedTokens
-    // nonce
-    let nonce = await alice.wallet.getNonce()
-    assert.notEqual(nonce, aliceOldState.nonce, 'alice wallet.nonce should have been changed')
-    assert.equal(nonce.toNumber(), aliceOldState.nonce + 1, 'alice wallet.nonce should have been changed')
-    aliceOldState.nonce = nonce.toNumber()
+    // Alice Items that have changed - lastOperationTime, commits
     // lastOperationTime
     let lastOperationTime = await alice.wallet.lastOperationTime()
     assert.notStrictEqual(lastOperationTime, aliceOldState.lastOperationTime, 'alice wallet.lastOperationTime should have been updated')
@@ -637,19 +657,11 @@ contract('ONEWallet', (accounts) => {
     let allCommits = await alice.wallet.getAllCommits()
     assert.notDeepEqual(allCommits, aliceOldState.allCommits, 'alice wallet.allCommits should have been updated')
     aliceOldState.allCommits = allCommits
-    // tracked tokens
-    let trackedTokens = await alice.wallet.getTrackedTokens()
-    assert.notDeepEqual(trackedTokens, aliceOldState.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
-    assert.equal(trackedTokens[0][0].toString(), ONEConstants.TokenType.ERC20.toString(), 'alice.wallet.trackedTokens tracking tokens of type ERC20')
-    assert.deepEqual(trackedTokens[1][0], testerc20.address, 'alice.wallet.trackedTokens tracking testerc20')
-    assert.deepEqual(trackedTokens[2].length, 1, 'alice.wallet.trackedTokens two tokens are now tracked')
-    assert.deepEqual([ trackedTokens[2][0].toString() ], ['0'], 'alice.wallet.trackedTokens tokens 0 (ERC29 has no NFT id) is now tracked')
-    aliceOldState.trackedTokens = trackedTokens
     // check alice
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
   })
 
-  // ==== BUT_DOMAIN ====
+  // ==== BUY_DOMAIN ====
   // Test Buy a harmony domain and link it to the wallet address 
   // Expected result: Domain is linked to wallet
   // Note: Will not be implemented as part of phase 2 testing
@@ -1220,6 +1232,7 @@ contract('ONEWallet', (accounts) => {
 
     await TestUtil.executeStandardTransaction(
       {
+        ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         wallet: alice,
         operationType: ONEConstants.OperationType.BATCH,
         data,
