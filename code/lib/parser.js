@@ -2,10 +2,10 @@ const EventMessage = require('./event-message')
 const EventMap = require('./events-map.json')
 const EventParams = require('./events-params.json')
 const ONEUtil = require('./util')
-// tx is a result from eth_getTransactionReceipt JSON RPC
-function parseTxLog (tx) {
+// `logs` are obtained from a transaction receipt, from the result of eth_getTransactionReceipt JSON RPC
+function parseTxLog (logs) {
   const events = []
-  for (const log of tx.logs || []) {
+  for (const log of logs || []) {
     const decodedEvents = {}
     for (const topic of log.topics) {
       const eventName = EventMap[topic]
