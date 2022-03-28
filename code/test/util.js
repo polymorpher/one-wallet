@@ -337,7 +337,6 @@ const makeTokens = async ({
   // create an ERC721
   if (makeERC721) {
     const tids = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-    // const uris = ['ipfs://test721/0', 'ipfs://test721/1', 'ipfs://test721/2', 'ipfs://test721/3', 'ipfs://test721/4', 'ipfs://test721/5', 'ipfs://test721/6', 'ipfs://test721/7', 'ipfs://test721/8', 'ipfs://test721/9']
     const uris = tids.map(e => `ipfs://test721/${e}`)
     testerc721 = await TestERC721.new(tids, uris, { from: deployer })
   }
@@ -345,7 +344,6 @@ const makeTokens = async ({
   if (makeERC1155) {
     const tids1155 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     const amounts1155 = [10, 20, 20, 20, 20, 20, 20, 20, 20, 100]
-    // const uris1155 = ['ipfs://test1155/0', 'ipfs://test1155/1', 'ipfs://test1155/2', 'ipfs://test1155/3', 'ipfs://test1155/4', 'ipfs://test1155/5', 'ipfs://test1155/6', 'ipfs://test1155/7', 'ipfs://test1155/8', 'ipfs://test1155/9']
     const uris1155 = tids1155.map(e => `ipfs://test1155/${e}`)
     testerc1155 = await TestERC1155.new(tids1155, amounts1155, uris1155, { from: deployer })
   }
@@ -474,140 +472,100 @@ const getONEWalletState = async (wallet) => {
   const walletIdentificationKeys = await wallet.getIdentificationKeys()
   // console.log(`walletIdentificationKeys: ${JSON.stringify(walletIdentificationKeys)}`)
   let identificationKeys = []
-  try {
-    for (let x of walletIdentificationKeys) {
-      identificationKeys.push(x[0].toString())
-    }
-  } catch (ex) {
-    console.log(`Failed to parse walletIdentificationKeys: ${ex.toString()}`)
+  for (let x of walletIdentificationKeys) {
+    identificationKeys.push(x[0].toString())
   }
   const forwardAddress = (await wallet.getForwardAddress()).toString()
   const walletInfo = await wallet.getInfo()
   let info = {}
-  try {
-    info = {
-      root: walletInfo[0].toString(),
-      height: new BN(walletInfo[1]).toNumber(),
-      interval: new BN(walletInfo[2]).toNumber(),
-      t0: new BN(walletInfo[3]).toNumber(),
-      lifespan: new BN(walletInfo[4]).toNumber(),
-      maxOperationsPerInterval: new BN(walletInfo[5]).toNumber(),
-      recoveryAddress: walletInfo[6].toString(),
-      extra: new BN(walletInfo[7]).toNumber()
-    }
-  } catch (ex) {
-    console.log(`Failed to parse Wallet Info: ${ex.toString()}`)
+  info = {
+    root: walletInfo[0].toString(),
+    height: new BN(walletInfo[1]).toNumber(),
+    interval: new BN(walletInfo[2]).toNumber(),
+    t0: new BN(walletInfo[3]).toNumber(),
+    lifespan: new BN(walletInfo[4]).toNumber(),
+    maxOperationsPerInterval: new BN(walletInfo[5]).toNumber(),
+    recoveryAddress: walletInfo[6].toString(),
+    extra: new BN(walletInfo[7]).toNumber()
   }
   const walletOldInfo = await wallet.getOldInfos()
   let oldInfo = []
-  try {
-    for (let x of walletOldInfo) {
-      oldInfo.push({
-        root: x[0].toString(),
-        height: new BN(x[1]).toNumber(),
-        interval: new BN(x[2]).toNumber(),
-        t0: new BN(x[3]).toNumber(),
-        lifespan: new BN(x[4]).toNumber(),
-        maxOperationsPerInterval: new BN(x[5]).toNumber()
-      })
-    }
-  } catch (ex) {
-    console.log(`Failed to parse Old Info: ${ex.toString()}`)
+  for (let x of walletOldInfo) {
+    oldInfo.push({
+      root: x[0].toString(),
+      height: new BN(x[1]).toNumber(),
+      interval: new BN(x[2]).toNumber(),
+      t0: new BN(x[3]).toNumber(),
+      lifespan: new BN(x[4]).toNumber(),
+      maxOperationsPerInterval: new BN(x[5]).toNumber()
+    })
   }
   const walletInnerCores = await wallet.getInnerCores()
   let innerCores = []
-  try {
-    for (let x of walletInnerCores) {
-      innerCores.push({
-        root: x[0].toString(),
-        height: new BN(x[1]).toNumber(),
-        interval: new BN(x[2]).toNumber(),
-        t0: new BN(x[3]).toNumber(),
-        lifespan: new BN(x[4]).toNumber(),
-        maxOperationsPerInterval: new BN(x[5]).toNumber()
-      })
-    }
-  } catch (ex) {
-    console.log(`Failed to parse walletInnerCores: ${ex.toString()}`)
+  for (let x of walletInnerCores) {
+    innerCores.push({
+      root: x[0].toString(),
+      height: new BN(x[1]).toNumber(),
+      interval: new BN(x[2]).toNumber(),
+      t0: new BN(x[3]).toNumber(),
+      lifespan: new BN(x[4]).toNumber(),
+      maxOperationsPerInterval: new BN(x[5]).toNumber()
+    })
   }
   const rootKey = (await wallet.getRootKey()).toString()
   const walletVersion = await wallet.getVersion()
   let version = {}
-  try {
-    version = {
-      majorVersion: new BN(walletVersion[0]).toNumber(),
-      minorVersion: new BN(walletVersion[1]).toNumber()
-    }
-  } catch (ex) {
-    console.log(`Failed to parse walletVersion: ${ex.toString()}`)
+  version = {
+    majorVersion: new BN(walletVersion[0]).toNumber(),
+    minorVersion: new BN(walletVersion[1]).toNumber()
   }
   const walletSpendingState = await wallet.getSpendingState()
   let spendingState = {}
-  try {
-    spendingState = {
-      spendingLimit: walletSpendingState[0].toString(),
-      spentAmount: walletSpendingState[1].toString(),
-      lastSpendingInterval: walletSpendingState[2].toString(),
-      spendingInterval: walletSpendingState[3].toString(),
-      lastLimitAdjustmentTime: walletSpendingState[4].toString(),
-      highestSpendingLimit: walletSpendingState[5].toString()
-    }
-  } catch (ex) {
-    console.log(`Failed to parse walletSpendingState: ${ex.toString()}`)
+  spendingState = {
+    spendingLimit: walletSpendingState[0].toString(),
+    spentAmount: walletSpendingState[1].toString(),
+    lastSpendingInterval: walletSpendingState[2].toString(),
+    spendingInterval: walletSpendingState[3].toString(),
+    lastLimitAdjustmentTime: walletSpendingState[4].toString(),
+    highestSpendingLimit: walletSpendingState[5].toString()
   }
   const nonce = new BN(await wallet.getNonce()).toNumber()
   const lastOperationTime = new BN(await wallet.lastOperationTime()).toNumber()
   const walletAllCommits = await wallet.getAllCommits()
   let allCommits = {}
-  try {
-    // commitHashArray
-    allCommits[0] = walletAllCommits[0]
-    // paramHashArray
-    allCommits[1] = walletAllCommits[1]
-    // veriFicationHashArray
-    allCommits[2] = walletAllCommits[2]
-    // timestampArray
-    allCommits[3] = walletAllCommits[3]
-    // completedArray
-    allCommits[4] = walletAllCommits[4]
-  } catch (ex) {
-    console.log(`Failed to parse walletAllCommits: ${ex.toString()}`)
-  }
+  // commitHashArray
+  allCommits[0] = walletAllCommits[0]
+  // paramHashArray
+  allCommits[1] = walletAllCommits[1]
+  // veriFicationHashArray
+  allCommits[2] = walletAllCommits[2]
+  // timestampArray
+  allCommits[3] = walletAllCommits[3]
+  // completedArray
+  allCommits[4] = walletAllCommits[4]
   const walletTrackedTokens = await wallet.getTrackedTokens()
   let trackedTokens = {}
-  try {
-    // tokenTypeArray
-    trackedTokens[0] = walletTrackedTokens[0]
-    // contractAddressArray
-    trackedTokens[1] = walletTrackedTokens[1]
-    // tokenIdArray
-    trackedTokens[2] = walletTrackedTokens[2]
-  } catch (ex) {
-    console.log(`Failed to parse walletTrackedTokens: ${ex.toString()}`)
-  }
+  // tokenTypeArray
+  trackedTokens[0] = walletTrackedTokens[0]
+  // contractAddressArray
+  trackedTokens[1] = walletTrackedTokens[1]
+  // tokenIdArray
+  trackedTokens[2] = walletTrackedTokens[2]
   const walletBacklinks = await wallet.getBacklinks()
   let backlinks = []
-  try {
-    for (let x of walletBacklinks) {
-      backlinks.push(x)
-    }
-  } catch (ex) {
-    console.log(`Failed to parse walletBacklinks: ${ex.toString()}`)
+  for (let x of walletBacklinks) {
+    backlinks.push(x)
   }
   const walletSignatures = await wallet.listSignatures(0, MAX_UINT32)
   let signatures = {}
-  try {
-    // Signature Tracker Hashes
-    signatures[0] = walletSignatures[0]
-    // signatures
-    signatures[1] = walletSignatures[1]
-    // timestamps
-    signatures[2] = walletSignatures[2]
-    // expiries
-    signatures[3] = walletSignatures[3]
-  } catch (ex) {
-    console.log(`Failed to parse walletSignatures: ${ex.toString()}`)
-  }
+  // Signature Tracker Hashes
+  signatures[0] = walletSignatures[0]
+  // signatures
+  signatures[1] = walletSignatures[1]
+  // timestamps
+  signatures[2] = walletSignatures[2]
+  // expiries
+  signatures[3] = walletSignatures[3]
 
   let state = {}
   state = {
