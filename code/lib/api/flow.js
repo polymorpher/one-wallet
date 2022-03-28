@@ -5,6 +5,7 @@ const config = require('../config/provider').getConfig()
 const storage = require('./storage').getStorage()
 const messager = require('./message').getMessage()
 const { api } = require('./index')
+const { parseTxLog } = require('../parser')
 const EventMessage = require('../event-message')
 const EventMaps = require('../events-map.json')
 const BN = require('bn.js')
@@ -296,8 +297,9 @@ const Flows = {
           onRevealFailure && await onRevealFailure(error)
           return
         }
-        const messages = tx?.receipt?.rawLogs.flatMap(l => l.topics.map(t => EventMessage?.[EventMaps?.[t]])).filter(Boolean)
-        onRevealSuccess && await onRevealSuccess(txId, messages)
+        const events = parseTxLog(tx?.receipt?.rawLogs)
+        // const messages = tx?.receipt?.rawLogs.flatMap(l => l.topics.map(t => EventMessage?.[EventMaps?.[t]])).filter(Boolean)
+        onRevealSuccess && await onRevealSuccess(txId, events)
         return true
       } catch (ex) {
         // console.trace(ex)
