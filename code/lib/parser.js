@@ -3,6 +3,14 @@ const EventMap = require('./events-map.json')
 const EventParams = require('./events-params.json')
 const ONEUtil = require('./util')
 const ONEConstant = require('./constants')
+
+const eventDataTransformer = {
+  'Harmony/CollectRewards': (data) => {
+    const data2 = '0x' + data.slice(2).padStart(64, '0')
+    // console.log(data, data2)
+    return data2
+  }
+}
 // `logs` are obtained from a transaction receipt, from the result of eth_getTransactionReceipt JSON RPC
 function parseTxLog (logs) {
   const events = []
@@ -14,14 +22,19 @@ function parseTxLog (logs) {
         continue
       }
       const eventDetail = EventMessage[eventName]
-      decodedEvents[eventName] = ONEUtil.abi.decodeParameters(EventParams[eventName].params, log.data)
+      const logData = eventDataTransformer[eventName] ? eventDataTransformer[eventName](log.data) : log.data
+      // console.log('decoding', EventParams[eventName].params, logData)
+      decodedEvents[eventName] = ONEUtil.abi.decodeParameters(EventParams[eventName].params, logData)
+      // console.log('decoded', decodedEvents[eventName])
       const amount = EventParams[eventName].amountIndex >= 0 && decodedEvents[eventName][EventParams[eventName].amountIndex]
       const data = { ...decodedEvents[eventName], amount }
       let message = eventDetail?.message
+      let amountInMessage = false
       if (eventDetail?.messageTemplate) {
         message = formatMessageTemplate(eventDetail.messageTemplate, data)
+        amountInMessage = eventDetail.messageTemplate?.includes('{{amount}}')
       }
-      const event = { eventName, message, type: eventDetail?.type, data }
+      const event = { eventName, message, type: eventDetail?.type, abort: eventDetail?.abort, amountInMessage, data }
       events.push(event)
     }
   }
@@ -29,7 +42,15 @@ function parseTxLog (logs) {
 }
 
 const REPLACERS = {
-  '{{amount}}': d => d.amount,
+  '{{amount}}': d => {
+    const amount = ONEUtil.toBN(d.amount)
+    if (amount.gtn(0)) {
+      return `${ONEUtil.formatNumber(ONEUtil.toOne(amount))} ONE`
+    } else {
+      return ''
+    }
+  },
+  '{{amount?}}': d => `${ONEUtil.formatNumber(ONEUtil.toOne(ONEUtil.toBN(d.amount)))} ONE`,
   '{{op:1}}': d => ONEConstant.OperationType[d[0]],
   '{{op:2}}': d => ONEConstant.OperationType[d[1]],
   '{{op:3}}': d => ONEConstant.OperationType[d[2]],
