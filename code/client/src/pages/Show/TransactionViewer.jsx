@@ -31,7 +31,7 @@ const TransactionViewer = ({ address }) => {
   const network = useSelector(state => state.global.network)
   const searchInput = useRef()
 
-  const [pageSize] = useState(10)
+  const [pageSize] = useState(25)
   const [hasMore, setHasMore] = useState(true)
   const [currentPage, setCurrentPage] = useState(0)
   const [error, setError] = useState('')
@@ -184,7 +184,7 @@ const TransactionViewer = ({ address }) => {
           events.push({ eventName: '[Transaction Reverted]' })
         }
         if (input?.startsWith('0xe4e5b258')) {
-          events.unshift({ eventName: '[Commit Transaction]' })
+          events.unshift({ eventName: '[Commit Transaction]', color: 'lightgrey' })
         }
         return (
           <Space direction='vertical'>
@@ -193,10 +193,10 @@ const TransactionViewer = ({ address }) => {
               if (e.message) {
                 displayText += ` (${e.message})`
               }
-              if (e.amount && e.eventName.includes('Token')) {
+              if (e.data?.amount && e.eventName.includes('Token')) {
                 displayText += ` (${e.amount} Token)`
-              } else if (e.amount) {
-                const oneAmount = ONEUtil.toOne(ONEUtil.toBN(e.amount))
+              } else if (e.data?.amount) {
+                const oneAmount = ONEUtil.toOne(ONEUtil.toBN(e.data?.amount))
                 displayText += ` (${oneAmount} ONE)`
               }
               return <Text key={`${i}`} style={{ color: e.color || getEventTypeColor(e.type) }}>{displayText}</Text>
