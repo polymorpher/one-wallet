@@ -44,6 +44,7 @@ module.exports = {
     'harmony-testnet': {
       name: 'Harmony Testnet',
       url: process.env.TESTNET_RPC || 'https://api.s0.b.hmny.io',
+      explorer: 'https://explorer.pops.one/tx/{{txId}}',
       chainId: 2,
       deploy: {
         factory: process.env.DEPLOY_FACTORY_TESTNET || '',

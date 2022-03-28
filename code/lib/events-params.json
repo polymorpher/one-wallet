@@ -1,0 +1,414 @@
+{
+  "TransferError": {
+    "params": [
+      "address",
+      "bytes"
+    ]
+  },
+  "LastResortAddressNotSet": {
+    "params": []
+  },
+  "RecoveryAddressUpdated": {
+    "params": [
+      "address"
+    ]
+  },
+  "PaymentReceived": {
+    "params": [
+      "uint256",
+      "address"
+    ],
+    "amountIndex": 0
+  },
+  "PaymentSent": {
+    "params": [
+      "uint256",
+      "address"
+    ],
+    "amountIndex": 0
+  },
+  "PaymentForwarded": {
+    "params": [
+      "uint256",
+      "address"
+    ],
+    "amountIndex": 0
+  },
+  "AutoRecoveryTriggered": {
+    "params": [
+      "address"
+    ]
+  },
+  "AutoRecoveryTriggeredPrematurely": {
+    "params": [
+      "address",
+      "uint256"
+    ]
+  },
+  "RecoveryFailure": {
+    "params": []
+  },
+  "RecoveryTriggered": {
+    "params": []
+  },
+  "Retired": {
+    "params": []
+  },
+  "ForwardAddressUpdated": {
+    "params": [
+      "address"
+    ]
+  },
+  "ForwardAddressAlreadySet": {
+    "params": [
+      "address"
+    ]
+  },
+  "ForwardAddressInvalid": {
+    "params": [
+      "address"
+    ]
+  },
+  "BackLinkUpdated": {
+    "params": [
+      "address",
+      "address"
+    ]
+  },
+  "BackLinkUpdateError": {
+    "params": [
+      "address",
+      "address",
+      "string"
+    ]
+  },
+  "ExternalCallCompleted": {
+    "params": [
+      "address",
+      "uint256",
+      "bytes",
+      "bytes"
+    ],
+    "amountIndex": 1
+  },
+  "ExternalCallFailed": {
+    "params": [
+      "address",
+      "uint256",
+      "bytes",
+      "bytes"
+    ],
+    "amountIndex": 1
+  },
+  "BackLinkAltered": {
+    "params": [
+      "address[]",
+      "address[]"
+    ]
+  },
+  "InvalidBackLinkIndex": {
+    "params": [
+      "uint256"
+    ]
+  },
+  "CommandDispatched": {
+    "params": [
+      "address",
+      "bytes"
+    ]
+  },
+  "CommandFailed": {
+    "params": [
+      "address",
+      "string",
+      "bytes"
+    ]
+  },
+  "DomainRegistered": {
+    "params": [
+      "address",
+      "string",
+      "bytes32"
+    ]
+  },
+  "ReverseDomainClaimed": {
+    "params": [
+      "address",
+      "bytes32"
+    ]
+  },
+  "ReverseDomainClaimError": {
+    "params": [
+      "string"
+    ]
+  },
+  "InvalidFQDN": {
+    "params": [
+      "string",
+      "uint32"
+    ]
+  },
+  "DomainRegistrationFailed": {
+    "params": [
+      "string"
+    ]
+  },
+  "AttemptRegistration": {
+    "params": [
+      "bytes32",
+      "string",
+      "address",
+      "uint256",
+      "string",
+      "address"
+    ]
+  },
+  "DomainTransferFailed": {
+    "params": [
+      "string"
+    ]
+  },
+  "AttemptRenewal": {
+    "params": [
+      "bytes32",
+      "string",
+      "uint256"
+    ]
+  },
+  "DomainRenewalFailed": {
+    "params": [
+      "string"
+    ]
+  },
+  "DomainTransferred": {
+    "params": [
+      "bytes32",
+      "address"
+    ]
+  },
+  "DomainRenewed": {
+    "params": [
+      "bytes32",
+      "string",
+      "uint256"
+    ]
+  },
+  "SignatureMismatch": {
+    "params": [
+      "bytes32",
+      "bytes32",
+      "bytes32"
+    ]
+  },
+  "SignatureNotExist": {
+    "params": [
+      "bytes32"
+    ]
+  },
+  "SignatureAlreadyExist": {
+    "params": [
+      "bytes32",
+      "bytes32"
+    ]
+  },
+  "SignatureAuthorized": {
+    "params": [
+      "bytes32",
+      "bytes32"
+    ]
+  },
+  "SignatureRevoked": {
+    "params": [
+      "bytes32",
+      "bytes32"
+    ]
+  },
+  "SignatureExpired": {
+    "params": [
+      "bytes32",
+      "bytes32"
+    ]
+  },
+  "ExceedSpendingLimit": {
+    "params": [
+      "uint256",
+      "uint256",
+      "uint256",
+      "uint256",
+      "address"
+    ],
+    "amountIndex": 0
+  },
+  "InsufficientFund": {
+    "params": [
+      "uint256",
+      "uint256",
+      "address"
+    ],
+    "amountIndex": 0
+  },
+  "ReceivedToken": {
+    "params": [
+      "uint8",
+      "uint256",
+      "address",
+      "address",
+      "address",
+      "uint256",
+      "bytes"
+    ],
+    "amountIndex": 1
+  },
+  "ForwardedToken": {
+    "params": [
+      "uint8",
+      "uint256",
+      "address",
+      "address",
+      "address",
+      "uint256",
+      "bytes"
+    ],
+    "amountIndex": 1
+  },
+  "TokenTransferFailed": {
+    "params": [
+      "uint8",
+      "address",
+      "uint256",
+      "address",
+      "uint256"
+    ],
+    "amountIndex": 4
+  },
+  "TokenTransferError": {
+    "params": [
+      "uint8",
+      "address",
+      "uint256",
+      "address",
+      "uint256",
+      "string"
+    ],
+    "amountIndex": 4
+  },
+  "TokenTransferSucceeded": {
+    "params": [
+      "uint8",
+      "address",
+      "uint256",
+      "address",
+      "uint256"
+    ],
+    "amountIndex": 4
+  },
+  "TokenRecovered": {
+    "params": [
+      "uint8",
+      "address",
+      "uint256",
+      "uint256"
+    ]
+  },
+  "BalanceRetrievalError": {
+    "params": [
+      "uint8",
+      "address",
+      "uint256",
+      "string"
+    ]
+  },
+  "TokenTracked": {
+    "params": [
+      "uint8",
+      "address",
+      "uint256"
+    ]
+  },
+  "TokenUntracked": {
+    "params": [
+      "uint8",
+      "address",
+      "uint256"
+    ]
+  },
+  "TokenNotFound": {
+    "params": [
+      "uint8",
+      "address",
+      "uint256"
+    ]
+  },
+  "CoreDisplaced": {
+    "params": [
+      "tuple(bytes32,uint8,uint8,uint32,uint32,uint8)",
+      "tuple(bytes32,uint8,uint8,uint32,uint32,uint8)",
+      "tuple(bytes32,uint8,uint8,uint32,uint32,uint8)[]"
+    ]
+  },
+  "CoreDisplacementFailed": {
+    "params": [
+      "tuple(bytes32,uint8,uint8,uint32,uint32,uint8)",
+      "tuple(bytes32,uint8,uint8,uint32,uint32,uint8)[]",
+      "string"
+    ]
+  },
+  "ONEWalletDeployFailed": {
+    "params": [
+      "uint256",
+      "bytes32"
+    ]
+  },
+  "ONEWalletDeploySuccess": {
+    "params": [
+      "address",
+      "uint256",
+      "bytes32"
+    ]
+  },
+  "SpendingLimitChanged": {
+    "params": [
+      "uint256"
+    ]
+  },
+  "HighestSpendingLimitChanged": {
+    "params": [
+      "uint256"
+    ]
+  },
+  "SpendingLimitChangeFailed": {
+    "params": [
+      "uint256",
+      "string"
+    ]
+  },
+  "SpendingLimitJumped": {
+    "params": [
+      "uint256"
+    ]
+  },
+  "StakingSuccess": {
+    "params": [
+      "uint8",
+      "address",
+      "uint256",
+      "uint256"
+    ],
+    "amountIndex": 2
+  },
+  "StakingFailure": {
+    "params": [
+      "uint8",
+      "address",
+      "uint256",
+      "uint256"
+    ],
+    "amountIndex": 2
+  },
+  "Harmony/CollectRewards": {
+    "params": [
+      "uint256"
+    ],
+    "amountIndex": 0
+  }
+}

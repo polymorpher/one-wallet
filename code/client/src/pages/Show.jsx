@@ -39,6 +39,7 @@ import CheckRoots from './Show/CheckRoots'
 import Limit from './Show/Limit'
 import Stake from './Show/Stake/Stake'
 import Unstake from './Show/Stake/Unstake'
+import TransactionViewer from './Show/TransactionViewer'
 import CollectStakeReward from './Show/Stake/CollectStakeReward'
 
 const tabList = [
@@ -51,7 +52,14 @@ const tabList = [
   { key: 'call', tab: 'Call', dev: true, expert: true },
   { key: 'sign', tab: 'Sign', dev: true, expert: true },
   { key: 'qr' },
-  { key: 'scan' }
+  { key: 'scan' },
+  {
+    key: 'history',
+    tab: 'History',
+    requireNetwork (network) {
+      return network.startsWith('harmony')
+    }
+  },
 ]
 
 const SectionList = [
@@ -141,7 +149,7 @@ const Show = () => {
     return <Redirect to={Paths.wallets} />
   }
 
-  const displayTabList = tabList.filter(e => e.tab && ((!e.expert || expert) || (!e.dev || dev)))
+  const displayTabList = tabList.filter(e => e.tab && ((!e.expert || expert) || (!e.dev || dev)) && (!e.requireNetwork || e.requireNetwork(network)))
 
   return (
     <>
@@ -165,6 +173,7 @@ const Show = () => {
           {activeTab === 'scan' && <Scan address={address} />}
           {activeTab === 'call' && <Call address={address} headless />}
           {activeTab === 'sign' && <Sign address={address} headless />}
+          {activeTab === 'history' && <TransactionViewer address={address} />}
           <Upgrade address={address} prompt={command === 'upgrade'} onClose={showStartScreen} />
           <CheckForwardState address={address} onClose={() => history.push(Paths.wallets)} />
           <CheckRoots address={address} onClose={() => history.push(Paths.wallets)} />
