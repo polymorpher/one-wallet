@@ -330,15 +330,13 @@ contract('ONEWallet', (accounts) => {
     let testTime = Date.now()
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
-    // create randomSeed
-    let randomSeed = new Uint8Array(new BigUint64Array([0n, BigInt(testTime)]).buffer)
     // recover Alices wallet
     //
     await TestUtil.executeStandardTransaction(
       {
+        ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
         operationType: ONEConstants.OperationType.RECOVER,
-        randomSeed,
         testTime
       }
     )
@@ -491,14 +489,12 @@ contract('ONEWallet', (accounts) => {
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // Call
-    let backlinkAddresses = [carol.wallet]
     let hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
     let data = ONEUtil.hexStringToBytes(hexData)
     await TestUtil.executeStandardTransaction(
       {
         walletInfo: alice,
         operationType: ONEConstants.OperationType.COMMAND,
-        backlinkAddresses,
         data,
         tokenType: ONEConstants.TokenType.ERC20,
         contractAddress: testerc20.address,
@@ -537,14 +533,13 @@ contract('ONEWallet', (accounts) => {
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // Add a backlink from Alice to Carol
-    let backlinkAddresses = [carol.wallet]
     let hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
     let data = ONEUtil.hexStringToBytes(hexData)
     await TestUtil.executeStandardTransaction(
       {
+        ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
         operationType: ONEConstants.OperationType.BACKLINK_ADD,
-        backlinkAddresses,
         data,
         testTime
       }
@@ -575,14 +570,12 @@ contract('ONEWallet', (accounts) => {
     let testTime = Date.now()
 
     // Add a backlink from Alice to Carol
-    let backlinkAddresses = [carol.wallet]
     let hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
     let data = ONEUtil.hexStringToBytes(hexData)
     await TestUtil.executeStandardTransaction(
       {
         walletInfo: alice,
         operationType: ONEConstants.OperationType.BACKLINK_ADD,
-        backlinkAddresses,
         data,
         testTime
       }
@@ -593,14 +586,12 @@ contract('ONEWallet', (accounts) => {
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // Remove the backlink from Alice to Carol
-    backlinkAddresses = [carol.wallet]
     hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
     data = ONEUtil.hexStringToBytes(hexData)
     await TestUtil.executeStandardTransaction(
       {
         walletInfo: alice,
         operationType: ONEConstants.OperationType.BACKLINK_DELETE,
-        backlinkAddresses,
         data,
         testTime
       }
@@ -632,7 +623,6 @@ contract('ONEWallet', (accounts) => {
 
     // First Link Alice to Carol
     testTime = await TestUtil.bumpTestTime(testTime, 60)
-    let backlinkAddresses = [carol.wallet]
     let hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
     let data = ONEUtil.hexStringToBytes(hexData)
     let aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
@@ -640,7 +630,6 @@ contract('ONEWallet', (accounts) => {
       {
         walletInfo: alice,
         operationType: ONEConstants.OperationType.BACKLINK_ADD,
-        backlinkAddresses,
         data,
         testTime
       }
@@ -648,14 +637,12 @@ contract('ONEWallet', (accounts) => {
     // Now overwride link to Carol with link to Dora
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // Get alices current tracked tokens and override the address from testerc20 to testerc20v2
-    backlinkAddresses = [dora.wallet]
     hexData = ONEUtil.abi.encodeParameters(['address[]'], [[dora.wallet.address]])
     data = ONEUtil.hexStringToBytes(hexData)
     await TestUtil.executeStandardTransaction(
       {
         walletInfo: alice,
         operationType: ONEConstants.OperationType.BACKLINK_OVERRIDE,
-        backlinkAddresses,
         data,
         testTime
       }

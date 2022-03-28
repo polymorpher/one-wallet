@@ -299,7 +299,7 @@ const makeWallet = async ({
   } else {
     lastResortAddress = ONEConstants.EmptyAddress
   }
-  const { wallet, seed, hseed, root, client: { layers } } = await createWallet({
+  const { wallet, seed, hseed, client: { layers } } = await createWallet({
     salt: new BN(ONEUtil.keccak(salt)),
     effectiveTime,
     duration,
@@ -313,7 +313,7 @@ const makeWallet = async ({
   const walletCurrentState = walletOldState
 
   return {
-    walletInfo: { wallet: wallet, seed, hseed, root, layers, lastResortAddress },
+    walletInfo: { wallet: wallet, seed, hseed, layers, lastResortAddress },
     walletOldState,
     walletCurrentState,
     initialBalance
@@ -665,7 +665,6 @@ const executeStandardTransaction = async ({
   data,
   address,
   randomSeed,
-  backlinkAddresses,
   testTime = Date.now(),
   getCurrentState = true
 }) => {
@@ -702,8 +701,8 @@ const executeStandardTransaction = async ({
     case ONEConstants.OperationType.BACKLINK_DELETE:
     case ONEConstants.OperationType.BACKLINK_OVERRIDE:
       paramsHash = ONEWallet.computeDataHash
-      commitParams = { operationType, backlinkAddresses, data }
-      revealParams = { operationType, backlinkAddresses, data }
+      commitParams = { operationType, data }
+      revealParams = { operationType, data }
       break
     case ONEConstants.OperationType.COMMAND:
       paramsHash = ONEWallet.computeDataHash
@@ -722,8 +721,8 @@ const executeStandardTransaction = async ({
       break
     case ONEConstants.OperationType.RECOVER:
       paramsHash = ONEWallet.computeRecoveryHash
-      commitParams = { operationType, randomSeed }
-      revealParams = { operationType, randomSeed }
+      commitParams = { operationType }
+      revealParams = { operationType }
       break
     case ONEConstants.OperationType.CHANGE_SPENDING_LIMIT:
     case ONEConstants.OperationType.JUMP_SPENDING_LIMIT:

@@ -50,6 +50,7 @@ Following are some discussion points
 
 
 ### Backlinking
+**Note: Following logic used is incorrect: see Clarification Points for correct logic**
 Encompasess the Following operations and parameters in Executor.sol
 * BACKLINK_ADD: `_backlinkAdd(backlinkAddresses, op.data)`
 * BACKLINK_DELETE: `_backlinkDelete(backlinkAddresses, op.data)`
@@ -112,6 +113,17 @@ and calls commit reveal as follows
   })
 ```
 
+### COMMAND
+ Encompasess the Following operations and parameters in Executor.sol
+ * `(op.operationType == Enums.OperationType.COMMAND)`
+ Which uses these parameters
+ * `backlinkAddresses.command(op.tokenType, op.contractAddress, op.tokenId, op.dest, op.amount, op.data)`
+ Which are passed from one wallet as
+ * `Executor.execute(op, tokenTrackerState, backlinkAddresses, signatures, spendingState)`
+ Which are received by oneWallet as
+ * 
+
+
 **CommitReveal**
 `util.js`
 Uses the passed commit and reveal parameters as well as the paramHash to process the backlink Update
@@ -121,6 +133,22 @@ Uses the passed commit and reveal parameters as well as the paramHash to process
 * [backlinkAddresses and randomSeed should not be an argument of a general function?](https://github.com/polymorpher/one-wallet/pull/263#discussion_r835748423)
 * [transactionExecute](https://github.com/polymorpher/one-wallet/pull/263#discussion_r835748509) suggest breaking down this function and only let it handle general, frequently occurring cases. Transaction execution functions for infrequent operations, if needed, can live in their own files. People testing individual functions shouldn't need to come to this centralized function and going over the entire thing to understand what's needed
 * [should use a general operation ](https://github.com/polymorpher/one-wallet/pull/263#discussion_r835748554)
+
+
+## Clarification Points
+### Parameters for Commit/Reveal
+If I understand this correctly 
+
+`ONEWallet.sol` calls `Executor.sol` using
+`Executor.execute(op, tokenTrackerState, backlinkAddresses, signatures, spendingState);`
+
+but only receives in the OperationParameters in the reveal call
+**The rest come from the ONEWallets state**
+e.g.
+`    IONEWallet[] backlinkAddresses; // to be set in next version - these are addresses forwarding funds and tokens to this contract AND must have their forwardAddress updated if this contract's forwardAddress is set or updated. One example of such an address is a previous version of the wallet "upgrading" to a new version. See more at https://github.com/polymorpher/one-wallet/issues/78`
+
+So we should only ever pass Operation Paramaeters 
+Even in `commitParams` and `revealParams`
 
 ## Design Approach
 
