@@ -31,7 +31,7 @@ contract('ONEWallet', (accounts) => {
   // Expected result the token is now tracked
   it('OPERATION 0 TRACK: must be able to track tokens', async () => {
     // create wallets and token contracts used througout the tests
-    let { wallet: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP0-0', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP0-0', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
     // make Tokens
     const { testerc20 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
 
@@ -42,7 +42,7 @@ contract('ONEWallet', (accounts) => {
     let { currentState: aliceCurrentState } = await TestUtil.executeStandardTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
-        wallet: alice,
+        walletInfo: alice,
         operationType: ONEConstants.OperationType.TRACK,
         tokenType: ONEConstants.TokenType.ERC20,
         contractAddress: testerc20.address,
@@ -69,7 +69,7 @@ contract('ONEWallet', (accounts) => {
   // Expected result the token is no longer tracked
   it('OPERATION 1 UNTRACK: must be able to untrack tokens', async () => {
     // create wallets and token contracts used througout the tests
-    let { wallet: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP0-0', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP0-0', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
     // make Tokens
     const { testerc20 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
 
@@ -81,7 +81,7 @@ contract('ONEWallet', (accounts) => {
     let { currentState: aliceCurrentState } = await TestUtil.executeStandardTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
-        wallet: alice,
+        walletInfo: alice,
         operationType: ONEConstants.OperationType.TRACK,
         tokenType: ONEConstants.TokenType.ERC20,
         contractAddress: testerc20.address,
@@ -96,7 +96,7 @@ contract('ONEWallet', (accounts) => {
     { ({ currentState: aliceCurrentState } = await TestUtil.executeStandardTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
-        wallet: alice,
+        walletInfo: alice,
         operationType: ONEConstants.OperationType.UNTRACK,
         tokenType: ONEConstants.TokenType.ERC20,
         contractAddress: testerc20.address,
@@ -121,8 +121,8 @@ contract('ONEWallet', (accounts) => {
   // Expected result the token is now tracked and alices balance has decreased and bobs increased
   it('OPERATION 2 TRANSFER_TOKEN: must be able to transfer assets', async () => {
     // create wallets and token contracts used througout the tests
-    let { wallet: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP2-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
-    let { wallet: bob } = await TestUtil.makeWallet({ salt: 'TG-OP2-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP2-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: bob } = await TestUtil.makeWallet({ salt: 'TG-OP2-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
 
     // make Tokens
     const { testerc20 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
@@ -151,7 +151,7 @@ contract('ONEWallet', (accounts) => {
     { ({ currentState: aliceCurrentState } = await TestUtil.executeStandardTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
-        wallet: alice,
+        walletInfo: alice,
         operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
         tokenType: ONEConstants.TokenType.ERC20,
         contractAddress: testerc20.address,
@@ -189,7 +189,7 @@ contract('ONEWallet', (accounts) => {
   // Expected result: Alice will now track testerc20v2 instead of testerc20
   it('OPERATION 3 OVERRIDE_TRACK: must be able to override tracked tokens', async () => {
     // create wallets and token contracts used througout the tests
-    let { wallet: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP3-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP3-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
     // make Tokens
     const { testerc20 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
     const { testerc20: testerc20v2 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
@@ -202,7 +202,7 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.executeStandardTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
-        wallet: alice,
+        walletInfo: alice,
         operationType: ONEConstants.OperationType.TRACK,
         tokenType: ONEConstants.TokenType.ERC20,
         contractAddress: testerc20.address,
@@ -225,7 +225,7 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.executeStandardTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
-        wallet: alice,
+        walletInfo: alice,
         operationType: ONEConstants.OperationType.OVERRIDE_TRACK,
         data,
         testTime
@@ -252,8 +252,8 @@ contract('ONEWallet', (accounts) => {
   // Expected result: Alices balance will decrease bobs will increase, alice spendingState is updated
   it('OPERATION 4 TRANSFER : must be able to transfer native assets', async () => {
     // create wallets and token contracts used througout the tests
-    let { wallet: alice, walletOldState: aliceOldState, initialBalance: aliceInitialBalance } = await TestUtil.makeWallet({ salt: 'TG-OP4-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
-    let { wallet: bob, initialBalance: bobInitialBalance } = await TestUtil.makeWallet({ salt: 'TG-OP4-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: alice, walletOldState: aliceOldState, initialBalance: aliceInitialBalance } = await TestUtil.makeWallet({ salt: 'TG-OP4-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: bob, initialBalance: bobInitialBalance } = await TestUtil.makeWallet({ salt: 'TG-OP4-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
 
     // Begin Tests
     let testTime = Date.now()
@@ -264,7 +264,7 @@ contract('ONEWallet', (accounts) => {
     let { currentState: aliceCurrentState } = await TestUtil.executeStandardTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
-        wallet: alice,
+        walletInfo: alice,
         operationType: ONEConstants.OperationType.TRANSFER,
         dest: bob.wallet.address,
         amount: transferAmount,
@@ -288,8 +288,8 @@ contract('ONEWallet', (accounts) => {
   // Expected result: alices lastResortAddress will change to bobs last Resort address
   it('OPERATION 5 SET_RECOVERY_ADDRESS: must be able to set recovery address', async () => {
     // create wallets and token contracts used througout the tests
-    let { wallet: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP5-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION, setLastResortAddress: false })
-    let { wallet: carol } = await TestUtil.makeWallet({ salt: 'TG-OP5-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP5-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION, setLastResortAddress: false })
+    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'TG-OP5-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
 
     // Begin Tests
     let testTime = Date.now()
@@ -300,7 +300,7 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.executeStandardTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
-        wallet: alice,
+        walletInfo: alice,
         operationType: ONEConstants.OperationType.SET_RECOVERY_ADDRESS,
         dest: carol.wallet.address,
         testTime
@@ -324,7 +324,7 @@ contract('ONEWallet', (accounts) => {
   // Expected result: will be transferred tos her last resort address (currently bob's last resort address)
   it('OPERATION 6 RECOVER: must be able to recover assets', async () => {
     // create wallets and token contracts used througout the tests
-    let { wallet: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP6-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP6-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
 
     // Begin Tests
     let testTime = Date.now()
@@ -336,7 +336,7 @@ contract('ONEWallet', (accounts) => {
     //
     await TestUtil.executeStandardTransaction(
       {
-        wallet: alice,
+        walletInfo: alice,
         operationType: ONEConstants.OperationType.RECOVER,
         randomSeed,
         testTime
@@ -362,8 +362,8 @@ contract('ONEWallet', (accounts) => {
   // Expected result: Funds will now be available in Carols Wallet
   it('OPERATION 8 FORWARD : must be able to forward to a different wallet', async () => {
     // create wallets and token contracts used througout the tests
-    let { wallet: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP8-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
-    let { wallet: carol } = await TestUtil.makeWallet({ salt: 'TG-OP8-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP8-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'TG-OP8-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
 
     // Begin Tests
     let testTime = Date.now()
@@ -373,7 +373,7 @@ contract('ONEWallet', (accounts) => {
     //
     await TestUtil.executeStandardTransaction(
       {
-        wallet: alice,
+        walletInfo: alice,
         operationType: ONEConstants.OperationType.FORWARD,
         dest: carol.wallet.address,
         testTime
@@ -392,8 +392,8 @@ contract('ONEWallet', (accounts) => {
   // Expected result: Alice will recover her tokens to her last resort address
   it('OPERATION 9 RECOVER_SELECTED_TOKENS: must be able to recover selected tokens', async () => {
     // create wallets and token contracts used througout the tests
-    let { wallet: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP9-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
-    let { wallet: carol } = await TestUtil.makeWallet({ salt: 'TG-OP9-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP9-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'TG-OP9-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
     // make Tokens
     const { testerc20 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
     // fund Tokens
@@ -411,7 +411,7 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.executeStandardTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
-        wallet: alice,
+        walletInfo: alice,
         operationType: ONEConstants.OperationType.TRACK,
         tokenType: ONEConstants.TokenType.ERC20,
         contractAddress: testerc20.address,
@@ -428,7 +428,7 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.executeStandardTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
-        wallet: alice,
+        walletInfo: alice,
         operationType: ONEConstants.OperationType.RECOVER_SELECTED_TOKENS,
         dest: carol.wallet.address,
         data,
@@ -472,8 +472,8 @@ contract('ONEWallet', (accounts) => {
   // Test executing a transfer of some ERC20 tokens to a backlinked wallet
   // Expected result: command will transfer tokens from Alice's wallet to the backlinked Carol's wallet
   it('OPERATION 11 COMMAND: must be able to execute a command', async () => {
-    let { wallet: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP11-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
-    let { wallet: carol } = await TestUtil.makeWallet({ salt: 'TG-OP11-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP11-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'TG-OP11-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
 
     // make Tokens
     const { testerc20 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
@@ -496,7 +496,7 @@ contract('ONEWallet', (accounts) => {
     let data = ONEUtil.hexStringToBytes(hexData)
     await TestUtil.executeStandardTransaction(
       {
-        wallet: alice,
+        walletInfo: alice,
         operationType: ONEConstants.OperationType.COMMAND,
         backlinkAddresses,
         data,
@@ -529,8 +529,8 @@ contract('ONEWallet', (accounts) => {
   // Expected result: Alices wallet will be backlinked to Carols
   it('OPERATION 12 BACKLINK_ADD: must be able to backlink to another ONEWallet', async () => {
     // create wallets and token contracts used througout the tests
-    let { wallet: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP12-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
-    let { wallet: carol } = await TestUtil.makeWallet({ salt: 'TG-OP12-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP12-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'TG-OP12-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
 
     // Begin Tests
     let testTime = Date.now()
@@ -542,7 +542,7 @@ contract('ONEWallet', (accounts) => {
     let data = ONEUtil.hexStringToBytes(hexData)
     await TestUtil.executeStandardTransaction(
       {
-        wallet: alice,
+        walletInfo: alice,
         operationType: ONEConstants.OperationType.BACKLINK_ADD,
         backlinkAddresses,
         data,
@@ -567,8 +567,8 @@ contract('ONEWallet', (accounts) => {
   // Expected result: Alices wallet will not be backlinked to Carols
   it('OPERATION 13 BACKLINK_DELETE: must be able to delete backlink to another wallet', async () => {
     // create wallets and token contracts used througout the tests
-    let { wallet: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP13-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
-    let { wallet: carol } = await TestUtil.makeWallet({ salt: 'TG-OP13-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP13-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'TG-OP13-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
     // create wallets and token contracts used througout the tests
 
     // Begin Tests
@@ -580,7 +580,7 @@ contract('ONEWallet', (accounts) => {
     let data = ONEUtil.hexStringToBytes(hexData)
     await TestUtil.executeStandardTransaction(
       {
-        wallet: alice,
+        walletInfo: alice,
         operationType: ONEConstants.OperationType.BACKLINK_ADD,
         backlinkAddresses,
         data,
@@ -598,7 +598,7 @@ contract('ONEWallet', (accounts) => {
     data = ONEUtil.hexStringToBytes(hexData)
     await TestUtil.executeStandardTransaction(
       {
-        wallet: alice,
+        walletInfo: alice,
         operationType: ONEConstants.OperationType.BACKLINK_DELETE,
         backlinkAddresses,
         data,
@@ -623,9 +623,9 @@ contract('ONEWallet', (accounts) => {
   // Expected result: Alices wallet will be backlinked to Doras
   it('OPERATION 14 BACKLINK_OVERRIDE: must be able to override a backlink to andother wallet', async () => {
     // create wallets and token contracts used througout the tests
-    let { wallet: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP14-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
-    let { wallet: carol } = await TestUtil.makeWallet({ salt: 'TG-OP14-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
-    let { wallet: dora } = await TestUtil.makeWallet({ salt: 'TG-OP14-3', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP14-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'TG-OP14-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: dora } = await TestUtil.makeWallet({ salt: 'TG-OP14-3', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
 
     // Begin Tests
     let testTime = Date.now()
@@ -638,7 +638,7 @@ contract('ONEWallet', (accounts) => {
     let aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
     await TestUtil.executeStandardTransaction(
       {
-        wallet: alice,
+        walletInfo: alice,
         operationType: ONEConstants.OperationType.BACKLINK_ADD,
         backlinkAddresses,
         data,
@@ -653,7 +653,7 @@ contract('ONEWallet', (accounts) => {
     data = ONEUtil.hexStringToBytes(hexData)
     await TestUtil.executeStandardTransaction(
       {
-        wallet: alice,
+        walletInfo: alice,
         operationType: ONEConstants.OperationType.BACKLINK_OVERRIDE,
         backlinkAddresses,
         data,
@@ -711,8 +711,8 @@ contract('ONEWallet', (accounts) => {
   // Expected result: Alice will sign a transaction to enable ernie to spend 100 tokens
   it('OPERATION 19 SIGN: must be able to sign a transaction', async () => {
     // create wallets and token contracts used througout the tests
-    let { wallet: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP19-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
-    let { wallet: ernie } = await TestUtil.makeWallet({ salt: 'TG-OP19-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP19-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: ernie } = await TestUtil.makeWallet({ salt: 'TG-OP19-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
 
     // make Tokens
     const { testerc20 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
@@ -731,7 +731,7 @@ contract('ONEWallet', (accounts) => {
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     await TestUtil.executeStandardTransaction(
       {
-        wallet: alice,
+        walletInfo: alice,
         operationType: ONEConstants.OperationType.SIGN,
         // tokenType: ONEConstants.TokenType.ERC20,
         contractAddress: testerc20.address,
@@ -763,8 +763,8 @@ contract('ONEWallet', (accounts) => {
   // Expected result: Alice will revoke the ability to spend by Ernie
   it('OPERATION 20 REVOKE: must be able to revoke authorizations', async () => {
     // create wallets and token contracts used througout the tests
-    let { wallet: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP20-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
-    let { wallet: ernie } = await TestUtil.makeWallet({ salt: 'TG-OP20-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP20-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: ernie } = await TestUtil.makeWallet({ salt: 'TG-OP20-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
 
     // make Tokens
     const { testerc20 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
@@ -785,7 +785,7 @@ contract('ONEWallet', (accounts) => {
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     await TestUtil.executeStandardTransaction(
       {
-        wallet: alice,
+        walletInfo: alice,
         operationType: ONEConstants.OperationType.REVOKE,
         // tokenType: ONEConstants.TokenType.ERC20,
         contractAddress: testerc20.address,
@@ -814,8 +814,8 @@ contract('ONEWallet', (accounts) => {
   // Expected result: Alice will do two transfers to Bob and validate balances have been updated
   it('OPERATION 22 BATCH : must be able to batch operations', async () => {
     // create wallets and token contracts used througout the tests
-    let { wallet: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP22-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
-    let { wallet: bob } = await TestUtil.makeWallet({ salt: 'TG-OP22-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP22-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: bob } = await TestUtil.makeWallet({ salt: 'TG-OP22-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
 
     // Begin Tests
     let testTime = Date.now()
@@ -868,7 +868,7 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.executeStandardTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
-        wallet: alice,
+        walletInfo: alice,
         operationType: ONEConstants.OperationType.BATCH,
         data,
         testTime
@@ -892,7 +892,7 @@ contract('ONEWallet', (accounts) => {
   // Expected result: Will Increase Alices Spending Limit from ONE_ETH TO THREE_ETH
   it('OPERATION 24 CHANGE_SPENDING_LIMIT: must be able to change spending limit', async () => {
     // create wallets and token contracts used througout the tests
-    let { wallet: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP24-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP24-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
 
     // Begin Tests
     let testTime = Date.now()
@@ -901,7 +901,7 @@ contract('ONEWallet', (accounts) => {
     // alice changes the spending limit
     await TestUtil.executeStandardTransaction(
       {
-        wallet: alice,
+        walletInfo: alice,
         operationType: ONEConstants.OperationType.CHANGE_SPENDING_LIMIT,
         amount: THREE_ETH,
         testTime
@@ -930,7 +930,7 @@ contract('ONEWallet', (accounts) => {
   // Expected result: will jump alices spending limit from THREE_ETH to TWO_ETH
   it('OPERATION 25 JUMP_SPENDING_LIMIT: must be able to jump spending limit', async () => {
     // create wallets and token contracts used througout the tests
-    let { wallet: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP25-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP25-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
 
     // Begin Tests
     let testTime = Date.now()
@@ -939,7 +939,7 @@ contract('ONEWallet', (accounts) => {
     // alice jumps the spending limit
     await TestUtil.executeStandardTransaction(
       {
-        wallet: alice,
+        walletInfo: alice,
         operationType: ONEConstants.OperationType.JUMP_SPENDING_LIMIT,
         amount: FOUR_ETH,
         testTime

@@ -313,7 +313,7 @@ const makeWallet = async ({
   const walletCurrentState = walletOldState
 
   return {
-    wallet: { wallet: wallet, seed, hseed, root, layers, lastResortAddress },
+    walletInfo: { wallet: wallet, seed, hseed, root, layers, lastResortAddress },
     walletOldState,
     walletCurrentState,
     initialBalance
@@ -655,7 +655,7 @@ const checkONEWalletStateChange = async (oldState, currentState) => {
 // ==== EXECUTION FUNCTIONS ====
 // executeStandardTransaction commits and reveals a wallet transaction
 const executeStandardTransaction = async ({
-  wallet,
+  walletInfo,
   operationType,
   tokenType,
   contractAddress,
@@ -671,13 +671,13 @@ const executeStandardTransaction = async ({
 }) => {
   // // calculate counter from testTime
   const counter = Math.floor(testTime / INTERVAL)
-  const otp = ONEUtil.genOTP({ seed: wallet.seed, counter })
+  const otp = ONEUtil.genOTP({ seed: walletInfo.seed, counter })
   // // calculate wallets effectiveTime (creation time) from t0
-  const info = await wallet.wallet.getInfo()
+  const info = await walletInfo.wallet.getInfo()
   const t0 = new BN(info[3]).toNumber()
   const walletEffectiveTime = t0 * INTERVAL
   const index = ONEUtil.timeToIndex({ effectiveTime: walletEffectiveTime, time: testTime })
-  const eotp = await ONE.computeEOTP({ otp, hseed: wallet.hseed })
+  const eotp = await ONE.computeEOTP({ otp, hseed: walletInfo.hseed })
 
   // Format commit and revealParams based on tokenType
   let commitParams
@@ -769,16 +769,16 @@ const executeStandardTransaction = async ({
   }
   let { tx, authParams, revealParams: returnedRevealParams } = await commitReveal({
     Debugger,
-    layers: wallet.layers,
+    layers: walletInfo.layers,
     index,
     eotp,
     paramsHash,
     commitParams,
     revealParams,
-    wallet: wallet.wallet
+    wallet: walletInfo.wallet
   })
   let currentState
-  if (getCurrentState) { currentState = await getONEWalletState(wallet.wallet) }
+  if (getCurrentState) { currentState = await getONEWalletState(walletInfo.wallet) }
   return { tx, authParams, revealParams: returnedRevealParams, currentState }
 }
 
