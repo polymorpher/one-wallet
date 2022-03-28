@@ -54,8 +54,8 @@ const tabList = [
   { key: 'qr' },
   { key: 'scan' },
   {
-    key: 'transactions',
-    tab: 'Transactions',
+    key: 'history',
+    tab: 'History',
     requireNetwork (network) {
       return network.startsWith('harmony')
     }
@@ -173,7 +173,7 @@ const Show = () => {
           {activeTab === 'scan' && <Scan address={address} />}
           {activeTab === 'call' && <Call address={address} headless />}
           {activeTab === 'sign' && <Sign address={address} headless />}
-          {activeTab === 'transactions' && <TransactionViewer address={address} />}
+          {activeTab === 'history' && <TransactionViewer address={address} />}
           <Upgrade address={address} prompt={command === 'upgrade'} onClose={showStartScreen} />
           <CheckForwardState address={address} onClose={() => history.push(Paths.wallets)} />
           <CheckRoots address={address} onClose={() => history.push(Paths.wallets)} />
