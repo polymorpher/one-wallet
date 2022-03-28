@@ -56,6 +56,8 @@ module.exports = {
   'ONEWalletDeploySuccess': undefined,
   'SpendingLimitChanged': undefined,
   'HighestSpendingLimitChanged': undefined,
-  'SpendingLimitChangeFailed': { type: 'error', message: 'Aborted: Failed to change spend limit', abort: true },
+  'SpendingLimitChangeFailed': { type: 'error', message: 'Failed to change spend limit', abort: true },
   'SpendingLimitJumped': undefined,
+  'StakingSuccess': { type: 'success', messageTemplate: '{{sa:0}} succeeded (amount: {{amount}})' },
+  'StakingFailure': { type: 'error', messageTemplate: '{{sa:0}} failed (amount: {{amount}})' }
 }
