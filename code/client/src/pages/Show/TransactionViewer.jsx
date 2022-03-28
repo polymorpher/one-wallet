@@ -177,7 +177,7 @@ const TransactionViewer = ({ address }) => {
         const bnValue = ONEUtil.toBN(value)
         // we don't need to check whether `to === address`, because the wallet can never initiate a transaction by itself (therefore it cannot be `from` and can only be `to`)
         if (bnValue.gtn(0)) {
-          events.unshift({ eventName: 'InboundExternalTransfer', amount: bnValue, color: 'green' })
+          events.unshift({ eventName: 'External Payment Received', data: { amount: bnValue.toString() }, color: 'green' })
         }
         if (ONEUtil.toBN(status).eqn(0)) {
           // console.log(status, record)
@@ -193,7 +193,7 @@ const TransactionViewer = ({ address }) => {
               // console.log(displayText, e.data)
               if (!e.amountInMessage) {
                 if (e.data?.amount && e.eventName.includes('Token')) {
-                  displayText += ` (${e.amount} Token)`
+                  displayText += ` (${e.data?.amount} token(s))`
                 } else if (e.data?.amount) {
                   const oneAmount = ONEUtil.formatNumber(ONEUtil.toOne(ONEUtil.toBN(e.data?.amount)))
                   displayText += ` (${oneAmount} ONE)`
