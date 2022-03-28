@@ -827,43 +827,23 @@ contract('ONEWallet', (accounts) => {
     // set up transfer and destination for the batch
     let transferAmount = ONE_CENT + HALF_DIME + ONE_DIME
     // alice tranfers ONE CENT to bob
-    let call = [
-      ONEConstants.OperationType.TRANSFER,
-      bob.wallet.address,
-      ONE_CENT
-    ]
-    calls.push(call)
+    let callObject = {
+      ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
+      operationType: ONEConstants.OperationType.TRANSFER,
+      dest: bob.wallet.address,
+      amount: ONE_CENT
+    }
+    let callArray = Object.values(callObject)
+    calls.push(callArray)
     // alice tranfers ONE HALF_DIME to bob
-    call[2] = HALF_DIME
-    calls.push(call)
+    callArray[5] = HALF_DIME
+    calls.push(callArray)
     // alice tranfers ONE DIME to bob
-    call[2] = ONE_DIME
-    calls.push(call)
-    // console.log(`calls: ${JSON.stringify(calls)}`)
-    // Sample from onewallet.js
-    // return Util.abi.encodeParameters(['tuple(bytes32,uint8,uint8,uint32,uint32,uint8)', 'tuple[](bytes32,uint8,uint8,uint32,uint32,uint8)', 'bytes'], [core, innerCores, identificationKey])
-    let hexData = ONEUtil.abi.encodeParameters(['tuple[](uint8,address,uint256)'], [calls])
-    // hexData = ONEUtil.encodeMultiCall(calls)
+    callArray[5] = ONE_DIME.toString()
+    calls.push(callArray)
+    let hexData = ONEUtil.abi.encodeParameters(['tuple(uint256,uint256,address,uint256,address,uint256,bytes)[]'], [calls])
     // move the batch information into data
     let data = ONEUtil.hexStringToBytes(hexData)
-
-    // // Sample approache using encodeMultiCall
-    // let call = {
-    //   operationType: ONEConstants.OperationType.TRANSFER,
-    //   dest: bob.wallet.address,
-    //   amount: ONE_CENT
-    // }
-    // calls.push(call)
-    // // alice tranfers ONE HALF_DIME to bob
-    // calls.amount = HALF_DIME
-    // calls.push(call)
-    // // alice tranfers ONE DIME to bob
-    // calls.amount = ONE_DIME
-    // calls.push(call)
-    // // For examples refer to encodeMulticalls and Reclaim.jsx for standard calls and Unwrap.jsx for safeTransferFrom
-    // hexData = ONEUtil.encodeMultiCall(calls)
-    // // move the batch information into data
-    // data = ONEUtil.hexStringToBytes(hexData)
 
     await TestUtil.executeStandardTransaction(
       {
