@@ -60,7 +60,6 @@ contract('ONEWallet', (accounts) => {
     assert.equal(1000, aliceBalanceERC20, 'Transfer of 1000 ERC20 tokens to alice.wallet succesful')
     aliceWalletBalanceERC20 = await alice.wallet.getBalance(ONEConstants.TokenType.ERC20, testerc20.address, 0)
     assert.equal(1000, aliceWalletBalanceERC20, 'Transfer of 1000 ERC20 tokens to alice.wallet checked via wallet succesful')
-    console.log('Funded ERC20')
 
     // Begin Tests
     let testTime = Date.now()

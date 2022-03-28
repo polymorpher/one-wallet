@@ -432,7 +432,7 @@ const validateUpdateTransaction = async ({ wallet, oldState, validateNonce = tru
   // nonce
   if (validateNonce) {
     let nonce = await wallet.getNonce()
-    assert.notEqual(nonce, oldState.nonce, 'wallet.nonce should have been changed')
+    // assert.notEqual(nonce, oldState.nonce, 'wallet.nonce should have been changed')
     assert.equal(nonce.toNumber(), oldState.nonce + 1, 'wallet.nonce should have been changed')
     oldState.nonce = nonce.toNumber()
   }
@@ -532,6 +532,8 @@ const getONEWalletState = async (wallet) => {
   const nonce = new BN(await wallet.getNonce()).toNumber()
   const lastOperationTime = new BN(await wallet.lastOperationTime()).toNumber()
   const walletAllCommits = await wallet.getAllCommits()
+  // const [hashes, paramsHashes, verificationHashes, timestamps, completed] = Object.keys(walletAllCommits).map(k => walletAllCommits[k])
+  // const allCommits = hashes.map((e, i) => ({ hash: hashes[i], paramsHash: paramsHashes[i], verificationHash: verificationHashes[i], timestamp: timestamps[i], completed: completed[i] }))
   let allCommits = {}
   // commitHashArray
   allCommits[0] = walletAllCommits[0]
@@ -544,6 +546,8 @@ const getONEWalletState = async (wallet) => {
   // completedArray
   allCommits[4] = walletAllCommits[4]
   const walletTrackedTokens = await wallet.getTrackedTokens()
+  // const [tokenType, contractAddress, tokenId] = Object.keys(walletTrackedTokens).map(k => walletTrackedTokens[k])
+  // const trackedTokens = hashes.map((e, i) => ({ tokenType: tokenType[i], contractAddress: contractAddress[i], tokenId: tokenId[i] }))
   let trackedTokens = {}
   // tokenTypeArray
   trackedTokens[0] = walletTrackedTokens[0]
@@ -552,11 +556,15 @@ const getONEWalletState = async (wallet) => {
   // tokenIdArray
   trackedTokens[2] = walletTrackedTokens[2]
   const walletBacklinks = await wallet.getBacklinks()
+  // const [backlinkAddresses] = Object.keys(walletBacklinks).map(k => walletBacklinks[k])
+  // const backlinks = hashes.map((e, i) => ({ backlinkAddresses: backlinkAddresses[i] }))
   let backlinks = []
   for (let x of walletBacklinks) {
     backlinks.push(x)
   }
   const walletSignatures = await wallet.listSignatures(0, MAX_UINT32)
+  // const [timestamp, expireAt, signature, hash] = Object.keys(walletSignatures).map(k => walletSignatures[k])
+  // const signatures = hashes.map((e, i) => ({ timestamp: timestamp[i], expireAt: expireAt[i], signature: signature[i], hash: hash[i] }))
   let signatures = {}
   // Signature Tracker Hashes
   signatures[0] = walletSignatures[0]
