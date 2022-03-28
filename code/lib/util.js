@@ -432,7 +432,19 @@ const utils = {
     }
   },
 
-  // get
+  // TODO: rewrite using BN to achieve 100% precision
+  formatNumber: (number, maxPrecision) => {
+    maxPrecision = maxPrecision || 4
+    number = parseFloat(number)
+    if (number < 10 ** (-maxPrecision)) {
+      return '0'
+    }
+    const order = Math.ceil(Math.log10(Math.max(number, 1)))
+    const digits = Math.max(0, maxPrecision - order)
+    // https://www.jacklmoore.com/notes/rounding-in-javascript/
+    const floored = Number(`${Math.floor(`${number}e+${digits}`)}e-${digits}`)
+    return floored.toString()
+  },
 
   web3utils
 }
