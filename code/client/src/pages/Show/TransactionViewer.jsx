@@ -50,7 +50,7 @@ const TransactionViewer = ({ address }) => {
       setLoading(true)
       setError('')
       try {
-        // TODO: right now some transactions are not returned from this API, like those internal ones.
+        // TODO: look up events and add to result https://web3js.readthedocs.io/en/v1.2.11/web3-eth-contract.html#events
         const txs = await api.rpc.getTransactionHistory({ address, pageSize, pageIndex: currentPage, fullTx: true })
         if (txs.length === 0) {
           // console.log(currentPage, txs)
