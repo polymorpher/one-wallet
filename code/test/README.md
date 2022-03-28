@@ -85,21 +85,21 @@ TT-SUBTEST-WALLETID e.g. `TG-OP4-1`
 
 | ID | Operation                    | Status  | Area     | Notes |
 | -- | ---------------------------- | ------- | -------- | ----- | 
-| 0	 | TRACK	                      | PASS    | Token    |
-| 1	 | UNTRACK 	                    | PASS    | Token    |
-| 2	 | TRANSFER_TOKEN	              | PASS    | Token    |
-| 3	 | OVERRIDE_TRACK	              | PASS    | Token    |
-| 4	 | TRANSFER	                    | PASS    | Token    | 
-| 5	 | SET_RECOVERY_ADDRESS	        | PASS    | Wallet   |
-| 6	 | RECOVER	                    | FAIL    | Wallet   |
-| 7	 | DISPLACE	                    | TBD     | Wallet   |
-| 8	 | FORWARD                      | FAIL    | Upgrade  |
-| 9	 | RECOVER_SELECTED_TOKENS	    | FAIL    | Wallet   |
-| 10 | BUY_DOMAIN	                  | Phase 2 | Domain   |
-| 11 | COMMAND	                    | FAIL    | Upgrade  |
-| 12 | BACKLINK_ADD	                | PASS    | Upgrade  |
-| 13 | BACKLINK_DELETE	            | PASS    | Upgrade  |
-| 14 | BACKLINK_OVERRIDE	          | PASS    | Upgrade  |
+| 0  | TRACK                        | PASS    | Token    |
+| 1  | UNTRACK                      | PASS    | Token    |
+| 2  | TRANSFER_TOKEN               | PASS    | Token    |
+| 3  | OVERRIDE_TRACK               | PASS    | Token    |
+| 4  | TRANSFER                     | PASS    | Token    | 
+| 5  | SET_RECOVERY_ADDRESS         | PASS    | Wallet   |
+| 6  | RECOVER	                    | FAIL    | Wallet   |
+| 7  | DISPLACE	                    | TBD     | Wallet   |
+| 8  | FORWARD                      | FAIL    | Upgrade  |
+| 9  | RECOVER_SELECTED_TOKENS      | FAIL    | Wallet   |
+| 10 | BUY_DOMAIN                   | Phase 2 | Domain   |
+| 11 | COMMAND                      | FAIL    | Upgrade  |
+| 12 | BACKLINK_ADD                 | PASS    | Upgrade  |
+| 13 | BACKLINK_DELETE              | PASS    | Upgrade  |
+| 14 | BACKLINK_OVERRIDE            | PASS    | Upgrade  |
 | 15 | RENEW_DOMAIN	                | Phase 2 | Domain   |
 | 16 | TRANSFER_DOMAIN	            | Phase 2 | Domain   |
 | 17 | RECLAIM_REVERSE_DOMAIN       | Phase 2 | Domain   |
@@ -108,6 +108,6 @@ TT-SUBTEST-WALLETID e.g. `TG-OP4-1`
 | 20 | REVOKE                       | FAIL    | Base     |
 | 21 | CALL                         | FAIL    | Base     |
 | 22 | BATCH                        | FAIL    | Base     |
-| 23 | NOOP                         | N/A	    | N/A      | this is for nulloperationparameter
+| 23 | NOOP                         | N/A     | N/A      | this is for nulloperationparameter
 | 24 | CHANGE_SPENDING_LIMIT        | PASS    | Spending |
 | 25 | JUMP_SPENDING_LIMIT          | FAIL    | Spending | 

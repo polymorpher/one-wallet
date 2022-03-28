@@ -17,6 +17,38 @@ Following are some discussion points
 
 ## Existing Codebase Notes
 
+## Operation Overview
+
+| ID | Operation                    | Status  | Area     | OneWallet.js                | Notes |
+| -- | ---------------------------- | ------- | -------- | --------------------------- | ----- | 
+| 0  | TRACK                        | PASS    | Token    | computeGeneralOperationHash |
+| 1  | UNTRACK                      | PASS    | Token    | computeGeneralOperationHash |
+| 2  | TRANSFER_TOKEN               | PASS    | Token    | computeGeneralOperationHash |
+| 3  | OVERRIDE_TRACK               | PASS    | Token    | computeGeneralOperationHash |
+| 4  | TRANSFER                     | PASS    | Token    | computeTransferHash         |
+| 5  | SET_RECOVERY_ADDRESS         | PASS    | Wallet   | computeDestHash             | 
+| 6  | RECOVER	                    | FAIL    | Wallet   | computeRecoveryHash         |
+| 7  | DISPLACE	                    | TBD     | Wallet   | computeTransferHash         | Tested in innerCores.js
+| 8  | FORWARD                      | FAIL    | Upgrade  | computeForwardHash          |
+| 9  | RECOVER_SELECTED_TOKENS      | FAIL    | Wallet   | computeGeneralOperationHash |
+| 10 | BUY_DOMAIN                   | Phase 2 | Domain   |
+| 11 | COMMAND                      | FAIL    | Upgrade  | computeDataHash             | Change to computeGeneralOperationHash 
+| 12 | BACKLINK_ADD                 | PASS    | Upgrade  | computeDataHash             | Change to computeGeneralOperationHash 
+| 13 | BACKLINK_DELETE              | PASS    | Upgrade  | computeDataHash             | Change to computeGeneralOperationHash 
+| 14 | BACKLINK_OVERRIDE            | PASS    | Upgrade  | computeDataHash             | Change to computeGeneralOperationHash 
+| 15 | RENEW_DOMAIN	                | Phase 2 | Domain   |                             |
+| 16 | TRANSFER_DOMAIN	            | Phase 2 | Domain   |                             |
+| 17 | RECLAIM_REVERSE_DOMAIN       | Phase 2 | Domain   |                             |
+| 18 | RECLAIM_DOMAIN_FROM_BACKLINK | Phase 2 | Domain   |                             |
+| 19 | SIGN	                        | FAIL    | Base     | computeGeneralOperationHash |
+| 20 | REVOKE                       | FAIL    | Base     | computeGeneralOperationHash |
+| 21 | CALL                         | FAIL    | Base     |
+| 22 | BATCH                        | FAIL    | Base     | computeGeneralOperationHash |
+| 23 | NOOP                         | N/A     | N/A      |                             | this is for nulloperationparameter
+| 24 | CHANGE_SPENDING_LIMIT        | PASS    | Spending | computeAmountHash           |
+| 25 | JUMP_SPENDING_LIMIT          | FAIL    | Spending | computeAmountHash           |
+
+
 ### Backlinking
 Encompasess the Following operations and parameters in Executor.sol
 * BACKLINK_ADD: `_backlinkAdd(backlinkAddresses, op.data)`
