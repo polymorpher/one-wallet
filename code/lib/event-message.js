@@ -2,7 +2,7 @@ module.exports = {
   'TransferError': undefined,
   'LastResortAddressNotSet': undefined,
   'RecoveryAddressUpdated': undefined,
-  'PaymentReceived': undefined,
+  'PaymentReceived': { type: 'success', message: 'Payment Received' },
   'PaymentSent': undefined,
   'PaymentForwarded': undefined,
   'AutoRecoveryTriggered': undefined,
@@ -58,6 +58,8 @@ module.exports = {
   'HighestSpendingLimitChanged': undefined,
   'SpendingLimitChangeFailed': { type: 'error', message: 'Failed to change spend limit', abort: true },
   'SpendingLimitJumped': undefined,
-  'StakingSuccess': { type: 'success', messageTemplate: '{{sa:0}} succeeded (amount: {{amount}})' },
-  'StakingFailure': { type: 'error', messageTemplate: '{{sa:0}} failed (amount: {{amount}})' }
+  'StakingSuccess': { type: 'success', messageTemplate: '{{sa:0}} succeeded ({{amount}})' },
+  'StakingFailure': { type: 'error', messageTemplate: '{{sa:0}} failed ({{amount}})' },
+  // EXTERNAL: https://github.com/harmony-one/harmony/blob/027896adacb8d011e57c0c0e65b47d63327f282b/staking/params.go
+  'Harmony/CollectRewards': { type: 'success', message: 'Reward Received' }
 }

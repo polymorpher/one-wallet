@@ -59,5 +59,6 @@
   "0x9c30b5be30998b0659ab6989540e4b3fe0d871a39d04a165e0eb81bbdeb0c260": "SpendingLimitChangeFailed(uint256,string)",
   "0xa9c024c7e92e008cbc90c913d397a11b8c7261b602ed23b2680e057e6923e9b5": "SpendingLimitJumped(uint256)",
   "0x528f3334a5449954361c87358dad2edb4040602088d6843ef657f5ada9fc3fa1": "StakingSuccess(uint8,address,uint256,uint256)",
-  "0x108257e315f93c1ae0e61bc44056f3cd3a1af3f53300a52b3c66cafaa02efa98": "StakingFailure(uint8,address,uint256,uint256)"
+  "0x108257e315f93c1ae0e61bc44056f3cd3a1af3f53300a52b3c66cafaa02efa98": "StakingFailure(uint8,address,uint256,uint256)",
+  "0xef0a8d7b9b8cbde3c16f5ea86afc300881518ffc9f6e8c8f6984e0037eec16fb": "Harmony/CollectRewards"
 }

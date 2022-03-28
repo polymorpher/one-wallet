@@ -404,5 +404,11 @@
       "uint256"
     ],
     "amountIndex": 2
+  },
+  "Harmony/CollectRewards": {
+    "params": [
+      "uint256"
+    ],
+    "amountIndex": 0
   }
 }

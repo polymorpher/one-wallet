@@ -5,6 +5,7 @@ const EVENT_MAP_OUT_JSON = process.env.EVENT_MAP_OUT_JSON || './lib/events-map.j
 const EVENT_PARAMS_OUT_JSON = process.env.EVENT_PARAMS_OUT_JSON || './lib/events-params.json'
 const ONEUtil = require('../lib/util')
 const PATTERN = /^event ([A-Za-z0-9]+)\((.*)\);$/
+const PRECOMPILE_PATTERN = /^precompile_event ([A-Za-z0-9/]+) \((.*)\);$/
 async function main () {
   const list = await fs.readFile(EVENT_LIST, { encoding: 'UTF-8' })
   const lines = list.split('\n')
@@ -12,7 +13,11 @@ async function main () {
   const hashMapJson = {}
   const paramsMapJson = {}
   for (let line of lines) {
-    const m = line.match(PATTERN)
+    let m = line.match(PRECOMPILE_PATTERN)
+    const isPrecompile = !!m
+    if (!m) {
+      m = line.match(PATTERN)
+    }
     if (!m) {
       continue
     }
@@ -20,7 +25,7 @@ async function main () {
     const args = m[2]
     const paramTypes = args.split(', ').map(e => e.trim().split(' ')[0].replace('tuple', ''))
     console.log(method, paramTypes)
-    const sig = `${method}(${paramTypes.join(',')})`
+    const sig = isPrecompile ? method : `${method}(${paramTypes.join(',')})`
     const hash = ONEUtil.hexString(ONEUtil.keccak(sig))
     hashMap[hash] = sig
     hashMapJson[hash] = method
