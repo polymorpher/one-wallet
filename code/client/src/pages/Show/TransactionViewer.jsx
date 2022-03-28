@@ -181,7 +181,7 @@ const TransactionViewer = ({ address }) => {
         }
         if (ONEUtil.toBN(status).eqn(0)) {
           console.log(status, record)
-          events.push({ eventName: '[Transaction Reverted]' })
+          events.push({ eventName: '[Transaction Reverted]', color: 'red' })
         }
         if (input?.startsWith('0xe4e5b258')) {
           events.unshift({ eventName: '[Commit Transaction]', color: 'lightgrey' })
@@ -189,15 +189,15 @@ const TransactionViewer = ({ address }) => {
         return (
           <Space direction='vertical'>
             {(events || []).map((e, i) => {
-              let displayText = e.eventName
-              if (e.message) {
-                displayText += ` (${e.message})`
-              }
-              if (e.data?.amount && e.eventName.includes('Token')) {
-                displayText += ` (${e.amount} Token)`
-              } else if (e.data?.amount) {
-                const oneAmount = ONEUtil.toOne(ONEUtil.toBN(e.data?.amount))
-                displayText += ` (${oneAmount} ONE)`
+              let displayText = e.message || e.eventName
+              console.log(displayText, e.data)
+              if (!e.amountInMessage) {
+                if (e.data?.amount && e.eventName.includes('Token')) {
+                  displayText += ` (${e.amount} Token)`
+                } else if (e.data?.amount) {
+                  const oneAmount = ONEUtil.formatNumber(ONEUtil.toOne(ONEUtil.toBN(e.data?.amount)))
+                  displayText += ` (${oneAmount} ONE)`
+                }
               }
               return <Text key={`${i}`} style={{ color: e.color || getEventTypeColor(e.type) }}>{displayText}</Text>
             })}
