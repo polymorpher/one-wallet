@@ -16,6 +16,7 @@ const TestERC1155 = artifacts.require('TestERC1155')
 // const HALF_DIME = unit.toWei('0.05', 'ether')
 // const ONE_DIME = unit.toWei('0.1', 'ether')
 const HALF_ETH = unit.toWei('0.5', 'ether')
+const ONE_ETH = unit.toWei('1', 'ether')
 const INTERVAL = 30000
 const DURATION = INTERVAL * 12
 const SLOT_SIZE = 1
@@ -33,6 +34,7 @@ let Factories
 let Libraries
 let Wallet
 
+// ==== DEPLOYMENT FUNCTIONS ====
 const init = async () => {
   const { factories, libraries, ONEWalletAbs } = await loadContracts()
   Factories = factories
@@ -48,7 +50,58 @@ const deploy = async (initArgs) => {
   return Factories['ONEWalletFactoryHelper'].deploy(initArgs)
 }
 
-const ONE_ETH = unit.toWei('1', 'ether')
+// ==== INFRASTRUCTURE FUNCTIONS ====
+const getClient = async () => {
+  return web3.eth.getNodeInfo()
+}
+
+const increaseTime = async (seconds) => {
+  const client = await getClient()
+  if (client.indexOf('TestRPC') === -1) {
+    throw new Error('Client is not ganache-cli and cannot forward time')
+  }
+
+  await web3.currentProvider.send({
+    jsonrpc: '2.0',
+    method: 'evm_increaseTime',
+    params: [seconds],
+    id: 0,
+  }, (err) => err && console.error(err))
+
+  await web3.currentProvider.send({
+    jsonrpc: '2.0',
+    method: 'evm_mine',
+    params: [],
+    id: 0,
+  }, (err) => err && console.error(err))
+
+  console.log('EVM increased time by', seconds)
+}
+
+const snapshot = async () => {
+  console.log('Taking EVM Snapshot')
+  return new Promise((resolve, reject) => {
+    web3.currentProvider.send({ jsonrpc: '2.0', method: 'evm_snapshot' },
+      (err, { result } = {}) => {
+        if (err) {
+          reject(err)
+        }
+        resolve(result)
+      })
+  })
+}
+
+const revert = async (id) => {
+  console.log(`EVM reverting to ${id}`)
+  return new Promise((resolve, reject) => {
+    web3.currentProvider.send({ jsonrpc: '2.0', method: 'evm_revert', params: [id] }, (err, { result } = {}) => {
+      if (err) {
+        reject(err)
+      }
+      resolve(result)
+    })
+  })
+}
 
 const sleep = async (milliseconds) => {
   return new Promise(resolve => setTimeout(resolve, milliseconds))
@@ -89,6 +142,16 @@ const bumpTestTime = async (testEffectiveTime, bumpSeconds) => {
   Logger.debug(`newChainTime    : ${JSON.stringify(newChainTime)}`)
   Logger.debug(`==================`)
   return testEffectiveTime
+}
+
+// ==== HELPER FUNCTIONS ====
+
+const printInnerTrees = ({ Debugger, innerTrees }) => {
+  for (let [index, innerTree] of innerTrees.entries()) {
+    const { layers: innerLayers, root: innerRoot } = innerTree
+    console.log(`Inner tree ${index}, root=${ONEUtil.hexString(innerRoot)}`)
+    Debugger.printLayers({ layers: innerLayers })
+  }
 }
 
 const makeCores = async ({
@@ -167,6 +230,14 @@ const makeCores = async ({
   return { core, innerCores, identificationKeys, vars }
 }
 
+const getEOTP = async ({ seed, hseed, effectiveTime, timeOffset }) => {
+  const counter = timeOffset && Math.floor((Date.now() + timeOffset) / INTERVAL)
+  const otp = ONEUtil.genOTP({ seed, counter })
+  const index = ONEUtil.timeToIndex({ effectiveTime, time: timeOffset && (Date.now() + timeOffset) })
+  const eotp = await ONE.computeEOTP({ otp, hseed })
+  return { index, eotp }
+}
+
 const createWallet = async ({
   salt,
   seed,
@@ -209,257 +280,190 @@ const createWallet = async ({
   }
 }
 
-const getClient = async () => {
-  return web3.eth.getNodeInfo()
-}
-
-const increaseTime = async (seconds) => {
-  const client = await getClient()
-  if (client.indexOf('TestRPC') === -1) {
-    throw new Error('Client is not ganache-cli and cannot forward time')
-  }
-
-  await web3.currentProvider.send({
-    jsonrpc: '2.0',
-    method: 'evm_increaseTime',
-    params: [seconds],
-    id: 0,
-  }, (err) => err && console.error(err))
-
-  await web3.currentProvider.send({
-    jsonrpc: '2.0',
-    method: 'evm_mine',
-    params: [],
-    id: 0,
-  }, (err) => err && console.error(err))
-
-  console.log('EVM increased time by', seconds)
-}
-
-const snapshot = async () => {
-  console.log('Taking EVM Snapshot')
-  return new Promise((resolve, reject) => {
-    web3.currentProvider.send({ jsonrpc: '2.0', method: 'evm_snapshot' },
-      (err, { result } = {}) => {
-        if (err) {
-          reject(err)
-        }
-        resolve(result)
-      })
-  })
-}
-
-const revert = async (id) => {
-  console.log(`EVM reverting to ${id}`)
-  return new Promise((resolve, reject) => {
-    web3.currentProvider.send({ jsonrpc: '2.0', method: 'evm_revert', params: [id] }, (err, { result } = {}) => {
-      if (err) {
-        reject(err)
-      }
-      resolve(result)
-    })
-  })
-}
-
-const getEOTP = async ({ seed, hseed, effectiveTime, timeOffset }) => {
-  const counter = timeOffset && Math.floor((Date.now() + timeOffset) / INTERVAL)
-  const otp = ONEUtil.genOTP({ seed, counter })
-  const index = ONEUtil.timeToIndex({ effectiveTime, time: timeOffset && (Date.now() + timeOffset) })
-  const eotp = await ONE.computeEOTP({ otp, hseed })
-  return { index, eotp }
-}
-
-// executeStandardTransaction commits and reveals a wallet transaction
-const executeStandardTransaction = async ({ wallet, operationType, tokenType, contractAddress, tokenId, dest, amount, data, address, randomSeed, backlinkAddresses, testTime = Date.now() }) => {
-  // // calculate counter from testTime
-  const counter = Math.floor(testTime / INTERVAL)
-  const otp = ONEUtil.genOTP({ seed: wallet.seed, counter })
-  // // calculate wallets effectiveTime (creation time) from t0
-  const info = await wallet.wallet.getInfo()
-  const t0 = new BN(info[3]).toNumber()
-  const walletEffectiveTime = t0 * INTERVAL
-  const index = ONEUtil.timeToIndex({ effectiveTime: walletEffectiveTime, time: testTime })
-  const eotp = await ONE.computeEOTP({ otp, hseed: wallet.hseed })
-
-  // Format commit and revealParams based on tokenType
-  let commitParams
-  let revealParams
-  let paramsHash
-  Logger.debug(`operationType: ${operationType}`)
-  switch (operationType) {
-    case ONEConstants.OperationType.TRACK:
-    case ONEConstants.OperationType.UNTRACK:
-      paramsHash = ONEWallet.computeGeneralOperationHash
-      commitParams = { operationType, tokenType, contractAddress, dest, amount }
-      revealParams = { operationType, tokenType, contractAddress, dest, amount }
-      break
-    case ONEConstants.OperationType.OVERRIDE_TRACK:
-    case ONEConstants.OperationType.RECOVER_SELECTED_TOKENS:
-    case ONEConstants.OperationType.BATCH:
-      paramsHash = ONEWallet.computeGeneralOperationHash
-      commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
-      revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
-      break
-    case ONEConstants.OperationType.BACKLINK_ADD:
-    case ONEConstants.OperationType.BACKLINK_DELETE:
-    case ONEConstants.OperationType.BACKLINK_OVERRIDE:
-      paramsHash = ONEWallet.computeDataHash
-      commitParams = { operationType, backlinkAddresses, data }
-      revealParams = { operationType, backlinkAddresses, data }
-      break
-    case ONEConstants.OperationType.COMMAND:
-      paramsHash = ONEWallet.computeDataHash
-      commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
-      revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
-      break
-    case ONEConstants.OperationType.SET_RECOVERY_ADDRESS:
-      paramsHash = ONEWallet.computeDestHash
-      commitParams = { operationType, dest }
-      revealParams = { operationType, dest }
-      break
-    case ONEConstants.OperationType.FORWARD:
-      paramsHash = ONEWallet.computeForwardHash
-      commitParams = { operationType, address }
-      revealParams = { operationType, address }
-      break
-    case ONEConstants.OperationType.RECOVER:
-      paramsHash = ONEWallet.computeRecoveryHash
-      commitParams = { operationType, randomSeed }
-      revealParams = { operationType, randomSeed }
-      break
-    case ONEConstants.OperationType.CHANGE_SPENDING_LIMIT:
-    case ONEConstants.OperationType.JUMP_SPENDING_LIMIT:
-      console.log('Updating Spending Limit')
-      paramsHash = ONEWallet.computeAmountHash
-      commitParams = { operationType, amount }
-      revealParams = { operationType, amount }
-      break
-    case ONEConstants.OperationType.SIGN:
-    case ONEConstants.OperationType.REVOKE:
-      paramsHash = ONEWallet.computeGeneralOperationHash
-      commitParams = { operationType, contractAddress, tokenId, dest, amount }
-      revealParams = { operationType, contractAddress, tokenId, dest, amount }
-      break
-    case ONEConstants.OperationType.TRANSFER_TOKEN:
-      paramsHash = ONEWallet.computeGeneralOperationHash
-      switch (tokenType) {
-        case ONEConstants.TokenType.ERC20:
-          commitParams = { operationType, tokenType, contractAddress, dest, amount }
-          revealParams = { operationType, tokenType, contractAddress, dest, amount }
-          break
-        case ONEConstants.TokenType.ERC721:
-          commitParams = { operationType, tokenType, contractAddress, tokenId, dest }
-          revealParams = { operationType, tokenType, contractAddress, tokenId, dest }
-          break
-        case ONEConstants.TokenType.ERC1155:
-          commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount }
-          revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount }
-          break
-        default:
-          console.log(`TODO: add in Token error handling for TRANSFER_TOKEN`)
-          return
-      }
-      break
-    case ONEConstants.OperationType.TRANSFER:
-      paramsHash = ONEWallet.computeTransferHash
-      commitParams = { operationType, dest, amount }
-      revealParams = { operationType, dest, amount }
-      break
-    default:
-      console.log(`TODO: add in error handling`)
-      return
-  }
-  await commitReveal({
-    Debugger,
-    layers: wallet.layers,
-    index,
-    eotp,
-    paramsHash,
-    commitParams,
-    revealParams,
-    wallet: wallet.wallet
-  })
-}
-
-const commitReveal = async ({ layers, Debugger, index, eotp, paramsHash, commitParams, revealParams, wallet }) => {
-  const neighbors = ONE.selectMerkleNeighbors({ layers, index })
-  const neighbor = neighbors[0]
-  const { hash: commitHash } = ONE.computeCommitHash({ neighbor, index, eotp })
-  if (typeof paramsHash === 'function') {
-    const { hash } = paramsHash({ ...commitParams })
-    paramsHash = hash
-  }
-  const { hash: verificationHash } = ONE.computeVerificationHash({ paramsHash, eotp })
-  Logger.debug(`Committing`, { commitHash: ONEUtil.hexString(commitHash), paramsHash: ONEUtil.hexString(paramsHash), verificationHash: ONEUtil.hexString(verificationHash) })
-  await wallet.commit(ONEUtil.hexString(commitHash), ONEUtil.hexString(paramsHash), ONEUtil.hexString(verificationHash))
-  Logger.debug(`Committed`)
-  const neighborsEncoded = neighbors.map(ONEUtil.hexString)
-  Debugger.debugProof({ neighbors, height: layers.length, index, eotp, root: layers[layers.length - 1] })
-  const commits = await wallet.lookupCommit(ONEUtil.hexString(commitHash))
-  const commitHashCommitted = commits[0][0]
-  const paramHashCommitted = commits[1][0]
-  const verificationHashCommitted = commits[2][0]
-  const timestamp = commits[3][0]
-  const completed = commits[4][0]
-  Logger.debug({ commit: { commitHashCommitted, paramHashCommitted, verificationHashCommitted, timestamp, completed }, currentTimeInSeconds: Math.floor(Date.now() / 1000) })
-  const authParams = [neighborsEncoded, index, ONEUtil.hexString(eotp)]
-  if (!revealParams.length) {
-    const { operationType, tokenType, contractAddress, tokenId, dest, amount, data } = { ...ONEConstants.NullOperationParams, ...revealParams }
-    revealParams = [operationType, tokenType, contractAddress, tokenId, dest, amount, data]
-  }
-  Logger.debug(`Revealing`, { authParams, revealParams })
-  const wouldSucceed = await wallet.reveal.call(authParams, revealParams)
-  Logger.debug(`Reveal success prediction`, !!wouldSucceed)
-  await wallet.reveal(authParams, revealParams)
-  return { authParams, revealParams }
-}
-
-const printInnerTrees = ({ Debugger, innerTrees }) => {
-  for (let [index, innerTree] of innerTrees.entries()) {
-    const { layers: innerLayers, root: innerRoot } = innerTree
-    console.log(`Inner tree ${index}, root=${ONEUtil.hexString(innerRoot)}`)
-    Debugger.printLayers({ layers: innerLayers })
-  }
-}
-
 // makeWallet uses an index and unlocked web3.eth.account and creates and funds a ONEwallet
-const makeWallet = async (salt, deployer, effectiveTime, duration, setLastResortAddress) => {
-  if (duration === undefined) { duration = DURATION }
-  let lastResortAccount = web3.eth.accounts.create()
-  let lastResortAddress = lastResortAccount.address
-  if (setLastResortAddress === false) { lastResortAddress = ONEConstants.EmptyAddress }
+const makeWallet = async ({
+  salt,
+  deployer,
+  effectiveTime,
+  duration = DURATION,
+  maxOperationsPerInterval = SLOT_SIZE,
+  spendingLimit = ONE_ETH,
+  fundAmount = HALF_ETH,
+  setLastResortAddress = true,
+  validate = true
+}) => {
+  let lastResortAddress
+  if (setLastResortAddress) {
+    let lastResortAccount = await web3.eth.accounts.create()
+    lastResortAddress = lastResortAccount.address
+  } else {
+    lastResortAddress = ONEConstants.EmptyAddress
+  }
   const { wallet, seed, hseed, root, client: { layers } } = await createWallet({
     salt: new BN(ONEUtil.keccak(salt)),
     effectiveTime,
     duration,
-    maxOperationsPerInterval: SLOT_SIZE,
-    lastResortAddress: lastResortAddress,
-    spendingLimit: ONE_ETH
+    maxOperationsPerInterval,
+    lastResortAddress,
+    spendingLimit
   })
-  // Fund wallet
-  await web3.eth.sendTransaction({
-    from: deployer,
-    to: wallet.address,
-    value: HALF_ETH
-  })
-  return { wallet, seed, hseed, root, layers, lastResortAddress: lastResortAccount.address }
+  let initialBalance = await fundWallet({ wallet, funder: deployer, fundAmount })
+  if (validate) { await validateBalance({ address: wallet.address, amount: fundAmount }) }
+  const walletOldState = await getONEWalletState(wallet)
+  const walletCurrentState = walletOldState
+
+  return {
+    wallet: { wallet: wallet, seed, hseed, root, layers, lastResortAddress },
+    walletOldState,
+    walletCurrentState,
+    initialBalance
+  }
 }
 
 // makeTokens makes test ERC20, ERC20Decimals9, ERC721, ERC1155
-const makeTokens = async (owner) => {
+const makeTokens = async ({
+  deployer,
+  makeERC20 = true,
+  makeERC721 = true,
+  makeERC1155 = true,
+  fund = true,
+  validate = true
+}) => {
+  let testerc20
+  let testerc721
+  let testerc1155
   // create an ERC20
-  const testerc20 = await TestERC20.new(10000000, { from: owner })
+  if (makeERC20) { testerc20 = await TestERC20.new(10000000, { from: deployer }) }
   // create an ERC721
-  const tids = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-  const uris = ['ipfs://test721/0', 'ipfs://test721/1', 'ipfs://test721/2', 'ipfs://test721/3', 'ipfs://test721/4', 'ipfs://test721/5', 'ipfs://test721/6', 'ipfs://test721/7', 'ipfs://test721/8', 'ipfs://test721/9']
-  const testerc721 = await TestERC721.new(tids, uris, { from: owner })
+  if (makeERC721) {
+    const tids = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    // const uris = ['ipfs://test721/0', 'ipfs://test721/1', 'ipfs://test721/2', 'ipfs://test721/3', 'ipfs://test721/4', 'ipfs://test721/5', 'ipfs://test721/6', 'ipfs://test721/7', 'ipfs://test721/8', 'ipfs://test721/9']
+    const uris = tids.map(e => `ipfs://test721/${e}`)
+    testerc721 = await TestERC721.new(tids, uris, { from: deployer })
+  }
   // create an ERC1155
-  const tids1155 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-  const amounts1155 = [10, 20, 20, 20, 20, 20, 20, 20, 20, 100]
-  const uris1155 = ['ipfs://test1155/0', 'ipfs://test1155/1', 'ipfs://test1155/2', 'ipfs://test1155/3', 'ipfs://test1155/4', 'ipfs://test1155/5', 'ipfs://test1155/6', 'ipfs://test1155/7', 'ipfs://test1155/8', 'ipfs://test1155/9']
-  const testerc1155 = await TestERC1155.new(tids1155, amounts1155, uris1155, { from: owner })
+  if (makeERC1155) {
+    const tids1155 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    const amounts1155 = [10, 20, 20, 20, 20, 20, 20, 20, 20, 100]
+    // const uris1155 = ['ipfs://test1155/0', 'ipfs://test1155/1', 'ipfs://test1155/2', 'ipfs://test1155/3', 'ipfs://test1155/4', 'ipfs://test1155/5', 'ipfs://test1155/6', 'ipfs://test1155/7', 'ipfs://test1155/8', 'ipfs://test1155/9']
+    const uris1155 = tids1155.map(e => `ipfs://test1155/${e}`)
+    testerc1155 = await TestERC1155.new(tids1155, amounts1155, uris1155, { from: deployer })
+  }
   return { testerc20, testerc721, testerc1155 }
 }
+
+// fundwallet
+const fundWallet = async ({ funder, wallet, value = HALF_ETH }) => {
+  // Fund wallet
+  await web3.eth.sendTransaction({
+    from: funder,
+    to: wallet.address,
+    value
+  })
+  let balance = await web3.eth.getBalance(wallet.address)
+  return balance
+}
+
+// fundTokens
+// funder: address (must have tokens and be unlocked for signing)
+// receiver: address
+const fundTokens = async ({
+  funder,
+  receiver,
+  tokenTypes = [],
+  tokenContracts = [],
+  tokenAmounts = [],
+  tokenIds = [[]],
+  validate = true
+}) => {
+  // let balances[]
+  // let tids[]
+  // transfer ERC20 tokens from accounts[0] (which owns the tokens) to alices wallet
+  for (let i = 0; i < tokenTypes.length; i++) {
+    if (tokenTypes[i] === ONEConstants.TokenType.ERC20) {
+      // await testerc20.transfer(alice.wallet.address, 1000, { from: accounts[0] })
+      await tokenContracts[i].transfer(receiver, tokenAmounts[i], { from: funder })
+      // balances[i]= await tokenAddresses[i].balanceOf(receiver)
+      console.log('FundTokens ERC20')
+    }
+  }
+  if (validate) validatetokenFunding({ receiver, tokenTypes, tokenContracts, tokenAmounts, tokenIds })
+  // return {balances, tids}
+}
+
+// ==== ADDRESS VALIDATION HELPER FUNCTIONS ====
+// These functions retrieve values using an address
+// They are typically used to validate wallets balances have been funded or updated
+// They do not update State
+
+const validateBalance = async ({ address, amount = HALF_ETH }) => {
+  let balance = await web3.eth.getBalance(address)
+  assert.equal(amount, balance, 'Wallet should have a different balance')
+}
+
+const validatetokenFunding = async ({ receiver, tokenTypes, tokenContracts, tokenAmounts, tokenIds }) => {
+  for (let i = 0; i < tokenTypes.length; i++) {
+    if (tokenTypes[i] === ONEConstants.TokenType.ERC20) {
+      let balanceERC20
+      balanceERC20 = await tokenContracts[i].balanceOf(receiver)
+      assert.equal(tokenAmounts[i], balanceERC20, 'Should have transferred ERC20 tokens to wallet')
+    }
+  }
+}
+
+// const validateEvents = async ({ tx, opEvent }) => {
+
+// }
+
+// ==== WALLET VALIDATOR HELPER FUNCTIONS ====
+// These functions retrieve values from the current state compare them to oldState
+// They return an updated OldState with the corrected values.
+
+// validateERC20BalanceUpdate
+// const validateERC20BalanceUpdate = async (wallet, oldState, amount) => {
+//   let balanceERC20
+//   let walletBalanceERC20
+//   balanceERC20 = await erc20.balanceOf(wallet.address)
+//   assert.equal(amount, balanceERC20, 'Should have transferred ERC20 tokens to wallet')
+//   walletBalanceERC20 = await wallet.getBalance(ONEConstants.TokenType.ERC20, erc20.address, 0)
+//   assert.equal(amount, walletBalanceERC20, 'Should have tranferred ERC20 tokens to wallet checked via wallet.getBalance')
+// }
+
+// validateUpdateTransaction: changed - nonce, lastOperationTime, commits,
+const validateUpdateTransaction = async ({ wallet, oldState, validateNonce = true }) => {
+  // nonce
+  if (validateNonce) {
+    let nonce = await wallet.getNonce()
+    assert.notEqual(nonce, oldState.nonce, 'wallet.nonce should have been changed')
+    assert.equal(nonce.toNumber(), oldState.nonce + 1, 'wallet.nonce should have been changed')
+    oldState.nonce = nonce.toNumber()
+  }
+  // lastOperationTime
+  let lastOperationTime = await wallet.lastOperationTime()
+  assert.notStrictEqual(lastOperationTime, oldState.lastOperationTime, 'wallet.lastOperationTime should have been updated')
+  oldState.lastOperationTime = lastOperationTime.toNumber()
+  // commits
+  let allCommits = await wallet.getAllCommits()
+  assert.notDeepEqual(allCommits, oldState.allCommits, 'wallet.allCommits should have been updated')
+  oldState.allCommits = allCommits
+  return oldState
+}
+
+// validateSpendingState
+const validateSpendingState = async ({ wallet, oldState, spentAmount = 0 }) => {
+  let spendingState = await wallet.getSpendingState()
+  assert.equal(spendingState.spentAmount, spentAmount, 'wallet.spentAmount should have been changed')
+  oldState.spendingState.spentAmount = spendingState.spentAmount
+  assert.notEqual(spendingState.lastSpendingInterval, '0', 'wallet.spentAmount should have been changed')
+  oldState.spendingState.lastSpendingInterval = spendingState.lastSpendingInterval
+  return oldState
+}
+
+// validateTokensTracked
+// const validateTokensTracked = async ({ wallet, walletOldState }) => {
+// }
+
+// ==== STATE RETREIVAL AND VALIDATION FUNCTIONS =====
 
 // get OneWallet state
 const getONEWalletState = async (wallet) => {
@@ -648,6 +652,169 @@ const checkONEWalletStateChange = async (oldState, currentState) => {
   assert.deepEqual(currentState.signatures, oldState.signatures, 'wallet.signatures is incorrect')
 }
 
+// ==== EXECUTION FUNCTIONS ====
+// executeStandardTransaction commits and reveals a wallet transaction
+const executeStandardTransaction = async ({
+  wallet,
+  operationType,
+  tokenType,
+  contractAddress,
+  tokenId,
+  dest,
+  amount,
+  data,
+  address,
+  randomSeed,
+  backlinkAddresses,
+  testTime = Date.now(),
+  getCurrentState = true
+}) => {
+  // // calculate counter from testTime
+  const counter = Math.floor(testTime / INTERVAL)
+  const otp = ONEUtil.genOTP({ seed: wallet.seed, counter })
+  // // calculate wallets effectiveTime (creation time) from t0
+  const info = await wallet.wallet.getInfo()
+  const t0 = new BN(info[3]).toNumber()
+  const walletEffectiveTime = t0 * INTERVAL
+  const index = ONEUtil.timeToIndex({ effectiveTime: walletEffectiveTime, time: testTime })
+  const eotp = await ONE.computeEOTP({ otp, hseed: wallet.hseed })
+
+  // Format commit and revealParams based on tokenType
+  let commitParams
+  let revealParams
+  let paramsHash
+  Logger.debug(`operationType: ${operationType}`)
+  switch (operationType) {
+    case ONEConstants.OperationType.TRACK:
+    case ONEConstants.OperationType.UNTRACK:
+      paramsHash = ONEWallet.computeGeneralOperationHash
+      commitParams = { operationType, tokenType, contractAddress, dest, amount }
+      revealParams = { operationType, tokenType, contractAddress, dest, amount }
+      break
+    case ONEConstants.OperationType.OVERRIDE_TRACK:
+    case ONEConstants.OperationType.RECOVER_SELECTED_TOKENS:
+    case ONEConstants.OperationType.BATCH:
+      paramsHash = ONEWallet.computeGeneralOperationHash
+      commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
+      revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
+      break
+    case ONEConstants.OperationType.BACKLINK_ADD:
+    case ONEConstants.OperationType.BACKLINK_DELETE:
+    case ONEConstants.OperationType.BACKLINK_OVERRIDE:
+      paramsHash = ONEWallet.computeDataHash
+      commitParams = { operationType, backlinkAddresses, data }
+      revealParams = { operationType, backlinkAddresses, data }
+      break
+    case ONEConstants.OperationType.COMMAND:
+      paramsHash = ONEWallet.computeDataHash
+      commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
+      revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
+      break
+    case ONEConstants.OperationType.SET_RECOVERY_ADDRESS:
+      paramsHash = ONEWallet.computeDestHash
+      commitParams = { operationType, dest }
+      revealParams = { operationType, dest }
+      break
+    case ONEConstants.OperationType.FORWARD:
+      paramsHash = ONEWallet.computeForwardHash
+      commitParams = { operationType, address: dest }
+      revealParams = { operationType, address: dest }
+      break
+    case ONEConstants.OperationType.RECOVER:
+      paramsHash = ONEWallet.computeRecoveryHash
+      commitParams = { operationType, randomSeed }
+      revealParams = { operationType, randomSeed }
+      break
+    case ONEConstants.OperationType.CHANGE_SPENDING_LIMIT:
+    case ONEConstants.OperationType.JUMP_SPENDING_LIMIT:
+      console.log('Updating Spending Limit')
+      paramsHash = ONEWallet.computeAmountHash
+      commitParams = { operationType, amount }
+      revealParams = { operationType, amount }
+      break
+    case ONEConstants.OperationType.SIGN:
+    case ONEConstants.OperationType.REVOKE:
+      paramsHash = ONEWallet.computeGeneralOperationHash
+      commitParams = { operationType, contractAddress, tokenId, dest, amount }
+      revealParams = { operationType, contractAddress, tokenId, dest, amount }
+      break
+    case ONEConstants.OperationType.TRANSFER_TOKEN:
+      paramsHash = ONEWallet.computeGeneralOperationHash
+      switch (tokenType) {
+        case ONEConstants.TokenType.ERC20:
+          commitParams = { operationType, tokenType, contractAddress, dest, amount }
+          revealParams = { operationType, tokenType, contractAddress, dest, amount }
+          break
+        case ONEConstants.TokenType.ERC721:
+          commitParams = { operationType, tokenType, contractAddress, tokenId, dest }
+          revealParams = { operationType, tokenType, contractAddress, tokenId, dest }
+          break
+        case ONEConstants.TokenType.ERC1155:
+          commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount }
+          revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount }
+          break
+        default:
+          console.log(`TODO: add in Token error handling for TRANSFER_TOKEN`)
+          return
+      }
+      break
+    case ONEConstants.OperationType.TRANSFER:
+      paramsHash = ONEWallet.computeTransferHash
+      commitParams = { operationType, dest, amount }
+      revealParams = { operationType, dest, amount }
+      break
+    default:
+      console.log(`TODO: add in error handling`)
+      return
+  }
+  let { tx, authParams, revealParams: returnedRevealParams } = await commitReveal({
+    Debugger,
+    layers: wallet.layers,
+    index,
+    eotp,
+    paramsHash,
+    commitParams,
+    revealParams,
+    wallet: wallet.wallet
+  })
+  let currentState
+  if (getCurrentState) { currentState = await getONEWalletState(wallet.wallet) }
+  return { tx, authParams, revealParams: returnedRevealParams, currentState }
+}
+
+const commitReveal = async ({ layers, Debugger, index, eotp, paramsHash, commitParams, revealParams, wallet }) => {
+  const neighbors = ONE.selectMerkleNeighbors({ layers, index })
+  const neighbor = neighbors[0]
+  const { hash: commitHash } = ONE.computeCommitHash({ neighbor, index, eotp })
+  if (typeof paramsHash === 'function') {
+    const { hash } = paramsHash({ ...commitParams })
+    paramsHash = hash
+  }
+  const { hash: verificationHash } = ONE.computeVerificationHash({ paramsHash, eotp })
+  Logger.debug(`Committing`, { commitHash: ONEUtil.hexString(commitHash), paramsHash: ONEUtil.hexString(paramsHash), verificationHash: ONEUtil.hexString(verificationHash) })
+  await wallet.commit(ONEUtil.hexString(commitHash), ONEUtil.hexString(paramsHash), ONEUtil.hexString(verificationHash))
+  Logger.debug(`Committed`)
+  const neighborsEncoded = neighbors.map(ONEUtil.hexString)
+  Debugger.debugProof({ neighbors, height: layers.length, index, eotp, root: layers[layers.length - 1] })
+  const commits = await wallet.lookupCommit(ONEUtil.hexString(commitHash))
+  const commitHashCommitted = commits[0][0]
+  const paramHashCommitted = commits[1][0]
+  const verificationHashCommitted = commits[2][0]
+  const timestamp = commits[3][0]
+  const completed = commits[4][0]
+  Logger.debug({ commit: { commitHashCommitted, paramHashCommitted, verificationHashCommitted, timestamp, completed }, currentTimeInSeconds: Math.floor(Date.now() / 1000) })
+  const authParams = [neighborsEncoded, index, ONEUtil.hexString(eotp)]
+  if (!revealParams.length) {
+    const { operationType, tokenType, contractAddress, tokenId, dest, amount, data } = { ...ONEConstants.NullOperationParams, ...revealParams }
+    revealParams = [operationType, tokenType, contractAddress, tokenId, dest, amount, data]
+  }
+  Logger.debug(`Revealing`, { authParams, revealParams })
+  const wouldSucceed = await wallet.reveal.call(authParams, revealParams)
+  Logger.debug(`Reveal success prediction`, !!wouldSucceed)
+  const tx = await wallet.reveal(authParams, revealParams)
+  return { tx, authParams, revealParams }
+}
+
 module.exports = {
   init,
   increaseTime,
@@ -667,5 +834,9 @@ module.exports = {
   makeWallet,
   makeTokens,
   getONEWalletState,
-  checkONEWalletStateChange
+  checkONEWalletStateChange,
+  validateBalance,
+  validateUpdateTransaction,
+  validateSpendingState,
+  fundTokens
 }

@@ -108,6 +108,6 @@ TT-SUBTEST-WALLETID e.g. `TG-OP4-1`
 | 20 | REVOKE                       | FAIL    | Base     |
 | 21 | CALL                         | FAIL    | Base     |
 | 22 | BATCH                        | FAIL    | Base     |
-| 23 | NOOP                         | N/A	    | N/A      | no operation
+| 23 | NOOP                         | N/A	    | N/A      | this is for nulloperationparameter
 | 24 | CHANGE_SPENDING_LIMIT        | PASS    | Spending |
 | 25 | JUMP_SPENDING_LIMIT          | FAIL    | Spending | 

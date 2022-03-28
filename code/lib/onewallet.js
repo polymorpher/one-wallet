@@ -214,6 +214,14 @@ const computeTransferHash = ({ dest, amount }) => {
   return { hash: keccak(input), bytes: input }
 }
 
+// address, hex string
+const computeSetRecoveryAddressHash = ({ address }) => {
+  const addressBytes = hexStringToBytes(address, 32)
+  const input = new Uint8Array(32)
+  input.set(addressBytes)
+  return { hash: keccak(input), bytes: input }
+}
+
 // dest, hex string
 const computeDestHash = ({ dest }) => {
   const destBytes = hexStringToBytes(dest, 32)
@@ -423,7 +431,7 @@ const computeTransferDomainHash = ({
   })
 }
 
-const computeForwardHash = ({ address }) => computeDestHash({ address })
+const computeForwardHash = ({ address }) => computeSetRecoveryAddressHash({ address })
 
 const encodeDisplaceDataHex = ({ core, innerCores, identificationKey }) => {
   return Util.abi.encodeParameters(['tuple(bytes32,uint8,uint8,uint32,uint32,uint8)', 'tuple[](bytes32,uint8,uint8,uint32,uint32,uint8)', 'bytes'], [core, innerCores, identificationKey])
@@ -452,6 +460,7 @@ module.exports = {
   computeTransferHash,
   computeRecoveryHash,
   computeDestHash,
+  computeSetRecoveryAddressHash,
   computeBuyDomainCommitHash,
   computeForwardHash,
   computeTransferDomainHash,

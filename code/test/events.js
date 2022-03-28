@@ -1,37 +1,37 @@
 // Test all events emitted
 // Provides negative use case coverage
 
-// TODO 
-// Retrieve the transaction from Commit Reveal whch has the event in tx.receipt.logs. 
+// TODO
+// Retrieve the transaction from Commit Reveal whch has the event in tx.receipt.logs.
 
 const TestUtil = require('./util')
-const unit = require('ethjs-unit')
-const ONEUtil = require('../lib/util')
+// const unit = require('ethjs-unit')
+// const ONEUtil = require('../lib/util')
 const ONEConstants = require('../lib/constants')
-const BN = require('bn.js')
-const ONE = require('../lib/onewallet')
-const ONEWallet = require('../lib/onewallet')
-const ONEDebugger = require('../lib/debug')
-const Logger = TestUtil.Logger
-const Debugger = ONEDebugger(Logger)
+// const BN = require('bn.js')
+// const ONE = require('../lib/onewallet')
+// const ONEWallet = require('../lib/onewallet')
+// const ONEDebugger = require('../lib/debug')
+// const Logger = TestUtil.Logger
+// const Debugger = ONEDebugger(Logger)
 
-const ONE_CENT = unit.toWei('0.01', 'ether')
-const HALF_DIME = unit.toWei('0.05', 'ether')
-const ONE_DIME = unit.toWei('0.1', 'ether')
-const HALF_ETH = unit.toWei('0.5', 'ether')
-const ONE_ETH = unit.toWei('1', 'ether')
-const TWO_ETH = unit.toWei('2', 'ether')
-const THREE_ETH = unit.toWei('3', 'ether')
-const FOUR_ETH = unit.toWei('4', 'ether')
+// const ONE_CENT = unit.toWei('0.01', 'ether')
+// const HALF_DIME = unit.toWei('0.05', 'ether')
+// const ONE_DIME = unit.toWei('0.1', 'ether')
+// const HALF_ETH = unit.toWei('0.5', 'ether')
+// const ONE_ETH = unit.toWei('1', 'ether')
+// const TWO_ETH = unit.toWei('2', 'ether')
+// const THREE_ETH = unit.toWei('3', 'ether')
+// const FOUR_ETH = unit.toWei('4', 'ether')
 const INTERVAL = 30000 // 30 second Intervals
 const DURATION = INTERVAL * 2 * 60 * 24 * 1 // 1 day wallet duration
 // const SLOT_SIZE = 1 // 1 transaction per interval
-const DUMMY_HEX = ONEUtil.hexString('5') // Dummy Hex string for 5 i.e. 0x05
+// const DUMMY_HEX = ONEUtil.hexString('5') // Dummy Hex string for 5 i.e. 0x05
 const EFFECTIVE_TIME = Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
 
 contract('ONEWallet', (accounts) => {
   // Wallets effective time is the current time minus half the duration (3 minutes ago)
-  let snapshotId
+  // let snapshotId
   beforeEach(async function () {
     // snapshotId = await TestUtil.snapshot()
     await TestUtil.init()
@@ -86,7 +86,6 @@ contract('ONEWallet', (accounts) => {
     // console.log(`revealTx: ${JSON.stringify(revealTx)}`)
     // const event = tx.receipt.logs.filter(e => e.event === 'TokenTracked')[0]
     // const tokenIds = event.args.ids
-
 
     // Update alice current State
     aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
