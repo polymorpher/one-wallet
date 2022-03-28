@@ -53,7 +53,7 @@ const TransactionViewer = ({ address }) => {
         // TODO: right now some transactions are not returned from this API, like those internal ones.
         const txs = await api.rpc.getTransactionHistory({ address, pageSize, pageIndex: currentPage, fullTx: true })
         if (txs.length === 0) {
-          console.log(currentPage, txs)
+          // console.log(currentPage, txs)
           setHasMore(false)
           return
         }
@@ -72,9 +72,9 @@ const TransactionViewer = ({ address }) => {
           })
         )
         setTxList(list => {
-          console.log(parsedTxs[0].hash)
+          // console.log(parsedTxs[0].hash)
           const foundIndex = list.findIndex(e => e.hash === parsedTxs[0].hash)
-          console.log(foundIndex, list.length, parsedTxs.length)
+          // console.log(foundIndex, list.length, parsedTxs.length)
           if (foundIndex < 0) {
             return list.concat(parsedTxs)
           } else {
@@ -180,7 +180,7 @@ const TransactionViewer = ({ address }) => {
           events.unshift({ eventName: 'InboundExternalTransfer', amount: bnValue, color: 'green' })
         }
         if (ONEUtil.toBN(status).eqn(0)) {
-          console.log(status, record)
+          // console.log(status, record)
           events.push({ eventName: '[Transaction Reverted]', color: 'red' })
         }
         if (input?.startsWith('0xe4e5b258')) {
@@ -190,7 +190,7 @@ const TransactionViewer = ({ address }) => {
           <Space direction='vertical'>
             {(events || []).map((e, i) => {
               let displayText = e.message || e.eventName
-              console.log(displayText, e.data)
+              // console.log(displayText, e.data)
               if (!e.amountInMessage) {
                 if (e.data?.amount && e.eventName.includes('Token')) {
                   displayText += ` (${e.amount} Token)`
