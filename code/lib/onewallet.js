@@ -222,6 +222,14 @@ const computeSetRecoveryAddressHash = ({ address }) => {
   return { hash: keccak(input), bytes: input }
 }
 
+// dest, hex string
+const computeDestHash = ({ dest }) => {
+  const destBytes = hexStringToBytes(dest, 32)
+  const input = new Uint8Array(32)
+  input.set(destBytes)
+  return { hash: keccak(input), bytes: input }
+}
+
 // otp, uint8array[4]
 // otp2, uint8array[4], optional
 // rand, integer, optional
@@ -451,6 +459,7 @@ module.exports = {
   // commit - specific operations
   computeTransferHash,
   computeRecoveryHash,
+  computeDestHash,
   computeSetRecoveryAddressHash,
   computeBuyDomainCommitHash,
   computeForwardHash,

@@ -4,11 +4,12 @@
   "private": true,
   "license": "Apache-2.0",
   "scripts": {
-    "test": "VERBOSE=1 truffle test --network=dev --compile-none",
+    "test": "VERBOSE=true truffle test --network=dev --compile-none",
     "migrate": "truffle migrate --network=dev",
     "lint": "eslint ./lib ./migrations ./test",
     "lint-fix": "eslint ./lib ./migrations ./test --fix",
     "console": "node --experimental-repl-await",
+    "soldoc": "npx solidity-docgen -i contracts -o ../docs/solidity --solc-module solc-0.8.4",
     "abi": "node scripts/abi.js",
     "event-hash": "node scripts/eventhash.js",
     "flatten": "truffle-flattener contracts/ONEWallet.sol > flattened/ONEWalletFlattened.sol"
@@ -82,6 +83,8 @@
     "moment-timezone": "^0.5.33",
     "rlp": "^2.2.6",
     "solhint": "^3.3.5",
+    "solidity-coverage": "^0.7.20",
+    "solidity-docgen": "^0.5.16",
     "standard": "^12.0.1",
     "webpack": "^5.33.2",
     "webpack-bundle-analyzer": "^3.6.1",

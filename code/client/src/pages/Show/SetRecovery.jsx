@@ -60,7 +60,7 @@ const SetRecovery = ({ address, onClose }) => {
       otp,
       otp2,
       commitHashGenerator: ONE.computeSetRecoveryAddressHash,
-      commitHashArgs: { address: dest },
+      commitHashArgs: { dest },
       prepareProof: () => setStage(0),
       beforeCommit: () => setStage(1),
       afterCommit: () => setStage(2),
