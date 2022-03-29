@@ -5,7 +5,7 @@ const ONEConstants = require('../lib/constants')
 const ONE_CENT = unit.toWei('0.01', 'ether')
 const HALF_DIME = unit.toWei('0.05', 'ether')
 const ONE_DIME = unit.toWei('0.1', 'ether')
-// const HALF_ETH = unit.toWei('0.5', 'ether')
+const HALF_ETH = unit.toWei('0.5', 'ether')
 // const ONE_ETH = unit.toWei('1', 'ether')
 // const TWO_ETH = unit.toWei('2', 'ether')
 const THREE_ETH = unit.toWei('3', 'ether')
@@ -127,6 +127,7 @@ contract('ONEWallet', (accounts) => {
     // make Tokens
     const { testerc20 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
     // fund Tokens
+    let testTime = Date.now()
     await TestUtil.fundTokens({
       funder: accounts[0],
       receiver: alice.wallet.address,
@@ -144,7 +145,7 @@ contract('ONEWallet', (accounts) => {
     assert.equal(1000, aliceWalletBalanceERC20, 'Transfer of 1000 ERC20 tokens to alice.wallet checked via wallet succesful')
 
     // Begin Tests
-    let testTime = Date.now()
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
 
     // TODO investigate how to combine populating objects that already exist
     // eslint-disable-next-line no-lone-blocks
@@ -286,15 +287,20 @@ contract('ONEWallet', (accounts) => {
   // ==== SET_RECOVERY_ADDRESS =====
   // Test setting of alices recovery address
   // Expected result: alices lastResortAddress will change to bobs last Resort address
+  // Notes: Cannot set this to zero address, the same address or the treasury address
+  // Fails to update if you have create alice wallet with `setLastResortAddress: true` as an address already set.
   it('OPERATION 5 SET_RECOVERY_ADDRESS: must be able to set recovery address', async () => {
     // create wallets and token contracts used througout the tests
-    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP5-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION, setLastResortAddress: false })
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP5-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION, setLastResortAddress: true })
     let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'TG-OP5-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
 
     // Begin Tests
     let testTime = Date.now()
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
+
+    let aliceGetInfoInitial = await alice.wallet.getInfo()
+    console.log(`Alice Initial last resort address: ${aliceGetInfoInitial[6].toString()}`)
 
     // alice tranfers ONE CENT to bob
     await TestUtil.executeStandardTransaction(
@@ -321,11 +327,12 @@ contract('ONEWallet', (accounts) => {
 
   // ==== RECOVER =====
   // Test recover all funds and tokens from alices wallet
-  // Expected result: will be transferred tos her last resort address (currently bob's last resort address)
+  // Expected result: will be transferred to her last resort address (currently bob's last resort address)
   it('OPERATION 6 RECOVER: must be able to recover assets', async () => {
     // create wallets and token contracts used througout the tests
     let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP6-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
 
+    await TestUtil.validateBalance({ address: alice.wallet.address, amount: HALF_ETH })
     // Begin Tests
     let testTime = Date.now()
 
@@ -342,6 +349,7 @@ contract('ONEWallet', (accounts) => {
     )
     // Update alice current State
     let aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
+    await TestUtil.validateBalance({ address: alice.wallet.address, amount: (0.5) })
     // Alice Items that have changed - nonce, lastOperationTime, recoveryAddress, commits
     aliceOldState = await TestUtil.validateUpdateTransaction({ wallet: alice.wallet, oldState: aliceOldState })
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)

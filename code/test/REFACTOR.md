@@ -21,12 +21,12 @@ Following are some discussion points
 
 | ID | Operation                    | Status  | Area     | OneWallet.js                | Notes |
 | -- | ---------------------------- | ------- | -------- | --------------------------- | ----- | 
-| 0  | TRACK                        | PASS    | Token    | computeGeneralOperationHash |
-| 1  | UNTRACK                      | PASS    | Token    | computeGeneralOperationHash |
-| 2  | TRANSFER_TOKEN               | PASS    | Token    | computeGeneralOperationHash |
-| 3  | OVERRIDE_TRACK               | PASS    | Token    | computeGeneralOperationHash |
-| 4  | TRANSFER                     | PASS    | Token    | computeTransferHash         |
-| 5  | SET_RECOVERY_ADDRESS         | PASS    | Wallet   | computeDestHash             | 
+| 0  | TRACK                        | PASS    | Token    | computeGeneralOperationHash | problem with passing data due to `op.data.length > 0)` test in executor.sol and needs validateTrackedTokens helper |
+| 1  | UNTRACK                      | PASS    | Token    | computeGeneralOperationHash | same as TRACK above |
+| 2  | TRANSFER_TOKEN               | PASS    | Token    | computeGeneralOperationHash | needs validateTokenBalance helper |
+| 3  | OVERRIDE_TRACK               | PASS    | Token    | computeGeneralOperationHash | needs validateTrackedTokens helper | 
+| 4  | TRANSFER                     | PASS    | Token    | computeTransferHash         | |
+| 5  | SET_RECOVERY_ADDRESS         | PASS    | Wallet   | computeDestHash             | Fails to update if you have create alice wallet with `setLastResortAddress: true` as an address already set. |
 | 6  | RECOVER	                    | FAIL    | Wallet   | computeRecoveryHash         |
 | 7  | DISPLACE	                    | TBD     | Wallet   | computeTransferHash         | Tested in innerCores.js
 | 8  | FORWARD                      | FAIL    | Upgrade  | computeForwardHash          |
