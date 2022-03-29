@@ -199,6 +199,16 @@ const utils = {
     return v
   },
 
+  toBN: (numberLike) => {
+    if (typeof numberLike === 'string' && numberLike.startsWith('0x')) {
+      return new BN(numberLike.slice(2), 16)
+    }
+    if (typeof numberLike === 'number' && numberLike > 1e+14) {
+      return new BN(String(numberLike))
+    }
+    return new BN(numberLike)
+  },
+
   argon2: async (input, { salt = new Uint8Array(8), progressObserver, batchSize = 32 } = {}) => {
     const { result } = await argon2.hash({ pass: input, batchSize, salt, progressObserver })
     return result
@@ -422,7 +432,19 @@ const utils = {
     }
   },
 
-  // get
+  // TODO: rewrite using BN to achieve 100% precision
+  formatNumber: (number, maxPrecision) => {
+    maxPrecision = maxPrecision || 4
+    number = parseFloat(number)
+    if (number < 10 ** (-maxPrecision)) {
+      return '0'
+    }
+    const order = Math.ceil(Math.log10(Math.max(number, 1)))
+    const digits = Math.max(0, maxPrecision - order)
+    // https://www.jacklmoore.com/notes/rounding-in-javascript/
+    const floored = Number(`${Math.floor(`${number}e+${digits}`)}e-${digits}`)
+    return floored.toString()
+  },
 
   web3utils
 }
