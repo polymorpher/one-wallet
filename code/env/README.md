@@ -44,3 +44,30 @@ DEPLOY_FACTORY_GANACHE=<...>
 DEPLOY_DEPLOYER_GANACHE=<...>
 DEPLOY_CODE_HELPER_GANACHE=<...>
 ```
+
+### Safari HTTPS security issue
+
+You may encounter HTTPS security issue when you try to run the client in Safari, accessing a local RPC endpoint (http://localhost:8545) provided by ganache.
+
+When you encounter this issue, you will see a blank screen in "Create Wallet" screen, whereas usually a QR code would show up. This is because the client cannot call the RPC (blocked by Safari) to acquire smart-contract bytecodes for the wallet, which is needed to generate the QR code. 
+
+There are two solutions to this issue
+
+#### Method 1: Use websocket RPC endpoints
+
+Simply use `GANACHE_RPC=ws://localhost:8545` in `client/.env`. This is experimental, so some other weird issues may occur.
+
+#### Method 2: Use ngrok a proxy with domain name with ngrok-provided HTTPS
+
+You can use ngrok to setup a proxy server under some ngrok-provided (or custom) domain name, and let ngrok provide HTTPS certificates. To do that, create `ngrok.sh`:
+
+```
+#!/usr/bin/env bash
+ngrok http 8545 --hostname=<whatever-domain-name-you-have-on-ngrok>
+```
+
+Then you can setup GANACHE_RPC in `client/.env`
+
+```
+GANACHE_RPC=<whatever-domain-name-you-have-on-ngrok>
+```

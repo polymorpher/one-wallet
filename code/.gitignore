@@ -122,5 +122,6 @@ webclient/dist
 /env/db/*
 !/env/db/.gitkeep
 /env/ganache.sh
+/env/ngrok.sh
 
 build/contracts/*
