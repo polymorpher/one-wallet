@@ -649,6 +649,7 @@ const executeStandardTransaction = async ({
   let revealParams
   let paramsHash
   Logger.debug(`operationType: ${operationType}`)
+  // Passing
   switch (operationType) {
     case ONEConstants.OperationType.TRACK:
     case ONEConstants.OperationType.UNTRACK:
@@ -672,7 +673,7 @@ const executeStandardTransaction = async ({
       revealParams = { operationType, data }
       break
     case ONEConstants.OperationType.COMMAND:
-      paramsHash = ONEWallet.computeDataHash
+      paramsHash = ONEWallet.computeGeneralOperationHash
       commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
       revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
       break
@@ -703,12 +704,12 @@ const executeStandardTransaction = async ({
       paramsHash = ONEWallet.computeGeneralOperationHash
       switch (tokenType) {
         case ONEConstants.TokenType.ERC20:
-          commitParams = { operationType, tokenType, contractAddress, dest, amount }
-          revealParams = { operationType, tokenType, contractAddress, dest, amount }
+          commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount }
+          revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount }
           break
         case ONEConstants.TokenType.ERC721:
-          commitParams = { operationType, tokenType, contractAddress, tokenId, dest }
-          revealParams = { operationType, tokenType, contractAddress, tokenId, dest }
+          commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount }
+          revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount }
           break
         case ONEConstants.TokenType.ERC1155:
           commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount }

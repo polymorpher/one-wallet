@@ -179,7 +179,7 @@ contract('ONEWallet', (accounts) => {
     assert.equal(trackedTokens[0][0].toString(), ONEConstants.TokenType.ERC20.toString(), 'alice.wallet.trackedTokens tracking tokens of type ERC20')
     assert.deepEqual(trackedTokens[1][0], testerc20.address, 'alice.wallet.trackedTokens tracking testerc20')
     assert.deepEqual(trackedTokens[2].length, 1, 'alice.wallet.trackedTokens two tokens are now tracked')
-    assert.deepEqual([ trackedTokens[2][0].toString() ], ['0'], 'alice.wallet.trackedTokens tokens 0 (ERC29 has no NFT id) is now tracked')
+    assert.deepEqual([ trackedTokens[2][0].toString() ], ['0'], 'alice.wallet.trackedTokens tokens 0 (ERC20 has no NFT id) is now tracked')
     aliceOldState.trackedTokens = trackedTokens
     // check alice
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
@@ -291,7 +291,7 @@ contract('ONEWallet', (accounts) => {
   // Fails to update if you have create alice wallet with `setLastResortAddress: true` as an address already set.
   it('OPERATION 5 SET_RECOVERY_ADDRESS: must be able to set recovery address', async () => {
     // create wallets and token contracts used througout the tests
-    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP5-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION, setLastResortAddress: true })
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TG-OP5-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION, setLastResortAddress: false })
     let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'TG-OP5-2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
 
     // Begin Tests
@@ -501,6 +501,7 @@ contract('ONEWallet', (accounts) => {
     let data = ONEUtil.hexStringToBytes(hexData)
     await TestUtil.executeStandardTransaction(
       {
+        ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
         operationType: ONEConstants.OperationType.COMMAND,
         data,

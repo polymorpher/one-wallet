@@ -17,7 +17,7 @@ const ONEConstants = require('../lib/constants')
 const ONE_CENT = unit.toWei('0.01', 'ether')
 // const HALF_DIME = unit.toWei('0.05', 'ether')
 // const ONE_DIME = unit.toWei('0.1', 'ether')
-const HALF_ETH = unit.toWei('0.5', 'ether')
+// const HALF_ETH = unit.toWei('0.5', 'ether')
 const INTERVAL = 30000 // 30 second Intervals
 const DURATION = INTERVAL * 12 // 6 minute wallet duration
 // const SLOT_SIZE = 1 // 1 transaction per interval
@@ -84,13 +84,13 @@ contract('ONEWallet', (accounts) => {
     // alice transfers tokens to bob
     await TestUtil.executeStandardTransaction(
       {
+        ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
         operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
         tokenType: ONEConstants.TokenType.ERC721,
         contractAddress: testerc721.address,
         tokenId: 8,
-        dest: bob.wallet.address,
-        amount: 1
+        dest: bob.wallet.address
       }
     )
 
@@ -154,6 +154,7 @@ contract('ONEWallet', (accounts) => {
     // alice transfers tokens to bob
     await TestUtil.executeStandardTransaction(
       {
+        ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
         operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
         tokenType: ONEConstants.TokenType.ERC1155,
@@ -219,6 +220,7 @@ contract('ONEWallet', (accounts) => {
     // ERC20 Transfer
     await TestUtil.executeStandardTransaction(
       {
+        ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
         operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
         tokenType: ONEConstants.TokenType.ERC20,

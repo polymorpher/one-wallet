@@ -27,10 +27,10 @@ Following are some discussion points
 | 3  | OVERRIDE_TRACK               | PASS    | Token    | computeGeneralOperationHash | needs validateTrackedTokens helper | 
 | 4  | TRANSFER                     | PASS    | Token    | computeTransferHash         | |
 | 5  | SET_RECOVERY_ADDRESS         | PASS    | Wallet   | computeDestHash             | Fails to update if you have create alice wallet with `setLastResortAddress: true` as an address already set. |
-| 6  | RECOVER	                    | FAIL    | Wallet   | computeGeneralOperationHash | Failing on core validation? [similar to this](https://github.com/polymorpher/one-wallet/pull/263#discussion_r835837005)
+| 6  | RECOVER	                    | TBD     | Wallet   | computeGeneralOperationHash | Tested in `basic.js` Failing on core validation? [similar to this](https://github.com/polymorpher/one-wallet/pull/263#discussion_r835837005)
 | 7  | DISPLACE	                    | TBD     | Wallet   | computeTransferHash         | Tested in innerCores.js
-| 8  | FORWARD                      | FAIL    | Upgrade  | computeForwardHash          |
-| 9  | RECOVER_SELECTED_TOKENS      | FAIL    | Wallet   | computeGeneralOperationHash |
+| 8  | FORWARD                      | FAIL    | Upgrade  | computeForwardHash          | review `commitParams = { operationType, address: dest }`
+| 9  | RECOVER_SELECTED_TOKENS      | FAIL    | Wallet   | computeGeneralOperationHash | Failing on core validation? [see this](https://github.com/polymorpher/one-wallet/pull/263#discussion_r835837005)
 | 10 | BUY_DOMAIN                   | Phase 2 | Domain   |
 | 11 | COMMAND                      | FAIL    | Upgrade  | computeDataHash             | Change to computeGeneralOperationHash 
 | 12 | BACKLINK_ADD                 | PASS    | Upgrade  | computeDataHash             | Change to computeGeneralOperationHash 
@@ -154,5 +154,17 @@ Even in `commitParams` and `revealParams`
 
 
 ## Development Action Items
+
+**Required for Initial Merge**
+* FundTokens Helper
+* Token Helpers ValidateTokenBalances, ValidateTrackedTokens, FundTokens
+* Event Testing: ValidateEvent
+* Functional Tests: Tokens.js and Upgrade.js
+* 100% Coverage for General, Tokens and Upgrade
+* Issue Summary - any known issues or enhancementes recommended
+* Updated README.md
+
+**Additional Action Items**
+
 
 
