@@ -4,6 +4,7 @@ import WalletConnectClient from '@walletconnect/client'
 import { InputBox, Link, Text } from '../components/Text'
 import Image from 'antd/es/image'
 import { Row } from 'antd/es/grid'
+import ConfigProvider from 'antd/es/config-provider'
 import Button from 'antd/es/button'
 import cacheActions from '../state/modules/cache/actions'
 import AnimatedSection from '../components/AnimatedSection'
@@ -12,7 +13,31 @@ import Spin from 'antd/es/spin'
 import util, { checkCamera } from '../util'
 import QrCodeScanner from '../components/QrCodeScanner'
 import { WalletSelector } from './Common'
+import Send from '../pages/Show/Send'
 import List from 'antd/es/list'
+
+const PromptView = ({ peerMeta, approveSession, rejectSession }) => {
+  return (
+    <>
+      <Row type='flex' justify='center' align='middle'>
+        <Image style={{ maxWidth: '100px' }} src={peerMeta.icons[0]} alt={peerMeta.name} />
+      </Row>
+      <Row type='flex' justify='center' align='middle'>
+        <Text>{peerMeta.name}</Text>
+      </Row>
+      <Row type='flex' justify='center' align='middle'>
+        <Text>{peerMeta.description}</Text>
+      </Row>
+      <Row type='flex' justify='center' align='middle'>
+        <Link target='_blank' href={peerMeta.url} rel='noreferrer'>{peerMeta.url}</Link>
+      </Row>
+      <Row type='flex' justify='center' align='middle' style={{ marginTop: '24px' }}>
+        <Button style={{ marginRight: '24px' }} onClick={approveSession}>Approve</Button>
+        <Button onClick={rejectSession}>Reject</Button>
+      </Row>
+    </>
+  )
+}
 
 const WalletConnect = ({ wc }) => {
   const dispatch = useDispatch()
@@ -152,6 +177,7 @@ const WalletConnect = ({ wc }) => {
   }
 
   const approveRequest = (request) => {
+    console.log(request)
     if (connector) {
       // TODO: Handle requests based on methods
       // connector.approveRequest({
@@ -163,6 +189,7 @@ const WalletConnect = ({ wc }) => {
   }
 
   const rejectRequest = (request) => {
+    console.log(request)
     if (connector) {
       connector.rejectRequest({ id: request.id, error: { message: 'User rejected the requets.' } })
       setRequests(requests.filter(r => r.id !== request.id))
@@ -195,57 +222,47 @@ const WalletConnect = ({ wc }) => {
         </Row>)}
       {!connected
         ? (peerMeta && peerMeta.name
-            ? (
-              <>
-                <Row type='flex' justify='center' align='middle'>
-                  <Image style={{ maxWidth: '100px' }} src={peerMeta.icons[0]} alt={peerMeta.name} />
-                </Row>
-                <Row type='flex' justify='center' align='middle'>
-                  <Text>{peerMeta.name}</Text>
-                </Row>
-                <Row type='flex' justify='center' align='middle'>
-                  <Text>{peerMeta.description}</Text>
-                </Row>
-                <Row type='flex' justify='center' align='middle'>
-                  <Link target='_blank' href={peerMeta.url} rel='noreferrer'>{peerMeta.url}</Link>
-                </Row>
-                <Row type='flex' justify='center' align='middle' style={{ marginTop: '24px' }}>
-                  <Button style={{ marginRight: '24px' }} onClick={approveSession}>Approve</Button>
-                  <Button onClick={rejectSession}>Reject</Button>
-                </Row>
-              </>)
+            ? <PromptView peerMeta={peerMeta} approveSession={approveSession} rejectSession={rejectSession} />
             : (
               <>
                 <WalletSelector onAddressSelected={setSelectedAddress} filter={e => e.majorVersion >= 10} showOlderVersions={false} useHex={false} />
+                {/* If no camera or `uri` provided, do not show the qr scanner initially. */}
                 {(!isScanMode || !hasCamera) && (
                   <>
                     <InputBox margin='auto' width={440} value={uri} onChange={({ target: { value } }) => setUri(value)} placeholder='Paste wc: uri...' />
                     {hasCamera && <Button onClick={() => setScanMode(true)}>Scan</Button>}
                   </>)}
-                {/* TODO: disable text upload mode, it's used for dev debugging only. */}
-                {isScanMode && hasCamera && <QrCodeScanner shouldInit supportedNonImgFiles={['text/plain']} btnText='Use Image or Text Instead' onScan={onScan} />}
+                {selectedAddress.value && isScanMode && hasCamera && <QrCodeScanner shouldInit uploadBtnText='Upload QR Code Instead' onScan={onScan} />}
               </>))
         : (
           <>
             <Row type='flex' justify='center' align='middle'>
-              <Text>Connected!</Text>
+              <Text>{selectedAddress.value}</Text>
+              <Button type='link' onClick={disconnect}>Disconnect</Button>
             </Row>
-            <Row type='flex' justify='center' align='middle'>
-              <Button onClick={disconnect}>Disconnect</Button>
-            </Row>
-            {requests.length > 0 && (
+            <ConfigProvider renderEmpty={() => (
+              <Text>No pending requests for this wallet.</Text>
+            )}
+            >
               <List
                 style={{ marginTop: '24px' }}
-                size='small'
-                header={<div>All pending requests</div>}
+                size='large'
                 bordered
                 dataSource={requests}
+                // TODO: customize item render based on request method type.
                 renderItem={item => (
                   <List.Item
                     actions={[<Button key='request-list-action-approve' onClick={() => approveRequest(item)}>Approve</Button>, <Button key='request-list-action-reject' onClick={() => rejectRequest(item)}>Reject</Button>]}
-                  >{item.method}
+                  >
+                    {item.method}
+                    {item.method === 'eth_sendTransaction' &&
+                      <Send
+                        address={selectedAddress.value} onSuccess={() => alert('a')}
+                        prefillAmount={10}
+                      />}
                   </List.Item>)}
-              />)}
+              />
+            </ConfigProvider>
           </>)}
     </AnimatedSection>
   )

@@ -348,7 +348,7 @@ const Extend = ({
     }
   }, [method])
 
-  const onScan = (e, { isJson = false } = {}) => {
+  const onScan = (e, isJson) => {
     if (e && !seed) {
       try {
         let parsed

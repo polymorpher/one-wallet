@@ -240,6 +240,11 @@ const Tools = () => {
               <Button type='primary' shape='round' href='http://multisig.harmony.one' target='_blank'>Open Harmony MultiSig</Button>
               <Button type='primary' shape='round' onClick={() => openTool(Sections.SushiEncoder)}>SushiSwap Transaction Encoder</Button>
             </Space>
+            <Divider />
+            <Title level={3}>Auth</Title>
+            <Space wrap>
+              <Button type='primary' shape='round' href='/auth/walletconnect'>Wallet Connect</Button>
+            </Space>
             {dev &&
               <>
                 <Divider />
