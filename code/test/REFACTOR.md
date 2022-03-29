@@ -27,7 +27,7 @@ Following are some discussion points
 | 3  | OVERRIDE_TRACK               | PASS    | Token    | computeGeneralOperationHash | needs validateTrackedTokens helper | 
 | 4  | TRANSFER                     | PASS    | Token    | computeTransferHash         | |
 | 5  | SET_RECOVERY_ADDRESS         | PASS    | Wallet   | computeDestHash             | Fails to update if you have create alice wallet with `setLastResortAddress: true` as an address already set. |
-| 6  | RECOVER	                    | FAIL    | Wallet   | computeRecoveryHash         |
+| 6  | RECOVER	                    | FAIL    | Wallet   | computeGeneralOperationHash | Failing on core validation? [similar to this](https://github.com/polymorpher/one-wallet/pull/263#discussion_r835837005)
 | 7  | DISPLACE	                    | TBD     | Wallet   | computeTransferHash         | Tested in innerCores.js
 | 8  | FORWARD                      | FAIL    | Upgrade  | computeForwardHash          |
 | 9  | RECOVER_SELECTED_TOKENS      | FAIL    | Wallet   | computeGeneralOperationHash |

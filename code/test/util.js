@@ -659,6 +659,7 @@ const executeStandardTransaction = async ({
     case ONEConstants.OperationType.OVERRIDE_TRACK:
     case ONEConstants.OperationType.RECOVER_SELECTED_TOKENS:
     case ONEConstants.OperationType.BATCH:
+    case ONEConstants.OperationType.RECOVER:
       paramsHash = ONEWallet.computeGeneralOperationHash
       commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
       revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
@@ -684,11 +685,6 @@ const executeStandardTransaction = async ({
       paramsHash = ONEWallet.computeForwardHash
       commitParams = { operationType, address: dest }
       revealParams = { operationType, address: dest }
-      break
-    case ONEConstants.OperationType.RECOVER:
-      paramsHash = ONEWallet.computeRecoveryHash
-      commitParams = { operationType }
-      revealParams = { operationType }
       break
     case ONEConstants.OperationType.CHANGE_SPENDING_LIMIT:
     case ONEConstants.OperationType.JUMP_SPENDING_LIMIT:
