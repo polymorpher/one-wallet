@@ -136,9 +136,9 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
     const executor = blockchain.prepareExecute(req.network, logger)
     const { receipt, predictedAddress } = await executor(async txArgs => {
       const c = blockchain.getFactory(req.network)
-      const predictedAddress = await c.predict.call(identificationKeys[0], txArgs)
+      const predictedAddress = await c.predict.call(identificationKeys[0], { from: txArgs.from })
       try {
-        await c.deploy.call(initArgs, txArgs)
+        await c.deploy.call(initArgs, { from: txArgs.from })
         const receipt = await c.deploy(initArgs, txArgs)
         return { predictedAddress, receipt }
       } catch (ex) {
