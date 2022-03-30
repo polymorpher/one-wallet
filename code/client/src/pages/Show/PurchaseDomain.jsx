@@ -234,7 +234,7 @@ const PurchaseDomain = ({ address, onClose }) => {
         />
       </Row>
       {available && <OtpStack walletName={autoWalletNameHint(wallet)} doubleOtp={doubleOtp} otpState={otpState} onComplete={doPurchase} action='buy now' />}
-      <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
+      <CommitRevealProgress stage={stage} />
     </AnimatedSection>
   )
 }

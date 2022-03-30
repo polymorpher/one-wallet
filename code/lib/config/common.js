@@ -1,10 +1,12 @@
+const Constants = require('../constants')
 const DEBUG = process.env.DEBUG
 
 module.exports = {
   appId: 'ONEWallet',
   appName: '1wallet',
-  version: 'v0.15.2-SNAPSHOT',
-  lastLibraryUpdateVersion: 'v0.15.1',
+  version: `v0.${Constants.MajorVersion}.${Constants.MinorVersion}`,
+  lastLibraryUpdateVersion: `v0.${Constants.MajorVersion}.${Constants.MinorVersion}`,
+  // lastLibraryUpdateVersion: `v0.16.0`, // use this for manual override
   minWalletVersion: parseInt(process.env.MIN_WALLET_VERSION || 9),
   minUpgradableVersion: parseInt(process.env.MIN_UPGRADABLE_WALLET_VERSION || 9),
   defaults: {
@@ -42,6 +44,7 @@ module.exports = {
     'harmony-testnet': {
       name: 'Harmony Testnet',
       url: process.env.TESTNET_RPC || 'https://api.s0.b.hmny.io',
+      explorer: 'https://explorer.pops.one/tx/{{txId}}',
       chainId: 2,
       deploy: {
         factory: process.env.DEPLOY_FACTORY_TESTNET || '',

@@ -108,7 +108,7 @@ const TransferDomain = ({ address, onClose }) => {
           <Warning>This wallet is not bound to a domain</Warning>
         </Row>}
 
-      <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
+      <CommitRevealProgress stage={stage} />
     </AnimatedSection>
   )
 }

@@ -23,19 +23,19 @@ const transitionStyles = {
   exited: { opacity: 0, zIndex: 0 },
 }
 
-const mobileTabBar = (props) => {
+const renderTabBar = (props) => {
   const panes = props.panes
   const activeKey = props.activeKey
-
+  const { isMobile } = useWindowDimensions()
   return (
-    <Space size='small' wrap style={{ marginBottom: '20px', marginTop: '10px' }}>
+    <Space size={isMobile ? 'small' : 'middle'} wrap style={{ marginBottom: '24px', marginTop: '16px' }}>
       {
         panes.map((pane) => (
           <Button
             key={pane.key}
             type='text'
             onClick={(e) => props.onTabClick(pane.key, e)}
-            size='small'
+            size={isMobile ? 'small' : 'large'}
             style={{
               color: activeKey === pane.key ? '#1890ff' : '#000000',
               borderBottom: activeKey === pane.key ? '1px solid #1890ff' : 'none',
@@ -66,9 +66,7 @@ const AnimatedSection = ({ show = true, wide, children, style, ...params }) => {
             padding: isMobile ? 0 : 24,
             paddingTop: isMobile ? 12 : 24,
           }}
-          tabProps={isMobile && {
-            renderTabBar: mobileTabBar
-          }}
+          tabProps={{ renderTabBar }}
           style={{
             padding: isMobile ? 16 : 32,
             maxWidth: wide ? 720 : 640,

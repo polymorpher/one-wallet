@@ -12,6 +12,7 @@ const config = {
   },
   corsOrigins: process.env['CORS'],
   secret: process.env['SECRET'],
+  safeNonce: process.env['SAFE_NONCE'] === '1' || process.env['SAFE_NONCE'] === 'true',
   pollingInterval: parseInt(process.env.pollingInterval || 1000),
   networks: {
     'harmony-testnet': {
@@ -19,7 +20,6 @@ const config = {
       url: process.env.TESTNET_RPC || 'https://api.s0.b.hmny.io',
       wss: process.env.TESTNET_WSS,
       mnemonic: process.env.HARMONY_TESTNET_MNEMONIC,
-      chainId: 2,
       skip: process.env.SKIP_TESTNET,
       numAccounts: process.env.TESTNET_NUM_ACCOUNTS || 1,
     },
@@ -28,7 +28,6 @@ const config = {
       url: process.env.MAINNET_RPC || 'https://api.s0.t.hmny.io',
       wss: process.env.MAINNET_WSS,
       mnemonic: process.env.HARMONY_MAINNET_MNEMONIC,
-      chainId: 1,
       skip: process.env.SKIP_MAINNET,
       numAccounts: process.env.MAINNET_NUM_ACCOUNTS || 1,
     },
@@ -41,7 +40,7 @@ const config = {
       numAccounts: process.env.GANACHE_NUM_ACCOUNTS || 1,
     },
   },
-  gasLimit: parseInt(process.env.GAS_LIMIT || '210000'),
+  gasLimit: parseInt(process.env.GAS_LIMIT || '12345678'),
   gasPrice: new BN(process.env.GAS_PRICE || '200'),
   cache: process.env.CACHE || 'cache'
 }

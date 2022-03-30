@@ -2,7 +2,6 @@ const axios = require('axios')
 const config = require('../config/provider').getConfig()
 const Contract = require('web3-eth-contract')
 const isEqual = require('lodash/fp/isEqual')
-const { TruffleProvider } = require('@harmony-js/core')
 const Web3 = require('web3')
 const ONEWalletContractAbi = require('../../build/abi/IONEWallet.json')
 const IONEWalletFactoryHelper = require('../../build/abi/IONEWalletFactoryHelper.json')
@@ -49,6 +48,11 @@ let base = axios.create({
   timeout: TIMEOUT,
 })
 
+let rpcBase = axios.create({
+  baseURL: config.networks[apiConfig.network].url,
+  timeout: TIMEOUT,
+})
+
 const initAPI = (store) => {
   store.subscribe(() => {
     const state = store.getState()
@@ -68,8 +72,21 @@ const initAPI = (store) => {
         headers: headers({ secret, network, majorVersion, minorVersion }),
         timeout: TIMEOUT,
       })
+      if (network !== apiConfig.network) {
+        rpcBase = axios.create({
+          baseURL: config.networks[network].url,
+          timeout: TIMEOUT,
+        })
+      }
+      Object.assign(apiConfig, {
+        relayer,
+        network,
+        secret,
+        majorVersion,
+        minorVersion,
+      })
+      // console.log('api update: ', { network, secret })
     }
-    // console.log('api update: ', { relayer, network, secret })
   })
 }
 
@@ -96,12 +113,8 @@ const initBlockchain = (store) => {
   Object.keys(config.networks).forEach(k => {
     const n = config.networks[k]
     try {
-      if (k.startsWith('eth')) {
-        providers[k] = new Web3.providers.HttpProvider(n.url)
-      } else {
-        providers[k] = new TruffleProvider(n.url, {}, { shardId: 0, chainId: n.chainId })
-      }
-      web3instances[k] = new Web3(providers[k])
+      web3instances[k] = new Web3(n.url)
+      providers[k] = web3instances[k].currentProvider
       networks.push(k)
     } catch (ex) {
       console.error(ex)
@@ -125,6 +138,7 @@ const initBlockchain = (store) => {
       }
     })
     if (network === 'harmony-mainnet') {
+      Contract.setProvider(providers[network])
       resolverWithProvider = (address) => new Contract(Resolver, address)
       reverseResolverWithProvider = (address) => new Contract(ReverseResolver, address)
       registrarWithProvider = (address) => new Contract(Registrar, address)
@@ -606,7 +620,7 @@ const api = {
       const { data } = await base.post('/commit', { address, hash, paramsHash, verificationHash, majorVersion, minorVersion })
       return data
     },
-    revealTransfer: async ({ neighbors, index, eotp, dest, amount, address }) => {
+    revealTransferLike: async ({ neighbors, index, eotp, dest, amount, address, operationType }) => {
       return api.relayer.reveal({
         address,
         neighbors,
@@ -614,11 +628,14 @@ const api = {
         eotp,
         dest,
         amount,
-        operationType: ONEConstants.OperationType.TRANSFER,
+        operationType,
         tokenType: ONEConstants.TokenType.NONE,
         contractAddress: ONEConstants.EmptyAddress,
         tokenId: 0
       })
+    },
+    revealTransfer: async ({ neighbors, index, eotp, dest, amount, address }) => {
+      return api.relayer.revealTransferLike({ neighbors, index, eotp, dest, amount, address, operationType: ONEConstants.OperationType.TRANSFER })
     },
 
     updateTrackToken: async ({ address, neighbors, index, eotp, tokenType, contractAddress, tokenId, track }) => {
@@ -629,12 +646,15 @@ const api = {
       return api.relayer.reveal({ address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
     },
     revealRecovery: async ({ neighbors, index, eotp, address, data }) => {
+      return api.relayer.revealDataBased({ address, neighbors, index, eotp, operationType: ONEConstants.OperationType.RECOVER, data })
+    },
+    revealDataBased: async ({ neighbors, index, eotp, address, data, operationType }) => {
       return api.relayer.reveal({
         address,
         neighbors,
         index,
         eotp,
-        operationType: ONEConstants.OperationType.RECOVER,
+        operationType,
         tokenType: ONEConstants.TokenType.NONE,
         contractAddress: ONEConstants.EmptyAddress,
         tokenId: 0,
@@ -644,18 +664,7 @@ const api = {
       })
     },
     revealSetRecoveryAddress: async ({ neighbors, index, eotp, address, lastResortAddress }) => {
-      return api.relayer.reveal({
-        address,
-        neighbors,
-        index,
-        eotp,
-        operationType: ONEConstants.OperationType.SET_RECOVERY_ADDRESS,
-        tokenType: ONEConstants.TokenType.NONE,
-        contractAddress: ONEConstants.EmptyAddress,
-        tokenId: 0,
-        dest: lastResortAddress,
-        amount: 0,
-      })
+      return api.relayer.revealTransferLike({ address, neighbors, index, eotp, operationType: ONEConstants.OperationType.SET_RECOVERY_ADDRESS, dest: lastResortAddress, amount: 0, })
     },
 
     /**
@@ -669,6 +678,7 @@ const api = {
      * @param resolver - hex address of Resolver
      * @param maxPrice - string, maximum price acceptable for the domain purchase, in wei
      * @param subdomain - string, the subdomain to be purchased. For "polymorpher.crazy.one", the subdomain is "polymorpher"
+     * @param data - hex string encoded bytes
      * @returns {Promise<void>}
      */
     revealBuyDomain: async ({ neighbors, index, eotp, address,
@@ -718,18 +728,7 @@ const api = {
     },
 
     revealForward: async ({ address, neighbors, index, eotp, dest }) => {
-      return api.relayer.reveal({
-        address,
-        neighbors,
-        index,
-        eotp,
-        operationType: ONEConstants.OperationType.FORWARD,
-        tokenType: ONEConstants.TokenType.NONE,
-        contractAddress: ONEConstants.EmptyAddress,
-        tokenId: 0,
-        amount: 0,
-        dest
-      })
+      return api.relayer.revealTransferLike({ address, neighbors, index, eotp, operationType: ONEConstants.OperationType.FORWARD, amount: 0, dest })
     },
 
     reveal: async ({ address, neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data = '0x', majorVersion, minorVersion }) => {
@@ -823,6 +822,103 @@ const api = {
       const { data } = axios.get(`https://explorer-v2-api.hmny.io/v0/signature/hash/${hash.slice(10)}`)
       return data || []
     }
+  },
+  staking: {
+    getDelegations: async ({ address }) => {
+      const { data: { result } } = await rpcBase.post('', {
+        'jsonrpc': '2.0',
+        'method': 'hmy_getDelegationsByDelegator',
+        'params': [
+          address
+        ],
+        'id': 1
+      })
+      // result's form, find out more at https://docs.harmony.one/home/developers/api/methods/staking-related-methods/hmy_getdelegationsbydelegator
+      //   [{
+      //     "Undelegations": [],
+      //     "amount": 100000000000000000000,
+      //     "delegator_address": "one1f3hj4rc79ywksrlx2rvjd774agn0tsltn3pa7m",
+      //     "reward": 0,
+      //     "validator_address": "one1x8fhymx4xsygy4dju9ea9vhs3vqg0u3ht0nz74"
+      //   }]
+      // eslint-disable-next-line camelcase
+      return result.map(({ Undelegations, amount, delegator_address, reward, validator_address }) => ({
+        undelegations: Undelegations,
+        amount,
+        delegatorAddress: delegator_address,
+        reward,
+        validatorAddress: validator_address
+      }))
+    },
+    getEpoch: async () => {
+      const { data: { result } } = await rpcBase.post('', {
+        'jsonrpc': '2.0',
+        'method': 'hmy_getEpoch',
+        'params': [],
+        'id': 1
+      })
+      return new BN(result.slice(2), 16).toNumber()
+    },
+    getBlockNumber: async () => {
+      const { data: { result } } = await rpcBase.post('', {
+        'jsonrpc': '2.0',
+        'method': 'hmy_blockNumber',
+        'params': [],
+        'id': 1
+      })
+      return new BN(result.slice(2), 16).toNumber()
+    },
+    getNetworkInfo: async () => {
+      const { data: { result } } = await rpcBase.post('', {
+        'jsonrpc': '2.0',
+        'method': 'hmy_getStakingNetworkInfo',
+        'params': [],
+        'id': 1
+      })
+      const circulatingSupply = result['circulating-supply']
+      const epochLastBlock = result['epoch-last-block']
+      const medianRawStake = result['median-raw-stake']
+      const totalStaking = result['total-staking']
+      const totalSupply = result['total-supply']
+      return {
+        circulatingSupply,
+        epochLastBlock,
+        medianRawStake,
+        totalStaking,
+        totalSupply,
+      }
+    },
+  },
+  rpc: {
+    getTransactionHistory: async ({ address, pageSize = 50, pageIndex = 0, fullTx = false }) => {
+      const { data } = await rpcBase.post('', {
+        jsonrpc: '2.0',
+        method: 'eth_getTransactionsHistory', // eth_ method is non-standard, but we still want to use it because it returns normalized addresses and transaction hashes
+        params: [
+          {
+            address,
+            order: 'DESC',
+            txType: 'ALL',
+            fullTx,
+            pageSize,
+            pageIndex
+          }
+        ],
+        id: 1
+      })
+      return data?.result?.transactions || []
+    },
+
+    getTransactionReceipt: async (txHash) => {
+      const { data: { result } } = await rpcBase.post('', {
+        jsonrpc: '2.0',
+        method: 'eth_getTransactionReceipt',
+        params: [txHash],
+        id: 1
+      })
+
+      return result
+    },
   }
 }
 

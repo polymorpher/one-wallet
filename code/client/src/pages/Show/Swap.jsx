@@ -770,7 +770,7 @@ const Swap = ({ address }) => {
             </Space>
           </Space>}
       </TallRow>
-      <CommitRevealProgress stage={stage} style={{ marginTop: 32 }} />
+      <CommitRevealProgress stage={stage} />
     </>
   )
 }
