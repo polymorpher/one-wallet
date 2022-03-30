@@ -4,6 +4,7 @@ const router = express.Router()
 const { StatusCodes } = require('http-status-codes')
 const blockchain = require('../blockchain')
 const ONEConstants = require('../../lib/constants')
+const { rpc } = require('../rpc')
 const SushiData = require('../../data/sushiswap.json')
 const BN = require('bn.js')
 const { generalLimiter, walletAddressLimiter, rootHashLimiter, globalLimiter } = require('./rl')
@@ -136,12 +137,19 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
     const executor = blockchain.prepareExecute(req.network, logger)
     const { receipt, predictedAddress } = await executor(async txArgs => {
       const c = blockchain.getFactory(req.network)
-      const predictedAddress = await c.predict.call(identificationKeys[0], { from: txArgs.from })
+      const predictedAddress = await c.predict.call(identificationKeys[0], txArgs)
+      const code = await rpc.getCode({ address: predictedAddress, network: req.network })
+      if (code.length > 0) {
+        const ex = new Error('already deployed')
+        ex.abort = true
+        ex.extra = { predictedAddress }
+        throw ex
+      }
       try {
-        await c.deploy.call(initArgs, { from: txArgs.from })
         const receipt = await c.deploy(initArgs, txArgs)
         return { predictedAddress, receipt }
       } catch (ex) {
+        ex.extra = { predictedAddress }
         throw ex
       }
     })
@@ -155,8 +163,8 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
     return res.json({ success: true, address, receipt })
   } catch (ex) {
     console.error(ex)
-    const { code, error, success } = parseError(ex)
-    return res.status(code).json({ error, success })
+    const { code, error, success, extra } = parseError(ex)
+    return res.status(code).json({ error, success, extra })
   }
 })
 
