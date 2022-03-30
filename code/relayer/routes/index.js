@@ -134,12 +134,22 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
     ]
     const logger = (...args) => console.log(`[/new]`, ...args)
     const executor = blockchain.prepareExecute(req.network, logger)
-    const receipt = await executor(txArgs => blockchain.getFactory(req.network).deploy(initArgs, txArgs))
+    const { receipt, predictedAddress } = await executor(async txArgs => {
+      const c = blockchain.getFactory(req.network)
+      const predictedAddress = await c.predict.call(identificationKeys[0], txArgs)
+      try {
+        await c.deploy.call(initArgs, txArgs)
+        const receipt = await c.deploy(initArgs, txArgs)
+        return { predictedAddress, receipt }
+      } catch (ex) {
+        throw ex
+      }
+    })
     console.log(JSON.stringify(receipt, null, 2))
     const { logs } = receipt
     const successLog = logs.find(log => log.event === 'ONEWalletDeploySuccess')
     if (!successLog) {
-      return res.status(StatusCodes.NOT_ACCEPTABLE).json(receipt)
+      return res.status(StatusCodes.NOT_ACCEPTABLE).json({ predictedAddress, receipt })
     }
     const address = successLog.args['addr']
     return res.json({ success: true, address, receipt })
