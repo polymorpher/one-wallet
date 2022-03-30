@@ -35,7 +35,8 @@ const CardStyle = {
   top: 0,
   zIndex: 100,
   backdropFilter: 'blur(10px)',
-  WebkitBackdropFilter: 'blur(10px)'
+  WebkitBackdropFilter: 'blur(10px)',
+  minHeight: '800px'
 }
 
 const Upgrade = ({ address, prompt, onClose }) => {
