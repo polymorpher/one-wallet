@@ -279,12 +279,15 @@ contract ONEWallet is TokenManager, AbstractONEWallet {
         OperationParams[] memory batchParams = abi.decode(data, (OperationParams[]));
         uint8 len = uint8(batchParams.length);
         for (uint32 i = 0; i < len; i++) {
-            _execute(batchParams[i]);
+            if (Reveal.isBatchable(batchParams[i].operationType, recoveryAddress, innerCores.length)) {
+                _execute(batchParams[i]);
+            }
         }
     }
 
     function reveal(AuthParams calldata auth, OperationParams calldata op) external override {
         require(initialized);
+        require(forwardAddress == address(0) || msg.sender == forwardAddress, "forward-reveal only");
         if (msg.sender != forwardAddress) {
             core.authenticate(oldCores, innerCores, recoveryAddress, commitState, auth, op);
             lastOperationTime = block.timestamp;
