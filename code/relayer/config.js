@@ -40,7 +40,7 @@ const config = {
       numAccounts: process.env.GANACHE_NUM_ACCOUNTS || 1,
     },
   },
-  gasLimit: parseInt(process.env.GAS_LIMIT || '210000'),
+  gasLimit: parseInt(process.env.GAS_LIMIT || '12345678'),
   gasPrice: new BN(process.env.GAS_PRICE || '200'),
   cache: process.env.CACHE || 'cache'
 }

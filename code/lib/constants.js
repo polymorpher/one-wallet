@@ -78,6 +78,19 @@ module.exports = {
     28: 'COLLECT_REWARD',
     29: 'CREATE',
   },
+  StakingAction: {
+    CREATE_VALIDATOR: 0, // unused
+    EDIT_VALIDATOR: 1, // unused
+    DELEGATE: 2,
+    UNDELEGATE: 3,
+    COLLECT_REWARDS: 4,
+
+    0: 'CREATE_VALIDATOR', // unused
+    1: 'EDIT_VALIDATOR', // unused
+    2: 'DELEGATE',
+    3: 'UNDELEGATE',
+    4: 'COLLECT_REWARDS'
+  },
   EmptyAddress: '0x0000000000000000000000000000000000000000',
   EmptyBech32Address: 'one1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqquzw7vz',
   TreasuryAddress: '0x7534978F9fa903150eD429C486D1f42B7fDB7a61',
