@@ -7,7 +7,7 @@ const ONE = require('../lib/onewallet')
 const ONEDebugger = require('../lib/debug')
 const ONEUtil = require('../lib/util')
 const ONEConstants = require('../lib/constants')
-const ONEWallet = require('../lib/onewallet')
+// const ONEWallet = require('../lib/onewallet')
 const TestERC20 = artifacts.require('TestERC20')
 const TestERC721 = artifacts.require('TestERC721')
 const TestERC1155 = artifacts.require('TestERC1155')
@@ -28,7 +28,7 @@ const Logger = {
     }
   }
 }
-const Debugger = ONEDebugger(Logger)
+// const Debugger = ONEDebugger(Logger)
 let Factories
 // eslint-disable-next-line no-unused-vars
 let Libraries
@@ -362,33 +362,6 @@ const fundWallet = async ({ funder, wallet, value = HALF_ETH }) => {
   return balance
 }
 
-// fundTokens
-// funder: address (must have tokens and be unlocked for signing)
-// receiver: address
-const fundTokens = async ({
-  funder,
-  receiver,
-  tokenTypes = [],
-  tokenContracts = [],
-  tokenAmounts = [],
-  tokenIds = [[]],
-  validate = true
-}) => {
-  // let balances[]
-  // let tids[]
-  // transfer ERC20 tokens from accounts[0] (which owns the tokens) to alices wallet
-  for (let i = 0; i < tokenTypes.length; i++) {
-    if (tokenTypes[i] === ONEConstants.TokenType.ERC20) {
-      // await testerc20.transfer(alice.wallet.address, 1000, { from: accounts[0] })
-      await tokenContracts[i].transfer(receiver, tokenAmounts[i], { from: funder })
-      // balances[i]= await tokenAddresses[i].balanceOf(receiver)
-      console.log('FundTokens ERC20')
-    }
-  }
-  if (validate) validatetokenFunding({ receiver, tokenTypes, tokenContracts, tokenAmounts, tokenIds })
-  // return {balances, tids}
-}
-
 // ==== ADDRESS VALIDATION HELPER FUNCTIONS ====
 // These functions retrieve values using an address
 // They are typically used to validate wallets balances have been funded or updated
@@ -398,34 +371,6 @@ const validateBalance = async ({ address, amount = HALF_ETH }) => {
   let balance = await web3.eth.getBalance(address)
   assert.equal(amount, balance, 'Wallet should have a different balance')
 }
-
-const validatetokenFunding = async ({ receiver, tokenTypes, tokenContracts, tokenAmounts, tokenIds }) => {
-  for (let i = 0; i < tokenTypes.length; i++) {
-    if (tokenTypes[i] === ONEConstants.TokenType.ERC20) {
-      let balanceERC20
-      balanceERC20 = await tokenContracts[i].balanceOf(receiver)
-      assert.equal(tokenAmounts[i], balanceERC20, 'Should have transferred ERC20 tokens to wallet')
-    }
-  }
-}
-
-// const validateEvents = async ({ tx, opEvent }) => {
-
-// }
-
-// ==== WALLET VALIDATOR HELPER FUNCTIONS ====
-// These functions retrieve values from the current state compare them to oldState
-// They return an updated OldState with the corrected values.
-
-// validateERC20BalanceUpdate
-// const validateERC20BalanceUpdate = async (wallet, oldState, amount) => {
-//   let balanceERC20
-//   let walletBalanceERC20
-//   balanceERC20 = await erc20.balanceOf(wallet.address)
-//   assert.equal(amount, balanceERC20, 'Should have transferred ERC20 tokens to wallet')
-//   walletBalanceERC20 = await wallet.getBalance(ONEConstants.TokenType.ERC20, erc20.address, 0)
-//   assert.equal(amount, walletBalanceERC20, 'Should have tranferred ERC20 tokens to wallet checked via wallet.getBalance')
-// }
 
 // updateOldTxnInfo: changed - nonce, lastOperationTime, commits,
 const updateOldTxnInfo = async ({ wallet, oldState, validateNonce = true }) => {
@@ -619,130 +564,6 @@ const checkONEWalletStateChange = async (oldState, currentState) => {
 }
 
 // ==== EXECUTION FUNCTIONS ====
-// executeStandardTransaction commits and reveals a wallet transaction
-const executeStandardTransaction = async ({
-  walletInfo,
-  operationType,
-  tokenType,
-  contractAddress,
-  tokenId,
-  dest,
-  amount,
-  data,
-  address,
-  randomSeed,
-  testTime = Date.now(),
-  getCurrentState = true
-}) => {
-  // // calculate counter from testTime
-  const counter = Math.floor(testTime / INTERVAL)
-  const otp = ONEUtil.genOTP({ seed: walletInfo.seed, counter })
-  // // calculate wallets effectiveTime (creation time) from t0
-  const info = await walletInfo.wallet.getInfo()
-  const t0 = new BN(info[3]).toNumber()
-  const walletEffectiveTime = t0 * INTERVAL
-  const index = ONEUtil.timeToIndex({ effectiveTime: walletEffectiveTime, time: testTime })
-  const eotp = await ONE.computeEOTP({ otp, hseed: walletInfo.hseed })
-
-  // Format commit and revealParams based on tokenType
-  let commitParams
-  let revealParams
-  let paramsHash
-  Logger.debug(`operationType: ${operationType}`)
-  // Passing
-  switch (operationType) {
-    case ONEConstants.OperationType.TRACK:
-    case ONEConstants.OperationType.UNTRACK:
-      paramsHash = ONEWallet.computeGeneralOperationHash
-      commitParams = { operationType, tokenType, contractAddress, dest, amount }
-      revealParams = { operationType, tokenType, contractAddress, dest, amount }
-      break
-    case ONEConstants.OperationType.OVERRIDE_TRACK:
-    case ONEConstants.OperationType.RECOVER_SELECTED_TOKENS:
-    case ONEConstants.OperationType.BATCH:
-    case ONEConstants.OperationType.RECOVER:
-      paramsHash = ONEWallet.computeGeneralOperationHash
-      commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
-      revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
-      break
-    case ONEConstants.OperationType.BACKLINK_ADD:
-    case ONEConstants.OperationType.BACKLINK_DELETE:
-    case ONEConstants.OperationType.BACKLINK_OVERRIDE:
-      paramsHash = ONEWallet.computeDataHash
-      commitParams = { operationType, data }
-      revealParams = { operationType, data }
-      break
-    case ONEConstants.OperationType.COMMAND:
-      paramsHash = ONEWallet.computeGeneralOperationHash
-      commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
-      revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
-      break
-    case ONEConstants.OperationType.SET_RECOVERY_ADDRESS:
-      paramsHash = ONEWallet.computeDestHash
-      commitParams = { operationType, dest }
-      revealParams = { operationType, dest }
-      break
-    case ONEConstants.OperationType.FORWARD:
-      paramsHash = ONEWallet.computeForwardHash
-      commitParams = { operationType, address: dest }
-      revealParams = { operationType, address: dest }
-      break
-    case ONEConstants.OperationType.CHANGE_SPENDING_LIMIT:
-    case ONEConstants.OperationType.JUMP_SPENDING_LIMIT:
-      console.log('Updating Spending Limit')
-      paramsHash = ONEWallet.computeAmountHash
-      commitParams = { operationType, amount }
-      revealParams = { operationType, amount }
-      break
-    case ONEConstants.OperationType.SIGN:
-    case ONEConstants.OperationType.REVOKE:
-      paramsHash = ONEWallet.computeGeneralOperationHash
-      commitParams = { operationType, contractAddress, tokenId, dest, amount }
-      revealParams = { operationType, contractAddress, tokenId, dest, amount }
-      break
-    case ONEConstants.OperationType.TRANSFER_TOKEN:
-      paramsHash = ONEWallet.computeGeneralOperationHash
-      switch (tokenType) {
-        case ONEConstants.TokenType.ERC20:
-          commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount }
-          revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount }
-          break
-        case ONEConstants.TokenType.ERC721:
-          commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount }
-          revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount }
-          break
-        case ONEConstants.TokenType.ERC1155:
-          commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount }
-          revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount }
-          break
-        default:
-          console.log(`TODO: add in Token error handling for TRANSFER_TOKEN`)
-          return
-      }
-      break
-    case ONEConstants.OperationType.TRANSFER:
-      paramsHash = ONEWallet.computeTransferHash
-      commitParams = { operationType, dest, amount }
-      revealParams = { operationType, dest, amount }
-      break
-    default:
-      console.log(`TODO: add in error handling`)
-      return
-  }
-  let { tx, authParams, revealParams: returnedRevealParams } = await commitReveal({
-    Debugger,
-    layers: walletInfo.layers,
-    index,
-    eotp,
-    paramsHash,
-    commitParams,
-    revealParams,
-    wallet: walletInfo.wallet
-  })
-  let currentState
-  if (getCurrentState) { currentState = await getONEWalletState(walletInfo.wallet) }
-  return { tx, authParams, revealParams: returnedRevealParams, currentState }
-}
 
 const commitReveal = async ({ layers, Debugger, index, eotp, paramsHash, commitParams, revealParams, wallet }) => {
   const neighbors = ONE.selectMerkleNeighbors({ layers, index })
@@ -792,7 +613,6 @@ module.exports = {
   wait,
   waitForReceipt,
   bumpTestTime,
-  executeStandardTransaction,
   makeWallet,
   makeTokens,
   getONEWalletState,
@@ -800,5 +620,4 @@ module.exports = {
   validateBalance,
   updateOldTxnInfo,
   validateSpendingState,
-  fundTokens
 }
