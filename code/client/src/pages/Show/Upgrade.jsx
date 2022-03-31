@@ -35,7 +35,8 @@ const CardStyle = {
   top: 0,
   zIndex: 100,
   backdropFilter: 'blur(10px)',
-  WebkitBackdropFilter: 'blur(10px)'
+  WebkitBackdropFilter: 'blur(10px)',
+  minHeight: '800px'
 }
 
 const Upgrade = ({ address, prompt, onClose }) => {
@@ -47,7 +48,8 @@ const Upgrade = ({ address, prompt, onClose }) => {
   const wallet = wallets[address] || {}
   const [skipUpdate, setSkipUpdate] = useState(false)
   const { majorVersion, minorVersion, lastResortAddress, doubleOtp, forwardAddress, temp } = wallet
-  const requireUpdate = majorVersion && (!(parseInt(majorVersion) >= ONEConstants.MajorVersion) || parseInt(minorVersion) === 0)
+  const isDevVersion = parseInt(minorVersion) === 0
+  const requireUpdate = majorVersion && (!(parseInt(majorVersion) >= ONEConstants.MajorVersion) || isDevVersion)
   const canUpgrade = majorVersion >= config.minUpgradableVersion
   const latestVersion = { majorVersion: ONEConstants.MajorVersion, minorVersion: ONEConstants.MinorVersion }
   const balances = useSelector(state => state.balance || {})
@@ -223,7 +225,10 @@ const Upgrade = ({ address, prompt, onClose }) => {
       >
         {!confirmUpgradeVisible &&
           <>
-            <Title level={isMobile ? 4 : 2}>An upgrade is available</Title>
+            <Title level={isMobile ? 4 : 2}>
+              An upgrade is available
+              {isDevVersion && <Text><br />(Dev version detected)</Text>}
+            </Title>
             <Text>Your wallet: v{ONEUtil.getVersion(wallet)}</Text>
             <Text>Latest version: v{ONEUtil.getVersion(latestVersion)}</Text>
             <Button type='primary' shape='round' size='large' onClick={() => setConfirmUpgradeVisible(true)}>Upgrade Now</Button>

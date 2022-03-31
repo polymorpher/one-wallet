@@ -257,8 +257,13 @@ const prepareExecute = (network, logger = console.log) => async (f) => {
         gasPrice: config.gasPrice.clone().addn(numAttempts)
       }), {
         retry: (ex, n) => {
+          if (ex?.abort) {
+            logger(`[abort][attempts=${n}]${printNonceStats()}`)
+            return false
+          }
           numAttempts = n
           logger(`[retry][attempts=${n}]${printNonceStats()}`)
+          return true
         }
       })
     logger(`[complete]${printNonceStats()}`, tx)

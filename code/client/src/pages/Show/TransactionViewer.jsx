@@ -52,10 +52,11 @@ const TransactionViewer = ({ address }) => {
       try {
         // TODO: look up events and add to result https://web3js.readthedocs.io/en/v1.2.11/web3-eth-contract.html#events
         const txs = await api.rpc.getTransactionHistory({ address, pageSize, pageIndex: currentPage, fullTx: true })
-        if (txs.length === 0) {
-          // console.log(currentPage, txs)
+        if (txs.length < pageSize) {
           setHasMore(false)
-          return
+          if (txs.length === 0) {
+            return
+          }
         }
         const parsedTxs = await Promise.all(
           txs.map(tx => {
