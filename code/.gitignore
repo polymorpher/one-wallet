@@ -125,3 +125,4 @@ webclient/dist
 /env/ngrok.sh
 
 build/contracts/*
+/contracts/upgrade/
