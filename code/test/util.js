@@ -427,8 +427,8 @@ const validatetokenFunding = async ({ receiver, tokenTypes, tokenContracts, toke
 //   assert.equal(amount, walletBalanceERC20, 'Should have tranferred ERC20 tokens to wallet checked via wallet.getBalance')
 // }
 
-// validateUpdateTransaction: changed - nonce, lastOperationTime, commits,
-const validateUpdateTransaction = async ({ wallet, oldState, validateNonce = true }) => {
+// updateOldTxnInfo: changed - nonce, lastOperationTime, commits,
+const updateOldTxnInfo = async ({ wallet, oldState, validateNonce = true }) => {
   // nonce
   if (validateNonce) {
     let nonce = await wallet.getNonce()
@@ -798,7 +798,7 @@ module.exports = {
   getONEWalletState,
   checkONEWalletStateChange,
   validateBalance,
-  validateUpdateTransaction,
+  updateOldTxnInfo,
   validateSpendingState,
   fundTokens
 }

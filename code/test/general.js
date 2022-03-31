@@ -51,7 +51,7 @@ contract('ONEWallet', (accounts) => {
     )
 
     // Alice Items that have changed - nonce, lastOperationTime, commits, trackedTokens
-    aliceOldState = await TestUtil.validateUpdateTransaction({ wallet: alice.wallet, oldState: aliceOldState })
+    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
     // tracked tokens
     let trackedTokens = await alice.wallet.getTrackedTokens()
     assert.notDeepEqual(trackedTokens, aliceOldState.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
@@ -105,7 +105,7 @@ contract('ONEWallet', (accounts) => {
     )) }
 
     // Alice Items that have changed - lastOperationTime, commits, trackedTokens
-    aliceOldState = await TestUtil.validateUpdateTransaction({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
+    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
     // tracked tokens
     let trackedTokens = await alice.wallet.getTrackedTokens()
     // console.log(`trackedTokens: ${JSON.stringify(trackedTokens)}`)
@@ -172,7 +172,7 @@ contract('ONEWallet', (accounts) => {
     assert.equal(100, bobBalanceERC20, 'Transfer of 100 ERC20 tokens to bob.wallet succesful')
     assert.equal(100, bobWalletBalanceERC20, 'Transfer of 100 ERC20 tokens to bob.wallet succesful and wallet balance updated')
     // Alice Items that have changed - nonce, lastOperationTime, commits, trackedTokens
-    aliceOldState = await TestUtil.validateUpdateTransaction({ wallet: alice.wallet, oldState: aliceOldState })
+    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
     // tracked tokens
     let trackedTokens = await alice.wallet.getTrackedTokens()
     assert.notDeepEqual(trackedTokens, aliceOldState.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
@@ -235,7 +235,7 @@ contract('ONEWallet', (accounts) => {
     // Update alice and bob's current State
     aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
     // Alice Items that have changed - lastOperationTime, commits, trackedTokens
-    aliceOldState = await TestUtil.validateUpdateTransaction({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
+    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
     // tracked tokens
     let trackedTokens = await alice.wallet.getTrackedTokens()
     assert.notDeepEqual(trackedTokens, aliceOldState.trackedTokens, 'alice.wallet.trackedTokens should have been updated')
@@ -276,8 +276,8 @@ contract('ONEWallet', (accounts) => {
     // validateBalanceUpdate
     // Alice Items that have changed - balance, nonce, lastOperationTime, commits, spendingState
     await TestUtil.validateBalance({ address: alice.wallet.address, amount: (aliceInitialBalance - transferAmount) })
-    aliceOldState = await TestUtil.validateUpdateTransaction({ wallet: alice.wallet, oldState: aliceOldState })
-    aliceOldState = await TestUtil.validateSpendingState({ wallet: alice.wallet, oldState: aliceOldState, spentAmount: transferAmount })
+    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
+    aliceOldState = await TestUtil.updateOldSpendingState({ wallet: alice.wallet, oldState: aliceOldState, spentAmount: transferAmount })
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
     // Bob Items that have changed - balance
     // Note when adding need to ensure the values are number (by using the Number function)
@@ -315,7 +315,7 @@ contract('ONEWallet', (accounts) => {
     // Update alice and bob's current State
     let aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
     // Alice Items that have changed - nonce, lastOperationTime, recoveryAddress, commits
-    aliceOldState = await TestUtil.validateUpdateTransaction({ wallet: alice.wallet, oldState: aliceOldState })
+    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
     // recoveryAddress
     let aliceGetInfo = await alice.wallet.getInfo()
     assert.notDeepEqual(aliceGetInfo, aliceOldState.info, 'alice wallet.getInfo recoveryAddress should have been changed')
@@ -351,7 +351,7 @@ contract('ONEWallet', (accounts) => {
     let aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
     await TestUtil.validateBalance({ address: alice.wallet.address, amount: (0.5) })
     // Alice Items that have changed - nonce, lastOperationTime, recoveryAddress, commits
-    aliceOldState = await TestUtil.validateUpdateTransaction({ wallet: alice.wallet, oldState: aliceOldState })
+    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
   })
 
@@ -388,7 +388,7 @@ contract('ONEWallet', (accounts) => {
     // Update alice current State
     let aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
     // Alice Items that have changed - nonce, lastOperationTime, recoveryAddress, commits
-    aliceOldState = await TestUtil.validateUpdateTransaction({ wallet: alice.wallet, oldState: aliceOldState })
+    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
     // check alice
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
   })
@@ -525,7 +525,7 @@ contract('ONEWallet', (accounts) => {
     assert.equal(100, carolBalanceERC20, 'Transfer of 100 ERC20 tokens to carol.wallet succesful')
     assert.equal(100, carolWalletBalanceERC20, 'Transfer of 100 ERC20 tokens to carol.wallet succesful and wallet balance updated')
     // Alice Items that have changed - nonce, lastOperationTime, commits, trackedTokens
-    aliceOldState = await TestUtil.validateUpdateTransaction({ wallet: alice.wallet, oldState: aliceOldState })
+    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
   })
 
@@ -556,7 +556,7 @@ contract('ONEWallet', (accounts) => {
     // Update alice and bob's current State
     let aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
     // Alice Items that have changed - nonce, lastOperationTime, commits, backlinkedAddresses
-    aliceOldState = await TestUtil.validateUpdateTransaction({ wallet: alice.wallet, oldState: aliceOldState })
+    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
     // backlinkedAddresses
     let backlinks = await alice.wallet.getBacklinks()
     assert.notDeepEqual(backlinks, aliceOldState.backlinkedAddresses, 'alice.wallet.backlinkedAddresses should have been updated')
@@ -608,7 +608,7 @@ contract('ONEWallet', (accounts) => {
     // Update alice and bob's current State
     aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
     // Alice Items that have changed - nonce, lastOperationTime, commits, backlinkedAddresses
-    aliceOldState = await TestUtil.validateUpdateTransaction({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
+    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
     // backlinkedAddresses
     let backlinks = await alice.wallet.getBacklinks()
     assert.notDeepEqual(backlinks, aliceOldState.backlinkedAddresses, 'alice.wallet.backlinkedAddresses should have been updated')
@@ -659,7 +659,7 @@ contract('ONEWallet', (accounts) => {
     // Update alice current State
     aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
     // Alice Items that have changed - nonce, lastOperationTime, commits, backlinkedAddresses
-    aliceOldState = await TestUtil.validateUpdateTransaction({ wallet: alice.wallet, oldState: aliceOldState })
+    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
     // backlinkedAddresses
     let backlinks = await alice.wallet.getBacklinks()
     assert.notDeepEqual(backlinks, aliceOldState.backlinkedAddresses, 'alice.wallet.backlinkedAddresses should have been updated')
@@ -749,7 +749,7 @@ contract('ONEWallet', (accounts) => {
     assert.equal(100, ernieBalanceERC20, 'Transfer of 100 ERC20 tokens to ernie.wallet succesful')
     assert.equal(100, ernieWalletBalanceERC20, 'Transfer of 100 ERC20 tokens to ernie.wallet succesful and wallet balance updated')
     // Alice Items that have changed - nonce, lastOperationTime, commits, trackedTokens
-    aliceOldState = await TestUtil.validateUpdateTransaction({ wallet: alice.wallet, oldState: aliceOldState })
+    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
     // check alice
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
   })
@@ -794,7 +794,7 @@ contract('ONEWallet', (accounts) => {
     // Update alice current State
     let aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
     // Alice Items that have changed - nonce, lastOperationTime, commits, trackedTokens
-    aliceOldState = await TestUtil.validateUpdateTransaction({ wallet: alice.wallet, oldState: aliceOldState })
+    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
   })
 
@@ -854,8 +854,8 @@ contract('ONEWallet', (accounts) => {
     let aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
     // Alice Items that have changed - balance, nonce, lastOperationTime, commits, spendingState
     await TestUtil.validateBalance({ address: alice.wallet.address, amount: (aliceInitialBalance - transferAmount) })
-    aliceOldState = await TestUtil.validateUpdateTransaction({ wallet: alice.wallet, oldState: aliceOldState })
-    aliceOldState = await TestUtil.validateSpendingState({ wallet: alice.wallet, oldState: aliceOldState, spentAmount: transferAmount })
+    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
+    aliceOldState = await TestUtil.updateOldSpendingState({ wallet: alice.wallet, oldState: aliceOldState, spentAmount: transferAmount })
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
   })
 
@@ -886,8 +886,8 @@ contract('ONEWallet', (accounts) => {
     // Update alice and bob's current State
     let aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
     // Alice Items that have changed - nonce, lastOperationTime, commits, spendingState
-    aliceOldState = await TestUtil.validateUpdateTransaction({ wallet: alice.wallet, oldState: aliceOldState })
-    // aliceOldState = await TestUtil.validateSpendingState({ wallet: alice.wallet, oldState: aliceOldState, spentAmount: 0 })
+    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
+    // aliceOldState = await TestUtil.updateOldSpendingState({ wallet: alice.wallet, oldState: aliceOldState, spentAmount: 0 })
     // spendingState
     let spendingState = await alice.wallet.getSpendingState()
     assert.notEqual(spendingState.highestSpendingLimit, aliceOldState.spendingState.highestSpendingLimit, 'alice wallet.highestSpendingLimit should have been changed')
@@ -924,8 +924,8 @@ contract('ONEWallet', (accounts) => {
     // Update alice and bob's current State
     let aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
     // Alice Items that have changed - balance, nonce, lastOperationTime, commits, spendingState
-    aliceOldState = await TestUtil.validateUpdateTransaction({ wallet: alice.wallet, oldState: aliceOldState })
-    // aliceOldState = await TestUtil.validateSpendingState({ wallet: alice.wallet, oldState: aliceOldState, spentAmount: 0 })
+    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
+    // aliceOldState = await TestUtil.updateOldSpendingState({ wallet: alice.wallet, oldState: aliceOldState, spentAmount: 0 })
     // spendingState
     let spendingState = await alice.wallet.getSpendingState()
     assert.notEqual(spendingState.highestSpendingLimit, aliceOldState.spendingState.highestSpendingLimit, 'alice wallet.highestSpendingLimit should have been changed')

@@ -25,28 +25,28 @@ Following are some discussion points
 | 1  | UNTRACK                      | PASS    | Token    | computeGeneralOperationHash | same as TRACK above |
 | 2  | TRANSFER_TOKEN               | PASS    | Token    | computeGeneralOperationHash | needs validateTokenBalance helper |
 | 3  | OVERRIDE_TRACK               | PASS    | Token    | computeGeneralOperationHash | needs validateTrackedTokens helper | 
-| 4  | TRANSFER                     | PASS    | Token    | computeTransferHash         | |
-| 5  | SET_RECOVERY_ADDRESS         | PASS    | Wallet   | computeDestHash             | Fails to update if you have create alice wallet with `setLastResortAddress: true` as an address already set. |
-| 6  | RECOVER	                    | TBD     | Wallet   | computeGeneralOperationHash | Tested in `basic.js` Failing on core validation? [similar to this](https://github.com/polymorpher/one-wallet/pull/263#discussion_r835837005)
-| 7  | DISPLACE	                    | TBD     | Wallet   | computeTransferHash         | Tested in innerCores.js
-| 8  | FORWARD                      | FAIL    | Upgrade  | computeForwardHash          | review `commitParams = { operationType, address: dest }`
+| 4  | TRANSFER                     | PASS    | Native    | computeTransferHash         | |
+| 5  | SET_RECOVERY_ADDRESS         | PASS    | Admin     | computeDestHash             | Fails to update if you have create alice wallet with `setLastResortAddress: true` as an address already set. |
+| 6  | RECOVER	                    | TBD     | Admin     | computeGeneralOperationHash | Tested in `basic.js` Failing on core validation? [similar to this](https://github.com/polymorpher/one-wallet/pull/263#discussion_r835837005)
+| 7  | DISPLACE	                    | TBD     | Utility   | computeTransferHash         | Tested in innerCores.js
+| 8  | FORWARD                      | FAIL    | Admin     | computeForwardHash          | review `commitParams = { operationType, address: dest }`
 | 9  | RECOVER_SELECTED_TOKENS      | FAIL    | Wallet   | computeGeneralOperationHash | Failing on core validation? [see this](https://github.com/polymorpher/one-wallet/pull/263#discussion_r835837005)
 | 10 | BUY_DOMAIN                   | Phase 2 | Domain   |
-| 11 | COMMAND                      | FAIL    | Upgrade  | computeDataHash             | Change to computeGeneralOperationHash 
-| 12 | BACKLINK_ADD                 | PASS    | Upgrade  | computeDataHash             | Change to computeGeneralOperationHash 
-| 13 | BACKLINK_DELETE              | PASS    | Upgrade  | computeDataHash             | Change to computeGeneralOperationHash 
-| 14 | BACKLINK_OVERRIDE            | PASS    | Upgrade  | computeDataHash             | Change to computeGeneralOperationHash 
+| 11 | COMMAND                      | FAIL    | Utility  | computeDataHash             | Change to computeGeneralOperationHash 
+| 12 | BACKLINK_ADD                 | PASS    | Admin    | computeDataHash             | Change to computeGeneralOperationHash 
+| 13 | BACKLINK_DELETE              | PASS    | Admin    | computeDataHash             | Change to computeGeneralOperationHash 
+| 14 | BACKLINK_OVERRIDE            | PASS    | Admin    | computeDataHash             | Change to computeGeneralOperationHash 
 | 15 | RENEW_DOMAIN	                | Phase 2 | Domain   |                             |
 | 16 | TRANSFER_DOMAIN	            | Phase 2 | Domain   |                             |
 | 17 | RECLAIM_REVERSE_DOMAIN       | Phase 2 | Domain   |                             |
 | 18 | RECLAIM_DOMAIN_FROM_BACKLINK | Phase 2 | Domain   |                             |
-| 19 | SIGN	                        | FAIL    | Base     | computeGeneralOperationHash |
-| 20 | REVOKE                       | FAIL    | Base     | computeGeneralOperationHash |
-| 21 | CALL                         | FAIL    | Base     |
-| 22 | BATCH                        | FAIL    | Base     | computeGeneralOperationHash |
+| 19 | SIGN	                        | FAIL    | Admin    | computeGeneralOperationHash |
+| 20 | REVOKE                       | FAIL    | Admin    | computeGeneralOperationHash |
+| 21 | CALL                         | FAIL    | Utility  |
+| 22 | BATCH                        | FAIL    | Utility  | computeGeneralOperationHash |
 | 23 | NOOP                         | N/A     | N/A      |                             | this is for nulloperationparameter
-| 24 | CHANGE_SPENDING_LIMIT        | PASS    | Spending | computeAmountHash           |
-| 25 | JUMP_SPENDING_LIMIT          | FAIL    | Spending | computeAmountHash           |
+| 24 | CHANGE_SPENDING_LIMIT        | PASS    | Admin    | computeAmountHash           |
+| 25 | JUMP_SPENDING_LIMIT          | FAIL    | Admin    | computeAmountHash           |
 
 
 ### Backlinking
