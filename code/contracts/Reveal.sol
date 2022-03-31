@@ -177,6 +177,21 @@ library Reveal {
         c.completed = true;
     }
 
+    function isBatchable(Enums.OperationType opType, address payable recoveryAddress, uint256 innerCoresLength) pure internal returns (bool) {
+        if (opType == Enums.OperationType.FORWARD) {
+            return Recovery.isRecoveryAddressSet(recoveryAddress);
+        } else if (opType == Enums.OperationType.DISPLACE) {
+            return innerCoresLength == 0;
+        } else if (opType == Enums.OperationType.JUMP_SPENDING_LIMIT) {
+            return false;
+        } else if (opType == Enums.OperationType.RECOVER){
+            return false;
+        } else if (opType == Enums.OperationType.BATCH){
+            return false;
+        }
+        return true;
+    }
+
     function authenticate(
         IONEWallet.CoreSetting storage core,
         IONEWallet.CoreSetting[] storage oldCores,
@@ -188,24 +203,35 @@ library Reveal {
     ) public {
         // first, we check whether the operation requires high-security
         if (op.operationType == Enums.OperationType.FORWARD) {
-            if (!Recovery.isRecoveryAddressSet(recoveryAddress)) {
+            if (Recovery.isRecoveryAddressSet(recoveryAddress)) {
+                authenticateCores(core, oldCores, commitState, auth, op, false, false);
+            } else {
+                // NOT batchable
                 // if innerCores are empty, this operation (in this case) is doomed to fail. Client should check for innerCores first before allowing the user to do this.
                 authenticateCores(innerCores[0], innerCores, commitState, auth, op, false, true);
-            } else {
-                authenticateCores(core, oldCores, commitState, auth, op, false, false);
             }
         } else if (op.operationType == Enums.OperationType.DISPLACE) {
             if (innerCores.length == 0) {
                 // authorize this operation using low security setting (only one core). After this operation is done, innerCores will no longer be empty
                 authenticateCores(core, oldCores, commitState, auth, op, false, false);
             } else {
+                // NOT batchable
                 authenticateCores(innerCores[0], innerCores, commitState, auth, op, false, true);
             }
         } else if (op.operationType == Enums.OperationType.RECOVER) {
+            // NOT batchable
             authenticateCores(core, oldCores, commitState, auth, op, true, true);
         } else if (op.operationType == Enums.OperationType.JUMP_SPENDING_LIMIT) {
+            // NOT batchable
             // if innerCores are empty, this operation (in this case) is doomed to fail. This is intended. Client should warn the user not to lower the limit too much if the wallet has no innerCores (use Extend to set first innerCores). Client should also advise the user the use Recovery feature to get their assets out, if they are stuck with very low limit and do not want to wait to double them each spendInterval.
             authenticateCores(innerCores[0], innerCores, commitState, auth, op, false, true);
+        } else if (op.operationType == Enums.OperationType.BATCH) {
+            // NOT batchable
+            IONEWallet.OperationParams[] memory batchParams = abi.decode(op.data, (IONEWallet.OperationParams[]));
+            for (uint256 i = 0; i < batchParams.length; i++) {
+                require(isBatchable(op.operationType, recoveryAddress, innerCores.length), "Bad batch op");
+            }
+            authenticateCores(core, oldCores, commitState, auth, op, false, false);
         } else {
             authenticateCores(core, oldCores, commitState, auth, op, false, false);
         }
