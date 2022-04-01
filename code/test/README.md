@@ -91,25 +91,53 @@ TT-SUBTEST-WALLETID e.g. `TG-OP4-1`
 | 1  | UNTRACK                      | PASS    | Token    |
 | 2  | TRANSFER_TOKEN               | PASS    | Token    |
 | 3  | OVERRIDE_TRACK               | PASS    | Token    |
-| 4  | TRANSFER                     | PASS    | Token    | 
-| 5  | SET_RECOVERY_ADDRESS         | PASS    | Wallet   |
-| 6  | RECOVER	                    | FAIL    | Wallet   |
-| 7  | DISPLACE	                    | TBD     | Wallet   |
-| 8  | FORWARD                      | FAIL    | Upgrade  |
-| 9  | RECOVER_SELECTED_TOKENS      | FAIL    | Wallet   |
+| 4  | TRANSFER                     | PASS    | Native   | 
+| 5  | SET_RECOVERY_ADDRESS         | PASS    | Admin    |
+| 6  | RECOVER	                    | FAIL    | Admin    |
+| 7  | DISPLACE	                    | TBD     | Utility  |
+| 8  | FORWARD                      | FAIL    | Admin    |
+| 9  | RECOVER_SELECTED_TOKENS      | FAIL    | Admin    |
 | 10 | BUY_DOMAIN                   | Phase 2 | Domain   |
-| 11 | COMMAND                      | FAIL    | Upgrade  |
-| 12 | BACKLINK_ADD                 | PASS    | Upgrade  |
-| 13 | BACKLINK_DELETE              | PASS    | Upgrade  |
-| 14 | BACKLINK_OVERRIDE            | PASS    | Upgrade  |
+| 11 | COMMAND                      | FAIL    | Utility  |
+| 12 | BACKLINK_ADD                 | PASS    | Admin    |
+| 13 | BACKLINK_DELETE              | PASS    | Admin    |
+| 14 | BACKLINK_OVERRIDE            | PASS    | Admin    |
 | 15 | RENEW_DOMAIN	                | Phase 2 | Domain   |
 | 16 | TRANSFER_DOMAIN	            | Phase 2 | Domain   |
 | 17 | RECLAIM_REVERSE_DOMAIN       | Phase 2 | Domain   |
 | 18 | RECLAIM_DOMAIN_FROM_BACKLINK | Phase 2 | Domain   |
-| 19 | SIGN	                        | FAIL    | Base     |
-| 20 | REVOKE                       | FAIL    | Base     |
-| 21 | CALL                         | FAIL    | Base     |
-| 22 | BATCH                        | FAIL    | Base     |
+| 19 | SIGN	                        | FAIL    | Admin    |
+| 20 | REVOKE                       | FAIL    | Admin    |
+| 21 | CALL                         | FAIL    | Utility  |
+| 22 | BATCH                        | FAIL    | Utility  |
 | 23 | NOOP                         | N/A     | N/A      | this is for nulloperationparameter
-| 24 | CHANGE_SPENDING_LIMIT        | PASS    | Spending |
-| 25 | JUMP_SPENDING_LIMIT          | FAIL    | Spending | 
+| 24 | CHANGE_SPENDING_LIMIT        | PASS    | Native   |
+| 25 | JUMP_SPENDING_LIMIT          | FAIL    | Native   | 
+
+### Feedback
+* TOKEN_UNTRACK does not emit events
+* ERC721 transferFrom does not update tracking
+* When transferring an ERC721 token it does not get untracked
+* ERC20 when balance goes to zero does not untrack token
+
+### Help required
+* Testing Negative events e.g. UNTRACK.TokenNotFound
+* Comparing values
+```
+    const expectedData = { 0: ONEConstants.TokenType.ERC20.toString(), 1: testerc20.address, 2: '0' }
+    await validateEvent({ tx, expectedEvent: 'TokenTracked', expectedData })
+
+// ==== Validation Helpers ====
+const validateEvent = async ({ tx, expectedEvent, expectedData }) => {
+  const events = ONEParser.parseTxLog(tx?.receipt?.rawLogs)
+  const event = events.filter(e => e.eventName === expectedEvent)[0]
+  const eventName = event?.eventName
+  const data = event?.data
+  if (expectedEvent) { assert.deepStrictEqual(expectedEvent, eventName, 'Expected event not triggered') }
+  if (expectedData) { assert.deepStrictEqual(expectedData, data, 'Expected event data is different') }
+}
+```
+
+
+
+

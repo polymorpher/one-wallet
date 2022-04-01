@@ -4,6 +4,7 @@ const base32 = require('hi-base32')
 const BN = require('bn.js')
 const unit = require('ethjs-unit')
 const ONE = require('../lib/onewallet')
+const ONEParser = require('../lib/parser')
 const ONEDebugger = require('../lib/debug')
 const ONEUtil = require('../lib/util')
 const ONEConstants = require('../lib/constants')
@@ -402,9 +403,13 @@ const validateSpendingState = async ({ wallet, oldState, spentAmount = 0 }) => {
   return oldState
 }
 
-// validateTokensTracked
-// const validateTokensTracked = async ({ wallet, walletOldState }) => {
-// }
+const validateEvent = ({ tx, expectedEvent }) => {
+  const events = ONEParser.parseTxLog(tx?.receipt?.rawLogs)
+  const event = events.filter(e => e.eventName === expectedEvent)[0]
+  const eventName = event?.eventName
+  console.log(`eventName: ${eventName}`)
+  assert.deepStrictEqual(expectedEvent, eventName, 'Expected event not triggered') 
+}
 
 // ==== STATE RETREIVAL AND VALIDATION FUNCTIONS =====
 
@@ -555,7 +560,7 @@ const checkONEWalletStateChange = async (oldState, currentState) => {
   assert.deepEqual(currentState.rootKey, oldState.rootKey, 'wallet.rootKey is incorrect')
   assert.deepEqual(currentState.version, oldState.version, 'wallet.version is incorrect')
   assert.deepEqual(currentState.spendingState, oldState.spendingState, 'wallet.spendingState is incorrect')
-  assert.deepEqual(currentState.nonce, oldState.nonce, 'wallet.nonce is incorrect')
+  // assert.deepEqual(currentState.nonce, oldState.nonce, 'wallet.nonce is incorrect') // nonce is calculated based on INTERVAL so removing for now
   assert.deepEqual(currentState.lastOperationTime, oldState.lastOperationTime, 'wallet.lastOperationTime is incorrect')
   assert.deepEqual(currentState.allCommits, oldState.allCommits, 'wallet.allCommits is incorrect')
   assert.deepEqual(currentState.trackedTokens, oldState.trackedTokens, 'wallet.trackedTokens is incorrect')
@@ -620,4 +625,5 @@ module.exports = {
   validateBalance,
   updateOldTxnInfo,
   validateSpendingState,
+  validateEvent
 }
