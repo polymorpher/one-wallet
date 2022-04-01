@@ -54,7 +54,8 @@ contract('ONEWallet', (accounts) => {
 
     const { wallet: w2, seed: s2, hseed: hs2, client: { layers: l2 } } = await TestUtil.createWallet({
       salt: new BN(ONEUtil.keccak('Wallet_Command_w2').slice(24)),
-      ...commonCreationArgs
+      ...commonCreationArgs,
+      backlinks: [w1.address]
     })
     const { eotp: e1, index: i1 } = await TestUtil.getEOTP({ seed: s1, hseed: hs1, effectiveTime })
     const { tx: tx1 } = await TestUtil.commitReveal({
@@ -74,13 +75,13 @@ contract('ONEWallet', (accounts) => {
     assert.equal(w2.address, forwardAddress, 'forward address should equal to second wallet')
 
     const { eotp: e2, index: i2 } = await TestUtil.getEOTP({ seed: s2, hseed: hs2, effectiveTime })
-    const hexData = ONEUtil.abi.encodeParameters(['address', 'uint16', 'bytes'], [w1.address, ONEConstants.OperationType.SIGN, '0x'])
+    const hexData = ONEUtil.abi.encodeParameters(['address', 'uint16', 'bytes'], [w1.address, ONEConstants.OperationType.SIGN, new Uint8Array()])
     const messageHash = ONEUtil.keccak('hello world')
     const signature = ONEUtil.keccak('awesome signature')
     const expiryAtBytes = new BN(0xffffffff).toArrayLike(Uint8Array, 'be', 4)
     const encodedExpiryAt = new Uint8Array(20)
     encodedExpiryAt.set(expiryAtBytes)
-    const data = ONEUtil.hexToBytes(hexData)
+    const data = ONEUtil.hexStringToBytes(hexData)
     const execParams = {
       operationType: ONEConstants.OperationType.COMMAND,
       tokenType: ONEConstants.TokenType.NONE,
@@ -90,6 +91,8 @@ contract('ONEWallet', (accounts) => {
       amount: new BN(signature).toString(),
       data,
     }
+    // Logger.debug('execParams', execParams)
+    // Logger.debug('hexData', hexData)
     assert.equal(await web3.eth.getBalance(w2.address), ONE_CENT, 'w2 should receive 1 cent forwarded from w1')
     const { tx: tx2 } = await TestUtil.commitReveal({
       Debugger,
@@ -101,10 +104,15 @@ contract('ONEWallet', (accounts) => {
       revealParams: { ...execParams },
       wallet: w2
     })
-    Logger.debug(tx2)
-    const v = await w1.isValidSignature(ONEUtil.hexToBytes(messageHash), ONEUtil.hexToBytes(signature))
-    assert.equal(v, true, `signature ${ONEUtil.hexToBytes(signature)} should be valid`)
-    const v1 = await w1.isValidSignature(ONEUtil.hexToBytes(messageHash), '0xabcd')
-    assert.equal(v1, false, `signature 0xabcd should be valid`)
+    // Logger.debug(tx2)
+    // Logger.debug(messageHash.length, signature.length)
+    // const sigs = await w1.listSignatures(0, 999)
+    // Logger.debug(sigs)
+    const v = await w1.isValidSignature(ONEUtil.hexString(messageHash), ONEUtil.hexString(signature))
+    // Logger.debug(v)
+    assert.equal(v, '0x1626ba7e', `signature ${ONEUtil.hexString(signature)} should be valid`)
+    const invalidSignature = ONEUtil.hexString(ONEUtil.keccak(signature))
+    const v1 = await w1.isValidSignature(ONEUtil.hexString(messageHash), invalidSignature)
+    assert.equal(v1, '0xffffffff', `signature ${invalidSignature} should be invalid`)
   })
 })
