@@ -114,29 +114,6 @@ TT-SUBTEST-WALLETID e.g. `TG-OP4-1`
 | 24 | CHANGE_SPENDING_LIMIT        | PASS    | Native   |
 | 25 | JUMP_SPENDING_LIMIT          | FAIL    | Native   | 
 
-### Feedback
-* TOKEN_UNTRACK does not emit events
-* ERC721 transferFrom does not update tracking
-* When transferring an ERC721 token it does not get untracked
-* ERC20 when balance goes to zero does not untrack token
-
-### Help required
-* Testing Negative events e.g. UNTRACK.TokenNotFound
-* Comparing values
-```
-    const expectedData = { 0: ONEConstants.TokenType.ERC20.toString(), 1: testerc20.address, 2: '0' }
-    await validateEvent({ tx, expectedEvent: 'TokenTracked', expectedData })
-
-// ==== Validation Helpers ====
-const validateEvent = async ({ tx, expectedEvent, expectedData }) => {
-  const events = ONEParser.parseTxLog(tx?.receipt?.rawLogs)
-  const event = events.filter(e => e.eventName === expectedEvent)[0]
-  const eventName = event?.eventName
-  const data = event?.data
-  if (expectedEvent) { assert.deepStrictEqual(expectedEvent, eventName, 'Expected event not triggered') }
-  if (expectedData) { assert.deepStrictEqual(expectedData, data, 'Expected event data is different') }
-}
-```
 
 
 
