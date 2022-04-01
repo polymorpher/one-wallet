@@ -1,13 +1,14 @@
 const config = require('./config')
 const HDWalletProvider = require('@truffle/hdwallet-provider')
 
-const BuildProvider = (conf, useTruffle) => {
+const BuildProvider = (conf) => {
   return new HDWalletProvider({
     mnemonic: conf.mnemonic,
     privateKeys: !conf.mnemonic && [conf.key],
     providerOrUrl: conf.wss || conf.url,
     sharedNonce: false,
     pollingInterval: config.pollingInterval,
+    numberOfAddresses: conf.numAccounts,
   })
 }
 
@@ -17,7 +18,7 @@ module.exports = {
       network_id: '*',
       gas: config.gasLimit,
       gasPrice: config.gasPrice,
-      provider: () => config.networks['eth-ganache'] && BuildProvider(config.networks['eth-ganache'], true)
+      provider: () => config.networks['eth-ganache'] && BuildProvider(config.networks['eth-ganache'])
     },
     ganache: {
       host: '127.0.0.1',
