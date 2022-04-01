@@ -33,7 +33,8 @@ library Enums {
         DELEGATE, // delegate some native asset to a Harmony validator
         UNDELEGATE, // undelegate some native asset from a Harmony validator
         COLLECT_REWARD, // collect reward accumulated through delegation on Harmony
-        CREATE // reserved, for creating new contract
+        CREATE, // reserved for future versions, for creating new contract
+        UPGRADE // reserved for v17, change implementation of current contract, requires recovery address approval (if applicable) and beacon approval
     }
     enum TokenType{
         ERC20, ERC721, ERC1155, NONE
