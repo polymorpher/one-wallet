@@ -104,7 +104,7 @@ contract('ONEWallet', (accounts) => {
       revealParams: { ...execParams },
       wallet: w2
     })
-    // Logger.debug(tx2)
+    Logger.debug(tx2)
     // Logger.debug(messageHash.length, signature.length)
     // const sigs = await w1.listSignatures(0, 999)
     // Logger.debug(sigs)
