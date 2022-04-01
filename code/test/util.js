@@ -291,6 +291,7 @@ const makeWallet = async ({
   spendingLimit = ONE_ETH,
   fundAmount = HALF_ETH,
   setLastResortAddress = true,
+  backlinks = [],
   validate = true
 }) => {
   let lastResortAddress
@@ -306,7 +307,8 @@ const makeWallet = async ({
     duration,
     maxOperationsPerInterval,
     lastResortAddress,
-    spendingLimit
+    spendingLimit,
+    backlinks
   })
   let initialBalance = await fundWallet({ wallet, funder: deployer, fundAmount })
   if (validate) { await validateBalance({ address: wallet.address, amount: fundAmount }) }

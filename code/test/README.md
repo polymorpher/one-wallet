@@ -92,24 +92,24 @@ TT-SUBTEST-WALLETID e.g. `TG-OP4-1`
 | 2  | TRANSFER_TOKEN               | PASS    | Token    |
 | 3  | OVERRIDE_TRACK               | PASS    | Token    |
 | 4  | TRANSFER                     | PASS    | Native   | 
-| 5  | SET_RECOVERY_ADDRESS         | PASS    | Admin    |
-| 6  | RECOVER	                    | FAIL    | Admin    |
-| 7  | DISPLACE	                    | TBD     | Utility  |
-| 8  | FORWARD                      | FAIL    | Admin    |
-| 9  | RECOVER_SELECTED_TOKENS      | FAIL    | Admin    |
+| 5  | SET_RECOVERY_ADDRESS         | PASS    | Wallet   |
+| 6  | RECOVER	                    | FAIL    | Wallet   |
+| 7  | DISPLACE	                    | TBD     | Admin    |
+| 8  | FORWARD                      | FAIL    | Wallet   |
+| 9  | RECOVER_SELECTED_TOKENS      | FAIL    | Wallet   |
 | 10 | BUY_DOMAIN                   | Phase 2 | Domain   |
-| 11 | COMMAND                      | FAIL    | Utility  |
-| 12 | BACKLINK_ADD                 | PASS    | Admin    |
-| 13 | BACKLINK_DELETE              | PASS    | Admin    |
-| 14 | BACKLINK_OVERRIDE            | PASS    | Admin    |
+| 11 | COMMAND                      | FAIL    | Admin    |
+| 12 | BACKLINK_ADD                 | PASS    | Wallet   |
+| 13 | BACKLINK_DELETE              | PASS    | Wallet   |
+| 14 | BACKLINK_OVERRIDE            | PASS    | Wallet   |
 | 15 | RENEW_DOMAIN	                | Phase 2 | Domain   |
 | 16 | TRANSFER_DOMAIN	            | Phase 2 | Domain   |
 | 17 | RECLAIM_REVERSE_DOMAIN       | Phase 2 | Domain   |
 | 18 | RECLAIM_DOMAIN_FROM_BACKLINK | Phase 2 | Domain   |
-| 19 | SIGN	                        | FAIL    | Admin    |
-| 20 | REVOKE                       | FAIL    | Admin    |
-| 21 | CALL                         | FAIL    | Utility  |
-| 22 | BATCH                        | FAIL    | Utility  |
+| 19 | SIGN	                        | FAIL    | Wallet   |
+| 20 | REVOKE                       | FAIL    | Wallet   |
+| 21 | CALL                         | FAIL    | Admin    |
+| 22 | BATCH                        | FAIL    | Admin    |
 | 23 | NOOP                         | N/A     | N/A      | this is for nulloperationparameter
 | 24 | CHANGE_SPENDING_LIMIT        | PASS    | Native   |
 | 25 | JUMP_SPENDING_LIMIT          | FAIL    | Native   | 

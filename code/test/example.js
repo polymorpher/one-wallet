@@ -27,29 +27,14 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.revert(snapshotId)
   })
 
-  // === BASIC POSITIVE TESTING ADMIN FUNCTIONS ====
+  // === EXAMPLE UTILITY FUNCTIONS ====
 
-  // ====== DISPLACE ======
-  // Test displace operation using 6x6 otps for different durations
-  // Expected result must authenticate otp from new core after displacement
-  it('AD.BASIC.7 DISPLACE: must authenticate otp from new core after displacement', async () => {
-  })
-
-  // ====== COMMAND ======
-  // Test wallet issuing a command
-  // Expected result command is succesfully issued
-  it('AD.BASIC.11 COMMAND: must be able to issue a command', async () => {
-  })
-
-  // ====== CALL ======
-  // Test calling a transaction
-  // Expected a transaction is called
-  it('AD.BASIC.21 CALL: must be able to add a signature', async () => {
-  })
-
-  // ====== BATCH ======
-  // Test batching transactions
-  // Expected result a batch of transactions will be processed
-  it('AD.BASIC.22 BATCH: must be able to process a batch of transactions', async () => {
+  // ====== CREATE_WALLET ======
+  // Test creation and validation of wallet
+  // Expected result the wallet is now created and validate
+  it('EX.UTILITY.1: must be able to create and validate a wallet', async () => {
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TT-WALLET-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
+    await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
   })
 })
