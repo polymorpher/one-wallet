@@ -250,7 +250,7 @@ const createWallet = async ({
   doubleOtp = false,
   randomness = 0,
   hasher = ONEUtil.sha256b,
-  spendingInterval = 86400,
+  spendingInterval = 3000,
   backlinks = []
 }) => {
   const { core, innerCores, identificationKeys, vars } = await makeCores({ salt, seed, maxOperationsPerInterval, doubleOtp, effectiveTime, duration, randomness, hasher })
@@ -395,14 +395,48 @@ const updateOldTxnInfo = async ({ wallet, oldState, validateNonce = true }) => {
   return oldState
 }
 
-// validateSpendingState
-const validateSpendingState = async ({ wallet, oldState, spentAmount = 0 }) => {
+// updateOldSpendingState
+const updateOldSpendingState = async ({
+  expectedSpendingState = {
+    highestSpendingLimit: '1000000000000000000', // Default to ONE ETH
+    lastLimitAdjustmentTime: '0', // Default to zero i.e. no adjustments
+    lastSpendingInterval: '0', // Default to zero i.e. have not changed spending interval
+    spendingInterval: '3000', // Default to 30 second spending interval 
+    spendingLimit: '1000000000000000000', // Default to ONE ETH
+    spentAmount: '0', // Default to zero i.e. nothing spent
+  },
+  wallet
+}) => {
   let spendingState = await wallet.getSpendingState()
-  assert.equal(spendingState.spentAmount, spentAmount, 'wallet.spentAmount should have been changed')
-  oldState.spendingState.spentAmount = spendingState.spentAmount
-  assert.notEqual(spendingState.lastSpendingInterval, '0', 'wallet.spentAmount should have been changed')
-  oldState.spendingState.lastSpendingInterval = spendingState.lastSpendingInterval
-  return oldState
+  // newSpendingState reflects the current Spending State overwritten by the expectedSpendingState allowing us to 
+  let newSpendingState = { ...spendingState, ...expectedSpendingState }
+  if (newSpendingState.highestSpendingLimit) {
+    assert.equal(newSpendingState.highestSpendingLimit, spendingState.highestSpendingLimit, 'Expected highestSpendingLimit to have changed')
+  }
+  if (newSpendingState.lastLimitAdjustmentTime) {
+    assert.equal(newSpendingState.lastLimitAdjustmentTime, spendingState.lastLimitAdjustmentTime, 'Expected lastLimitAdjustmentTime to have changed')
+  }
+  if (newSpendingState.lastSpendingInterval) {
+    assert.equal(newSpendingState.lastSpendingInterval, spendingState.lastSpendingInterval, 'Expected lastSpendingInterval to have changed')
+  }
+  if (newSpendingState.spendingInterval) {
+    assert.equal(newSpendingState.spendingInterval, spendingState.spendingInterval, 'Expected spendingInterval to have changed')
+  }
+  if (newSpendingState.spendingLimit) {
+    assert.equal(newSpendingState.spendingLimit, spendingState.spendingLimit, 'Expected spendingLimit to have changed')
+  }
+  if (newSpendingState.spentAmount) {
+    assert.equal(newSpendingState.spentAmount, spendingState.spentAmount, 'Expected spentAmount to have changed')
+  }
+  let spendingStateObject = {
+    spendingLimit: expectedSpendingState[0].toString(),
+    spentAmount: expectedSpendingState[1].toString(),
+    lastSpendingInterval: expectedSpendingState[2].toString(),
+    spendingInterval: expectedSpendingState[3].toString(),
+    lastLimitAdjustmentTime: expectedSpendingState[4].toString(),
+    highestSpendingLimit: expectedSpendingState[5].toString()
+  }
+  return spendingStateObject
 }
 
 const validateEvent = ({ tx, expectedEvent }) => {
@@ -626,6 +660,6 @@ module.exports = {
   checkONEWalletStateChange,
   validateBalance,
   updateOldTxnInfo,
-  validateSpendingState,
+  updateOldSpendingState,
   validateEvent
 }

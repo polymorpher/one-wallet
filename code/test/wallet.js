@@ -61,8 +61,8 @@ const executeWalletTransaction = async ({
   const index = ONEUtil.timeToIndex({ effectiveTime: walletEffectiveTime, time: testTime })
   const eotp = await ONE.computeEOTP({ otp, hseed: walletInfo.hseed })
   let paramsHash
-  let commitParams 
-  let revealParams 
+  let commitParams
+  let revealParams
   // Process the Operation
   switch (operationType) {
     // Format commit and revealParams for FORWARD Tranasction
@@ -80,7 +80,7 @@ const executeWalletTransaction = async ({
       console.log(`Invalid Operation passed`)
       assert.equal('A Valid Operation', operationType, 'Error invalid operationType passed')
       return
-    }
+  }
   let { tx, authParams, revealParams: returnedRevealParams } = await TestUtil.commitReveal({
     Debugger,
     layers: walletInfo.layers,
@@ -94,6 +94,18 @@ const executeWalletTransaction = async ({
   let currentState
   if (getCurrentState) { currentState = await TestUtil.getONEWalletState(walletInfo.wallet) }
   return { tx, authParams, revealParams: returnedRevealParams, currentState }
+}
+
+// ==== Validation Helpers ====
+const updateOldfowardAddress = async ({
+  expectedForwardAddress,
+  wallet
+}) => {
+  // check Alices Forward address
+  let forwardAddress = await wallet.getForwardAddress()
+  Logger.debug(`forwardAddress: ${forwardAddress}`)
+  assert.strictEqual(expectedForwardAddress, forwardAddress, 'forward address should have been updated')
+  return forwardAddress
 }
 
 contract('ONEWallet', (accounts) => {
@@ -127,6 +139,47 @@ contract('ONEWallet', (accounts) => {
   // Test forwarding to another wallet
   // Expected result the wallet will be forwarded to
   it('WA.BASIC.8 FORWARD: must be able to set forward to another wallet', async () => {
+    // create wallets and token contracts used througout the tests
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.8.1', deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: carol, walletOldState: carolOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.8.2', deployer: accounts[0], effectiveTime, duration, backlinks: [alice.wallet.address] })
+
+    // alice and carol both have an initial balance of half an ETH
+    await TestUtil.validateBalance({ address: alice.wallet.address, amount: HALF_ETH })
+    await TestUtil.validateBalance({ address: carol.wallet.address, amount: HALF_ETH })
+
+    // Begin Tests
+    let testTime = Date.now()
+
+    // set alice's forwarding address to carol's wallet address
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    let { tx, currentState: aliceCurrentState } = await executeWalletTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.FORWARD,
+        dest: carol.wallet.address,
+        testTime
+      }
+    )
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx, expectedEvent: 'ForwardAddressUpdated' })
+
+    // Check alice's balance is now 0 and carol's is ONE ETH after the forward
+    await TestUtil.validateBalance({ address: alice.wallet.address, amount: 0 })
+    await TestUtil.validateBalance({ address: carol.wallet.address, amount: ONE_ETH })
+
+    // Alice Items that have changed - lastOperationTime, commits, trackedTokens
+    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
+    // Alice's forward address should now be carol's address
+    aliceOldState.forwardAddress = await updateOldfowardAddress({ expectedForwardAddress: carol.wallet.address, wallet: alice.wallet })
+    // Alice's spending state has been updated
+    let expectedSpendingState = await alice.wallet.getSpendingState()
+    aliceOldState.spendingState = await TestUtil.updateOldSpendingState({ expectedSpendingState, wallet: alice.wallet })
+    // check alice
+    await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
+    // check carol's wallet hasn't changed (just her balances above)
+    const carolCurrentState = await TestUtil.getONEWalletState(carol.wallet)
+    await TestUtil.checkONEWalletStateChange(carolOldState, carolCurrentState)
   })
 
   // ====== RECOVER_SELECTED_TOKENS ======
@@ -157,89 +210,6 @@ contract('ONEWallet', (accounts) => {
   // Test setting signing a transaction
   // Expected result the wallets will sign a transaction
   it('WA.BASIC.19 SIGN: must be able to sign a transaction', async () => {
-    const purse = web3.eth.accounts.create()
-
-    const commonCreationArgs = {
-      effectiveTime,
-      duration,
-      maxOperationsPerInterval: SLOT_SIZE,
-      lastResortAddress: purse.address,
-      spendingLimit: ONE_ETH
-    }
-    const { wallet: w1, seed: s1, hseed: hs1, client: { layers: l1 } } = await TestUtil.createWallet({
-      salt: new BN(ONEUtil.keccak('Wallet_Command_w1').slice(24)),
-      ...commonCreationArgs
-    })
-    await web3.eth.sendTransaction({
-      from: accounts[0],
-      to: w1.address,
-      value: ONE_CENT
-    })
-    assert.equal(await web3.eth.getBalance(w1.address), ONE_CENT, 'w1 should receive 1 cent')
-    assert.equal(await web3.eth.getBalance(purse.address), '0', 'purse should be empty')
-
-    const { wallet: w2, seed: s2, hseed: hs2, client: { layers: l2 } } = await TestUtil.createWallet({
-      salt: new BN(ONEUtil.keccak('Wallet_Command_w2').slice(24)),
-      ...commonCreationArgs,
-      backlinks: [w1.address]
-    })
-    const { eotp: e1, index: i1 } = await TestUtil.getEOTP({ seed: s1, hseed: hs1, effectiveTime })
-    const { tx: tx1 } = await TestUtil.commitReveal({
-      Debugger,
-      layers: l1,
-      index: i1,
-      eotp: e1,
-      paramsHash: ONEWallet.computeForwardHash,
-      commitParams: { address: w2.address },
-      revealParams: { dest: w2.address, operationType: ONEConstants.OperationType.FORWARD },
-      wallet: w1
-    })
-    Logger.debug(tx1)
-
-    const forwardAddress = await w1.getForwardAddress()
-    Logger.debug(forwardAddress)
-    assert.equal(w2.address, forwardAddress, 'forward address should equal to second wallet')
-
-    const { eotp: e2, index: i2 } = await TestUtil.getEOTP({ seed: s2, hseed: hs2, effectiveTime })
-    const hexData = ONEUtil.abi.encodeParameters(['address', 'uint16', 'bytes'], [w1.address, ONEConstants.OperationType.SIGN, new Uint8Array()])
-    const messageHash = ONEUtil.keccak('hello world')
-    const signature = ONEUtil.keccak('awesome signature')
-    const expiryAtBytes = new BN(0xffffffff).toArrayLike(Uint8Array, 'be', 4)
-    const encodedExpiryAt = new Uint8Array(20)
-    encodedExpiryAt.set(expiryAtBytes)
-    const data = ONEUtil.hexStringToBytes(hexData)
-    const execParams = {
-      operationType: ONEConstants.OperationType.COMMAND,
-      tokenType: ONEConstants.TokenType.NONE,
-      contractAddress: ONEConstants.EmptyAddress,
-      tokenId: new BN(messageHash).toString(),
-      dest: ONEUtil.hexString(encodedExpiryAt),
-      amount: new BN(signature).toString(),
-      data,
-    }
-    // Logger.debug('execParams', execParams)
-    // Logger.debug('hexData', hexData)
-    assert.equal(await web3.eth.getBalance(w2.address), ONE_CENT, 'w2 should receive 1 cent forwarded from w1')
-    const { tx: tx2 } = await TestUtil.commitReveal({
-      Debugger,
-      layers: l2,
-      index: i2,
-      eotp: e2,
-      paramsHash: ONEWallet.computeGeneralOperationHash,
-      commitParams: { ...execParams },
-      revealParams: { ...execParams },
-      wallet: w2
-    })
-    // Logger.debug(tx2)
-    // Logger.debug(messageHash.length, signature.length)
-    // const sigs = await w1.listSignatures(0, 999)
-    // Logger.debug(sigs)
-    const v = await w1.isValidSignature(ONEUtil.hexString(messageHash), ONEUtil.hexString(signature))
-    // Logger.debug(v)
-    assert.equal(v, '0x1626ba7e', `signature ${ONEUtil.hexString(signature)} should be valid`)
-    const invalidSignature = ONEUtil.hexString(ONEUtil.keccak(signature))
-    const v1 = await w1.isValidSignature(ONEUtil.hexString(messageHash), invalidSignature)
-    assert.equal(v1, '0xffffffff', `signature ${invalidSignature} should be invalid`)
   })
 
   // ====== REVOKE ======
@@ -252,110 +222,16 @@ contract('ONEWallet', (accounts) => {
 
   // === Scenario (Complex) Testing ===
 
-  // ====== SIGN ======
-  // TO BE REMOVED
+  // ====== FORWARD + COMMAND ======
   // Test signing a transaction with a backlinked wallet
   // Expected result the backlinked wallet will sign a transaction for the linked wallet
-  it('WA.COMPLEX.19.X SIGN.BACKLINK: must be able to sign a transaction for a backlinked wallet', async () => {
-    const purse = web3.eth.accounts.create()
+  it('WA.COMPLEX.8.0 FORWARD.COMMAND: must be able to sign a transaction for a backlinked wallet', async () => {
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.COMPLEX.8.0.1', deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: carol, walletOldState: carolOldState } = await TestUtil.makeWallet({ salt: 'WA.COMPLEX.8.0.2', deployer: accounts[0], effectiveTime, duration, backlinks: [alice.wallet.address] })
 
-    const commonCreationArgs = {
-      effectiveTime,
-      duration,
-      maxOperationsPerInterval: SLOT_SIZE,
-      lastResortAddress: purse.address,
-      spendingLimit: ONE_ETH
-    }
-    const { wallet: w1, seed: s1, hseed: hs1, client: { layers: l1 } } = await TestUtil.createWallet({
-      salt: new BN(ONEUtil.keccak('Wallet_Command_w1').slice(24)),
-      ...commonCreationArgs
-    })
-    await web3.eth.sendTransaction({
-      from: accounts[0],
-      to: w1.address,
-      value: ONE_CENT
-    })
-    assert.equal(await web3.eth.getBalance(w1.address), ONE_CENT, 'w1 should receive 1 cent')
-    assert.equal(await web3.eth.getBalance(purse.address), '0', 'purse should be empty')
-
-    const { wallet: w2, seed: s2, hseed: hs2, client: { layers: l2 } } = await TestUtil.createWallet({
-      salt: new BN(ONEUtil.keccak('Wallet_Command_w2').slice(24)),
-      ...commonCreationArgs,
-      backlinks: [w1.address]
-    })
-    const { eotp: e1, index: i1 } = await TestUtil.getEOTP({ seed: s1, hseed: hs1, effectiveTime })
-    const { tx: tx1 } = await TestUtil.commitReveal({
-      Debugger,
-      layers: l1,
-      index: i1,
-      eotp: e1,
-      paramsHash: ONEWallet.computeForwardHash,
-      commitParams: { address: w2.address },
-      revealParams: { dest: w2.address, operationType: ONEConstants.OperationType.FORWARD },
-      wallet: w1
-    })
-    Logger.debug(tx1)
-
-    const forwardAddress = await w1.getForwardAddress()
-    Logger.debug(forwardAddress)
-    assert.equal(w2.address, forwardAddress, 'forward address should equal to second wallet')
-
-    const { eotp: e2, index: i2 } = await TestUtil.getEOTP({ seed: s2, hseed: hs2, effectiveTime })
-    const hexData = ONEUtil.abi.encodeParameters(['address', 'uint16', 'bytes'], [w1.address, ONEConstants.OperationType.SIGN, new Uint8Array()])
-    const messageHash = ONEUtil.keccak('hello world')
-    const signature = ONEUtil.keccak('awesome signature')
-    const expiryAtBytes = new BN(0xffffffff).toArrayLike(Uint8Array, 'be', 4)
-    const encodedExpiryAt = new Uint8Array(20)
-    encodedExpiryAt.set(expiryAtBytes)
-    const data = ONEUtil.hexStringToBytes(hexData)
-    const execParams = {
-      operationType: ONEConstants.OperationType.COMMAND,
-      tokenType: ONEConstants.TokenType.NONE,
-      contractAddress: ONEConstants.EmptyAddress,
-      tokenId: new BN(messageHash).toString(),
-      dest: ONEUtil.hexString(encodedExpiryAt),
-      amount: new BN(signature).toString(),
-      data,
-    }
-    // Logger.debug('execParams', execParams)
-    // Logger.debug('hexData', hexData)
-    assert.equal(await web3.eth.getBalance(w2.address), ONE_CENT, 'w2 should receive 1 cent forwarded from w1')
-    const { tx: tx2 } = await TestUtil.commitReveal({
-      Debugger,
-      layers: l2,
-      index: i2,
-      eotp: e2,
-      paramsHash: ONEWallet.computeGeneralOperationHash,
-      commitParams: { ...execParams },
-      revealParams: { ...execParams },
-      wallet: w2
-    })
-    // Logger.debug(tx2)
-    // Logger.debug(messageHash.length, signature.length)
-    // const sigs = await w1.listSignatures(0, 999)
-    // Logger.debug(sigs)
-    const v = await w1.isValidSignature(ONEUtil.hexString(messageHash), ONEUtil.hexString(signature))
-    // Logger.debug(v)
-    assert.equal(v, '0x1626ba7e', `signature ${ONEUtil.hexString(signature)} should be valid`)
-    const invalidSignature = ONEUtil.hexString(ONEUtil.keccak(signature))
-    const v1 = await w1.isValidSignature(ONEUtil.hexString(messageHash), invalidSignature)
-    assert.equal(v1, '0xffffffff', `signature ${invalidSignature} should be invalid`)
-  })
-
-  // Test signing a transaction with a backlinked wallet
-  // Expected result the backlinked wallet will sign a transaction for the linked wallet
-  it('WA.COMPLEX.19.0 SIGN.BACKLINK: must be able to sign a transaction for a backlinked wallet', async () => {
-    // create wallets and token contracts used througout the tests
-    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.COMPLEX.19.0.1', deployer: accounts[0], effectiveTime, duration })
-    let { walletInfo: carol, walletOldState: carolOldState } = await TestUtil.makeWallet({ salt: 'WA.COMPLEX.19.0.2', deployer: accounts[0], effectiveTime, duration, backlinks: [alice.wallet.address] })
-
-    // Alice's lastResortAddress is a purse created automatically for testing and ensure that it's empty
-    Logger.debug(`alice.lastResortAddress: ${alice.lastResortAddress}`)
-    assert.strictEqual(await web3.eth.getBalance(alice.lastResortAddress), '0', 'purse should be empty')
-    let forwardAddress = await alice.wallet.getForwardAddress()
-    Logger.debug(`forwardAddress after carol wallet create: ${forwardAddress}`)
-    assert.strictEqual(forwardAddress, ONEConstants.EmptyAddress, 'forward address should initially be the zero address')
-    assert.equal(await web3.eth.getBalance(carol.wallet.address), HALF_ETH, 'Carol initially has 0.5 ETH')
+    // alice and carol both have an initial balance of half an ETH
+    await TestUtil.validateBalance({ address: alice.wallet.address, amount: HALF_ETH })
+    await TestUtil.validateBalance({ address: carol.wallet.address, amount: HALF_ETH })
 
     // Begin Tests
     let testTime = Date.now()
@@ -371,12 +247,25 @@ contract('ONEWallet', (accounts) => {
         testTime
       }
     )
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx, expectedEvent: 'ForwardAddressUpdated' })
 
-    // check Alices Forward address
-    forwardAddress = await alice.wallet.getForwardAddress()
-    Logger.debug(`forwardAddress after forward: ${forwardAddress}`)
-    assert.strictEqual(carol.wallet.address, forwardAddress, 'forward address should be equal to carols wallet')
-    assert.equal(await web3.eth.getBalance(carol.wallet.address), ONE_ETH, 'w2 should receive 1 cent forwarded from w1')
+    // Check alice's balance is now 0 and carol's is ONE ETH after the forward
+    await TestUtil.validateBalance({ address: alice.wallet.address, amount: 0 })
+    await TestUtil.validateBalance({ address: carol.wallet.address, amount: ONE_ETH })
+
+    // Alice Items that have changed - lastOperationTime, commits, trackedTokens
+    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
+    // Alice's forward address should now be carol's address
+    aliceOldState.forwardAddress = await updateOldfowardAddress({ expectedForwardAddress: carol.wallet.address, wallet: alice.wallet })
+    // Alice's spending state has been updated
+    let expectedSpendingState = await alice.wallet.getSpendingState()
+    aliceOldState.spendingState = await TestUtil.updateOldSpendingState({ expectedSpendingState, wallet: alice.wallet })
+    // check alice
+    await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
+    // check carol's wallet hasn't changed (just her balances above)
+    let carolCurrentState = await TestUtil.getONEWalletState(carol.wallet)
+    await TestUtil.checkONEWalletStateChange(carolOldState, carolCurrentState)
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
 
@@ -391,7 +280,7 @@ contract('ONEWallet', (accounts) => {
     Logger.debug(messageHash.length, signature.length)
     const data = ONEUtil.hexStringToBytes(hexData)
 
-    let { tx: tx2, currentState: carolCurrentState } = await executeWalletTransaction(
+    let { tx: tx2, currentState: carolCurrentStateSigned } = await executeWalletTransaction(
       {
         ...NullOperationParams, // Default all fields to Null values than override
         walletInfo: carol,
@@ -413,6 +302,17 @@ contract('ONEWallet', (accounts) => {
     const invalidSignature = ONEUtil.hexString(ONEUtil.keccak(signature))
     const v1 = await alice.wallet.isValidSignature(ONEUtil.hexString(messageHash), invalidSignature)
     assert.strictEqual(v1, '0xffffffff', `signature ${invalidSignature} should be invalid`)
+
+    // check alice nothing has signed
+    await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
+    // Carol Items that have changed - lastOperationTime, commits, trackedTokens
+    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: carol.wallet, oldState: carolOldState, validateNonce: false })
+    // // Alice's spending state has been updated
+    // expectedSpendingState = await carol.wallet.getSpendingState()
+    // carolOldState.spendingState = await TestUtil.updateOldSpendingState({ expectedSpendingState, wallet: carol.wallet })
+    // // check alice
+    // check carol's wallet hasn't changed (just her balances above)
+    await TestUtil.checkONEWalletStateChange(carolOldState, carolCurrentStateSigned)
   })
 // Combination testing of multiple functions
 })
