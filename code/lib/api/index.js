@@ -663,8 +663,8 @@ const api = {
         data,
       })
     },
-    revealSetRecoveryAddress: async ({ neighbors, index, eotp, address, lastResortAddress }) => {
-      return api.relayer.revealTransferLike({ address, neighbors, index, eotp, operationType: ONEConstants.OperationType.SET_RECOVERY_ADDRESS, dest: lastResortAddress, amount: 0, })
+    revealSetRecoveryAddress: async ({ neighbors, index, eotp, address, dest }) => {
+      return api.relayer.revealTransferLike({ address, neighbors, index, eotp, operationType: ONEConstants.OperationType.SET_RECOVERY_ADDRESS, dest, amount: 0, })
     },
 
     /**
