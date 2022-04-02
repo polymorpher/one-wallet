@@ -18,8 +18,7 @@ import ShowUtils from './show-util'
 import { useDispatch, useSelector } from 'react-redux'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
-import ONENames from '../../../../lib/names'
-import { autoWalletNameHint } from '../../util'
+import util, { autoWalletNameHint } from '../../util'
 const { Title } = Typography
 
 const TransferDomain = ({ address, onClose }) => {
@@ -41,7 +40,7 @@ const TransferDomain = ({ address, onClose }) => {
     network,
     resetWorker,
     onSuccess: async () => {
-      const dest = transferTo.value
+      const dest = util.safeNormalizedAddress(transferTo.value)
       const resolved = await api.blockchain.domain.resolve({ domain })
       if (resolved === dest) {
         message.success(`Domain ${domain} is transferred to ${dest}`)
