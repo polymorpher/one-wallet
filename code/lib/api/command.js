@@ -30,6 +30,12 @@ const Command = ({ backlinkAddress, wallet }) => ({
       return this.batch(args)
     } else if (operationType === Op.SET_RECOVERY_ADDRESS) {
       return this.setRecoveryAddress(args)
+    } else if (operationType === Op.DELEGATE) {
+      return this.setRecoveryAddress(args)
+    } else if (operationType === Op.UNDELEGATE) {
+      return this.setRecoveryAddress(args)
+    } else if (operationType === Op.COLLECT_REWARD) {
+      return this.setRecoveryAddress(args)
     } else {
       return this.general(args)
     }
@@ -156,6 +162,21 @@ const Command = ({ backlinkAddress, wallet }) => ({
       dest,
       data
     }
+    return makeParams(params)
+  },
+  delegate: ({ dest, amount }) => {
+    const data = ONEUtil.makeCommandData(backlinkAddress, Op.DELEGATE)
+    const params = { ...ONEConstants.NullOperationParams, operationType: Op.COMMAND, dest, amount, data }
+    return makeParams(params)
+  },
+  undelegate: ({ dest, amount }) => {
+    const data = ONEUtil.makeCommandData(backlinkAddress, Op.UNDELEGATE)
+    const params = { ...ONEConstants.NullOperationParams, operationType: Op.COMMAND, dest, amount, data }
+    return makeParams(params)
+  },
+  collectReward: () => {
+    const data = ONEUtil.makeCommandData(backlinkAddress, Op.COLLECT_REWARD)
+    const params = { ...ONEConstants.NullOperationParams, operationType: Op.COMMAND, data }
     return makeParams(params)
   },
 
