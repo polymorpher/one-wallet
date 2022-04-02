@@ -14,7 +14,7 @@ import { api } from '../../../../lib/api'
 import ShowUtils from './show-util'
 import { walletActions } from '../../state/modules/wallet'
 const { Title, Text } = Typography
-const DoRecover = ({ address, show, onClose }) => {
+const DoRecover = ({ address, onClose }) => {
   const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const { lastResortAddress } = wallet
