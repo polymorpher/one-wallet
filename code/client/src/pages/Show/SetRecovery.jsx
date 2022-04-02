@@ -17,7 +17,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
 import { autoWalletNameHint, useWindowDimensions } from '../../util'
-import ONENames from '../../../../lib/names'
 const { Title } = Typography
 
 const SetRecovery = ({ address, onClose }) => {

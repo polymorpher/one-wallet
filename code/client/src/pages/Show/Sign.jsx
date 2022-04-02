@@ -75,22 +75,23 @@ const Sign = ({
       message = ONEUtil.ethMessage(message)
     }
     const hash = ONEUtil.keccak(message)
-    const tokenId = new BN(hash)
+    const tokenId = new BN(hash).toString()
 
     const expiryAt = noExpiry ? 0xffffffff : Math.floor(((Date.now() + duration) / 1000))
     const expiryAtBytes = new BN(expiryAt).toArrayLike(Uint8Array, 'be', 4)
     const encodedExpiryAt = new Uint8Array(20)
     encodedExpiryAt.set(expiryAtBytes)
-    const args = { operationType: ONEConstants.OperationType.SIGN, tokenType: ONEConstants.TokenType.NONE, contractAddress: ONEConstants.EmptyAddress, tokenId, dest: ONEUtil.hexString(encodedExpiryAt) }
-    let signature
-    const commitHashArgs = ({ eotp }) => {
-      const buf = ONEUtil.bytesConcat(eotp, hash)
-      signature = ONEUtil.keccak(buf)
-      return { amount: signature, ...args }
+    const args = {
+      operationType: ONEConstants.OperationType.SIGN,
+      tokenType: ONEConstants.TokenType.NONE,
+      contractAddress: ONEConstants.EmptyAddress,
+      tokenId,
+      dest: ONEUtil.hexString(encodedExpiryAt)
     }
-    const revealArgs = ({ eotp }) => {
-      const { amount: signature, tokenId, ...args } = commitHashArgs({ eotp })
-      return { amount: ONEUtil.hexString(signature), tokenId: ONEUtil.hexString(tokenId.toArrayLike(Uint8Array, 'be', 32)), ...args }
+    const commitRevealArgs = ({ eotp }) => {
+      const buf = ONEUtil.bytesConcat(eotp, hash)
+      const signature = ONEUtil.keccak(buf)
+      return { amount: new BN(signature).toString(), ...args }
     }
 
     SmartFlows.commitReveal({
@@ -99,9 +100,8 @@ const Sign = ({
       otp2,
       recoverRandomness,
       commitHashGenerator: ONE.computeGeneralOperationHash,
-      commitHashArgs,
       revealAPI: api.relayer.reveal,
-      revealArgs,
+      commitRevealArgs,
       onRevealSuccess: (txId, messages) => {
         onRevealSuccess(txId, messages)
         onSuccess && onSuccess(txId, { hash, signature })
