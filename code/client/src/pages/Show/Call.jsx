@@ -22,7 +22,6 @@ import { api } from '../../../../lib/api'
 import ONEConstants from '../../../../lib/constants'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
-import ONENames from '../../../../lib/names'
 const { Title } = Typography
 const { TextArea } = Input
 
@@ -130,12 +129,7 @@ const Call = ({
   }
   if (!(majorVersion > 10)) {
     return (
-      <AnimatedSection
-        style={{ maxWidth: 720 }}
-        title={<Title level={2}>Call Contract Function</Title>} extra={[
-          <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-        ]}
-      >
+      <AnimatedSection wide onClose={onClose} title={<Title level={2}>Call Contract Function</Title>}>
         <Warning>Your wallet is too old. Please use a wallet that is at least version 10.1</Warning>
       </AnimatedSection>
     )

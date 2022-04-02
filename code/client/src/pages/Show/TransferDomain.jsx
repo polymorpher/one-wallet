@@ -1,9 +1,7 @@
-import Button from 'antd/es/button'
 import Row from 'antd/es/row'
 import Space from 'antd/es/space'
 import Typography from 'antd/es/typography'
 import message from '../../message'
-import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import { Hint, Label, Warning } from '../../components/Text'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
@@ -81,12 +79,7 @@ const TransferDomain = ({ address, onClose }) => {
   }
 
   return (
-    <AnimatedSection
-      style={{ maxWidth: 720 }}
-      title={<Title level={2}>Transfer Domain</Title>} extra={[
-        <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-      ]}
-    >
+    <AnimatedSection wide onClose={onClose} title={<Title level={2}>Transfer Domain</Title>}>
       <Space direction='vertical' size='large'>
         <Hint>You will transfer ownership of domain {wallet.domain} to this address. Note that address still needs to reclaim reverse address lookup. If it is an 1wallet, its owner will be able to do so in the user interface.</Hint>
         <Space align='baseline' size='large'>

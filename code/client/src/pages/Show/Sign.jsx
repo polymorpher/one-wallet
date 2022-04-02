@@ -7,7 +7,6 @@ import Checkbox from 'antd/es/checkbox'
 import Button from 'antd/es/button'
 import Space from 'antd/es/space'
 import Typography from 'antd/es/typography'
-import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import QuestionCircleOutlined from '@ant-design/icons/QuestionCircleOutlined'
 import { Hint, Label, Warning } from '../../components/Text'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
@@ -23,7 +22,6 @@ import ONEConstants from '../../../../lib/constants'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
 import humanizeDuration from 'humanize-duration'
-import ONENames from '../../../../lib/names'
 import { autoWalletNameHint } from '../../util'
 const { Title } = Typography
 const { TextArea } = Input
@@ -111,11 +109,7 @@ const Sign = ({
   }
   if (!(wallet.majorVersion > 10)) {
     return (
-      <AnimatedSection
-        style={{ maxWidth: 720 }} title={<Title level={2}>Sign Message</Title>} extra={[
-          <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-        ]}
-      >
+      <AnimatedSection wide onClose={onClose} title={<Title level={2}>Sign Message</Title>}>
         <Warning>Your wallet is too old. Please use a wallet that is at least version 10.1</Warning>
       </AnimatedSection>
     )
@@ -167,12 +161,7 @@ const Sign = ({
     return inner
   }
   return (
-    <AnimatedSection
-      style={{ maxWidth: 720 }}
-      title={<Title level={2}>Sign Message</Title>} extra={[
-        <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-      ]}
-    >
+    <AnimatedSection wide onClose={onClose} title={<Title level={2}>Sign Message</Title>}>
       {inner}
     </AnimatedSection>
   )

@@ -2,7 +2,6 @@ import Button from 'antd/es/button'
 import Row from 'antd/es/row'
 import Space from 'antd/es/space'
 import Typography from 'antd/es/typography'
-import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
 import React, { useState } from 'react'
@@ -13,6 +12,7 @@ import { EotpBuilders, SmartFlows } from '../../../../lib/api/flow'
 import { api } from '../../../../lib/api'
 import ShowUtils from './show-util'
 import { walletActions } from '../../state/modules/wallet'
+
 const { Title, Text } = Typography
 const DoRecover = ({ address, onClose }) => {
   const wallets = useSelector(state => state.wallet)
@@ -50,12 +50,7 @@ const DoRecover = ({ address, onClose }) => {
     })
   }
   return (
-    <AnimatedSection
-      style={{ maxWidth: 720 }}
-      title={<Title level={2}>Recover</Title>} extra={[
-        <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-      ]}
-    >
+    <AnimatedSection wide title={<Title level={2}>Recover</Title>} onClose={onClose}>
       {lastResortAddress &&
         <>
           <Space direction='vertical' size='large'>

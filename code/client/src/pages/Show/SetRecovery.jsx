@@ -1,8 +1,6 @@
-import Button from 'antd/es/button'
 import Space from 'antd/es/space'
 import Typography from 'antd/es/typography'
 import message from '../../message'
-import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import { Hint, Label } from '../../components/Text'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
@@ -67,13 +65,7 @@ const SetRecovery = ({ address, onClose }) => {
   }
 
   return (
-    <AnimatedSection
-      style={{ maxWidth: 720 }}
-      title={<Title level={isMobile ? 5 : 2}>Set Recovery Address</Title>}
-      extra={[
-        <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-      ]}
-    >
+    <AnimatedSection wide onClose={onClose} title={<Title level={isMobile ? 5 : 2}>Set Recovery Address</Title>}>
       <Space direction='vertical' size='large'>
         <Hint>Note: You can only do this once!</Hint>
         <Space

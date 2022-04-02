@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import Button from 'antd/es/button'
 import Row from 'antd/es/row'
 import Space from 'antd/es/space'
 import Spin from 'antd/es/spin'
@@ -13,7 +12,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { AutoResizeInputBox, Warning, Hint } from '../../components/Text'
 import { walletActions } from '../../state/modules/wallet'
 import AnimatedSection from '../../components/AnimatedSection'
-import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import BN from 'bn.js'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
@@ -192,11 +190,7 @@ const PurchaseDomain = ({ address, onClose }) => {
   const { isMobile } = useWindowDimensions()
   const titleLevel = isMobile ? 4 : 3
   return (
-    <AnimatedSection
-      style={{ maxWidth: 720 }} title={<Title level={2}>Buy Domain</Title>} extra={[
-        <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-      ]}
-    >
+    <AnimatedSection wide title={<Title level={2}>Buy Domain</Title>} onClose={onClose}>
       <Row>
         <Hint>
           Send and receive cryptos with your unique domain name. Starting from only 1 ONE.

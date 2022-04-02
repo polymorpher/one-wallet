@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import Button from 'antd/es/button'
 import Space from 'antd/es/space'
 import Typography from 'antd/es/typography'
 import Col from 'antd/es/col'
 import message from '../../message'
-import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import { Warning, LabeledRow } from '../../components/Text'
 import { AverageRow } from '../../components/Grid'
 import AddressInput from '../../components/AddressInput'
@@ -22,7 +20,7 @@ import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
 import querystring from 'query-string'
 import { useLocation } from 'react-router'
-import ONENames from '../../../../lib/names'
+
 const { Title, Text } = Typography
 
 const Reclaim = ({
@@ -166,24 +164,14 @@ const Reclaim = ({
   }
   if (!(majorVersion > 10)) {
     return (
-      <AnimatedSection
-        style={{ maxWidth: 720 }}
-        title={<Title level={2}>Reclaim Assets</Title>} extra={[
-          <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-        ]}
-      >
+      <AnimatedSection wide onClose={onClose} title={<Title level={2}>Reclaim Assets</Title>}>
         <Warning>Your wallet is too old. Please use a wallet that is at least version 10.1</Warning>
       </AnimatedSection>
     )
   }
 
   return (
-    <AnimatedSection
-      style={{ maxWidth: 720 }}
-      title={<Title level={2}>Reclaim Assets</Title>} extra={[
-        <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-      ]}
-    >
+    <AnimatedSection wide onClose={onClose} title={<Title level={2}>Reclaim Assets</Title>}>
       <Space direction='vertical' size='large' style={{ width: '100%' }}>
         <Text>Reclaim domain, tokens, and collectibles accidentally left behind in an old wallet during an upgrade</Text>
         <LabeledRow isMobile={isMobile} label='Claim From'>

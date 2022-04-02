@@ -3,7 +3,6 @@ import Button from 'antd/es/button'
 import Col from 'antd/es/col'
 import Row from 'antd/es/row'
 import Typography from 'antd/es/typography'
-import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import { Hint, InputBox, Label, Warning } from '../../components/Text'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
@@ -136,20 +135,7 @@ const Send = ({
   }
 
   return (
-    <AnimatedSection
-      style={{ maxWidth: 720 }}
-      title={
-        <Title level={isMobile ? 5 : 2}>
-          {
-            isMobile ? '' : 'Send: '
-          }
-          {titleSuffix}
-        </Title>
-      }
-      extra={[
-        <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-      ]}
-    >
+    <AnimatedSection wide title={<Title level={isMobile ? 5 : 2}>{isMobile ? '' : 'Send: '}{titleSuffix}</Title>} onClose={onClose}>
       <Row align='middle' style={{ marginBottom: '10px' }}>
         <Col>
           {isNFT && <Title level={4}>{metadata?.displayName}</Title>}
