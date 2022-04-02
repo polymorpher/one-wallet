@@ -6,8 +6,6 @@ const storage = require('./storage').getStorage()
 const messager = require('./message').getMessage()
 const { api } = require('./index')
 const { parseTxLog } = require('../parser')
-const EventMessage = require('../event-message')
-const EventMaps = require('../events-map.json')
 const BN = require('bn.js')
 
 const EotpBuilders = {
