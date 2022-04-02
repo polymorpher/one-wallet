@@ -7,6 +7,7 @@ const messager = require('./message').getMessage()
 const { api } = require('./index')
 const { parseTxLog } = require('../parser')
 const BN = require('bn.js')
+const { Command } = require('./command')
 
 const EotpBuilders = {
   fromOtp: async ({ otp, otp2, rand, nonce, wallet }) => {
@@ -225,12 +226,6 @@ const Flows = {
   }) => {
     const { majorVersion, minorVersion, forwardAddress } = wallet
     let address = wallet.address
-
-    if (ONEConstants.EmptyAddress !== forwardAddress && majorVersion >= 16) {
-      // This is a source wallet which already has a forwarded address. Must transform the parameters into COMMAND, orignated from target wallet
-      message.debug(`Transforming to COMMAND from ${forwardAddress}`)
-    }
-
     if (!eotp) {
       const derived = await deriver({
         otp,
@@ -257,6 +252,16 @@ const Flows = {
 
     const neighbors = ONE.selectMerkleNeighbors({ layers, index })
     const neighbor = neighbors[0]
+
+    if (ONEConstants.EmptyAddress !== forwardAddress && majorVersion >= 16 && commitRevealArgs) {
+      // This is a source wallet which already has a forwarded address. Must transform the parameters into COMMAND, orignated from target wallet
+      message.debug(`Transforming to COMMAND from ${forwardAddress}`)
+      const command = Command({ backlinkAddress: address, wallet })
+      address = forwardAddress
+      const args = command.transform(commitRevealArgs)
+      message.debug(`Transformed ${JSON.stringify(commitRevealArgs)} to ${JSON.stringify(args.commitRevealArgs)}`, undefined, { console: true })
+      commitRevealArgs = args.commitRevealArgs
+    }
 
     // compute commitHashArgs with fallbacks
     if (typeof commitRevealArgs === 'function') {

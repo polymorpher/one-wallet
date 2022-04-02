@@ -6,8 +6,7 @@ const { api } = require('./index')
 
 const Op = ONEConstants.OperationType
 
-const COMMON = { commitHashGenerator: ONE.computeGeneralOperationHash, revealAPI: api.relayer.reveal }
-const makeParams = (params) => ({ ...COMMON, commitHashArgs: params, revealArgs: params })
+const makeParams = (params) => ({ commitHashGenerator: ONE.computeGeneralOperationHash, revealAPI: api.relayer.reveal, commitRevealArgs: params })
 const Command = ({ backlinkAddress, wallet }) => ({
   transform ({ operationType, ...args }) {
     if (operationType === Op.TRANSFER_DOMAIN) {
