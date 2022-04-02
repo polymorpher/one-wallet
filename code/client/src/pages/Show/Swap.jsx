@@ -35,7 +35,6 @@ import { balanceActions } from '../../state/modules/balance'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import uniqBy from 'lodash/fp/uniqBy'
 import styled from 'styled-components'
-import ONENames from '../../../../lib/names'
 const { Text, Title } = Typography
 
 const tokenIconUrl = (token) => {
@@ -504,12 +503,8 @@ const Swap = ({ address }) => {
       otp2,
       recoverRandomness,
       commitHashGenerator: ONE.computeGeneralOperationHash,
-      commitHashArgs: { ...args, data: ONEUtil.hexStringToBytes(hexData) },
-      prepareProof: () => setStage(0),
-      beforeCommit: () => setStage(1),
-      afterCommit: () => setStage(2),
+      commitRevealArgs: { ...args, data: ONEUtil.hexStringToBytes(hexData) },
       revealAPI: api.relayer.reveal,
-      revealArgs: { ...args, data: hexData },
       onRevealSuccess: async (txId, messages) => {
         onRevealSuccess(txId, messages)
         if (trackToken) {

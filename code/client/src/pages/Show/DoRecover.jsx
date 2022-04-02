@@ -38,18 +38,14 @@ const DoRecover = ({ address, show, onClose }) => {
       hash = new Uint8Array(32)
     }
     const eotpBuilder = wallet.majorVersion >= 8 ? EotpBuilders.recovery : EotpBuilders.legacyRecovery
-    const data = ONEUtil.hexString(bytes)
     SmartFlows.commitReveal({
       recoverRandomness: () => 0,
       wallet,
       eotpBuilder,
       index: -1,
-      prepareProof: () => setStage(0),
       commitHashGenerator: () => ({ hash, bytes: new Uint8Array(0) }), // Only legacy committer uses `bytes`. It mingles them with other parameters to produce hash. legacy recover has no parameters, therefore `bytes` should be empty byte array
-      beforeCommit: () => setStage(1),
-      afterCommit: () => setStage(2),
       revealAPI: api.relayer.revealRecovery,
-      revealArgs: { data },
+      commitRevealArgs: { data: bytes },
       ...helpers
     })
   }

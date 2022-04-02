@@ -35,7 +35,28 @@ const TransferDomain = ({ address, onClose }) => {
   const { otpInput, otp2Input } = otpState
   const resetOtp = otpState.resetOtp
 
-  const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
+  const { prepareValidation, ...handlers } = ShowUtils.buildHelpers({
+    setStage,
+    resetOtp,
+    network,
+    resetWorker,
+    onSuccess: async () => {
+      const dest = transferTo.value
+      const resolved = await api.blockchain.domain.resolve({ domain })
+      if (resolved === dest) {
+        message.success(`Domain ${domain} is transferred to ${dest}`)
+        if (wallets[dest]) {
+          dispatch(walletActions.bindDomain({ address: dest, domain }))
+        }
+        if (address !== resolved) {
+          dispatch(walletActions.bindDomain({ address, domain: null }))
+        }
+      } else {
+        message.success(`Domain ${domain} is not yet resolved to ${dest}. There might be a delay. Please check again later`)
+      }
+      onClose()
+    }
+  })
 
   const doTransferDomain = async () => {
     if (stage >= 0) {
@@ -53,34 +74,10 @@ const TransferDomain = ({ address, onClose }) => {
       otp,
       otp2,
       commitHashGenerator: ONE.computeTransferDomainHash,
-      commitHashArgs: { dest, subdomain },
-      beforeCommit: () => setStage(1),
-      afterCommit: () => setStage(2),
-      onCommitError,
-      onCommitFailure,
+      commitRevealArgs: { dest, subdomain },
       revealAPI: api.relayer.revealTransferDomain,
-      revealArgs: { dest, subdomain },
-      prepareProofFailed,
       recoverRandomness,
-      onRevealFailure,
-      onRevealError,
-      onRevealAttemptFailed,
-      onRevealSuccess: async (txId, messages) => {
-        onRevealSuccess(txId, messages)
-        const resolved = await api.blockchain.domain.resolve({ domain })
-        if (resolved === dest) {
-          message.success(`Domain ${domain} is transferred to ${dest}`)
-          if (wallets[dest]) {
-            dispatch(walletActions.bindDomain({ address: dest, domain }))
-          }
-          if (address !== resolved) {
-            dispatch(walletActions.bindDomain({ address, domain: null }))
-          }
-        } else {
-          message.success(`Domain ${domain} is not yet resolved to ${dest}. There might be a delay. Please check again later`)
-        }
-        onClose()
-      }
+      ...handlers,
     })
   }
 

@@ -120,7 +120,24 @@ const PurchaseDomain = ({ address, onClose }) => {
   const resetOtp = otpState.resetOtp
   const { resetWorker, recoverRandomness } = useRandomWorker()
 
-  const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
+  const { prepareValidation, ...handlers } = ShowUtils.buildHelpers({
+    setStage,
+    resetOtp,
+    network,
+    resetWorker,
+    onSuccess: () => {
+      setTimeout(async () => {
+        setStage(-1)
+        resetOtp()
+        resetWorker()
+        const lookup = await api.blockchain.domain.reverseLookup({ address })
+        if (lookup) {
+          dispatch(walletActions.bindDomain({ address, domain: lookup }))
+        }
+        onClose()
+      }, 2500)
+    }
+  })
 
   const doPurchase = async () => {
     if (stage >= 0) {
@@ -134,31 +151,10 @@ const PurchaseDomain = ({ address, onClose }) => {
       otp,
       otp2,
       recoverRandomness,
-      prepareProofFailed,
       commitHashGenerator: ONE.computeBuyDomainCommitHash,
-      commitHashArgs: { maxPrice: purchaseOnePrice.value, subdomain: validatedSubdomain },
-      beforeCommit: () => setStage(1),
-      afterCommit: () => setStage(2),
-      onCommitError,
-      onCommitFailure,
+      commitRevealArgs: { maxPrice: purchaseOnePrice.value, subdomain: validatedSubdomain, data },
       revealAPI: api.relayer.revealBuyDomain,
-      revealArgs: { subdomain: validatedSubdomain, maxPrice: purchaseOnePrice.value, data: ONEUtil.hexString(data) },
-      onRevealFailure,
-      onRevealError,
-      onRevealAttemptFailed,
-      onRevealSuccess: async (txId, messages) => {
-        onRevealSuccess(txId, messages)
-        setTimeout(async () => {
-          setStage(-1)
-          resetOtp()
-          resetWorker()
-          const lookup = await api.blockchain.domain.reverseLookup({ address })
-          if (lookup) {
-            dispatch(walletActions.bindDomain({ address, domain: lookup }))
-          }
-          onClose()
-        }, 2500)
-      }
+      ...handlers,
     })
   }
 

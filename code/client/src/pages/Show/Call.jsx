@@ -116,19 +116,15 @@ const Call = ({
       return
     }
 
-    const args = { amount, operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: dest, tokenId: 0, dest: ONEConstants.EmptyAddress }
+    const args = { ...ONEConstants.NullOperationParams, amount, operationType: ONEConstants.OperationType.CALL }
     SmartFlows.commitReveal({
       wallet,
       otp,
       otp2,
       recoverRandomness,
       commitHashGenerator: ONE.computeGeneralOperationHash,
-      commitHashArgs: { ...args, data: ONEUtil.hexStringToBytes(encodedData) },
-      prepareProof: () => setStage(0),
-      beforeCommit: () => setStage(1),
-      afterCommit: () => setStage(2),
+      commitRevealArgs: { ...args, data: ONEUtil.hexStringToBytes(encodedData), majorVersion, minorVersion },
       revealAPI: api.relayer.reveal,
-      revealArgs: { ...args, data: encodedData, majorVersion, minorVersion },
       ...handlers
     })
   }

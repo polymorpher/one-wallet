@@ -151,7 +151,7 @@ const Reclaim = ({
       return
     }
     const hexData = ONEUtil.encodeMultiCall(calls)
-    const args = { amount: 0, operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: ONEConstants.EmptyAddress, tokenId: 1, dest: ONEConstants.EmptyAddress }
+    const args = { ...ONEConstants.NullOperationParams, operationType: ONEConstants.OperationType.CALL, tokenId: 1 }
 
     SmartFlows.commitReveal({
       wallet,
@@ -159,12 +159,8 @@ const Reclaim = ({
       otp2,
       recoverRandomness,
       commitHashGenerator: ONE.computeGeneralOperationHash,
-      commitHashArgs: { ...args, data: ONEUtil.hexStringToBytes(hexData) },
-      prepareProof: () => setStage(0),
-      beforeCommit: () => setStage(1),
-      afterCommit: () => setStage(2),
+      commitRevealArgs: { ...args, data: ONEUtil.hexStringToBytes(hexData) },
       revealAPI: api.relayer.reveal,
-      revealArgs: { ...args, data: hexData },
       ...handlers
     })
   }

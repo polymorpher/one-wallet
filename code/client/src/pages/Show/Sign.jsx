@@ -100,9 +100,6 @@ const Sign = ({
       recoverRandomness,
       commitHashGenerator: ONE.computeGeneralOperationHash,
       commitHashArgs,
-      prepareProof: () => setStage(0),
-      beforeCommit: () => setStage(1),
-      afterCommit: () => setStage(2),
       revealAPI: api.relayer.reveal,
       revealArgs,
       onRevealSuccess: (txId, messages) => {

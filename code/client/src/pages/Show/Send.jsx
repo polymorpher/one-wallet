@@ -22,7 +22,6 @@ import ONEConstants from '../../../../lib/constants'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
 import { AverageRow } from '../../components/Grid'
-import ONENames from '../../../../lib/names'
 const { Title, Link } = Typography
 
 const Send = ({
@@ -85,7 +84,12 @@ const Send = ({
     }
   }
 
-  const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
+  const { prepareValidation, onRevealSuccess, ...helpers } = ShowUtils.buildHelpers({
+    setStage,
+    resetOtp,
+    network,
+    resetWorker,
+  })
 
   const doSend = () => {
     if (stage >= 0) {
@@ -103,22 +107,13 @@ const Send = ({
         otp,
         otp2,
         recoverRandomness,
-        prepareProofFailed,
         commitHashGenerator: ONE.computeTransferHash,
-        commitHashArgs: { dest, amount },
-        prepareProof: () => setStage(0),
-        beforeCommit: () => setStage(1),
-        afterCommit: () => setStage(2),
-        onCommitError,
-        onCommitFailure,
         revealAPI: api.relayer.revealTransfer,
-        revealArgs: { dest, amount },
-        onRevealFailure,
-        onRevealError,
-        onRevealAttemptFailed,
-        onRevealSuccess: (txId, messages) => {
-          onRevealSuccess(txId, messages)
-          onSuccess && onSuccess(txId)
+        commitRevealArgs: { dest, amount },
+        ...helpers,
+        onRevealSuccess: (tx, messages) => {
+          onRevealSuccess(tx, messages)
+          onSuccess && onSuccess(tx)
           Chaining.refreshBalance(dispatch, intersection(Object.keys(wallets), [dest, address]))
         }
       })
@@ -128,19 +123,9 @@ const Send = ({
         otp,
         otp2,
         recoverRandomness,
-        prepareProofFailed,
         commitHashGenerator: ONE.computeGeneralOperationHash,
-        commitHashArgs: { dest, amount, operationType: ONEConstants.OperationType.TRANSFER_TOKEN, tokenType: selectedToken.tokenType, contractAddress: selectedToken.contractAddress, tokenId: selectedToken.tokenId },
-        prepareProof: () => setStage(0),
-        beforeCommit: () => setStage(1),
-        afterCommit: () => setStage(2),
-        onCommitError,
-        onCommitFailure,
         revealAPI: api.relayer.revealTokenOperation,
-        revealArgs: { dest, amount, operationType: ONEConstants.OperationType.TRANSFER_TOKEN, tokenType: selectedToken.tokenType, contractAddress: selectedToken.contractAddress, tokenId: selectedToken.tokenId },
-        onRevealFailure,
-        onRevealError,
-        onRevealAttemptFailed,
+        commitRevealArgs: { dest, amount, operationType: ONEConstants.OperationType.TRANSFER_TOKEN, tokenType: selectedToken.tokenType, contractAddress: selectedToken.contractAddress, tokenId: selectedToken.tokenId },
         onRevealSuccess: (txId, messages) => {
           onRevealSuccess(txId, messages)
           onSuccess && onSuccess(txId)

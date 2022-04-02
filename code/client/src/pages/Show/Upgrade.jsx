@@ -16,14 +16,13 @@ import message from '../../message'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
 import ShowUtils from './show-util'
-import { EOTPDerivation, Flows, SmartFlows } from '../../../../lib/api/flow'
+import { EOTPDerivation, SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import { api } from '../../../../lib/api'
 import { walletActions } from '../../state/modules/wallet'
 import { useHistory } from 'react-router'
 import Paths from '../../constants/paths'
 import WalletAddress from '../../components/WalletAddress'
-import ONENames from '../../../../lib/names'
 const { Title, Text, Link } = Typography
 const { Step } = Steps
 const CardStyle = {
@@ -159,12 +158,11 @@ const Upgrade = ({ address, prompt, onClose }) => {
       index,
       layers,
       recoverRandomness,
-      commitHashGenerator: ONE.computeForwardHash,
-      commitHashArgs: { address: newAddress },
-      beforeCommit: () => setStage(1),
-      afterCommit: () => setStage(2),
+      commitHashGenerator: ONE.computeDestOnlyHash,
+      commitRevealArgs: { dest: newAddress },
       revealAPI: api.relayer.revealForward,
-      revealArgs: { dest: newAddress },
+      prepareProof,
+      prepareProofFailed,
       ...helpers,
       onRevealSuccess: async (txId, messages) => {
         onRevealSuccess(txId, messages)

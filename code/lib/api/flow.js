@@ -7,6 +7,7 @@ const messager = require('./message').getMessage()
 const { api } = require('./index')
 const { parseTxLog } = require('../parser')
 const BN = require('bn.js')
+const Message = require('../../client/src/message')
 
 const EotpBuilders = {
   fromOtp: async ({ otp, otp2, rand, nonce, wallet }) => {
@@ -209,7 +210,7 @@ const EOTPDerivation = {
 const Flows = {
   commitReveal: async ({
     otp, otp2, eotpBuilder = EotpBuilders.fromOtp, wallet,
-    commitHashGenerator, commitHashArgs, revealAPI, revealArgs,
+    commitHashGenerator, commitHashArgs, revealAPI, revealArgs, commitRevealArgs = null,
     deriver = EOTPDerivation.deriveEOTP, effectiveTime = null, innerTrees = null,
     recoverRandomness = null, prepareProof = null, prepareProofFailed = null,
     index = null,
@@ -223,7 +224,14 @@ const Flows = {
     message = messager,
     overrideVersion = false,
   }) => {
-    const { address, majorVersion, minorVersion } = wallet
+    const { majorVersion, minorVersion, forwardAddress } = wallet
+    let address = wallet.address
+
+    if (ONEConstants.EmptyAddress !== forwardAddress && majorVersion >= 16) {
+      // This is a source wallet which already has a forwarded address. Must transform the parameters into COMMAND, orignated from target wallet
+      message.debug(`Transforming to COMMAND from ${forwardAddress}`)
+    }
+
     if (!eotp) {
       const derived = await deriver({
         otp,
@@ -252,7 +260,12 @@ const Flows = {
     const neighbor = neighbors[0]
 
     const { commitHash, paramsHash, verificationHash } = committer({
-      address, commitHashGenerator, neighbor, index, eotp, commitHashArgs: typeof commitHashArgs === 'function' ? commitHashArgs({ neighbor, index, eotp }) : commitHashArgs })
+      address,
+      commitHashGenerator,
+      neighbor,
+      index,
+      eotp,
+      commitHashArgs: typeof commitHashArgs === 'function' ? commitHashArgs({ neighbor, index, eotp }) : (commitRevealArgs || commitHashArgs) })
     // console.log(commitHash, paramsHash)
     try {
       const { success, error } = await api.relayer.commit({
@@ -284,7 +297,7 @@ const Flows = {
           eotp: ONEUtil.hexString(eotp),
           address,
           ...(overrideVersion ? { majorVersion, minorVersion } : {}),
-          ...(typeof revealArgs === 'function' ? revealArgs({ neighbor, index, eotp }) : revealArgs)
+          ...(typeof revealArgs === 'function' ? revealArgs({ neighbor, index, eotp }) : (commitRevealArgs || revealArgs))
         })
         if (!success) {
           if (error.includes('Cannot find commit')) {

@@ -259,9 +259,8 @@ const Extend = ({
             recoverRandomness,
           }),
       commitHashGenerator: ONE.computeDataHash,
-      commitHashArgs: { ...args, data: ONEUtil.hexStringToBytes(encodedData) },
+      commitRevealArgs: { ...args, data: ONEUtil.hexStringToBytes(encodedData) },
       revealAPI: api.relayer.reveal,
-      revealArgs: { ...args, data: encodedData },
       ...handlers,
     })
   }

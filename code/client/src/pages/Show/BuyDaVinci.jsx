@@ -18,7 +18,6 @@ import ONEUtil from '../../../../lib/util'
 import { SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
-import ONENames from '../../../../lib/names'
 const { Title, Text } = Typography
 
 const DAVINCI_URL_PATTERN = /\/\/davinci.gallery\/view\/(0x[a-zA-Z0-9]+)/
@@ -62,12 +61,8 @@ const BuyDaVinci = ({ address, onSuccess, onClose }) => {
       otp2,
       recoverRandomness,
       commitHashGenerator: ONE.computeGeneralOperationHash,
-      commitHashArgs: { ...args, data: ONEUtil.hexStringToBytes(encodedData) },
-      prepareProof: () => setStage(0),
-      beforeCommit: () => setStage(1),
-      afterCommit: () => setStage(2),
+      commitRevealArgs: { ...args, data: ONEUtil.hexStringToBytes(encodedData) },
       revealAPI: api.relayer.reveal,
-      revealArgs: { ...args, data: encodedData },
       ...handlers
     })
   }

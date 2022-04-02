@@ -60,12 +60,8 @@ const SetRecovery = ({ address, onClose }) => {
       otp,
       otp2,
       commitHashGenerator: ONE.computeDestOnlyHash,
-      commitHashArgs: { dest },
-      prepareProof: () => setStage(0),
-      beforeCommit: () => setStage(1),
-      afterCommit: () => setStage(2),
+      commitRevealArgs: { dest },
       revealAPI: api.relayer.revealSetRecoveryAddress,
-      revealArgs: { dest },
       recoverRandomness,
       ...helpers,
     })

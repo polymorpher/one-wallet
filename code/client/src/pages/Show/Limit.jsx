@@ -137,9 +137,8 @@ const Limit = ({
             recoverRandomness,
           }),
       commitHashGenerator: ONE.computeAmountHash,
-      commitHashArgs: { amount },
       revealAPI: api.relayer.reveal,
-      revealArgs: { ...ONEConstants.NullOperationParams, amount, operationType: moreAuthRequired ? ONEConstants.OperationType.JUMP_SPENDING_LIMIT : ONEConstants.OperationType.CHANGE_SPENDING_LIMIT },
+      commitRevealArgs: { ...ONEConstants.NullOperationParams, amount, operationType: moreAuthRequired ? ONEConstants.OperationType.JUMP_SPENDING_LIMIT : ONEConstants.OperationType.CHANGE_SPENDING_LIMIT },
       ...helpers,
     })
   }

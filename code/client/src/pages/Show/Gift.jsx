@@ -30,7 +30,6 @@ import { handleAPIError } from '../../handler'
 import WalletCreateProgress from '../../components/WalletCreateProgress'
 import config from '../../config'
 import qrcode from 'qrcode'
-import ONENames from '../../../../lib/names'
 const { Title, Text, Link } = Typography
 
 const Share = ({ seed, redPacketAddress, address, network, isMobile, onClose, message, randomFactor }) => {
@@ -137,7 +136,15 @@ const Gift = ({
   const [effectiveTime, setEffectiveTime] = useState()
 
   const { resetWorker, recoverRandomness } = useRandomWorker()
-  const { prepareValidation, onRevealSuccess, ...handlers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
+  const { prepareValidation, ...handlers } = ShowUtils.buildHelpers({
+    setStage,
+    resetOtp,
+    network,
+    resetWorker,
+    onSuccess: (tx) => {
+      setSection(sections.share)
+    }
+  })
 
   useEffect(() => {
     const worker = new Worker('/ONEWalletWorker.js')
@@ -244,7 +251,7 @@ const Gift = ({
       }
     }
     const hexData = ONEUtil.encodeMultiCall(calls)
-    const args = { amount: 0, operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: ONEConstants.EmptyAddress, tokenId: 1, dest: ONEConstants.EmptyAddress }
+    const args = { ...ONEConstants.NullOperationParams, operationType: ONEConstants.OperationType.CALL, tokenId: 1 }
 
     SmartFlows.commitReveal({
       wallet,
@@ -252,17 +259,9 @@ const Gift = ({
       otp2,
       recoverRandomness,
       commitHashGenerator: ONE.computeGeneralOperationHash,
-      commitHashArgs: { ...args, data: ONEUtil.hexStringToBytes(hexData) },
-      prepareProof: () => setStage(0),
-      beforeCommit: () => setStage(1),
-      afterCommit: () => setStage(2),
+      commitRevealArgs: { ...args, data: ONEUtil.hexStringToBytes(hexData) },
       revealAPI: api.relayer.reveal,
-      revealArgs: { ...args, data: hexData },
       ...handlers,
-      onRevealSuccess: (txId, messages) => {
-        onRevealSuccess(txId, messages)
-        setSection(sections.share)
-      }
     })
   }
 
