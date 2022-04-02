@@ -7,7 +7,6 @@ const messager = require('./message').getMessage()
 const { api } = require('./index')
 const { parseTxLog } = require('../parser')
 const BN = require('bn.js')
-const Message = require('../../client/src/message')
 
 const EotpBuilders = {
   fromOtp: async ({ otp, otp2, rand, nonce, wallet }) => {
@@ -259,13 +258,23 @@ const Flows = {
     const neighbors = ONE.selectMerkleNeighbors({ layers, index })
     const neighbor = neighbors[0]
 
+    // compute commitHashArgs with fallbacks
+    if (typeof commitRevealArgs === 'function') {
+      commitHashArgs = commitRevealArgs({ neighbor, index, eotp })
+    } else if (commitRevealArgs) {
+      commitHashArgs = commitRevealArgs
+    } else if (typeof commitHashArgs === 'function') {
+      commitHashArgs = commitHashArgs({ neighbor, index, eotp })
+    }
+
     const { commitHash, paramsHash, verificationHash } = committer({
       address,
       commitHashGenerator,
       neighbor,
       index,
       eotp,
-      commitHashArgs: typeof commitHashArgs === 'function' ? commitHashArgs({ neighbor, index, eotp }) : (commitRevealArgs || commitHashArgs) })
+      commitHashArgs
+    })
     // console.log(commitHash, paramsHash)
     try {
       const { success, error } = await api.relayer.commit({
@@ -285,6 +294,14 @@ const Flows = {
     }
     afterCommit && await afterCommit(commitHash)
 
+    if (typeof commitRevealArgs === 'function') {
+      revealArgs = commitRevealArgs({ neighbor, index, eotp })
+    } else if (commitRevealArgs) {
+      revealArgs = commitRevealArgs
+    } else if (typeof revealArgs === 'function') {
+      revealArgs = revealArgs({ neighbor, index, eotp })
+    }
+
     let numAttemptsRemaining = maxTransferAttempts - 1
     const tryReveal = () => setTimeout(async () => {
       try {
@@ -297,7 +314,7 @@ const Flows = {
           eotp: ONEUtil.hexString(eotp),
           address,
           ...(overrideVersion ? { majorVersion, minorVersion } : {}),
-          ...(typeof revealArgs === 'function' ? revealArgs({ neighbor, index, eotp }) : (commitRevealArgs || revealArgs))
+          ...(revealArgs)
         })
         if (!success) {
           if (error.includes('Cannot find commit')) {
