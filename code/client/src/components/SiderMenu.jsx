@@ -24,13 +24,14 @@ import styled from 'styled-components'
 import { useWindowDimensions } from '../util'
 import abbr from '../abbr'
 import { useDispatch, useSelector } from 'react-redux'
+import { getPrimaryBorderColor, getPrimaryTextColor } from '../theme'
 import WalletConstants from '../constants/wallet'
 import { cacheActions } from '../state/modules/cache'
 const { Link } = Typography
 
 const SiderLink = styled(Link).attrs((e) => ({
   ...e,
-  style: { color: '#fafafa', ...e.style },
+  style: { ...e.style },
   target: '_blank',
   rel: 'noopener noreferrer'
 }))`
@@ -45,8 +46,10 @@ const mobileMenuItemStyle = {
 }
 
 const LineDivider = ({ children }) => {
+  const theme = useSelector(state => state.global.v2ui ? state.global.theme : 'dark')
+  const color = getPrimaryBorderColor(theme)
   return (
-    <Divider style={{ borderColor: '#fafafa', opacity: 0.5, color: '#fafafa', fontSize: 14 }}>
+    <Divider style={{ borderColor: color, opacity: 0.5, color: color, fontSize: 14 }}>
       {children}
     </Divider>
   )
@@ -91,28 +94,36 @@ const StatsInfo = () => {
     }
   }, [])
 
-  return stats
-    ? (
-      <Row style={{ marginBottom: 16 }} justify='center'>
-        <Row style={{ marginBottom: 8 }}>
-          <Tag color='dimgray' style={{ margin: 0, width: 64, borderRadius: 0, textAlign: 'center' }}>wallets</Tag>
-          <Tag color='lightseagreen' style={{ width: 80, borderRadius: 0, textAlign: 'center' }}>{stats.count.toLocaleString()}</Tag>
-        </Row>
-        <Row>
-          <Tag color='dimgray' style={{ margin: 0, width: 64, borderRadius: 0, textAlign: 'center' }}>balance</Tag>
-          <Tag color='steelblue' style={{ width: 80, borderRadius: 0, textAlign: 'center' }}>{abbr(stats.totalAmount, 0)} ONE</Tag>
-        </Row>
-      </Row>)
-    : (
-      <Row justify='center'>
-        <Spin />
-      </Row>)
+  return (
+    <>
+      <LineDivider>Global Usage</LineDivider>
+      {stats
+        ? (
+          <Row style={{ marginBottom: 16 }} justify='center'>
+            <Row style={{ marginBottom: 8 }}>
+              <Tag color='dimgray' style={{ margin: 0, width: 64, borderRadius: 0, textAlign: 'center' }}>wallets</Tag>
+              <Tag color='lightseagreen' style={{ width: 80, borderRadius: 0, textAlign: 'center' }}>{stats.count.toLocaleString()}</Tag>
+            </Row>
+            <Row>
+              <Tag color='dimgray' style={{ margin: 0, width: 64, borderRadius: 0, textAlign: 'center' }}>balance</Tag>
+              <Tag color='steelblue' style={{ width: 80, borderRadius: 0, textAlign: 'center' }}>{abbr(stats.totalAmount, 0)} ONE</Tag>
+            </Row>
+          </Row>)
+        : (
+          <Row justify='center'>
+            <Spin />
+          </Row>)}
+      <LineDivider />
+    </>
+  )
 }
 
 const DeskstopSiderMenu = ({ action, nav, ...args }) => {
   const history = useHistory()
   const theme = useSelector(state => state.global.v2ui ? state.global.theme : 'dark')
   const v2ui = useSelector(state => state.global.v2ui)
+
+  const menuTextColor = v2ui ? getPrimaryTextColor(theme) : null
 
   return (
     <Layout.Sider collapsed={false} {...args}>
@@ -122,13 +133,10 @@ const DeskstopSiderMenu = ({ action, nav, ...args }) => {
           <Image preview={false} src={v2ui ? OneWalletLogo : HarmonyLogo} style={{ cursor: 'pointer', padding: 32 }} onClick={() => history.push('/')} />
         </SiderLink>
       </Row>
-      <Row justify='center' style={{ marginBottom: 24 }}><SiderLink href='https://harmony.one/1wallet'>{config.appName} {config.version}</SiderLink></Row>
 
-      <LineDivider>Global Usage</LineDivider>
+      <Row justify='center' style={{ marginBottom: 24 }}><SiderLink style={{ color: getPrimaryTextColor(theme) }} href='https://harmony.one/1wallet'>{config.appName} {config.version}</SiderLink></Row>
 
       {!v2ui && <StatsInfo />}
-
-      <LineDivider />
 
       <Menu theme={theme} mode='inline' onClick={nav} selectedKeys={[action]}>
         <Menu.Item key='create' icon={<PlusCircleOutlined />}>Create</Menu.Item>
@@ -137,10 +145,10 @@ const DeskstopSiderMenu = ({ action, nav, ...args }) => {
       </Menu>
       <LineDivider />
       <Menu theme={theme} mode='inline' selectable={false}>
-        <Menu.Item key='grant' icon={<DollarOutlined />}><SiderLink style={{ color: null }} href='https://harmony.one/wallet'>Grants</SiderLink></Menu.Item>
-        <Menu.Item key='bug' icon={<GithubOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/issues'>Bug Report</SiderLink></Menu.Item>
-        <Menu.Item key='audit' icon={<AuditOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/tree/master/audits'>Audits</SiderLink></Menu.Item>
-        <Menu.Item key='wiki' icon={<InfoCircleOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/wiki'>Wiki</SiderLink></Menu.Item>
+        <Menu.Item key='grant' icon={<DollarOutlined />}><SiderLink style={{ color: menuTextColor }} href='https://harmony.one/wallet'>Grants</SiderLink></Menu.Item>
+        <Menu.Item key='bug' icon={<GithubOutlined />}><SiderLink style={{ color: menuTextColor }} href='https://github.com/polymorpher/one-wallet/issues'>Bug Report</SiderLink></Menu.Item>
+        <Menu.Item key='audit' icon={<AuditOutlined />}><SiderLink style={{ color: menuTextColor }} href='https://github.com/polymorpher/one-wallet/tree/master/audits'>Audits</SiderLink></Menu.Item>
+        <Menu.Item key='wiki' icon={<InfoCircleOutlined />}><SiderLink style={{ color: menuTextColor }} href='https://github.com/polymorpher/one-wallet/wiki'>Wiki</SiderLink></Menu.Item>
       </Menu>
       <LineDivider />
       <Menu theme={theme} mode='inline' onClick={nav} selectedKeys={[action]}>
