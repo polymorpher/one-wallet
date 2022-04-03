@@ -44,7 +44,7 @@ const Stake = ({
   const [reward, setReward] = useState(null)
   const history = useHistory()
   const {
-    dispatch, wallet, network, stage, setStage,
+    dispatch, wallet, forwardWallet, network, stage, setStage,
     resetWorker, recoverRandomness, otpState, isMobile,
   } = useOps({ address })
   const doubleOtp = wallet.doubleOtp
@@ -118,6 +118,7 @@ const Stake = ({
 
     SmartFlows.commitReveal({
       wallet,
+      forwardWallet,
       otp,
       otp2,
       recoverRandomness,

@@ -5,6 +5,7 @@ import Button from 'antd/es/button'
 import Card from 'antd/es/card'
 import Space from 'antd/es/space'
 import { useWindowDimensions } from '../util'
+import CloseOutlined from '@ant-design/icons/CloseOutlined'
 
 const Section = styled(Card)`
   padding: 32px;
@@ -51,7 +52,7 @@ const renderTabBar = (props) => {
   )
 }
 
-const AnimatedSection = ({ show = true, wide, children, style, ...params }) => {
+const AnimatedSection = ({ show = true, wide, children, style, onClose, ...params }) => {
   const { isMobile } = useWindowDimensions()
   return (
     <Transition in={show} timeout={300}>
@@ -75,6 +76,7 @@ const AnimatedSection = ({ show = true, wide, children, style, ...params }) => {
             ...transitionStyles[state],
             ...style
           }}
+          {...onClose && { extra: [<Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />] }}
           {...params}
         >
           {children}

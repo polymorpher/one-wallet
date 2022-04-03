@@ -1,9 +1,7 @@
-import Button from 'antd/es/button'
 import Row from 'antd/es/row'
 import Space from 'antd/es/space'
 import Typography from 'antd/es/typography'
 import message from '../../message'
-import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import { Hint, Label, Warning } from '../../components/Text'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
@@ -15,27 +13,44 @@ import ONEConstants from '../../../../lib/constants'
 import { api } from '../../../../lib/api'
 import walletActions from '../../state/modules/wallet/actions'
 import ShowUtils from './show-util'
-import { useDispatch, useSelector } from 'react-redux'
-import { OtpStack, useOtpState } from '../../components/OtpStack'
-import { useRandomWorker } from './randomWorker'
-import ONENames from '../../../../lib/names'
-import { autoWalletNameHint } from '../../util'
+import { OtpStack } from '../../components/OtpStack'
+import util, { autoWalletNameHint } from '../../util'
+import { useOps } from '../../components/Common'
 const { Title } = Typography
 
 const TransferDomain = ({ address, onClose }) => {
-  const dispatch = useDispatch()
-  const wallets = useSelector(state => state.wallet)
-  const wallet = wallets[address] || {}
+  const {
+    wallet, wallets, forwardWallet, network, stage, setStage, dispatch,
+    resetWorker, recoverRandomness, otpState,
+  } = useOps({ address })
+
   const domain = wallet.domain || ''
-  const network = useSelector(state => state.global.network)
-  const [stage, setStage] = useState(-1)
   const [transferTo, setTransferTo] = useState({ value: '', label: '' })
-  const { resetWorker, recoverRandomness } = useRandomWorker()
-  const { state: otpState } = useOtpState()
   const { otpInput, otp2Input } = otpState
   const resetOtp = otpState.resetOtp
 
-  const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
+  const { prepareValidation, ...handlers } = ShowUtils.buildHelpers({
+    setStage,
+    resetOtp,
+    network,
+    resetWorker,
+    onSuccess: async () => {
+      const dest = util.safeNormalizedAddress(transferTo.value)
+      const resolved = await api.blockchain.domain.resolve({ name: domain })
+      if (resolved === dest) {
+        message.success(`Domain ${domain} is transferred to ${dest}`)
+        if (wallets[dest]) {
+          dispatch(walletActions.bindDomain({ address: dest, domain }))
+        }
+        if (address !== resolved) {
+          dispatch(walletActions.bindDomain({ address, domain: null }))
+        }
+      } else {
+        message.success(`Domain ${domain} is not yet resolved to ${dest}. There might be a delay. Please check again later`)
+      }
+      onClose()
+    }
+  })
 
   const doTransferDomain = async () => {
     if (stage >= 0) {
@@ -50,47 +65,19 @@ const TransferDomain = ({ address, onClose }) => {
     setStage(0)
     SmartFlows.commitReveal({
       wallet,
+      forwardWallet,
       otp,
       otp2,
       commitHashGenerator: ONE.computeTransferDomainHash,
-      commitHashArgs: { dest, subdomain },
-      beforeCommit: () => setStage(1),
-      afterCommit: () => setStage(2),
-      onCommitError,
-      onCommitFailure,
+      commitRevealArgs: { dest, subdomain },
       revealAPI: api.relayer.revealTransferDomain,
-      revealArgs: { dest, subdomain },
-      prepareProofFailed,
       recoverRandomness,
-      onRevealFailure,
-      onRevealError,
-      onRevealAttemptFailed,
-      onRevealSuccess: async (txId, messages) => {
-        onRevealSuccess(txId, messages)
-        const resolved = await api.blockchain.domain.resolve({ domain })
-        if (resolved === dest) {
-          message.success(`Domain ${domain} is transferred to ${dest}`)
-          if (wallets[dest]) {
-            dispatch(walletActions.bindDomain({ address: dest, domain }))
-          }
-          if (address !== resolved) {
-            dispatch(walletActions.bindDomain({ address, domain: null }))
-          }
-        } else {
-          message.success(`Domain ${domain} is not yet resolved to ${dest}. There might be a delay. Please check again later`)
-        }
-        onClose()
-      }
+      ...handlers,
     })
   }
 
   return (
-    <AnimatedSection
-      style={{ maxWidth: 720 }}
-      title={<Title level={2}>Transfer Domain</Title>} extra={[
-        <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-      ]}
-    >
+    <AnimatedSection wide onClose={onClose} title={<Title level={2}>Transfer Domain</Title>}>
       <Space direction='vertical' size='large'>
         <Hint>You will transfer ownership of domain {wallet.domain} to this address. Note that address still needs to reclaim reverse address lookup. If it is an 1wallet, its owner will be able to do so in the user interface.</Hint>
         <Space align='baseline' size='large'>

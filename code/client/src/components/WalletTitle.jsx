@@ -54,6 +54,11 @@ const WalletTitle = ({ address, onQrCodeClick, onScanClick, noWarning }) => {
     history.push(Paths.showAddress(oneAddress, 'domain'))
   }
 
+  const onTransferDomain = () => {
+    const oneAddress = util.safeOneAddress(wallet.address)
+    history.push(Paths.showAddress(oneAddress, 'domainTransfer'))
+  }
+
   return (
     <Space direction='vertical' style={{ width: '100%' }}>
       <Row justify='space-between' align='top' style={{ marginBottom: isMobile ? 0 : 16 }}>
@@ -79,7 +84,7 @@ const WalletTitle = ({ address, onQrCodeClick, onScanClick, noWarning }) => {
         />
         {wallet.majorVersion >= 9 && (
           hasDomainName
-            ? <Text type='secondary' style={{ paddingLeft: 16 }}> {domain} {doubleLinked === null && <Tooltip title='Verifying domain...'><Spin /></Tooltip>} {doubleLinked === false && <Tooltip title="This domain does not resolve back to the wallet's address, even though the wallet's address maps to the domain"> <WarningTwoTone twoToneColor='#ffcc00' /></Tooltip>}</Text>
+            ? <Text type='secondary' style={{ paddingLeft: 16 }}> {domain} {doubleLinked ? <Button type='link' onClick={onTransferDomain}>(transfer)</Button> : <></>} {doubleLinked === null && <Tooltip title='Verifying domain...'><Spin /></Tooltip>} {doubleLinked === false && <Tooltip title="This domain does not resolve back to the wallet's address, even though the wallet's address maps to the domain"> <WarningTwoTone twoToneColor='#ffcc00' /></Tooltip>}</Text>
             : (balance.gtn(0) &&
               <Button type='link' shape='round' onClick={onPurchaseDomain}>
                 (get a domain?)

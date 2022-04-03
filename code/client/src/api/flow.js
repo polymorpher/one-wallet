@@ -1,9 +1,9 @@
 import WalletConstants from '../constants/wallet'
 import { balanceActions } from '../state/modules/balance'
-import { EotpBuilders, SecureFlows, Flows, SmartFlows } from '../../../lib/api/flow'
+import { EotpBuilders, Flows, SmartFlows } from '../../../lib/api/flow'
 import { api } from '../../../lib/api'
 
-export { EotpBuilders, SecureFlows, Flows, SmartFlows }
+export { EotpBuilders, Flows, SmartFlows }
 
 export const Chaining = {
   refreshBalance: (dispatch, addresses) => {

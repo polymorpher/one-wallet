@@ -1,5 +1,4 @@
 import Button from 'antd/es/button'
-import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import React, { useEffect, useState } from 'react'
 import AnimatedSection from '../../../components/AnimatedSection'
 import { Warning, Title, Link, Text } from '../../../components/Text'
@@ -15,7 +14,6 @@ import Paths from '../../../constants/paths'
 import BN from 'bn.js'
 import { TallRow } from '../../../components/Grid'
 import { api } from '../../../../../lib/api'
-import flatten from 'lodash/fp/flatten'
 import { useSelector } from 'react-redux'
 const StakeCommon = ({ children, address, titleSuffix, onClose }) => {
   const history = useHistory()
@@ -25,7 +23,7 @@ const StakeCommon = ({ children, address, titleSuffix, onClose }) => {
     return (
       <AnimatedSection
         wide title={<Title level={isMobile ? 5 : 2}>Staking{titleSuffix ? ` - ${titleSuffix}` : ''}</Title>}
-        extra={[<Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />]}
+        onClose={onClose}
       >
         <Warning>Staking is available only on Harmony Mainnet. Please change your network (on top right of the window)</Warning>
       </AnimatedSection>
@@ -36,7 +34,7 @@ const StakeCommon = ({ children, address, titleSuffix, onClose }) => {
     return (
       <AnimatedSection
         wide title={<Title level={isMobile ? 5 : 2}>Staking{titleSuffix ? ` - ${titleSuffix}` : ''}</Title>}
-        extra={[<Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />]}
+        onClose={onClose}
       >
         <Warning>Staking requires wallet version {'>='} 16. Please <Link onClick={() => retryUpgrade({ dispatch, history, address: wallet.address })}>upgrade your wallet</Link></Warning>
       </AnimatedSection>
@@ -46,7 +44,7 @@ const StakeCommon = ({ children, address, titleSuffix, onClose }) => {
   return (
     <AnimatedSection
       wide title={<Title level={isMobile ? 5 : 2}>Staking{titleSuffix ? ` - ${titleSuffix}` : ''}</Title>}
-      extra={[<Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />]}
+      onClose={onClose}
     >
       {children}
     </AnimatedSection>

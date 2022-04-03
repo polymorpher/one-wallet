@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import Button from 'antd/es/button'
 import Row from 'antd/es/row'
 import Space from 'antd/es/space'
 import Spin from 'antd/es/spin'
@@ -9,19 +8,18 @@ import api from '../../api'
 import util, { autoWalletNameHint, useWaitExecution, useWindowDimensions } from '../../util'
 import ONEUtil from '../../../../lib/util'
 import ONENames from '../../../../lib/names'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { AutoResizeInputBox, Warning, Hint } from '../../components/Text'
 import { walletActions } from '../../state/modules/wallet'
 import AnimatedSection from '../../components/AnimatedSection'
-import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import BN from 'bn.js'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
-import { OtpStack, useOtpState } from '../../components/OtpStack'
-import { useRandomWorker } from './randomWorker'
+import { OtpStack } from '../../components/OtpStack'
 import ShowUtils from './show-util'
 import { SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import ONEConstants from '../../../../lib/constants'
+import { useOps } from '../../components/Common'
 
 const { Text, Title, Link } = Typography
 
@@ -91,17 +89,17 @@ const prepareName = (name) => {
   return name
 }
 
-// eslint-disable-next-line no-unused-vars
-const { balance: PAYMENT_EXCESS_BUFFER } = util.toBalance(0.1)
 /**
  * Renders Purchase Domain section that enables users to purchase an available domain for their selected wallet using selected token.
  */
 const PurchaseDomain = ({ address, onClose }) => {
-  const dispatch = useDispatch()
+  const {
+    wallet, forwardWallet, network, stage, setStage, dispatch,
+    resetWorker, recoverRandomness, otpState,
+  } = useOps({ address })
+
   const balances = useSelector(state => state.balance || {})
-  const wallets = useSelector(state => state.wallet)
-  const wallet = wallets[address] || {}
-  const network = useSelector(state => state.global.network)
+
   const oneBalance = balances[address]?.balance || 0
   const [subdomain, setSubdomain] = useState(prepareName(wallet.name))
   const [purchaseOnePrice, setPurchaseOnePrice] = useState({ value: '', formatted: '' })
@@ -113,14 +111,27 @@ const PurchaseDomain = ({ address, onClose }) => {
   const price = useSelector(state => state.global.price)
   const validatedSubdomain = validateSubdomain(subdomain)
 
-  const [stage, setStage] = useState(-1)
   const doubleOtp = wallet.doubleOtp
-  const { state: otpState } = useOtpState()
-  const { otpInput, otp2Input } = otpState
-  const resetOtp = otpState.resetOtp
-  const { resetWorker, recoverRandomness } = useRandomWorker()
+  const { otpInput, otp2Input, resetOtp } = otpState
 
-  const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
+  const { prepareValidation, ...handlers } = ShowUtils.buildHelpers({
+    setStage,
+    resetOtp,
+    network,
+    resetWorker,
+    onSuccess: () => {
+      setTimeout(async () => {
+        setStage(-1)
+        resetOtp()
+        resetWorker()
+        const lookup = await api.blockchain.domain.reverseLookup({ address })
+        if (lookup) {
+          dispatch(walletActions.bindDomain({ address, domain: lookup }))
+        }
+        onClose()
+      }, 2500)
+    }
+  })
 
   const doPurchase = async () => {
     if (stage >= 0) {
@@ -131,34 +142,14 @@ const PurchaseDomain = ({ address, onClose }) => {
     const data = ONE.encodeBuyDomainData({ subdomain: validatedSubdomain })
     SmartFlows.commitReveal({
       wallet,
+      forwardWallet,
       otp,
       otp2,
       recoverRandomness,
-      prepareProofFailed,
       commitHashGenerator: ONE.computeBuyDomainCommitHash,
-      commitHashArgs: { maxPrice: purchaseOnePrice.value, subdomain: validatedSubdomain },
-      beforeCommit: () => setStage(1),
-      afterCommit: () => setStage(2),
-      onCommitError,
-      onCommitFailure,
+      commitRevealArgs: { maxPrice: purchaseOnePrice.value, subdomain: validatedSubdomain, data },
       revealAPI: api.relayer.revealBuyDomain,
-      revealArgs: { subdomain: validatedSubdomain, maxPrice: purchaseOnePrice.value, data: ONEUtil.hexString(data) },
-      onRevealFailure,
-      onRevealError,
-      onRevealAttemptFailed,
-      onRevealSuccess: async (txId, messages) => {
-        onRevealSuccess(txId, messages)
-        setTimeout(async () => {
-          setStage(-1)
-          resetOtp()
-          resetWorker()
-          const lookup = await api.blockchain.domain.reverseLookup({ address })
-          if (lookup) {
-            dispatch(walletActions.bindDomain({ address, domain: lookup }))
-          }
-          onClose()
-        }, 2500)
-      }
+      ...handlers,
     })
   }
 
@@ -196,11 +187,7 @@ const PurchaseDomain = ({ address, onClose }) => {
   const { isMobile } = useWindowDimensions()
   const titleLevel = isMobile ? 4 : 3
   return (
-    <AnimatedSection
-      style={{ maxWidth: 720 }} title={<Title level={2}>Buy Domain</Title>} extra={[
-        <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-      ]}
-    >
+    <AnimatedSection wide title={<Title level={2}>Buy Domain</Title>} onClose={onClose}>
       <Row>
         <Hint>
           Send and receive cryptos with your unique domain name. Starting from only 1 ONE.

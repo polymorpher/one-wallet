@@ -1,28 +1,25 @@
 import React, { useEffect, useState } from 'react'
-import Button from 'antd/es/button'
 import Space from 'antd/es/space'
 import Typography from 'antd/es/typography'
 import Col from 'antd/es/col'
 import message from '../../message'
-import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import { Warning, LabeledRow } from '../../components/Text'
 import { AverageRow } from '../../components/Grid'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
-import util, { autoWalletNameHint, useWindowDimensions } from '../../util'
+import util, { autoWalletNameHint} from '../../util'
 import ShowUtils from './show-util'
-import { useSelector } from 'react-redux'
 import { SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import ONEUtil from '../../../../lib/util'
 import { api } from '../../../../lib/api'
 import ONEConstants from '../../../../lib/constants'
-import { OtpStack, useOtpState } from '../../components/OtpStack'
-import { useRandomWorker } from './randomWorker'
+import { OtpStack} from '../../components/OtpStack'
 import querystring from 'query-string'
 import { useLocation } from 'react-router'
-import ONENames from '../../../../lib/names'
+import { useOps } from '../../components/Common'
+
 const { Title, Text } = Typography
 
 const Reclaim = ({
@@ -33,20 +30,14 @@ const Reclaim = ({
 }) => {
   const location = useLocation()
 
-  const { isMobile } = useWindowDimensions()
-  const wallets = useSelector(state => state.wallet)
-  const wallet = wallets[address] || {}
+  const {
+    wallet, forwardWallet, network, stage, setStage,
+    resetWorker, recoverRandomness, otpState, isMobile,
+  } = useOps({ address })
+
   const { majorVersion } = wallet
-  const network = useSelector(state => state.global.network)
-
   const doubleOtp = wallet.doubleOtp
-  const { state: otpState } = useOtpState()
-  const { otpInput, otp2Input } = otpState
-  const resetOtp = otpState.resetOtp
-
-  const [stage, setStage] = useState(-1)
-
-  const { resetWorker, recoverRandomness } = useRandomWorker()
+  const { otpInput, otp2Input, resetOtp } = otpState
 
   const [from, setFrom] = useState({ value: prefillFrom || '', label: prefillFrom ? util.safeOneAddress(prefillFrom) : '' })
   const [trackedTokens, setTrackedTokens] = useState([])
@@ -151,43 +142,30 @@ const Reclaim = ({
       return
     }
     const hexData = ONEUtil.encodeMultiCall(calls)
-    const args = { amount: 0, operationType: ONEConstants.OperationType.CALL, tokenType: ONEConstants.TokenType.NONE, contractAddress: ONEConstants.EmptyAddress, tokenId: 1, dest: ONEConstants.EmptyAddress }
+    const args = { ...ONEConstants.NullOperationParams, operationType: ONEConstants.OperationType.CALL, tokenId: 1 }
 
     SmartFlows.commitReveal({
       wallet,
+      // forwardWallet,
       otp,
       otp2,
       recoverRandomness,
       commitHashGenerator: ONE.computeGeneralOperationHash,
-      commitHashArgs: { ...args, data: ONEUtil.hexStringToBytes(hexData) },
-      prepareProof: () => setStage(0),
-      beforeCommit: () => setStage(1),
-      afterCommit: () => setStage(2),
+      commitRevealArgs: { ...args, data: ONEUtil.hexStringToBytes(hexData) },
       revealAPI: api.relayer.reveal,
-      revealArgs: { ...args, data: hexData },
       ...handlers
     })
   }
   if (!(majorVersion > 10)) {
     return (
-      <AnimatedSection
-        style={{ maxWidth: 720 }}
-        title={<Title level={2}>Reclaim Assets</Title>} extra={[
-          <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-        ]}
-      >
+      <AnimatedSection wide onClose={onClose} title={<Title level={2}>Reclaim Assets</Title>}>
         <Warning>Your wallet is too old. Please use a wallet that is at least version 10.1</Warning>
       </AnimatedSection>
     )
   }
 
   return (
-    <AnimatedSection
-      style={{ maxWidth: 720 }}
-      title={<Title level={2}>Reclaim Assets</Title>} extra={[
-        <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-      ]}
-    >
+    <AnimatedSection wide onClose={onClose} title={<Title level={2}>Reclaim Assets</Title>}>
       <Space direction='vertical' size='large' style={{ width: '100%' }}>
         <Text>Reclaim domain, tokens, and collectibles accidentally left behind in an old wallet during an upgrade</Text>
         <LabeledRow isMobile={isMobile} label='Claim From'>

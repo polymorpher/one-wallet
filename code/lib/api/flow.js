@@ -6,9 +6,8 @@ const storage = require('./storage').getStorage()
 const messager = require('./message').getMessage()
 const { api } = require('./index')
 const { parseTxLog } = require('../parser')
-const EventMessage = require('../event-message')
-const EventMaps = require('../events-map.json')
 const BN = require('bn.js')
+const { Command } = require('./command')
 
 const EotpBuilders = {
   fromOtp: async ({ otp, otp2, rand, nonce, wallet }) => {
@@ -211,7 +210,7 @@ const EOTPDerivation = {
 const Flows = {
   commitReveal: async ({
     otp, otp2, eotpBuilder = EotpBuilders.fromOtp, wallet,
-    commitHashGenerator, commitHashArgs, revealAPI, revealArgs,
+    commitHashGenerator, commitHashArgs, revealAPI, revealArgs, commitRevealArgs = null,
     deriver = EOTPDerivation.deriveEOTP, effectiveTime = null, innerTrees = null,
     recoverRandomness = null, prepareProof = null, prepareProofFailed = null,
     index = null,
@@ -226,6 +225,7 @@ const Flows = {
     overrideVersion = false,
   }) => {
     const { address, majorVersion, minorVersion } = wallet
+
     if (!eotp) {
       const derived = await deriver({
         otp,
@@ -253,8 +253,23 @@ const Flows = {
     const neighbors = ONE.selectMerkleNeighbors({ layers, index })
     const neighbor = neighbors[0]
 
+    // compute commitHashArgs with fallbacks
+    if (typeof commitRevealArgs === 'function') {
+      commitHashArgs = commitRevealArgs({ neighbor, index, eotp })
+    } else if (commitRevealArgs) {
+      commitHashArgs = commitRevealArgs
+    } else if (typeof commitHashArgs === 'function') {
+      commitHashArgs = commitHashArgs({ neighbor, index, eotp })
+    }
+
     const { commitHash, paramsHash, verificationHash } = committer({
-      address, commitHashGenerator, neighbor, index, eotp, commitHashArgs: typeof commitHashArgs === 'function' ? commitHashArgs({ neighbor, index, eotp }) : commitHashArgs })
+      address,
+      commitHashGenerator,
+      neighbor,
+      index,
+      eotp,
+      commitHashArgs
+    })
     // console.log(commitHash, paramsHash)
     try {
       const { success, error } = await api.relayer.commit({
@@ -274,6 +289,14 @@ const Flows = {
     }
     afterCommit && await afterCommit(commitHash)
 
+    if (typeof commitRevealArgs === 'function') {
+      revealArgs = commitRevealArgs({ neighbor, index, eotp })
+    } else if (commitRevealArgs) {
+      revealArgs = commitRevealArgs
+    } else if (typeof revealArgs === 'function') {
+      revealArgs = revealArgs({ neighbor, index, eotp })
+    }
+
     let numAttemptsRemaining = maxTransferAttempts - 1
     const tryReveal = () => setTimeout(async () => {
       try {
@@ -286,7 +309,7 @@ const Flows = {
           eotp: ONEUtil.hexString(eotp),
           address,
           ...(overrideVersion ? { majorVersion, minorVersion } : {}),
-          ...(typeof revealArgs === 'function' ? revealArgs({ neighbor, index, eotp }) : revealArgs)
+          ...(revealArgs)
         })
         if (!success) {
           if (error.includes('Cannot find commit')) {
@@ -316,7 +339,7 @@ const Flows = {
   },
 }
 
-const SecureFlows = {
+const SecureFlowsV3 = {
   /**
    * require contract version between [3, 5]
    * @param wallet
@@ -421,21 +444,43 @@ const SecureFlowsV7 = {
   }
 }
 
+const SecureFlowsV16 = {
+  commitReveal: async ({ wallet, forwardWallet, commitRevealArgs, message, ...params }) => {
+    console.log('forwardWallet', forwardWallet)
+    const { address, forwardAddress } = wallet
+    // TODO: retrieve forwardAddress' version via api.blockchain.getVersion or via local state. This is not needed right now, but may be useful later
+    if (ONEConstants.EmptyAddress !== forwardAddress && forwardWallet?.root && commitRevealArgs) {
+      // This is a source wallet which already has a forwarded address. Must transform the parameters into COMMAND, orignated from target wallet
+      message.debug(`Transforming to COMMAND from ${forwardAddress} on ${address}`)
+      const command = Command({ backlinkAddress: address, wallet: forwardWallet })
+      const args = command.transform(commitRevealArgs)
+      message.debug(`Transformed ${JSON.stringify(commitRevealArgs)} to ${JSON.stringify(args.commitRevealArgs)}`, undefined, { console: true })
+      commitRevealArgs = args.commitRevealArgs
+      return SecureFlowsV7.commitReveal({
+        wallet: forwardWallet, message, ...params, overrideVersion: false, commitRevealArgs })
+    }
+    return SecureFlowsV7.commitReveal({ wallet, commitRevealArgs, message, ...params })
+  }
+}
+
 const SmartFlows = {
   commitReveal: async ({ wallet, message = messager, ...args }) => {
     if (!wallet.majorVersion || !(wallet.majorVersion >= config.minWalletVersion)) {
       message.warning('You are using a terribly outdated version of 1wallet. Please create a new one and move your assets.', 15)
     }
+    if (wallet.majorVersion >= 16) {
+      return SecureFlowsV16.commitReveal({ ...args, wallet, message })
+    }
     if (wallet.majorVersion >= 7) {
-      return SecureFlowsV7.commitReveal({ ...args, wallet })
+      return SecureFlowsV7.commitReveal({ ...args, wallet, message })
     }
     if (wallet.majorVersion >= 6) {
       message.warning('You are using an outdated wallet. It is prone to DoS attack.', 15)
-      return SecureFlowsV6.commitReveal({ ...args, wallet })
+      return SecureFlowsV6.commitReveal({ ...args, wallet, message })
     }
     message.warning('You are using a wallet version that is prone to man-in-the-middle attack. Please create a new wallet and migrate assets ASAP. See https://github.com/polymorpher/one-wallet/issues/47')
     if (wallet.majorVersion >= 3) {
-      return SecureFlows.commitReveal({ ...args, wallet })
+      return SecureFlowsV3.commitReveal({ ...args, wallet, message })
     }
     return Flows.commitReveal({
       ...args, wallet, committer: Committer.legacy
@@ -445,7 +490,6 @@ const SmartFlows = {
 
 module.exports = {
   EotpBuilders,
-  SecureFlows,
   Flows,
   SmartFlows,
   EOTPDerivation
