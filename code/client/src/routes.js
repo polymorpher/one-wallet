@@ -46,9 +46,11 @@ const LocalRoutes = () => {
   }, [needCodeUpdate, clientVersion])
 
   return (
-    <Layout style={{
-      minHeight: '100vh'
-    }}
+    <Layout
+      style={{
+        minHeight: '100vh'
+      }}
+      className={v2ui ? 'v2ui' : ''}
     >
       <SiderMenu />
       <Layout>

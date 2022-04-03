@@ -1,0 +1,29 @@
+// Override ant styles
+
+//@layout-header-background: #ffffff;
+.ant-carousel {
+  width: 100%;
+}
+.ant-carousel .slick-prev,
+.ant-carousel .slick-next,
+.ant-carousel .slick-prev:hover,
+.ant-carousel .slick-next:hover {
+  font-size: inherit;
+  color: currentColor;
+}
+.ant-carousel .slick-prev::before{
+  content: "";
+}
+.ant-carousel .slick-next::before{
+  content: "";
+}
+
+.ant-input:focus {
+  box-shadow: none !important;
+  color: #000000;
+  border-right-width: 0 !important;
+}
+
+.ant-input:hover {
+  border-right-width: 0 !important;
+}

@@ -17,6 +17,7 @@ import InfoCircleOutlined from '@ant-design/icons/InfoCircleOutlined'
 import DollarOutlined from '@ant-design/icons/DollarOutlined'
 import ToolOutlined from '@ant-design/icons/ToolOutlined'
 import HarmonyLogo from '../assets/harmony.svg'
+import OneWalletLogo from '../assets/1walletlogo.svg'
 import config from '../config'
 import Paths from '../constants/paths'
 import styled from 'styled-components'
@@ -74,6 +75,7 @@ const MobileSiderMenu = ({ action, nav, ...args }) => {
 const DeskstopSiderMenu = ({ action, nav, ...args }) => {
   const history = useHistory()
   const statsCached = useSelector(state => state.cache.global.stats)
+  const v2ui = useSelector(state => state.global.v2ui)
   const [stats, setStats] = useState(null)
   const dispatch = useDispatch()
 
@@ -95,7 +97,7 @@ const DeskstopSiderMenu = ({ action, nav, ...args }) => {
       {/* <Image src='/assets/harmony.svg' /> */}
       <Row justify='center'>
         <SiderLink href='https://harmony.one/'>
-          <Image preview={false} src={HarmonyLogo} style={{ cursor: 'pointer', padding: 32 }} onClick={() => history.push('/')} />
+          <Image preview={false} src={v2ui ? OneWalletLogo : HarmonyLogo} style={{ cursor: 'pointer', padding: 32 }} onClick={() => history.push('/')} />
         </SiderLink>
       </Row>
       <Row justify='center' style={{ marginBottom: 24 }}><SiderLink href='https://harmony.one/1wallet'>{config.appName} {config.version}</SiderLink></Row>
