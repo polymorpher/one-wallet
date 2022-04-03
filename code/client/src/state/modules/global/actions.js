@@ -1,6 +1,7 @@
 import { createAction } from '@reduxjs/toolkit'
 
 const setDev = createAction('SET_DEV')
+const setV2Ui = createAction('SET_V2_UI')
 
 // Set the wallet address that is known by the user, that is the address has been entered in the system at least once.
 // E.g. transaction destination or recovery address.
@@ -21,6 +22,7 @@ const migrate = createAction('GLOBAL_AUTO_MIGRATE')
 
 export default {
   setDev,
+  setV2Ui,
 
   deleteKnownAddress,
   setKnownAddress,

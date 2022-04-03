@@ -25,6 +25,7 @@ import cacheActions from './state/modules/cache/actions'
 const LocalRoutes = () => {
   const dispatch = useDispatch()
   const dev = useSelector(state => state.global.dev)
+  const v2ui = useSelector(state => state.global.v2ui)
   const wallets = useSelector(state => state.wallet)
   const network = useSelector(state => state.global.network)
   const networkWallets = util.filterNetworkWallets(wallets, network)
@@ -66,6 +67,12 @@ const LocalRoutes = () => {
             <Route
               path={Paths.dev} render={() => {
                 dispatch(globalActions.setDev(!dev))
+                return <Redirect to={Paths.root} />
+              }}
+            />
+            <Route
+              path={Paths.v2ui} render={() => {
+                dispatch(globalActions.setV2Ui(!v2ui))
                 return <Redirect to={Paths.root} />
               }}
             />
