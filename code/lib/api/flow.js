@@ -456,9 +456,10 @@ const SecureFlowsV16 = {
       const args = command.transform(commitRevealArgs)
       message.debug(`Transformed ${JSON.stringify(commitRevealArgs)} to ${JSON.stringify(args.commitRevealArgs)}`, undefined, { console: true })
       commitRevealArgs = args.commitRevealArgs
+      return SecureFlowsV7.commitReveal({
+        wallet: forwardWallet, message, ...params, overrideVersion: false, commitRevealArgs })
     }
-    return SecureFlowsV7.commitReveal({
-      wallet: forwardWallet, message, ...params, overrideVersion: false, commitRevealArgs })
+    return SecureFlowsV7.commitReveal({ wallet, commitRevealArgs, message, ...params })
   }
 }
 
