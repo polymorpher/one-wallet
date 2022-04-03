@@ -36,7 +36,7 @@ const TransferDomain = ({ address, onClose }) => {
     resetWorker,
     onSuccess: async () => {
       const dest = util.safeNormalizedAddress(transferTo.value)
-      const resolved = await api.blockchain.domain.resolve({ domain })
+      const resolved = await api.blockchain.domain.resolve({ name: domain })
       if (resolved === dest) {
         message.success(`Domain ${domain} is transferred to ${dest}`)
         if (wallets[dest]) {
