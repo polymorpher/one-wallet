@@ -73,11 +73,8 @@ const MobileSiderMenu = ({ action, nav, ...args }) => {
   )
 }
 
-const DeskstopSiderMenu = ({ action, nav, ...args }) => {
-  const history = useHistory()
+const StatsInfo = () => {
   const statsCached = useSelector(state => state.cache.global.stats)
-  const theme = useSelector(state => state.global.v2ui ? state.global.theme : 'dark')
-  const v2ui = useSelector(state => state.global.v2ui)
   const [stats, setStats] = useState(null)
   const dispatch = useDispatch()
 
@@ -94,6 +91,29 @@ const DeskstopSiderMenu = ({ action, nav, ...args }) => {
     }
   }, [])
 
+  return stats
+    ? (
+      <Row style={{ marginBottom: 16 }} justify='center'>
+        <Row style={{ marginBottom: 8 }}>
+          <Tag color='dimgray' style={{ margin: 0, width: 64, borderRadius: 0, textAlign: 'center' }}>wallets</Tag>
+          <Tag color='lightseagreen' style={{ width: 80, borderRadius: 0, textAlign: 'center' }}>{stats.count.toLocaleString()}</Tag>
+        </Row>
+        <Row>
+          <Tag color='dimgray' style={{ margin: 0, width: 64, borderRadius: 0, textAlign: 'center' }}>balance</Tag>
+          <Tag color='steelblue' style={{ width: 80, borderRadius: 0, textAlign: 'center' }}>{abbr(stats.totalAmount, 0)} ONE</Tag>
+        </Row>
+      </Row>)
+    : (
+      <Row justify='center'>
+        <Spin />
+      </Row>)
+}
+
+const DeskstopSiderMenu = ({ action, nav, ...args }) => {
+  const history = useHistory()
+  const theme = useSelector(state => state.global.v2ui ? state.global.theme : 'dark')
+  const v2ui = useSelector(state => state.global.v2ui)
+
   return (
     <Layout.Sider collapsed={false} {...args}>
       {/* <Image src='/assets/harmony.svg' /> */}
@@ -106,22 +126,7 @@ const DeskstopSiderMenu = ({ action, nav, ...args }) => {
 
       <LineDivider>Global Usage</LineDivider>
 
-      {stats
-        ? (
-          <Row style={{ marginBottom: 16 }} justify='center'>
-            <Row style={{ marginBottom: 8 }}>
-              <Tag color='dimgray' style={{ margin: 0, width: 64, borderRadius: 0, textAlign: 'center' }}>wallets</Tag>
-              <Tag color='lightseagreen' style={{ width: 80, borderRadius: 0, textAlign: 'center' }}>{stats.count.toLocaleString()}</Tag>
-            </Row>
-            <Row>
-              <Tag color='dimgray' style={{ margin: 0, width: 64, borderRadius: 0, textAlign: 'center' }}>balance</Tag>
-              <Tag color='steelblue' style={{ width: 80, borderRadius: 0, textAlign: 'center' }}>{abbr(stats.totalAmount, 0)} ONE</Tag>
-            </Row>
-          </Row>)
-        : (
-          <Row justify='center'>
-            <Spin />
-          </Row>)}
+      {!v2ui && <StatsInfo />}
 
       <LineDivider />
 
@@ -141,6 +146,8 @@ const DeskstopSiderMenu = ({ action, nav, ...args }) => {
       <Menu theme={theme} mode='inline' onClick={nav} selectedKeys={[action]}>
         <Menu.Item key='tools' icon={<ToolOutlined />}>Tools</Menu.Item>
       </Menu>
+
+      {v2ui && <StatsInfo />}
     </Layout.Sider>
   )
 }
