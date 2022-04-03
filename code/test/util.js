@@ -388,6 +388,78 @@ const validateBalance = async ({ address, amount = HALF_ETH }) => {
 
 // ==== PARSING HELPER FUNCTIONS ====
 
+const getInfoParsed = async (wallet) => {
+  let walletInfo = await wallet.getInfo()
+  let info = {}
+  info = {
+    root: walletInfo[0],
+    height: new BN(walletInfo[1]).toNumber(),
+    interval: new BN(walletInfo[2]).toNumber(),
+    t0: new BN(walletInfo[3]).toNumber(),
+    lifespan: new BN(walletInfo[4]).toNumber(),
+    maxOperationsPerInterval: new BN(walletInfo[5]).toNumber(),
+    recoveryAddress: walletInfo[6],
+    extra: new BN(walletInfo[7]).toNumber()
+  }
+  return info
+}
+
+const getOldInfosParsed = async (wallet) => {
+  const walletOldInfos = await wallet.getOldInfos()
+  let oldInfos = []
+  for (let x of walletOldInfos) {
+    oldInfos.push({
+      root: x[0],
+      height: new BN(x[1]).toNumber(),
+      interval: new BN(x[2]).toNumber(),
+      t0: new BN(x[3]).toNumber(),
+      lifespan: new BN(x[4]).toNumber(),
+      maxOperationsPerInterval: new BN(x[5]).toNumber()
+    })
+  }
+  return oldInfos
+}
+
+const getInnerCoresParsed = async (wallet) => {
+  const walletInnerCores = await wallet.getInnerCores()
+  let innerCores = []
+  for (let x of walletInnerCores) {
+    innerCores.push({
+      root: x[0],
+      height: new BN(x[1]).toNumber(),
+      interval: new BN(x[2]).toNumber(),
+      t0: new BN(x[3]).toNumber(),
+      lifespan: new BN(x[4]).toNumber(),
+      maxOperationsPerInterval: new BN(x[5]).toNumber()
+    })
+  }
+  return innerCores
+}
+
+const getVersionParsed = async (wallet) => {
+  const walletVersion = await wallet.getVersion()
+  let version = {}
+  version = {
+    majorVersion: new BN(walletVersion[0]).toNumber(),
+    minorVersion: new BN(walletVersion[1]).toNumber()
+  }
+  return version
+}
+
+const getSpendingStateParsed = async (wallet) => {
+  const walletSpendingState = await wallet.getSpendingState()
+  let spendingState = {}
+  spendingState = {
+    spendingLimit: walletSpendingState[0].toString(),
+    spentAmount: walletSpendingState[1].toString(),
+    lastSpendingInterval: walletSpendingState[2].toString(),
+    spendingInterval: walletSpendingState[3].toString(),
+    lastLimitAdjustmentTime: walletSpendingState[4].toString(),
+    highestSpendingLimit: walletSpendingState[5].toString()
+  }
+  return spendingState
+}
+
 const getAllCommitsParsed = async (wallet) => {
   let walletAllCommits = await wallet.getAllCommits()
   const [hashes, paramsHashes, verificationHashes, timestamps, completed] = Object.keys(walletAllCommits).map(k => walletAllCommits[k])
@@ -495,80 +567,22 @@ const updateOldSignatures = async ({ expectedSignatures, wallet }) => {
 // get OneWallet state
 const getONEWalletState = async (wallet) => {
   Logger.debug(`getting State for: ${wallet.address}`)
-  const address = (wallet.address).toString()
-  const identificationKey = (await wallet.identificationKey()).toString()
-  // console.log(`identificationKey: ${JSON.stringify(identificationKey)}`)
-  const walletIdentificationKeys = await wallet.getIdentificationKeys()
-  // console.log(`walletIdentificationKeys: ${JSON.stringify(walletIdentificationKeys)}`)
-  let identificationKeys = []
-  for (let x of walletIdentificationKeys) {
-    identificationKeys.push(x[0].toString())
-  }
-  const forwardAddress = (await wallet.getForwardAddress()).toString()
-  const walletInfo = await wallet.getInfo()
-  let info = {}
-  info = {
-    root: walletInfo[0].toString(),
-    height: new BN(walletInfo[1]).toNumber(),
-    interval: new BN(walletInfo[2]).toNumber(),
-    t0: new BN(walletInfo[3]).toNumber(),
-    lifespan: new BN(walletInfo[4]).toNumber(),
-    maxOperationsPerInterval: new BN(walletInfo[5]).toNumber(),
-    recoveryAddress: walletInfo[6].toString(),
-    extra: new BN(walletInfo[7]).toNumber()
-  }
-  const walletOldInfo = await wallet.getOldInfos()
-  let oldInfo = []
-  for (let x of walletOldInfo) {
-    oldInfo.push({
-      root: x[0].toString(),
-      height: new BN(x[1]).toNumber(),
-      interval: new BN(x[2]).toNumber(),
-      t0: new BN(x[3]).toNumber(),
-      lifespan: new BN(x[4]).toNumber(),
-      maxOperationsPerInterval: new BN(x[5]).toNumber()
-    })
-  }
-  const walletInnerCores = await wallet.getInnerCores()
-  let innerCores = []
-  for (let x of walletInnerCores) {
-    innerCores.push({
-      root: x[0].toString(),
-      height: new BN(x[1]).toNumber(),
-      interval: new BN(x[2]).toNumber(),
-      t0: new BN(x[3]).toNumber(),
-      lifespan: new BN(x[4]).toNumber(),
-      maxOperationsPerInterval: new BN(x[5]).toNumber()
-    })
-  }
-  const rootKey = (await wallet.getRootKey()).toString()
-  const walletVersion = await wallet.getVersion()
-  let version = {}
-  version = {
-    majorVersion: new BN(walletVersion[0]).toNumber(),
-    minorVersion: new BN(walletVersion[1]).toNumber()
-  }
-  const walletSpendingState = await wallet.getSpendingState()
-  let spendingState = {}
-  spendingState = {
-    spendingLimit: walletSpendingState[0].toString(),
-    spentAmount: walletSpendingState[1].toString(),
-    lastSpendingInterval: walletSpendingState[2].toString(),
-    spendingInterval: walletSpendingState[3].toString(),
-    lastLimitAdjustmentTime: walletSpendingState[4].toString(),
-    highestSpendingLimit: walletSpendingState[5].toString()
-  }
+  const address = wallet.address
+  const identificationKey = await wallet.identificationKey()
+  const identificationKeys = await wallet.getIdentificationKeys()
+  const forwardAddress = await wallet.getForwardAddress()
+  const info = await getInfoParsed(wallet)
+  const oldInfos = await getOldInfosParsed(wallet)
+  const innerCores = await getInnerCoresParsed(wallet)
+  const rootKey = await wallet.getRootKey()
+  const version = await getVersionParsed(wallet)
+  const spendingState = await getSpendingStateParsed(wallet)
   const nonce = new BN(await wallet.getNonce()).toNumber()
   const lastOperationTime = new BN(await wallet.lastOperationTime()).toNumber()
   const allCommits = await getAllCommitsParsed(wallet)
   const trackedTokens = await getTrackedTokensParsed(wallet)
   const signatures = await getSignaturesParsed(wallet)
-
-  const walletBacklinks = await wallet.getBacklinks()
-  let backlinks = []
-  for (let x of walletBacklinks) {
-    backlinks.push(x)
-  }
+  const backlinks = await wallet.getBacklinks()
 
   let state = {}
   state = {
@@ -577,7 +591,7 @@ const getONEWalletState = async (wallet) => {
     identificationKeys,
     forwardAddress,
     info,
-    oldInfo,
+    oldInfos,
     innerCores,
     rootKey,
     version,
@@ -600,7 +614,7 @@ const checkONEWalletStateChange = async (oldState, currentState) => {
   assert.deepEqual(currentState.identificationKeys, oldState.identificationKeys, 'wallet.identificationKeys is incorrect')
   assert.deepEqual(currentState.forwardAddress, oldState.forwardAddress, 'wallet.forwardAddress is incorrect')
   assert.deepEqual(currentState.info, oldState.info, 'wallet.info is incorrect')
-  assert.deepEqual(currentState.oldInfo, oldState.oldInfo, 'wallet.oldInfos is incorrect')
+  assert.deepEqual(currentState.oldInfos, oldState.oldInfos, 'wallet.oldInfos is incorrect')
   assert.deepEqual(currentState.innerCores, oldState.innerCores, 'wallet.innerCores is incorrect')
   assert.deepEqual(currentState.rootKey, oldState.rootKey, 'wallet.rootKey is incorrect')
   assert.deepEqual(currentState.version, oldState.version, 'wallet.version is incorrect')
@@ -677,6 +691,11 @@ module.exports = {
   validateBalance,
 
   // parsing helpers
+  getInfoParsed,
+  getOldInfosParsed,
+  getInnerCoresParsed,
+  getVersionParsed,
+  getSpendingStateParsed,
   getAllCommitsParsed,
   getTrackedTokensParsed,
   getSignaturesParsed,
