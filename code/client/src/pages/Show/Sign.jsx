@@ -13,16 +13,15 @@ import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
 import BN from 'bn.js'
 import ShowUtils from './show-util'
-import { useSelector } from 'react-redux'
 import { SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import ONEUtil from '../../../../lib/util'
 import { api } from '../../../../lib/api'
 import ONEConstants from '../../../../lib/constants'
-import { OtpStack, useOtpState } from '../../components/OtpStack'
-import { useRandomWorker } from './randomWorker'
+import { OtpStack } from '../../components/OtpStack'
 import humanizeDuration from 'humanize-duration'
 import { autoWalletNameHint } from '../../util'
+import { useOps } from '../../components/Common'
 const { Title } = Typography
 const { TextArea } = Input
 
@@ -36,18 +35,13 @@ const Sign = ({
   shouldAutoFocus,
   headless,
 }) => {
-  const wallets = useSelector(state => state.wallet)
-  const wallet = wallets[address] || {}
-  const network = useSelector(state => state.global.network)
+  const {
+    wallet, forwardWallet, network, stage, setStage,
+    resetWorker, recoverRandomness, otpState,
+  } = useOps({ address })
 
   const doubleOtp = wallet.doubleOtp
-  const { state: otpState } = useOtpState()
-  const { otpInput, otp2Input } = otpState
-  const resetOtp = otpState.resetOtp
-
-  const [stage, setStage] = useState(-1)
-
-  const { resetWorker, recoverRandomness } = useRandomWorker()
+  const { otpInput, otp2Input, resetOtp } = otpState
 
   const [messageInput, setMessageInput] = useState(prefillMessageInput)
   const [useRawMessage, setUseRawMessage] = useState(prefillUseRawMessage)
@@ -86,14 +80,16 @@ const Sign = ({
       tokenId,
       dest: ONEUtil.hexString(encodedExpiryAt)
     }
+    let signature
     const commitRevealArgs = ({ eotp }) => {
       const buf = ONEUtil.bytesConcat(eotp, hash)
-      const signature = ONEUtil.keccak(buf)
+      signature = ONEUtil.keccak(buf)
       return { amount: new BN(signature).toString(), ...args }
     }
 
     SmartFlows.commitReveal({
       wallet,
+      forwardWallet,
       otp,
       otp2,
       recoverRandomness,

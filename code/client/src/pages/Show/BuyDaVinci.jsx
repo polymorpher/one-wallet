@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import util, { autoWalletNameHint, useWindowDimensions } from '../../util'
+import util, { autoWalletNameHint} from '../../util'
 import Button from 'antd/es/button'
 import Col from 'antd/es/col'
 import Row from 'antd/es/row'
@@ -11,32 +11,28 @@ import { InputBox } from '../../components/Text'
 import { NFTGridItem } from '../../components/NFTGrid'
 import { TallRow } from '../../components/Grid'
 import { useSelector } from 'react-redux'
-import { OtpStack, useOtpState } from '../../components/OtpStack'
-import { useRandomWorker } from './randomWorker'
+import { OtpStack} from '../../components/OtpStack'
 import ShowUtils from './show-util'
 import ONEUtil from '../../../../lib/util'
 import { SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
+import { useOps } from '../../components/Common'
 const { Title, Text } = Typography
 
 const DAVINCI_URL_PATTERN = /\/\/davinci.gallery\/view\/(0x[a-zA-Z0-9]+)/
 const DAVINCI_CONTRACT = '0x1d89bc60cd482ddfae8208e6a14d6c185c2095a1'
 const BuyDaVinci = ({ address, onSuccess, onClose }) => {
-  const network = useSelector(state => state.global.network)
-  const wallets = useSelector(state => state.wallet)
-  const wallet = wallets[address] || {}
-  const { isMobile } = useWindowDimensions()
+  const {
+    wallet, forwardWallet, network, stage, setStage,
+    resetWorker, recoverRandomness, otpState, isMobile,
+  } = useOps({ address })
+
   const [url, setUrl] = useState('')
   const [pendingToken, setPendingToken] = useState(null)
   const price = useSelector(state => state.global.price)
   const { formatted, fiatFormatted } = util.computeBalance(pendingToken?.price?.toString() || 0, price)
-
-  const { state: otpState } = useOtpState()
-  const { otpInput, otp2Input } = otpState
-  const resetOtp = otpState.resetOtp
-  const [stage, setStage] = useState(-1)
-  const { resetWorker, recoverRandomness } = useRandomWorker()
+  const { otpInput, otp2Input, resetOtp } = otpState
   const { prepareValidation, ...handlers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker, onSuccess })
 
   const doBuy = async () => {
@@ -57,6 +53,7 @@ const BuyDaVinci = ({ address, onSuccess, onClose }) => {
     const args = util.callArgs({ dest, amount })
     SmartFlows.commitReveal({
       wallet,
+      forwardWallet,
       otp,
       otp2,
       recoverRandomness,

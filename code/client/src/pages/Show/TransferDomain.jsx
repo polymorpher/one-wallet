@@ -13,22 +13,19 @@ import ONEConstants from '../../../../lib/constants'
 import { api } from '../../../../lib/api'
 import walletActions from '../../state/modules/wallet/actions'
 import ShowUtils from './show-util'
-import { useDispatch, useSelector } from 'react-redux'
-import { OtpStack, useOtpState } from '../../components/OtpStack'
-import { useRandomWorker } from './randomWorker'
+import { OtpStack } from '../../components/OtpStack'
 import util, { autoWalletNameHint } from '../../util'
+import { useOps } from '../../components/Common'
 const { Title } = Typography
 
 const TransferDomain = ({ address, onClose }) => {
-  const dispatch = useDispatch()
-  const wallets = useSelector(state => state.wallet)
-  const wallet = wallets[address] || {}
+  const {
+    wallet, wallets, forwardWallet, network, stage, setStage, dispatch,
+    resetWorker, recoverRandomness, otpState,
+  } = useOps({ address })
+
   const domain = wallet.domain || ''
-  const network = useSelector(state => state.global.network)
-  const [stage, setStage] = useState(-1)
   const [transferTo, setTransferTo] = useState({ value: '', label: '' })
-  const { resetWorker, recoverRandomness } = useRandomWorker()
-  const { state: otpState } = useOtpState()
   const { otpInput, otp2Input } = otpState
   const resetOtp = otpState.resetOtp
 
@@ -68,6 +65,7 @@ const TransferDomain = ({ address, onClose }) => {
     setStage(0)
     SmartFlows.commitReveal({
       wallet,
+      forwardWallet,
       otp,
       otp2,
       commitHashGenerator: ONE.computeTransferDomainHash,

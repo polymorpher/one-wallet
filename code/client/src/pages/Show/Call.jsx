@@ -11,7 +11,7 @@ import { AverageRow, TallRow } from '../../components/Grid'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
-import util, { autoWalletNameHint, useWindowDimensions } from '../../util'
+import util, { autoWalletNameHint } from '../../util'
 import BN from 'bn.js'
 import ShowUtils from './show-util'
 import { useSelector } from 'react-redux'
@@ -20,8 +20,8 @@ import ONE from '../../../../lib/onewallet'
 import ONEUtil from '../../../../lib/util'
 import { api } from '../../../../lib/api'
 import ONEConstants from '../../../../lib/constants'
-import { OtpStack, useOtpState } from '../../components/OtpStack'
-import { useRandomWorker } from './randomWorker'
+import { OtpStack } from '../../components/OtpStack'
+import { useOps } from '../../components/Common'
 const { Title } = Typography
 const { TextArea } = Input
 
@@ -38,20 +38,15 @@ const Call = ({
   shouldAutoFocus,
   headless,
 }) => {
-  const { isMobile } = useWindowDimensions()
-  const wallets = useSelector(state => state.wallet)
-  const wallet = wallets[address] || {}
+  const {
+    wallet, forwardWallet, network, stage, setStage,
+    resetWorker, recoverRandomness, otpState, isMobile,
+  } = useOps({ address })
+
   const { majorVersion, minorVersion } = wallet
-  const network = useSelector(state => state.global.network)
 
   const doubleOtp = wallet.doubleOtp
-  const { state: otpState } = useOtpState()
-  const { otpInput, otp2Input } = otpState
-  const resetOtp = otpState.resetOtp
-
-  const [stage, setStage] = useState(-1)
-
-  const { resetWorker, recoverRandomness } = useRandomWorker()
+  const { otpInput, otp2Input, resetOtp } = otpState
 
   const balances = useSelector(state => state.balance || {})
   const price = useSelector(state => state.global.price)
@@ -118,6 +113,7 @@ const Call = ({
     const args = { ...ONEConstants.NullOperationParams, amount, operationType: ONEConstants.OperationType.CALL }
     SmartFlows.commitReveal({
       wallet,
+      forwardWallet,
       otp,
       otp2,
       recoverRandomness,

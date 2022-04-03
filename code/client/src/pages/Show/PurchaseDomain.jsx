@@ -8,18 +8,18 @@ import api from '../../api'
 import util, { autoWalletNameHint, useWaitExecution, useWindowDimensions } from '../../util'
 import ONEUtil from '../../../../lib/util'
 import ONENames from '../../../../lib/names'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { AutoResizeInputBox, Warning, Hint } from '../../components/Text'
 import { walletActions } from '../../state/modules/wallet'
 import AnimatedSection from '../../components/AnimatedSection'
 import BN from 'bn.js'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
-import { OtpStack, useOtpState } from '../../components/OtpStack'
-import { useRandomWorker } from './randomWorker'
+import { OtpStack } from '../../components/OtpStack'
 import ShowUtils from './show-util'
 import { SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import ONEConstants from '../../../../lib/constants'
+import { useOps } from '../../components/Common'
 
 const { Text, Title, Link } = Typography
 
@@ -89,17 +89,17 @@ const prepareName = (name) => {
   return name
 }
 
-// eslint-disable-next-line no-unused-vars
-const { balance: PAYMENT_EXCESS_BUFFER } = util.toBalance(0.1)
 /**
  * Renders Purchase Domain section that enables users to purchase an available domain for their selected wallet using selected token.
  */
 const PurchaseDomain = ({ address, onClose }) => {
-  const dispatch = useDispatch()
+  const {
+    wallet, forwardWallet, network, stage, setStage, dispatch,
+    resetWorker, recoverRandomness, otpState,
+  } = useOps({ address })
+
   const balances = useSelector(state => state.balance || {})
-  const wallets = useSelector(state => state.wallet)
-  const wallet = wallets[address] || {}
-  const network = useSelector(state => state.global.network)
+
   const oneBalance = balances[address]?.balance || 0
   const [subdomain, setSubdomain] = useState(prepareName(wallet.name))
   const [purchaseOnePrice, setPurchaseOnePrice] = useState({ value: '', formatted: '' })
@@ -111,12 +111,8 @@ const PurchaseDomain = ({ address, onClose }) => {
   const price = useSelector(state => state.global.price)
   const validatedSubdomain = validateSubdomain(subdomain)
 
-  const [stage, setStage] = useState(-1)
   const doubleOtp = wallet.doubleOtp
-  const { state: otpState } = useOtpState()
-  const { otpInput, otp2Input } = otpState
-  const resetOtp = otpState.resetOtp
-  const { resetWorker, recoverRandomness } = useRandomWorker()
+  const { otpInput, otp2Input, resetOtp } = otpState
 
   const { prepareValidation, ...handlers } = ShowUtils.buildHelpers({
     setStage,
@@ -146,6 +142,7 @@ const PurchaseDomain = ({ address, onClose }) => {
     const data = ONE.encodeBuyDomainData({ subdomain: validatedSubdomain })
     SmartFlows.commitReveal({
       wallet,
+      forwardWallet,
       otp,
       otp2,
       recoverRandomness,
