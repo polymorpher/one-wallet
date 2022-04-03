@@ -30,6 +30,7 @@ import { handleAPIError } from '../../handler'
 import WalletCreateProgress from '../../components/WalletCreateProgress'
 import config from '../../config'
 import qrcode from 'qrcode'
+import { useOps } from '../../components/Common'
 const { Title, Text, Link } = Typography
 
 const Share = ({ seed, redPacketAddress, address, network, isMobile, onClose, message, randomFactor }) => {
@@ -93,15 +94,14 @@ const Gift = ({
   prefilledClaimLimit, // string, ONE
   prefilledClaimInterval // int, non-zero
 }) => {
-  const { isMobile } = useWindowDimensions()
+  const {
+    wallet, forwardWallet, network, stage, setStage,
+    resetWorker, recoverRandomness, otpState, isMobile,
+  } = useOps({ address })
+
   const price = useSelector(state => state.global.price)
-  const network = useSelector(state => state.global.network)
-  const wallets = useSelector(state => state.wallet)
   const balances = useSelector(state => state.balance || {})
-  const wallet = wallets[address] || {}
-  const [stage, setStage] = useState(-1)
   const doubleOtp = wallet.doubleOtp
-  const { state: otpState } = useOtpState()
   const { otpInput, otp2Input, resetOtp } = otpState
 
   const [section, setSection] = useState(sections.prepare)
@@ -135,7 +135,6 @@ const Gift = ({
   const [redPacketAddress, setRedPacketAddress] = useState() // '0x12345678901234567890'
   const [effectiveTime, setEffectiveTime] = useState()
 
-  const { resetWorker, recoverRandomness } = useRandomWorker()
   const { prepareValidation, ...handlers } = ShowUtils.buildHelpers({
     setStage,
     resetOtp,
@@ -169,6 +168,7 @@ const Gift = ({
       if (!root || !layers) {
         return
       }
+      const identificationKeys = [ONEUtil.getIdentificationKey(seed, true)]
       try {
         const { address: newAddress } = await api.relayer.create({
           root: ONEUtil.hexString(root),
@@ -180,6 +180,8 @@ const Gift = ({
           lastResortAddress: address,
           spendingLimit: ONEUtil.toFraction(claimLimitInput).toString(),
           spendingInterval: claimInterval,
+          innerCores: [],
+          identificationKeys,
         })
         setRedPacketAddress(newAddress)
       } catch (ex) {
@@ -255,6 +257,7 @@ const Gift = ({
 
     SmartFlows.commitReveal({
       wallet,
+      forwardWallet,
       otp,
       otp2,
       recoverRandomness,
