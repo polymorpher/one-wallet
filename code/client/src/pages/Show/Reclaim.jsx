@@ -8,18 +8,17 @@ import { AverageRow } from '../../components/Grid'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
-import util, { autoWalletNameHint, useWindowDimensions } from '../../util'
+import util, { autoWalletNameHint} from '../../util'
 import ShowUtils from './show-util'
-import { useSelector } from 'react-redux'
 import { SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import ONEUtil from '../../../../lib/util'
 import { api } from '../../../../lib/api'
 import ONEConstants from '../../../../lib/constants'
-import { OtpStack, useOtpState } from '../../components/OtpStack'
-import { useRandomWorker } from './randomWorker'
+import { OtpStack} from '../../components/OtpStack'
 import querystring from 'query-string'
 import { useLocation } from 'react-router'
+import { useOps } from '../../components/Common'
 
 const { Title, Text } = Typography
 
@@ -31,20 +30,14 @@ const Reclaim = ({
 }) => {
   const location = useLocation()
 
-  const { isMobile } = useWindowDimensions()
-  const wallets = useSelector(state => state.wallet)
-  const wallet = wallets[address] || {}
+  const {
+    wallet, forwardWallet, network, stage, setStage,
+    resetWorker, recoverRandomness, otpState, isMobile,
+  } = useOps({ address })
+
   const { majorVersion } = wallet
-  const network = useSelector(state => state.global.network)
-
   const doubleOtp = wallet.doubleOtp
-  const { state: otpState } = useOtpState()
-  const { otpInput, otp2Input } = otpState
-  const resetOtp = otpState.resetOtp
-
-  const [stage, setStage] = useState(-1)
-
-  const { resetWorker, recoverRandomness } = useRandomWorker()
+  const { otpInput, otp2Input, resetOtp } = otpState
 
   const [from, setFrom] = useState({ value: prefillFrom || '', label: prefillFrom ? util.safeOneAddress(prefillFrom) : '' })
   const [trackedTokens, setTrackedTokens] = useState([])
@@ -153,6 +146,7 @@ const Reclaim = ({
 
     SmartFlows.commitReveal({
       wallet,
+      // forwardWallet,
       otp,
       otp2,
       recoverRandomness,
