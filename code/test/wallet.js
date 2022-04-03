@@ -8,9 +8,6 @@ const ONEWallet = require('../lib/onewallet')
 const BN = require('bn.js')
 const ONEDebugger = require('../lib/debug')
 const assert = require('assert')
-const TestERC20 = artifacts.require('TestERC20')
-const TestERC721 = artifacts.require('TestERC721')
-const TestERC1155 = artifacts.require('TestERC1155')
 
 const NullOperationParams = {
   ...ONEConstants.NullOperationParams,
@@ -115,6 +112,7 @@ contract('ONEWallet', (accounts) => {
   beforeEach(async function () {
     snapshotId = await TestUtil.snapshot()
     console.log(`Taken snapshot id=${snapshotId}`)
+    await TestUtil.init()
   })
 
   afterEach(async function () {
@@ -270,7 +268,6 @@ contract('ONEWallet', (accounts) => {
     testTime = await TestUtil.bumpTestTime(testTime, 60)
 
     // Carols uses the CALL command to sign a transaction
-    // const { eotp: e2, index: i2 } = await TestUtil.getEOTP({ seed: s2, hseed: hs2, effectiveTime })
     const hexData = ONEUtil.abi.encodeParameters(['address', 'uint16', 'bytes'], [alice.wallet.address, ONEConstants.OperationType.SIGN, new Uint8Array()])
     const messageHash = ONEUtil.keccak('hello world')
     const signature = ONEUtil.keccak('awesome signature')
@@ -292,25 +289,18 @@ contract('ONEWallet', (accounts) => {
         testTime
       }
     )
+    aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
     Logger.debug(tx2)
 
-    const sigs = await alice.wallet.listSignatures(0, 999)
-    Logger.debug(sigs)
-    const v = await alice.wallet.isValidSignature(ONEUtil.hexString(messageHash), ONEUtil.hexString(signature))
-    Logger.debug(v)
-    assert.strictEqual(v, '0x1626ba7e', `signature ${ONEUtil.hexString(signature)} should be valid`)
-    const invalidSignature = ONEUtil.hexString(ONEUtil.keccak(signature))
-    const v1 = await alice.wallet.isValidSignature(ONEUtil.hexString(messageHash), invalidSignature)
-    assert.strictEqual(v1, '0xffffffff', `signature ${invalidSignature} should be invalid`)
-
-    // check alice nothing has signed
+    // Alice items that have changed -signatures
+    // check alice signatures have changed by getting the current values and overriding with the expected hash and signature
+    const expectedSignatures = await TestUtil.getSignaturesParsed(alice.wallet)
+    aliceOldState.signatures = expectedSignatures
+    aliceOldState.signatures[0].hash = ONEUtil.hexString(messageHash)
+    aliceOldState.signatures[0].signature = ONEUtil.hexString(signature)
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
     // Carol Items that have changed - lastOperationTime, commits, trackedTokens
-    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: carol.wallet, oldState: carolOldState, validateNonce: false })
-    // // Alice's spending state has been updated
-    // expectedSpendingState = await carol.wallet.getSpendingState()
-    // carolOldState.spendingState = await TestUtil.updateOldSpendingState({ expectedSpendingState, wallet: carol.wallet })
-    // // check alice
+    carolOldState = await TestUtil.updateOldTxnInfo({ wallet: carol.wallet, oldState: carolOldState, validateNonce: false })
     // check carol's wallet hasn't changed (just her balances above)
     await TestUtil.checkONEWalletStateChange(carolOldState, carolCurrentStateSigned)
   })

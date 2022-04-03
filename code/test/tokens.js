@@ -8,6 +8,7 @@ const ONEWallet = require('../lib/onewallet')
 const BN = require('bn.js')
 const ONEDebugger = require('../lib/debug')
 const assert = require('assert')
+const { getTrackedTokensParsed } = require('./util')
 const TestERC20 = artifacts.require('TestERC20')
 const TestERC721 = artifacts.require('TestERC721')
 const TestERC1155 = artifacts.require('TestERC1155')
@@ -191,26 +192,34 @@ const updateOldTrackedTokens = async ({
   expectedTrackedTokens,
   wallet
 }) => {
-  let trackedTokens = await wallet.getTrackedTokens()
+  let trackedTokens = await getTrackedTokensParsed(wallet)
+  expectedTrackedTokens.sort(
+    function (a, b) {
+      if (a.tokenType === b.tokenType) {
+        if (a.contractAddress === b.contract) { return a.tokenId - b.tokenId }
+        return b.contractAddress - a.contractAddress
+      }
+      return a.tokenType > b.tokenType ? 1 : -1
+    })
+  const trackedTokensSorted = trackedTokens.slice()
+  trackedTokensSorted.sort(
+    function (a, b) {
+      if (a.tokenType === b.tokenType) {
+        if (a.contractAddress === b.contract) { return a.tokenId - b.tokenId }
+        // contractAddress is only important when tokenId are the same
+        return b.contractAddress - a.contractAddress
+      }
+      return a.tokenType > b.tokenType ? 1 : -1
+    })
   Logger.debug(`expectedTrackedTokens: ${JSON.stringify(expectedTrackedTokens)}`)
   Logger.debug(`trackedTokens: ${JSON.stringify(trackedTokens)}`)
-  // expectedTrackedTokens.sort()
-  let expectedTokenTypes = expectedTrackedTokens[0].sort()
-  let expectedContractAddresses = expectedTrackedTokens[1].sort()
-  let expectedTokenIds = expectedTrackedTokens[2].sort()
   let trackedTokenArray = Object.values(trackedTokens).slice()
-  // trackedTokenArray.sort()
-  let trackedTokenTypes = trackedTokenArray[0].slice()
-  trackedTokenTypes.sort()
-  let trackedTokenContractAddresses = trackedTokenArray[1].slice()
-  trackedTokenContractAddresses.sort()
-  let trackedTokenTokenIds = trackedTokenArray[2].slice()
-  trackedTokenTokenIds.sort()
-  assert.strictEqual(expectedTokenTypes.length, trackedTokenTypes.length, 'Number of Tracked Tokens is different than expected')
-  for (let i = 0; i < trackedTokens[0].length; i++) {
-    assert.strictEqual(expectedTokenTypes[i].toString(), trackedTokenTypes[i].toString(), 'Tracked Token Type is different than expected')
-    assert.strictEqual(expectedContractAddresses[i].toString(), trackedTokenContractAddresses[i].toString(), 'Tracked Token Address is different than expected')
-    assert.strictEqual(expectedTokenIds[i].toString(), trackedTokenTokenIds[i].toString(), 'Tracked Token Ids are different than expected')
+  trackedTokenArray.sort()
+  assert.strictEqual(expectedTrackedTokens.length, trackedTokensSorted.length, 'Number of Tracked Tokens is different than expected')
+  for (let i = 0; i < expectedTrackedTokens.length; i++) {
+    assert.strictEqual(expectedTrackedTokens[i].tokenType.toString(), trackedTokensSorted[i].tokenType.toString(), 'Tracked Token Type is different than expected')
+    assert.strictEqual(expectedTrackedTokens[i].contractAddress, trackedTokensSorted[i].contractAddress, 'Tracked Token Address is different than expected')
+    assert.strictEqual(expectedTrackedTokens[i].tokenId.toString(), trackedTokensSorted[i].tokenId.toString(), 'Tracked Token Ids are different than expected')
   }
   return trackedTokens
 }
@@ -259,7 +268,11 @@ contract('ONEWallet', (accounts) => {
     // Alice Items that have changed - nonce, lastOperationTime, commits, trackedTokens
     aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
     // tracked tokens
-    const expectedTrackedTokens = [[ONEConstants.TokenType.ERC20], [testerc20.address], [[0]]]
+    const expectedTrackedTokens = [{
+      tokenType: ONEConstants.TokenType.ERC20,
+      contractAddress: testerc20.address,
+      tokenId: 0 }]
+    // const expectedTrackedTokens = [[ONEConstants.TokenType.ERC20], [testerc20.address], [[0]]]
     aliceOldState.trackedTokens = await updateOldTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
     // check alice
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
@@ -311,7 +324,7 @@ contract('ONEWallet', (accounts) => {
     // Alice Items that have changed - lastOperationTime, commits, trackedTokens
     aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
     // tracked tokens
-    const expectedTrackedTokens = [[], [], [[]]]
+    const expectedTrackedTokens = []
     aliceOldState.trackedTokens = await updateOldTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
     // check alice
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentStateUntracked)
@@ -369,7 +382,11 @@ contract('ONEWallet', (accounts) => {
     // Alice Items that have changed - nonce, lastOperationTime, commits, trackedTokens
     aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
     // tracked tokens
-    const expectedTrackedTokens = [[ONEConstants.TokenType.ERC20], [testerc20.address], [[0]]]
+    // tracked tokens
+    const expectedTrackedTokens = [{
+      tokenType: ONEConstants.TokenType.ERC20,
+      contractAddress: testerc20.address,
+      tokenId: 0 }]
     aliceOldState.trackedTokens = await updateOldTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
 
     // check alice
@@ -425,7 +442,11 @@ contract('ONEWallet', (accounts) => {
     // Alice Items that have changed - lastOperationTime, commits, trackedTokens
     aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
     // tracked tokens
-    const expectedTrackedTokens = [[ONEConstants.TokenType.ERC20], [testerc20v2.address], [[0]]]
+    // tracked tokens
+    const expectedTrackedTokens = [{
+      tokenType: ONEConstants.TokenType.ERC20,
+      contractAddress: testerc20v2.address,
+      tokenId: 0 }]
     aliceOldState.trackedTokens = await updateOldTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
     // check alice
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentStateTrackedOverride)
@@ -464,7 +485,10 @@ contract('ONEWallet', (accounts) => {
     // Alice Items that have changed - nonce, lastOperationTime, commits, trackedTokens
     aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
     // tracked tokens
-    const expectedTrackedTokens = [[ONEConstants.TokenType.ERC721], [testerc721.address], [[3]]]
+    const expectedTrackedTokens = [{
+      tokenType: ONEConstants.TokenType.ERC721,
+      contractAddress: testerc721.address,
+      tokenId: 3 }]
     aliceOldState.trackedTokens = await updateOldTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
     // check alice
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
@@ -518,7 +542,7 @@ contract('ONEWallet', (accounts) => {
     // Alice Items that have changed - lastOperationTime, commits, trackedTokens
     aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
     // tracked tokens
-    const expectedTrackedTokens = [[], [], [[]]]
+    const expectedTrackedTokens = []
     aliceOldState.trackedTokens = await updateOldTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
     // check alice
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentStateUntracked)
@@ -580,7 +604,11 @@ contract('ONEWallet', (accounts) => {
     // Alice Items that have changed - nonce, lastOperationTime, commits, trackedTokens
     aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
     // tracked tokens
-    const expectedTrackedTokens = [[ONEConstants.TokenType.ERC721, ONEConstants.TokenType.ERC721], [testerc721.address, testerc721.address], ['2', '3']]
+    const expectedTrackedTokens = [
+      { tokenType: ONEConstants.TokenType.ERC721, contractAddress: testerc721.address, tokenId: 2 },
+      { tokenType: ONEConstants.TokenType.ERC721, contractAddress: testerc721.address, tokenId: 3 },
+    ]
+
     aliceOldState.trackedTokens = await updateOldTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
 
     // check alice
@@ -637,7 +665,7 @@ contract('ONEWallet', (accounts) => {
     // Alice Items that have changed - lastOperationTime, commits, trackedTokens
     aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
     // tracked tokens
-    const expectedTrackedTokens = [[ONEConstants.TokenType.ERC721], [testerc721v2.address], [[3]]]
+    const expectedTrackedTokens = [{ tokenType: ONEConstants.TokenType.ERC721, contractAddress: testerc721v2.address, tokenId: 3 }]
     aliceOldState.trackedTokens = await updateOldTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
     // check alice
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentStateTrackedOverride)
@@ -676,7 +704,7 @@ contract('ONEWallet', (accounts) => {
     // Alice Items that have changed - nonce, lastOperationTime, commits, trackedTokens
     aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
     // tracked tokens
-    const expectedTrackedTokens = [[ONEConstants.TokenType.ERC1155], [testerc1155.address], [[3]]]
+    const expectedTrackedTokens = [{ tokenType: ONEConstants.TokenType.ERC1155, contractAddress: testerc1155.address, tokenId: 3 }]
     aliceOldState.trackedTokens = await updateOldTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
     // check alice
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
@@ -730,7 +758,7 @@ contract('ONEWallet', (accounts) => {
     // Alice Items that have changed - lastOperationTime, commits, trackedTokens
     aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
     // tracked tokens
-    const expectedTrackedTokens = [[], [], [[]]]
+    const expectedTrackedTokens = []
     aliceOldState.trackedTokens = await updateOldTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
     // check alice
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentStateUntracked)
@@ -792,7 +820,10 @@ contract('ONEWallet', (accounts) => {
     // Alice Items that have changed - nonce, lastOperationTime, commits, trackedTokens
     aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
     // tracked tokens
-    const expectedTrackedTokens = [[ONEConstants.TokenType.ERC1155, ONEConstants.TokenType.ERC1155], [testerc1155.address, testerc1155.address], ['2', '3']]
+    const expectedTrackedTokens = [
+      { tokenType: ONEConstants.TokenType.ERC1155, contractAddress: testerc1155.address, tokenId: 2 },
+      { tokenType: ONEConstants.TokenType.ERC1155, contractAddress: testerc1155.address, tokenId: 3 }
+    ]
     aliceOldState.trackedTokens = await updateOldTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
 
     // check alice
@@ -848,7 +879,7 @@ contract('ONEWallet', (accounts) => {
     // Alice Items that have changed - lastOperationTime, commits, trackedTokens
     aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
     // tracked tokens
-    const expectedTrackedTokens = [[ONEConstants.TokenType.ERC1155], [testerc1155v2.address], [[3]]]
+    const expectedTrackedTokens = [{ tokenType: ONEConstants.TokenType.ERC1155, contractAddress: testerc1155v2.address, tokenId: 3 }]
     aliceOldState.trackedTokens = await updateOldTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
     // check alice
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentStateTrackedOverride)
@@ -985,7 +1016,11 @@ contract('ONEWallet', (accounts) => {
     // Alice Items that have changed - lastOperationTime, commits, trackedTokens
     aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: true })
     // tracked tokens
-    const expectedTrackedTokens = [tokenTypes, contractAddresses, tokenIds]
+    const expectedTrackedTokens = [
+      { tokenType: ONEConstants.TokenType.ERC20, contractAddress: testerc20.address, tokenId: 0 },
+      { tokenType: ONEConstants.TokenType.ERC721, contractAddress: testerc721.address, tokenId: 2 },
+      { tokenType: ONEConstants.TokenType.ERC1155, contractAddress: testerc1155.address, tokenId: 3 }
+    ]
     aliceOldState.trackedTokens = await updateOldTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
     // check alice
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
@@ -1043,7 +1078,9 @@ contract('ONEWallet', (accounts) => {
     // Alice Items that have changed - lastOperationTime, commits, trackedTokens
     aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: true })
     // tracked tokens
-    const expectedTrackedTokens = [[ONEConstants.TokenType.ERC721], [testerc721.address], [[2]]]
+    const expectedTrackedTokens = [
+      { tokenType: ONEConstants.TokenType.ERC721, contractAddress: testerc721.address, tokenId: 2 },
+    ]
     aliceOldState.trackedTokens = await updateOldTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
     // check alice
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
@@ -1051,6 +1088,7 @@ contract('ONEWallet', (accounts) => {
 
   // Combination testing of multiple tokens, funding, tracking and transfers
   it('TT.COMBO.1: TokenTracker(token management) must commit and reveal successfully', async () => {
+    // await TestUtil.wait(10)
     // create wallets and token contracts used througout the tests
     let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TT.COMBO.1.1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
     let { walletInfo: bob } = await TestUtil.makeWallet({ salt: 'TT.COMBO.1.2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
@@ -1135,9 +1173,11 @@ contract('ONEWallet', (accounts) => {
     aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
     // tracked tokens
     const expectedTrackedTokens = [
-      [ONEConstants.TokenType.ERC20, ONEConstants.TokenType.ERC721, ONEConstants.TokenType.ERC721, ONEConstants.TokenType.ERC1155, ONEConstants.TokenType.ERC1155],
-      [testerc20.address, testerc721.address, testerc721.address, testerc1155.address, testerc1155.address], 
-      ['0', '2', '3', '2', '3']
+      { tokenType: ONEConstants.TokenType.ERC20, contractAddress: testerc20.address, tokenId: 0 },
+      { tokenType: ONEConstants.TokenType.ERC721, contractAddress: testerc721.address, tokenId: 2 },
+      { tokenType: ONEConstants.TokenType.ERC721, contractAddress: testerc721.address, tokenId: 3 },
+      { tokenType: ONEConstants.TokenType.ERC1155, contractAddress: testerc1155.address, tokenId: 2 },
+      { tokenType: ONEConstants.TokenType.ERC1155, contractAddress: testerc1155.address, tokenId: 3 }
     ]
     aliceOldState.trackedTokens = await updateOldTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
 

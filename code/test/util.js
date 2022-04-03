@@ -12,6 +12,8 @@ const ONEConstants = require('../lib/constants')
 const TestERC20 = artifacts.require('TestERC20')
 const TestERC721 = artifacts.require('TestERC721')
 const TestERC1155 = artifacts.require('TestERC1155')
+const VALID_SIGNATURE_VALUE = '0x1626ba7e'
+const INVALID_SIGNATURE_VALUE = '0xffffffff'
 
 // const ONE_CENT = unit.toWei('0.01', 'ether')
 // const HALF_DIME = unit.toWei('0.05', 'ether')
@@ -365,6 +367,15 @@ const fundWallet = async ({ funder, wallet, value = HALF_ETH }) => {
   return balance
 }
 
+// === EVENT VALIDATION ====
+const validateEvent = ({ tx, expectedEvent }) => {
+  const events = ONEParser.parseTxLog(tx?.receipt?.rawLogs)
+  const event = events.filter(e => e.eventName === expectedEvent)[0]
+  const eventName = event?.eventName
+  console.log(`eventName: ${eventName}`)
+  assert.deepStrictEqual(expectedEvent, eventName, 'Expected event not triggered')
+}
+
 // ==== ADDRESS VALIDATION HELPER FUNCTIONS ====
 // These functions retrieve values using an address
 // They are typically used to validate wallets balances have been funded or updated
@@ -374,6 +385,34 @@ const validateBalance = async ({ address, amount = HALF_ETH }) => {
   let balance = await web3.eth.getBalance(address)
   assert.equal(amount, balance, 'Wallet should have a different balance')
 }
+
+// ==== PARSING HELPER FUNCTIONS ====
+
+const getAllCommitsParsed = async (wallet) => {
+  let walletAllCommits = await wallet.getAllCommits()
+  const [hashes, paramsHashes, verificationHashes, timestamps, completed] = Object.keys(walletAllCommits).map(k => walletAllCommits[k])
+  const allCommits = hashes.map((e, i) => ({ hash: hashes[i], paramsHash: paramsHashes[i], verificationHash: verificationHashes[i], timestamp: timestamps[i], completed: completed[i] }))
+  return allCommits
+}
+
+const getTrackedTokensParsed = async (wallet) => {
+  const walletTrackedTokens = await wallet.getTrackedTokens()
+  const [tokenType, contractAddress, tokenId] = Object.keys(walletTrackedTokens).map(k => walletTrackedTokens[k])
+  const trackedTokens = tokenType.map((e, i) => ({ tokenType: tokenType[i].toNumber(), contractAddress: contractAddress[i], tokenId: tokenId[i].toNumber() }))
+  return trackedTokens
+}
+
+const getSignaturesParsed = async (wallet) => {
+  const walletSignatures = await wallet.listSignatures(0, MAX_UINT32)
+  const [hash, signature, timestamp, expireAt] = Object.keys(walletSignatures).map(k => walletSignatures[k])
+  const signatures = hash.map((e, i) => ({ hash: hash[i], signature: signature[i], timestamp: timestamp[i], expireAt: expireAt[i] }))
+  return signatures
+}
+
+// ==== STATE VALIDATION HELPER FUNCTIONS ====
+// These functions validate elements of a wallets STATE
+// They are typically used after an un update Operation to validate changed elements
+// They return an updated OldState by replacing elements from the current state
 
 // updateOldTxnInfo: changed - nonce, lastOperationTime, commits,
 const updateOldTxnInfo = async ({ wallet, oldState, validateNonce = true }) => {
@@ -389,7 +428,7 @@ const updateOldTxnInfo = async ({ wallet, oldState, validateNonce = true }) => {
   assert.notStrictEqual(lastOperationTime, oldState.lastOperationTime, 'wallet.lastOperationTime should have been updated')
   oldState.lastOperationTime = lastOperationTime.toNumber()
   // commits
-  let allCommits = await wallet.getAllCommits()
+  let allCommits = await getAllCommitsParsed(wallet)
   assert.notDeepEqual(allCommits, oldState.allCommits, 'wallet.allCommits should have been updated')
   oldState.allCommits = allCommits
   return oldState
@@ -439,12 +478,16 @@ const updateOldSpendingState = async ({
   return spendingStateObject
 }
 
-const validateEvent = ({ tx, expectedEvent }) => {
-  const events = ONEParser.parseTxLog(tx?.receipt?.rawLogs)
-  const event = events.filter(e => e.eventName === expectedEvent)[0]
-  const eventName = event?.eventName
-  console.log(`eventName: ${eventName}`)
-  assert.deepStrictEqual(expectedEvent, eventName, 'Expected event not triggered') 
+// updateOldSignatures
+const updateOldSignatures = async ({ expectedSignatures, wallet }) => {
+  let signatures = getSignaturesParsed(wallet)
+  // check all expectedSignatures are valid
+  for (let i = 0; i < expectedSignatures.length; i++) {
+    const v = await wallet.isValidSignature(expectedSignatures[i].hash, expectedSignatures[i].signature)
+    Logger.debug(v)
+    assert.strictEqual(v, VALID_SIGNATURE_VALUE, `signature ${expectedSignatures[i].signature} should be valid`)
+  }
+  return signatures
 }
 
 // ==== STATE RETREIVAL AND VALIDATION FUNCTIONS =====
@@ -517,49 +560,15 @@ const getONEWalletState = async (wallet) => {
   }
   const nonce = new BN(await wallet.getNonce()).toNumber()
   const lastOperationTime = new BN(await wallet.lastOperationTime()).toNumber()
-  const walletAllCommits = await wallet.getAllCommits()
-  // const [hashes, paramsHashes, verificationHashes, timestamps, completed] = Object.keys(walletAllCommits).map(k => walletAllCommits[k])
-  // const allCommits = hashes.map((e, i) => ({ hash: hashes[i], paramsHash: paramsHashes[i], verificationHash: verificationHashes[i], timestamp: timestamps[i], completed: completed[i] }))
-  let allCommits = {}
-  // commitHashArray
-  allCommits[0] = walletAllCommits[0]
-  // paramHashArray
-  allCommits[1] = walletAllCommits[1]
-  // veriFicationHashArray
-  allCommits[2] = walletAllCommits[2]
-  // timestampArray
-  allCommits[3] = walletAllCommits[3]
-  // completedArray
-  allCommits[4] = walletAllCommits[4]
-  const walletTrackedTokens = await wallet.getTrackedTokens()
-  // const [tokenType, contractAddress, tokenId] = Object.keys(walletTrackedTokens).map(k => walletTrackedTokens[k])
-  // const trackedTokens = hashes.map((e, i) => ({ tokenType: tokenType[i], contractAddress: contractAddress[i], tokenId: tokenId[i] }))
-  let trackedTokens = {}
-  // tokenTypeArray
-  trackedTokens[0] = walletTrackedTokens[0]
-  // contractAddressArray
-  trackedTokens[1] = walletTrackedTokens[1]
-  // tokenIdArray
-  trackedTokens[2] = walletTrackedTokens[2]
+  const allCommits = await getAllCommitsParsed(wallet)
+  const trackedTokens = await getTrackedTokensParsed(wallet)
+  const signatures = await getSignaturesParsed(wallet)
+
   const walletBacklinks = await wallet.getBacklinks()
-  // const [backlinkAddresses] = Object.keys(walletBacklinks).map(k => walletBacklinks[k])
-  // const backlinks = hashes.map((e, i) => ({ backlinkAddresses: backlinkAddresses[i] }))
   let backlinks = []
   for (let x of walletBacklinks) {
     backlinks.push(x)
   }
-  const walletSignatures = await wallet.listSignatures(0, MAX_UINT32)
-  // const [timestamp, expireAt, signature, hash] = Object.keys(walletSignatures).map(k => walletSignatures[k])
-  // const signatures = hashes.map((e, i) => ({ timestamp: timestamp[i], expireAt: expireAt[i], signature: signature[i], hash: hash[i] }))
-  let signatures = {}
-  // Signature Tracker Hashes
-  signatures[0] = walletSignatures[0]
-  // signatures
-  signatures[1] = walletSignatures[1]
-  // timestamps
-  signatures[2] = walletSignatures[2]
-  // expiries
-  signatures[3] = walletSignatures[3]
 
   let state = {}
   state = {
@@ -640,26 +649,47 @@ const commitReveal = async ({ layers, Debugger, index, eotp, paramsHash, commitP
 }
 
 module.exports = {
+  // deployment
   init,
-  increaseTime,
-  createWallet,
-  makeCores,
-  Logger,
   getFactory: (factory) => Factories[factory],
-  commitReveal,
-  printInnerTrees,
-  getEOTP,
+
+  // infrastructure
+  Logger,
+  increaseTime,
   snapshot,
   revert,
   wait,
   waitForReceipt,
   bumpTestTime,
+
+  // helpers
+  createWallet,
+  makeCores,
+  printInnerTrees,
+  getEOTP,
   makeWallet,
   makeTokens,
-  getONEWalletState,
-  checkONEWalletStateChange,
+
+  // event validation
+  validateEvent,
+
+  // address validation helpers
   validateBalance,
+
+  // parsing helpers
+  getAllCommitsParsed,
+  getTrackedTokensParsed,
+  getSignaturesParsed,
+
+  // state helpers
   updateOldTxnInfo,
   updateOldSpendingState,
-  validateEvent
+  updateOldSignatures,
+
+  // state retrieval and validation
+  getONEWalletState,
+  checkONEWalletStateChange,
+
+  // execution
+  commitReveal
 }
