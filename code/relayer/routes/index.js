@@ -139,7 +139,7 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
       const c = blockchain.getFactory(req.network)
       const predictedAddress = await c.predict.call(identificationKeys[0], txArgs)
       const code = await rpc.getCode({ address: predictedAddress, network: req.network })
-      if (code.length > 0) {
+      if (code?.length > 0) {
         const ex = new Error('already deployed')
         ex.abort = true
         ex.extra = { predictedAddress }
