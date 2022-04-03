@@ -6,7 +6,7 @@ export const initialState = {
   knownAddresses: {},
   dev: false,
   v2ui: false, // the v2 UI toggle switch: https://github.com/polymorpher/one-wallet/issues/260
-  theme: 'light', // ignored in v1 ui
+  theme: 'light', // ignored in v1 ui, used in v2 to support proper theming: light vs dark etc.
   fetching: false,
   error: undefined,
   selectedWallet: undefined, // address in hex string, matching a key in wallets

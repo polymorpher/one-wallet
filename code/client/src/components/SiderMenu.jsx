@@ -77,6 +77,7 @@ const MobileSiderMenu = ({ action, nav, ...args }) => {
 }
 
 const StatsInfo = () => {
+  const v2ui = useSelector(state => state.global.v2ui)
   const statsCached = useSelector(state => state.cache.global.stats)
   const [stats, setStats] = useState(null)
   const dispatch = useDispatch()
@@ -113,20 +114,20 @@ const StatsInfo = () => {
           <Row justify='center'>
             <Spin />
           </Row>)}
-      <LineDivider />
+      {!v2ui && <LineDivider />}
     </>
   )
 }
 
 const DeskstopSiderMenu = ({ action, nav, ...args }) => {
   const history = useHistory()
-  const theme = useSelector(state => state.global.v2ui ? state.global.theme : 'dark')
+  const theme = useSelector(state => state.global.v2ui ? (state.global.theme ?? 'light') : 'dark')
   const v2ui = useSelector(state => state.global.v2ui)
 
   const menuTextColor = v2ui ? getPrimaryTextColor(theme) : null
 
   return (
-    <Layout.Sider collapsed={false} {...args}>
+    <Layout.Sider collapsed={false} {...args} theme={theme}>
       {/* <Image src='/assets/harmony.svg' /> */}
       <Row justify='center'>
         <SiderLink href='https://harmony.one/'>
