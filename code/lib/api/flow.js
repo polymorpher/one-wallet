@@ -224,8 +224,8 @@ const Flows = {
     message = messager,
     overrideVersion = false,
   }) => {
-    const { majorVersion, minorVersion, forwardAddress } = wallet
-    let address = wallet.address
+    const { address, majorVersion, minorVersion } = wallet
+
     if (!eotp) {
       const derived = await deriver({
         otp,
@@ -252,16 +252,6 @@ const Flows = {
 
     const neighbors = ONE.selectMerkleNeighbors({ layers, index })
     const neighbor = neighbors[0]
-
-    if (ONEConstants.EmptyAddress !== forwardAddress && majorVersion >= 16 && commitRevealArgs) {
-      // This is a source wallet which already has a forwarded address. Must transform the parameters into COMMAND, orignated from target wallet
-      message.debug(`Transforming to COMMAND from ${forwardAddress}`)
-      const command = Command({ backlinkAddress: address, wallet })
-      address = forwardAddress
-      const args = command.transform(commitRevealArgs)
-      message.debug(`Transformed ${JSON.stringify(commitRevealArgs)} to ${JSON.stringify(args.commitRevealArgs)}`, undefined, { console: true })
-      commitRevealArgs = args.commitRevealArgs
-    }
 
     // compute commitHashArgs with fallbacks
     if (typeof commitRevealArgs === 'function') {
@@ -349,7 +339,7 @@ const Flows = {
   },
 }
 
-const SecureFlows = {
+const SecureFlowsV3 = {
   /**
    * require contract version between [3, 5]
    * @param wallet
@@ -454,21 +444,42 @@ const SecureFlowsV7 = {
   }
 }
 
+const SecureFlowsV16 = {
+  commitReveal: async ({ wallet, forwardWallet, commitRevealArgs, message, ...params }) => {
+    console.log('forwardWallet', forwardWallet)
+    const { address, forwardAddress } = wallet
+    // TODO: retrieve forwardAddress' version via api.blockchain.getVersion or via local state. This is not needed right now, but may be useful later
+    if (ONEConstants.EmptyAddress !== forwardAddress && forwardWallet?.root && commitRevealArgs) {
+      // This is a source wallet which already has a forwarded address. Must transform the parameters into COMMAND, orignated from target wallet
+      message.debug(`Transforming to COMMAND from ${forwardAddress} on ${address}`)
+      const command = Command({ backlinkAddress: address, wallet: forwardWallet })
+      const args = command.transform(commitRevealArgs)
+      message.debug(`Transformed ${JSON.stringify(commitRevealArgs)} to ${JSON.stringify(args.commitRevealArgs)}`, undefined, { console: true })
+      commitRevealArgs = args.commitRevealArgs
+    }
+    return SecureFlowsV7.commitReveal({
+      wallet: forwardWallet, message, ...params, overrideVersion: false, commitRevealArgs })
+  }
+}
+
 const SmartFlows = {
   commitReveal: async ({ wallet, message = messager, ...args }) => {
     if (!wallet.majorVersion || !(wallet.majorVersion >= config.minWalletVersion)) {
       message.warning('You are using a terribly outdated version of 1wallet. Please create a new one and move your assets.', 15)
     }
+    if (wallet.majorVersion >= 16) {
+      return SecureFlowsV16.commitReveal({ ...args, wallet, message })
+    }
     if (wallet.majorVersion >= 7) {
-      return SecureFlowsV7.commitReveal({ ...args, wallet })
+      return SecureFlowsV7.commitReveal({ ...args, wallet, message })
     }
     if (wallet.majorVersion >= 6) {
       message.warning('You are using an outdated wallet. It is prone to DoS attack.', 15)
-      return SecureFlowsV6.commitReveal({ ...args, wallet })
+      return SecureFlowsV6.commitReveal({ ...args, wallet, message })
     }
     message.warning('You are using a wallet version that is prone to man-in-the-middle attack. Please create a new wallet and migrate assets ASAP. See https://github.com/polymorpher/one-wallet/issues/47')
     if (wallet.majorVersion >= 3) {
-      return SecureFlows.commitReveal({ ...args, wallet })
+      return SecureFlowsV3.commitReveal({ ...args, wallet, message })
     }
     return Flows.commitReveal({
       ...args, wallet, committer: Committer.legacy
@@ -478,7 +489,7 @@ const SmartFlows = {
 
 module.exports = {
   EotpBuilders,
-  SecureFlows,
+  SecureFlows: SecureFlowsV3,
   Flows,
   SmartFlows,
   EOTPDerivation
