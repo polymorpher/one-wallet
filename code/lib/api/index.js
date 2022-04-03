@@ -245,7 +245,7 @@ const api = {
     getIdentificationKeys: async ({ address }) => {
       const c = oneWallet(address)
       const res = await c.methods.getIdentificationKeys().call()
-      return res
+      return new Array(...res)
     },
     getLastOperationTime: async ({ address }) => {
       const c = oneWallet(address)
@@ -266,6 +266,13 @@ const api = {
       lastSpendingInterval = new BN(r[2])
       spendingInterval = new BN(r[3])
       return { spendingLimit, spendingAmount, lastSpendingInterval, spendingInterval }
+    },
+    getVersion: async ({ address }) => {
+      const c = oneWallet(address)
+      const versionResult = await c.methods.getVersion().call()
+      const majorVersion = new BN(versionResult[0]).toNumber()
+      const minorVersion = new BN(versionResult[1]).toNumber()
+      return { majorVersion, minorVersion }
     },
     /**
      * Require contract >= v2
