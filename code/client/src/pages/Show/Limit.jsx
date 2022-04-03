@@ -10,8 +10,6 @@ import ONE from '../../../../lib/onewallet'
 import { api } from '../../../../lib/api'
 import ONEConstants from '../../../../lib/constants'
 import AnimatedSection from '../../components/AnimatedSection'
-import Button from 'antd/es/button'
-import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import Col from 'antd/es/col'
 import { Warning, WideLabel, Link } from '../../components/Text'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
@@ -28,6 +26,7 @@ import { OtpSuperStack } from '../../components/OtpSuperStack'
 import message from '../../message'
 import { walletActions } from '../../state/modules/wallet'
 import { useHistory } from 'react-router'
+import EnsureExecutable from './EnsureExecutable'
 
 const Limit = ({
   address,
@@ -137,20 +136,15 @@ const Limit = ({
             recoverRandomness,
           }),
       commitHashGenerator: ONE.computeAmountHash,
-      commitHashArgs: { amount },
       revealAPI: api.relayer.reveal,
-      revealArgs: { ...ONEConstants.NullOperationParams, amount, operationType: moreAuthRequired ? ONEConstants.OperationType.JUMP_SPENDING_LIMIT : ONEConstants.OperationType.CHANGE_SPENDING_LIMIT },
+      commitRevealArgs: { ...ONEConstants.NullOperationParams, amount, operationType: moreAuthRequired ? ONEConstants.OperationType.JUMP_SPENDING_LIMIT : ONEConstants.OperationType.CHANGE_SPENDING_LIMIT },
       ...helpers,
     })
   }
 
   if (!(wallet.majorVersion >= 15)) {
     return (
-      <AnimatedSection
-        style={{ maxWidth: 720 }}
-        title={<Title level={isMobile ? 5 : 2}>Change Spending Limit</Title>}
-        extra={[<Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />]}
-      >
+      <AnimatedSection wide title={<Title level={isMobile ? 5 : 2}>Change Spending Limit</Title>} onClose={onClose}>
         <Warning>
           Your wallet needs to be at least v15 to change spending limit. Please <Link onClick={() => retryUpgrade({ dispatch, history, address })}>upgrade your wallet</Link>.
         </Warning>
@@ -159,11 +153,7 @@ const Limit = ({
   }
 
   return (
-    <AnimatedSection
-      style={{ maxWidth: 720 }}
-      title={<Title level={isMobile ? 5 : 2}>Change Spending Limit</Title>}
-      extra={[<Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />]}
-    >
+    <AnimatedSection wide title={<Title level={isMobile ? 5 : 2}>Change Spending Limit</Title>} onClose={onClose}>
       <AverageRow>
         <Space direction='vertical' size='small'>
           <Title level={4}>Increase spending limit</Title>
@@ -244,4 +234,4 @@ const Limit = ({
   )
 }
 
-export default Limit
+export default EnsureExecutable(Limit, 'Spend Limit')

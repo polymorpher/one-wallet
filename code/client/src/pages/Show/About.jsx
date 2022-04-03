@@ -18,6 +18,8 @@ import { useHistory } from 'react-router'
 import WalletAddress from '../../components/WalletAddress'
 import { deleteWalletLocally } from '../../storage/util'
 import LocalExport from '../../components/LocalExport'
+import { api } from '../../../../lib/api'
+import ONEUtil from '../../../../lib/util'
 
 const { Title, Text } = Typography
 
@@ -33,6 +35,15 @@ const About = ({ address }) => {
   const [selectedLink, setSelectedLink] = useState()
   const [inspecting, setInspecting] = useState()
   const oldInfos = wallet.oldInfos || []
+  const [backlinkVersions, setBacklinkVersions] = useState([])
+
+  useEffect(() => {
+    async function fetchVersions () {
+      const versions = await Promise.all(backlinks.map(b => api.blockchain.getVersion({ address: b })))
+      setBacklinkVersions(versions)
+    }
+    fetchVersions()
+  }, [backlinks.length])
 
   const inspect = async (backlink) => {
     const tempWallet = {
@@ -92,6 +103,7 @@ const About = ({ address }) => {
               </Space>
             </Col>
             <Col>
+              {backlinkVersions[i] && <Text>(v{ONEUtil.getVersion(backlinkVersions[i])}) </Text>}
               <WalletAddress address={backlink} shorten addressStyle={{ padding: 0 }} onClick={(t) => setSelectedLink(t && backlink)} />
             </Col>
             <Col span={isMobile ? 24 : 12} />

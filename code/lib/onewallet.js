@@ -425,6 +425,8 @@ const computeTransferDomainHash = ({
 
 const computeForwardHash = ({ address }) => computeSetRecoveryAddressHash({ address })
 
+const computeDestOnlyHash = ({ dest }) => computeSetRecoveryAddressHash({ address: dest })
+
 const encodeDisplaceDataHex = ({ core, innerCores, identificationKey }) => {
   return Util.abi.encodeParameters(['tuple(bytes32,uint8,uint8,uint32,uint32,uint8)', 'tuple[](bytes32,uint8,uint8,uint32,uint32,uint8)', 'bytes'], [core, innerCores, identificationKey])
 }
@@ -456,6 +458,7 @@ module.exports = {
   computeForwardHash,
   computeTransferDomainHash,
   computeAmountHash,
+  computeDestOnlyHash,
 
   // operation - encoders
   encodeBuyDomainData,

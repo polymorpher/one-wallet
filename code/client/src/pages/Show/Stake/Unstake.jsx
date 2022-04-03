@@ -34,7 +34,7 @@ const Unstake = ({
   const [maxUndelegateAmount, setMaxUndelegateAmount] = useState(new BN(0))
   const history = useHistory()
   const {
-    wallet, network, stage, setStage,
+    wallet, forwardWallet, network, stage, setStage,
     resetWorker, recoverRandomness, otpState, isMobile,
   } = useOps({ address })
   const doubleOtp = wallet.doubleOtp
@@ -103,6 +103,7 @@ const Unstake = ({
 
     SmartFlows.commitReveal({
       wallet,
+      forwardWallet,
       otp,
       otp2,
       recoverRandomness,

@@ -3,15 +3,14 @@ import Button from 'antd/es/button'
 import Col from 'antd/es/col'
 import Row from 'antd/es/row'
 import Typography from 'antd/es/typography'
-import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import { Hint, InputBox, Label, Warning } from '../../components/Text'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
-import util, { autoWalletNameHint, useWindowDimensions } from '../../util'
+import util, { autoWalletNameHint } from '../../util'
 import BN from 'bn.js'
 import ShowUtils from './show-util'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { HarmonyONE } from '../../components/TokenAssets'
 import { SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
@@ -19,10 +18,9 @@ import { api } from '../../../../lib/api'
 import { Chaining } from '../../api/flow'
 import intersection from 'lodash/fp/intersection'
 import ONEConstants from '../../../../lib/constants'
-import { OtpStack, useOtpState } from '../../components/OtpStack'
-import { useRandomWorker } from './randomWorker'
+import { OtpStack } from '../../components/OtpStack'
 import { AverageRow } from '../../components/Grid'
-import ONENames from '../../../../lib/names'
+import { useOps } from '../../components/Common'
 const { Title, Link } = Typography
 
 const Send = ({
@@ -33,21 +31,12 @@ const Send = ({
   prefillAmount, // string, number of tokens, in whole amount (not wei)
   prefillDest, // string, hex format
 }) => {
-  const dispatch = useDispatch()
-  const wallets = useSelector(state => state.wallet)
-  const wallet = wallets[address] || {}
-  const network = useSelector(state => state.global.network)
-  const { isMobile } = useWindowDimensions()
-
+  const {
+    wallet, wallets, forwardWallet, network, stage, setStage, dispatch,
+    resetWorker, recoverRandomness, otpState, isMobile,
+  } = useOps({ address })
   const doubleOtp = wallet.doubleOtp
-  const { state: otpState } = useOtpState()
-  const { otpInput, otp2Input } = otpState
-  const resetOtp = otpState.resetOtp
-
-  const [stage, setStage] = useState(-1)
-
-  const { resetWorker, recoverRandomness } = useRandomWorker()
-
+  const { otpInput, otp2Input, resetOtp } = otpState
   const balances = useSelector(state => state.balance || {})
   const price = useSelector(state => state.global.price)
   const { balance = 0, tokenBalances = {} } = balances[address] || {}
@@ -85,7 +74,12 @@ const Send = ({
     }
   }
 
-  const { onCommitError, onCommitFailure, onRevealFailure, onRevealError, onRevealAttemptFailed, onRevealSuccess, prepareValidation, prepareProofFailed } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
+  const { prepareValidation, onRevealSuccess, ...helpers } = ShowUtils.buildHelpers({
+    setStage,
+    resetOtp,
+    network,
+    resetWorker,
+  })
 
   const doSend = () => {
     if (stage >= 0) {
@@ -100,47 +94,31 @@ const Send = ({
     if (selectedToken.key === 'one') {
       SmartFlows.commitReveal({
         wallet,
+        forwardWallet,
         otp,
         otp2,
         recoverRandomness,
-        prepareProofFailed,
         commitHashGenerator: ONE.computeTransferHash,
-        commitHashArgs: { dest, amount },
-        prepareProof: () => setStage(0),
-        beforeCommit: () => setStage(1),
-        afterCommit: () => setStage(2),
-        onCommitError,
-        onCommitFailure,
         revealAPI: api.relayer.revealTransfer,
-        revealArgs: { dest, amount },
-        onRevealFailure,
-        onRevealError,
-        onRevealAttemptFailed,
-        onRevealSuccess: (txId, messages) => {
-          onRevealSuccess(txId, messages)
-          onSuccess && onSuccess(txId)
+        commitRevealArgs: { dest, amount },
+        ...helpers,
+        onRevealSuccess: (tx, messages) => {
+          onRevealSuccess(tx, messages)
+          onSuccess && onSuccess(tx)
           Chaining.refreshBalance(dispatch, intersection(Object.keys(wallets), [dest, address]))
         }
       })
     } else {
       SmartFlows.commitReveal({
         wallet,
+        forwardWallet,
         otp,
         otp2,
         recoverRandomness,
-        prepareProofFailed,
         commitHashGenerator: ONE.computeGeneralOperationHash,
-        commitHashArgs: { dest, amount, operationType: ONEConstants.OperationType.TRANSFER_TOKEN, tokenType: selectedToken.tokenType, contractAddress: selectedToken.contractAddress, tokenId: selectedToken.tokenId },
-        prepareProof: () => setStage(0),
-        beforeCommit: () => setStage(1),
-        afterCommit: () => setStage(2),
-        onCommitError,
-        onCommitFailure,
         revealAPI: api.relayer.revealTokenOperation,
-        revealArgs: { dest, amount, operationType: ONEConstants.OperationType.TRANSFER_TOKEN, tokenType: selectedToken.tokenType, contractAddress: selectedToken.contractAddress, tokenId: selectedToken.tokenId },
-        onRevealFailure,
-        onRevealError,
-        onRevealAttemptFailed,
+        commitRevealArgs: { dest, amount, operationType: ONEConstants.OperationType.TRANSFER_TOKEN, tokenType: selectedToken.tokenType, contractAddress: selectedToken.contractAddress, tokenId: selectedToken.tokenId },
+        ...helpers,
         onRevealSuccess: (txId, messages) => {
           onRevealSuccess(txId, messages)
           onSuccess && onSuccess(txId)
@@ -151,20 +129,7 @@ const Send = ({
   }
 
   return (
-    <AnimatedSection
-      style={{ maxWidth: 720 }}
-      title={
-        <Title level={isMobile ? 5 : 2}>
-          {
-            isMobile ? '' : 'Send: '
-          }
-          {titleSuffix}
-        </Title>
-      }
-      extra={[
-        <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-      ]}
-    >
+    <AnimatedSection wide title={<Title level={isMobile ? 5 : 2}>{isMobile ? '' : 'Send: '}{titleSuffix}</Title>} onClose={onClose}>
       <Row align='middle' style={{ marginBottom: '10px' }}>
         <Col>
           {isNFT && <Title level={4}>{metadata?.displayName}</Title>}
