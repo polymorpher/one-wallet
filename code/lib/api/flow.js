@@ -490,7 +490,6 @@ const SmartFlows = {
 
 module.exports = {
   EotpBuilders,
-  SecureFlows: SecureFlowsV3,
   Flows,
   SmartFlows,
   EOTPDerivation
