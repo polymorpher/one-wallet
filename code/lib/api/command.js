@@ -9,6 +9,7 @@ const Op = ONEConstants.OperationType
 const makeParams = (params) => ({ commitHashGenerator: ONE.computeGeneralOperationHash, revealAPI: api.relayer.reveal, commitRevealArgs: params })
 const Command = ({ backlinkAddress, wallet }) => ({
   transform ({ operationType, ...args }) {
+    args = { operationType, ...args }
     if (operationType === Op.TRANSFER_DOMAIN) {
       return this.domainTransfer(args)
     } else if (operationType === Op.TRANSFER) {
