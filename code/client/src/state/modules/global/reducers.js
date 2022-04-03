@@ -5,7 +5,8 @@ import config from '../../../config'
 export const initialState = {
   knownAddresses: {},
   dev: false,
-  v2ui: false, // the next version UI toggle switch: https://github.com/polymorpher/one-wallet/issues/260
+  v2ui: false, // the v2 UI toggle switch: https://github.com/polymorpher/one-wallet/issues/260
+  theme: 'light', // ignored in v1 ui
   fetching: false,
   error: undefined,
   selectedWallet: undefined, // address in hex string, matching a key in wallets
@@ -32,6 +33,11 @@ const reducer = handleActions(
     [globalActions.setV2Ui]: (state, action) => ({
       ...state,
       v2ui: action.payload
+    }),
+
+    [globalActions.setUiTheme]: (state, action) => ({
+      ...state,
+      theme: action.payload
     }),
 
     [globalActions.setKnownAddress]: (state, action) => ({
