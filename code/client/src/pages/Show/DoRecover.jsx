@@ -1,7 +1,7 @@
 import Button from 'antd/es/button'
 import Row from 'antd/es/row'
 import Space from 'antd/es/space'
-import Typography from 'antd/es/typography'
+import { Title, Text } from '../../components/Text'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
 import React, { useState } from 'react'
@@ -12,8 +12,8 @@ import { EotpBuilders, SmartFlows } from '../../../../lib/api/flow'
 import { api } from '../../../../lib/api'
 import ShowUtils from './show-util'
 import { walletActions } from '../../state/modules/wallet'
+import EnsureExecutable from './EnsureExecutable'
 
-const { Title, Text } = Typography
 const DoRecover = ({ address, onClose }) => {
   const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
@@ -73,4 +73,4 @@ const DoRecover = ({ address, onClose }) => {
     </AnimatedSection>
   )
 }
-export default DoRecover
+export default EnsureExecutable(DoRecover, 'Recover')

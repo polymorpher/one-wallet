@@ -26,6 +26,7 @@ import { OtpSuperStack } from '../../components/OtpSuperStack'
 import message from '../../message'
 import { walletActions } from '../../state/modules/wallet'
 import { useHistory } from 'react-router'
+import EnsureExecutable from './EnsureExecutable'
 
 const Limit = ({
   address,
@@ -233,4 +234,4 @@ const Limit = ({
   )
 }
 
-export default Limit
+export default EnsureExecutable(Limit, 'Spend Limit')

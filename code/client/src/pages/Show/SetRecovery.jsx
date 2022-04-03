@@ -15,6 +15,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
 import { autoWalletNameHint, useWindowDimensions } from '../../util'
+import EnsureExecutable from "./EnsureExecutable";
 const { Title } = Typography
 
 const SetRecovery = ({ address, onClose }) => {
@@ -88,4 +89,4 @@ const SetRecovery = ({ address, onClose }) => {
   )
 }
 
-export default SetRecovery
+export default EnsureExecutable(SetRecovery, 'Recovery ')

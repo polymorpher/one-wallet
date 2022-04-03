@@ -41,6 +41,7 @@ import Divider from 'antd/es/divider'
 import humanizeDuration from 'humanize-duration'
 import { OtpSuperStack } from '../../components/OtpSuperStack'
 import ONENames from '../../../../lib/names'
+import EnsureExecutable from './EnsureExecutable'
 const { Title, Text } = Typography
 
 const Subsections = {
@@ -528,4 +529,4 @@ const Extend = ({
   )
 }
 
-export default Extend
+export default EnsureExecutable(Extend, 'Renewal')
