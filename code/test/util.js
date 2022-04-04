@@ -1,4 +1,5 @@
 const { loadContracts } = require('../extensions/loader')
+const { range } = require('lodash')
 const config = require('../config')
 const base32 = require('hi-base32')
 const BN = require('bn.js')
@@ -306,27 +307,10 @@ const makeTokens = async ({
   makeERC20 = true,
   makeERC721 = true,
   makeERC1155 = true,
-  fund = true,
-  validate = true
 }) => {
-  let testerc20
-  let testerc721
-  let testerc1155
-  // create an ERC20
-  if (makeERC20) { testerc20 = await TestERC20.new(10000000, { from: deployer }) }
-  // create an ERC721
-  if (makeERC721) {
-    const tids = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-    const uris = tids.map(e => `ipfs://test721/${e}`)
-    testerc721 = await TestERC721.new(tids, uris, { from: deployer })
-  }
-  // create an ERC1155
-  if (makeERC1155) {
-    const tids1155 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-    const amounts1155 = [10, 20, 20, 20, 20, 20, 20, 20, 20, 100]
-    const uris1155 = tids1155.map(e => `ipfs://test1155/${e}`)
-    testerc1155 = await TestERC1155.new(tids1155, amounts1155, uris1155, { from: deployer })
-  }
+  const testerc20 = makeERC20 && (await TestERC20.new(10000000, { from: deployer }))
+  const testerc721 = makeERC721 && (await TestERC721.new(range(10), range(10).map(e => `ipfs://test721/${e}`), { from: deployer }))
+  const testerc1155 = makeERC1155 && (await TestERC1155.new(range(10), [10, 20, 20, 20, 20, 20, 20, 20, 20, 100], range(10).map(e => `ipfs://test1155/${e}`), { from: deployer }))
   return { testerc20, testerc721, testerc1155 }
 }
 
