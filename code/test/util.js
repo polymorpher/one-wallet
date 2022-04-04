@@ -323,19 +323,19 @@ const validateBalance = async ({ address, amount = HALF_ETH }) => {
   assert.equal(amount, balance, 'Wallet should have a different balance')
 }
 
-const syncAndValidateStateMutation = async ({ wallet, oldState, validateNonce = true }) => {
+const syncAndValidateStateMutation = async ({ wallet, state, validateNonce = true }) => {
   if (validateNonce) {
     const nonce = await wallet.getNonce()
-    assert.equal(nonce.toNumber(), oldState.nonce + 1, 'wallet.nonce should have been changed')
-    oldState.nonce = nonce.toNumber()
+    assert.equal(nonce.toNumber(), state.nonce + 1, 'wallet.nonce should have been changed')
+    state.nonce = nonce.toNumber()
   }
   const lastOperationTime = await wallet.lastOperationTime()
-  assert.notStrictEqual(lastOperationTime, oldState.lastOperationTime, 'wallet.lastOperationTime should have been updated')
-  oldState.lastOperationTime = lastOperationTime.toNumber()
+  assert.notStrictEqual(lastOperationTime, state.lastOperationTime, 'wallet.lastOperationTime should have been updated')
+  state.lastOperationTime = lastOperationTime.toNumber()
   const allCommits = await wallet.getAllCommits()
-  assert.notDeepEqual(allCommits, oldState.allCommits, 'wallet.allCommits should have been updated')
-  oldState.allCommits = allCommits
-  return oldState
+  assert.notDeepEqual(allCommits, state.allCommits, 'wallet.allCommits should have been updated')
+  state.allCommits = allCommits
+  return state
 }
 
 // validateSpendingState
