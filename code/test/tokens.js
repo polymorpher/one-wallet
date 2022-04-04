@@ -10,7 +10,6 @@
 
 const TestUtil = require('./util')
 const config = require('../config')
-const unit = require('ethjs-unit')
 const ONEUtil = require('../lib/util')
 const ONEConstants = require('../lib/constants')
 const ONE = require('../lib/onewallet')
@@ -41,37 +40,6 @@ const Logger = {
   }
 }
 const Debugger = ONEDebugger(Logger)
-
-// === UTILITY FUNCTIONS
-// makeTokens makes test ERC20, ERC20Decimals9, ERC721, ERC1155
-const makeTokens = async ({
-  deployer,
-  makeERC20 = true,
-  makeERC721 = true,
-  makeERC1155 = true,
-  fund = true,
-  validate = true
-}) => {
-  let testerc20
-  let testerc721
-  let testerc1155
-  // create an ERC20
-  if (makeERC20) { testerc20 = await TestERC20.new(10000000, { from: deployer }) }
-  // create an ERC721
-  if (makeERC721) {
-    const tids = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-    const uris = tids.map(e => `ipfs://test721/${e}`)
-    testerc721 = await TestERC721.new(tids, uris, { from: deployer })
-  }
-  // create an ERC1155
-  if (makeERC1155) {
-    const tids1155 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-    const amounts1155 = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
-    const uris1155 = tids1155.map(e => `ipfs://test1155/${e}`)
-    testerc1155 = await TestERC1155.new(tids1155, amounts1155, uris1155, { from: deployer })
-  }
-  return { testerc20, testerc721, testerc1155 }
-}
 
 // fundTokens
 // funder: address (must have tokens and be unlocked for signing)
@@ -318,7 +286,7 @@ contract('ONEWallet', (accounts) => {
     let { walletInfo: bob } = await TestUtil.makeWallet({ salt: 'TN.BASIC.2.2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
 
     // make Tokens
-    const { testerc20 } = await makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
+    const { testerc20 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
 
     // Begin Tests
     let testTime = Date.now()
@@ -516,7 +484,7 @@ contract('ONEWallet', (accounts) => {
     let { walletInfo: bob } = await TestUtil.makeWallet({ salt: 'TN.BASIC.2.2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
 
     // make Tokens
-    const { testerc721 } = await makeTokens({ deployer: accounts[0], makeERC20: false, makeERC721: true, makeERC1155: false })
+    const { testerc721 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: false, makeERC721: true, makeERC1155: false })
 
     // Begin Tests
     let testTime = Date.now()
@@ -718,7 +686,7 @@ contract('ONEWallet', (accounts) => {
     let { walletInfo: bob } = await TestUtil.makeWallet({ salt: 'TN.POSITIVE.2.1.2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
 
     // make Tokens
-    const { testerc1155 } = await makeTokens({ deployer: accounts[0], makeERC20: false, makeERC721: false, makeERC1155: true })
+    const { testerc1155 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: false, makeERC721: false, makeERC1155: true })
 
     // Begin Tests
     let testTime = Date.now()
@@ -834,7 +802,7 @@ contract('ONEWallet', (accounts) => {
     let { walletInfo: bob } = await TestUtil.makeWallet({ salt: 'TT.COMBO.1.2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
 
     // make Tokens
-    const { testerc20, testerc721, testerc1155 } = await makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: true, makeERC1155: true })
+    const { testerc20, testerc721, testerc1155 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: true, makeERC1155: true })
     let testTime = Date.now()
 
     // ERC20 Transfer

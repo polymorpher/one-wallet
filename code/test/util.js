@@ -303,7 +303,7 @@ const makeTokens = async ({
 }) => {
   const testerc20 = makeERC20 && (await TestERC20.new(10000000, { from: deployer }))
   const testerc721 = makeERC721 && (await TestERC721.new(range(10), range(10).map(e => `ipfs://test721/${e}`), { from: deployer }))
-  const testerc1155 = makeERC1155 && (await TestERC1155.new(range(10), [10, 20, 20, 20, 20, 20, 20, 20, 20, 100], range(10).map(e => `ipfs://test1155/${e}`), { from: deployer }))
+  const testerc1155 = makeERC1155 && (await TestERC1155.new(range(10), range(10, 110, 10), range(10).map(e => `ipfs://test1155/${e}`), { from: deployer }))
   return { testerc20, testerc721, testerc1155 }
 }
 
