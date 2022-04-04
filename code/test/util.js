@@ -7,6 +7,7 @@ const ONE = require('../lib/onewallet')
 const ONEParser = require('../lib/parser')
 const ONEDebugger = require('../lib/debug')
 
+const { backoff } = require('exponential-backoff')
 const ONEUtil = require('../lib/util')
 const ONEConstants = require('../lib/constants')
 const TestERC20 = artifacts.require('TestERC20')
@@ -109,37 +110,27 @@ const wait = async (seconds) => {
   Logger.debug(`wait: ${seconds}`)
   await sleep(seconds * 1000)
 }
-const waitForReceipt = async (transactionHash) => {
-  let transactionReceipt = null
-  let i = 0
-  while (transactionReceipt == null && i < 10) { // Waiting expectedBlockTime until the transaction is mined
-    transactionReceipt = await web3.eth.getTransactionReceipt(transactionHash)
-    if (transactionReceipt !== null) { break }
-    await sleep(1000)
-    i++
-    Logger.debug(`waiting`)
-  }
-  assert.notEqual(null, transactionReceipt, `transactionReceipt not found for ${transactionHash} after waiting 10 seconds`)
-}
+const waitForReceipt = async (transactionHash) => backoff(async () => web3.eth.getTransactionReceipt(transactionHash), {
+  retry: (ex, n) => Logger.debug(`[${n}] waiting for receipt...`) || true })
 
 const bumpTestTime = async (testEffectiveTime, bumpSeconds) => {
-  Logger.debug(`testEffective   : ${testEffectiveTime}`)
-  Logger.debug(`bumpSeconds     : ${bumpSeconds}`)
+  Logger.debug(`Simulated Timestamp       : ${testEffectiveTime}`)
+  Logger.debug(`Simulated increase (secs) : ${bumpSeconds}`)
   testEffectiveTime = testEffectiveTime + (bumpSeconds * 1000)
   const blockNumber = await web3.eth.getBlockNumber()
   const chainTime = await ((await web3.eth.getBlock(blockNumber)).timestamp) * 1000
   const chainBumpSeconds = Math.floor((testEffectiveTime - chainTime) / 1000)
-  Logger.debug(`Date.now()      : ${Date.now()}`)
-  Logger.debug(`blockNumber     : ${JSON.stringify(blockNumber)}`)
-  Logger.debug(`chainTime       : ${JSON.stringify(chainTime)}`)
-  Logger.debug(`testEffective   : ${testEffectiveTime}`)
-  Logger.debug(`chainBumpSeconds: ${chainBumpSeconds}`)
+  Logger.debug(`Current System Time       : ${Date.now()}`)
+  Logger.debug(`Block Number              : ${JSON.stringify(blockNumber)}`)
+  Logger.debug(`Blockchain Clock Time     : ${JSON.stringify(chainTime)}`)
+  Logger.debug(`New Simulated Timestamp   : ${testEffectiveTime}`)
+  Logger.debug(`Increased Blockchain Time : ${chainBumpSeconds}`)
   await increaseTime(chainBumpSeconds)
   const newBlockNumber = await web3.eth.getBlockNumber()
   const newChainTime = (await web3.eth.getBlock(newBlockNumber)).timestamp * 1000
-  Logger.debug(`newBlockNumber  : ${JSON.stringify(newBlockNumber)}`)
-  Logger.debug(`newChainTime    : ${JSON.stringify(newChainTime)}`)
-  Logger.debug(`==================`)
+  Logger.debug(`New Block Number          : ${JSON.stringify(newBlockNumber)}`)
+  Logger.debug(`New Blockchain Clock      : ${JSON.stringify(newChainTime)}`)
+  Logger.debug(`====================================`)
   return testEffectiveTime
 }
 
@@ -148,7 +139,7 @@ const bumpTestTime = async (testEffectiveTime, bumpSeconds) => {
 const printInnerTrees = ({ Debugger, innerTrees }) => {
   for (let [index, innerTree] of innerTrees.entries()) {
     const { layers: innerLayers, root: innerRoot } = innerTree
-    console.log(`Inner tree ${index}, root=${ONEUtil.hexString(innerRoot)}`)
+    Logger.debug(`Inner tree ${index}, root=${ONEUtil.hexString(innerRoot)}`)
     Debugger.printLayers({ layers: innerLayers })
   }
 }
