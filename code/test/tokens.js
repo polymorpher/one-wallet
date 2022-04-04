@@ -7,10 +7,6 @@ const ONEWallet = require('../lib/onewallet')
 const BN = require('bn.js')
 const ONEDebugger = require('../lib/debug')
 const assert = require('assert')
-const { getTrackedTokensParsed } = require('./util')
-const TestERC20 = artifacts.require('TestERC20')
-const TestERC721 = artifacts.require('TestERC721')
-const TestERC1155 = artifacts.require('TestERC1155')
 
 const NullOperationParams = {
   ...ONEConstants.NullOperationParams,
@@ -44,36 +40,33 @@ const fundTokens = async ({
   tokenIds = [[]],
   validate = true
 }) => {
-  // let balances[]
-  // let tids[]
-  // transfer ERC20 tokens from accounts[0] (which owns the tokens) to alices wallet
+  // transfer ERC20 tokens from accounts[0] (which owns the tokens) to alice's wallet
   for (let i = 0; i < tokenTypes.length; i++) {
     switch (tokenTypes[i]) {
       case ONEConstants.TokenType.ERC20:
-        // await testerc20.transfer(alice.wallet.address, 1000, { from: accounts[0] })
         await tokenContracts[i].transfer(receivers[i], tokenAmounts[i][0], { from: funder })
-        // balances[i]= await tokenAddresses[i].balanceOf(receiver)
-        Logger.debug('FundTokens ERC20')
+        Logger.debug(`Funded ${tokenAmounts[i][0]} ERC20 to ${receivers[i]}`)
         break
       case ONEConstants.TokenType.ERC721:
         for (let j = 0; j < tokenIds[i].length; j++) {
           await tokenContracts[i].safeTransferFrom(funder, receivers[i], tokenIds[i][j], { from: funder })
         }
-        Logger.debug('FundTokens ERC721')
+        Logger.debug(`Funded id=${tokenIds[i][j]} ERC721 to ${receivers[i]}`)
         break
       case ONEConstants.TokenType.ERC1155:
         for (let j = 0; j < tokenIds[i].length; j++) {
           await tokenContracts[i].safeTransferFrom(funder, receivers[i], tokenIds[i][j], tokenAmounts[i][j], DUMMY_HEX, { from: funder })
         }
-        Logger.debug('FundTokens ERC1155')
+        Logger.debug(`Funded ${tokenIds[i][j]} with amount ${tokenAmounts[i][j]} ERC1155 to ${receivers[i]}`)
         break
       default:
-        console.log(`ERROR fundTokens: Index ${[i]} Incorrect TokenType:  ${tokenTypes[i]}`)
+        console.log(`ERROR fundTokens: Index ${[i]} - Incorrect TokenType: ${tokenTypes[i]}`)
         return
     }
   }
-  if (validate) validatetokenBalances({ receivers, tokenTypes, tokenContracts, tokenAmounts, tokenIds })
-  // return {balances, tids}
+  if (validate) {
+    await validateTokenBalances({ receivers, tokenTypes, tokenContracts, tokenAmounts, tokenIds })
+  }
 }
 
 // ==== EXECUTION FUNCTIONS ====
@@ -122,7 +115,7 @@ const executeTokenTransaction = async ({
 }
 
 // ==== Validation Helpers ====
-const validatetokenBalances = async ({
+const validateTokenBalances = async ({
   receivers = [],
   tokenTypes = [],
   tokenContracts = [],
@@ -151,7 +144,7 @@ const validatetokenBalances = async ({
         }
         break
       default:
-        Logger.debug(`ERROR validatetokenBalances: Index ${[i]} Incorrect TokenType:  ${tokenTypes[i]}`)
+        Logger.debug(`ERROR validateTokenBalances: Index ${[i]} Incorrect TokenType:  ${tokenTypes[i]}`)
     }
   }
 }
@@ -160,7 +153,7 @@ const updateOldTrackedTokens = async ({
   expectedTrackedTokens,
   wallet
 }) => {
-  let trackedTokens = await getTrackedTokensParsed(wallet)
+  let trackedTokens = await TestUtil.getTrackedTokensParsed(wallet)
   expectedTrackedTokens.sort(
     function (a, b) {
       if (a.tokenType === b.tokenType) {
@@ -340,7 +333,7 @@ contract('ONEWallet', (accounts) => {
 
     // check alice and bobs balance
 
-    await validatetokenBalances({
+    await validateTokenBalances({
       receivers: [alice.wallet.address, bob.wallet.address],
       tokenTypes: [ONEConstants.TokenType.ERC20, ONEConstants.TokenType.ERC20],
       tokenContracts: [testerc20, testerc20],
@@ -561,7 +554,7 @@ contract('ONEWallet', (accounts) => {
 
     // check alice and bobs balance
 
-    await validatetokenBalances({
+    await validateTokenBalances({
       receivers: [alice.wallet.address, bob.wallet.address],
       tokenTypes: [ONEConstants.TokenType.ERC721, ONEConstants.TokenType.ERC721],
       tokenContracts: [testerc721, testerc721],
@@ -777,7 +770,7 @@ contract('ONEWallet', (accounts) => {
 
     // check alice and bobs balance
 
-    await validatetokenBalances({
+    await validateTokenBalances({
       receivers: [alice.wallet.address, bob.wallet.address],
       tokenTypes: [ONEConstants.TokenType.ERC1155, ONEConstants.TokenType.ERC1155],
       tokenContracts: [testerc1155, testerc1155],
