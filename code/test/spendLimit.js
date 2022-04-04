@@ -56,7 +56,7 @@ contract('ONEWallet', (accounts) => {
       assert.equal(spendingState.spendingLimit.toString(), newLimit.toString(), 'New limit should be 2 ETH')
     }
     {
-      // await TestUtil.increaseTime(60)
+      await TestUtil.increaseTime(60)
       const newLimit = ONE_ETH.muln(3)
       const { eotp, index } = await TestUtil.getEOTP({ seed, hseed, effectiveTime, timeOffset: 60000 })
       const { tx } = await TestUtil.commitReveal({
