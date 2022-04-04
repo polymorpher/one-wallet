@@ -1,14 +1,6 @@
 const { factoryContractsList, factoryContracts, libraryList, dependencies, ONEWallet } = require('./contracts')
 const ONEConfig = require('../lib/config/common')
 const Contract = require('@truffle/contract')
-const config = require('../config')
-const Logger = {
-  debug: (...args) => {
-    if (config.verbose) {
-      console.log(...args)
-    }
-  }
-}
 
 const knownAddresses = {
   ONEWalletFactory: (network) => ONEConfig.networks[network]?.deploy?.factory,
@@ -17,7 +9,7 @@ const knownAddresses = {
 }
 
 // including libraries
-const loadContracts = async () => {
+const loadContracts = async (Logger) => {
   const libraries = {}
   const factories = {}
   const accounts = await web3.eth.getAccounts()
