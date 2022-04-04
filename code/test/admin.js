@@ -17,7 +17,7 @@ contract('ONEWallet', (accounts) => {
   // Test creation and validation of wallet
   it('AD-WALLET-1: must be able to create and validate a wallet', async () => {
     let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'TT-WALLET-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
-    let newState = await TestUtil.getONEWalletState(alice.wallet)
+    let newState = await TestUtil.getState(alice.wallet)
     await TestUtil.checkONEWalletStateChange(state, newState)
   })
 })
