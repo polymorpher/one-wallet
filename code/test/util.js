@@ -283,13 +283,7 @@ const makeWallet = async ({
   backlinks = [],
   validate = true
 }) => {
-  let lastResortAddress
-  if (setLastResortAddress) {
-    let lastResortAccount = await web3.eth.accounts.create()
-    lastResortAddress = lastResortAccount.address
-  } else {
-    lastResortAddress = ONEConstants.EmptyAddress
-  }
+  let lastResortAddress = setLastResortAddress ? (await web3.eth.accounts.create()).address : ONEConstants.EmptyAddress
   const { wallet, seed, hseed, client: { layers } } = await createWallet({
     salt: new BN(ONEUtil.keccak(salt)),
     effectiveTime,
@@ -299,17 +293,11 @@ const makeWallet = async ({
     spendingLimit,
     backlinks
   })
-  let initialBalance = await fundWallet({ wallet, funder: deployer, fundAmount })
+  let balance = await fundWallet({ to: wallet.address, from: deployer, fundAmount })
   if (validate) { await validateBalance({ address: wallet.address, amount: fundAmount }) }
-  const walletOldState = await getONEWalletState(wallet)
-  const walletCurrentState = walletOldState
+  const state = await getONEWalletState(wallet)
 
-  return {
-    walletInfo: { wallet: wallet, seed, hseed, layers, lastResortAddress },
-    walletOldState,
-    walletCurrentState,
-    initialBalance
-  }
+  return { walletInfo: { wallet: wallet, seed, hseed, layers, lastResortAddress }, state, balance }
 }
 
 // makeTokens makes test ERC20, ERC20Decimals9, ERC721, ERC1155
@@ -342,16 +330,10 @@ const makeTokens = async ({
   return { testerc20, testerc721, testerc1155 }
 }
 
-// fundwallet
-const fundWallet = async ({ funder, wallet, value = HALF_ETH }) => {
-  // Fund wallet
-  await web3.eth.sendTransaction({
-    from: funder,
-    to: wallet.address,
-    value
-  })
-  let balance = await web3.eth.getBalance(wallet.address)
-  return balance
+const fundWallet = async ({ from, to, value = HALF_ETH }) => {
+  await web3.eth.sendTransaction({ from, to, value })
+  const balance = await web3.eth.getBalance(to)
+  return new BN(balance).toString()
 }
 
 // === EVENT VALIDATION ====
