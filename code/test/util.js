@@ -39,7 +39,7 @@ let Wallet
 
 // ==== DEPLOYMENT FUNCTIONS ====
 const init = async () => {
-  const { factories, libraries, ONEWalletAbs } = await loadContracts()
+  const { factories, libraries, ONEWalletAbs } = await loadContracts(Logger)
   Factories = factories
   Libraries = libraries
   Wallet = ONEWalletAbs
