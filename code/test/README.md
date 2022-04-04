@@ -93,12 +93,12 @@ TT-SUBTEST-WALLETID e.g. `TG-OP4-1`
 | 3  | OVERRIDE_TRACK               | PASS    | Token    |
 | 4  | TRANSFER                     | PASS    | Native   | 
 | 5  | SET_RECOVERY_ADDRESS         | PASS    | Wallet   |
-| 6  | RECOVER	                    | FAIL    | Wallet   |
-| 7  | DISPLACE	                    | TBD     | Admin    |
-| 8  | FORWARD                      | FAIL    | Wallet   |
-| 9  | RECOVER_SELECTED_TOKENS      | FAIL    | Wallet   |
+| 6  | RECOVER	                    | TBD*    | Wallet   | additional authentication needed
+| 7  | DISPLACE	                    | PASS*   | Admin    | Currently tested in innerCores.js
+| 8  | FORWARD                      | PASS    | Wallet   |
+| 9  | RECOVER_SELECTED_TOKENS      | TBD     | Wallet   |
 | 10 | BUY_DOMAIN                   | Phase 2 | Domain   |
-| 11 | COMMAND                      | FAIL    | Admin    |
+| 11 | COMMAND                      | TBD     | Admin    |
 | 12 | BACKLINK_ADD                 | PASS    | Wallet   |
 | 13 | BACKLINK_DELETE              | PASS    | Wallet   |
 | 14 | BACKLINK_OVERRIDE            | PASS    | Wallet   |
@@ -106,13 +106,13 @@ TT-SUBTEST-WALLETID e.g. `TG-OP4-1`
 | 16 | TRANSFER_DOMAIN	            | Phase 2 | Domain   |
 | 17 | RECLAIM_REVERSE_DOMAIN       | Phase 2 | Domain   |
 | 18 | RECLAIM_DOMAIN_FROM_BACKLINK | Phase 2 | Domain   |
-| 19 | SIGN	                        | FAIL    | Wallet   |
-| 20 | REVOKE                       | FAIL    | Wallet   |
-| 21 | CALL                         | FAIL    | Admin    |
-| 22 | BATCH                        | FAIL    | Admin    |
+| 19 | SIGN	                        | TBD     | Wallet   |
+| 20 | REVOKE                       | TBD     | Wallet   |
+| 21 | CALL                         | PASS*   | Admin    | Currently tested in WA.COMPLEX.8.0 FORWARD.COMMAND:
+| 22 | BATCH                        | TBD     | Admin    |
 | 23 | NOOP                         | N/A     | N/A      | this is for nulloperationparameter
 | 24 | CHANGE_SPENDING_LIMIT        | PASS    | Native   |
-| 25 | JUMP_SPENDING_LIMIT          | FAIL    | Native   | 
+| 25 | JUMP_SPENDING_LIMIT          | TBD*    | Native   | additional authentication needs review
 
 
 

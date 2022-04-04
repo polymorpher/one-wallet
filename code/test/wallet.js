@@ -64,6 +64,7 @@ const executeWalletTransaction = async ({
   switch (operationType) {
     // Format commit and revealParams for FORWARD Tranasction
     case ONEConstants.OperationType.FORWARD:
+    case ONEConstants.OperationType.SET_RECOVERY_ADDRESS:
       paramsHash = ONEWallet.computeForwardHash
       commitParams = { address: dest }
       revealParams = { operationType, dest }
@@ -73,9 +74,16 @@ const executeWalletTransaction = async ({
       commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
       revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
       break
+    case ONEConstants.OperationType.BACKLINK_ADD:
+    case ONEConstants.OperationType.BACKLINK_DELETE:
+    case ONEConstants.OperationType.BACKLINK_OVERRIDE:
+      paramsHash = ONEWallet.computeDataHash
+      commitParams = { operationType, data }
+      revealParams = { operationType, data }
+      break
     default:
       console.log(`Invalid Operation passed`)
-      assert.equal('A Valid Operation', operationType, 'Error invalid operationType passed')
+      assert.strictEqual('A Valid Operation', operationType, 'Error invalid operationType passed')
       return
   }
   let { tx, authParams, revealParams: returnedRevealParams } = await TestUtil.commitReveal({
@@ -122,14 +130,53 @@ contract('ONEWallet', (accounts) => {
   // === BASIC POSITIVE TESTING WALLET ====
 
   // ====== SET_RECOVERY_ADDRESS ======
-  // Test setting of a wallets recovery address
-  // Expected result the wallets recovery address
+  // Test setting of alices recovery address
+  // Expected result: alices lastResortAddress will change to bobs last Resort address
+  // Notes: Cannot set this to zero address, the same address or the treasury address
+  // Fails to update if you have create alice wallet with `setLastResortAddress: true` as an address already set.
   it('WA.BASIC.5 SET_RECOVERY_ADDRESS: must be able to set recovery address', async () => {
+    // create wallets and token contracts used througout the tests
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.5.1', deployer: accounts[0], effectiveTime, duration, setLastResortAddress: false })
+    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'WA.BASIC.5.2', deployer: accounts[0], effectiveTime, duration })
+
+    // Begin Tests
+    let testTime = Date.now()
+
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+
+    let aliceInfoInitial = await TestUtil.getInfoParsed(alice.wallet)
+    assert.strictEqual(aliceInfoInitial.recoveryAddress, ONEConstants.EmptyAddress, `Alice should initally have last address set to zero address`)
+
+    // alice sets her recovery address to bobs
+    let { tx, currentState: aliceCurrentState } = await executeWalletTransaction(
+      {
+        ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.SET_RECOVERY_ADDRESS,
+        dest: carol.wallet.address,
+        testTime
+      }
+    )
+
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx, expectedEvent: 'RecoveryAddressUpdated' })
+
+    // Alice Items that have changed - nonce, lastOperationTime, recoveryAddress, commits
+    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
+    // recoveryAddress
+    let aliceInfo = await TestUtil.getInfoParsed(alice.wallet)
+    assert.notDeepStrictEqual(aliceInfo, aliceOldState.info, 'alice wallet.getInfo recoveryAddress should have been changed')
+    assert.strictEqual(aliceInfo.recoveryAddress, carol.wallet.address, 'alice wallet.getInfo recoveryAddress should equal carol.wallet.address')
+    aliceOldState.info.recoveryAddress = aliceInfo.recoveryAddress
+    // check alice
+    await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
   })
 
   // ====== RECOVER ======
   // Test setting of recovering assets to the recovery address
   // Expected result the assets will be transferred to the wallets recovery address
+  // Logic: additional authentication required (see _recover in ONEWallet.sol)
+  /// To initiate recovery, client should submit leaf_{-1} as eotp, where leaf_{-1} is the last leaf in OTP Merkle Tree. Note that leaf_0 = hasher(hseed . nonce . OTP . randomness) where hasher is either sha256 or argon2, depending on client's security parameters. The definition of leaf_{-1} ensures attackers cannot use widespread miners to brute-force for seed or hseed, even if keccak256(leaf_{i}) for any i is known. It has been considered that leaf_0 should be used instead of leaf_{-1}, because leaf_0 is extremely unlikely to be used for any wallet operation. It is only used if the user performs any operation within the first 60 seconds of seed generation (when QR code is displayed). Regardless of which leaf is used to trigger recovery, this mechanism ensures hseed remains secret at the client. Even when the leaf becomes public (on blockchain), it is no longer useful because the wallet would already be deprecated (all assets transferred out). It can be used to repeatedly trigger recovery on this deprecated wallet, but that would cause no harm.
   it('WA.BASIC.6 RECOVER: must be able to recover assets', async () => {
   })
 
@@ -188,21 +235,145 @@ contract('ONEWallet', (accounts) => {
   })
 
   // ====== BACKLINK_ADD ======
-  // Test adding a backlink
-  // Expected result the wallet will have a backlink added
+  // Test add a backlink from Alices wallet to Carols
+  // Expected result: Alices wallet will be backlinked to Carols
   it('WA.BASIC.12 BACKLINK_ADD: must be able to add a backlink', async () => {
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.12.1', deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'WA.BASIC.12.1', deployer: accounts[0], effectiveTime, duration })
+
+    // Begin Tests
+    let testTime = Date.now()
+
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    // Add a backlink from Alice to Carol
+    let hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
+    let data = ONEUtil.hexStringToBytes(hexData)
+    let { tx, currentState: aliceCurrentState } = await executeWalletTransaction(
+      {
+        ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.BACKLINK_ADD,
+        data,
+        testTime
+      }
+    )
+
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx, expectedEvent: 'BackLinkAltered' })
+
+    // Alice Items that have changed - nonce, lastOperationTime, commits, backlinkedAddresses
+    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
+    // backlinkedAddresses
+    let backlinks = await alice.wallet.getBacklinks()
+    assert.notDeepStrictEqual(backlinks, aliceOldState.backlinkedAddresses, 'alice.wallet.backlinkedAddresses should have been updated')
+    assert.strictEqual(backlinks[0].toString(), carol.wallet.address.toString(), 'alice.wallet.backlinkedAddresses should equal carol.wallet.address')
+    aliceOldState.backlinks = backlinks
+    // check alice
+    await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
   })
 
   // ====== BACKLINK_DELETE ======
-  // Test deleting a backlink
-  // Expected result the backlink will be deleted
+  // Test remove a backlink from Alices wallet to Carols
+  // Expected result: Alices wallet will not be backlinked to Carols
   it('WA.BASIC.13 BACKLINK_DELETE: must be able to delete a backlink', async () => {
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.13.1', deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'WA.BASIC.13.2', deployer: accounts[0], effectiveTime, duration })
+
+    // Begin Tests
+    let testTime = Date.now()
+
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    // Add a backlink from Alice to Carol
+    let hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
+    let data = ONEUtil.hexStringToBytes(hexData)
+    let { currentState: aliceStateLinked } = await executeWalletTransaction(
+      {
+        ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.BACKLINK_ADD,
+        data,
+        testTime
+      }
+    )
+
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    // Remove the backlink from Alice to Carol
+    hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
+    data = ONEUtil.hexStringToBytes(hexData)
+    let { tx, currentState: aliceCurrentState } = await executeWalletTransaction(
+      {
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.BACKLINK_DELETE,
+        data,
+        testTime
+      }
+    )
+
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx, expectedEvent: 'BackLinkAltered' })
+
+    // Alice Items that have changed - nonce, lastOperationTime, commits, backlinkedAddresses
+    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
+    // backlinkedAddresses
+    let backlinks = await alice.wallet.getBacklinks()
+    assert.notDeepStrictEqual(backlinks, aliceStateLinked.backlinkedAddresses, 'alice.wallet.backlinkedAddresses should have been updated')
+    assert.strictEqual(backlinks.length, 0, 'alice.wallet.backlinkedAddresses should be empty')
+    aliceOldState.backlinks = backlinks
+    // check alice
+    await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
   })
 
   // ====== BACKLINK_OVERRIDE ======
-  // Test overriding a backlink
-  // Expected result the backlink will be overwritten
+  // Test override a backlink from Alices wallet to Carols with Alices Wallet to Doras
+  // Expected result: Alices wallet will be backlinked to Doras
   it('WA.BASIC.14 BACKLINK_OVERRIDE: must be able to override a backlink', async () => {
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.14.1', deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'WA.BASIC.14.2', deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: dora } = await TestUtil.makeWallet({ salt: 'WA.BASIC.14.3', deployer: accounts[0], effectiveTime, duration })
+
+    // Begin Tests
+    let testTime = Date.now()
+
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    // Add a backlink from Alice to Carol
+    let hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
+    let data = ONEUtil.hexStringToBytes(hexData)
+    let { currentState: aliceLinkedToCarolState } = await executeWalletTransaction(
+      {
+        ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.BACKLINK_ADD,
+        data,
+        testTime
+      }
+    )
+
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+
+    // Now overwride link to Carol with link to Dora
+    hexData = ONEUtil.abi.encodeParameters(['address[]'], [[dora.wallet.address]])
+    data = ONEUtil.hexStringToBytes(hexData)
+    let { tx, currentState: aliceCurrentState } = await executeWalletTransaction(
+      {
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.BACKLINK_OVERRIDE,
+        data,
+        testTime
+      }
+    )
+
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx, expectedEvent: 'BackLinkAltered' })
+
+    // Alice Items that have changed - nonce, lastOperationTime, commits, backlinkedAddresses
+    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
+    // backlinkedAddresses
+    let backlinks = await alice.wallet.getBacklinks()
+    assert.notDeepStrictEqual(backlinks, aliceLinkedToCarolState.backlinkedAddresses, 'alice.wallet.backlinkedAddresses should have been updated')
+    assert.strictEqual(backlinks[0].toString(), dora.wallet.address.toString(), 'alice.wallet.backlinkedAddresses should equal dora.wallet.address')
+    aliceOldState.backlinks = backlinks
+    // check alice
+    await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
   })
 
   // ====== SIGN ======

@@ -208,6 +208,8 @@ contract('ONEWallet', (accounts) => {
   // Expected result alice can transfer funds to bob
   // Jump Logic:
   // Too Much : Can't increase the limit greater than the highest spending limit (newLimit > ss.highestSpendingLimit)
+  // Authentication: from function authenticate in reveal.sol
+  // if innerCores are empty, this operation (in this case) is doomed to fail. This is intended. Client should warn the user not to lower the limit too much if the wallet has no innerCores (use Extend to set first innerCores). Client should also advise the user the use Recovery feature to get their assets out, if they are stuck with very low limit and do not want to wait to double them each spendInterval.
   it('WA.BASIC.25 JUMP_SPENDING_LIMIT: must be able to transfer native currency', async () => {
   // create wallets and token contracts used througout the tests
     let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TN.BASIC.25.1', deployer: accounts[0], effectiveTime, duration })
