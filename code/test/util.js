@@ -448,7 +448,7 @@ const syncAndValidateStateMutation = async ({ wallet, oldState, validateNonce = 
   const lastOperationTime = await wallet.lastOperationTime()
   assert.notStrictEqual(lastOperationTime, oldState.lastOperationTime, 'wallet.lastOperationTime should have been updated')
   oldState.lastOperationTime = lastOperationTime.toNumber()
-  const allCommits = await wallet.getAllCommits()
+  const allCommits = await getAllCommitsParsed(wallet)
   assert.notDeepEqual(allCommits, oldState.allCommits, 'wallet.allCommits should have been updated')
   oldState.allCommits = allCommits
   return oldState
@@ -459,7 +459,7 @@ const syncAndValidateSpendingStateMutation = async ({
     highestSpendingLimit: '1000000000000000000', // Default to ONE ETH
     lastLimitAdjustmentTime: '0', // Default to zero i.e. no adjustments
     lastSpendingInterval: '0', // Default to zero i.e. have not changed spending interval
-    spendingInterval: '3000', // Default to 30 second spending interval 
+    spendingInterval: '3000', // Default to 30 second spending interval
     spendingLimit: '1000000000000000000', // Default to ONE ETH
     spentAmount: '0', // Default to zero i.e. nothing spent
   },
@@ -489,7 +489,7 @@ const syncAndValidateOldSignaturesMutation = async ({ expectedSignatures, wallet
 // ==== STATE RETREIVAL AND VALIDATION FUNCTIONS =====
 
 // get OneWallet state
-const getONEWalletState = async (wallet) => {
+const getState = async (wallet) => {
   Logger.debug(`getting State for: ${wallet.address}`)
   const address = wallet.address
   const identificationKey = await wallet.identificationKey()
@@ -629,7 +629,7 @@ module.exports = {
   syncAndValidateSpendingStateMutation,
 
   // state retrieval and validation
-  getONEWalletState,
+  getState,
   checkONEWalletStateChange,
 
   // execution

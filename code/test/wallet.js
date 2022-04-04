@@ -97,7 +97,7 @@ const executeWalletTransaction = async ({
     wallet: walletInfo.wallet
   })
   let currentState
-  if (getCurrentState) { currentState = await TestUtil.getONEWalletState(walletInfo.wallet) }
+  if (getCurrentState) { currentState = await TestUtil.getState(walletInfo.wallet) }
   return { tx, authParams, revealParams: returnedRevealParams, currentState }
 }
 
@@ -136,7 +136,7 @@ contract('ONEWallet', (accounts) => {
   // Fails to update if you have create alice wallet with `setLastResortAddress: true` as an address already set.
   it('WA.BASIC.5 SET_RECOVERY_ADDRESS: must be able to set recovery address', async () => {
     // create wallets and token contracts used througout the tests
-    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.5.1', deployer: accounts[0], effectiveTime, duration, setLastResortAddress: false })
+    let { walletInfo: alice, state: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.5.1', deployer: accounts[0], effectiveTime, duration, setLastResortAddress: false })
     let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'WA.BASIC.5.2', deployer: accounts[0], effectiveTime, duration })
 
     // Begin Tests
@@ -162,7 +162,7 @@ contract('ONEWallet', (accounts) => {
     TestUtil.validateEvent({ tx, expectedEvent: 'RecoveryAddressUpdated' })
 
     // Alice Items that have changed - nonce, lastOperationTime, recoveryAddress, commits
-    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
+    aliceOldState = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, oldState: aliceOldState })
     // recoveryAddress
     let aliceInfo = await TestUtil.getInfoParsed(alice.wallet)
     assert.notDeepStrictEqual(aliceInfo, aliceOldState.info, 'alice wallet.getInfo recoveryAddress should have been changed')
@@ -185,8 +185,8 @@ contract('ONEWallet', (accounts) => {
   // Expected result the wallet will be forwarded to
   it('WA.BASIC.8 FORWARD: must be able to set forward to another wallet', async () => {
     // create wallets and token contracts used througout the tests
-    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.8.1', deployer: accounts[0], effectiveTime, duration })
-    let { walletInfo: carol, walletOldState: carolOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.8.2', deployer: accounts[0], effectiveTime, duration, backlinks: [alice.wallet.address] })
+    let { walletInfo: alice, state: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.8.1', deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: carol, state: carolOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.8.2', deployer: accounts[0], effectiveTime, duration, backlinks: [alice.wallet.address] })
 
     // alice and carol both have an initial balance of half an ETH
     await TestUtil.validateBalance({ address: alice.wallet.address, amount: HALF_ETH })
@@ -214,17 +214,17 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.validateBalance({ address: carol.wallet.address, amount: ONE_ETH })
 
     // Alice Items that have changed - lastOperationTime, commits, trackedTokens
-    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
+    aliceOldState = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
     // Alice's forward address should now be carol's address
     aliceOldState.forwardAddress = await updateOldfowardAddress({ expectedForwardAddress: carol.wallet.address, wallet: alice.wallet })
     // Alice's spending state has been updated spentAmount = HALF_ETH and lastSpendingInterval has been updated
     let expectedSpendingState = await TestUtil.getSpendingStateParsed(alice.wallet)
     expectedSpendingState.spentAmount = HALF_ETH
-    aliceOldState.spendingState = await TestUtil.updateOldSpendingState({ expectedSpendingState, wallet: alice.wallet })
+    aliceOldState.spendingState = await TestUtil.syncAndValidateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
     // check alice
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
     // check carol's wallet hasn't changed (just her balances above)
-    const carolCurrentState = await TestUtil.getONEWalletState(carol.wallet)
+    const carolCurrentState = await TestUtil.getState(carol.wallet)
     await TestUtil.checkONEWalletStateChange(carolOldState, carolCurrentState)
   })
 
@@ -238,8 +238,8 @@ contract('ONEWallet', (accounts) => {
   // Test add a backlink from Alices wallet to Carols
   // Expected result: Alices wallet will be backlinked to Carols
   it('WA.BASIC.12 BACKLINK_ADD: must be able to add a backlink', async () => {
-    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.12.1', deployer: accounts[0], effectiveTime, duration })
-    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'WA.BASIC.12.1', deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: alice, state: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.12.1.1', deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'WA.BASIC.12.1.2', deployer: accounts[0], effectiveTime, duration })
 
     // Begin Tests
     let testTime = Date.now()
@@ -262,7 +262,7 @@ contract('ONEWallet', (accounts) => {
     TestUtil.validateEvent({ tx, expectedEvent: 'BackLinkAltered' })
 
     // Alice Items that have changed - nonce, lastOperationTime, commits, backlinkedAddresses
-    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
+    aliceOldState = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, oldState: aliceOldState })
     // backlinkedAddresses
     let backlinks = await alice.wallet.getBacklinks()
     assert.notDeepStrictEqual(backlinks, aliceOldState.backlinkedAddresses, 'alice.wallet.backlinkedAddresses should have been updated')
@@ -276,7 +276,7 @@ contract('ONEWallet', (accounts) => {
   // Test remove a backlink from Alices wallet to Carols
   // Expected result: Alices wallet will not be backlinked to Carols
   it('WA.BASIC.13 BACKLINK_DELETE: must be able to delete a backlink', async () => {
-    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.13.1', deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: alice, state: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.13.1', deployer: accounts[0], effectiveTime, duration })
     let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'WA.BASIC.13.2', deployer: accounts[0], effectiveTime, duration })
 
     // Begin Tests
@@ -313,7 +313,7 @@ contract('ONEWallet', (accounts) => {
     TestUtil.validateEvent({ tx, expectedEvent: 'BackLinkAltered' })
 
     // Alice Items that have changed - nonce, lastOperationTime, commits, backlinkedAddresses
-    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
+    aliceOldState = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, oldState: aliceOldState })
     // backlinkedAddresses
     let backlinks = await alice.wallet.getBacklinks()
     assert.notDeepStrictEqual(backlinks, aliceStateLinked.backlinkedAddresses, 'alice.wallet.backlinkedAddresses should have been updated')
@@ -327,7 +327,7 @@ contract('ONEWallet', (accounts) => {
   // Test override a backlink from Alices wallet to Carols with Alices Wallet to Doras
   // Expected result: Alices wallet will be backlinked to Doras
   it('WA.BASIC.14 BACKLINK_OVERRIDE: must be able to override a backlink', async () => {
-    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.14.1', deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: alice, state: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.14.1', deployer: accounts[0], effectiveTime, duration })
     let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'WA.BASIC.14.2', deployer: accounts[0], effectiveTime, duration })
     let { walletInfo: dora } = await TestUtil.makeWallet({ salt: 'WA.BASIC.14.3', deployer: accounts[0], effectiveTime, duration })
 
@@ -366,7 +366,7 @@ contract('ONEWallet', (accounts) => {
     TestUtil.validateEvent({ tx, expectedEvent: 'BackLinkAltered' })
 
     // Alice Items that have changed - nonce, lastOperationTime, commits, backlinkedAddresses
-    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
+    aliceOldState = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, oldState: aliceOldState })
     // backlinkedAddresses
     let backlinks = await alice.wallet.getBacklinks()
     assert.notDeepStrictEqual(backlinks, aliceLinkedToCarolState.backlinkedAddresses, 'alice.wallet.backlinkedAddresses should have been updated')
@@ -396,8 +396,8 @@ contract('ONEWallet', (accounts) => {
   // Test signing a transaction with a backlinked wallet
   // Expected result the backlinked wallet will sign a transaction for the linked wallet
   it('WA.COMPLEX.8.0 FORWARD.COMMAND: must be able to sign a transaction for a backlinked wallet', async () => {
-    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.COMPLEX.8.0.1', deployer: accounts[0], effectiveTime, duration })
-    let { walletInfo: carol, walletOldState: carolOldState } = await TestUtil.makeWallet({ salt: 'WA.COMPLEX.8.0.2', deployer: accounts[0], effectiveTime, duration, backlinks: [alice.wallet.address] })
+    let { walletInfo: alice, state: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.COMPLEX.8.0.1', deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: carol, state: carolOldState } = await TestUtil.makeWallet({ salt: 'WA.COMPLEX.8.0.2', deployer: accounts[0], effectiveTime, duration, backlinks: [alice.wallet.address] })
 
     // alice and carol both have an initial balance of half an ETH
     await TestUtil.validateBalance({ address: alice.wallet.address, amount: HALF_ETH })
@@ -425,17 +425,17 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.validateBalance({ address: carol.wallet.address, amount: ONE_ETH })
 
     // Alice Items that have changed - lastOperationTime, commits, trackedTokens
-    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
+    aliceOldState = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
     // Alice's forward address should now be carol's address
     aliceOldState.forwardAddress = await updateOldfowardAddress({ expectedForwardAddress: carol.wallet.address, wallet: alice.wallet })
     // Alice's spending state has been updated spentAmount = HALF_ETH and lastSpendingInterval has been updated
     let expectedSpendingState = await TestUtil.getSpendingStateParsed(alice.wallet)
     expectedSpendingState.spentAmount = HALF_ETH
-    aliceOldState.spendingState = await TestUtil.updateOldSpendingState({ expectedSpendingState, wallet: alice.wallet })
+    aliceOldState.spendingState = await TestUtil.syncAndValidateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
     // check alice
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
     // check carol's wallet hasn't changed (just her balances above)
-    let carolCurrentState = await TestUtil.getONEWalletState(carol.wallet)
+    let carolCurrentState = await TestUtil.getState(carol.wallet)
     await TestUtil.checkONEWalletStateChange(carolOldState, carolCurrentState)
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
@@ -462,7 +462,7 @@ contract('ONEWallet', (accounts) => {
         testTime
       }
     )
-    aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
+    aliceCurrentState = await TestUtil.getState(alice.wallet)
     Logger.debug(tx2)
 
     // Alice items that have changed -signatures
@@ -473,7 +473,7 @@ contract('ONEWallet', (accounts) => {
     aliceOldState.signatures[0].signature = ONEUtil.hexString(signature)
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
     // Carol Items that have changed - lastOperationTime, commits, trackedTokens
-    carolOldState = await TestUtil.updateOldTxnInfo({ wallet: carol.wallet, oldState: carolOldState, validateNonce: false })
+    carolOldState = await TestUtil.syncAndValidateStateMutation({ wallet: carol.wallet, oldState: carolOldState, validateNonce: false })
     // check carol's wallet hasn't changed (just her balances above)
     await TestUtil.checkONEWalletStateChange(carolOldState, carolCurrentStateSigned)
   })

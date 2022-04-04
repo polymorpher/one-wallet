@@ -34,7 +34,7 @@ contract('ONEWallet', (accounts) => {
   // Expected result the wallet is now created and validate
   it('EX.UTILITY.1: must be able to create and validate a wallet', async () => {
     let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TT-WALLET-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
-    let aliceCurrentState = await TestUtil.getONEWalletState(alice.wallet)
+    let aliceCurrentState = await TestUtil.getState(alice.wallet)
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
   })
 })
