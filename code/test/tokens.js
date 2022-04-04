@@ -335,7 +335,7 @@ contract('ONEWallet', (accounts) => {
   // Expected result the token is now tracked and alices balance has decreased and bobs increased
   it('TN.BASIC.2 TRANSFER_TOKEN: must be able to transfer ERC20 token', async () => {
     // create wallets and token contracts used througout the tests
-    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TN.POSITIVE.2.1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
+    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TN.BASIC.2.1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
     let { walletInfo: bob } = await TestUtil.makeWallet({ salt: 'TN.BASIC.2.2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
 
     // make Tokens

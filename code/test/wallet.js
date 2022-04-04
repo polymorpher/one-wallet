@@ -170,8 +170,9 @@ contract('ONEWallet', (accounts) => {
     aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
     // Alice's forward address should now be carol's address
     aliceOldState.forwardAddress = await updateOldfowardAddress({ expectedForwardAddress: carol.wallet.address, wallet: alice.wallet })
-    // Alice's spending state has been updated
-    let expectedSpendingState = await alice.wallet.getSpendingState()
+    // Alice's spending state has been updated spentAmount = HALF_ETH and lastSpendingInterval has been updated
+    let expectedSpendingState = await TestUtil.getSpendingStateParsed(alice.wallet)
+    expectedSpendingState.spentAmount = HALF_ETH
     aliceOldState.spendingState = await TestUtil.updateOldSpendingState({ expectedSpendingState, wallet: alice.wallet })
     // check alice
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
@@ -256,8 +257,9 @@ contract('ONEWallet', (accounts) => {
     aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
     // Alice's forward address should now be carol's address
     aliceOldState.forwardAddress = await updateOldfowardAddress({ expectedForwardAddress: carol.wallet.address, wallet: alice.wallet })
-    // Alice's spending state has been updated
-    let expectedSpendingState = await alice.wallet.getSpendingState()
+    // Alice's spending state has been updated spentAmount = HALF_ETH and lastSpendingInterval has been updated
+    let expectedSpendingState = await TestUtil.getSpendingStateParsed(alice.wallet)
+    expectedSpendingState.spentAmount = HALF_ETH
     aliceOldState.spendingState = await TestUtil.updateOldSpendingState({ expectedSpendingState, wallet: alice.wallet })
     // check alice
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)

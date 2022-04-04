@@ -370,9 +370,10 @@ const fundWallet = async ({ funder, wallet, value = HALF_ETH }) => {
 // === EVENT VALIDATION ====
 const validateEvent = ({ tx, expectedEvent }) => {
   const events = ONEParser.parseTxLog(tx?.receipt?.rawLogs)
+  Logger.debug(`events: ${JSON.stringify(events)}`)
   const event = events.filter(e => e.eventName === expectedEvent)[0]
   const eventName = event?.eventName
-  console.log(`eventName: ${eventName}`)
+  Logger.debug(`eventName: ${eventName}`)
   assert.deepStrictEqual(expectedEvent, eventName, 'Expected event not triggered')
 }
 
@@ -518,36 +519,14 @@ const updateOldSpendingState = async ({
   },
   wallet
 }) => {
-  let spendingState = await wallet.getSpendingState()
-  // newSpendingState reflects the current Spending State overwritten by the expectedSpendingState allowing us to 
-  let newSpendingState = { ...spendingState, ...expectedSpendingState }
-  if (newSpendingState.highestSpendingLimit) {
-    assert.equal(newSpendingState.highestSpendingLimit, spendingState.highestSpendingLimit, 'Expected highestSpendingLimit to have changed')
-  }
-  if (newSpendingState.lastLimitAdjustmentTime) {
-    assert.equal(newSpendingState.lastLimitAdjustmentTime, spendingState.lastLimitAdjustmentTime, 'Expected lastLimitAdjustmentTime to have changed')
-  }
-  if (newSpendingState.lastSpendingInterval) {
-    assert.equal(newSpendingState.lastSpendingInterval, spendingState.lastSpendingInterval, 'Expected lastSpendingInterval to have changed')
-  }
-  if (newSpendingState.spendingInterval) {
-    assert.equal(newSpendingState.spendingInterval, spendingState.spendingInterval, 'Expected spendingInterval to have changed')
-  }
-  if (newSpendingState.spendingLimit) {
-    assert.equal(newSpendingState.spendingLimit, spendingState.spendingLimit, 'Expected spendingLimit to have changed')
-  }
-  if (newSpendingState.spentAmount) {
-    assert.equal(newSpendingState.spentAmount, spendingState.spentAmount, 'Expected spentAmount to have changed')
-  }
-  let spendingStateObject = {
-    spendingLimit: expectedSpendingState[0].toString(),
-    spentAmount: expectedSpendingState[1].toString(),
-    lastSpendingInterval: expectedSpendingState[2].toString(),
-    spendingInterval: expectedSpendingState[3].toString(),
-    lastLimitAdjustmentTime: expectedSpendingState[4].toString(),
-    highestSpendingLimit: expectedSpendingState[5].toString()
-  }
-  return spendingStateObject
+  let spendingState = await getSpendingStateParsed(wallet)
+  assert.equal(expectedSpendingState.highestSpendingLimit, spendingState.highestSpendingLimit, 'Expected highestSpendingLimit to have changed')
+  assert.equal(expectedSpendingState.lastLimitAdjustmentTime, spendingState.lastLimitAdjustmentTime, 'Expected lastLimitAdjustmentTime to have changed')
+  assert.equal(expectedSpendingState.lastSpendingInterval, spendingState.lastSpendingInterval, 'Expected lastSpendingInterval to have changed')
+  assert.equal(expectedSpendingState.spendingInterval, spendingState.spendingInterval, 'Expected spendingInterval to have changed')
+  assert.equal(expectedSpendingState.spendingLimit, spendingState.spendingLimit, 'Expected spendingLimit to have changed')
+  assert.equal(expectedSpendingState.spentAmount, spendingState.spentAmount, 'Expected spentAmount to have changed')
+  return spendingState
 }
 
 // updateOldSignatures
@@ -603,7 +582,6 @@ const getONEWalletState = async (wallet) => {
     backlinks,
     signatures,
   }
-  // console.log(`state: ${JSON.stringify(state)}`)
   Logger.debug(`state: ${JSON.stringify(state)}`)
   return state
 }
