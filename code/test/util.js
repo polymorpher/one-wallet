@@ -4,26 +4,26 @@ const base32 = require('hi-base32')
 const BN = require('bn.js')
 const unit = require('ethjs-unit')
 const ONE = require('../lib/onewallet')
+<<<<<<< HEAD
 const ONEParser = require('../lib/parser')
 const ONEDebugger = require('../lib/debug')
+=======
+
+>>>>>>> 1bfbb6ca (cleanup util)
 const ONEUtil = require('../lib/util')
 const ONEConstants = require('../lib/constants')
-// const ONEWallet = require('../lib/onewallet')
 const TestERC20 = artifacts.require('TestERC20')
 const TestERC721 = artifacts.require('TestERC721')
 const TestERC1155 = artifacts.require('TestERC1155')
 const VALID_SIGNATURE_VALUE = '0x1626ba7e'
 const INVALID_SIGNATURE_VALUE = '0xffffffff'
 
-// const ONE_CENT = unit.toWei('0.01', 'ether')
-// const HALF_DIME = unit.toWei('0.05', 'ether')
-// const ONE_DIME = unit.toWei('0.1', 'ether')
 const HALF_ETH = unit.toWei('0.5', 'ether')
 const ONE_ETH = unit.toWei('1', 'ether')
 const INTERVAL = 30000
 const DURATION = INTERVAL * 12
 const SLOT_SIZE = 1
-const MAX_UINT32 = Math.pow(2, 32) - 1
+const MAX_UINT32 = new BN(2).pow(new BN(32)).subn(1)
 const Logger = {
   debug: (...args) => {
     if (config.verbose) {
@@ -31,7 +31,6 @@ const Logger = {
     }
   }
 }
-// const Debugger = ONEDebugger(Logger)
 let Factories
 // eslint-disable-next-line no-unused-vars
 let Libraries
