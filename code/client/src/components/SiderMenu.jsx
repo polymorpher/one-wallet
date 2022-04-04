@@ -18,13 +18,20 @@ import DollarOutlined from '@ant-design/icons/DollarOutlined'
 import ToolOutlined from '@ant-design/icons/ToolOutlined'
 import HarmonyLogo from '../assets/harmony.svg'
 import OneWalletLogo from '../assets/1walletlogo.svg'
+import OverviewIcon from '../assets/icons/overview.svg?el'
+import AssetsIcon from '../assets/icons/assets.svg?el'
+import NFTIcon from '../assets/icons/nft.svg?el'
+import SwapIcon from '../assets/icons/swap.svg?el'
+import StakeIcon from '../assets/icons/stake.svg?el'
+import AuditIcon from '../assets/icons/audit.svg?el'
+import RestoreIcon from '../assets/icons/restore.svg?el'
 import config from '../config'
 import Paths from '../constants/paths'
 import styled from 'styled-components'
 import { useWindowDimensions } from '../util'
 import abbr from '../abbr'
 import { useDispatch, useSelector } from 'react-redux'
-import { getPrimaryBorderColor, getPrimaryTextColor } from '../theme'
+import { getColorPalette, getPrimaryBorderColor, getPrimaryTextColor } from '../theme'
 import WalletConstants from '../constants/wallet'
 import { cacheActions } from '../state/modules/cache'
 const { Link } = Typography
@@ -122,22 +129,19 @@ const StatsInfo = () => {
 const DeskstopSiderMenu = ({ action, nav, ...args }) => {
   const history = useHistory()
   const theme = useSelector(state => state.global.v2ui ? (state.global.theme ?? 'light') : 'dark')
-  const v2ui = useSelector(state => state.global.v2ui)
-
-  const menuTextColor = v2ui ? getPrimaryTextColor(theme) : null
 
   return (
     <Layout.Sider collapsed={false} {...args} theme={theme}>
       {/* <Image src='/assets/harmony.svg' /> */}
       <Row justify='center'>
         <SiderLink href='https://harmony.one/'>
-          <Image preview={false} src={v2ui ? OneWalletLogo : HarmonyLogo} style={{ cursor: 'pointer', padding: 32 }} onClick={() => history.push('/')} />
+          <Image preview={false} src={HarmonyLogo} style={{ cursor: 'pointer', padding: 32 }} onClick={() => history.push('/')} />
         </SiderLink>
       </Row>
 
       <Row justify='center' style={{ marginBottom: 24 }}><SiderLink style={{ color: getPrimaryTextColor(theme) }} href='https://harmony.one/1wallet'>{config.appName} {config.version}</SiderLink></Row>
 
-      {!v2ui && <StatsInfo />}
+      <StatsInfo />
 
       <Menu theme={theme} mode='inline' onClick={nav} selectedKeys={[action]}>
         <Menu.Item key='create' icon={<PlusCircleOutlined />}>Create</Menu.Item>
@@ -146,17 +150,55 @@ const DeskstopSiderMenu = ({ action, nav, ...args }) => {
       </Menu>
       <LineDivider />
       <Menu theme={theme} mode='inline' selectable={false}>
-        <Menu.Item key='grant' icon={<DollarOutlined />}><SiderLink style={{ color: menuTextColor }} href='https://harmony.one/wallet'>Grants</SiderLink></Menu.Item>
-        <Menu.Item key='bug' icon={<GithubOutlined />}><SiderLink style={{ color: menuTextColor }} href='https://github.com/polymorpher/one-wallet/issues'>Bug Report</SiderLink></Menu.Item>
-        <Menu.Item key='audit' icon={<AuditOutlined />}><SiderLink style={{ color: menuTextColor }} href='https://github.com/polymorpher/one-wallet/tree/master/audits'>Audits</SiderLink></Menu.Item>
-        <Menu.Item key='wiki' icon={<InfoCircleOutlined />}><SiderLink style={{ color: menuTextColor }} href='https://github.com/polymorpher/one-wallet/wiki'>Wiki</SiderLink></Menu.Item>
+        <Menu.Item key='grant' icon={<DollarOutlined />}><SiderLink style={{ color: null }} href='https://harmony.one/wallet'>Grants</SiderLink></Menu.Item>
+        <Menu.Item key='bug' icon={<GithubOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/issues'>Bug Report</SiderLink></Menu.Item>
+        <Menu.Item key='audit' icon={<AuditOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/tree/master/audits'>Audits</SiderLink></Menu.Item>
+        <Menu.Item key='wiki' icon={<InfoCircleOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/wiki'>Wiki</SiderLink></Menu.Item>
       </Menu>
       <LineDivider />
       <Menu theme={theme} mode='inline' onClick={nav} selectedKeys={[action]}>
         <Menu.Item key='tools' icon={<ToolOutlined />}>Tools</Menu.Item>
       </Menu>
+    </Layout.Sider>
+  )
+}
 
-      {v2ui && <StatsInfo />}
+const DeskstopSiderMenuV2 = ({ action, nav, ...args }) => {
+  const history = useHistory()
+  const theme = useSelector(state => state.global.v2ui ? (state.global.theme ?? 'light') : 'dark')
+
+  const { primaryTextColor, secondaryTextColor } = getColorPalette(theme)
+
+  return (
+    <Layout.Sider collapsed={false} {...args} theme={theme} style={{ color: primaryTextColor }}>
+      <Row justify='center'>
+        <SiderLink href='https://harmony.one/'>
+          <Image preview={false} src={OneWalletLogo} style={{ cursor: 'pointer', padding: 32 }} onClick={() => history.push('/')} />
+        </SiderLink>
+      </Row>
+
+      <Row justify='center' style={{ marginBottom: 24 }}><SiderLink href='https://harmony.one/1wallet'>{config.appName} {config.version}</SiderLink></Row>
+
+      <Menu theme={theme} mode='inline' onClick={nav} selectedKeys={[action]}>
+        <Menu.Item key='overview' icon={<OverviewIcon fill={action === 'overview' ? 'currentColor' : secondaryTextColor} />}>Overview</Menu.Item>
+        <Menu.Item key='assets' icon={<AssetsIcon fill={action === 'assets' ? 'currentColor' : secondaryTextColor} />}>Assets</Menu.Item>
+        <Menu.Item key='nft' icon={<NFTIcon fill={action === 'nft' ? 'currentColor' : secondaryTextColor} />}>NFTs</Menu.Item>
+        <Menu.Item key='swap' icon={<SwapIcon fill={action === 'swap' ? 'currentColor' : secondaryTextColor} />}>Swap</Menu.Item>
+        <Menu.Item key='stake' icon={<StakeIcon fill={action === 'stake' ? 'currentColor' : secondaryTextColor} />}>Stake</Menu.Item>
+        <Menu.Item key='restore' icon={<RestoreIcon fill={action === 'restore' ? 'currentColor' : secondaryTextColor} />}>Restore</Menu.Item>
+      </Menu>
+      <LineDivider />
+      <Menu theme={theme} mode='inline' selectable={false}>
+        <Menu.Item key='audit' icon={<AuditIcon fill={secondaryTextColor} />}><SiderLink href='https://github.com/polymorpher/one-wallet/tree/master/audits'>Audits</SiderLink></Menu.Item>
+      </Menu>
+      <LineDivider />
+      <Menu theme={theme} mode='inline' onClick={nav} selectedKeys={[action]} style={{ color: secondaryTextColor }}>
+        <Menu.Item key='tools'>Tools</Menu.Item>
+        <Menu.Item key='bug'><SiderLink href='https://github.com/polymorpher/one-wallet/issues'>Bug Report</SiderLink></Menu.Item>
+        <Menu.Item key='wiki'><SiderLink href='https://github.com/polymorpher/one-wallet/wiki'>Wiki</SiderLink></Menu.Item>
+      </Menu>
+
+      <StatsInfo />
     </Layout.Sider>
   )
 }
@@ -166,6 +208,7 @@ const SiderMenu = ({ ...args }) => {
   const history = useHistory()
   const match = useRouteMatch('/:action')
   const { action } = match ? match.params : {}
+  const v2ui = useSelector(state => state.global.v2ui)
   args.action = action
   args.nav = ({ key }) => {
     history.push(Paths[key])
@@ -174,7 +217,7 @@ const SiderMenu = ({ ...args }) => {
   return (
     isMobile
       ? <MobileSiderMenu {...args} />
-      : <DeskstopSiderMenu {...args} />
+      : (v2ui ? <DeskstopSiderMenuV2 {...args} /> : <DeskstopSiderMenu {...args} />)
   )
 }
 

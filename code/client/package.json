@@ -25,6 +25,7 @@
     "@babel/preset-env": "^7.13.15",
     "@babel/preset-react": "^7.13.13",
     "@babel/runtime": "^7.14.0",
+    "@svgr/webpack": "^6.2.1",
     "@truffle/contract": "^4.3.43",
     "@truffle/debug-utils": "github:polymorpher/truffle-debug-utils",
     "babel-loader": "^8.2.2",
