@@ -149,7 +149,7 @@ const executeTokenTransaction = async ({
     wallet: walletInfo.wallet
   })
   let currentState
-  if (getCurrentState) { currentState = await TestUtil.getONEWalletState(walletInfo.wallet) }
+  if (getCurrentState) { currentState = await TestUtil.getState(walletInfo.wallet) }
   return { tx, authParams, revealParams: returnedRevealParams, currentState }
 }
 

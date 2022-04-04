@@ -296,7 +296,7 @@ const makeWallet = async ({
   })
   let balance = await fundWallet({ to: wallet.address, from: deployer, fundAmount })
   if (validate) { await validateBalance({ address: wallet.address, amount: fundAmount }) }
-  const state = await getONEWalletState(wallet)
+  const state = await getState(wallet)
 
   return { walletInfo: { wallet: wallet, seed, hseed, layers, lastResortAddress }, state, balance }
 }
@@ -334,6 +334,7 @@ const validateEvent = ({ tx, expectedEvent }) => {
 // These functions retrieve values using an address
 // They are typically used to validate wallets balances have been funded or updated
 // They do not update State
+// Functions must not mutate arguments' inner state unless stated in the name
 
 const validateBalance = async ({ address, amount = HALF_ETH }) => {
   let balance = await web3.eth.getBalance(address)
@@ -392,8 +393,7 @@ const getInnerCoresParsed = async (wallet) => {
 
 const getVersionParsed = async (wallet) => {
   const walletVersion = await wallet.getVersion()
-  let version = {}
-  version = {
+  const version = {
     majorVersion: new BN(walletVersion[0]).toNumber(),
     minorVersion: new BN(walletVersion[1]).toNumber()
   }
@@ -402,8 +402,7 @@ const getVersionParsed = async (wallet) => {
 
 const getSpendingStateParsed = async (wallet) => {
   const walletSpendingState = await wallet.getSpendingState()
-  let spendingState = {}
-  spendingState = {
+  const spendingState = {
     spendingLimit: walletSpendingState[0].toString(),
     spentAmount: walletSpendingState[1].toString(),
     lastSpendingInterval: walletSpendingState[2].toString(),
@@ -454,28 +453,8 @@ const syncAndValidateStateMutation = async ({ wallet, oldState, validateNonce = 
   oldState.allCommits = allCommits
   return oldState
 }
-// updateOldTxnInfo: changed - nonce, lastOperationTime, commits,
-const updateOldTxnInfo = async ({ wallet, oldState, validateNonce = true }) => {
-  // nonce
-  if (validateNonce) {
-    let nonce = await wallet.getNonce()
-    // assert.notEqual(nonce, oldState.nonce, 'wallet.nonce should have been changed')
-    assert.equal(nonce.toNumber(), oldState.nonce + 1, 'wallet.nonce should have been changed')
-    oldState.nonce = nonce.toNumber()
-  }
-  // lastOperationTime
-  let lastOperationTime = await wallet.lastOperationTime()
-  assert.notStrictEqual(lastOperationTime, oldState.lastOperationTime, 'wallet.lastOperationTime should have been updated')
-  oldState.lastOperationTime = lastOperationTime.toNumber()
-  // commits
-  let allCommits = await getAllCommitsParsed(wallet)
-  assert.notDeepEqual(allCommits, oldState.allCommits, 'wallet.allCommits should have been updated')
-  oldState.allCommits = allCommits
-  return oldState
-}
 
-// updateOldSpendingState
-const updateOldSpendingState = async ({
+const syncAndValidateSpendingStateMutation = async ({
   expectedSpendingState = {
     highestSpendingLimit: '1000000000000000000', // Default to ONE ETH
     lastLimitAdjustmentTime: '0', // Default to zero i.e. no adjustments
@@ -496,8 +475,7 @@ const updateOldSpendingState = async ({
   return spendingState
 }
 
-// updateOldSignatures
-const updateOldSignatures = async ({ expectedSignatures, wallet }) => {
+const syncAndValidateOldSignaturesMutation = async ({ expectedSignatures, wallet }) => {
   let signatures = getSignaturesParsed(wallet)
   // check all expectedSignatures are valid
   for (let i = 0; i < expectedSignatures.length; i++) {
@@ -647,9 +625,8 @@ module.exports = {
 
   // state helpers
   syncAndValidateStateMutation,
-  updateOldTxnInfo,
-  updateOldSpendingState,
-  updateOldSignatures,
+  syncAndValidateOldSignaturesMutation,
+  syncAndValidateSpendingStateMutation,
 
   // state retrieval and validation
   getONEWalletState,
