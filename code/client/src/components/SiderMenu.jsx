@@ -23,7 +23,6 @@ import AssetsIcon from '../assets/icons/assets.svg?el'
 import NFTIcon from '../assets/icons/nft.svg?el'
 import SwapIcon from '../assets/icons/swap.svg?el'
 import StakeIcon from '../assets/icons/stake.svg?el'
-import AuditIcon from '../assets/icons/audit.svg?el'
 import RestoreIcon from '../assets/icons/restore.svg?el'
 import config from '../config'
 import Paths from '../constants/paths'
@@ -188,17 +187,14 @@ const DeskstopSiderMenuV2 = ({ action, nav, ...args }) => {
         <Menu.Item key='restore' icon={<RestoreIcon fill={action === 'restore' ? 'currentColor' : secondaryTextColor} />}>Restore</Menu.Item>
       </Menu>
       <LineDivider />
-      <Menu theme={theme} mode='inline' selectable={false}>
-        <Menu.Item key='audit' icon={<AuditIcon fill={secondaryTextColor} />}><SiderLink href='https://github.com/polymorpher/one-wallet/tree/master/audits'>Audits</SiderLink></Menu.Item>
-      </Menu>
-      <LineDivider />
-      <Menu theme={theme} mode='inline' onClick={nav} selectedKeys={[action]} style={{ color: secondaryTextColor }}>
-        <Menu.Item key='tools'>Tools</Menu.Item>
-        <Menu.Item key='bug'><SiderLink href='https://github.com/polymorpher/one-wallet/issues'>Bug Report</SiderLink></Menu.Item>
+      <Menu theme={theme} mode='inline' className='secondary-menu' onClick={nav} selectedKeys={[action]} style={{ color: secondaryTextColor, textTransform: 'uppercase' }}>
+        <Menu.Item key='grant'><SiderLink href='https://harmony.one/wallet'>Grants</SiderLink></Menu.Item>
+        <Menu.Item key='audit'><SiderLink href='https://github.com/polymorpher/one-wallet/tree/master/audits'>Audits</SiderLink></Menu.Item>
         <Menu.Item key='wiki'><SiderLink href='https://github.com/polymorpher/one-wallet/wiki'>Wiki</SiderLink></Menu.Item>
+        <Menu.Item key='bug'><SiderLink href='https://github.com/polymorpher/one-wallet/issues'>Bugs</SiderLink></Menu.Item>
+        <Menu.Item key='network'><SiderLink href='https://github.com/polymorpher/one-wallet/issues'>Network</SiderLink></Menu.Item>
+        <Menu.Item key='tools'>Tools</Menu.Item>
       </Menu>
-
-      <StatsInfo />
     </Layout.Sider>
   )
 }
