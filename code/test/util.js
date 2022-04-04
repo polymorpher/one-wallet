@@ -4,12 +4,9 @@ const base32 = require('hi-base32')
 const BN = require('bn.js')
 const unit = require('ethjs-unit')
 const ONE = require('../lib/onewallet')
-<<<<<<< HEAD
 const ONEParser = require('../lib/parser')
 const ONEDebugger = require('../lib/debug')
-=======
 
->>>>>>> 1bfbb6ca (cleanup util)
 const ONEUtil = require('../lib/util')
 const ONEConstants = require('../lib/constants')
 const TestERC20 = artifacts.require('TestERC20')
