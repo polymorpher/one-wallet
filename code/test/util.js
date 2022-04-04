@@ -323,21 +323,16 @@ const validateBalance = async ({ address, amount = HALF_ETH }) => {
   assert.equal(amount, balance, 'Wallet should have a different balance')
 }
 
-// updateOldTxnInfo: changed - nonce, lastOperationTime, commits,
-const updateOldTxnInfo = async ({ wallet, oldState, validateNonce = true }) => {
-  // nonce
+const syncAndValidateStateMutation = async ({ wallet, oldState, validateNonce = true }) => {
   if (validateNonce) {
-    let nonce = await wallet.getNonce()
-    // assert.notEqual(nonce, oldState.nonce, 'wallet.nonce should have been changed')
+    const nonce = await wallet.getNonce()
     assert.equal(nonce.toNumber(), oldState.nonce + 1, 'wallet.nonce should have been changed')
     oldState.nonce = nonce.toNumber()
   }
-  // lastOperationTime
-  let lastOperationTime = await wallet.lastOperationTime()
+  const lastOperationTime = await wallet.lastOperationTime()
   assert.notStrictEqual(lastOperationTime, oldState.lastOperationTime, 'wallet.lastOperationTime should have been updated')
   oldState.lastOperationTime = lastOperationTime.toNumber()
-  // commits
-  let allCommits = await wallet.getAllCommits()
+  const allCommits = await wallet.getAllCommits()
   assert.notDeepEqual(allCommits, oldState.allCommits, 'wallet.allCommits should have been updated')
   oldState.allCommits = allCommits
   return oldState
@@ -569,6 +564,6 @@ module.exports = {
   getONEWalletState,
   checkONEWalletStateChange,
   validateBalance,
-  updateOldTxnInfo,
+  syncAndValidateStateMutation,
   validateSpendingState,
 }
