@@ -440,6 +440,20 @@ const getSignaturesParsed = async (wallet) => {
 // They are typically used after an un update Operation to validate changed elements
 // They return an updated OldState by replacing elements from the current state
 
+const syncAndValidateStateMutation = async ({ wallet, oldState, validateNonce = true }) => {
+  if (validateNonce) {
+    const nonce = await wallet.getNonce()
+    assert.equal(nonce.toNumber(), oldState.nonce + 1, 'wallet.nonce should have been changed')
+    oldState.nonce = nonce.toNumber()
+  }
+  const lastOperationTime = await wallet.lastOperationTime()
+  assert.notStrictEqual(lastOperationTime, oldState.lastOperationTime, 'wallet.lastOperationTime should have been updated')
+  oldState.lastOperationTime = lastOperationTime.toNumber()
+  const allCommits = await wallet.getAllCommits()
+  assert.notDeepEqual(allCommits, oldState.allCommits, 'wallet.allCommits should have been updated')
+  oldState.allCommits = allCommits
+  return oldState
+}
 // updateOldTxnInfo: changed - nonce, lastOperationTime, commits,
 const updateOldTxnInfo = async ({ wallet, oldState, validateNonce = true }) => {
   // nonce
@@ -632,6 +646,7 @@ module.exports = {
   getSignaturesParsed,
 
   // state helpers
+  syncAndValidateStateMutation,
   updateOldTxnInfo,
   updateOldSpendingState,
   updateOldSignatures,

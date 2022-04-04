@@ -266,7 +266,7 @@ contract('ONEWallet', (accounts) => {
     TestUtil.validateEvent({ tx, expectedEvent: 'TokenTracked' })
 
     // Alice Items that have changed - nonce, lastOperationTime, commits, trackedTokens
-    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
+    aliceOldState = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, oldState: aliceOldState })
     // tracked tokens
     const expectedTrackedTokens = [{
       tokenType: ONEConstants.TokenType.ERC20,
@@ -322,7 +322,7 @@ contract('ONEWallet', (accounts) => {
     TestUtil.validateEvent({ tx, expectedEvent: 'TokenUntracked' })
 
     // Alice Items that have changed - lastOperationTime, commits, trackedTokens
-    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
+    aliceOldState = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
     // tracked tokens
     const expectedTrackedTokens = []
     aliceOldState.trackedTokens = await updateOldTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
@@ -380,7 +380,7 @@ contract('ONEWallet', (accounts) => {
     })
 
     // Alice Items that have changed - nonce, lastOperationTime, commits, trackedTokens
-    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
+    aliceOldState = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, oldState: aliceOldState })
     // tracked tokens
     // tracked tokens
     const expectedTrackedTokens = [{
@@ -440,7 +440,7 @@ contract('ONEWallet', (accounts) => {
       }
     )
     // Alice Items that have changed - lastOperationTime, commits, trackedTokens
-    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
+    aliceOldState = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
     // tracked tokens
     // tracked tokens
     const expectedTrackedTokens = [{
@@ -483,7 +483,7 @@ contract('ONEWallet', (accounts) => {
     TestUtil.validateEvent({ tx, expectedEvent: 'TokenTracked' })
 
     // Alice Items that have changed - nonce, lastOperationTime, commits, trackedTokens
-    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
+    aliceOldState = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, oldState: aliceOldState })
     // tracked tokens
     const expectedTrackedTokens = [{
       tokenType: ONEConstants.TokenType.ERC721,
@@ -540,7 +540,7 @@ contract('ONEWallet', (accounts) => {
     TestUtil.validateEvent({ tx, expectedEvent: 'TokenUntracked' })
 
     // Alice Items that have changed - lastOperationTime, commits, trackedTokens
-    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
+    aliceOldState = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
     // tracked tokens
     const expectedTrackedTokens = []
     aliceOldState.trackedTokens = await updateOldTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
@@ -602,7 +602,7 @@ contract('ONEWallet', (accounts) => {
     })
 
     // Alice Items that have changed - nonce, lastOperationTime, commits, trackedTokens
-    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
+    aliceOldState = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, oldState: aliceOldState })
     // tracked tokens
     const expectedTrackedTokens = [
       { tokenType: ONEConstants.TokenType.ERC721, contractAddress: testerc721.address, tokenId: 2 },
@@ -663,7 +663,7 @@ contract('ONEWallet', (accounts) => {
       }
     )
     // Alice Items that have changed - lastOperationTime, commits, trackedTokens
-    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
+    aliceOldState = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
     // tracked tokens
     const expectedTrackedTokens = [{ tokenType: ONEConstants.TokenType.ERC721, contractAddress: testerc721v2.address, tokenId: 3 }]
     aliceOldState.trackedTokens = await updateOldTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
@@ -702,7 +702,7 @@ contract('ONEWallet', (accounts) => {
     TestUtil.validateEvent({ tx, expectedEvent: 'TokenTracked' })
 
     // Alice Items that have changed - nonce, lastOperationTime, commits, trackedTokens
-    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
+    aliceOldState = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, oldState: aliceOldState })
     // tracked tokens
     const expectedTrackedTokens = [{ tokenType: ONEConstants.TokenType.ERC1155, contractAddress: testerc1155.address, tokenId: 3 }]
     aliceOldState.trackedTokens = await updateOldTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
@@ -756,7 +756,7 @@ contract('ONEWallet', (accounts) => {
     TestUtil.validateEvent({ tx, expectedEvent: 'TokenUntracked' })
 
     // Alice Items that have changed - lastOperationTime, commits, trackedTokens
-    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
+    aliceOldState = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
     // tracked tokens
     const expectedTrackedTokens = []
     aliceOldState.trackedTokens = await updateOldTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
@@ -818,7 +818,7 @@ contract('ONEWallet', (accounts) => {
     })
 
     // Alice Items that have changed - nonce, lastOperationTime, commits, trackedTokens
-    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState })
+    aliceOldState = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, oldState: aliceOldState })
     // tracked tokens
     const expectedTrackedTokens = [
       { tokenType: ONEConstants.TokenType.ERC1155, contractAddress: testerc1155.address, tokenId: 2 },
@@ -877,7 +877,7 @@ contract('ONEWallet', (accounts) => {
       }
     )
     // Alice Items that have changed - lastOperationTime, commits, trackedTokens
-    aliceOldState = await TestUtil.updateOldTxnInfo({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
+    aliceOldState = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
     // tracked tokens
     const expectedTrackedTokens = [{ tokenType: ONEConstants.TokenType.ERC1155, contractAddress: testerc1155v2.address, tokenId: 3 }]
     aliceOldState.trackedTokens = await updateOldTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
