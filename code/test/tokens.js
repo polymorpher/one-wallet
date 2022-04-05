@@ -698,5 +698,6 @@ contract('ONEWallet', (accounts) => {
         testTime
       }
     )
+    // TODO: add validation later
   })
 })
