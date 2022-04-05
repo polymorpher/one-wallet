@@ -97,7 +97,7 @@ module.exports = {
   OldTreasuryAddresses: ['0x02F2cF45DD4bAcbA091D78502Dba3B2F431a54D3'],
   BlacklistedAddresses: ['0x36571a32c08de564a4cc94ed087c27d3c58f7470'],
   MajorVersion: 16,
-  MinorVersion: 0,
+  MinorVersion: 1,
   DefaultSpendingInterval: 86400, // 3600 * 24
   Domain: {
     DEFAULT_RENT_DURATION: 31536000, // 365 * 24 * 3600,
