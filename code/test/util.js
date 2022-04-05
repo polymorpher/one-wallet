@@ -1,5 +1,5 @@
 const { loadContracts } = require('../extensions/loader')
-const { range } = require('lodash')
+const { range, cloneDeep } = require('lodash')
 const config = require('../config')
 const base32 = require('hi-base32')
 const BN = require('bn.js')
@@ -321,7 +321,8 @@ const validateBalance = async ({ address, amount = HALF_ETH }) => {
   assert.equal(amount, balance, 'Wallet should have a different balance')
 }
 
-const syncAndValidateStateMutation = async ({ wallet, state, validateNonce = true }) => {
+const validateOpsStateMutation = async ({ wallet, state, validateNonce = true }) => {
+  state = cloneDeep(state)
   if (validateNonce) {
     const nonce = await wallet.getNonce()
     assert.equal(nonce.toNumber(), state.nonce + 1, 'wallet.nonce should have been changed')
@@ -517,6 +518,6 @@ module.exports = {
   getState,
   assertStateEqual,
   validateBalance,
-  syncAndValidateStateMutation,
+  validateOpsStateMutation,
   syncAndValidateSpendingStateMutation,
 }
