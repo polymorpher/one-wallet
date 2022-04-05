@@ -444,7 +444,7 @@ const getState = async (wallet) => {
 }
 
 // check OneWallet state
-const checkONEWalletStateChange = async (oldState, currentState) => {
+const assertStateEqual = async (oldState, currentState) => {
   assert.deepEqual(currentState.identificationKey, oldState.identificationKey, 'wallet.identificationKey is incorrect')
   assert.deepEqual(currentState.identificationKeys, oldState.identificationKeys, 'wallet.identificationKeys is incorrect')
   assert.deepEqual(currentState.forwardAddress, oldState.forwardAddress, 'wallet.forwardAddress is incorrect')
@@ -515,7 +515,7 @@ module.exports = {
   makeWallet,
   makeTokens,
   getState,
-  checkONEWalletStateChange,
+  assertStateEqual,
   validateBalance,
   syncAndValidateStateMutation,
   syncAndValidateSpendingStateMutation,
