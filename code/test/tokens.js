@@ -221,15 +221,9 @@ contract('ONEWallet', (accounts) => {
   // Test untracking of an ERC20 token
   // Expected result: the token is no longer tracked
   it('TN.BASIC.1 UNTRACK: must be able to untrack ERC20 tokens', async () => {
-    // create wallets and token contracts used throughout the tests
-    let { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'TN.BASIC.1.1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
-    // make Tokens
+    const { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'TN.BASIC.1.1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
     const { testerc20 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
-
-    // Begin Tests
     let testTime = Date.now()
-
-    // Need to track a token before untracking
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     let { currentState: state } = await executeTokenTransaction(
       {
@@ -241,10 +235,8 @@ contract('ONEWallet', (accounts) => {
         testTime
       }
     )
-
     testTime = await TestUtil.bumpTestTime(testTime, 60)
-    // eslint-disable-next-line no-lone-blocks
-    let { currentState: aliceCurrentStateUntracked } = await executeTokenTransaction(
+    const { currentState: aliceCurrentStateUntracked } = await executeTokenTransaction(
       {
         ...NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
@@ -254,13 +246,9 @@ contract('ONEWallet', (accounts) => {
         testTime
       }
     )
-
-    // Alice Items that have changed - lastOperationTime, commits, trackedTokens
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state, validateNonce: false })
-    // tracked tokens
     const expectedTrackedTokens = [[], [], [[]]]
     state.trackedTokens = await validateTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
-    // check alice
     await TestUtil.assertStateEqual(state, aliceCurrentStateUntracked)
   })
 
@@ -268,16 +256,10 @@ contract('ONEWallet', (accounts) => {
   // Test transferring a token
   // Expected result the token is now tracked and alices balance has decreased and bobs increased
   it('TN.BASIC.2 TRANSFER_TOKEN: must be able to transfer ERC20 token', async () => {
-    // create wallets and token contracts used througout the tests
     let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'TN.POSITIVE.2.1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
-    let { walletInfo: bob } = await TestUtil.makeWallet({ salt: 'TN.BASIC.2.2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
-
-    // make Tokens
+    const { walletInfo: bob } = await TestUtil.makeWallet({ salt: 'TN.BASIC.2.2', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
     const { testerc20 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
-
-    // Begin Tests
     let testTime = Date.now()
-    // Fund Alice with 1000 ERC20 tokens
     await fundTokens({
       funder: accounts[0],
       receivers: [alice.wallet.address],
@@ -285,8 +267,6 @@ contract('ONEWallet', (accounts) => {
       tokenContracts: [testerc20],
       tokenAmounts: [[1000]]
     })
-    // let aliceFundedState = await TestUtil.getONEWalletState(alice.wallet)
-
     testTime = await TestUtil.bumpTestTime(testTime, 60)
 
     // TODO investigate how to combine populating objects that already exist
@@ -303,7 +283,6 @@ contract('ONEWallet', (accounts) => {
       }
     )
     // check alice and bobs balance
-
     await validateTokenBalances({
       receivers: [alice.wallet.address, bob.wallet.address],
       tokenTypes: [ONEConstants.TokenType.ERC20, ONEConstants.TokenType.ERC20],
@@ -311,13 +290,9 @@ contract('ONEWallet', (accounts) => {
       tokenAmounts: [[900], [100]]
     })
 
-    // Alice Items that have changed - nonce, lastOperationTime, commits, trackedTokens
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
-    // tracked tokens
     const expectedTrackedTokens = [[ONEConstants.TokenType.ERC20], [testerc20.address], [[0]]]
     state.trackedTokens = await validateTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
-
-    // check alice
     await TestUtil.assertStateEqual(state, aliceTransferState)
   })
 
@@ -325,18 +300,14 @@ contract('ONEWallet', (accounts) => {
   // Test overriding all of Alices Token Tracking information
   // Expected result: Alice will now track testerc20v2 instead of testerc20
   it('TN.BASIC.3 OVERRIDE_TRACK: must be able to override ERC20 tracked tokens', async () => {
-    // create wallets and token contracts used througout the tests
-    let { walletInfo: alice, state: aliceOldState } = await TestUtil.makeWallet({ salt: 'TN.POSITIVE.3.1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
-    // make Tokens
+    const { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'TN.POSITIVE.3.1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
     const { testerc20 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
     const { testerc20: testerc20v2 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
-
-    // Begin Tests
     let testTime = Date.now()
 
     // First track testerc20
     testTime = await TestUtil.bumpTestTime(testTime, 60)
-    let { currentState: aliceCurrentStateTracked } = await executeTokenTransaction(
+    let { currentState: state } = await executeTokenTransaction(
       {
         ...NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
@@ -348,16 +319,13 @@ contract('ONEWallet', (accounts) => {
         testTime
       }
     )
-    // Update alice old state to current state (no validation)
-    aliceOldState = aliceCurrentStateTracked
-
-    // Get alices current tracked tokens and override the address from testerc20 to testerc20v2
-    let newTrackedTokens = await alice.wallet.getTrackedTokens()
+    // Get alice's current tracked tokens and override the address from testerc20 to testerc20v2
+    const newTrackedTokens = await alice.wallet.getTrackedTokens()
     newTrackedTokens[1] = [testerc20v2.address]
-    let hexData = ONEUtil.abi.encodeParameters(['uint256[]', 'address[]', 'uint256[]'], [newTrackedTokens[0], newTrackedTokens[1], newTrackedTokens[2]])
-    let data = ONEUtil.hexStringToBytes(hexData)
+    const hexData = ONEUtil.abi.encodeParameters(['uint256[]', 'address[]', 'uint256[]'], [newTrackedTokens[0], newTrackedTokens[1], newTrackedTokens[2]])
+    const data = ONEUtil.hexStringToBytes(hexData)
     testTime = await TestUtil.bumpTestTime(testTime, 60)
-    let { currentState: aliceCurrentStateTrackedOverride } = await executeTokenTransaction(
+    const { currentState: overrideState } = await executeTokenTransaction(
       {
         ...NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
@@ -366,13 +334,10 @@ contract('ONEWallet', (accounts) => {
         testTime
       }
     )
-    // Alice Items that have changed - lastOperationTime, commits, trackedTokens
-    aliceOldState = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state: aliceOldState, validateNonce: false })
-    // tracked tokens
+    state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state, validateNonce: false })
     const expectedTrackedTokens = [[ONEConstants.TokenType.ERC20], [testerc20v2.address], [[0]]]
-    aliceOldState.trackedTokens = await validateTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
-    // check alice
-    await TestUtil.assertStateEqual(aliceOldState, aliceCurrentStateTrackedOverride)
+    state.trackedTokens = await validateTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
+    await TestUtil.assertStateEqual(state, overrideState)
   })
 
   // ==== ADDITIONAL POSITIVE TESTING ERC721 ====
