@@ -104,7 +104,7 @@ const executeTokenTransaction = async ({
 
   // format commit and revealParams
   const commitRevealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
-  let { tx, authParams, revealParams } = await TestUtil.commitReveal({
+  const { tx, authParams, revealParams } = await TestUtil.commitReveal({
     Debugger,
     layers: walletInfo.layers,
     index,
@@ -114,8 +114,7 @@ const executeTokenTransaction = async ({
     revealParams: commitRevealParams,
     wallet: walletInfo.wallet
   })
-  let currentState
-  if (getCurrentState) { currentState = await TestUtil.getState(walletInfo.wallet) }
+  const currentState = getCurrentState && (await TestUtil.getState(walletInfo.wallet))
   return { tx, authParams, revealParams, currentState }
 }
 
@@ -174,9 +173,10 @@ const validateTrackedTokens = async ({
 contract('ONEWallet', (accounts) => {
   // Wallets effective time is the current time minus half the duration (3 minutes ago)
   let snapshotId
+
   beforeEach(async function () {
-    snapshotId = await TestUtil.snapshot()
     await TestUtil.init()
+    snapshotId = await TestUtil.snapshot()
   })
   afterEach(async function () {
     await TestUtil.revert(snapshotId)
