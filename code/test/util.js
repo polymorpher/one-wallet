@@ -313,6 +313,10 @@ const fundWallet = async ({ from, to, value = HALF_ETH }) => {
   return new BN(balance).toString()
 }
 
+const parseCommits = (commits) => {
+  const [hashes, paramsHashes, verificationHashes, timestamps, completed] = Object.keys(commits).map(k => commits[k])
+  return hashes.map((e, i) => ({ hash: hashes[i], paramsHash: paramsHashes[i], verificationHash: verificationHashes[i], timestamp: timestamps[i], completed: completed[i] }))
+}
 // ==== ADDRESS VALIDATION HELPERS ====
 // Functions must not mutate arguments' inner state unless stated in the name
 
@@ -331,7 +335,7 @@ const validateOpsStateMutation = async ({ wallet, state, validateNonce = true })
   const lastOperationTime = await wallet.lastOperationTime()
   assert.notStrictEqual(lastOperationTime, state.lastOperationTime, 'wallet.lastOperationTime should have been updated')
   state.lastOperationTime = lastOperationTime.toNumber()
-  const allCommits = await wallet.getAllCommits()
+  const allCommits = parseCommits(await wallet.getAllCommits())
   assert.notDeepEqual(allCommits, state.allCommits, 'wallet.allCommits should have been updated')
   state.allCommits = allCommits
   return state
@@ -406,18 +410,15 @@ const getState = async (wallet) => {
   }
   const nonce = new BN(await wallet.getNonce()).toNumber()
   const lastOperationTime = new BN(await wallet.lastOperationTime()).toNumber()
-  const walletAllCommits = await wallet.getAllCommits()
-  const [hashes, paramsHashes, verificationHashes, timestamps, completed] = Object.keys(walletAllCommits).map(k => walletAllCommits[k])
-  const allCommits = hashes.map((e, i) => ({ hash: hashes[i], paramsHash: paramsHashes[i], verificationHash: verificationHashes[i], timestamp: timestamps[i], completed: completed[i] }))
-
+  const allCommits = parseCommits(await wallet.getAllCommits())
   const walletTrackedTokens = await wallet.getTrackedTokens()
-  const [tokenType, contractAddress, tokenId] = Object.keys(walletTrackedTokens).map(k => walletTrackedTokens[k])
-  const trackedTokens = hashes.map((e, i) => ({ tokenType: tokenType[i], contractAddress: contractAddress[i], tokenId: tokenId[i] }))
+  const [tokenTypes, contractAddresses, tokenIds] = Object.keys(walletTrackedTokens).map(k => walletTrackedTokens[k])
+  const trackedTokens = tokenTypes.map((e, i) => ({ tokenType: tokenTypes[i], contractAddress: contractAddresses[i], tokenId: tokenIds[i] }))
   const walletBacklinks = await wallet.getBacklinks()
   const backlinks = new Array(walletBacklinks)
   const walletSignatures = await wallet.listSignatures(0, MAX_UINT32)
-  const [timestamp, expireAt, signature, hash] = Object.keys(walletSignatures).map(k => walletSignatures[k])
-  const signatures = hashes.map((e, i) => ({ timestamp: timestamp[i], expireAt: expireAt[i], signature: signature[i], hash: hash[i] }))
+  const [timestamps, expireAts, signatureArray, hashes] = Object.keys(walletSignatures).map(k => walletSignatures[k])
+  const signatures = hashes.map((e, i) => ({ timestamp: timestamps[i], expireAt: expireAts[i], signature: signatureArray[i], hash: hashes[i] }))
   let state = {
     address,
     identificationKey,
