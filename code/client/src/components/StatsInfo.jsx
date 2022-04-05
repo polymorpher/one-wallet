@@ -94,7 +94,7 @@ export const StatsInfoV2 = () => {
             <Statistic style={{ marginBottom: 8 }} title='1Wallet count' value={stats.count} valueStyle={{ color: primaryTextColor, fontWeight: 'bold' }} />
           </Tag>
           <Tag color={secondaryBgColor} style={{ margin: 0, padding: '4px 32px' }}>
-            <Statistic style={{ marginBottom: 8 }} title='Total managed' value={abbr(stats.totalAmount, 0)} suffix=' ONE' valueStyle={{ color: primaryTextColor, fontWeight: 'bold' }} />
+            <Statistic style={{ marginBottom: 8 }} title='Total managed' value={(stats.totalAmount * onePrice).toFixed(2)} prefix='$' valueStyle={{ color: primaryTextColor, fontWeight: 'bold' }} />
           </Tag>
         </Row>)
       : (
