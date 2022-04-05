@@ -69,7 +69,7 @@ const TransferDomain = ({ address, onClose }) => {
       otp,
       otp2,
       commitHashGenerator: ONE.computeTransferDomainHash,
-      commitRevealArgs: { dest, subdomain },
+      commitRevealArgs: { dest, subdomain, operationType: ONEConstants.OperationType.TRANSFER_DOMAIN },
       revealAPI: api.relayer.revealTransferDomain,
       recoverRandomness,
       ...handlers,

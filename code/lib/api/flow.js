@@ -446,7 +446,6 @@ const SecureFlowsV7 = {
 
 const SecureFlowsV16 = {
   commitReveal: async ({ wallet, forwardWallet, commitRevealArgs, message, ...params }) => {
-    console.log('forwardWallet', forwardWallet)
     const { address, forwardAddress } = wallet
     // TODO: retrieve forwardAddress' version via api.blockchain.getVersion or via local state. This is not needed right now, but may be useful later
     if (ONEConstants.EmptyAddress !== forwardAddress && forwardWallet?.root && commitRevealArgs) {

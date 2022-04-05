@@ -119,6 +119,7 @@ secrets.js
 
 webclient/dist
 
+# environment files
 /env/db/*
 !/env/db/.gitkeep
 /env/ganache.sh

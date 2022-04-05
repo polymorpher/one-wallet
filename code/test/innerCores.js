@@ -124,7 +124,7 @@ contract('ONEWallet', (accounts) => {
       to: wallet.address,
       value: ONE_DIME
     })
-    const { tx, authParams, revealParams } = await TestUtil.commitReveal({
+    await TestUtil.commitReveal({
       Debugger,
       layers: newLayers,
       index,
