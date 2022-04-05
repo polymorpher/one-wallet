@@ -82,8 +82,8 @@ First, create a new file and write out how you expect a successful operation to 
 | 5   | SET_RECOVERY_ADDRESS         | PASS     | Core     |                                                            |
 | 6   | RECOVER	                     | PASS     | Core     |                                                            |
 | 7   | DISPLACE	                    | PASS     | Security |                                                            |
-| 8   | FORWARD                      | FAIL     | Upgrade  |                                                            |
-| 9   | RECOVER_SELECTED_TOKENS      | FAIL     | Token    |                                                            |
+| 8   | FORWARD                      | PASS     | Upgrade  |                                                            |
+| 9   | RECOVER_SELECTED_TOKENS      | TODO     | Token    |                                                            |
 | 10  | BUY_DOMAIN                   | Phase 2  | Domain   |                                                            |
 | 11  | COMMAND                      | PASS     | Upgrade  | More tests needed for different commands                   |
 | 12  | BACKLINK_ADD                 | TODO     | Upgrade  |                                                            |
@@ -104,4 +104,4 @@ First, create a new file and write out how you expect a successful operation to 
 | 27  | UNDELEGATE                   | Phase 1  | Staking  |                                                            |
 | 28  | COLLECT_REWARD               | Phase 1  | Staking  |                                                            |
 | 29  | CREATE                       | RESERVED | App      |                                                            |
-| 29  | UPGRADE                      | RESERVED | Upgrade  |                                                            | 
+| 30  | UPGRADE                      | RESERVED | Upgrade  |                                                            | 
