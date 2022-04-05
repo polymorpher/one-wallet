@@ -49,6 +49,7 @@ module.exports = {
       version: '0.8.4',
       settings: {
         optimizer: {
+          runs: 200,
           enabled: true,
         },
       },
@@ -56,6 +57,7 @@ module.exports = {
   },
 
   plugins: [
-    'truffle-contract-size'
+    'truffle-contract-size',
+    'solidity-coverage'
   ],
 }
