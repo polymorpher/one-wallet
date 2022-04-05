@@ -351,11 +351,7 @@ const getState = async (wallet) => {
   Logger.debug(`Getting state for: ${wallet.address}`)
   const address = (wallet.address).toString()
   const identificationKey = (await wallet.identificationKey()).toString()
-  const walletIdentificationKeys = await wallet.getIdentificationKeys()
-  let identificationKeys = []
-  for (let x of walletIdentificationKeys) {
-    identificationKeys.push(x[0].toString())
-  }
+  const identificationKeys = new Array(await wallet.getIdentificationKeys())
   const forwardAddress = (await wallet.getForwardAddress()).toString()
   const walletInfo = await wallet.getInfo()
   let info = {}
