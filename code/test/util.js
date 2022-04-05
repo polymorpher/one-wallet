@@ -11,7 +11,7 @@ const ONEConstants = require('../lib/constants')
 const TestERC20 = artifacts.require('TestERC20')
 const TestERC721 = artifacts.require('TestERC721')
 const TestERC1155 = artifacts.require('TestERC1155')
-
+const SALT_BASE = new BN(process.env.SALT_BASE || Date.now())
 const HALF_ETH = unit.toWei('0.5', 'ether')
 const ONE_ETH = unit.toWei('1', 'ether')
 const INTERVAL = 30000
@@ -32,11 +32,14 @@ let Wallet
 
 // ==== DEPLOYMENT FUNCTIONS ====
 const init = async () => {
+  if (Factories && Libraries && Wallet) {
+    return
+  }
   const { factories, libraries, ONEWalletAbs } = await loadContracts(Logger)
   Factories = factories
   Libraries = libraries
   Wallet = ONEWalletAbs
-  console.log('Initialized')
+  Logger.debug('Initialized')
 }
 
 const deploy = async (initArgs) => {
@@ -123,10 +126,16 @@ const bumpTestTime = async (testEffectiveTime, bumpSeconds) => {
   Logger.debug(`Increased Blockchain Time : ${chainBumpSeconds}`)
   await increaseTime(chainBumpSeconds)
   const newBlockNumber = await web3.eth.getBlockNumber()
-  const newChainTime = (await web3.eth.getBlock(newBlockNumber)).timestamp * 1000
-  Logger.debug(`New Block Number          : ${JSON.stringify(newBlockNumber)}`)
-  Logger.debug(`New Blockchain Clock      : ${JSON.stringify(newChainTime)}`)
+  const newBlock = await web3.eth.getBlock(newBlockNumber)
+  if (newBlock) {
+    const newChainTime = newBlock.timestamp * 1000
+    Logger.debug(`New Block Number          : ${JSON.stringify(newBlockNumber)}`)
+    Logger.debug(`New Blockchain Clock      : ${JSON.stringify(newChainTime)}`)
+  } else {
+    Logger.debug(`Unable to retrieve new block`)
+  }
   Logger.debug(`====================================`)
+
   return testEffectiveTime
 }
 
@@ -268,7 +277,7 @@ const createWallet = async ({
 
 // makeWallet uses an index and unlocked web3.eth.account and creates and funds a ONEwallet
 const makeWallet = async ({
-  salt,
+  salt: assignedSalt,
   deployer,
   effectiveTime,
   duration = DURATION,
@@ -276,11 +285,11 @@ const makeWallet = async ({
   spendingLimit = ONE_ETH,
   fundAmount = HALF_ETH,
   setLastResortAddress = true,
-  validate = true
+  validate = true,
 }) => {
   let lastResortAddress = setLastResortAddress ? (await web3.eth.accounts.create()).address : ONEConstants.EmptyAddress
   const { wallet, seed, hseed, client: { layers } } = await createWallet({
-    salt: new BN(ONEUtil.keccak(salt)),
+    salt: new BN(ONEUtil.keccak(assignedSalt)).add(SALT_BASE),
     effectiveTime,
     duration,
     maxOperationsPerInterval,
