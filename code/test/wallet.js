@@ -70,6 +70,8 @@ const executeWalletTransaction = async ({
       revealParams = { operationType, dest }
       break
     case ONEConstants.OperationType.COMMAND:
+    case ONEConstants.OperationType.TRACK:
+    case ONEConstants.OperationType.RECOVER_SELECTED_TOKENS:
       paramsHash = ONEWallet.computeGeneralOperationHash
       commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
       revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
@@ -150,7 +152,7 @@ contract('ONEWallet', (accounts) => {
     // alice sets her recovery address to bobs
     let { tx, currentState: aliceCurrentState } = await executeWalletTransaction(
       {
-        ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
+        ...NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
         operationType: ONEConstants.OperationType.SET_RECOVERY_ADDRESS,
         dest: carol.wallet.address,
@@ -232,6 +234,80 @@ contract('ONEWallet', (accounts) => {
   // Test recovering selected tokens
   // Expected result the tokens will be recovered
   it('WA.BASIC.9 RECOVER_SELECTED_TOKENS: must be able to recover selected tokens', async () => {
+    // create wallets and token contracts used througout the tests
+    let { walletInfo: alice, state: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.9.1', deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: carol, state: carolOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.9.2', deployer: accounts[0], effectiveTime, duration, backlinks: [alice.wallet.address] })
+
+    // make Tokens
+    const { testerc20 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
+
+    // Begin Tests
+    let testTime = Date.now()
+
+    // Fund Alice with 1000 ERC20 tokens
+    await TestUtil.fundTokens({
+      funder: accounts[0],
+      receivers: [alice.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC20],
+      tokenContracts: [testerc20],
+      tokenAmounts: [[1000]]
+    })
+
+    // Before we can recover we need to track testERC20
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    await executeWalletTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.TRACK,
+        tokenType: ONEConstants.TokenType.ERC20,
+        contractAddress: testerc20.address,
+        testTime
+      }
+    )
+    let trackedTokens = await TestUtil.getTrackedTokensParsed(alice.wallet)
+    Logger.debug(`trackedTokens: ${JSON.stringify(trackedTokens)}`)
+
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    // Recover test taokens takes an array of uint32 which are the indices of the tracked tokens to recover
+    let hexData = ONEUtil.abi.encodeParameters(['uint32[]'], [[0]])
+    let data = ONEUtil.hexStringToBytes(hexData)
+    let { tx, currentState: aliceCurrentState } = await executeWalletTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.RECOVER_SELECTED_TOKENS,
+        dest: carol.wallet.address,
+        data,
+        testTime
+      }
+    )
+
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx, expectedEvent: 'TokenRecovered' })
+
+    // check alice and bobs balance
+
+    await TestUtil.validateTokenBalances({
+      receivers: [alice.wallet.address, carol.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC20, ONEConstants.TokenType.ERC20],
+      tokenContracts: [testerc20, testerc20],
+      tokenAmounts: [[0], [1000]]
+    })
+
+    // Alice Items that have changed - lastOperationTime, commits, trackedTokens
+    aliceOldState = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, oldState: aliceOldState, validateNonce: false })
+    // Alice's forward address should now be carol's address
+    aliceOldState.forwardAddress = await updateOldfowardAddress({ expectedForwardAddress: carol.wallet.address, wallet: alice.wallet })
+    // Alice's spending state has been updated spentAmount = HALF_ETH and lastSpendingInterval has been updated
+    let expectedSpendingState = await TestUtil.getSpendingStateParsed(alice.wallet)
+    expectedSpendingState.spentAmount = HALF_ETH
+    aliceOldState.spendingState = await TestUtil.syncAndValidateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
+    // check alice
+    await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
+    // check carol's wallet hasn't changed (just her balances above)
+    const carolCurrentState = await TestUtil.getState(carol.wallet)
+    await TestUtil.checkONEWalletStateChange(carolOldState, carolCurrentState)
   })
 
   // ====== BACKLINK_ADD ======

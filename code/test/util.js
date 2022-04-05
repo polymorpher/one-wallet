@@ -16,6 +16,7 @@ const TestERC721 = artifacts.require('TestERC721')
 const TestERC1155 = artifacts.require('TestERC1155')
 const VALID_SIGNATURE_VALUE = '0x1626ba7e'
 const INVALID_SIGNATURE_VALUE = '0xffffffff'
+const DUMMY_HEX = '0x'
 
 const HALF_ETH = unit.toWei('0.5', 'ether')
 const ONE_ETH = unit.toWei('1', 'ether')
@@ -320,6 +321,47 @@ const fundWallet = async ({ from, to, value = HALF_ETH }) => {
   return new BN(balance).toString()
 }
 
+// fundTokens
+// funder: address (must have tokens and be unlocked for signing)
+// receiver: address
+const fundTokens = async ({
+  funder,
+  receivers = [],
+  tokenTypes = [],
+  tokenContracts = [],
+  tokenAmounts = [[]],
+  tokenIds = [[]],
+  validate = true
+}) => {
+  // transfer ERC20 tokens from accounts[0] (which owns the tokens) to alice's wallet
+  for (let i = 0; i < tokenTypes.length; i++) {
+    switch (tokenTypes[i]) {
+      case ONEConstants.TokenType.ERC20:
+        await tokenContracts[i].transfer(receivers[i], tokenAmounts[i][0], { from: funder })
+        Logger.debug(`Funded ${tokenAmounts[i][0]} ERC20 to ${receivers[i]}`)
+        break
+      case ONEConstants.TokenType.ERC721:
+        for (let j = 0; j < tokenIds[i].length; j++) {
+          await tokenContracts[i].safeTransferFrom(funder, receivers[i], tokenIds[i][j], { from: funder })
+        }
+        Logger.debug(`Funded id=${tokenIds[i]} ERC721 to ${receivers[i]}`)
+        break
+      case ONEConstants.TokenType.ERC1155:
+        for (let j = 0; j < tokenIds[i].length; j++) {
+          await tokenContracts[i].safeTransferFrom(funder, receivers[i], tokenIds[i][j], tokenAmounts[i][j], DUMMY_HEX, { from: funder })
+        }
+        Logger.debug(`Funded ${tokenIds[i]} with amount ${tokenAmounts[i]} ERC1155 to ${receivers[i]}`)
+        break
+      default:
+        console.log(`ERROR fundTokens: Index ${[i]} - Incorrect TokenType: ${tokenTypes[i]}`)
+        return
+    }
+  }
+  if (validate) {
+    await validateTokenBalances({ receivers, tokenTypes, tokenContracts, tokenAmounts, tokenIds })
+  }
+}
+
 // === EVENT VALIDATION ====
 const validateEvent = ({ tx, expectedEvent }) => {
   const events = ONEParser.parseTxLog(tx?.receipt?.rawLogs)
@@ -339,6 +381,41 @@ const validateEvent = ({ tx, expectedEvent }) => {
 const validateBalance = async ({ address, amount = HALF_ETH }) => {
   let balance = await web3.eth.getBalance(address)
   assert.equal(amount, balance, 'Wallet should have a different balance')
+}
+
+// ==== Validation Helpers ====
+const validateTokenBalances = async ({
+  receivers = [],
+  tokenTypes = [],
+  tokenContracts = [],
+  tokenIds = [[]],
+  tokenAmounts = [[]]
+}) => {
+  for (let i = 0; i < tokenTypes.length; i++) {
+    switch (tokenTypes[i]) {
+      case ONEConstants.TokenType.ERC20:
+        let balanceERC20 = await tokenContracts[i].balanceOf(receivers[i])
+        assert.strictEqual(tokenAmounts[i][0].toString(), balanceERC20.toString(), 'Should have transferred ERC20 tokens to wallet')
+        break
+      case ONEConstants.TokenType.ERC721:
+        for (let j = 0; j < tokenIds[i].length; j++) {
+          let balanceERC721 = await tokenContracts[i].balanceOf(receivers[i])
+          assert.strictEqual(tokenAmounts[i].toString(), balanceERC721.toString(), 'Transfer of ERC721 token to receiver validated by balance')
+          let owner = await tokenContracts[i].ownerOf(tokenIds[i][j])
+          assert.strictEqual(receivers[i], owner, 'Transfer of ERC721 token validated by owner')
+        }
+        break
+      case ONEConstants.TokenType.ERC1155:
+        for (let j = 0; j < tokenIds[i].length; j++) {
+          let balanceERC1155 = await tokenContracts[i].balanceOf(receivers[i], tokenIds[i][j])
+          assert.strictEqual(tokenAmounts[i][j].toString(), balanceERC1155.toString(), 'ERC1155 token to balance validated')
+          // assert.strictEqual(tokenAmounts[i][j], await tokenContracts[i].balanceOf(receivers[i], tokenContracts[i][j]), 'Transfer of ERC1155 token to receiver validated by balance')
+        }
+        break
+      default:
+        Logger.debug(`ERROR validateTokenBalances: Index ${[i]} Incorrect TokenType:  ${tokenTypes[i]}`)
+    }
+  }
 }
 
 // ==== PARSING HELPER FUNCTIONS ====
@@ -486,6 +563,42 @@ const syncAndValidateOldSignaturesMutation = async ({ expectedSignatures, wallet
   return signatures
 }
 
+const syncAndValidateTrackedTokensMutation = async ({
+  expectedTrackedTokens,
+  wallet
+}) => {
+  let trackedTokens = await getTrackedTokensParsed(wallet)
+  expectedTrackedTokens.sort(
+    function (a, b) {
+      if (a.tokenType === b.tokenType) {
+        if (a.contractAddress === b.contract) { return a.tokenId - b.tokenId }
+        return b.contractAddress - a.contractAddress
+      }
+      return a.tokenType > b.tokenType ? 1 : -1
+    })
+  const trackedTokensSorted = trackedTokens.slice()
+  trackedTokensSorted.sort(
+    function (a, b) {
+      if (a.tokenType === b.tokenType) {
+        if (a.contractAddress === b.contract) { return a.tokenId - b.tokenId }
+        // contractAddress is only important when tokenId are the same
+        return b.contractAddress - a.contractAddress
+      }
+      return a.tokenType > b.tokenType ? 1 : -1
+    })
+  Logger.debug(`expectedTrackedTokens: ${JSON.stringify(expectedTrackedTokens)}`)
+  Logger.debug(`trackedTokens: ${JSON.stringify(trackedTokens)}`)
+  let trackedTokenArray = Object.values(trackedTokens).slice()
+  trackedTokenArray.sort()
+  assert.strictEqual(expectedTrackedTokens.length, trackedTokensSorted.length, 'Number of Tracked Tokens is different than expected')
+  for (let i = 0; i < expectedTrackedTokens.length; i++) {
+    assert.strictEqual(expectedTrackedTokens[i].tokenType.toString(), trackedTokensSorted[i].tokenType.toString(), 'Tracked Token Type is different than expected')
+    assert.strictEqual(expectedTrackedTokens[i].contractAddress, trackedTokensSorted[i].contractAddress, 'Tracked Token Address is different than expected')
+    assert.strictEqual(expectedTrackedTokens[i].tokenId.toString(), trackedTokensSorted[i].tokenId.toString(), 'Tracked Token Ids are different than expected')
+  }
+  return trackedTokens
+}
+
 // ==== STATE RETREIVAL AND VALIDATION FUNCTIONS =====
 
 // get OneWallet state
@@ -606,12 +719,14 @@ module.exports = {
   getEOTP,
   makeWallet,
   makeTokens,
+  fundTokens,
 
   // event validation
   validateEvent,
 
   // address validation helpers
   validateBalance,
+  validateTokenBalances,
 
   // parsing helpers
   getInfoParsed,
@@ -627,6 +742,7 @@ module.exports = {
   syncAndValidateStateMutation,
   syncAndValidateOldSignaturesMutation,
   syncAndValidateSpendingStateMutation,
+  syncAndValidateTrackedTokensMutation,
 
   // state retrieval and validation
   getState,

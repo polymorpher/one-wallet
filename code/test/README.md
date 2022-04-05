@@ -96,7 +96,7 @@ TT-SUBTEST-WALLETID e.g. `TG-OP4-1`
 | 6  | RECOVER	                    | TBD*    | Wallet   | additional authentication needed
 | 7  | DISPLACE	                    | PASS*   | Wallet   | Currently tested in innerCores.js
 | 8  | FORWARD                      | PASS    | Wallet   |
-| 9  | RECOVER_SELECTED_TOKENS      | TBD     | Wallet   |
+| 9  | RECOVER_SELECTED_TOKENS      | FAIL*   | Wallet   | Currently getting revert Param mismatch
 | 10 | BUY_DOMAIN                   | Phase 2 | Domain   |
 | 11 | COMMAND                      | TBD     | Wallet   |
 | 12 | BACKLINK_ADD                 | PASS    | Wallet   |
