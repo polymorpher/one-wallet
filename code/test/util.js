@@ -1,25 +1,23 @@
 const { loadContracts } = require('../extensions/loader')
-const { range } = require('lodash')
+const { range, cloneDeep } = require('lodash')
 const config = require('../config')
 const base32 = require('hi-base32')
 const BN = require('bn.js')
 const unit = require('ethjs-unit')
 const ONE = require('../lib/onewallet')
 const ONEParser = require('../lib/parser')
-const ONEDebugger = require('../lib/debug')
-
 const { backoff } = require('exponential-backoff')
 const ONEUtil = require('../lib/util')
 const ONEConstants = require('../lib/constants')
 const TestERC20 = artifacts.require('TestERC20')
 const TestERC721 = artifacts.require('TestERC721')
 const TestERC1155 = artifacts.require('TestERC1155')
-const VALID_SIGNATURE_VALUE = '0x1626ba7e'
-const INVALID_SIGNATURE_VALUE = '0xffffffff'
-const DUMMY_HEX = '0x'
-
+const SALT_BASE = new BN(process.env.SALT_BASE || Date.now())
 const HALF_ETH = unit.toWei('0.5', 'ether')
 const ONE_ETH = unit.toWei('1', 'ether')
+const VALID_SIGNATURE_VALUE = '0x1626ba7e'
+// const INVALID_SIGNATURE_VALUE = '0xffffffff'
+const DUMMY_HEX = '0x'
 const INTERVAL = 30000
 const DURATION = INTERVAL * 12
 const SLOT_SIZE = 1
@@ -38,11 +36,14 @@ let Wallet
 
 // ==== DEPLOYMENT FUNCTIONS ====
 const init = async () => {
+  if (Factories && Libraries && Wallet) {
+    return
+  }
   const { factories, libraries, ONEWalletAbs } = await loadContracts(Logger)
   Factories = factories
   Libraries = libraries
   Wallet = ONEWalletAbs
-  console.log('Initialized')
+  Logger.debug('Initialized')
 }
 
 const deploy = async (initArgs) => {
@@ -129,10 +130,16 @@ const bumpTestTime = async (testEffectiveTime, bumpSeconds) => {
   Logger.debug(`Increased Blockchain Time : ${chainBumpSeconds}`)
   await increaseTime(chainBumpSeconds)
   const newBlockNumber = await web3.eth.getBlockNumber()
-  const newChainTime = (await web3.eth.getBlock(newBlockNumber)).timestamp * 1000
-  Logger.debug(`New Block Number          : ${JSON.stringify(newBlockNumber)}`)
-  Logger.debug(`New Blockchain Clock      : ${JSON.stringify(newChainTime)}`)
+  const newBlock = await web3.eth.getBlock(newBlockNumber)
+  if (newBlock) {
+    const newChainTime = newBlock.timestamp * 1000
+    Logger.debug(`New Block Number          : ${JSON.stringify(newBlockNumber)}`)
+    Logger.debug(`New Blockchain Clock      : ${JSON.stringify(newChainTime)}`)
+  } else {
+    Logger.debug(`Unable to retrieve new block`)
+  }
   Logger.debug(`====================================`)
+
   return testEffectiveTime
 }
 
@@ -274,7 +281,7 @@ const createWallet = async ({
 
 // makeWallet uses an index and unlocked web3.eth.account and creates and funds a ONEwallet
 const makeWallet = async ({
-  salt,
+  salt: assignedSalt,
   deployer,
   effectiveTime,
   duration = DURATION,
@@ -287,7 +294,7 @@ const makeWallet = async ({
 }) => {
   let lastResortAddress = setLastResortAddress ? (await web3.eth.accounts.create()).address : ONEConstants.EmptyAddress
   const { wallet, seed, hseed, client: { layers } } = await createWallet({
-    salt: new BN(ONEUtil.keccak(salt)),
+    salt: new BN(ONEUtil.keccak(assignedSalt)).add(SALT_BASE),
     effectiveTime,
     duration,
     maxOperationsPerInterval,
@@ -383,7 +390,6 @@ const validateBalance = async ({ address, amount = HALF_ETH }) => {
   assert.equal(amount, balance, 'Wallet should have a different balance')
 }
 
-// ==== Validation Helpers ====
 const validateTokenBalances = async ({
   receivers = [],
   tokenTypes = [],
@@ -418,8 +424,18 @@ const validateTokenBalances = async ({
   }
 }
 
-// ==== PARSING HELPER FUNCTIONS ====
+// ==== GENERIC PARSING HELPER FUNCTIONS ====
+const parseCommits = (commits) => {
+  const [hashes, paramsHashes, verificationHashes, timestamps, completed] = Object.keys(commits).map(k => commits[k])
+  return hashes.map((e, i) => ({ hash: hashes[i], paramsHash: paramsHashes[i], verificationHash: verificationHashes[i], timestamp: timestamps[i], completed: completed[i] }))
+}
 
+const parseTrackedTokens = (trackedTokens) => {
+  const [tokenTypes, contractAddresses, tokenIds] = Object.keys(trackedTokens).map(k => trackedTokens[k])
+  return tokenTypes.map((e, i) => ({ tokenType: tokenTypes[i], contractAddress: contractAddresses[i], tokenId: tokenIds[i] }))
+}
+
+// ==== WALLET PARSING HELPER FUNCTIONS ====
 const getInfoParsed = async (wallet) => {
   let walletInfo = await wallet.getInfo()
   let info = {}
@@ -516,22 +532,23 @@ const getSignaturesParsed = async (wallet) => {
 // They are typically used after an un update Operation to validate changed elements
 // They return an updated OldState by replacing elements from the current state
 
-const syncAndValidateStateMutation = async ({ wallet, oldState, validateNonce = true }) => {
+const validateOpsStateMutation = async ({ wallet, state, validateNonce = false }) => {
+  state = cloneDeep(state)
   if (validateNonce) {
     const nonce = await wallet.getNonce()
-    assert.equal(nonce.toNumber(), oldState.nonce + 1, 'wallet.nonce should have been changed')
-    oldState.nonce = nonce.toNumber()
+    assert.equal(nonce.toNumber(), state.nonce + 1, 'wallet.nonce should have been changed')
+    state.nonce = nonce.toNumber()
   }
   const lastOperationTime = await wallet.lastOperationTime()
-  assert.notStrictEqual(lastOperationTime, oldState.lastOperationTime, 'wallet.lastOperationTime should have been updated')
-  oldState.lastOperationTime = lastOperationTime.toNumber()
+  assert.notStrictEqual(lastOperationTime, state.lastOperationTime, 'wallet.lastOperationTime should have been updated')
+  state.lastOperationTime = lastOperationTime.toNumber()
   const allCommits = await getAllCommitsParsed(wallet)
-  assert.notDeepEqual(allCommits, oldState.allCommits, 'wallet.allCommits should have been updated')
-  oldState.allCommits = allCommits
-  return oldState
+  assert.notDeepEqual(allCommits, state.allCommits, 'wallet.allCommits should have been updated')
+  state.allCommits = allCommits
+  return state
 }
 
-const syncAndValidateSpendingStateMutation = async ({
+const validateSpendingStateMutation = async ({
   expectedSpendingState = {
     highestSpendingLimit: '1000000000000000000', // Default to ONE ETH
     lastLimitAdjustmentTime: '0', // Default to zero i.e. no adjustments
@@ -552,7 +569,7 @@ const syncAndValidateSpendingStateMutation = async ({
   return spendingState
 }
 
-const syncAndValidateOldSignaturesMutation = async ({ expectedSignatures, wallet }) => {
+const validateSignaturesMutation = async ({ expectedSignatures, wallet }) => {
   let signatures = getSignaturesParsed(wallet)
   // check all expectedSignatures are valid
   for (let i = 0; i < expectedSignatures.length; i++) {
@@ -563,7 +580,7 @@ const syncAndValidateOldSignaturesMutation = async ({ expectedSignatures, wallet
   return signatures
 }
 
-const syncAndValidateTrackedTokensMutation = async ({
+const validateTrackedTokensMutation = async ({
   expectedTrackedTokens,
   wallet
 }) => {
@@ -645,22 +662,24 @@ const getState = async (wallet) => {
 }
 
 // check OneWallet state
-const checkONEWalletStateChange = async (oldState, currentState) => {
-  assert.deepEqual(currentState.identificationKey, oldState.identificationKey, 'wallet.identificationKey is incorrect')
-  assert.deepEqual(currentState.identificationKeys, oldState.identificationKeys, 'wallet.identificationKeys is incorrect')
-  assert.deepEqual(currentState.forwardAddress, oldState.forwardAddress, 'wallet.forwardAddress is incorrect')
-  assert.deepEqual(currentState.info, oldState.info, 'wallet.info is incorrect')
-  assert.deepEqual(currentState.oldInfos, oldState.oldInfos, 'wallet.oldInfos is incorrect')
-  assert.deepEqual(currentState.innerCores, oldState.innerCores, 'wallet.innerCores is incorrect')
-  assert.deepEqual(currentState.rootKey, oldState.rootKey, 'wallet.rootKey is incorrect')
-  assert.deepEqual(currentState.version, oldState.version, 'wallet.version is incorrect')
-  assert.deepEqual(currentState.spendingState, oldState.spendingState, 'wallet.spendingState is incorrect')
-  // assert.deepEqual(currentState.nonce, oldState.nonce, 'wallet.nonce is incorrect') // nonce is calculated based on INTERVAL so removing for now
-  assert.deepEqual(currentState.lastOperationTime, oldState.lastOperationTime, 'wallet.lastOperationTime is incorrect')
-  assert.deepEqual(currentState.allCommits, oldState.allCommits, 'wallet.allCommits is incorrect')
-  assert.deepEqual(currentState.trackedTokens, oldState.trackedTokens, 'wallet.trackedTokens is incorrect')
-  assert.deepEqual(currentState.backlinks, oldState.backlinks, 'wallet.backlinks is incorrect')
-  assert.deepEqual(currentState.signatures, oldState.signatures, 'wallet.signatures is incorrect')
+const assertStateEqual = async (expectedState, actualState, checkNonce = false) => {
+  assert.deepEqual(actualState.identificationKey, expectedState.identificationKey, 'wallet.identificationKey is incorrect')
+  assert.deepEqual(actualState.identificationKeys, expectedState.identificationKeys, 'wallet.identificationKeys is incorrect')
+  assert.deepEqual(actualState.forwardAddress, expectedState.forwardAddress, 'wallet.forwardAddress is incorrect')
+  assert.deepEqual(actualState.info, expectedState.info, 'wallet.info is incorrect')
+  assert.deepEqual(actualState.oldInfo, expectedState.oldInfo, 'wallet.oldInfos is incorrect')
+  assert.deepEqual(actualState.innerCores, expectedState.innerCores, 'wallet.innerCores is incorrect')
+  assert.deepEqual(actualState.rootKey, expectedState.rootKey, 'wallet.rootKey is incorrect')
+  assert.deepEqual(actualState.version, expectedState.version, 'wallet.version is incorrect')
+  assert.deepEqual(actualState.spendingState, expectedState.spendingState, 'wallet.spendingState is incorrect')
+  if (checkNonce) {
+    assert.deepEqual(actualState.nonce, expectedState.nonce, 'wallet.nonce is incorrect')
+  }
+  assert.deepEqual(actualState.lastOperationTime, expectedState.lastOperationTime, 'wallet.lastOperationTime is incorrect')
+  assert.deepEqual(actualState.allCommits, expectedState.allCommits, 'wallet.allCommits is incorrect')
+  assert.deepEqual(actualState.trackedTokens, expectedState.trackedTokens, 'wallet.trackedTokens is incorrect')
+  assert.deepEqual(actualState.backlinks, expectedState.backlinks, 'wallet.backlinks is incorrect')
+  assert.deepEqual(actualState.signatures, expectedState.signatures, 'wallet.signatures is incorrect')
 }
 
 // ==== EXECUTION FUNCTIONS ====
@@ -691,9 +710,14 @@ const commitReveal = async ({ layers, Debugger, index, eotp, paramsHash, commitP
     const { operationType, tokenType, contractAddress, tokenId, dest, amount, data } = { ...ONEConstants.NullOperationParams, ...revealParams }
     revealParams = [operationType, tokenType, contractAddress, tokenId, dest, amount, data]
   }
-  Logger.debug(`Revealing`, { authParams, revealParams })
-  const wouldSucceed = await wallet.reveal.call(authParams, revealParams)
-  Logger.debug(`Reveal success prediction`, !!wouldSucceed)
+  Logger.debug(`Revealing`, JSON.stringify({ authParams, revealParams }))
+  try {
+    const wouldSucceed = await wallet.reveal.call(authParams, revealParams)
+    Logger.debug(`Reveal success prediction`, !!wouldSucceed)
+  } catch (ex) {
+    console.error(ex)
+    throw ex
+  }
   const tx = await wallet.reveal(authParams, revealParams)
   return { tx, authParams, revealParams }
 }
@@ -728,7 +752,11 @@ module.exports = {
   validateBalance,
   validateTokenBalances,
 
-  // parsing helpers
+  // generic parsing helpers
+  parseCommits,
+  parseTrackedTokens,
+
+  // wallet parsing helpers
   getInfoParsed,
   getOldInfosParsed,
   getInnerCoresParsed,
@@ -739,14 +767,14 @@ module.exports = {
   getSignaturesParsed,
 
   // state helpers
-  syncAndValidateStateMutation,
-  syncAndValidateOldSignaturesMutation,
-  syncAndValidateSpendingStateMutation,
-  syncAndValidateTrackedTokensMutation,
+  validateOpsStateMutation,
+  validateSignaturesMutation,
+  validateSpendingStateMutation,
+  validateTrackedTokensMutation,
 
   // state retrieval and validation
   getState,
-  checkONEWalletStateChange,
+  assertStateEqual,
 
   // execution
   commitReveal

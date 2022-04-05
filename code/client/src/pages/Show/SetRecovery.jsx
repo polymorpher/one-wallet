@@ -1,8 +1,6 @@
-import Button from 'antd/es/button'
 import Space from 'antd/es/space'
 import Typography from 'antd/es/typography'
 import message from '../../message'
-import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import { Hint, Label } from '../../components/Text'
 import AddressInput from '../../components/AddressInput'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
@@ -17,7 +15,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
 import { autoWalletNameHint, useWindowDimensions } from '../../util'
-import ONENames from '../../../../lib/names'
+import EnsureExecutable from "./EnsureExecutable";
 const { Title } = Typography
 
 const SetRecovery = ({ address, onClose }) => {
@@ -59,26 +57,16 @@ const SetRecovery = ({ address, onClose }) => {
       wallet,
       otp,
       otp2,
-      commitHashGenerator: ONE.computeSetRecoveryAddressHash,
-      commitHashArgs: { dest },
-      prepareProof: () => setStage(0),
-      beforeCommit: () => setStage(1),
-      afterCommit: () => setStage(2),
+      commitHashGenerator: ONE.computeDestOnlyHash,
+      commitRevealArgs: { dest },
       revealAPI: api.relayer.revealSetRecoveryAddress,
-      revealArgs: { lastResortAddress: dest },
       recoverRandomness,
       ...helpers,
     })
   }
 
   return (
-    <AnimatedSection
-      style={{ maxWidth: 720 }}
-      title={<Title level={isMobile ? 5 : 2}>Set Recovery Address</Title>}
-      extra={[
-        <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-      ]}
-    >
+    <AnimatedSection wide onClose={onClose} title={<Title level={isMobile ? 5 : 2}>Set Recovery Address</Title>}>
       <Space direction='vertical' size='large'>
         <Hint>Note: You can only do this once!</Hint>
         <Space
@@ -101,4 +89,4 @@ const SetRecovery = ({ address, onClose }) => {
   )
 }
 
-export default SetRecovery
+export default EnsureExecutable(SetRecovery, 'Recovery ')

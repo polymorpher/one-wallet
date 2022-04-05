@@ -156,7 +156,7 @@ contract('ONEWallet', (accounts) => {
     // Spending State
     let expectedSpendingState = await TestUtil.getSpendingStateParsed(alice.wallet)
     expectedSpendingState.spentAmount = ONE_CENT
-    aliceOldState.spendingState = await TestUtil.syncAndValidateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
+    aliceOldState.spendingState = await TestUtil.validateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
     // Bob Items that have changed - nothing in the wallet just his balance above
     await TestUtil.checkONEWalletStateChange(bobOldState, bobCurrentState)
@@ -199,7 +199,7 @@ contract('ONEWallet', (accounts) => {
     expectedSpendingState.spendingLimit = THREE_ETH
     expectedSpendingState.highestSpendingLimit = THREE_ETH
     expectedSpendingState.lastLimitAdjustmentTime = currentSpendingState.lastLimitAdjustmentTime
-    aliceOldState.spendingState = await TestUtil.syncAndValidateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
+    aliceOldState.spendingState = await TestUtil.validateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
   })
 
@@ -241,7 +241,7 @@ contract('ONEWallet', (accounts) => {
     expectedSpendingState.spendingLimit = HALF_ETH
     expectedSpendingState.highestSpendingLimit = ONE_ETH
     expectedSpendingState.lastLimitAdjustmentTime = currentSpendingState.lastLimitAdjustmentTime
-    aliceOldState.spendingState = await TestUtil.syncAndValidateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
+    aliceOldState.spendingState = await TestUtil.validateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
   })
 

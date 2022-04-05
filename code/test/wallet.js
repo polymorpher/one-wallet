@@ -14,13 +14,10 @@ const NullOperationParams = {
   data: new Uint8Array()
 
 }
-const DUMMY_HEX = '0x'
 const ONE_ETH = unit.toWei('1', 'ether')
-const ONE_CENT = unit.toWei('0.01', 'ether')
 const HALF_ETH = unit.toWei('0.5', 'ether')
 const INTERVAL = 30000 // 30 second Intervals
 const duration = INTERVAL * 12 // 6 minute wallet duration
-const SLOT_SIZE = 1 // 1 transaction per interval
 const effectiveTime = Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - duration / 2
 
 const Logger = {
@@ -136,10 +133,10 @@ contract('ONEWallet', (accounts) => {
   // Expected result: alices lastResortAddress will change to bobs last Resort address
   // Notes: Cannot set this to zero address, the same address or the treasury address
   // Fails to update if you have create alice wallet with `setLastResortAddress: true` as an address already set.
-  it('WA.BASIC.5 SET_RECOVERY_ADDRESS: must be able to set recovery address', async () => {
+  it('WA-BASIC-5 SET_RECOVERY_ADDRESS: must be able to set recovery address', async () => {
     // create wallets and token contracts used througout the tests
-    let { walletInfo: alice, state: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.5.1', deployer: accounts[0], effectiveTime, duration, setLastResortAddress: false })
-    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'WA.BASIC.5.2', deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: alice, state: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA-BASIC-5-1', deployer: accounts[0], effectiveTime, duration, setLastResortAddress: false })
+    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'WA-BASIC-5-2', deployer: accounts[0], effectiveTime, duration })
 
     // Begin Tests
     let testTime = Date.now()
@@ -179,16 +176,16 @@ contract('ONEWallet', (accounts) => {
   // Expected result the assets will be transferred to the wallets recovery address
   // Logic: additional authentication required (see _recover in ONEWallet.sol)
   /// To initiate recovery, client should submit leaf_{-1} as eotp, where leaf_{-1} is the last leaf in OTP Merkle Tree. Note that leaf_0 = hasher(hseed . nonce . OTP . randomness) where hasher is either sha256 or argon2, depending on client's security parameters. The definition of leaf_{-1} ensures attackers cannot use widespread miners to brute-force for seed or hseed, even if keccak256(leaf_{i}) for any i is known. It has been considered that leaf_0 should be used instead of leaf_{-1}, because leaf_0 is extremely unlikely to be used for any wallet operation. It is only used if the user performs any operation within the first 60 seconds of seed generation (when QR code is displayed). Regardless of which leaf is used to trigger recovery, this mechanism ensures hseed remains secret at the client. Even when the leaf becomes public (on blockchain), it is no longer useful because the wallet would already be deprecated (all assets transferred out). It can be used to repeatedly trigger recovery on this deprecated wallet, but that would cause no harm.
-  it('WA.BASIC.6 RECOVER: must be able to recover assets', async () => {
+  it('WA-BASIC-6 RECOVER: must be able to recover assets', async () => {
   })
 
   // ====== FORWARD ======
   // Test forwarding to another wallet
   // Expected result the wallet will be forwarded to
-  it('WA.BASIC.8 FORWARD: must be able to set forward to another wallet', async () => {
+  it('WA-BASIC-8 FORWARD: must be able to set forward to another wallet', async () => {
     // create wallets and token contracts used througout the tests
-    let { walletInfo: alice, state: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.8.1', deployer: accounts[0], effectiveTime, duration })
-    let { walletInfo: carol, state: carolOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.8.2', deployer: accounts[0], effectiveTime, duration, backlinks: [alice.wallet.address] })
+    let { walletInfo: alice, state: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA-BASIC-8-1', deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: carol, state: carolOldState } = await TestUtil.makeWallet({ salt: 'WA-BASIC-8-2', deployer: accounts[0], effectiveTime, duration, backlinks: [alice.wallet.address] })
 
     // alice and carol both have an initial balance of half an ETH
     await TestUtil.validateBalance({ address: alice.wallet.address, amount: HALF_ETH })
@@ -222,7 +219,7 @@ contract('ONEWallet', (accounts) => {
     // Alice's spending state has been updated spentAmount = HALF_ETH and lastSpendingInterval has been updated
     let expectedSpendingState = await TestUtil.getSpendingStateParsed(alice.wallet)
     expectedSpendingState.spentAmount = HALF_ETH
-    aliceOldState.spendingState = await TestUtil.syncAndValidateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
+    aliceOldState.spendingState = await TestUtil.validateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
     // check alice
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
     // check carol's wallet hasn't changed (just her balances above)
@@ -233,10 +230,10 @@ contract('ONEWallet', (accounts) => {
   // ====== RECOVER_SELECTED_TOKENS ======
   // Test recovering selected tokens
   // Expected result the tokens will be recovered
-  it('WA.BASIC.9 RECOVER_SELECTED_TOKENS: must be able to recover selected tokens', async () => {
+  it('WA-BASIC-9 RECOVER_SELECTED_TOKENS: must be able to recover selected tokens', async () => {
     // create wallets and token contracts used througout the tests
-    let { walletInfo: alice, state: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.9.1', deployer: accounts[0], effectiveTime, duration })
-    let { walletInfo: carol, state: carolOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.9.2', deployer: accounts[0], effectiveTime, duration, backlinks: [alice.wallet.address] })
+    let { walletInfo: alice, state: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA-BASIC-9-1', deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: carol, state: carolOldState } = await TestUtil.makeWallet({ salt: 'WA-BASIC-9-2', deployer: accounts[0], effectiveTime, duration, backlinks: [alice.wallet.address] })
 
     // make Tokens
     const { testerc20 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
@@ -302,7 +299,7 @@ contract('ONEWallet', (accounts) => {
     // Alice's spending state has been updated spentAmount = HALF_ETH and lastSpendingInterval has been updated
     let expectedSpendingState = await TestUtil.getSpendingStateParsed(alice.wallet)
     expectedSpendingState.spentAmount = HALF_ETH
-    aliceOldState.spendingState = await TestUtil.syncAndValidateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
+    aliceOldState.spendingState = await TestUtil.validateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
     // check alice
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
     // check carol's wallet hasn't changed (just her balances above)
@@ -313,9 +310,9 @@ contract('ONEWallet', (accounts) => {
   // ====== BACKLINK_ADD ======
   // Test add a backlink from Alices wallet to Carols
   // Expected result: Alices wallet will be backlinked to Carols
-  it('WA.BASIC.12 BACKLINK_ADD: must be able to add a backlink', async () => {
-    let { walletInfo: alice, state: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.12.1.1', deployer: accounts[0], effectiveTime, duration })
-    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'WA.BASIC.12.1.2', deployer: accounts[0], effectiveTime, duration })
+  it('WA-BASIC-12 BACKLINK_ADD: must be able to add a backlink', async () => {
+    let { walletInfo: alice, state: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA-BASIC-12-1-1', deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'WA-BASIC-12-1-2', deployer: accounts[0], effectiveTime, duration })
 
     // Begin Tests
     let testTime = Date.now()
@@ -351,9 +348,9 @@ contract('ONEWallet', (accounts) => {
   // ====== BACKLINK_DELETE ======
   // Test remove a backlink from Alices wallet to Carols
   // Expected result: Alices wallet will not be backlinked to Carols
-  it('WA.BASIC.13 BACKLINK_DELETE: must be able to delete a backlink', async () => {
-    let { walletInfo: alice, state: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.13.1', deployer: accounts[0], effectiveTime, duration })
-    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'WA.BASIC.13.2', deployer: accounts[0], effectiveTime, duration })
+  it('WA-BASIC-13 BACKLINK_DELETE: must be able to delete a backlink', async () => {
+    let { walletInfo: alice, state: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA-BASIC-13-1', deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'WA-BASIC-13.2', deployer: accounts[0], effectiveTime, duration })
 
     // Begin Tests
     let testTime = Date.now()
@@ -402,10 +399,10 @@ contract('ONEWallet', (accounts) => {
   // ====== BACKLINK_OVERRIDE ======
   // Test override a backlink from Alices wallet to Carols with Alices Wallet to Doras
   // Expected result: Alices wallet will be backlinked to Doras
-  it('WA.BASIC.14 BACKLINK_OVERRIDE: must be able to override a backlink', async () => {
-    let { walletInfo: alice, state: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.BASIC.14.1', deployer: accounts[0], effectiveTime, duration })
-    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'WA.BASIC.14.2', deployer: accounts[0], effectiveTime, duration })
-    let { walletInfo: dora } = await TestUtil.makeWallet({ salt: 'WA.BASIC.14.3', deployer: accounts[0], effectiveTime, duration })
+  it('WA-BASIC-14 BACKLINK_OVERRIDE: must be able to override a backlink', async () => {
+    let { walletInfo: alice, state: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA-BASIC-14-1', deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'WA-BASIC-14.2', deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: dora } = await TestUtil.makeWallet({ salt: 'WA-BASIC-14.3', deployer: accounts[0], effectiveTime, duration })
 
     // Begin Tests
     let testTime = Date.now()
@@ -455,13 +452,13 @@ contract('ONEWallet', (accounts) => {
   // ====== SIGN ======
   // Test setting signing a transaction
   // Expected result the wallets will sign a transaction
-  it('WA.BASIC.19 SIGN: must be able to sign a transaction', async () => {
+  it('WA-BASIC-19 SIGN: must be able to sign a transaction', async () => {
   })
 
   // ====== REVOKE ======
   // Test setting of a wallets recovery address
   // Expected result the wallets recovery address
-  it('WA.BASIC.20 REVOKE: must be able to revoke a signature', async () => {
+  it('WA-BASIC-20 REVOKE: must be able to revoke a signature', async () => {
   })
 
   // === Negative Use Cases (Event Testing) ===
@@ -471,9 +468,9 @@ contract('ONEWallet', (accounts) => {
   // ====== FORWARD + COMMAND ======
   // Test signing a transaction with a backlinked wallet
   // Expected result the backlinked wallet will sign a transaction for the linked wallet
-  it('WA.COMPLEX.8.0 FORWARD.COMMAND: must be able to sign a transaction for a backlinked wallet', async () => {
-    let { walletInfo: alice, state: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA.COMPLEX.8.0.1', deployer: accounts[0], effectiveTime, duration })
-    let { walletInfo: carol, state: carolOldState } = await TestUtil.makeWallet({ salt: 'WA.COMPLEX.8.0.2', deployer: accounts[0], effectiveTime, duration, backlinks: [alice.wallet.address] })
+  it('WA-COMPLEX-8-0 FORWARD.COMMAND: must be able to sign a transaction for a backlinked wallet', async () => {
+    let { walletInfo: alice, state: aliceOldState } = await TestUtil.makeWallet({ salt: 'WA-COMPLEX-8-0-1', deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: carol, state: carolOldState } = await TestUtil.makeWallet({ salt: 'WA-COMPLEX-8-0-2', deployer: accounts[0], effectiveTime, duration, backlinks: [alice.wallet.address] })
 
     // alice and carol both have an initial balance of half an ETH
     await TestUtil.validateBalance({ address: alice.wallet.address, amount: HALF_ETH })
@@ -507,7 +504,7 @@ contract('ONEWallet', (accounts) => {
     // Alice's spending state has been updated spentAmount = HALF_ETH and lastSpendingInterval has been updated
     let expectedSpendingState = await TestUtil.getSpendingStateParsed(alice.wallet)
     expectedSpendingState.spentAmount = HALF_ETH
-    aliceOldState.spendingState = await TestUtil.syncAndValidateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
+    aliceOldState.spendingState = await TestUtil.validateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
     // check alice
     await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
     // check carol's wallet hasn't changed (just her balances above)

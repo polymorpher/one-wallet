@@ -33,6 +33,9 @@ const message = {
       return
     }
     console.log('[DEBUG]', content)
+    if (config?.console) {
+      return
+    }
     return show({ content, duration, type: 'info', ...config })
   }
 }

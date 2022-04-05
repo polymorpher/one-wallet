@@ -7,24 +7,21 @@ import Checkbox from 'antd/es/checkbox'
 import Button from 'antd/es/button'
 import Space from 'antd/es/space'
 import Typography from 'antd/es/typography'
-import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import QuestionCircleOutlined from '@ant-design/icons/QuestionCircleOutlined'
 import { Hint, Label, Warning } from '../../components/Text'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
 import BN from 'bn.js'
 import ShowUtils from './show-util'
-import { useSelector } from 'react-redux'
 import { SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import ONEUtil from '../../../../lib/util'
 import { api } from '../../../../lib/api'
 import ONEConstants from '../../../../lib/constants'
-import { OtpStack, useOtpState } from '../../components/OtpStack'
-import { useRandomWorker } from './randomWorker'
+import { OtpStack } from '../../components/OtpStack'
 import humanizeDuration from 'humanize-duration'
-import ONENames from '../../../../lib/names'
 import { autoWalletNameHint } from '../../util'
+import { useOps } from '../../components/Common'
 const { Title } = Typography
 const { TextArea } = Input
 
@@ -38,18 +35,13 @@ const Sign = ({
   shouldAutoFocus,
   headless,
 }) => {
-  const wallets = useSelector(state => state.wallet)
-  const wallet = wallets[address] || {}
-  const network = useSelector(state => state.global.network)
+  const {
+    wallet, forwardWallet, network, stage, setStage,
+    resetWorker, recoverRandomness, otpState,
+  } = useOps({ address })
 
   const doubleOtp = wallet.doubleOtp
-  const { state: otpState } = useOtpState()
-  const { otpInput, otp2Input } = otpState
-  const resetOtp = otpState.resetOtp
-
-  const [stage, setStage] = useState(-1)
-
-  const { resetWorker, recoverRandomness } = useRandomWorker()
+  const { otpInput, otp2Input, resetOtp } = otpState
 
   const [messageInput, setMessageInput] = useState(prefillMessageInput)
   const [useRawMessage, setUseRawMessage] = useState(prefillUseRawMessage)
@@ -75,36 +67,35 @@ const Sign = ({
       message = ONEUtil.ethMessage(message)
     }
     const hash = ONEUtil.keccak(message)
-    const tokenId = new BN(hash)
+    const tokenId = new BN(hash).toString()
 
     const expiryAt = noExpiry ? 0xffffffff : Math.floor(((Date.now() + duration) / 1000))
     const expiryAtBytes = new BN(expiryAt).toArrayLike(Uint8Array, 'be', 4)
     const encodedExpiryAt = new Uint8Array(20)
     encodedExpiryAt.set(expiryAtBytes)
-    const args = { operationType: ONEConstants.OperationType.SIGN, tokenType: ONEConstants.TokenType.NONE, contractAddress: ONEConstants.EmptyAddress, tokenId, dest: ONEUtil.hexString(encodedExpiryAt) }
+    const args = {
+      operationType: ONEConstants.OperationType.SIGN,
+      tokenType: ONEConstants.TokenType.NONE,
+      contractAddress: ONEConstants.EmptyAddress,
+      tokenId,
+      dest: ONEUtil.hexString(encodedExpiryAt)
+    }
     let signature
-    const commitHashArgs = ({ eotp }) => {
+    const commitRevealArgs = ({ eotp }) => {
       const buf = ONEUtil.bytesConcat(eotp, hash)
       signature = ONEUtil.keccak(buf)
-      return { amount: signature, ...args }
-    }
-    const revealArgs = ({ eotp }) => {
-      const { amount: signature, tokenId, ...args } = commitHashArgs({ eotp })
-      return { amount: ONEUtil.hexString(signature), tokenId: ONEUtil.hexString(tokenId.toArrayLike(Uint8Array, 'be', 32)), ...args }
+      return { amount: new BN(signature).toString(), ...args }
     }
 
     SmartFlows.commitReveal({
       wallet,
+      forwardWallet,
       otp,
       otp2,
       recoverRandomness,
       commitHashGenerator: ONE.computeGeneralOperationHash,
-      commitHashArgs,
-      prepareProof: () => setStage(0),
-      beforeCommit: () => setStage(1),
-      afterCommit: () => setStage(2),
       revealAPI: api.relayer.reveal,
-      revealArgs,
+      commitRevealArgs,
       onRevealSuccess: (txId, messages) => {
         onRevealSuccess(txId, messages)
         onSuccess && onSuccess(txId, { hash, signature })
@@ -114,11 +105,7 @@ const Sign = ({
   }
   if (!(wallet.majorVersion > 10)) {
     return (
-      <AnimatedSection
-        style={{ maxWidth: 720 }} title={<Title level={2}>Sign Message</Title>} extra={[
-          <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-        ]}
-      >
+      <AnimatedSection wide onClose={onClose} title={<Title level={2}>Sign Message</Title>}>
         <Warning>Your wallet is too old. Please use a wallet that is at least version 10.1</Warning>
       </AnimatedSection>
     )
@@ -170,12 +157,7 @@ const Sign = ({
     return inner
   }
   return (
-    <AnimatedSection
-      style={{ maxWidth: 720 }}
-      title={<Title level={2}>Sign Message</Title>} extra={[
-        <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-      ]}
-    >
+    <AnimatedSection wide onClose={onClose} title={<Title level={2}>Sign Message</Title>}>
       {inner}
     </AnimatedSection>
   )

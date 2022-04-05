@@ -1,8 +1,7 @@
 import Button from 'antd/es/button'
 import Row from 'antd/es/row'
 import Space from 'antd/es/space'
-import Typography from 'antd/es/typography'
-import CloseOutlined from '@ant-design/icons/CloseOutlined'
+import { Title, Text } from '../../components/Text'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
 import React, { useState } from 'react'
@@ -13,8 +12,9 @@ import { EotpBuilders, SmartFlows } from '../../../../lib/api/flow'
 import { api } from '../../../../lib/api'
 import ShowUtils from './show-util'
 import { walletActions } from '../../state/modules/wallet'
-const { Title, Text } = Typography
-const DoRecover = ({ address, show, onClose }) => {
+import EnsureExecutable from './EnsureExecutable'
+
+const DoRecover = ({ address, onClose }) => {
   const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
   const { lastResortAddress } = wallet
@@ -38,28 +38,19 @@ const DoRecover = ({ address, show, onClose }) => {
       hash = new Uint8Array(32)
     }
     const eotpBuilder = wallet.majorVersion >= 8 ? EotpBuilders.recovery : EotpBuilders.legacyRecovery
-    const data = ONEUtil.hexString(bytes)
     SmartFlows.commitReveal({
       recoverRandomness: () => 0,
       wallet,
       eotpBuilder,
       index: -1,
-      prepareProof: () => setStage(0),
       commitHashGenerator: () => ({ hash, bytes: new Uint8Array(0) }), // Only legacy committer uses `bytes`. It mingles them with other parameters to produce hash. legacy recover has no parameters, therefore `bytes` should be empty byte array
-      beforeCommit: () => setStage(1),
-      afterCommit: () => setStage(2),
       revealAPI: api.relayer.revealRecovery,
-      revealArgs: { data },
+      commitRevealArgs: { data: bytes },
       ...helpers
     })
   }
   return (
-    <AnimatedSection
-      style={{ maxWidth: 720 }}
-      title={<Title level={2}>Recover</Title>} extra={[
-        <Button key='close' type='text' icon={<CloseOutlined />} onClick={onClose} />
-      ]}
-    >
+    <AnimatedSection wide title={<Title level={2}>Recover</Title>} onClose={onClose}>
       {lastResortAddress &&
         <>
           <Space direction='vertical' size='large'>
@@ -82,4 +73,4 @@ const DoRecover = ({ address, show, onClose }) => {
     </AnimatedSection>
   )
 }
-export default DoRecover
+export default EnsureExecutable(DoRecover, 'Recover')

@@ -130,6 +130,10 @@ const util = {
     return w && w.address && (!from || w.backlinks?.includes(from)) && util.isEmptyAddress(w.forwardAddress) && !w.temp
   },
 
+  isCommandOnlyWallet: (w) => {
+    return w && !util.isEmptyAddress(w.forwardAddress) && w.majorVersion >= 16
+  },
+
   safeExec: (f, args, handler) => {
     if (typeof f !== 'function') {
       return f

@@ -1,3 +1,7 @@
+# NOTICE
+
+The content of this document is being worked on, and will be available later in April 2022.
+
 # DEVELOPER GUIDE
 
 ## ONE Wallet Overview

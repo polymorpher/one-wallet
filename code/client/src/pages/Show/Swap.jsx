@@ -10,9 +10,9 @@ import Space from 'antd/es/space'
 import Typography from 'antd/es/typography'
 import message from '../../message'
 import React, { useCallback, useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import ONEConstants from '../../../../lib/constants'
-import util, { autoWalletNameHint, useWindowDimensions } from '../../util'
+import util, { autoWalletNameHint } from '../../util'
 import { DefaultTrackedERC20, HarmonyONE, withKeys } from '../../components/TokenAssets'
 import api from '../../api'
 import { Hint, InputBox, Warning } from '../../components/Text'
@@ -20,12 +20,11 @@ import BN from 'bn.js'
 import PercentageOutlined from '@ant-design/icons/PercentageOutlined'
 import QuestionCircleOutlined from '@ant-design/icons/QuestionCircleOutlined'
 import SwapOutlined from '@ant-design/icons/SwapOutlined'
-import { OtpStack, useOtpState } from '../../components/OtpStack'
+import { OtpStack } from '../../components/OtpStack'
 import { FallbackImage } from '../../constants/ui'
 import ShowUtils from './show-util'
 import { SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
-import { useRandomWorker } from './randomWorker'
 import ONEUtil from '../../../../lib/util'
 import { handleTrackNewToken } from '../../components/ERC20Grid'
 import { Link } from 'react-router-dom'
@@ -35,7 +34,7 @@ import { balanceActions } from '../../state/modules/balance'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import uniqBy from 'lodash/fp/uniqBy'
 import styled from 'styled-components'
-import ONENames from '../../../../lib/names'
+import { useOps } from '../../components/Common'
 const { Text, Title } = Typography
 
 const tokenIconUrl = (token) => {
@@ -155,14 +154,12 @@ const isTrivialSwap = (tokenFrom, tokenTo) => {
  * Renders swap coins from ONE wallet or tracked token to another token tab.
  */
 const Swap = ({ address }) => {
-  const { isMobile } = useWindowDimensions()
-  const wallets = useSelector(state => state.wallet)
-  const network = useSelector(state => state.global.network)
-  const wallet = wallets[address] || {}
-  const dispatch = useDispatch()
-  const [stage, setStage] = useState(-1)
+  const {
+    wallet, forwardWallet, network, stage, setStage, dispatch,
+    resetWorker, recoverRandomness, otpState, isMobile,
+  } = useOps({ address })
+
   const doubleOtp = wallet.doubleOtp
-  const { state: otpState } = useOtpState()
   const { otpInput, otp2Input, resetOtp } = otpState
 
   const harmonyToken = { ...HarmonyONE }
@@ -494,22 +491,19 @@ const Swap = ({ address }) => {
     setTokenTo({ ...token, value: token.symbol, label: <TokenLabel token={token} selected /> })
     // onAmountChange(true)({ target: { value: swapAmountFormatted } })
   }
-  const { resetWorker, recoverRandomness } = useRandomWorker()
+
   const { prepareValidation, onRevealSuccess, ...handlers } = ShowUtils.buildHelpers({ setStage, resetOtp, network, resetWorker })
 
   const commonCommitReveal = ({ otp, otp2, hexData, args, trackToken, updateFromBalance, extraHandlers }) => {
     SmartFlows.commitReveal({
       wallet,
+      forwardWallet,
       otp,
       otp2,
       recoverRandomness,
       commitHashGenerator: ONE.computeGeneralOperationHash,
-      commitHashArgs: { ...args, data: ONEUtil.hexStringToBytes(hexData) },
-      prepareProof: () => setStage(0),
-      beforeCommit: () => setStage(1),
-      afterCommit: () => setStage(2),
+      commitRevealArgs: { ...args, data: ONEUtil.hexStringToBytes(hexData) },
       revealAPI: api.relayer.reveal,
-      revealArgs: { ...args, data: hexData },
       onRevealSuccess: async (txId, messages) => {
         onRevealSuccess(txId, messages)
         if (trackToken) {

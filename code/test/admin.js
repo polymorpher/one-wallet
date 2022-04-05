@@ -2,8 +2,8 @@
 const TestUtil = require('./util')
 const INTERVAL = 30000 // 30 second Intervals
 const DURATION = INTERVAL * 12 // 6 minute wallet duration
-// Wallets effective time is the current time minus half the duration (3 minutes ago)
-const EFFECTIVE_TIME = Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
+const getEffectiveTime = () => Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
+
 contract('ONEWallet', (accounts) => {
   let snapshotId
   beforeEach(async function () {
