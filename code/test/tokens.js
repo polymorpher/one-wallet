@@ -319,10 +319,7 @@ contract('ONEWallet', (accounts) => {
         testTime
       }
     )
-    // Get alice's current tracked tokens and override the address from testerc20 to testerc20v2
-    const newTrackedTokens = await alice.wallet.getTrackedTokens()
-    newTrackedTokens[1] = [testerc20v2.address]
-    const hexData = ONEUtil.abi.encodeParameters(['uint256[]', 'address[]', 'uint256[]'], [newTrackedTokens[0], newTrackedTokens[1], newTrackedTokens[2]])
+    const hexData = ONEUtil.abi.encodeParameters(['uint256[]', 'address[]', 'uint256[]'], [[ONEConstants.TokenType.ERC20], [testerc20v2.address], [0]])
     const data = ONEUtil.hexStringToBytes(hexData)
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     const { currentState: overrideState } = await executeTokenTransaction(
@@ -472,9 +469,7 @@ contract('ONEWallet', (accounts) => {
         testTime
       }
     )
-    // Get alices current tracked tokens and override the address from testerc20 to testerc20v2
-    const [trackedTokenTypes] = await alice.wallet.getTrackedTokens()
-    const hexData = ONEUtil.abi.encodeParameters(['uint256[]', 'address[]', 'uint256[]'], [trackedTokenTypes, [testerc721v2.address], [3]])
+    const hexData = ONEUtil.abi.encodeParameters(['uint256[]', 'address[]', 'uint256[]'], [[ONEConstants.TokenType.ERC721], [testerc721v2.address], [3]])
     const data = ONEUtil.hexStringToBytes(hexData)
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     const { currentState } = await executeTokenTransaction(
@@ -627,9 +622,7 @@ contract('ONEWallet', (accounts) => {
         testTime
       }
     )
-    // Get alice's current tracked tokens and override the address from testerc20 to testerc20v2
-    const [trackedTokenTypes] = await alice.wallet.getTrackedTokens()
-    const hexData = ONEUtil.abi.encodeParameters(['uint256[]', 'address[]', 'uint256[]'], [trackedTokenTypes, [testerc1155v2.address], [3]])
+    const hexData = ONEUtil.abi.encodeParameters(['uint256[]', 'address[]', 'uint256[]'], [[ONEConstants.TokenType.ERC1155], [testerc1155v2.address], [3]])
     const data = ONEUtil.hexStringToBytes(hexData)
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     const { currentState } = await executeTokenTransaction(
