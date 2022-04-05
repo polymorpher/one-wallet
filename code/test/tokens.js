@@ -110,8 +110,8 @@ const executeTokenTransaction = async ({
     index,
     eotp,
     paramsHash: ONEWallet.computeGeneralOperationHash,
-    commitParams: commitRevealParams,
-    revealParams: commitRevealParams,
+    commitParams: { ...commitRevealParams },
+    revealParams: { ...commitRevealParams },
     wallet: walletInfo.wallet
   })
   const currentState = getCurrentState && (await TestUtil.getState(walletInfo.wallet))

@@ -454,22 +454,24 @@ const getState = async (wallet) => {
 }
 
 // check OneWallet state
-const assertStateEqual = async (oldState, currentState) => {
-  assert.deepEqual(currentState.identificationKey, oldState.identificationKey, 'wallet.identificationKey is incorrect')
-  assert.deepEqual(currentState.identificationKeys, oldState.identificationKeys, 'wallet.identificationKeys is incorrect')
-  assert.deepEqual(currentState.forwardAddress, oldState.forwardAddress, 'wallet.forwardAddress is incorrect')
-  assert.deepEqual(currentState.info, oldState.info, 'wallet.info is incorrect')
-  assert.deepEqual(currentState.oldInfo, oldState.oldInfo, 'wallet.oldInfos is incorrect')
-  assert.deepEqual(currentState.innerCores, oldState.innerCores, 'wallet.innerCores is incorrect')
-  assert.deepEqual(currentState.rootKey, oldState.rootKey, 'wallet.rootKey is incorrect')
-  assert.deepEqual(currentState.version, oldState.version, 'wallet.version is incorrect')
-  assert.deepEqual(currentState.spendingState, oldState.spendingState, 'wallet.spendingState is incorrect')
-  assert.deepEqual(currentState.nonce, oldState.nonce, 'wallet.nonce is incorrect')
-  assert.deepEqual(currentState.lastOperationTime, oldState.lastOperationTime, 'wallet.lastOperationTime is incorrect')
-  assert.deepEqual(currentState.allCommits, oldState.allCommits, 'wallet.allCommits is incorrect')
-  assert.deepEqual(currentState.trackedTokens, oldState.trackedTokens, 'wallet.trackedTokens is incorrect')
-  assert.deepEqual(currentState.backlinks, oldState.backlinks, 'wallet.backlinks is incorrect')
-  assert.deepEqual(currentState.signatures, oldState.signatures, 'wallet.signatures is incorrect')
+const assertStateEqual = async (expectedState, actualState, checkNonce = false) => {
+  assert.deepEqual(actualState.identificationKey, expectedState.identificationKey, 'wallet.identificationKey is incorrect')
+  assert.deepEqual(actualState.identificationKeys, expectedState.identificationKeys, 'wallet.identificationKeys is incorrect')
+  assert.deepEqual(actualState.forwardAddress, expectedState.forwardAddress, 'wallet.forwardAddress is incorrect')
+  assert.deepEqual(actualState.info, expectedState.info, 'wallet.info is incorrect')
+  assert.deepEqual(actualState.oldInfo, expectedState.oldInfo, 'wallet.oldInfos is incorrect')
+  assert.deepEqual(actualState.innerCores, expectedState.innerCores, 'wallet.innerCores is incorrect')
+  assert.deepEqual(actualState.rootKey, expectedState.rootKey, 'wallet.rootKey is incorrect')
+  assert.deepEqual(actualState.version, expectedState.version, 'wallet.version is incorrect')
+  assert.deepEqual(actualState.spendingState, expectedState.spendingState, 'wallet.spendingState is incorrect')
+  if (checkNonce) {
+    assert.deepEqual(actualState.nonce, expectedState.nonce, 'wallet.nonce is incorrect')
+  }
+  assert.deepEqual(actualState.lastOperationTime, expectedState.lastOperationTime, 'wallet.lastOperationTime is incorrect')
+  assert.deepEqual(actualState.allCommits, expectedState.allCommits, 'wallet.allCommits is incorrect')
+  assert.deepEqual(actualState.trackedTokens, expectedState.trackedTokens, 'wallet.trackedTokens is incorrect')
+  assert.deepEqual(actualState.backlinks, expectedState.backlinks, 'wallet.backlinks is incorrect')
+  assert.deepEqual(actualState.signatures, expectedState.signatures, 'wallet.signatures is incorrect')
 }
 
 // ==== EXECUTION FUNCTIONS ====
@@ -500,9 +502,14 @@ const commitReveal = async ({ layers, Debugger, index, eotp, paramsHash, commitP
     const { operationType, tokenType, contractAddress, tokenId, dest, amount, data } = { ...ONEConstants.NullOperationParams, ...revealParams }
     revealParams = [operationType, tokenType, contractAddress, tokenId, dest, amount, data]
   }
-  Logger.debug(`Revealing`, { authParams, revealParams })
-  const wouldSucceed = await wallet.reveal.call(authParams, revealParams)
-  Logger.debug(`Reveal success prediction`, !!wouldSucceed)
+  Logger.debug(`Revealing`, JSON.stringify({ authParams, revealParams }))
+  try {
+    const wouldSucceed = await wallet.reveal.call(authParams, revealParams)
+    Logger.debug(`Reveal success prediction`, !!wouldSucceed)
+  } catch (ex) {
+    console.error(ex)
+    throw ex
+  }
   const tx = await wallet.reveal(authParams, revealParams)
   return { tx, authParams, revealParams }
 }
