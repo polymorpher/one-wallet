@@ -6,8 +6,8 @@ import Paths from './constants/paths'
 import Layout from 'antd/es/layout'
 import Row from 'antd/es/row'
 import Spin from 'antd/es/spin'
-import SiderMenu from './components/SiderMenu'
-import WalletHeader from './components/WalletHeader'
+import SiderMenu, { SiderMenuV2 } from './components/SiderMenu'
+import WalletHeader, { WalletHeaderV2 } from './components/WalletHeader'
 import CreatePage from './pages/Create'
 import AddressDetailPage from './pages/Contacts/AddressDetail'
 import ListPage from './pages/List'
@@ -52,9 +52,9 @@ const LocalRoutes = () => {
       }}
       className={v2ui ? 'v2ui' : ''}
     >
-      <SiderMenu />
+      {v2ui ? <SiderMenuV2 /> : <SiderMenu />}
       <Layout>
-        <WalletHeader />
+        {v2ui ? <WalletHeaderV2 /> : <WalletHeader />}
         <Layout.Content
           style={
             {

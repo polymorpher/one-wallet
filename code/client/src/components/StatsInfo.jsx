@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react'
 import Row from 'antd/es/row'
 import Divider from 'antd/es/divider'
 import Tag from 'antd/es/tag'
+import Statistic from 'antd/es/statistic'
 import Spin from 'antd/es/spin'
 import abbr from '../abbr'
 import { useDispatch, useSelector } from 'react-redux'
-import { getPrimaryBorderColor } from '../theme'
+import { getPrimaryBorderColor, getColorPalette } from '../theme'
 import WalletConstants from '../constants/wallet'
 import { cacheActions } from '../state/modules/cache'
 
@@ -58,5 +59,47 @@ export const StatsInfo = () => {
           </Row>)}
       <LineDivider />
     </>
+  )
+}
+
+export const StatsInfoV2 = () => {
+  const statsCached = useSelector(state => state.cache.global.stats)
+  const onePrice = useSelector(state => state.global.price)
+  const [stats, setStats] = useState(null)
+  const dispatch = useDispatch()
+  const theme = useSelector(state => state.global.v2ui ? state.global.theme : 'dark')
+  const { primaryTextColor, secondaryBgColor } = getColorPalette(theme)
+
+  useEffect(() => {
+    setStats(statsCached)
+  }, [statsCached])
+
+  useEffect(() => {
+    const { timeUpdated } = statsCached || {}
+    if (!timeUpdated || (Date.now() - timeUpdated > WalletConstants.globalStatsCacheDuration)) {
+      dispatch(cacheActions.fetchGlobalStats())
+    } else {
+      setStats(statsCached)
+    }
+  }, [])
+
+  return (
+    stats
+      ? (
+        <Row style={{ color: primaryTextColor }} justify='center' className='wallet-stats-info'>
+          <Tag color={secondaryBgColor} style={{ margin: 0, padding: '4px 32px' }}>
+            <Statistic style={{ marginBottom: 8 }} title='ONE price' value={onePrice} prefix='$' valueStyle={{ color: primaryTextColor, fontWeight: 'bold' }} />
+          </Tag>
+          <Tag color={secondaryBgColor} style={{ margin: '0 -1px', padding: '4px 32px' }}>
+            <Statistic style={{ marginBottom: 8 }} title='1Wallet count' value={stats.count} valueStyle={{ color: primaryTextColor, fontWeight: 'bold' }} />
+          </Tag>
+          <Tag color={secondaryBgColor} style={{ margin: 0, padding: '4px 32px' }}>
+            <Statistic style={{ marginBottom: 8 }} title='Total managed' value={abbr(stats.totalAmount, 0)} suffix=' ONE' valueStyle={{ color: primaryTextColor, fontWeight: 'bold' }} />
+          </Tag>
+        </Row>)
+      : (
+        <Row justify='center'>
+          <Spin />
+        </Row>)
   )
 }

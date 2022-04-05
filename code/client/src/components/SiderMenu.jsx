@@ -146,17 +146,29 @@ const SiderMenu = ({ ...args }) => {
   const history = useHistory()
   const match = useRouteMatch('/:action')
   const { action } = match ? match.params : {}
-  const v2ui = useSelector(state => state.global.v2ui)
   args.action = action
   args.nav = ({ key }) => {
     history.push(Paths[key])
   }
 
-  return (
-    isMobile
-      ? <MobileSiderMenu {...args} />
-      : (v2ui ? <DeskstopSiderMenuV2 {...args} /> : <DeskstopSiderMenu {...args} />)
-  )
+  return isMobile
+    ? <MobileSiderMenu {...args} />
+    : <DeskstopSiderMenu {...args} />
+}
+
+export const SiderMenuV2 = ({ ...args }) => {
+  const { isMobile } = useWindowDimensions()
+  const history = useHistory()
+  const match = useRouteMatch('/:action')
+  const { action } = match ? match.params : {}
+  args.action = action
+  args.nav = ({ key }) => {
+    history.push(Paths[key])
+  }
+
+  return isMobile
+    ? <MobileSiderMenu {...args} />
+    : <DeskstopSiderMenuV2 {...args} />
 }
 
 export default SiderMenu

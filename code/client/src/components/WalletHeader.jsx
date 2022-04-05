@@ -8,6 +8,7 @@ import Modal from 'antd/es/modal'
 import Input from 'antd/es/input'
 import Button from 'antd/es/button'
 import Space from 'antd/es/space'
+import Row from 'antd/es/row'
 import Typography from 'antd/es/typography'
 import { useRouteMatch, useHistory } from 'react-router'
 import { titleCase } from 'title-case'
@@ -21,6 +22,8 @@ import util, { useWindowDimensions } from '../util'
 import { Hint } from './Text'
 import WalletAddress from './WalletAddress'
 import { globalActions } from '../state/modules/global'
+import { StatsInfoV2 } from './StatsInfo'
+import { getColorPalette } from '../theme'
 // import Paths from '../constants/paths'
 const { Text, Link } = Typography
 
@@ -124,6 +127,38 @@ const WalletHeader = () => {
         <SecretSettings key='settings' visible={settingsVisible} onClose={() => setSettingsVisible(false)} />
       ]}
     />
+  )
+}
+
+export const WalletHeaderV2 = () => {
+  const { isMobile } = useWindowDimensions()
+  const theme = useSelector(state => state.global.v2ui ? state.global.theme : 'dark')
+  const dev = useSelector(state => state.global.dev)
+  const match = useRouteMatch('/:action/:address?')
+  const { address: routeAddress } = match ? match.params : {}
+  const address = routeAddress && util.safeNormalizedAddress(routeAddress) || ''
+  const wallets = useSelector(state => state.wallet)
+  const wallet = wallets[address] || {}
+  const [settingsVisible, setSettingsVisible] = useState(false)
+  const [relayerEditVisible, setRelayerEditVisible] = useState(false)
+  const { primaryBgColor } = getColorPalette(theme)
+  return (
+    <Row
+      style={{ background: primaryBgColor, padding: isMobile ? 8 : 24 }}
+      justify='center'
+    >
+      {wallet && wallet.address}
+      <StatsInfoV2 />
+      {dev && <Button key='toggle' shape='circle' icon={relayerEditVisible ? <CloseOutlined /> : <SettingOutlined />} onClick={() => setRelayerEditVisible(!relayerEditVisible)} />}
+      {dev && relayerEditVisible &&
+        <Space size='small' key='relayer'>
+          <Button shape='circle' icon={<LockOutlined />} onClick={() => setSettingsVisible(true)} />
+          <RelayerSelector />
+          <Divider type='vertical' />
+        </Space>}
+      <NetworkSelector key='network' />
+      <SecretSettings key='settings' visible={settingsVisible} onClose={() => setSettingsVisible(false)} />
+    </Row>
   )
 }
 
