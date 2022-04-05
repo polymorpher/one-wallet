@@ -159,14 +159,14 @@ const validateTrackedTokens = async ({
   expectedTrackedTokens,
   wallet
 }) => {
-  const trackedTokens = await wallet.getTrackedTokens()
+  const trackedTokens = TestUtil.parseTrackedTokens(await wallet.getTrackedTokens())
   Logger.debug(`expectedTrackedTokens: ${JSON.stringify(expectedTrackedTokens)}`)
   Logger.debug(`trackedTokens: ${JSON.stringify(trackedTokens)}`)
-  assert.strictEqual(expectedTrackedTokens[0].length, trackedTokens[0].length, 'Number of Tracked Tokens is different than expected')
-  for (let i = 0; i < trackedTokens[0].length; i++) {
-    assert.strictEqual(expectedTrackedTokens[0][i].toString(), trackedTokens[0][i].toString(), 'Tracked Token Type is different than expected')
-    assert.strictEqual(expectedTrackedTokens[1][i].toString(), trackedTokens[1][i].toString(), 'Tracked Token Address is different than expected')
-    assert.strictEqual(expectedTrackedTokens[2][i].toString(), trackedTokens[2][i].toString(), 'Tracked Token Ids are different than expected')
+  assert.strictEqual(expectedTrackedTokens.length, trackedTokens.length, 'Number of Tracked Tokens is different than expected')
+  for (let i = 0; i < trackedTokens.length; i++) {
+    assert.strictEqual(expectedTrackedTokens[i].tokenType.toString(), trackedTokens[i].tokenType.toString(), 'Tracked Token Type is different than expected')
+    assert.strictEqual(expectedTrackedTokens[i].contractAddress.toString(), trackedTokens[i].contractAddress.toString(), 'Tracked Token Address is different than expected')
+    assert.strictEqual(expectedTrackedTokens[i].tokenId.toString(), trackedTokens[i].tokenId.toString(), 'Tracked Token Ids are different than expected')
   }
   return trackedTokens
 }
@@ -211,7 +211,7 @@ contract('ONEWallet', (accounts) => {
     // Alice Items that have changed - nonce, lastOperationTime, commits, trackedTokens
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state: state })
     // check that tracked tokens are as expected
-    const expectedTrackedTokens = [[ONEConstants.TokenType.ERC20], [testerc20.address], [[0]]]
+    const expectedTrackedTokens = TestUtil.parseTrackedTokens([[ONEConstants.TokenType.ERC20], [testerc20.address], [0]])
     state.trackedTokens = await validateTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
     // check alice's state consistency
     await TestUtil.assertStateEqual(state, aliceCurrentState)
@@ -247,7 +247,7 @@ contract('ONEWallet', (accounts) => {
       }
     )
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state, validateNonce: false })
-    const expectedTrackedTokens = [[], [], [[]]]
+    const expectedTrackedTokens = TestUtil.parseTrackedTokens([[], [], []])
     state.trackedTokens = await validateTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
     await TestUtil.assertStateEqual(state, aliceCurrentStateUntracked)
   })
@@ -291,7 +291,7 @@ contract('ONEWallet', (accounts) => {
     })
 
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
-    const expectedTrackedTokens = [[ONEConstants.TokenType.ERC20], [testerc20.address], [[0]]]
+    const expectedTrackedTokens = TestUtil.parseTrackedTokens([[ONEConstants.TokenType.ERC20], [testerc20.address], [0]])
     state.trackedTokens = await validateTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
     await TestUtil.assertStateEqual(state, aliceTransferState)
   })
@@ -335,7 +335,7 @@ contract('ONEWallet', (accounts) => {
       }
     )
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state, validateNonce: false })
-    const expectedTrackedTokens = [[ONEConstants.TokenType.ERC20], [testerc20v2.address], [[0]]]
+    const expectedTrackedTokens = TestUtil.parseTrackedTokens([[ONEConstants.TokenType.ERC20], [testerc20v2.address], [0]])
     state.trackedTokens = await validateTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
     await TestUtil.assertStateEqual(state, overrideState)
   })
@@ -362,7 +362,7 @@ contract('ONEWallet', (accounts) => {
       }
     )
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
-    const expectedTrackedTokens = [[ONEConstants.TokenType.ERC721], [testerc721.address], [[3]]]
+    const expectedTrackedTokens = TestUtil.parseTrackedTokens([[ONEConstants.TokenType.ERC721], [testerc721.address], [3]])
     state.trackedTokens = await validateTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
     await TestUtil.assertStateEqual(state, currentState)
   })
@@ -399,7 +399,7 @@ contract('ONEWallet', (accounts) => {
       }
     )
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state, validateNonce: false })
-    const expectedTrackedTokens = [[], [], [[]]]
+    const expectedTrackedTokens = TestUtil.parseTrackedTokens([[], [], []])
     state.trackedTokens = await validateTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
     await TestUtil.assertStateEqual(state, currentState)
   })
@@ -445,7 +445,7 @@ contract('ONEWallet', (accounts) => {
       tokenAmounts: [[1], [1]]
     })
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
-    const expectedTrackedTokens = [[ONEConstants.TokenType.ERC721, ONEConstants.TokenType.ERC721], [testerc721.address, testerc721.address], ['2', '3']]
+    const expectedTrackedTokens = TestUtil.parseTrackedTokens([[ONEConstants.TokenType.ERC721, ONEConstants.TokenType.ERC721], [testerc721.address, testerc721.address], ['2', '3']])
     state.trackedTokens = await validateTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
     await TestUtil.assertStateEqual(state, currentState)
   })
@@ -487,7 +487,7 @@ contract('ONEWallet', (accounts) => {
       }
     )
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state, validateNonce: false })
-    const expectedTrackedTokens = [[ONEConstants.TokenType.ERC721], [testerc721v2.address], [[3]]]
+    const expectedTrackedTokens = TestUtil.parseTrackedTokens([[ONEConstants.TokenType.ERC721], [testerc721v2.address], [3]])
     state.trackedTokens = await validateTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
     await TestUtil.assertStateEqual(state, currentState)
   })
@@ -515,7 +515,7 @@ contract('ONEWallet', (accounts) => {
       }
     )
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
-    const expectedTrackedTokens = [[ONEConstants.TokenType.ERC1155], [testerc1155.address], [[3]]]
+    const expectedTrackedTokens = TestUtil.parseTrackedTokens([[ONEConstants.TokenType.ERC1155], [testerc1155.address], [3]])
     state.trackedTokens = await validateTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
     await TestUtil.assertStateEqual(state, currentState)
   })
@@ -553,7 +553,7 @@ contract('ONEWallet', (accounts) => {
       }
     )
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state, validateNonce: false })
-    const expectedTrackedTokens = [[], [], [[]]]
+    const expectedTrackedTokens = TestUtil.parseTrackedTokens([[], [], []])
     state.trackedTokens = await validateTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
     await TestUtil.assertStateEqual(state, currentState)
   })
@@ -601,7 +601,7 @@ contract('ONEWallet', (accounts) => {
 
     // Alice Items that have changed - nonce, lastOperationTime, commits, trackedTokens
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
-    const expectedTrackedTokens = [[ONEConstants.TokenType.ERC1155, ONEConstants.TokenType.ERC1155], [testerc1155.address, testerc1155.address], ['2', '3']]
+    const expectedTrackedTokens = TestUtil.parseTrackedTokens([[ONEConstants.TokenType.ERC1155, ONEConstants.TokenType.ERC1155], [testerc1155.address, testerc1155.address], ['2', '3']])
     state.trackedTokens = await validateTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
     await TestUtil.assertStateEqual(state, currentState)
   })
@@ -642,7 +642,7 @@ contract('ONEWallet', (accounts) => {
       }
     )
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state, validateNonce: false })
-    const expectedTrackedTokens = [[ONEConstants.TokenType.ERC1155], [testerc1155v2.address], [[3]]]
+    const expectedTrackedTokens = TestUtil.parseTrackedTokens([[ONEConstants.TokenType.ERC1155], [testerc1155v2.address], [3]])
     state.trackedTokens = await validateTrackedTokens({ expectedTrackedTokens, wallet: alice.wallet })
     await TestUtil.assertStateEqual(state, currentState)
   })

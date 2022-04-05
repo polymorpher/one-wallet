@@ -317,6 +317,10 @@ const parseCommits = (commits) => {
   const [hashes, paramsHashes, verificationHashes, timestamps, completed] = Object.keys(commits).map(k => commits[k])
   return hashes.map((e, i) => ({ hash: hashes[i], paramsHash: paramsHashes[i], verificationHash: verificationHashes[i], timestamp: timestamps[i], completed: completed[i] }))
 }
+const parseTrackedTokens = (trackedTokens) => {
+  const [tokenTypes, contractAddresses, tokenIds] = Object.keys(trackedTokens).map(k => trackedTokens[k])
+  return tokenTypes.map((e, i) => ({ tokenType: tokenTypes[i], contractAddress: contractAddresses[i], tokenId: tokenIds[i] }))
+}
 // ==== ADDRESS VALIDATION HELPERS ====
 // Functions must not mutate arguments' inner state unless stated in the name
 
@@ -411,9 +415,8 @@ const getState = async (wallet) => {
   const nonce = new BN(await wallet.getNonce()).toNumber()
   const lastOperationTime = new BN(await wallet.lastOperationTime()).toNumber()
   const allCommits = parseCommits(await wallet.getAllCommits())
-  const walletTrackedTokens = await wallet.getTrackedTokens()
-  const [tokenTypes, contractAddresses, tokenIds] = Object.keys(walletTrackedTokens).map(k => walletTrackedTokens[k])
-  const trackedTokens = tokenTypes.map((e, i) => ({ tokenType: tokenTypes[i], contractAddress: contractAddresses[i], tokenId: tokenIds[i] }))
+  const trackedTokens = parseTrackedTokens(await wallet.getTrackedTokens())
+
   const walletBacklinks = await wallet.getBacklinks()
   const backlinks = new Array(walletBacklinks)
   const walletSignatures = await wallet.listSignatures(0, MAX_UINT32)
@@ -517,4 +520,5 @@ module.exports = {
   validateBalance,
   validateOpsStateMutation,
   syncAndValidateSpendingStateMutation,
+  parseTrackedTokens,
 }
