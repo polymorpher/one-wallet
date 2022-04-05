@@ -89,7 +89,7 @@ const executeTokenTransaction = async ({
   tokenId,
   dest,
   amount,
-  data,
+  data = new Uint8Array(),
   testTime = Date.now(),
   getCurrentState = true
 }) => {
