@@ -1,5 +1,6 @@
 const TestUtil = require('./util')
 const config = require('../config')
+const unit = require('ethjs-unit')
 const ONEUtil = require('../lib/util')
 const ONEConstants = require('../lib/constants')
 const ONE = require('../lib/onewallet')
@@ -15,7 +16,7 @@ const NullOperationParams = {
 const INTERVAL = 30000 // 30 second Intervals
 const DURATION = INTERVAL * 12 // 6 minute wallet duration
 const getEffectiveTime = () => Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
-
+const HALF_ETH = unit.toWei('0.5', 'ether')
 const Logger = {
   debug: (...args) => {
     if (config.verbose) {
@@ -83,9 +84,9 @@ contract('ONEWallet', (accounts) => {
   // ====== TRACK ======
   // Test tacking of an ERC20 token
   // Expected result: the token is now tracked
-  it('TN-BASIC-0 TRACK: must be able to track ERC20 tokens', async () => {
+  it('TO-BASIC-0 TRACK: must be able to track ERC20 tokens', async () => {
     // create wallets and token contracts used throughout the tests
-    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'TN-BASIC-0-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'TO-BASIC-0-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
     // make Tokens
     const { testerc20 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
     // Begin Tests
@@ -118,8 +119,8 @@ contract('ONEWallet', (accounts) => {
   // ====== UNTRACK ======
   // Test untracking of an ERC20 token
   // Expected result: the token is no longer tracked
-  it('TN-BASIC-1 UNTRACK: must be able to untrack ERC20 tokens', async () => {
-    const { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'TN-BASIC-1-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+  it('TO-BASIC-1 UNTRACK: must be able to untrack ERC20 tokens', async () => {
+    const { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'TO-BASIC-1-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
     const { testerc20 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
     let testTime = Date.now()
     testTime = await TestUtil.bumpTestTime(testTime, 60)
@@ -154,9 +155,9 @@ contract('ONEWallet', (accounts) => {
   // ====== TRANSFER_TOKEN ======
   // Test transferring a token
   // Expected result the token is now tracked and alices balance has decreased and bobs increased
-  it('TN-BASIC-2 TRANSFER_TOKEN: must be able to transfer ERC20 token', async () => {
-    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'TN-BASIC-2-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
-    const { walletInfo: bob } = await TestUtil.makeWallet({ salt: 'TN-BASIC-2.2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+  it('TO-BASIC-2 TRANSFER_TOKEN: must be able to transfer ERC20 token', async () => {
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'TO-BASIC-2-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+    const { walletInfo: bob } = await TestUtil.makeWallet({ salt: 'TO-BASIC-2.2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
     const { testerc20 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
     let testTime = Date.now()
     await TestUtil.fundTokens({
@@ -198,8 +199,8 @@ contract('ONEWallet', (accounts) => {
   // ====== OVERRIDE_TRACK ======
   // Test overriding all of Alices Token Tracking information
   // Expected result: Alice will now track testerc20v2 instead of testerc20
-  it('TN-BASIC-3 OVERRIDE_TRACK: must be able to override ERC20 tracked tokens', async () => {
-    const { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'TN-POSITIVE-3-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+  it('TO-BASIC-3 OVERRIDE_TRACK: must be able to override ERC20 tracked tokens', async () => {
+    const { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'TO-POSITIVE-3-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
     const { testerc20 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
     const { testerc20: testerc20v2 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
     let testTime = Date.now()
@@ -236,13 +237,92 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.assertStateEqual(state, overrideState)
   })
 
+  // ====== RECOVER_SELECTED_TOKENS ======
+  // Test recovering selected tokens
+  // Expected result the tokens will be recovered
+  it('TO-BASIC-9 RECOVER_SELECTED_TOKENS: must be able to recover selected tokens', async () => {
+    // create wallets and token contracts used througout the tests
+    let { walletInfo: alice, state: aliceState } = await TestUtil.makeWallet({ salt: 'TO-BASIC-9-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+    let { walletInfo: carol, state: carolState } = await TestUtil.makeWallet({ salt: 'TO-BASIC-9-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION, backlinks: [alice.wallet.address] })
+
+    // make Tokens
+    const { testerc20 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
+
+    // Begin Tests
+    let testTime = Date.now()
+
+    // Fund Alice with 1000 ERC20 tokens
+    await TestUtil.fundTokens({
+      funder: accounts[0],
+      receivers: [alice.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC20],
+      tokenContracts: [testerc20],
+      tokenAmounts: [[1000]]
+    })
+
+    // Before we can recover we need to track testERC20
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    await executeTokenTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.TRACK,
+        tokenType: ONEConstants.TokenType.ERC20,
+        contractAddress: testerc20.address,
+        testTime
+      }
+    )
+    let trackedTokens = await TestUtil.getTrackedTokensParsed(alice.wallet)
+    Logger.debug(`trackedTokens: ${JSON.stringify(trackedTokens)}`)
+
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    // Recover test tokens takes an array of uint32 which are the indices of the tracked tokens to recover
+    let hexData = ONEUtil.abi.encodeParameters(['uint32[]'], [[0]])
+    let data = ONEUtil.hexStringToBytes(hexData)
+    let { tx, currentState: aliceCurrentState } = await executeTokenTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.RECOVER_SELECTED_TOKENS,
+        dest: carol.wallet.address,
+        data,
+        testTime
+      }
+    )
+    const carolCurrentState = TestUtil.getState(carol.wallet)
+
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx, expectedEvent: 'TokenRecovered' })
+
+    // check alices and carols balance
+
+    await TestUtil.validateTokenBalances({
+      receivers: [alice.wallet.address, carol.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC20, ONEConstants.TokenType.ERC20],
+      tokenContracts: [testerc20, testerc20],
+      tokenAmounts: [[0], [1000]]
+    })
+
+    aliceState = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, oldState: aliceState, validateNonce: false })
+    // Alice's forward address should now be carol's address
+    aliceState.forwardAddress = await TestUtil.validateFowardAddressMutation({ expectedForwardAddress: carol.wallet.address, wallet: alice.wallet })
+    // Alice's spending state has been updated spentAmount = HALF_ETH and lastSpendingInterval has been updated
+    let expectedSpendingState = await TestUtil.getSpendingStateParsed(alice.wallet)
+    expectedSpendingState.spentAmount = HALF_ETH
+    aliceState.spendingState = await TestUtil.validateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
+    // check alice
+    await TestUtil.assertStateEqual(aliceState, aliceCurrentState)
+    // check carol's wallet hasn't changed (just her balances above)
+    await TestUtil.assertStateEqual(carolState, carolCurrentState)
+  })
+
   // ==== ADDITIONAL POSITIVE TESTING ERC721 ====
 
   // ====== TRACK ======
   // Test tacking of an ERC721 token
   // Expected result: the token is now tracked
-  it('TN-POSITIVE-0 TRACK: must be able to track ERC721 tokens', async () => {
-    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'TN-POSITIVE-0-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+  it('TO-POSITIVE-0 TRACK: must be able to track ERC721 tokens', async () => {
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'TO-POSITIVE-0-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
     const { testerc721 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: false, makeERC721: true, makeERC1155: false })
     let testTime = Date.now()
     testTime = await TestUtil.bumpTestTime(testTime, 60)
@@ -267,8 +347,8 @@ contract('ONEWallet', (accounts) => {
   // ====== UNTRACK ======
   // Test untracking of an ERC721 token
   // Expected result: the token is no longer tracked
-  it('TN-POSITIVE-1 UNTRACK: must be able to untrack ERC721 tokens', async () => {
-    const { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'TN-POSITIVE-1-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+  it('TO-POSITIVE-1 UNTRACK: must be able to untrack ERC721 tokens', async () => {
+    const { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'TO-POSITIVE-1-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
     const { testerc721 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: false, makeERC721: true, makeERC1155: false })
     let testTime = Date.now()
     testTime = await TestUtil.bumpTestTime(testTime, 60)
@@ -305,9 +385,9 @@ contract('ONEWallet', (accounts) => {
   // ====== TRANSFER_TOKEN ======
   // Test transferring a ERC721 token
   // Expected result the token is now tracked and alices balance has decreased and bobs increased
-  it('TN-POSITIVE-2 TRANSFER_TOKEN: must be able to transfer ERC721 tokens', async () => {
-    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'TN-POSITIVE-2-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
-    const { walletInfo: bob } = await TestUtil.makeWallet({ salt: 'TN-BASIC-2-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+  it('TO-POSITIVE-2 TRANSFER_TOKEN: must be able to transfer ERC721 tokens', async () => {
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'TO-POSITIVE-2-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+    const { walletInfo: bob } = await TestUtil.makeWallet({ salt: 'TO-BASIC-2-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
     const { testerc721 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: false, makeERC721: true, makeERC1155: false })
 
     // Begin Tests
@@ -352,8 +432,8 @@ contract('ONEWallet', (accounts) => {
   // ====== OVERRIDE_TRACK ======
   // Test overriding all of Alice's Token Tracking information
   // Expected result: Alice will now track testerc721v2 instead of testerc721
-  it('TN-POSITIVE-3 OVERRIDE_TRACK: must be able to override tracked tokens', async () => {
-    const { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'TN-POSITIVE-3-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+  it('TO-POSITIVE-3 OVERRIDE_TRACK: must be able to override tracked tokens', async () => {
+    const { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'TO-POSITIVE-3-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
     const { testerc721 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: false, makeERC721: true, makeERC1155: false })
     const { testerc721: testerc721v2 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: false, makeERC721: true, makeERC1155: false })
     let testTime = Date.now()
@@ -394,9 +474,9 @@ contract('ONEWallet', (accounts) => {
   // ====== TRACK ======
   // Test tacking of an ERC1155 token
   // Expected result: the token is now tracked
-  it('TN-POSITIVE-0-1 TRACK: must be able to track ERC1155 tokens', async () => {
+  it('TO-POSITIVE-0-1 TRACK: must be able to track ERC1155 tokens', async () => {
     // create wallets and token contracts used througout the tests
-    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'TN-POSITIVE-0-1-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'TO-POSITIVE-0-1-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
     const { testerc1155 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: false, makeERC721: false, makeERC1155: true })
     let testTime = Date.now()
     testTime = await TestUtil.bumpTestTime(testTime, 60)
@@ -421,8 +501,8 @@ contract('ONEWallet', (accounts) => {
   // ====== UNTRACK ======
   // Test untracking of an ERC1155 token
   // Expected result the token is no longer tracked
-  it('TN-POSITIVE-1-1 UNTRACK: must be able to untrack ERC1155 tokens', async () => {
-    let { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'TN-POSITIVE-1-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+  it('TO-POSITIVE-1-1 UNTRACK: must be able to untrack ERC1155 tokens', async () => {
+    let { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'TO-POSITIVE-1-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
     const { testerc1155 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: false, makeERC721: false, makeERC1155: true })
     let testTime = Date.now()
     testTime = await TestUtil.bumpTestTime(testTime, 60)
@@ -460,10 +540,10 @@ contract('ONEWallet', (accounts) => {
   // ====== TRANSFER_TOKEN ======
   // Test transferring a ERC1155 token
   // Expected result the token is now tracked and alices balance has decreased and bobs increased
-  it('TN-POSITIVE-2-1 TRANSFER_TOKEN: must be able to transfer ERC1155 tokens', async () => {
+  it('TO-POSITIVE-2-1 TRANSFER_TOKEN: must be able to transfer ERC1155 tokens', async () => {
     // create wallets and token contracts used througout the tests
-    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'TN-POSITIVE-2-1-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
-    const { walletInfo: bob } = await TestUtil.makeWallet({ salt: 'TN-POSITIVE-2-1-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'TO-POSITIVE-2-1-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+    const { walletInfo: bob } = await TestUtil.makeWallet({ salt: 'TO-POSITIVE-2-1-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
     const { testerc1155 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: false, makeERC721: false, makeERC1155: true })
     let testTime = Date.now()
     // Fund Alice with 2 ERC721 tokens (2,3) quantity 20, 30
@@ -508,8 +588,8 @@ contract('ONEWallet', (accounts) => {
   // ====== OVERRIDE_TRACK ======
   // Test overriding all of Alices Token Tracking information
   // Expected result: Alice will now track testerc1155v2 instead of testerc1155
-  it('TN-POSITIVE-3-1 OVERRIDE_TRACK: must be able to override tracked tokens', async () => {
-    const { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'TN-POSITIVE-3-1-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+  it('TO-POSITIVE-3-1 OVERRIDE_TRACK: must be able to override tracked tokens', async () => {
+    const { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'TO-POSITIVE-3-1-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
     const { testerc1155 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: false, makeERC721: false, makeERC1155: true })
     const { testerc1155: testerc1155v2 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: false, makeERC721: false, makeERC1155: true })
     let testTime = Date.now()
@@ -546,7 +626,7 @@ contract('ONEWallet', (accounts) => {
 
   // Complex Scenario Testing
   // TokenTracker Testing (track, multitrack, getTrackedTokens, getBalance, recoverToken) also batch transactions
-  it('TN-COMBO-1: TokenTracker(token management) must commit and reveal successfully', async () => {
+  it('TO-COMBO-1: TokenTracker(token management) must commit and reveal successfully', async () => {
     let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'TT-COMBO-1-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
     const { walletInfo: bob } = await TestUtil.makeWallet({ salt: 'TT-COMBO-1-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
     const { testerc20, testerc721, testerc1155 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: true, makeERC1155: true })

@@ -548,6 +548,22 @@ const validateOpsStateMutation = async ({ wallet, state, validateNonce = false }
   return state
 }
 
+const validateInfoMutation = async ({
+  expectedInfo,
+  wallet
+}) => {
+  let info = await getInfoParsed(wallet)
+  assert.equal(expectedInfo.root, info.root, 'Expected root to have changed')
+  assert.equal(expectedInfo.height, info.height, 'Expected height to have changed')
+  assert.equal(expectedInfo.interval, info.interval, 'Expected interval to have changed')
+  assert.equal(expectedInfo.t0, info.t0, 'Expected t0 to have changed')
+  assert.equal(expectedInfo.lifespan, info.lifespan, 'Expected lifespan to have changed')
+  assert.equal(expectedInfo.maxOperationsPerInterval, info.maxOperationsPerInterval, 'Expected maxOperationsPerInterval to have changed')
+  assert.equal(expectedInfo.recoveryAddress, info.recoveryAddress, 'Expected recoveryAddress to have changed')
+  assert.equal(expectedInfo.extra, info.extra, 'Expected extra to have changed')
+  return info
+}
+
 const validateSpendingStateMutation = async ({
   expectedSpendingState = {
     highestSpendingLimit: '1000000000000000000', // Default to ONE ETH
@@ -616,6 +632,17 @@ const validateTrackedTokensMutation = async ({
   return trackedTokens
 }
 
+const validateFowardAddressMutation = async ({
+  expectedForwardAddress,
+  wallet
+}) => {
+  // check Alices Forward address
+  let forwardAddress = await wallet.getForwardAddress()
+  Logger.debug(`forwardAddress: ${forwardAddress}`)
+  assert.strictEqual(expectedForwardAddress, forwardAddress, 'forward address should have been updated')
+  return forwardAddress
+}
+
 // ==== STATE RETREIVAL AND VALIDATION FUNCTIONS =====
 
 // get OneWallet state
@@ -663,23 +690,23 @@ const getState = async (wallet) => {
 
 // check OneWallet state
 const assertStateEqual = async (expectedState, actualState, checkNonce = false) => {
-  assert.deepEqual(actualState.identificationKey, expectedState.identificationKey, 'wallet.identificationKey is incorrect')
-  assert.deepEqual(actualState.identificationKeys, expectedState.identificationKeys, 'wallet.identificationKeys is incorrect')
-  assert.deepEqual(actualState.forwardAddress, expectedState.forwardAddress, 'wallet.forwardAddress is incorrect')
-  assert.deepEqual(actualState.info, expectedState.info, 'wallet.info is incorrect')
-  assert.deepEqual(actualState.oldInfo, expectedState.oldInfo, 'wallet.oldInfos is incorrect')
-  assert.deepEqual(actualState.innerCores, expectedState.innerCores, 'wallet.innerCores is incorrect')
-  assert.deepEqual(actualState.rootKey, expectedState.rootKey, 'wallet.rootKey is incorrect')
-  assert.deepEqual(actualState.version, expectedState.version, 'wallet.version is incorrect')
-  assert.deepEqual(actualState.spendingState, expectedState.spendingState, 'wallet.spendingState is incorrect')
+  assert.deepEqual(expectedState.identificationKey, actualState.identificationKey, 'wallet.identificationKey is incorrect')
+  assert.deepEqual(expectedState.identificationKeys, actualState.identificationKeys, 'wallet.identificationKeys is incorrect')
+  assert.deepEqual(expectedState.forwardAddress, actualState.forwardAddress, 'wallet.forwardAddress is incorrect')
+  assert.deepEqual(expectedState.info, actualState.info, 'wallet.info is incorrect')
+  assert.deepEqual(expectedState.oldInfo, actualState.oldInfo, 'wallet.oldInfos is incorrect')
+  assert.deepEqual(expectedState.innerCores, actualState.innerCores, 'wallet.innerCores is incorrect')
+  assert.deepEqual(expectedState.rootKey, actualState.rootKey, 'wallet.rootKey is incorrect')
+  assert.deepEqual(expectedState.version, actualState.version, 'wallet.version is incorrect')
+  assert.deepEqual(expectedState.spendingState, actualState.spendingState, 'wallet.spendingState is incorrect')
   if (checkNonce) {
-    assert.deepEqual(actualState.nonce, expectedState.nonce, 'wallet.nonce is incorrect')
+    assert.deepEqual(expectedState.nonce, actualState.nonce, 'wallet.nonce is incorrect')
   }
-  assert.deepEqual(actualState.lastOperationTime, expectedState.lastOperationTime, 'wallet.lastOperationTime is incorrect')
-  assert.deepEqual(actualState.allCommits, expectedState.allCommits, 'wallet.allCommits is incorrect')
-  assert.deepEqual(actualState.trackedTokens, expectedState.trackedTokens, 'wallet.trackedTokens is incorrect')
-  assert.deepEqual(actualState.backlinks, expectedState.backlinks, 'wallet.backlinks is incorrect')
-  assert.deepEqual(actualState.signatures, expectedState.signatures, 'wallet.signatures is incorrect')
+  assert.deepEqual(expectedState.lastOperationTime, actualState.lastOperationTime, 'wallet.lastOperationTime is incorrect')
+  assert.deepEqual(expectedState.allCommits, actualState.allCommits, 'wallet.allCommits is incorrect')
+  assert.deepEqual(expectedState.trackedTokens, actualState.trackedTokens, 'wallet.trackedTokens is incorrect')
+  assert.deepEqual(expectedState.backlinks, actualState.backlinks, 'wallet.backlinks is incorrect')
+  assert.deepEqual(expectedState.signatures, actualState.signatures, 'wallet.signatures is incorrect')
 }
 
 // ==== EXECUTION FUNCTIONS ====
@@ -770,7 +797,9 @@ module.exports = {
   validateOpsStateMutation,
   validateSignaturesMutation,
   validateSpendingStateMutation,
+  validateInfoMutation,
   validateTrackedTokensMutation,
+  validateFowardAddressMutation,
 
   // state retrieval and validation
   getState,

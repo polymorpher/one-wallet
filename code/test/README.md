@@ -80,26 +80,26 @@ First, create a new file and write out how you expect a successful operation to 
 | 3   | OVERRIDE_TRACK               | PASS     | Token    |                                                            |
 | 4   | TRANSFER                     | PASS     | Core     |                                                            |
 | 5   | SET_RECOVERY_ADDRESS         | PASS     | Core     |                                                            |
-| 6   | RECOVER	                     | PASS     | Core     |                                                            |
-| 7   | DISPLACE	                    | PASS     | Security |                                                            |
+| 6   | RECOVER	                     | *PASS    | Core     |                                                            |
+| 7   | DISPLACE	                   | PASS     | Security |                                                            |
 | 8   | FORWARD                      | PASS     | Upgrade  |                                                            |
-| 9   | RECOVER_SELECTED_TOKENS      | TODO     | Token    |                                                            |
+| 9   | RECOVER_SELECTED_TOKENS      | *WIP     | Token    |                                                            |
 | 10  | BUY_DOMAIN                   | Phase 2  | Domain   |                                                            |
-| 11  | COMMAND                      | PASS     | Upgrade  | More tests needed for different commands                   |
-| 12  | BACKLINK_ADD                 | TODO     | Upgrade  |                                                            |
-| 13  | BACKLINK_DELETE              | TODO     | Upgrade  |                                                            |
-| 14  | BACKLINK_OVERRIDE            | TODO     | Upgrade  |                                                            |
-| 15  | RENEW_DOMAIN	                | Phase 2  | Domain   |                                                            |
+| 11  | COMMAND                      | *WIP     | Upgrade    | More tests needed for different commands                   |
+| 12  | BACKLINK_ADD                 | PASS     | Upgrade  |                                                            |
+| 13  | BACKLINK_DELETE              | PASS     | Upgrade  |                                                            |
+| 14  | BACKLINK_OVERRIDE            | PASS     | Upgrade  |                                                            |
+| 15  | RENEW_DOMAIN	               | Phase 2  | Domain   |                                                            |
 | 16  | TRANSFER_DOMAIN	             | Phase 2  | Domain   |                                                            |
 | 17  | RECLAIM_REVERSE_DOMAIN       | Phase 2  | Domain   |                                                            |
 | 18  | RECLAIM_DOMAIN_FROM_BACKLINK | Phase 2  | Domain   |                                                            |
-| 19  | SIGN	                        | TODO     | App      |                                                            |
+| 19  | SIGN	                       | TODO     | App      |                                                            |
 | 20  | REVOKE                       | TODO     | App      |                                                            |
 | 21  | CALL                         | TODO     | App      |                                                            |
 | 22  | BATCH                        | TODO     | App      |                                                            |
 | 23  | NOOP                         | N/A      | N/A      | This is reserved as a default value and for error checking |
 | 24  | CHANGE_SPENDING_LIMIT        | PASS     | Security |                                                            |
-| 25  | JUMP_SPENDING_LIMIT          | PASS     | Security |                                                            |
+| 25  | JUMP_SPENDING_LIMIT          | *WIP     | Security |                                                            |
 | 26  | DELEGATE                     | Phase 1  | Staking  |                                                            |
 | 27  | UNDELEGATE                   | Phase 1  | Staking  |                                                            |
 | 28  | COLLECT_REWARD               | Phase 1  | Staking  |                                                            |

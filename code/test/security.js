@@ -22,9 +22,8 @@ const ONE_ETH = unit.toWei('1', 'ether')
 const TWO_ETH = unit.toWei('2', 'ether')
 const THREE_ETH = unit.toWei('3', 'ether')
 const INTERVAL = 30000 // 30 second Intervals
-const duration = INTERVAL * 12 // 6 minute wallet duration
-const SLOT_SIZE = 1 // 1 transaction per interval
-const effectiveTime = Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - duration / 2
+const DURATION = INTERVAL * 12 // 6 minute wallet duration
+const getEffectiveTime = () => Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
 
 const Logger = {
   debug: (...args) => {
@@ -36,8 +35,8 @@ const Logger = {
 const Debugger = ONEDebugger(Logger)
 
 // ==== EXECUTION FUNCTIONS ====
-// executeStandardTransaction commits and reveals a wallet transaction
-const executeNativeTransaction = async ({
+// executeSecurityTransaction commits and reveals a wallet transaction
+const executeSecurityTransaction = async ({
   walletInfo,
   operationType,
   tokenType,
@@ -71,6 +70,11 @@ const executeNativeTransaction = async ({
       commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
       revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
       break
+    case ONEConstants.OperationType.SET_RECOVERY_ADDRESS:
+      paramsHash = ONEWallet.computeDestOnlyHash
+      commitParams = { operationType, dest }
+      revealParams = { operationType, dest }
+      break
     case ONEConstants.OperationType.CHANGE_SPENDING_LIMIT:
     case ONEConstants.OperationType.JUMP_SPENDING_LIMIT:
       paramsHash = ONEWallet.computeAmountHash
@@ -97,87 +101,44 @@ const executeNativeTransaction = async ({
   return { tx, authParams, revealParams: returnedRevealParams, currentState }
 }
 
-// ==== Validation Helpers ====
-
 contract('ONEWallet', (accounts) => {
   Logger.debug(`Testing with ${accounts.length} accounts`)
   Logger.debug(accounts)
   let snapshotId
   beforeEach(async function () {
-    snapshotId = await TestUtil.snapshot()
-    console.log(`Taken snapshot id=${snapshotId}`)
     await TestUtil.init()
+    snapshotId = await TestUtil.snapshot()
   })
-
   afterEach(async function () {
     await TestUtil.revert(snapshotId)
   })
 
-  // === BASIC POSITIVE TESTING WALLET ====
+  // === BASIC POSITIVE TESTING SECURITY ====
 
-  // ====== TRANSFER ======
-  // Test transferring native currency
-  // Expected result alice can transfer funds to bob
-  it('WA.BASIC.4 TRANSFER: must be able to transfer native currency', async () => {
-  // create wallets and token contracts used througout the tests
-    let { walletInfo: alice, state: aliceOldState } = await TestUtil.makeWallet({ salt: 'TN.BASIC.4.1', deployer: accounts[0], effectiveTime, duration })
-    let { walletInfo: bob, state: bobOldState } = await TestUtil.makeWallet({ salt: 'TN.BASIC.4.2', deployer: accounts[0], effectiveTime, duration })
-
-    // alice and bob both have an initial balance of half an ETH
-    await TestUtil.validateBalance({ address: alice.wallet.address, amount: HALF_ETH })
-    await TestUtil.validateBalance({ address: bob.wallet.address, amount: HALF_ETH })
-
-    // Begin Tests
-    let testTime = Date.now()
-
-    testTime = await TestUtil.bumpTestTime(testTime, 60)
-    // alice tranfers ONE CENT to bob
-    let { tx, currentState: aliceCurrentState } = await executeNativeTransaction(
-      {
-        ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
-        walletInfo: alice,
-        operationType: ONEConstants.OperationType.TRANSFER,
-        dest: bob.wallet.address,
-        amount: ONE_CENT,
-        testTime
-      }
-    )
-    let bobCurrentState = await TestUtil.getState(bob.wallet)
-
-    // Validate succesful event emitted
-    TestUtil.validateEvent({ tx, expectedEvent: 'PaymentSent' })
-
-    // Check alice's balance  bob's is ONE ETH after the forward
-    await TestUtil.validateBalance({ address: alice.wallet.address, amount: (HALF_ETH - ONE_CENT) })
-    await TestUtil.validateBalance({ address: bob.wallet.address, amount: (Number(HALF_ETH) + Number(ONE_CENT)) })
-
-    // Alice Items that have changed - balance, nonce, lastOperationTime, commits, spendingState
-    aliceOldState = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, oldState: aliceOldState })
-    // Spending State
-    let expectedSpendingState = await TestUtil.getSpendingStateParsed(alice.wallet)
-    expectedSpendingState.spentAmount = ONE_CENT
-    aliceOldState.spendingState = await TestUtil.validateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
-    await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
-    // Bob Items that have changed - nothing in the wallet just his balance above
-    await TestUtil.checkONEWalletStateChange(bobOldState, bobCurrentState)
+  // ==== DISPLACE =====
+  // Test must allow displace operation using 6x6 otps for different durations
+  // Expected result: can authenticate otp from new core after displacement
+  // Note: this is currently tested in innerCores.js
+  it('CO-BASIC-7 DISPLACE : must allow displace operation using 6x6 otps for different durations authenticate otp from new core after displacement', async () => {
+    assert.strictEqual(0, 1, 'Please test displace using innerCores.js')
   })
 
   // ====== CHANGE_SPENDING_LIMIT ======
   // Test changing the spending limit
   // Expected result alice spending limit will be updated
-  // Change Logic: 
+  // Change Logic:
   // Too early: Can't increase the limit twice within the same interval (ss.lastLimitAdjustmentTime + ss.spendingInterval > block.timestamp && newLimit > ss.spendingLimit)
   // Too much : Can't increase the limit by more than double existing limit + 1 native Token (newLimit > (ss.spendingLimit) * 2 + (1 ether))
-  it('WA.BASIC.24 CHANGE_SPENDING_LIMIT: must be able to transfer native currency', async () => {
+  it('CO-BASIC-24 CHANGE_SPENDING_LIMIT: must be able to transfer native currency', async () => {
     // create wallets and token contracts used througout the tests
-    let { walletInfo: alice, state: aliceOldState } = await TestUtil.makeWallet({ salt: 'TN.BASIC.24.1', deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'CO-BASIC-24-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
 
     // Begin Tests
     let testTime = Date.now()
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // alice changes the spending limit
-    let { tx, currentState: aliceCurrentState } = await executeNativeTransaction(
+    let { tx, currentState } = await executeSecurityTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
@@ -192,15 +153,15 @@ contract('ONEWallet', (accounts) => {
     // TestUtil.validateEvent({ tx, expectedEvent: 'HighestSpendingLimitChanged' })
 
     // Alice Items that have changed - nonce, lastOperationTime, commits, spendingState
-    aliceOldState = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, oldState: aliceOldState })
+    state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
     // Spending State
-    let currentSpendingState = await TestUtil.getSpendingStateParsed(alice.wallet) // retrieve this  as it will have lastLimitAdjustmentTime
-    const expectedSpendingState = aliceOldState.spendingState
+    const currentSpendingState = await TestUtil.getSpendingStateParsed(alice.wallet) // retrieve this  as it will have lastLimitAdjustmentTime
+    const expectedSpendingState = state.spendingState
     expectedSpendingState.spendingLimit = THREE_ETH
     expectedSpendingState.highestSpendingLimit = THREE_ETH
     expectedSpendingState.lastLimitAdjustmentTime = currentSpendingState.lastLimitAdjustmentTime
-    aliceOldState.spendingState = await TestUtil.validateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
-    await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
+    state.spendingState = await TestUtil.validateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
+    await TestUtil.assertStateEqual(state, currentState)
   })
 
   // ====== JUMP_SPENDING_LIMIT ======
@@ -210,16 +171,16 @@ contract('ONEWallet', (accounts) => {
   // Too Much : Can't increase the limit greater than the highest spending limit (newLimit > ss.highestSpendingLimit)
   // Authentication: from function authenticate in reveal.sol
   // if innerCores are empty, this operation (in this case) is doomed to fail. This is intended. Client should warn the user not to lower the limit too much if the wallet has no innerCores (use Extend to set first innerCores). Client should also advise the user the use Recovery feature to get their assets out, if they are stuck with very low limit and do not want to wait to double them each spendInterval.
-  it('WA.BASIC.25 JUMP_SPENDING_LIMIT: must be able to transfer native currency', async () => {
+  it('CO-BASIC-25 JUMP_SPENDING_LIMIT: must be able to transfer native currency', async () => {
   // create wallets and token contracts used througout the tests
-    let { walletInfo: alice, state: aliceOldState } = await TestUtil.makeWallet({ salt: 'TN.BASIC.25.1', deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'CO-BASIC-25-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
 
     // Begin Tests
     let testTime = Date.now()
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // alice JUMPS the spending limit
-    let { tx, currentState: aliceCurrentState } = await executeNativeTransaction(
+    let { tx, currentState } = await executeSecurityTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
@@ -234,15 +195,15 @@ contract('ONEWallet', (accounts) => {
     // TestUtil.validateEvent({ tx, expectedEvent: 'HighestSpendingLimitChanged' })
 
     // Alice Items that have changed - nonce, lastOperationTime, commits, spendingState
-    aliceOldState = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, oldState: aliceOldState })
+    state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
     // Spending State
     let currentSpendingState = await TestUtil.getSpendingStateParsed(alice.wallet) // retrieve this  as it will have lastLimitAdjustmentTime
-    const expectedSpendingState = aliceOldState.spendingState
+    const expectedSpendingState = state.spendingState
     expectedSpendingState.spendingLimit = HALF_ETH
     expectedSpendingState.highestSpendingLimit = ONE_ETH
     expectedSpendingState.lastLimitAdjustmentTime = currentSpendingState.lastLimitAdjustmentTime
-    aliceOldState.spendingState = await TestUtil.validateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
-    await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
+    state.spendingState = await TestUtil.validateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
+    await TestUtil.assertStateEqual(state, currentState)
   })
 
   // === Negative Use Cases (Event Testing) ===
