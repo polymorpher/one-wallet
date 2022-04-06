@@ -24,6 +24,7 @@ import WalletAddress from './WalletAddress'
 import { globalActions } from '../state/modules/global'
 import { StatsInfoV2 } from './StatsInfo'
 import { getColorPalette } from '../theme'
+import { WalletSelectorV2 } from '../integration/Common'
 // import Paths from '../constants/paths'
 const { Text, Link } = Typography
 
@@ -141,13 +142,14 @@ export const WalletHeaderV2 = () => {
   const wallet = wallets[address] || {}
   const [settingsVisible, setSettingsVisible] = useState(false)
   const [relayerEditVisible, setRelayerEditVisible] = useState(false)
-  const { primaryBgColor } = getColorPalette(theme)
+  const { primaryBgColor, secondaryBgColor, secondaryBorderColor } = getColorPalette(theme)
   return (
     <Row
       style={{ background: primaryBgColor, padding: isMobile ? 8 : 24 }}
       justify='center'
     >
-      {wallet && wallet.address}
+      {/* Wallet selector + send + receive if wallet exists */}
+      {wallet && <WalletSelectorV2 onAddressSelected={(a) => console.log(a)} filter={e => e.majorVersion >= 10} useHex style={{ background: secondaryBgColor, border: `1px solid ${secondaryBorderColor}`, margin: '0 16px', padding: '16px 0', borderRadius: '16px' }} selectStyle={{}} />}
       <StatsInfoV2 />
       {dev && <Button key='toggle' shape='circle' icon={relayerEditVisible ? <CloseOutlined /> : <SettingOutlined />} onClick={() => setRelayerEditVisible(!relayerEditVisible)} />}
       {dev && relayerEditVisible &&

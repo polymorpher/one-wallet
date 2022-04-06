@@ -26,7 +26,7 @@ import Paths from '../constants/paths'
 import styled from 'styled-components'
 import { useWindowDimensions } from '../util'
 import { useSelector } from 'react-redux'
-import { getColorPalette, getPrimaryTextColor } from '../theme'
+import { getColorPalette } from '../theme'
 import { StatsInfo, LineDivider } from './StatsInfo'
 const { Link } = Typography
 
@@ -70,6 +70,7 @@ const MobileSiderMenu = ({ action, nav, ...args }) => {
 const DeskstopSiderMenu = ({ action, nav, ...args }) => {
   const history = useHistory()
   const theme = useSelector(state => state.global.v2ui ? (state.global.theme ?? 'light') : 'dark')
+  const { primaryTextColor } = getColorPalette(theme)
 
   return (
     <Layout.Sider collapsed={false} {...args} theme={theme}>
@@ -80,7 +81,7 @@ const DeskstopSiderMenu = ({ action, nav, ...args }) => {
         </SiderLink>
       </Row>
 
-      <Row justify='center' style={{ marginBottom: 24 }}><SiderLink style={{ color: getPrimaryTextColor(theme) }} href='https://harmony.one/1wallet'>{config.appName} {config.version}</SiderLink></Row>
+      <Row justify='center' style={{ marginBottom: 24 }}><SiderLink style={{ color: primaryTextColor }} href='https://harmony.one/1wallet'>{config.appName} {config.version}</SiderLink></Row>
 
       <StatsInfo />
 
