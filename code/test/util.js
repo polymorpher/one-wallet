@@ -690,23 +690,23 @@ const getState = async (wallet) => {
 
 // check OneWallet state
 const assertStateEqual = async (expectedState, actualState, checkNonce = false) => {
-  assert.deepEqual(expectedState.identificationKey, actualState.identificationKey, 'wallet.identificationKey is incorrect')
-  assert.deepEqual(expectedState.identificationKeys, actualState.identificationKeys, 'wallet.identificationKeys is incorrect')
-  assert.deepEqual(expectedState.forwardAddress, actualState.forwardAddress, 'wallet.forwardAddress is incorrect')
-  assert.deepEqual(expectedState.info, actualState.info, 'wallet.info is incorrect')
-  assert.deepEqual(expectedState.oldInfo, actualState.oldInfo, 'wallet.oldInfos is incorrect')
-  assert.deepEqual(expectedState.innerCores, actualState.innerCores, 'wallet.innerCores is incorrect')
-  assert.deepEqual(expectedState.rootKey, actualState.rootKey, 'wallet.rootKey is incorrect')
-  assert.deepEqual(expectedState.version, actualState.version, 'wallet.version is incorrect')
-  assert.deepEqual(expectedState.spendingState, actualState.spendingState, 'wallet.spendingState is incorrect')
+  assert.deepEqual(actualState.identificationKey, expectedState.identificationKey, 'wallet.identificationKey is incorrect')
+  assert.deepEqual(actualState.identificationKeys, expectedState.identificationKeys, 'wallet.identificationKeys is incorrect')
+  assert.deepEqual(actualState.forwardAddress, expectedState.forwardAddress, 'wallet.forwardAddress is incorrect')
+  assert.deepEqual(actualState.info, expectedState.info, 'wallet.info is incorrect')
+  assert.deepEqual(actualState.oldInfo, expectedState.oldInfo, 'wallet.oldInfos is incorrect')
+  assert.deepEqual(actualState.innerCores, expectedState.innerCores, 'wallet.innerCores is incorrect')
+  assert.deepEqual(actualState.rootKey, expectedState.rootKey, 'wallet.rootKey is incorrect')
+  assert.deepEqual(actualState.version, expectedState.version, 'wallet.version is incorrect')
+  assert.deepEqual(actualState.spendingState, expectedState.spendingState, 'wallet.spendingState is incorrect')
   if (checkNonce) {
-    assert.deepEqual(expectedState.nonce, actualState.nonce, 'wallet.nonce is incorrect')
+    assert.deepEqual(actualState.nonce, expectedState.nonce, 'wallet.nonce is incorrect')
   }
-  assert.deepEqual(expectedState.lastOperationTime, actualState.lastOperationTime, 'wallet.lastOperationTime is incorrect')
-  assert.deepEqual(expectedState.allCommits, actualState.allCommits, 'wallet.allCommits is incorrect')
-  assert.deepEqual(expectedState.trackedTokens, actualState.trackedTokens, 'wallet.trackedTokens is incorrect')
-  assert.deepEqual(expectedState.backlinks, actualState.backlinks, 'wallet.backlinks is incorrect')
-  assert.deepEqual(expectedState.signatures, actualState.signatures, 'wallet.signatures is incorrect')
+  assert.deepEqual(actualState.lastOperationTime, expectedState.lastOperationTime, 'wallet.lastOperationTime is incorrect')
+  assert.deepEqual(actualState.allCommits, expectedState.allCommits, 'wallet.allCommits is incorrect')
+  assert.deepEqual(actualState.trackedTokens, expectedState.trackedTokens, 'wallet.trackedTokens is incorrect')
+  assert.deepEqual(actualState.backlinks, expectedState.backlinks, 'wallet.backlinks is incorrect')
+  assert.deepEqual(actualState.signatures, expectedState.signatures, 'wallet.signatures is incorrect')
 }
 
 // ==== EXECUTION FUNCTIONS ====

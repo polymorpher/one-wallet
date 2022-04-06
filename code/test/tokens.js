@@ -242,7 +242,7 @@ contract('ONEWallet', (accounts) => {
   // Expected result the tokens will be recovered
   it('TO-BASIC-9 RECOVER_SELECTED_TOKENS: must be able to recover selected tokens', async () => {
     // create wallets and token contracts used througout the tests
-    let { walletInfo: alice, state: aliceState } = await TestUtil.makeWallet({ salt: 'TO-BASIC-9-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'TO-BASIC-9-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
     let { walletInfo: carol, state: carolState } = await TestUtil.makeWallet({ salt: 'TO-BASIC-9-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION, backlinks: [alice.wallet.address] })
 
     // make Tokens
@@ -279,7 +279,7 @@ contract('ONEWallet', (accounts) => {
     // Recover test tokens takes an array of uint32 which are the indices of the tracked tokens to recover
     let hexData = ONEUtil.abi.encodeParameters(['uint32[]'], [[0]])
     let data = ONEUtil.hexStringToBytes(hexData)
-    let { tx, currentState: aliceCurrentState } = await executeTokenTransaction(
+    let { tx, currentState } = await executeTokenTransaction(
       {
         ...NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
@@ -303,15 +303,15 @@ contract('ONEWallet', (accounts) => {
       tokenAmounts: [[0], [1000]]
     })
 
-    aliceState = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, oldState: aliceState, validateNonce: false })
+    state = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, state })
     // Alice's forward address should now be carol's address
-    aliceState.forwardAddress = await TestUtil.validateFowardAddressMutation({ expectedForwardAddress: carol.wallet.address, wallet: alice.wallet })
+    state.forwardAddress = await TestUtil.validateFowardAddressMutation({ expectedForwardAddress: carol.wallet.address, wallet: alice.wallet })
     // Alice's spending state has been updated spentAmount = HALF_ETH and lastSpendingInterval has been updated
-    let expectedSpendingState = await TestUtil.getSpendingStateParsed(alice.wallet)
+    const expectedSpendingState = await TestUtil.getSpendingStateParsed(alice.wallet)
     expectedSpendingState.spentAmount = HALF_ETH
-    aliceState.spendingState = await TestUtil.validateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
+    state.spendingState = await TestUtil.validateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
     // check alice
-    await TestUtil.assertStateEqual(aliceState, aliceCurrentState)
+    await TestUtil.assertStateEqual(state, currentState)
     // check carol's wallet hasn't changed (just her balances above)
     await TestUtil.assertStateEqual(carolState, carolCurrentState)
   })
