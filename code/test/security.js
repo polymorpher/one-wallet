@@ -332,9 +332,8 @@ contract('ONEWallet', (accounts) => {
         testTime
       }
     )
-    // Validate succesful event emitted
-    // TestUtil.validateEvent({ tx: tx4, expectedEvent: 'SpendingLimitChanged' })
-    // TestUtil.validateEvent({ tx, expectedEvent: 'HighestSpendingLimitChanged' })
+    // Validate SpendingLimitChangeFailed event emitted
+    TestUtil.validateEvent({ tx: tx4, expectedEvent: 'SpendingLimitChangeFailed' })
     // Alice Items that have changed - nonce, lastOperationTime, commits, spendingState
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
     // Spending State
@@ -357,7 +356,7 @@ contract('ONEWallet', (accounts) => {
         testTime
       }
     )
-    // JUMP_SPENDING_LIMIT does not trgger an event
+    // JUMP_SPENDING_LIMIT does not trigger an event
     // Alice Items that have changed - nonce, lastOperationTime, commits, spendingState
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
     // Spending State
