@@ -30,8 +30,8 @@ const Logger = {
 const Debugger = ONEDebugger(Logger)
 
 // ==== EXECUTION FUNCTIONS ====
-// executeStandardTransaction commits and reveals a wallet transaction
-const executeWalletTransaction = async ({
+// executeUpgradeTransaction commits and reveals a wallet transaction
+const executeUpgradeTransaction = async ({
   walletInfo,
   operationType,
   tokenType,
@@ -85,7 +85,7 @@ const executeWalletTransaction = async ({
   }
   let { tx, authParams, revealParams: returnedRevealParams } = await TestUtil.commitReveal({
     Debugger,
-    layers: walletInfo.layers,
+    layers: walletInfo.client.layers,
     index,
     eotp,
     paramsHash,
@@ -129,7 +129,7 @@ contract('ONEWallet', (accounts) => {
 
     // set alice's forwarding address to carol's wallet address
     testTime = await TestUtil.bumpTestTime(testTime, 60)
-    let { tx, currentState } = await executeWalletTransaction(
+    let { tx, currentState } = await executeUpgradeTransaction(
       {
         ...NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
@@ -161,8 +161,9 @@ contract('ONEWallet', (accounts) => {
   })
 
   // ====== COMMAND ======
-  // Test wallet issuing a command
-  // Expected result command is succesfully issued
+  // Test wallet issuing a command for a backlinked wallet
+  // Expected result Carol will execute a command which adds a signature to Alice's wallet
+  // Logic: This executes command in WalletGraph.sol and wallets must be backlinked
   it('UP-BASIC-11 COMMAND: must be able to issue a command', async () => {
     assert.strictEqual(0, 1, 'Under Development')
   })
@@ -181,7 +182,7 @@ contract('ONEWallet', (accounts) => {
     // Add a backlink from Alice to Carol
     let hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
     let data = ONEUtil.hexStringToBytes(hexData)
-    let { tx, currentState } = await executeWalletTransaction(
+    let { tx, currentState } = await executeUpgradeTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
@@ -219,7 +220,7 @@ contract('ONEWallet', (accounts) => {
     // Add a backlink from Alice to Carol
     let hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
     let data = ONEUtil.hexStringToBytes(hexData)
-    let { currentState: stateLinked } = await executeWalletTransaction(
+    let { currentState: stateLinked } = await executeUpgradeTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
@@ -233,7 +234,7 @@ contract('ONEWallet', (accounts) => {
     // Remove the backlink from Alice to Carol
     hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
     data = ONEUtil.hexStringToBytes(hexData)
-    let { tx, currentState } = await executeWalletTransaction(
+    let { tx, currentState } = await executeUpgradeTransaction(
       {
         walletInfo: alice,
         operationType: ONEConstants.OperationType.BACKLINK_DELETE,
@@ -271,7 +272,7 @@ contract('ONEWallet', (accounts) => {
     // Add a backlink from Alice to Carol
     let hexData = ONEUtil.abi.encodeParameters(['address[]'], [[carol.wallet.address]])
     let data = ONEUtil.hexStringToBytes(hexData)
-    let { currentState: linkedToCarolState } = await executeWalletTransaction(
+    let { currentState: linkedToCarolState } = await executeUpgradeTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
@@ -286,7 +287,7 @@ contract('ONEWallet', (accounts) => {
     // Now overwride link to Carol with link to Dora
     hexData = ONEUtil.abi.encodeParameters(['address[]'], [[dora.wallet.address]])
     data = ONEUtil.hexStringToBytes(hexData)
-    let { tx, currentState } = await executeWalletTransaction(
+    let { tx, currentState } = await executeUpgradeTransaction(
       {
         walletInfo: alice,
         operationType: ONEConstants.OperationType.BACKLINK_OVERRIDE,
@@ -336,7 +337,7 @@ contract('ONEWallet', (accounts) => {
 
     // set alice's forwarding address to carol's wallet address
     testTime = await TestUtil.bumpTestTime(testTime, 60)
-    let { tx, currentState } = await executeWalletTransaction(
+    let { tx, currentState } = await executeUpgradeTransaction(
       {
         ...NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
@@ -376,10 +377,11 @@ contract('ONEWallet', (accounts) => {
     const expiryAtBytes = new BN(0xffffffff).toArrayLike(Uint8Array, 'be', 4)
     const encodedExpiryAt = new Uint8Array(20)
     encodedExpiryAt.set(expiryAtBytes)
+    Logger.debug(`----====-----`)
     Logger.debug(messageHash.length, signature.length)
     const data = ONEUtil.hexStringToBytes(hexData)
 
-    let { tx: tx2, currentState: carolCurrentStateSigned } = await executeWalletTransaction(
+    let { tx: tx2, currentState: carolCurrentStateSigned } = await executeUpgradeTransaction(
       {
         ...NullOperationParams, // Default all fields to Null values than override
         walletInfo: carol,

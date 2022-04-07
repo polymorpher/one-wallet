@@ -26,7 +26,58 @@ const Logger = {
 }
 const Debugger = ONEDebugger(Logger)
 
-
+// ==== EXECUTION FUNCTIONS ====
+// executeAppTransaction commits and reveals a wallet transaction
+const executeAppTransaction = async ({
+  walletInfo,
+  operationType,
+  tokenType,
+  contractAddress,
+  tokenId,
+  dest,
+  amount,
+  data,
+  testTime = Date.now(),
+  getCurrentState = true
+}) => {
+  // calculate counter from testTime
+  const counter = Math.floor(testTime / INTERVAL)
+  const otp = ONEUtil.genOTP({ seed: walletInfo.seed, counter })
+  // calculate wallets effectiveTime (creation time) from t0
+  const info = await walletInfo.wallet.getInfo()
+  const t0 = new BN(info[3]).toNumber()
+  const walletEffectiveTime = t0 * INTERVAL
+  const index = ONEUtil.timeToIndex({ effectiveTime: walletEffectiveTime, time: testTime })
+  const eotp = await ONE.computeEOTP({ otp, hseed: walletInfo.hseed })
+  let paramsHash
+  let commitParams
+  let revealParams
+  // Process the Operation
+  switch (operationType) {
+    case ONEConstants.OperationType.COMMAND:
+      paramsHash = ONEWallet.computeGeneralOperationHash
+      commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
+      revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
+      break
+    default:
+      console.log(`Invalid Operation passed`)
+      assert.strictEqual('A Valid Operation', operationType, 'Error invalid operationType passed')
+      return
+  }
+  let { tx, authParams, revealParams: returnedRevealParams } = await TestUtil.commitReveal({
+    Debugger,
+    layers: walletInfo.client.layers,
+    index,
+    eotp,
+    paramsHash,
+    commitParams,
+    revealParams,
+    wallet: walletInfo.wallet
+  })
+  let currentState
+  if (getCurrentState) { currentState = await TestUtil.getState(walletInfo.wallet) }
+  return { tx, authParams, revealParams: returnedRevealParams, currentState }
+}
 contract('ONEWallet', (accounts) => {
   Logger.debug(`Testing with ${accounts.length} accounts`)
   Logger.debug(accounts)
@@ -42,11 +93,9 @@ contract('ONEWallet', (accounts) => {
   // === BASIC POSITIVE TESTING APP FUNCTIONS ====
 
   // ====== COMMAND ======
-  // Test wallet issuing a command
-  // Expected result command is succesfully issued
-  it('AP-BASIC-11 COMMAND: must be able to issue a command', async () => {
-    assert.strictEqual(0, 1, 'Under Development')
-  })
+  // Test wallet issuing a command for a backlinked wallet
+  // Expected result Carol will execute a command which adds a signature to Alice's wallet
+  // Logic: This executes command in WalletGraph.sol and wallets must be backlinked
 
   // ====== SIGN ======
   // Test setting signing a transaction
@@ -65,7 +114,7 @@ contract('ONEWallet', (accounts) => {
   // ====== CALL ======
   // Test calling a transaction
   // Expected a transaction is called
-  it('UP-BASIC-21 CALL: must be able to add a signature', async () => {
+  it('AP-BASIC-21 CALL: must be able to add a signature', async () => {
     assert.strictEqual(0, 1, 'Under Development')
   })
 

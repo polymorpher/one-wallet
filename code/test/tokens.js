@@ -54,7 +54,7 @@ const executeTokenTransaction = async ({
   const commitRevealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
   const { tx, authParams, revealParams } = await TestUtil.commitReveal({
     Debugger,
-    layers: walletInfo.layers,
+    layers: walletInfo.client.layers,
     index,
     eotp,
     paramsHash: ONEWallet.computeGeneralOperationHash,

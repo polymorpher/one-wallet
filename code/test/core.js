@@ -84,7 +84,7 @@ const executeCoreTransaction = async ({
   }
   let { tx, authParams, revealParams: returnedRevealParams } = await TestUtil.commitReveal({
     Debugger,
-    layers: walletInfo.layers,
+    layers: walletInfo.client.layers,
     index,
     eotp,
     paramsHash,
@@ -215,9 +215,9 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.validateBalance({ address: info.recoveryAddress, amount: 0 })
 
     // Begin Tests
-    const index = 2 ** (alice.layers.length - 1) - 1
-    const eotp = await Flow.EotpBuilders.recovery({ wallet: alice.wallet, layers: alice.layers })
-    const neighbors = ONE.selectMerkleNeighbors({ layers: alice.layers, index })
+    const index = 2 ** (alice.client.layers.length - 1) - 1
+    const eotp = await Flow.EotpBuilders.recovery({ wallet: alice.wallet, layers: alice.client.layers })
+    const neighbors = ONE.selectMerkleNeighbors({ layers: alice.client.layers, index })
     const neighbor = neighbors[0]
     const { hash: commitHash } = ONE.computeCommitHash({ neighbor, index, eotp })
     const { hash: recoveryHash, bytes: recoveryData } = ONE.computeRecoveryHash({ hseed: alice.hseed })

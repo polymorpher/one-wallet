@@ -293,7 +293,7 @@ const makeWallet = async ({
   validate = true
 }) => {
   let lastResortAddress = setLastResortAddress ? (await web3.eth.accounts.create()).address : ONEConstants.EmptyAddress
-  const { wallet, seed, hseed, client: { layers } } = await createWallet({
+  const { wallet, seed, hseed, client: { layers, innerTrees } } = await createWallet({
     salt: new BN(ONEUtil.keccak(assignedSalt)).add(SALT_BASE),
     effectiveTime,
     duration,
@@ -306,7 +306,7 @@ const makeWallet = async ({
   if (validate) { await validateBalance({ address: wallet.address, amount: fundAmount }) }
   const state = await getState(wallet)
 
-  return { walletInfo: { wallet: wallet, seed, hseed, layers, lastResortAddress }, state, balance }
+  return { walletInfo: { wallet: wallet, seed, hseed, client: { layers, innerTrees }, lastResortAddress }, state, balance }
 }
 
 // makeTokens makes test ERC20, ERC20Decimals9, ERC721, ERC1155

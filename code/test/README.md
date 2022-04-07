@@ -99,7 +99,7 @@ First, create a new file and write out how you expect a successful operation to 
 | 22  | BATCH                        | TODO     | App      |                                                            |
 | 23  | NOOP                         | N/A      | N/A      | This is reserved as a default value and for error checking |
 | 24  | CHANGE_SPENDING_LIMIT        | PASS     | Security |                                                            |
-| 25  | JUMP_SPENDING_LIMIT          | *WIP     | Security |                                                            |
+| 25  | JUMP_SPENDING_LIMIT          | PASS     | Security |                                                            |
 | 26  | DELEGATE                     | Phase 1  | Staking  |                                                            |
 | 27  | UNDELEGATE                   | Phase 1  | Staking  |                                                            |
 | 28  | COLLECT_REWARD               | Phase 1  | Staking  |                                                            |

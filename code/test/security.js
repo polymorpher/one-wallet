@@ -22,8 +22,10 @@ const ONE_ETH = unit.toWei('1', 'ether')
 const TWO_ETH = unit.toWei('2', 'ether')
 const THREE_ETH = unit.toWei('3', 'ether')
 const INTERVAL = 30000 // 30 second Intervals
-const DURATION = INTERVAL * 12 // 6 minute wallet duration
-const getEffectiveTime = () => Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
+const INTERVAL6 = INTERVAL * 6 // 6 intervals is 3 minutes
+const NOW = Math.floor(Date.now() / (INTERVAL)) * INTERVAL - 5000
+const duration = INTERVAL * 2 * 60 * 24 * 4 // 4 day wallet duration
+const getEffectiveTime = () => Math.floor(NOW / INTERVAL6) * INTERVAL6 - duration / 2
 
 const Logger = {
   debug: (...args) => {
@@ -57,8 +59,9 @@ const executeSecurityTransaction = async ({
   const info = await walletInfo.wallet.getInfo()
   const t0 = new BN(info[3]).toNumber()
   const walletEffectiveTime = t0 * INTERVAL
-  const index = ONEUtil.timeToIndex({ effectiveTime: walletEffectiveTime, time: testTime })
-  const eotp = await ONE.computeEOTP({ otp, hseed: walletInfo.hseed })
+  let index = ONEUtil.timeToIndex({ effectiveTime: walletEffectiveTime, time: testTime })
+  let eotp = await ONE.computeEOTP({ otp, hseed: walletInfo.hseed })
+  let layers = walletInfo.client.layers
   let paramsHash
   let commitParams
   let revealParams
@@ -76,7 +79,23 @@ const executeSecurityTransaction = async ({
       revealParams = { operationType, dest }
       break
     case ONEConstants.OperationType.CHANGE_SPENDING_LIMIT:
+      paramsHash = ONEWallet.computeAmountHash
+      commitParams = { operationType, amount }
+      revealParams = { operationType, amount }
+      break
     case ONEConstants.OperationType.JUMP_SPENDING_LIMIT:
+      // Client Logic
+      const tOtpCounter = Math.floor(testTime / INTERVAL)
+      const treeIndex = tOtpCounter % 6
+      layers = walletInfo.client.innerTrees[treeIndex].layers
+      const otpb = ONEUtil.genOTP({ seed: walletInfo.seed, counter: tOtpCounter, n: 6 })
+      const otps = []
+      for (let i = 0; i < 6; i++) {
+        otps.push(otpb.subarray(i * 4, i * 4 + 4))
+      }
+      index = ONEUtil.timeToIndex({ time: testTime, effectiveTime: walletEffectiveTime, interval: INTERVAL6 })
+      eotp = await ONEWallet.computeInnerEOTP({ otps })
+      // Commit Reveal parameters
       paramsHash = ONEWallet.computeAmountHash
       commitParams = { operationType, amount }
       revealParams = { operationType, amount }
@@ -88,7 +107,7 @@ const executeSecurityTransaction = async ({
   }
   let { tx, authParams, revealParams: returnedRevealParams } = await TestUtil.commitReveal({
     Debugger,
-    layers: walletInfo.layers,
+    layers,
     index,
     eotp,
     paramsHash,
@@ -131,7 +150,7 @@ contract('ONEWallet', (accounts) => {
   // Too much : Can't increase the limit by more than double existing limit + 1 native Token (newLimit > (ss.spendingLimit) * 2 + (1 ether))
   it('CO-BASIC-24 CHANGE_SPENDING_LIMIT: must be able to transfer native currency', async () => {
     // create wallets and token contracts used througout the tests
-    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'CO-BASIC-24-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'CO-BASIC-24-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration })
 
     // Begin Tests
     let testTime = Date.now()
@@ -173,14 +192,15 @@ contract('ONEWallet', (accounts) => {
   // if innerCores are empty, this operation (in this case) is doomed to fail. This is intended. Client should warn the user not to lower the limit too much if the wallet has no innerCores (use Extend to set first innerCores). Client should also advise the user the use Recovery feature to get their assets out, if they are stuck with very low limit and do not want to wait to double them each spendInterval.
   it('CO-BASIC-25 JUMP_SPENDING_LIMIT: must be able to transfer native currency', async () => {
   // create wallets and token contracts used througout the tests
-    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'CO-BASIC-25-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'CO-BASIC-25-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration })
 
     // Begin Tests
     let testTime = Date.now()
 
-    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    testTime = await TestUtil.bumpTestTime(testTime, 240)
+
     // alice JUMPS the spending limit
-    let { tx, currentState } = await executeSecurityTransaction(
+    let { currentState } = await executeSecurityTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
@@ -190,9 +210,7 @@ contract('ONEWallet', (accounts) => {
       }
     )
 
-    // Validate succesful event emitted
-    TestUtil.validateEvent({ tx, expectedEvent: 'SpendingLimitChanged' })
-    // TestUtil.validateEvent({ tx, expectedEvent: 'HighestSpendingLimitChanged' })
+    // JUMP_SPENDING_LIMIT does not trgger an event
 
     // Alice Items that have changed - nonce, lastOperationTime, commits, spendingState
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
