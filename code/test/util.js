@@ -302,7 +302,7 @@ const makeWallet = async ({
     spendingLimit,
     backlinks
   })
-  let balance = await fundWallet({ to: wallet.address, from: deployer, fundAmount })
+  let balance = await fundWallet({ to: wallet.address, from: deployer, value: fundAmount })
   if (validate) { await validateBalance({ address: wallet.address, amount: fundAmount }) }
   const state = await getState(wallet)
 
@@ -764,13 +764,14 @@ module.exports = {
   bumpTestTime,
 
   // helpers
-  createWallet,
   makeCores,
   printInnerTrees,
   getEOTP,
+  createWallet,
+  fundWallet,
   makeWallet,
-  makeTokens,
   fundTokens,
+  makeTokens,
 
   // event validation
   validateEvent,

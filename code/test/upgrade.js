@@ -14,8 +14,10 @@ const NullOperationParams = {
   data: new Uint8Array()
 
 }
-const ONE_ETH = unit.toWei('1', 'ether')
 const HALF_ETH = unit.toWei('0.5', 'ether')
+const ONE_ETH = unit.toWei('1', 'ether')
+const TWO_ETH = unit.toWei('2', 'ether')
+const THREE_ETH = unit.toWei('3', 'ether')
 const INTERVAL = 30000 // 30 second Intervals
 const DURATION = INTERVAL * 12 // 6 minute wallet duration
 const getEffectiveTime = () => Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
@@ -324,7 +326,7 @@ contract('ONEWallet', (accounts) => {
   // ====== FORWARD + COMMAND ======
   // Test signing a transaction with a backlinked wallet
   // Expected result the backlinked wallet will sign a transaction for the linked wallet
-  it('UP-COMPLEX-8-0 FORWARD.COMMAND: must be able to sign a transaction for a backlinked wallet', async () => {
+  it('UP-COMPLEX-8-0 FORWARD-COMMAND: must be able to sign a transaction for a backlinked wallet', async () => {
     let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'UP-COMPLEX-8-0-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
     let { walletInfo: carol, state: carolState } = await TestUtil.makeWallet({ salt: 'UP-COMPLEX-8-0-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION, backlinks: [alice.wallet.address] })
 
@@ -407,6 +409,257 @@ contract('ONEWallet', (accounts) => {
     carolState = await TestUtil.validateOpsStateMutation({ wallet: carol.wallet, state: carolState })
     // check carol's wallet hasn't changed (just her balances above)
     await TestUtil.assertStateEqual(carolState, carolCurrentStateSigned)
+  })
+
+  // ====== FORWARD MULTIPLE TOKENS  ======
+  // Test forwarding to another wallet
+  // Expected result all tracked tokens will be forwarded to the destination wallet
+  it('UP-COMPLEX-8-1 FORWARD-EXISTING: must be able to forward all assets to another wallet', async () => {
+    // create wallets and token contracts used througout the tests
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'UP-COMPLEX-8-1-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+    let { walletInfo: carol, state: carolState } = await TestUtil.makeWallet({ salt: 'UP-COMPLEX-8-1-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION, backlinks: [alice.wallet.address] })
+
+    // alice and carol both have an initial balance of half an ETH
+    await TestUtil.validateBalance({ address: alice.wallet.address, amount: HALF_ETH })
+    await TestUtil.validateBalance({ address: carol.wallet.address, amount: HALF_ETH })
+
+    // Make Tokens and Fund Alices Wallet
+    const { testerc20, testerc721, testerc1155 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: true, makeERC1155: true })
+    // Fund Alice with 1000 ERC20, 2 ERC721 and 50 ERC1155
+    await TestUtil.fundTokens({
+      funder: accounts[0],
+      receivers: [alice.wallet.address, alice.wallet.address, alice.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC20, ONEConstants.TokenType.ERC721, ONEConstants.TokenType.ERC1155],
+      tokenContracts: [testerc20, testerc721, testerc1155],
+      tokenIds: [0, [2, 3], [2, 3]],
+      tokenAmounts: [[1000], [2], [20, 30]]
+    })
+
+    await TestUtil.validateTokenBalances({
+      receivers: [alice.wallet.address, alice.wallet.address, alice.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC20, ONEConstants.TokenType.ERC721, ONEConstants.TokenType.ERC1155],
+      tokenContracts: [testerc20, testerc721, testerc1155],
+      tokenIds: [0, [2, 3], [2, 3]],
+      tokenAmounts: [[1000], [2], [20, 30]]
+    })
+
+    // Begin Tests
+    let testTime = Date.now()
+
+    // set alice's forwarding address to carol's wallet address
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    let { tx, currentState } = await executeUpgradeTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.FORWARD,
+        dest: carol.wallet.address,
+        testTime
+      }
+    )
+    const carolCurrentState = await TestUtil.getState(carol.wallet)
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx, expectedEvent: 'ForwardAddressUpdated' })
+
+    // Check alice's balance is now 0 and carol's is ONE ETH after the forward
+    await TestUtil.validateBalance({ address: alice.wallet.address, amount: 0 })
+    await TestUtil.validateBalance({ address: carol.wallet.address, amount: ONE_ETH })
+
+    // Validate Alice and Carols Token Balance
+    await TestUtil.validateTokenBalances({
+      receivers: [alice.wallet.address, carol.wallet.address, carol.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC20, ONEConstants.TokenType.ERC721, ONEConstants.TokenType.ERC1155],
+      tokenContracts: [testerc20, testerc721, testerc1155],
+      tokenIds: [0, [2, 3], [2, 3]],
+      tokenAmounts: [[1000], [2], [20, 30]]
+    })
+
+    // Alice Items that have changed - lastOperationTime, commits, trackedTokens
+    state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
+    // Alice's forward address should now be carol's address
+    state.forwardAddress = await TestUtil.validateFowardAddressMutation({ expectedForwardAddress: carol.wallet.address, wallet: alice.wallet })
+    // Alice's spending state has been updated spentAmount = HALF_ETH and lastSpendingInterval has been updated
+    let expectedSpendingState = await TestUtil.getSpendingStateParsed(alice.wallet)
+    expectedSpendingState.spentAmount = HALF_ETH
+    state.spendingState = await TestUtil.validateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
+    // tracked tokens
+    let expectedTrackedTokens = [
+      // { tokenType: ONEConstants.TokenType.ERC20, contractAddress: testerc20.address, tokenId: 0 },
+      { tokenType: ONEConstants.TokenType.ERC721, contractAddress: testerc721.address, tokenId: 2 },
+      { tokenType: ONEConstants.TokenType.ERC721, contractAddress: testerc721.address, tokenId: 3 },
+      { tokenType: ONEConstants.TokenType.ERC1155, contractAddress: testerc1155.address, tokenId: 2 },
+      { tokenType: ONEConstants.TokenType.ERC1155, contractAddress: testerc1155.address, tokenId: 3 }
+    ]
+    state.trackedTokens = await TestUtil.validateTrackedTokensMutation({ expectedTrackedTokens, wallet: alice.wallet })
+
+    // check alice
+    await TestUtil.assertStateEqual(state, currentState)
+    // check carol's wallet has changed: trackedTokens
+    // tracked tokens
+    expectedTrackedTokens = [
+      // { tokenType: ONEConstants.TokenType.ERC20, contractAddress: testerc20.address, tokenId: 0 },
+      { tokenType: ONEConstants.TokenType.ERC721, contractAddress: testerc721.address, tokenId: 2 },
+      { tokenType: ONEConstants.TokenType.ERC721, contractAddress: testerc721.address, tokenId: 3 },
+      { tokenType: ONEConstants.TokenType.ERC1155, contractAddress: testerc1155.address, tokenId: 2 },
+      { tokenType: ONEConstants.TokenType.ERC1155, contractAddress: testerc1155.address, tokenId: 3 }
+    ]
+    carolState.trackedTokens = await TestUtil.validateTrackedTokensMutation({ expectedTrackedTokens, wallet: carol.wallet })
+
+    await TestUtil.assertStateEqual(carolState, carolCurrentState)
+  })
+
+  // ====== FORWARD NATIVE TOKENS AUTOMATICALLY ======
+  // Test forwarding to another wallet
+  // Expected result all tracked tokens will be automatically forwarded to the destination wallet
+  it('UP-COMPLEX-8-2 FORWARD-AUTOMATICALLY-NATIVE: native assets should be forwarded automatically', async () => {
+    // create wallets and token contracts used througout the tests
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'UP-COMPLEX-8-2-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+    let { walletInfo: carol, state: carolState } = await TestUtil.makeWallet({ salt: 'UP-COMPLEX-8-2-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION, backlinks: [alice.wallet.address] })
+
+    // alice and carol both have an initial balance of half an ETH
+    await TestUtil.validateBalance({ address: alice.wallet.address, amount: HALF_ETH })
+    await TestUtil.validateBalance({ address: carol.wallet.address, amount: HALF_ETH })
+
+    // Begin Tests
+    let testTime = Date.now()
+
+    // set alice's forwarding address to carol's wallet address
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    let { tx, currentState } = await executeUpgradeTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.FORWARD,
+        dest: carol.wallet.address,
+        testTime
+      }
+    )
+    let carolCurrentState = await TestUtil.getState(carol.wallet)
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx, expectedEvent: 'ForwardAddressUpdated' })
+
+    // Check alice's balance is now 0 and carol's is ONE ETH after the forward
+    await TestUtil.validateBalance({ address: alice.wallet.address, amount: 0 })
+    await TestUtil.validateBalance({ address: carol.wallet.address, amount: ONE_ETH })
+
+    // Alice Items that have changed - lastOperationTime, commits, trackedTokens
+    state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
+    // Alice's forward address should now be carol's address
+    state.forwardAddress = await TestUtil.validateFowardAddressMutation({ expectedForwardAddress: carol.wallet.address, wallet: alice.wallet })
+    // Alice's spending state has been updated spentAmount = HALF_ETH and lastSpendingInterval has been updated
+    let expectedSpendingState = await TestUtil.getSpendingStateParsed(alice.wallet)
+    expectedSpendingState.spentAmount = HALF_ETH
+    state.spendingState = await TestUtil.validateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
+    // check alice
+    await TestUtil.assertStateEqual(state, currentState)
+    // check carol's wallet hasn't changed (just her balances above)
+    await TestUtil.assertStateEqual(carolState, carolCurrentState)
+
+    // Now fund Alice with TWO_ETH which should be forwarded to Carol
+    await TestUtil.fundWallet({ to: alice.wallet.address, from: accounts[0], value: TWO_ETH })
+    currentState = await TestUtil.getState(alice.wallet)
+    carolCurrentState = await TestUtil.getState(carol.wallet)
+    // Check alice's balance is now 0 and carol's is THREE ETH after the forward
+    await TestUtil.validateBalance({ address: alice.wallet.address, amount: 0 })
+    await TestUtil.validateBalance({ address: carol.wallet.address, amount: THREE_ETH })
+    // check alice
+    await TestUtil.assertStateEqual(state, currentState)
+    // check carol's wallet hasn't changed (just her balances above)
+    await TestUtil.assertStateEqual(carolState, carolCurrentState)
+  })
+
+  // ====== FORWARD MULTIPLE TOKENS AUTOMATICALLY ======
+  // Test forwarding to another wallet
+  // Expected result all tracked tokens will be automatically forwarded to the destination wallet
+  it('UP-COMPLEX-8-3 FORWARD-AUTOMATICALLY-TOKENS: must be able to forward all assets to another wallet', async () => {
+    // create wallets and token contracts used througout the tests
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'UP-COMPLEX-8-3-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+    let { walletInfo: carol, state: carolState } = await TestUtil.makeWallet({ salt: 'UP-COMPLEX-8-3-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION, backlinks: [alice.wallet.address] })
+
+    // alice and carol both have an initial balance of half an ETH
+    await TestUtil.validateBalance({ address: alice.wallet.address, amount: HALF_ETH })
+    await TestUtil.validateBalance({ address: carol.wallet.address, amount: HALF_ETH })
+
+    // Make Tokens
+    const { testerc20, testerc721, testerc1155 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: true, makeERC1155: true })
+
+    // Begin Tests
+    let testTime = Date.now()
+
+    // set alice's forwarding address to carol's wallet address
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    let { tx, currentState } = await executeUpgradeTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.FORWARD,
+        dest: carol.wallet.address,
+        testTime
+      }
+    )
+    let carolCurrentState = await TestUtil.getState(carol.wallet)
+
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx, expectedEvent: 'ForwardAddressUpdated' })
+
+    // Check alice's balance is now 0 and carol's is ONE ETH after the forward
+    await TestUtil.validateBalance({ address: alice.wallet.address, amount: 0 })
+    await TestUtil.validateBalance({ address: carol.wallet.address, amount: ONE_ETH })
+
+    // Fund Alice with 1000 ERC20, 2 ERC721 and 50 ERC1155
+    await TestUtil.fundTokens({
+      funder: accounts[0],
+      receivers: [alice.wallet.address, alice.wallet.address, alice.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC20, ONEConstants.TokenType.ERC721, ONEConstants.TokenType.ERC1155],
+      tokenContracts: [testerc20, testerc721, testerc1155],
+      tokenIds: [0, [2, 3], [2, 3]],
+      tokenAmounts: [[1000], [2], [20, 30]],
+      validate: false
+    })
+    currentState = await TestUtil.getState(alice.wallet)
+    carolCurrentState = await TestUtil.getState(carol.wallet)
+
+    // Validate Alice and Carol's Token BAlances These should have been forwarded to Carol
+    await TestUtil.validateTokenBalances({
+      receivers: [alice.wallet.address, carol.wallet.address, carol.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC20, ONEConstants.TokenType.ERC721, ONEConstants.TokenType.ERC1155],
+      tokenContracts: [testerc20, testerc721, testerc1155],
+      tokenIds: [0, [2, 3], [2, 3]],
+      tokenAmounts: [[1000], [2], [20, 30]]
+    })
+
+    // Alice Items that have changed - lastOperationTime, commits, trackedTokens
+    state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
+    // Alice's forward address should now be carol's address
+    state.forwardAddress = await TestUtil.validateFowardAddressMutation({ expectedForwardAddress: carol.wallet.address, wallet: alice.wallet })
+    // Alice's spending state has been updated spentAmount = HALF_ETH and lastSpendingInterval has been updated
+    let expectedSpendingState = await TestUtil.getSpendingStateParsed(alice.wallet)
+    expectedSpendingState.spentAmount = HALF_ETH
+    state.spendingState = await TestUtil.validateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
+    // tracked tokens
+    let expectedTrackedTokens = [
+      // { tokenType: ONEConstants.TokenType.ERC20, contractAddress: testerc20.address, tokenId: 0 },
+      // { tokenType: ONEConstants.TokenType.ERC721, contractAddress: testerc721.address, tokenId: 2 },
+      // { tokenType: ONEConstants.TokenType.ERC721, contractAddress: testerc721.address, tokenId: 3 },
+      // { tokenType: ONEConstants.TokenType.ERC1155, contractAddress: testerc1155.address, tokenId: 2 },
+      // { tokenType: ONEConstants.TokenType.ERC1155, contractAddress: testerc1155.address, tokenId: 3 }
+    ]
+    state.trackedTokens = await TestUtil.validateTrackedTokensMutation({ expectedTrackedTokens, wallet: alice.wallet })
+
+    // check alice
+    await TestUtil.assertStateEqual(state, currentState)
+    // check carol's wallet has changed: trackedTokens
+    // tracked tokens
+    expectedTrackedTokens = [
+      // { tokenType: ONEConstants.TokenType.ERC20, contractAddress: testerc20.address, tokenId: 0 },
+      { tokenType: ONEConstants.TokenType.ERC721, contractAddress: testerc721.address, tokenId: 2 },
+      { tokenType: ONEConstants.TokenType.ERC721, contractAddress: testerc721.address, tokenId: 3 },
+      { tokenType: ONEConstants.TokenType.ERC1155, contractAddress: testerc1155.address, tokenId: 2 },
+      { tokenType: ONEConstants.TokenType.ERC1155, contractAddress: testerc1155.address, tokenId: 3 }
+    ]
+    carolState.trackedTokens = await TestUtil.validateTrackedTokensMutation({ expectedTrackedTokens, wallet: carol.wallet })
+
+    await TestUtil.assertStateEqual(carolState, carolCurrentState)
   })
 // Combination testing of multiple functions
 })
