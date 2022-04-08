@@ -146,8 +146,8 @@ contract('ONEWallet', (accounts) => {
     TestUtil.validateEvent({ tx, expectedEvent: 'PaymentSent' })
 
     // Check alice's balance  bob's is ONE ETH after the forward
-    await TestUtil.validateBalance({ address: alice.wallet.address, amount: (HALF_ETH - ONE_CENT) })
-    await TestUtil.validateBalance({ address: bob.wallet.address, amount: (Number(HALF_ETH) + Number(ONE_CENT)) })
+    await TestUtil.validateBalance({ address: alice.wallet.address, amount: new BN(HALF_ETH).sub(ONE_CENT) })
+    await TestUtil.validateBalance({ address: bob.wallet.address, amount: new BN(HALF_ETH).add(ONE_CENT) })
 
     // Alice Items that have changed - balance, nonce, lastOperationTime, commits, spendingState
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
