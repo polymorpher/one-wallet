@@ -401,9 +401,9 @@ contract('ONEWallet', (accounts) => {
     // Alice items that have changed -signatures
     // check alice signatures have changed by getting the current values and overriding with the expected hash and signature
     const expectedSignatures = await TestUtil.getSignaturesParsed(alice.wallet)
-    state.signatures = expectedSignatures
-    state.signatures[0].hash = ONEUtil.hexString(messageHash)
-    state.signatures[0].signature = ONEUtil.hexString(signature)
+    expectedSignatures[0].hash = ONEUtil.hexString(messageHash)
+    expectedSignatures[0].signature = ONEUtil.hexString(signature)
+    state.signatures = await TestUtil.validateSignaturesMutation({ expectedSignatures, wallet: alice.wallet })
     await TestUtil.assertStateEqual(state, currentState)
     // Carol Items that have changed - lastOperationTime, commits, trackedTokens
     carolState = await TestUtil.validateOpsStateMutation({ wallet: carol.wallet, state: carolState })
