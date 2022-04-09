@@ -49,21 +49,37 @@ const executeTokenTransaction = async ({
   const walletEffectiveTime = t0 * INTERVAL
   const index = ONEUtil.timeToIndex({ effectiveTime: walletEffectiveTime, time: testTime })
   const eotp = await ONE.computeEOTP({ otp, hseed: walletInfo.hseed })
-
-  // format commit and revealParams
-  const commitRevealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
-  const { tx, authParams, revealParams } = await TestUtil.commitReveal({
+  let layers = walletInfo.client.layers
+  let paramsHash
+  let commitParams
+  let revealParams
+  // Process the Operation
+  switch (operationType) {
+    // Format commit and revealParams for RECOVER_SELECTED_TOKENS Tranasction
+    case ONEConstants.OperationType.RECOVER_SELECTED_TOKENS:
+      paramsHash = ONEWallet.computeDestDataHash
+      commitParams = { operationType, dest, data }
+      revealParams = { operationType, dest, data }
+      break
+    default:
+      paramsHash = ONEWallet.computeGeneralOperationHash
+      commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
+      revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
+      break
+  }
+  let { tx, authParams, revealParams: returnedRevealParams } = await TestUtil.commitReveal({
     Debugger,
-    layers: walletInfo.client.layers,
+    layers,
     index,
     eotp,
-    paramsHash: ONEWallet.computeGeneralOperationHash,
-    commitParams: { ...commitRevealParams },
-    revealParams: { ...commitRevealParams },
+    paramsHash,
+    commitParams,
+    revealParams,
     wallet: walletInfo.wallet
   })
-  const currentState = getCurrentState && (await TestUtil.getState(walletInfo.wallet))
-  return { tx, authParams, revealParams, currentState }
+  let currentState
+  if (getCurrentState) { currentState = await TestUtil.getState(walletInfo.wallet) }
+  return { tx, authParams, revealParams: returnedRevealParams, currentState }
 }
 
 // === TESTING
@@ -243,7 +259,7 @@ contract('ONEWallet', (accounts) => {
   it('TO-BASIC-9 RECOVER_SELECTED_TOKENS: must be able to recover selected tokens', async () => {
     // create wallets and token contracts used througout the tests
     let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'TO-BASIC-9-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
-    let { walletInfo: carol, state: carolState } = await TestUtil.makeWallet({ salt: 'TO-BASIC-9-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION, backlinks: [alice.wallet.address] })
+    let { walletInfo: carol, state: carolState } = await TestUtil.makeWallet({ salt: 'TO-BASIC-9-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
 
     // make Tokens
     const { testerc20 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
@@ -260,6 +276,13 @@ contract('ONEWallet', (accounts) => {
       tokenAmounts: [[1000]]
     })
 
+    await TestUtil.validateTokenBalances({
+      receivers: [alice.wallet.address, carol.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC20, ONEConstants.TokenType.ERC20],
+      tokenContracts: [testerc20, testerc20],
+      tokenAmounts: [[1000], [0]]
+    })
+
     // Before we can recover we need to track testERC20
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     await executeTokenTransaction(
@@ -272,8 +295,8 @@ contract('ONEWallet', (accounts) => {
         testTime
       }
     )
-    let trackedTokens = await TestUtil.getTrackedTokensParsed(alice.wallet)
-    Logger.debug(`trackedTokens: ${JSON.stringify(trackedTokens)}`)
+    state.trackedTokens = await TestUtil.getTrackedTokensParsed(alice.wallet)
+    Logger.debug(`trackedTokens: ${JSON.stringify(state.trackedTokens)}`)
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // Recover test tokens takes an array of uint32 which are the indices of the tracked tokens to recover
@@ -289,7 +312,7 @@ contract('ONEWallet', (accounts) => {
         testTime
       }
     )
-    const carolCurrentState = TestUtil.getState(carol.wallet)
+    const carolCurrentState = await TestUtil.getState(carol.wallet)
 
     // Validate succesful event emitted
     TestUtil.validateEvent({ tx, expectedEvent: 'TokenRecovered' })
@@ -303,13 +326,7 @@ contract('ONEWallet', (accounts) => {
       tokenAmounts: [[0], [1000]]
     })
 
-    state = await TestUtil.syncAndValidateStateMutation({ wallet: alice.wallet, state })
-    // Alice's forward address should now be carol's address
-    state.forwardAddress = await TestUtil.validateFowardAddressMutation({ expectedForwardAddress: carol.wallet.address, wallet: alice.wallet })
-    // Alice's spending state has been updated spentAmount = HALF_ETH and lastSpendingInterval has been updated
-    const expectedSpendingState = await TestUtil.getSpendingStateParsed(alice.wallet)
-    expectedSpendingState.spentAmount = HALF_ETH
-    state.spendingState = await TestUtil.validateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
+    state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
     // check alice
     await TestUtil.assertStateEqual(state, currentState)
     // check carol's wallet hasn't changed (just her balances above)
@@ -469,6 +486,77 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.assertStateEqual(state, currentState)
   })
 
+  // ====== RECOVER_SELECTED_TOKENS ======
+  // Test recovering of an ERC721  tokens
+  // Expected result the ERC721 tokens will be recovered
+  it('TO-POSITIVE-9 RECOVER_SELECTED_TOKENS: must be able to recover selected tokens', async () => {
+    // create wallets and token contracts used througout the tests
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'TO-POSITIVE-9-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+    let { walletInfo: carol, state: carolState } = await TestUtil.makeWallet({ salt: 'TO-POSITIVE-9-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+
+    // make Tokens
+    const { testerc721 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: false, makeERC721: true, makeERC1155: false })
+
+    // Begin Tests
+    let testTime = Date.now()
+
+    // Fund Alice with 2 ERC721 TOKENS (2,3)
+    await TestUtil.fundTokens({
+      funder: accounts[0],
+      receivers: [alice.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC721],
+      tokenContracts: [testerc721],
+      tokenIds: [[2, 3]],
+      tokenAmounts: [[2]]
+    })
+    state.trackedTokens = await TestUtil.getTrackedTokensParsed(alice.wallet)
+    Logger.debug(`trackedTokens: ${JSON.stringify(state.trackedTokens)}`)
+
+    await TestUtil.validateTokenBalances({
+      receivers: [alice.wallet.address, alice.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC721, ONEConstants.TokenType.ERC721],
+      tokenContracts: [testerc721, testerc721],
+      tokenIds: [[2], [3]],
+      tokenAmounts: [[2], [2]]
+    })
+
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    // Recover test tokens takes an array of uint32 which are the indices of the tracked tokens to recover
+    let hexData = ONEUtil.abi.encodeParameters(['uint32[]'], [[0, 1]])
+    let data = ONEUtil.hexStringToBytes(hexData)
+    let { tx, currentState } = await executeTokenTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.RECOVER_SELECTED_TOKENS,
+        dest: carol.wallet.address,
+        data,
+        testTime
+      }
+    )
+    const carolCurrentState = await TestUtil.getState(carol.wallet)
+
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx, expectedEvent: 'TokenRecovered' })
+
+    // check carols token balance
+    await TestUtil.validateTokenBalances({
+      receivers: [carol.wallet.address, carol.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC721, ONEConstants.TokenType.ERC721],
+      tokenContracts: [testerc721, testerc721],
+      tokenIds: [[2], [3]],
+      tokenAmounts: [[2], [2]]
+    })
+
+    state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
+    // check alice
+    await TestUtil.assertStateEqual(state, currentState)
+    // check carol's tracked tokens have changed
+    const expectedTrackedTokens = TestUtil.parseTrackedTokens([[ONEConstants.TokenType.ERC721, ONEConstants.TokenType.ERC721], [testerc721.address, testerc721.address], ['2', '3']])
+    carolState.trackedTokens = await TestUtil.validateTrackedTokensMutation({ expectedTrackedTokens, wallet: carol.wallet })
+    await TestUtil.assertStateEqual(carolState, carolCurrentState)
+  })
+
   // ==== ADDITIONAL POSITIVE TESTING ERC1155 ====
 
   // ====== TRACK ======
@@ -624,6 +712,77 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.assertStateEqual(state, currentState)
   })
 
+  // ====== RECOVER_SELECTED_TOKENS ======
+  // Test recovering of an ERC1155  tokens
+  // Expected result the ERC1155 tokens will be recovered
+  it('TO-POSITIVE-9-1 RECOVER_SELECTED_TOKENS: must be able to recover selected tokens', async () => {
+    // create wallets and token contracts used througout the tests
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'TO-POSITIVE-9-1-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+    let { walletInfo: carol, state: carolState } = await TestUtil.makeWallet({ salt: 'TO-POSITIVE-9-1-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+
+    // make Tokens
+    const { testerc1155 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: false, makeERC721: false, makeERC1155: true })
+
+    // Begin Tests
+    let testTime = Date.now()
+
+    // Fund Alice with 2 ERC721 tokens (2,3) quantity 20, 30
+    await TestUtil.fundTokens({
+      funder: accounts[0],
+      receivers: [alice.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC1155],
+      tokenContracts: [testerc1155],
+      tokenIds: [[2, 3]],
+      tokenAmounts: [[20, 30]]
+    })
+    state.trackedTokens = await TestUtil.getTrackedTokensParsed(alice.wallet)
+    Logger.debug(`trackedTokens: ${JSON.stringify(state.trackedTokens)}`)
+
+    await TestUtil.validateTokenBalances({
+      receivers: [alice.wallet.address, alice.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC1155, ONEConstants.TokenType.ERC1155],
+      tokenContracts: [testerc1155, testerc1155],
+      tokenIds: [[2], [3]],
+      tokenAmounts: [[20], [30]]
+    })
+
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    // Recover test tokens takes an array of uint32 which are the indices of the tracked tokens to recover
+    let hexData = ONEUtil.abi.encodeParameters(['uint32[]'], [[0, 1]])
+    let data = ONEUtil.hexStringToBytes(hexData)
+    let { tx, currentState } = await executeTokenTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.RECOVER_SELECTED_TOKENS,
+        dest: carol.wallet.address,
+        data,
+        testTime
+      }
+    )
+    const carolCurrentState = await TestUtil.getState(carol.wallet)
+
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx, expectedEvent: 'TokenRecovered' })
+
+    // check carols token balance
+    await TestUtil.validateTokenBalances({
+      receivers: [carol.wallet.address, carol.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC1155, ONEConstants.TokenType.ERC1155],
+      tokenContracts: [testerc1155, testerc1155],
+      tokenIds: [[2], [3]],
+      tokenAmounts: [[20], [30]]
+    })
+
+    state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
+    // check alice
+    await TestUtil.assertStateEqual(state, currentState)
+    // check carol's tracked tokens have changed
+    const expectedTrackedTokens = TestUtil.parseTrackedTokens([[ONEConstants.TokenType.ERC1155, ONEConstants.TokenType.ERC1155], [testerc1155.address, testerc1155.address], ['2', '3']])
+    carolState.trackedTokens = await TestUtil.validateTrackedTokensMutation({ expectedTrackedTokens, wallet: carol.wallet })
+    await TestUtil.assertStateEqual(carolState, carolCurrentState)
+  })
+
   // Complex Scenario Testing
   // TokenTracker Testing (track, multitrack, getTrackedTokens, getBalance, recoverToken) also batch transactions
   it('TO-COMBO-1: TokenTracker(token management) must commit and reveal successfully', async () => {
@@ -706,5 +865,108 @@ contract('ONEWallet', (accounts) => {
 
     // check alice
     await TestUtil.assertStateEqual(state, currentState)
+  })
+
+  // ====== RECOVER_SELECTED_TOKENS MULTIPLE Tokens======
+  // Test recovering mulitple selected tokens
+  // Expected result the tokens will be recovered
+  it('TO-COMPLEX-9 RECOVER_SELECTED_TOKENS: must be able to recover selected tokens', async () => {
+    // create wallets and token contracts used througout the tests
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'TO-COMPLEX-9-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+    let { walletInfo: carol, state: carolState } = await TestUtil.makeWallet({ salt: 'TO-COMPLEX-9-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+
+    const { testerc20, testerc721, testerc1155 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: true, makeERC1155: true })
+    // Fund Alice with 1000 ERC20, 2 ERC721 and 50 ERC1155
+    await TestUtil.fundTokens({
+      funder: accounts[0],
+      receivers: [alice.wallet.address, alice.wallet.address, alice.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC20, ONEConstants.TokenType.ERC721, ONEConstants.TokenType.ERC1155],
+      tokenContracts: [testerc20, testerc721, testerc1155],
+      tokenIds: [[], [2, 3], [2, 3]],
+      tokenAmounts: [[1000], [2], [20, 30]]
+    })
+    state.trackedTokens = await TestUtil.getTrackedTokensParsed(alice.wallet)
+    Logger.debug(`trackedTokens: ${JSON.stringify(state.trackedTokens)}`)
+
+    let testTime = Date.now()
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+
+    await TestUtil.validateTokenBalances({
+      receivers: [alice.wallet.address, alice.wallet.address, alice.wallet.address, carol.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC20, ONEConstants.TokenType.ERC721, ONEConstants.TokenType.ERC1155, ONEConstants.TokenType.ERC20],
+      tokenContracts: [testerc20, testerc721, testerc1155, testerc20],
+      tokenIds: [[], [2, 3], [2, 3], []],
+      tokenAmounts: [[1000], [2], [20, 30], [0]]
+    })
+
+    // Before we can recover we need to track testERC20
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    await executeTokenTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.TRACK,
+        tokenType: ONEConstants.TokenType.ERC20,
+        contractAddress: testerc20.address,
+        testTime
+      }
+    )
+    state.trackedTokens = await TestUtil.getTrackedTokensParsed(alice.wallet)
+    Logger.debug(`trackedTokens: ${JSON.stringify(state.trackedTokens)}`)
+
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    // Recover test tokens takes an array of uint32 which are the indices of the tracked tokens to recover
+    let hexData = ONEUtil.abi.encodeParameters(['uint32[]'], [[1, 3, 4]])
+    let data = ONEUtil.hexStringToBytes(hexData)
+    let { tx, currentState } = await executeTokenTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.RECOVER_SELECTED_TOKENS,
+        dest: carol.wallet.address,
+        data,
+        testTime
+      }
+    )
+    const carolCurrentState = await TestUtil.getState(carol.wallet)
+
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx, expectedEvent: 'TokenRecovered' })
+
+    // check alice and carols balance
+    await TestUtil.validateTokenBalances({
+      receivers: [alice.wallet.address, alice.wallet.address, alice.wallet.address, carol.wallet.address, carol.wallet.address, carol.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC20, ONEConstants.TokenType.ERC721, ONEConstants.TokenType.ERC1155, ONEConstants.TokenType.ERC20, ONEConstants.TokenType.ERC721, ONEConstants.TokenType.ERC1155],
+      tokenContracts: [testerc20, testerc721, testerc1155, testerc20, testerc721, testerc1155],
+      tokenIds: [[], [2], [2], [], [3], [3]],
+      tokenAmounts: [[0], [1], [20], [1000], [1], [30]]
+    })
+
+    // Alice Items that have changed - nonce, lastOperationTime, commits, trackedTokens
+    state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
+    // tracked tokens
+    let expectedTrackedTokens = [
+      { tokenType: ONEConstants.TokenType.ERC20, contractAddress: testerc20.address, tokenId: 0 },
+      { tokenType: ONEConstants.TokenType.ERC721, contractAddress: testerc721.address, tokenId: 2 },
+      { tokenType: ONEConstants.TokenType.ERC721, contractAddress: testerc721.address, tokenId: 3 },
+      { tokenType: ONEConstants.TokenType.ERC1155, contractAddress: testerc1155.address, tokenId: 2 },
+      { tokenType: ONEConstants.TokenType.ERC1155, contractAddress: testerc1155.address, tokenId: 3 }
+    ]
+    state.trackedTokens = await TestUtil.validateTrackedTokensMutation({ expectedTrackedTokens, wallet: alice.wallet })
+
+    // check alice
+    await TestUtil.assertStateEqual(state, currentState)
+    // check carol's tracked tokens have changed (and her balances above)
+    // tracked tokens
+    expectedTrackedTokens = [
+      // { tokenType: ONEConstants.TokenType.ERC20, contractAddress: testerc20.address, tokenId: 0 },
+      // { tokenType: ONEConstants.TokenType.ERC721, contractAddress: testerc721.address, tokenId: 2 },
+      { tokenType: ONEConstants.TokenType.ERC721, contractAddress: testerc721.address, tokenId: 3 },
+      // { tokenType: ONEConstants.TokenType.ERC1155, contractAddress: testerc1155.address, tokenId: 2 },
+      { tokenType: ONEConstants.TokenType.ERC1155, contractAddress: testerc1155.address, tokenId: 3 }
+    ]
+    carolState.trackedTokens = await TestUtil.validateTrackedTokensMutation({ expectedTrackedTokens, wallet: carol.wallet })
+
+    await TestUtil.assertStateEqual(carolState, carolCurrentState)
   })
 })

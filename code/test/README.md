@@ -83,7 +83,7 @@ First, create a new file and write out how you expect a successful operation to 
 | 6   | RECOVER	                     | *PASS    | Core     |                                                            |
 | 7   | DISPLACE	                   | PASS     | Security |                                                            |
 | 8   | FORWARD                      | PASS     | Upgrade  |                                                            |
-| 9   | RECOVER_SELECTED_TOKENS      | *WIP     | Token    |                                                            |
+| 9   | RECOVER_SELECTED_TOKENS      | PASS     | Token    |                                                            |
 | 10  | BUY_DOMAIN                   | Phase 2  | Domain   |                                                            |
 | 11  | COMMAND                      | *WIP     | Upgrade    | More tests needed for different commands                   |
 | 12  | BACKLINK_ADD                 | PASS     | Upgrade  |                                                            |
