@@ -61,7 +61,7 @@ const executeAppTransaction = async ({
       break
     default:
       console.log(`Invalid Operation passed`)
-      assert.strictEqual('A Valid Operation', operationType, 'Error invalid operationType passed')
+      assert.strictEqual(operationType, 'A Valid Operation', 'Error invalid operationType passed')
       return
   }
   let { tx, authParams, revealParams: returnedRevealParams } = await TestUtil.commitReveal({
@@ -100,35 +100,30 @@ contract('ONEWallet', (accounts) => {
   // ====== SIGN ======
   // Test setting signing a transaction
   // Expected result the wallets will sign a transaction
-  it('UP-BASIC-19 SIGN: must be able to sign a transaction', async () => {
-    assert.strictEqual(0, 1, 'Under Development')
+  it('TODO-UP-BASIC-19 SIGN: must be able to sign a transaction', async () => {
   })
 
   // ====== REVOKE ======
   // Test setting of a wallets recovery address
   // Expected result the wallets recovery address
-  it('UP-BASIC-20 REVOKE: must be able to revoke a signature', async () => {
-    assert.strictEqual(0, 1, 'Under Development')
+  it('TODO-UP-BASIC-20 REVOKE: must be able to revoke a signature', async () => {
   })
 
   // ====== CALL ======
   // Test calling a transaction
   // Expected a transaction is called
-  it('AP-BASIC-21 CALL: must be able to add a signature', async () => {
-    assert.strictEqual(0, 1, 'Under Development')
+  it('TODO-AP-BASIC-21 CALL: must be able to add a signature', async () => {
   })
 
   // ====== BATCH ======
   // Test batching transactions
   // Expected result a batch of transactions will be processed
-  it('UP-BASIC-22 BATCH: must be able to process a batch of transactions', async () => {
-    assert.strictEqual(0, 1, 'Under Development')
+  it('TODO-UP-BASIC-22 BATCH: must be able to process a batch of transactions', async () => {
   })
 
   // ====== CREATE ======
   // Test create transactions
   // Expected result a create transaction will be processed
-  it('UP-BASIC-29 CREATE: must be able to process a create transactions', async () => {
-    assert.strictEqual(0, 1, 'Under Development')
+  it('TODO-UP-BASIC-29 CREATE: must be able to process a create transactions', async () => {
   })
 })

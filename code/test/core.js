@@ -79,7 +79,7 @@ const executeCoreTransaction = async ({
       break
     default:
       console.log(`Invalid Operation passed`)
-      assert.strictEqual('A Valid Operation', operationType, 'Error invalid operationType passed')
+      assert.strictEqual(operationType, 'A Valid Operation', 'Error invalid operationType passed')
       return
   }
   let { tx, authParams, revealParams: returnedRevealParams } = await TestUtil.commitReveal({
@@ -209,7 +209,7 @@ contract('ONEWallet', (accounts) => {
     // create wallets and token contracts used througout the tests
     let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'CO-BASIC-6', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
 
-    assert.strictEqual(ONEConstants.EmptyAddress, state.forwardAddress, 'Expected forward address to be empty' )
+    assert.strictEqual(state.forwardAddress, ONEConstants.EmptyAddress, 'Expected forward address to be empty' )
     let info = await TestUtil.getInfoParsed(alice.wallet)
     await TestUtil.validateBalance({ address: alice.wallet.address, amount: HALF_ETH })
     await TestUtil.validateBalance({ address: info.recoveryAddress, amount: 0 })

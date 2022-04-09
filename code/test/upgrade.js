@@ -82,7 +82,7 @@ const executeUpgradeTransaction = async ({
       break
     default:
       console.log(`Invalid Operation passed`)
-      assert.strictEqual('A Valid Operation', operationType, 'Error invalid operationType passed')
+      assert.strictEqual(operationType, 'A Valid Operation', 'Error invalid operationType passed')
       return
   }
   let { tx, authParams, revealParams: returnedRevealParams } = await TestUtil.commitReveal({
@@ -166,8 +166,7 @@ contract('ONEWallet', (accounts) => {
   // Test wallet issuing a command for a backlinked wallet
   // Expected result Carol will execute a command which adds a signature to Alice's wallet
   // Logic: This executes command in WalletGraph.sol and wallets must be backlinked
-  it('UP-BASIC-11 COMMAND: must be able to issue a command', async () => {
-    assert.strictEqual(0, 1, 'Under Development')
+  it('TODO-UP-BASIC-11 COMMAND: must be able to issue a command', async () => {
   })
 
   // ====== BACKLINK_ADD ======
@@ -315,8 +314,7 @@ contract('ONEWallet', (accounts) => {
   // ====== UPGRADE ======
   // Test upgrade transactions
   // Expected result an upgrade transactions will be processed
-  it('UP-BASIC-30 UPGRADE: must be able to process a upgrade  transactions', async () => {
-    assert.strictEqual(0, 1, 'Under Development')
+  it('TODO-UP-BASIC-30 UPGRADE: must be able to process a upgrade  transactions', async () => {
   })
 
   // === Negative Use Cases (Event Testing) ===

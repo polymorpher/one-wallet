@@ -391,7 +391,7 @@ const validateEvent = ({ tx, expectedEvent }) => {
 
 const validateBalance = async ({ address, amount = HALF_ETH }) => {
   let balance = await web3.eth.getBalance(address)
-  assert.equal(amount, balance, 'Wallet should have a different balance')
+  assert.equal(balance, amount, 'Wallet should have a different balance')
 }
 
 const validateTokenBalances = async ({
@@ -405,21 +405,20 @@ const validateTokenBalances = async ({
     switch (tokenTypes[i]) {
       case ONEConstants.TokenType.ERC20:
         let balanceERC20 = await tokenContracts[i].balanceOf(receivers[i])
-        assert.strictEqual(tokenAmounts[i][0].toString(), balanceERC20.toString(), 'Should have transferred ERC20 tokens to wallet')
+        assert.strictEqual(balanceERC20.toString(), tokenAmounts[i][0].toString(), 'Should have transferred ERC20 tokens to wallet')
         break
       case ONEConstants.TokenType.ERC721:
         for (let j = 0; j < tokenIds[i].length; j++) {
           let balanceERC721 = await tokenContracts[i].balanceOf(receivers[i])
-          assert.strictEqual(tokenAmounts[i].toString(), balanceERC721.toString(), 'Transfer of ERC721 token to receiver validated by balance')
+          assert.strictEqual(balanceERC721.toString(), tokenAmounts[i].toString(), 'Transfer of ERC721 token to receiver validated by balance')
           let owner = await tokenContracts[i].ownerOf(tokenIds[i][j])
-          assert.strictEqual(receivers[i], owner, 'Transfer of ERC721 token validated by owner')
+          assert.strictEqual(owner, receivers[i], 'Transfer of ERC721 token validated by owner')
         }
         break
       case ONEConstants.TokenType.ERC1155:
         for (let j = 0; j < tokenIds[i].length; j++) {
           let balanceERC1155 = await tokenContracts[i].balanceOf(receivers[i], tokenIds[i][j])
-          assert.strictEqual(tokenAmounts[i][j].toString(), balanceERC1155.toString(), 'ERC1155 token to balance validated')
-          // assert.strictEqual(tokenAmounts[i][j], await tokenContracts[i].balanceOf(receivers[i], tokenContracts[i][j]), 'Transfer of ERC1155 token to receiver validated by balance')
+          assert.strictEqual(balanceERC1155.toString(), tokenAmounts[i][j].toString(), 'ERC1155 token to balance validated')
         }
         break
       default:
@@ -557,14 +556,14 @@ const validateInfoMutation = async ({
   wallet
 }) => {
   let info = await getInfoParsed(wallet)
-  assert.equal(expectedInfo.root, info.root, 'Expected root to have changed')
-  assert.equal(expectedInfo.height, info.height, 'Expected height to have changed')
-  assert.equal(expectedInfo.interval, info.interval, 'Expected interval to have changed')
-  assert.equal(expectedInfo.t0, info.t0, 'Expected t0 to have changed')
-  assert.equal(expectedInfo.lifespan, info.lifespan, 'Expected lifespan to have changed')
-  assert.equal(expectedInfo.maxOperationsPerInterval, info.maxOperationsPerInterval, 'Expected maxOperationsPerInterval to have changed')
-  assert.equal(expectedInfo.recoveryAddress, info.recoveryAddress, 'Expected recoveryAddress to have changed')
-  assert.equal(expectedInfo.extra, info.extra, 'Expected extra to have changed')
+  assert.equal(info.root, expectedInfo.root, 'Expected root to have changed')
+  assert.equal(info.height, expectedInfo.height, 'Expected height to have changed')
+  assert.equal(info.interval, expectedInfo.interval, 'Expected interval to have changed')
+  assert.equal(info.t0, expectedInfo.t0, 'Expected t0 to have changed')
+  assert.equal(info.lifespan, expectedInfo.lifespan, 'Expected lifespan to have changed')
+  assert.equal(info.maxOperationsPerInterval, expectedInfo.maxOperationsPerInterval, 'Expected maxOperationsPerInterval to have changed')
+  assert.equal(info.recoveryAddress, expectedInfo.recoveryAddress, 'Expected recoveryAddress to have changed')
+  assert.equal(info.extra, expectedInfo.extra, 'Expected extra to have changed')
   return info
 }
 
@@ -580,12 +579,12 @@ const validateSpendingStateMutation = async ({
   wallet
 }) => {
   let spendingState = await getSpendingStateParsed(wallet)
-  assert.equal(expectedSpendingState.highestSpendingLimit, spendingState.highestSpendingLimit, 'Expected highestSpendingLimit to have changed')
-  assert.equal(expectedSpendingState.lastLimitAdjustmentTime, spendingState.lastLimitAdjustmentTime, 'Expected lastLimitAdjustmentTime to have changed')
-  assert.equal(expectedSpendingState.lastSpendingInterval, spendingState.lastSpendingInterval, 'Expected lastSpendingInterval to have changed')
-  assert.equal(expectedSpendingState.spendingInterval, spendingState.spendingInterval, 'Expected spendingInterval to have changed')
-  assert.equal(expectedSpendingState.spendingLimit, spendingState.spendingLimit, 'Expected spendingLimit to have changed')
-  assert.equal(expectedSpendingState.spentAmount, spendingState.spentAmount, 'Expected spentAmount to have changed')
+  assert.equal(spendingState.highestSpendingLimit, expectedSpendingState.highestSpendingLimit, 'Expected highestSpendingLimit to have changed')
+  assert.equal(spendingState.lastLimitAdjustmentTime, expectedSpendingState.lastLimitAdjustmentTime, 'Expected lastLimitAdjustmentTime to have changed')
+  assert.equal(spendingState.lastSpendingInterval, expectedSpendingState.lastSpendingInterval, 'Expected lastSpendingInterval to have changed')
+  assert.equal(spendingState.spendingInterval, expectedSpendingState.spendingInterval, 'Expected spendingInterval to have changed')
+  assert.equal(spendingState.spendingLimit, expectedSpendingState.spendingLimit, 'Expected spendingLimit to have changed')
+  assert.equal(spendingState.spentAmount, expectedSpendingState.spentAmount, 'Expected spentAmount to have changed')
   return spendingState
 }
 
@@ -627,11 +626,11 @@ const validateTrackedTokensMutation = async ({
   Logger.debug(`trackedTokens: ${JSON.stringify(trackedTokens)}`)
   let trackedTokenArray = Object.values(trackedTokens).slice()
   trackedTokenArray.sort()
-  assert.strictEqual(expectedTrackedTokens.length, trackedTokensSorted.length, 'Number of Tracked Tokens is different than expected')
+  assert.strictEqual(trackedTokensSorted.length, expectedTrackedTokens.length, 'Number of Tracked Tokens is different than expected')
   for (let i = 0; i < expectedTrackedTokens.length; i++) {
-    assert.strictEqual(expectedTrackedTokens[i].tokenType.toString(), trackedTokensSorted[i].tokenType.toString(), 'Tracked Token Type is different than expected')
-    assert.strictEqual(expectedTrackedTokens[i].contractAddress, trackedTokensSorted[i].contractAddress, 'Tracked Token Address is different than expected')
-    assert.strictEqual(expectedTrackedTokens[i].tokenId.toString(), trackedTokensSorted[i].tokenId.toString(), 'Tracked Token Ids are different than expected')
+    assert.strictEqual(trackedTokensSorted[i].tokenType.toString(), expectedTrackedTokens[i].tokenType.toString(), 'Tracked Token Type is different than expected')
+    assert.strictEqual(trackedTokensSorted[i].contractAddress, expectedTrackedTokens[i].contractAddress, 'Tracked Token Address is different than expected')
+    assert.strictEqual(trackedTokensSorted[i].tokenId.toString(), expectedTrackedTokens[i].tokenId.toString(), 'Tracked Token Ids are different than expected')
   }
   return trackedTokens
 }
@@ -643,7 +642,7 @@ const validateFowardAddressMutation = async ({
   // check Alices Forward address
   let forwardAddress = await wallet.getForwardAddress()
   Logger.debug(`forwardAddress: ${forwardAddress}`)
-  assert.strictEqual(expectedForwardAddress, forwardAddress, 'forward address should have been updated')
+  assert.strictEqual(forwardAddress, expectedForwardAddress, 'forward address should have been updated')
   return forwardAddress
 }
 
