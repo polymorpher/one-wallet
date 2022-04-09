@@ -16,14 +16,13 @@ import message from '../../message'
 import { OtpStack, useOtpState } from '../../components/OtpStack'
 import { useRandomWorker } from './randomWorker'
 import ShowUtils from './show-util'
-import { EOTPDerivation, Flows, SmartFlows } from '../../../../lib/api/flow'
+import { EOTPDerivation, SmartFlows } from '../../../../lib/api/flow'
 import ONE from '../../../../lib/onewallet'
 import { api } from '../../../../lib/api'
 import { walletActions } from '../../state/modules/wallet'
 import { useHistory } from 'react-router'
 import Paths from '../../constants/paths'
 import WalletAddress from '../../components/WalletAddress'
-import ONENames from '../../../../lib/names'
 const { Title, Text, Link } = Typography
 const { Step } = Steps
 const CardStyle = {
@@ -35,7 +34,8 @@ const CardStyle = {
   top: 0,
   zIndex: 100,
   backdropFilter: 'blur(10px)',
-  WebkitBackdropFilter: 'blur(10px)'
+  WebkitBackdropFilter: 'blur(10px)',
+  minHeight: '800px'
 }
 
 const Upgrade = ({ address, prompt, onClose }) => {
@@ -47,7 +47,8 @@ const Upgrade = ({ address, prompt, onClose }) => {
   const wallet = wallets[address] || {}
   const [skipUpdate, setSkipUpdate] = useState(false)
   const { majorVersion, minorVersion, lastResortAddress, doubleOtp, forwardAddress, temp } = wallet
-  const requireUpdate = majorVersion && (!(parseInt(majorVersion) >= ONEConstants.MajorVersion) || parseInt(minorVersion) === 0)
+  const isDevVersion = parseInt(minorVersion) === 0
+  const requireUpdate = majorVersion && (!(parseInt(majorVersion) >= ONEConstants.MajorVersion) || isDevVersion)
   const canUpgrade = majorVersion >= config.minUpgradableVersion
   const latestVersion = { majorVersion: ONEConstants.MajorVersion, minorVersion: ONEConstants.MinorVersion }
   const balances = useSelector(state => state.balance || {})
@@ -157,12 +158,11 @@ const Upgrade = ({ address, prompt, onClose }) => {
       index,
       layers,
       recoverRandomness,
-      commitHashGenerator: ONE.computeForwardHash,
-      commitHashArgs: { address: newAddress },
-      beforeCommit: () => setStage(1),
-      afterCommit: () => setStage(2),
+      commitHashGenerator: ONE.computeDestOnlyHash,
+      commitRevealArgs: { dest: newAddress },
       revealAPI: api.relayer.revealForward,
-      revealArgs: { dest: newAddress },
+      prepareProof,
+      prepareProofFailed,
       ...helpers,
       onRevealSuccess: async (txId, messages) => {
         onRevealSuccess(txId, messages)
@@ -223,7 +223,10 @@ const Upgrade = ({ address, prompt, onClose }) => {
       >
         {!confirmUpgradeVisible &&
           <>
-            <Title level={isMobile ? 4 : 2}>An upgrade is available</Title>
+            <Title level={isMobile ? 4 : 2}>
+              An upgrade is available
+              {isDevVersion && <Text><br />(Dev version detected)</Text>}
+            </Title>
             <Text>Your wallet: v{ONEUtil.getVersion(wallet)}</Text>
             <Text>Latest version: v{ONEUtil.getVersion(latestVersion)}</Text>
             <Button type='primary' shape='round' size='large' onClick={() => setConfirmUpgradeVisible(true)}>Upgrade Now</Button>

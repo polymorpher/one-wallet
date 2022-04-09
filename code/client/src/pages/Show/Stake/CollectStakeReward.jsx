@@ -23,7 +23,7 @@ const CollectStateReward = ({
 }) => {
   const history = useHistory()
   const {
-    wallet, network, stage, setStage,
+    wallet, forwardWallet, network, stage, setStage,
     resetWorker, recoverRandomness, otpState, isMobile,
   } = useOps({ address })
   const doubleOtp = wallet.doubleOtp
@@ -57,6 +57,7 @@ const CollectStateReward = ({
     const data = ONEUtil.hexString(bytes)
     SmartFlows.commitReveal({
       wallet,
+      forwardWallet,
       otp,
       otp2,
       recoverRandomness,

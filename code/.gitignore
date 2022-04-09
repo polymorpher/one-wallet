@@ -119,8 +119,11 @@ secrets.js
 
 webclient/dist
 
+# environment files
 /env/db/*
 !/env/db/.gitkeep
 /env/ganache.sh
+/env/ngrok.sh
 
 build/contracts/*
+/contracts/upgrade/

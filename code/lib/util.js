@@ -13,6 +13,7 @@ const abi = require('web3-eth-abi')
 const web3utils = require('web3-utils')
 const elliptic = require('elliptic')
 const range = require('lodash/fp/range')
+const ONEConstants = require('./constants')
 
 const utils = {
   hexView: (bytes) => {
@@ -444,6 +445,11 @@ const utils = {
     // https://www.jacklmoore.com/notes/rounding-in-javascript/
     const floored = Number(`${Math.floor(`${number}e+${digits}`)}e-${digits}`)
     return floored.toString()
+  },
+
+  makeCommandData: (address, operation, data = new Uint8Array()) => {
+    const hexData = abi.encodeParameters(['address', 'uint16', 'bytes'], [address, operation, data])
+    return utils.hexStringToBytes(hexData)
   },
 
   web3utils

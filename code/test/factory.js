@@ -1,13 +1,9 @@
 const TestUtil = require('./util')
 const unit = require('ethjs-unit')
 const ONEUtil = require('../lib/util')
-const ONEDebugger = require('../lib/debug')
 const INTERVAL = 30000
 const DURATION = INTERVAL * 8
 const SLOT_SIZE = 1
-
-const Logger = TestUtil.Logger
-const Debugger = ONEDebugger(Logger)
 
 contract('ONEWallet', (accounts) => {
   const EFFECTIVE_TIME = Math.floor(Date.now() / INTERVAL) * INTERVAL - DURATION / 2

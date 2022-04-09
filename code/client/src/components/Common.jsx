@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useState } from 'react'
 import { useRandomWorker } from '../pages/Show/randomWorker'
 import { useOtpState } from './OtpStack'
-import { useWindowDimensions } from '../util'
+import util, { useWindowDimensions } from '../util'
 
 export const useWallet = ({ address }) => {
   const dispatch = useDispatch()
@@ -32,13 +32,14 @@ const useOpsBase = ({ address }) => {
 
 export const useOps = ({ address }) => {
   const { dispatch, wallets, wallet, network, stage, setStage, isMobile, os } = useOpsBase({ address })
+  const forwardWallet = !util.isEmptyAddress(wallet.forwardAddress) && wallets[wallet.forwardAddress]
   const { resetWorker, recoverRandomness } = useRandomWorker()
   const { state: otpState } = useOtpState()
-
   return {
     dispatch,
     wallets,
     wallet,
+    forwardWallet,
     network,
     stage,
     setStage,
