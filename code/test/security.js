@@ -171,7 +171,7 @@ contract('ONEWallet', (accounts) => {
 
     // Validate succesful event emitted
     TestUtil.validateEvent({ tx, expectedEvent: 'SpendingLimitChanged' })
-    // TestUtil.validateEvent({ tx, expectedEvent: 'HighestSpendingLimitChanged' })
+    TestUtil.validateEvent({ tx, expectedEvent: 'HighestSpendingLimitChanged' })
 
     // Alice Items that have changed - nonce, lastOperationTime, commits, spendingState
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
@@ -259,7 +259,7 @@ contract('ONEWallet', (accounts) => {
     )
     // Validate succesful event emitted
     TestUtil.validateEvent({ tx: tx1, expectedEvent: 'SpendingLimitChanged' })
-    // TestUtil.validateEvent({ tx, expectedEvent: 'HighestSpendingLimitChanged' })
+    TestUtil.validateEvent({ tx: tx1, expectedEvent: 'HighestSpendingLimitChanged' })
     // Alice Items that have changed - nonce, lastOperationTime, commits, spendingState
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
     // Spending State
@@ -284,7 +284,6 @@ contract('ONEWallet', (accounts) => {
     )
     // Validate SpendingLimitChangeFailed event emitted
     TestUtil.validateEvent({ tx: tx2, expectedEvent: 'SpendingLimitChangeFailed' })
-    // TestUtil.validateEvent({ tx, expectedEvent: 'HighestSpendingLimitChanged' })
     // Alice Items that have changed - nonce, lastOperationTime, commits, spendingState
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
     // Spending State
@@ -381,7 +380,7 @@ contract('ONEWallet', (accounts) => {
     )
     // Validate succesful event emitted
     TestUtil.validateEvent({ tx: tx6, expectedEvent: 'SpendingLimitChanged' })
-    // TestUtil.validateEvent({ tx, expectedEvent: 'HighestSpendingLimitChanged' })
+    TestUtil.validateEvent({ tx: tx6, expectedEvent: 'HighestSpendingLimitChanged' })
     // Alice Items that have changed - nonce, lastOperationTime, commits, spendingState
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
     // Spending State

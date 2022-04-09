@@ -373,10 +373,14 @@ const fundTokens = async ({
 const validateEvent = ({ tx, expectedEvent }) => {
   const events = ONEParser.parseTxLog(tx?.receipt?.rawLogs)
   Logger.debug(`events: ${JSON.stringify(events)}`)
-  const event = events.filter(e => e.eventName === expectedEvent)[0]
-  const eventName = event?.eventName
-  Logger.debug(`eventName: ${eventName}`)
-  assert.deepStrictEqual(expectedEvent, eventName, 'Expected event not triggered')
+  let eventName = ''
+  for (let i = 0; i < events.length || 0; i++) {
+    const event = events.filter(e => e.eventName === expectedEvent)[i]
+    eventName = event?.eventName
+    Logger.debug(`eventName: ${eventName}`)
+    if (eventName === expectedEvent) { return }
+  }
+  assert.deepStrictEqual(eventName, expectedEvent, 'Expected event not triggered')
 }
 
 // ==== ADDRESS VALIDATION HELPER FUNCTIONS ====
@@ -746,6 +750,7 @@ const commitReveal = async ({ layers, Debugger, index, eotp, paramsHash, commitP
     throw ex
   }
   const tx = await wallet.reveal(authParams, revealParams)
+  Logger.debug(`tx`, JSON.stringify(tx))
   return { tx, authParams, revealParams }
 }
 
