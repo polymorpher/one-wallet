@@ -237,13 +237,160 @@ contract('ONEWallet', (accounts) => {
   // ====== CALL ======
   // Test calling a transaction
   // Expected a transaction is called
-  it('TODO-AP-BASIC-21 CALL: must be able to call a transaction', async () => {
+  it('AP-BASIC-21 CALL: must be able to call a transaction', async () => {
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'AP-BASIC-21-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+    let { walletInfo: bob, state: bobState } = await TestUtil.makeWallet({ salt: 'AP-BASIC-21-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+
+    // Begin Tests
+    let testTime = Date.now()
+
+    const { testerc20 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
+    await TestUtil.fundTokens({
+      funder: accounts[0],
+      receivers: [alice.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC20],
+      tokenContracts: [testerc20],
+      tokenAmounts: [[1000]]
+    })
+
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+
+    // Alice uses the CALL command to call a contract, logic is as follows
+    // ONEWallet.sol _execute
+    //  if (op.tokenId == 0) {_callContract(op.contractAddress, op.amount, op.data);} else { _multiCall(op.data);}
+    // ONEWallet.sol _callContract
+    // _callContract(address contractAddress, uint256 amount, bytes memory encodedWithSignature)
+    // checks the balance of the contract and the spendingState then calls the contract as follows
+    // (bool success, bytes memory ret) = contractAddress.call{value : amount}(encodedWithSignature);
+    // Therefore
+    // op.tokenId = multicall indicator
+    // op.contractAddress = the contract we are calling (should have a balance and be within spending limit)
+    // op.data = encodedWithSignature
+
+    const hexData = ONEUtil.encodeCalldata('transfer(address,uint256)', [bob.wallet.address, 100])
+    const data = ONEUtil.hexStringToBytes(hexData)
+
+    let { tx, currentState } = await executeAppTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.CALL,
+        contractAddress: testerc20.address,
+        data,
+        testTime
+      }
+    )
+    let bobCurrentState = await TestUtil.getState(bob.wallet)
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx, expectedEvent: 'ExternalCallCompleted' })
+
+    // check alice and bobs balance
+    await TestUtil.validateTokenBalances({
+      receivers: [alice.wallet.address, bob.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC20, ONEConstants.TokenType.ERC20],
+      tokenContracts: [testerc20, testerc20],
+      tokenAmounts: [[900], [100]]
+    })
+
+    // check Alice's current state
+    state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
+    // Alice's spending state lastSpendingInterval has been updated
+    const newSpendingState = await TestUtil.getSpendingStateParsed(alice.wallet)
+    const expectedSpendingState = state.spendingState
+    expectedSpendingState.lastSpendingInterval = newSpendingState.lastSpendingInterval
+    state.spendingState = await TestUtil.validateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
+    await TestUtil.assertStateEqual(state, currentState)
+    // Check Bob nothing has changed except for balances above
+    await TestUtil.assertStateEqual(bobState, bobCurrentState)
   })
 
   // ====== BATCH ======
   // Test batching transactions
-  // Expected result a batch of transactions will be processed
-  it('TODO-UP-BASIC-22 BATCH: must be able to process a batch of transactions', async () => {
+  // Expected result will track an ERC20 and then transfer 100 ERC20 to Bob
+  it('AP-BASIC-22 BATCH: must be able to process a batch of transactions', async () => {
+  //   struct OperationParams {
+  //     uint8 Enums.OperationType operationType;
+  //     uint8 Enums.TokenType tokenType;
+  //     address contractAddress;
+  //     uint256 tokenId;
+  //     address payable dest;
+  //     uint256 amount;
+  //     bytes data;
+  // }
+
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'AP-BASIC-22-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+    let { walletInfo: bob, state: bobState } = await TestUtil.makeWallet({ salt: 'AP-BASIC-22-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+
+    // Begin Tests
+    let testTime = Date.now()
+
+    const { testerc20 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: false, makeERC1155: false })
+    await TestUtil.fundTokens({
+      funder: accounts[0],
+      receivers: [alice.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC20],
+      tokenContracts: [testerc20],
+      tokenAmounts: [[1000]]
+    })
+
+    // Note here we populate each operation as an object then map it to an array
+    // It was felt this was clearer and allows us to leverage default values however it could be done concisely by providing the values in an array as follows
+    // let operationParams = [ONEConstants.OperationType.TRACK, ONEConstants.TokenType.ERC20, testerc20.address, 0, alice.wallet.address, 1 , new Uint8Array()]
+    let operationParamsArray = []
+    // Alice Tracks the ERC20 token
+    let operationParamsObject = {
+      ...NullOperationParams, // Default all fields to Null values than override
+      operationType: ONEConstants.OperationType.TRACK,
+      tokenType: ONEConstants.TokenType.ERC20,
+      contractAddress: testerc20.address,
+      dest: alice.wallet.address,
+      amount: 1
+    }
+    let operationParams = Object.keys(operationParamsObject).map((key) => operationParamsObject[key])
+    operationParamsArray.push(operationParams)
+    // Alice transfers 100 ERC20 tokens to Bob
+    operationParamsObject = {
+      ...NullOperationParams, // Default all fields to Null values than override
+      operationType: ONEConstants.OperationType.TRANSFER_TOKEN,
+      tokenType: ONEConstants.TokenType.ERC20,
+      contractAddress: testerc20.address,
+      dest: bob.wallet.address,
+      amount: 100
+    }
+    operationParams = Object.keys(operationParamsObject).map((key) => operationParamsObject[key])
+    operationParamsArray.push(operationParams)
+    const hexData = ONEUtil.abi.encodeParameters(['tuple[](uint8,uint8,address,uint256,address,uint256,bytes)'], [operationParamsArray])
+    const data = ONEUtil.hexStringToBytes(hexData)
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    const { tx, currentState } = await executeAppTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.BATCH,
+        data,
+        testTime
+      }
+    )
+    let bobCurrentState = await TestUtil.getState(bob.wallet)
+    // Validate succesful events emitted
+    TestUtil.validateEvent({ tx, expectedEvent: 'TokenTracked' })
+    TestUtil.validateEvent({ tx, expectedEvent: 'TokenTransferSucceeded' })
+
+    // check alice and bobs balance
+    await TestUtil.validateTokenBalances({
+      receivers: [alice.wallet.address, bob.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC20, ONEConstants.TokenType.ERC20],
+      tokenContracts: [testerc20, testerc20],
+      tokenAmounts: [[900], [100]]
+    })
+
+    // check Alice's current state
+    state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
+    const expectedTrackedTokens = TestUtil.parseTrackedTokens([[ONEConstants.TokenType.ERC20], [testerc20.address], [0]])
+    state.trackedTokens = await TestUtil.validateTrackedTokensMutation({ expectedTrackedTokens, wallet: alice.wallet })
+    await TestUtil.assertStateEqual(state, currentState)
+    // Check Bob nothing has changed except for balances above
+    await TestUtil.assertStateEqual(bobState, bobCurrentState)
   })
 
   // ====== CREATE ======

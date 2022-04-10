@@ -95,8 +95,8 @@ First, create a new file and write out how you expect a successful operation to 
 | 18  | RECLAIM_DOMAIN_FROM_BACKLINK | Phase 2  | Domain   |                                                            |
 | 19  | SIGN	                       | PASS     | App      |                                                            |
 | 20  | REVOKE                       | PASS     | App      |                                                            |
-| 21  | CALL                         | TODO     | App      |                                                            |
-| 22  | BATCH                        | TODO     | App      |                                                            |
+| 21  | CALL                         | PASS     | App      |                                                            |
+| 22  | BATCH                        | PASS     | App      |                                                            |
 | 23  | NOOP                         | N/A      | N/A      | This is reserved as a default value and for error checking |
 | 24  | CHANGE_SPENDING_LIMIT        | PASS     | Security |                                                            |
 | 25  | JUMP_SPENDING_LIMIT          | PASS     | Security |                                                            |
