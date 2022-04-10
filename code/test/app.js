@@ -54,15 +54,16 @@ const executeAppTransaction = async ({
   let revealParams
   // Process the Operation
   switch (operationType) {
-    case ONEConstants.OperationType.COMMAND:
+    // case ONEConstants.OperationType.COMMAND:
+    //   paramsHash = ONEWallet.computeGeneralOperationHash
+    //   commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
+    //   revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
+    //   break
+    default:
       paramsHash = ONEWallet.computeGeneralOperationHash
       commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
       revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
       break
-    default:
-      console.log(`Invalid Operation passed`)
-      assert.strictEqual(operationType, 'A Valid Operation', 'Error invalid operationType passed')
-      return
   }
   let { tx, authParams, revealParams: returnedRevealParams } = await TestUtil.commitReveal({
     Debugger,
@@ -92,27 +93,151 @@ contract('ONEWallet', (accounts) => {
 
   // === BASIC POSITIVE TESTING APP FUNCTIONS ====
 
-  // ====== COMMAND ======
-  // Test wallet issuing a command for a backlinked wallet
-  // Expected result Carol will execute a command which adds a signature to Alice's wallet
-  // Logic: This executes command in WalletGraph.sol and wallets must be backlinked
-
   // ====== SIGN ======
   // Test setting signing a transaction
   // Expected result the wallets will sign a transaction
-  it('TODO-UP-BASIC-19 SIGN: must be able to sign a transaction', async () => {
+  it('AP-BASIC-19 SIGN: must be able to sign a transaction', async () => {
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'AP-BASIC-19-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+
+    // Begin Tests
+    let testTime = Date.now()
+
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+
+    // Alice uses the SIGN command to sign a transaction, contract logic is as follows
+    // Executor.sol execute
+    // signatures.authorizeHandler(op.contractAddress, op.tokenId, op.dest, op.amount);
+    // SignatureManager.sol authorizeHandler
+    // authorize(st, bytes32(tokenId), bytes32(amount), uint32(bytes4(bytes20(address(dest)))));
+    // function authorize(SignatureTracker storage st, bytes32 hash, bytes32 signature, uint32 expireAt) public returns (bool){
+    // Therefore
+    // op.tokenId = hash
+    // op.amount = signature
+    // dest = expireAt
+    const hexData = ONEUtil.abi.encodeParameters(['address', 'uint16', 'bytes'], [alice.wallet.address, ONEConstants.OperationType.SIGN, new Uint8Array()])
+    const messageHash = ONEUtil.keccak('hello world')
+    const signature = ONEUtil.keccak('awesome signature')
+    const expiryAtBytes = new BN(0xffffffff).toArrayLike(Uint8Array, 'be', 4)
+    const encodedExpiryAt = new Uint8Array(20)
+    encodedExpiryAt.set(expiryAtBytes)
+    const data = ONEUtil.hexStringToBytes(hexData)
+
+    let { tx, currentState } = await executeAppTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.SIGN,
+        tokenId: new BN(messageHash).toString(),
+        dest: ONEUtil.hexString(encodedExpiryAt),
+        amount: new BN(signature).toString(),
+        data,
+        testTime
+      }
+    )
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx, expectedEvent: 'SignatureAuthorized' })
+
+    // Alice items that have changed -signatures
+    state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
+    // check alice signatures have changed by getting the current values and overriding with the expected hash and signature
+    const expectedSignatures = await TestUtil.getSignaturesParsed(alice.wallet)
+    expectedSignatures[0].hash = ONEUtil.hexString(messageHash)
+    expectedSignatures[0].signature = ONEUtil.hexString(signature)
+    state.signatures = await TestUtil.validateSignaturesMutation({ expectedSignatures, wallet: alice.wallet })
+    await TestUtil.assertStateEqual(state, currentState)
   })
 
   // ====== REVOKE ======
   // Test setting of a wallets recovery address
   // Expected result the wallets recovery address
-  it('TODO-UP-BASIC-20 REVOKE: must be able to revoke a signature', async () => {
+  it('AP-BASIC-20 REVOKE: must be able to revoke a signature', async () => {
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'AP-BASIC-20-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+
+    // Begin Tests
+    let testTime = Date.now()
+
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+
+    // Alice uses the SIGN command to sign a transaction, contract logic is as follows
+    // Executor.sol execute
+    // signatures.authorizeHandler(op.contractAddress, op.tokenId, op.dest, op.amount);
+    // SignatureManager.sol authorizeHandler
+    // authorize(st, bytes32(tokenId), bytes32(amount), uint32(bytes4(bytes20(address(dest)))));
+    // function authorize(SignatureTracker storage st, bytes32 hash, bytes32 signature, uint32 expireAt) public returns (bool){
+    // Sign Logic
+    // op.tokenId = hash
+    // op.amount = signature
+    // dest = expireAt
+    const hexData = ONEUtil.abi.encodeParameters(['address', 'uint16', 'bytes'], [alice.wallet.address, ONEConstants.OperationType.SIGN, new Uint8Array()])
+    const messageHash = ONEUtil.keccak('hello world')
+    const signature = ONEUtil.keccak('awesome signature')
+    // const expiryAtDate = Math.floor(((testTime + 30000) / 1000)) // 5 mins after testTime
+    // let expiryAtBytes = new BN(expiryAtDate).toArrayLike(Uint8Array, 'be', 4)
+    let expiryAtBytes = new BN(0xffffffff).toArrayLike(Uint8Array, 'be', 4)
+    let encodedExpiryAt = new Uint8Array(20)
+    encodedExpiryAt.set(expiryAtBytes)
+    let data = ONEUtil.hexStringToBytes(hexData)
+
+    let { tx, currentState } = await executeAppTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.SIGN,
+        tokenId: new BN(messageHash).toString(),
+        dest: ONEUtil.hexString(encodedExpiryAt),
+        amount: new BN(signature).toString(),
+        data,
+        testTime
+      }
+    )
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx, expectedEvent: 'SignatureAuthorized' })
+
+    // Alice items that have changed -signatures
+    state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
+    // check alice signatures have changed by getting the current values and overriding with the expected hash and signature
+    let expectedSignatures = await TestUtil.getSignaturesParsed(alice.wallet)
+    expectedSignatures[0].hash = ONEUtil.hexString(messageHash)
+    expectedSignatures[0].signature = ONEUtil.hexString(signature)
+    state.signatures = await TestUtil.validateSignaturesMutation({ expectedSignatures, wallet: alice.wallet })
+    await TestUtil.assertStateEqual(state, currentState)
+
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    // Alice uses the REVOKE command to revoke a transaction, contract logic is as follows
+    // Executor.sol execute
+    // signatures.revokeHandler(op.contractAddress, op.tokenId, op.dest, op.amount);
+    // SignatureManager.sol revokeHandler
+    // function revokeHandler(SignatureTracker storage st, address contractAddress, uint256 tokenId, address payable dest, uint256 amount) public {
+    //     function revoke(SignatureTracker storage st, bytes32 hash, bytes32 signature) public returns (bool){
+    // Revoke Logic
+    // contractAddress (if != address(0) then revoke everything base on time if passed )
+    // dest = expireAt (if > 0 then revoke all signatures before this time)
+    // op.tokenId = hash
+    // op.amount = signature
+    let { currentState: currentStateRevoked } = await executeAppTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.REVOKE,
+        data,
+        testTime
+      }
+    )
+    // No event is emitted from revokeBefore
+    // TestUtil.validateEvent({ tx2, expectedEvent: 'SignatureRevoked' })
+
+    // Alice items that have changed -signatures
+    state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
+    // check alice signatures have changed by getting the current values and overriding with the expected hash and signature
+    expectedSignatures = []
+    state.signatures = await TestUtil.validateSignaturesMutation({ expectedSignatures, wallet: alice.wallet })
+    await TestUtil.assertStateEqual(state, currentStateRevoked)
   })
 
   // ====== CALL ======
   // Test calling a transaction
   // Expected a transaction is called
-  it('TODO-AP-BASIC-21 CALL: must be able to add a signature', async () => {
+  it('TODO-AP-BASIC-21 CALL: must be able to call a transaction', async () => {
   })
 
   // ====== BATCH ======

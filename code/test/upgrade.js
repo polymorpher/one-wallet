@@ -314,7 +314,7 @@ contract('ONEWallet', (accounts) => {
   // ====== UPGRADE ======
   // Test upgrade transactions
   // Expected result an upgrade transactions will be processed
-  it('TODO-UP-BASIC-30 UPGRADE: must be able to process a upgrade  transactions', async () => {
+  it('TODO-UP-BASIC-30 UPGRADE: must be able to process a upgrade transactions', async () => {
   })
 
   // === Negative Use Cases (Event Testing) ===

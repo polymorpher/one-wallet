@@ -93,8 +93,8 @@ First, create a new file and write out how you expect a successful operation to 
 | 16  | TRANSFER_DOMAIN	             | Phase 2  | Domain   |                                                            |
 | 17  | RECLAIM_REVERSE_DOMAIN       | Phase 2  | Domain   |                                                            |
 | 18  | RECLAIM_DOMAIN_FROM_BACKLINK | Phase 2  | Domain   |                                                            |
-| 19  | SIGN	                       | TODO     | App      |                                                            |
-| 20  | REVOKE                       | TODO     | App      |                                                            |
+| 19  | SIGN	                       | PASS     | App      |                                                            |
+| 20  | REVOKE                       | PASS     | App      |                                                            |
 | 21  | CALL                         | TODO     | App      |                                                            |
 | 22  | BATCH                        | TODO     | App      |                                                            |
 | 23  | NOOP                         | N/A      | N/A      | This is reserved as a default value and for error checking |
