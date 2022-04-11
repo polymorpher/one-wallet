@@ -182,7 +182,7 @@ First, create a new file and write out how you expect a successful operation to 
 | Application   | REVOKE BY DATE      | TODO   |       |
 | Application   | REVOKE BY SIGNATURE | TODO   |       |
 | Application   | CALL WITH PAYMENT   | TODO   |       |
-| Application   | MULTICALL           | TODO   |       |
+| Application   | MULTICALL           | PASS   |       |
 | Core          | BASIC               | PASS   |       |
 | Security      | BASIC               | PASS   |       |
 | Token         | BASIC               | PASS   |       |

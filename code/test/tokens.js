@@ -783,7 +783,7 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.assertStateEqual(carolState, carolCurrentState)
   })
 
-  // Complex Scenario Testing
+  // ==== COMPLEX SCENARIO TESTING ====
   // TokenTracker Testing (track, multitrack, getTrackedTokens, getBalance, recoverToken) also batch transactions
   it('TO-COMBO-1: TokenTracker(token management) must commit and reveal successfully', async () => {
     let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'TT-COMBO-1-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
@@ -959,10 +959,7 @@ contract('ONEWallet', (accounts) => {
     // check carol's tracked tokens have changed (and her balances above)
     // tracked tokens
     expectedTrackedTokens = [
-      // { tokenType: ONEConstants.TokenType.ERC20, contractAddress: testerc20.address, tokenId: 0 },
-      // { tokenType: ONEConstants.TokenType.ERC721, contractAddress: testerc721.address, tokenId: 2 },
       { tokenType: ONEConstants.TokenType.ERC721, contractAddress: testerc721.address, tokenId: 3 },
-      // { tokenType: ONEConstants.TokenType.ERC1155, contractAddress: testerc1155.address, tokenId: 2 },
       { tokenType: ONEConstants.TokenType.ERC1155, contractAddress: testerc1155.address, tokenId: 3 }
     ]
     carolState.trackedTokens = await TestUtil.validateTrackedTokensMutation({ expectedTrackedTokens, wallet: carol.wallet })

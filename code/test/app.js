@@ -393,4 +393,116 @@ contract('ONEWallet', (accounts) => {
   // Expected result a create transaction will be processed
   it('TODO-UP-BASIC-29 CREATE: must be able to process a create transactions', async () => {
   })
+
+  // ==== COMPLEX SCENARIO TESTING ====
+  // ====== CALL MULTI ======
+  // Test calling mutliple transactions
+  // Expected multiple transactions are called
+  it('AP-COMPLEX-21 CALL: must be able to call multiple transactions', async () => {
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'AP-COMPLEX-21-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+    let { walletInfo: bob, state: bobState } = await TestUtil.makeWallet({ salt: 'AP-COMPLEX-21-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+
+    // Begin Tests
+    let testTime = Date.now()
+
+    const { testerc20, testerc721, testerc1155 } = await TestUtil.makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: true, makeERC1155: true })
+    // Fund Alice with 1000 ERC20, 2 ERC721 and 50 ERC1155
+    await TestUtil.fundTokens({
+      funder: accounts[0],
+      receivers: [alice.wallet.address, alice.wallet.address, alice.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC20, ONEConstants.TokenType.ERC721, ONEConstants.TokenType.ERC1155],
+      tokenContracts: [testerc20, testerc721, testerc1155],
+      tokenIds: [[], [2, 3], [2, 3]],
+      tokenAmounts: [[1000], [2], [20, 30]]
+    })
+    state = await TestUtil.getState(alice.wallet)
+
+    // check alice and bobs balance
+    await TestUtil.validateTokenBalances({
+      receivers: [alice.wallet.address, alice.wallet.address, alice.wallet.address, bob.wallet.address, alice.wallet.address, alice.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC20, ONEConstants.TokenType.ERC721, ONEConstants.TokenType.ERC1155, ONEConstants.TokenType.ERC20, ONEConstants.TokenType.ERC721, ONEConstants.TokenType.ERC1155],
+      tokenContracts: [testerc20, testerc721, testerc1155, testerc20, testerc721, testerc1155],
+      tokenIds: [[], [2], [2], [], [3], [3]],
+      tokenAmounts: [[1000], [2], [20], [0], [2], [30]]
+    })
+
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+
+    // Alice uses the CALL command to call a contract, logic is as follows
+    // ONEWallet.sol _execute
+    //  if (op.tokenId == 0) {_callContract(op.contractAddress, op.amount, op.data);} else { _multiCall(op.data);}
+    // ONEWallet.sol _callContract
+    // _callContract(address contractAddress, uint256 amount, bytes memory encodedWithSignature)
+    // checks the balance of the contract and the spendingState then calls the contract as follows
+    // (bool success, bytes memory ret) = contractAddress.call{value : amount}(encodedWithSignature);
+    // Therefore
+    // op.tokenId = multicall indicator
+    // op.contractAddress = the contract we are calling (should have a balance and be within spending limit)
+    // op.data = encodedWithSignature
+
+    // Note here we populate each operation as an object then map it to an array
+    // It was felt this was clearer and allows us to leverage default values however it could be done concisely by providing the values in an array as follows
+    // let operationParams = [ONEConstants.OperationType.TRACK, ONEConstants.TokenType.ERC20, testerc20.address, 0, alice.wallet.address, 1 , new Uint8Array()]
+    let destArray = []
+    let amountsArray = []
+    let encodedParamsArray = []
+    let hexData
+    let data
+    // Alice transfers 100 ERC20 tokens to Bob
+    destArray.push(testerc20.address)
+    amountsArray.push(0)
+    encodedParamsArray.push(ONEUtil.hexStringToBytes(ONEUtil.encodeCalldata('transfer(address,uint256)', [bob.wallet.address, 100])))
+    // Alice transfers ERC721 NFT id 3 token to Bob
+    destArray.push(testerc721.address)
+    amountsArray.push(0)
+    encodedParamsArray.push(ONEUtil.hexStringToBytes(ONEUtil.encodeCalldata('safeTransferFrom(address,address,uint256)', [alice.wallet.address, bob.wallet.address, 3])))
+    // Alice transfers ERC1155 ID 3 30 tokens to bob
+    // Alice transfers 100 ERC20 tokens to Bob
+    destArray.push(testerc1155.address)
+    amountsArray.push(0)
+    encodedParamsArray.push(ONEUtil.hexStringToBytes(ONEUtil.encodeCalldata('safeTransferFrom(address,address,uint256,uint256,bytes)', [alice.wallet.address, bob.wallet.address, 3, 30, ONEConstants.NullOperationParams.data ])))
+    hexData = ONEUtil.abi.encodeParameters(['address[]', 'uint256[]', 'bytes[]'], [destArray, amountsArray, encodedParamsArray])
+    data = ONEUtil.hexStringToBytes(hexData)
+
+    let { tx, currentState } = await executeAppTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.CALL,
+        // contractAddress: testerc20.address,
+        tokenId: 1,
+        data,
+        testTime
+      }
+    )
+    let bobCurrentState = await TestUtil.getState(bob.wallet)
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx, expectedEvent: 'ExternalCallCompleted' })
+
+    // check alice and bobs balance
+    await TestUtil.validateTokenBalances({
+      receivers: [alice.wallet.address, alice.wallet.address, alice.wallet.address, bob.wallet.address, bob.wallet.address, bob.wallet.address],
+      tokenTypes: [ONEConstants.TokenType.ERC20, ONEConstants.TokenType.ERC721, ONEConstants.TokenType.ERC1155, ONEConstants.TokenType.ERC20, ONEConstants.TokenType.ERC721, ONEConstants.TokenType.ERC1155],
+      tokenContracts: [testerc20, testerc721, testerc1155, testerc20, testerc721, testerc1155],
+      tokenIds: [[], [2], [2], [], [3], [3]],
+      tokenAmounts: [[900], [1], [20], [100], [1], [30]]
+    })
+
+    // check Alice's current state
+    state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
+    // Alice's spending state lastSpendingInterval has been updated
+    const newSpendingState = await TestUtil.getSpendingStateParsed(alice.wallet)
+    const expectedSpendingState = state.spendingState
+    expectedSpendingState.lastSpendingInterval = newSpendingState.lastSpendingInterval
+    state.spendingState = await TestUtil.validateSpendingStateMutation({ expectedSpendingState, wallet: alice.wallet })
+    await TestUtil.assertStateEqual(state, currentState)
+    // Check Bob tracked tokens have changes as well as balances above
+    // tracked tokens
+    let expectedTrackedTokens = [
+      { tokenType: ONEConstants.TokenType.ERC721, contractAddress: testerc721.address, tokenId: 3 },
+      { tokenType: ONEConstants.TokenType.ERC1155, contractAddress: testerc1155.address, tokenId: 3 }
+    ]
+    bobState.trackedTokens = await TestUtil.validateTrackedTokensMutation({ expectedTrackedTokens, wallet: bob.wallet })
+    await TestUtil.assertStateEqual(bobState, bobCurrentState)
+  })
 })
