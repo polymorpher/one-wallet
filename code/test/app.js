@@ -54,11 +54,6 @@ const executeAppTransaction = async ({
   let revealParams
   // Process the Operation
   switch (operationType) {
-    // case ONEConstants.OperationType.COMMAND:
-    //   paramsHash = ONEWallet.computeGeneralOperationHash
-    //   commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
-    //   revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
-    //   break
     default:
       paramsHash = ONEWallet.computeGeneralOperationHash
       commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }

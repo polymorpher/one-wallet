@@ -105,3 +105,90 @@ First, create a new file and write out how you expect a successful operation to 
 | 28  | COLLECT_REWARD               | Phase 1  | Staking  |                                                            |
 | 29  | CREATE                       | RESERVED | App      |                                                            |
 | 30  | UPGRADE                      | RESERVED | Upgrade  |                                                            | 
+
+### Appendix B: EVENT Testing Status Overview
+
+| Contract            | Event                            | Status  | Sample Operation        | Notes             |
+|---------------------|----------------------------------|---------|-------------------------|-------------------|
+| CoreManager         | CoreDisplaced                    | PASS    | DISPLACE                |                   |
+| CoreManager         | CoreDisplacementFailed           | TODO    | DISPLACE                |                   |
+| DomainManager       | DomainRegistered                 | Phase 2 |                         |                   |
+| DomainManager       | ReverseDomainClaimed             | Phase 2 |                         |                   |
+| DomainManager       | ReverseDomainClaimError          | Phase 2 |                         |                   |
+| DomainManager       | InvalidFQDN                      | Phase 2 |                         |                   |
+| DomainManager       | DomainRegistrationFailed         | Phase 2 |                         |                   |
+| DomainManager       | AttemptRegistration              | Phase 2 |                         |                   |
+| DomainManager       | DomainTransferFailed             | Phase 2 |                         |                   |
+| DomainManager       | AttemptRenewal                   | Phase 2 |                         |                   |
+| DomainManager       | DomainRenewalFailed              | Phase 2 |                         |                   |
+| DomainManager       | DomainTransferred                | Phase 2 |                         |                   |
+| DomainManager       | DomainRenewed                    | Phase 2 |                         |                   |
+| ONEWalletCodeHelper | ONEWalletDeployFailed            | TODO    |                         | FactoryHelper.sol |
+| ONEWalletCodeHelper | ONEWalletDeploySuccess           | TODO    |                         | FactoryHelper.sol |
+| IONEWallet          | TransferError                    | TODO    |                         |                   |
+| IONEWallet          | LastResortAddressNotSet          | TODO    |                         |                   |
+| IONEWallet          | RecoveryAddressUpdated           | PASS    | SET_RECOVERY_ADDRESS    |                   |
+| IONEWallet          | PaymentReceived                  | TODO    |                         |                   |
+| IONEWallet          | PaymentSent                      | PASS    | TRANSFER                |                   |
+| IONEWallet          | PaymentForwarded                 | TODO    |                         |                   |
+| IONEWallet          | AutoRecoveryTriggered            | TODO    |                         |                   |
+| IONEWallet          | AutoRecoveryTriggeredPrematurely | TODO    |                         |                   |
+| IONEWallet          | RecoveryFailure                  | TODO    |                         |                   |
+| IONEWallet          | RecoveryTriggered                | PASS    |  RECOVER                |                   |
+| IONEWallet          | Retired                          | TODO    |                         |                   |
+| IONEWallet          | ForwardedBalance                 | TODO    |                         |                   |
+| IONEWallet          | ForwardAddressUpdated            | PASS    | FORWARD                 |                   |
+| IONEWallet          | ForwardAddressAlreadySet         | TODO    |                         |                   |
+| IONEWallet          | ForwardAddressInvalid            | TODO    |                         |                   |
+| IONEWallet          | ExternalCallCompleted            | PASS    | CALL                    |                   |
+| IONEWallet          | ExternalCallFailed               | TODO    |                         |                   |
+| IONEWallet          | TransferError                    | TODO    |                         |                   |
+| SignatureManager    | SignatureMismatch                | TODO    |                         |                   |
+| SignatureManager    | SignatureNotExist                | TODO    |                         |                   |
+| SignatureManager    | SignatureAlreadyExist            | TODO    |                         |                   |
+| SignatureManager    | SignatureAuthorized              | PASS    | SIGN                    |                   |
+| SignatureManager    | SignatureRevoked                 | TODO    |                         |                   |
+| SignatureManager    | SignatureExpired                 | TODO    |                         |                   |
+| SpendingManager     | ExceedSpendingLimit              | TODO    |                         |                   |
+| SpendingManager     | InsufficientFund                 | TODO    |                         |                   |
+| SpendingManager     | SpendingLimitChanged             | PASS    | CHANGE_SPENDING_LIMIT   |                   |
+| SpendingManager     | HighestSpendingLimitChanged      | PASS    | CHANGE_SPENDING_LIMIT   |                   |
+| SpendingManager     | SpendingLimitChangeFailed        | PASS    | CHANGE_SPENDING_LIMIT   |                   |
+| SpendingManager     | SpendingLimitJumped              | TODO    |                         |                   |
+| Staking             | StakingSuccess                   | TODO    |                         |                   |
+| Staking             | StakingFailure                   | TODO    |                         |                   |
+| TokenManager        | ReceivedToken                    | TODO    |                         |                   |
+| TokenManager        | ForwardedToken                   | TODO    |                         |                   |
+| TokenTracker        | TokenTransferFailed              | TODO    |                         |                   |
+| TokenTracker        | TokenTransferError               | TODO    |                         |                   |
+| TokenTracker        | TokenTransferSucceeded           | PASS    | TRANSFER_TOKEN          |                   |
+| TokenTracker        | TokenRecovered                   | PASS    | RECOVER_SELECTED_TOKENS |                   |
+| TokenTracker        | BalanceRetrievalError            | TODO    |                         |                   |
+| TokenTracker        | TokenTracked                     | PASS    | TRACK                   |                   |
+| TokenTracker        | TokenUntracked                   | PASS    | UNTRACK                 |                   |
+| TokenTracker        | TokenNotFound                    | TODO    |                         |                   |
+| WalletGraph         | BackLinkAltered                  | PASS    | BACKLINK_ADD            |                   |
+| WalletGraph         | InvalidBackLinkIndex             | TODO    |                         |                   |
+| WalletGraph         | CommandDispatched                | TODO    |                         |                   |
+| WalletGraph         | CommandFailed                    | TODO    |                         |                   |
+| WalletGraph         | BackLinkUpdated                  | TODO    |                         |                   |
+| WalletGraph         | BackLinkUpdateError              | TODO    |                         |                   |
+
+### Appendix C: Positive Use Case Testing Status Overview
+
+| Functionality | Positive Use Cases  | Status | Notes |
+|---------------|---------------------|--------|-------|
+| Application   | BASIC               | PASS   |       |
+| Application   | REVOKE BY DATE      | TODO   |       |
+| Application   | REVOKE BY SIGNATURE | TODO   |       |
+| Application   | CALL WITH PAYMENT   | TODO   |       |
+| Application   | MULTICALL           | TODO   |       |
+| Core          | BASIC               | PASS   |       |
+| Security      | BASIC               | PASS   |       |
+| Token         | BASIC               | PASS   |       |
+| Token         | ERC20               | PASS   |       |
+| Token         | ERC721              | PASS   |       |
+| Token         | ERC1155             | PASS   |       |
+| Upgrade       | BASIC               | PASS   |       |
+
+### Appendix D: Complex Scenario Testing Status Overview
