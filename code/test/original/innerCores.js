@@ -1,9 +1,9 @@
-const TestUtil = require('./util')
+const TestUtil = require('../util')
 const unit = require('ethjs-unit')
-const ONEUtil = require('../lib/util')
-const ONEDebugger = require('../lib/debug')
-const ONEWallet = require('../lib/onewallet')
-const ONEConstants = require('../lib/constants')
+const ONEUtil = require('../../lib/util')
+const ONEDebugger = require('../../lib/debug')
+const ONEWallet = require('../../lib/onewallet')
+const ONEConstants = require('../../lib/constants')
 const BN = require('bn.js')
 const INTERVAL = 30000
 const SLOT_SIZE = 1
@@ -20,6 +20,7 @@ contract('ONEWallet', (accounts) => {
   const EFFECTIVE_TIMES = DURATIONS.map(d => Math.floor(NOW / INTERVAL) * INTERVAL - d / 2)
   let snapshotId
   beforeEach(async function () {
+    await TestUtil.init()
     snapshotId = await TestUtil.snapshot()
   })
 
