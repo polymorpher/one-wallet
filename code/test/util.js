@@ -18,8 +18,9 @@ const ONE_ETH = unit.toWei('1', 'ether')
 const VALID_SIGNATURE_VALUE = '0x1626ba7e'
 // const INVALID_SIGNATURE_VALUE = '0xffffffff'
 const DUMMY_HEX = '0x'
-const INTERVAL = 30000
-const DURATION = INTERVAL * 12
+const INTERVAL = 30000 // 30 second Intervals
+const DURATION = INTERVAL * 12 // 6 minute wallet duration
+const getEffectiveTime = () => Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
 const SLOT_SIZE = 1
 const MAX_UINT32 = new BN(2).pow(new BN(32)).subn(1)
 const Logger = {
@@ -44,6 +45,14 @@ const init = async () => {
   Libraries = libraries
   Wallet = ONEWalletAbs
   Logger.debug('Initialized')
+  // if (testData) {
+  //   let {
+  //     alice, bob, carol, dora, ernie, state, bobState, carolState, doraState, ernieState, testerc20, testerc721, testerc1155, testerc20v2, testerc721v2, testerc1155v2
+  //   } = await deployTestData()
+  //   return {
+  //     alice, bob, carol, dora, ernie, state, bobState, carolState, doraState, ernieState, testerc20, testerc721, testerc1155, testerc20v2, testerc721v2, testerc1155v2
+  //   }
+  // }
 }
 
 const deploy = async (initArgs) => {
@@ -51,6 +60,34 @@ const deploy = async (initArgs) => {
     await init()
   }
   return Factories['ONEWalletFactoryHelper'].deploy(initArgs)
+}
+
+const deployTestData = async () => {
+  // get Deployer accounts
+  const accounts = await web3.eth.getAccounts()
+  // deploy wallets
+  let { walletInfo: alice, state } = await makeWallet({ salt: 'UT-GENERAL-0-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+  const { walletInfo: bob, state: bobState } = await makeWallet({ salt: 'UT-GENERAL-0-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+  const { walletInfo: carol, state: carolState } = await makeWallet({ salt: 'UT-GENERAL-0-3', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+  const { walletInfo: dora, state: doraState } = await makeWallet({ salt: 'UT-GENERAL-0-4', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+  const { walletInfo: ernie, state: ernieState } = await makeWallet({ salt: 'UT-GENERAL-0-5', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+  // deploy tokens
+  const { testerc20, testerc721, testerc1155 } = await makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: true, makeERC1155: true })
+  const { testerc20: testerc20v2, testerc721: testerc721v2, testerc1155: testerc1155v2 } = await makeTokens({ deployer: accounts[0], makeERC20: true, makeERC721: true, makeERC1155: true })
+  // fund tokens
+  await fundTokens({
+    funder: accounts[0],
+    receivers: [alice.wallet.address, alice.wallet.address, alice.wallet.address],
+    tokenTypes: [ONEConstants.TokenType.ERC20, ONEConstants.TokenType.ERC721, ONEConstants.TokenType.ERC1155],
+    tokenContracts: [testerc20, testerc721, testerc1155],
+    tokenIds: [[], [2, 3], [2, 3]],
+    tokenAmounts: [[1000], [2], [20, 30]]
+  })
+  state = await getState(alice.wallet)
+
+  return {
+    alice, bob, carol, dora, ernie, state, bobState, carolState, doraState, ernieState, testerc20, testerc721, testerc1155, testerc20v2, testerc721v2, testerc1155v2
+  }
 }
 
 // ==== INFRASTRUCTURE FUNCTIONS ====
@@ -757,6 +794,7 @@ module.exports = {
   // deployment
   init,
   getFactory: (factory) => Factories[factory],
+  deployTestData,
 
   // infrastructure
   Logger,

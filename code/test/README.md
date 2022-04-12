@@ -30,6 +30,26 @@ To run an individual test use
 ```
 VERBOSE=0 truffle test --network=ganache --compile-none --grep 'AD-WALLET-1'
 ```
+## Test Data Overview
+Before each test we deploy the OneWallet Contracts and test data (through ulitity helper functions in `util.js`). The form of users and token contracts funded as follows
+
+### Test Users
+All users are funded with HALF_ETH (half the native token) and initially have a SpendingLimit of ONE_ETH (one native token). Also alice is funded with tokens as follows
+* alice: Primary user funded with 1000 testerc20, 2 testerc721 tokens [2,3], 50 testerc115 tokens [(2,20),(3,30)]
+* bob: used  for testing token transfers from alice and tracking tokens
+* carol: used for testing backlinks with alice
+* dora: used for testing overriding backlinks
+* ernie: general purpose user
+
+We deploy the following contracts using account[0] with the following initial funds, some of which are used to fund alice
+* ERC20: testerc20 10000000 of which 1000 are used to fund alice
+* ERC721: testerc721 10 tokens [0,1,2,3,4,5,6,7,8,9] of which [2,3] are used to fund alice
+* ERC1155: testerc1155 10 tokens [0,1,2,3,4,5,6,7,8,9] with quantities of [10,20,30,40,50,66,70,80,90,100] of which [(2,20),(3,30)] are used to fund alice
+
+We also deploy the following contracts which can be used for additional tracking or transfer function (no initial funding is done from these contracts)
+* ERC20: testerc20 10000000 
+* ERC721: testerc721 10 tokens [0,1,2,3,4,5,6,7,8,9] 
+* ERC1155: testerc1155 10 tokens [0,1,2,3,4,5,6,7,8,9] with quantities of [10,20,30,40,50,66,70,80,90,100] 
 
 ## Tests Areas
 
@@ -177,18 +197,18 @@ First, create a new file and write out how you expect a successful operation to 
 ### Appendix C: Positive Use Case Testing Status Overview
 
 | Functionality | Positive Use Cases  | Status | Notes |
-|---------------|---------------------|--------|-------|
-| Application   | BASIC               | PASS   |       |
-| Application   | REVOKE BY DATE      | TODO   |       |
-| Application   | REVOKE BY SIGNATURE | TODO   |       |
-| Application   | CALL WITH PAYMENT   | TODO   |       |
-| Application   | MULTICALL           | PASS   |       |
-| Core          | BASIC               | PASS   |       |
-| Security      | BASIC               | PASS   |       |
-| Token         | BASIC               | PASS   |       |
-| Token         | ERC20               | PASS   |       |
-| Token         | ERC721              | PASS   |       |
-| Token         | ERC1155             | PASS   |       |
-| Upgrade       | BASIC               | PASS   |       |
+|---------------|---------------------|--------|-----------------------------|
+| Application   | BASIC               | PASS   |                             |
+| Application   | REVOKE BY DATE      | TODO   |                             |
+| Application   | REVOKE BY SIGNATURE | TODO   |                             |
+| Application   | CALL WITH PAYMENT   | TODO   | See samples in Swap.jsx     |
+| Application   | MULTICALL           | PASS   |                             |
+| Core          | BASIC               | PASS   |                             |
+| Security      | BASIC               | PASS   |                             |
+| Token         | BASIC               | PASS   |                             |
+| Token         | ERC20               | PASS   |                             |
+| Token         | ERC721              | PASS   |                             |
+| Token         | ERC1155             | PASS   |                             |
+| Upgrade       | BASIC               | PASS   |                             |
 
 ### Appendix D: Complex Scenario Testing Status Overview
