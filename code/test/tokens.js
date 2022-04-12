@@ -84,6 +84,8 @@ const executeTokenTransaction = async ({
 
 // === TESTING
 contract('ONEWallet', (accounts) => {
+  Logger.debug(`Testing with ${accounts.length} accounts`)
+  Logger.debug(accounts)
   // Wallets effective time is the current time minus half the duration (3 minutes ago)
   let snapshotId
   let alice, bob, carol, dora, ernie, state, bobState, carolState, doraState, ernieState, testerc20, testerc721, testerc1155, testerc20v2, testerc721v2, testerc1155v2

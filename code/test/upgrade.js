@@ -103,10 +103,30 @@ const executeUpgradeTransaction = async ({
 contract('ONEWallet', (accounts) => {
   Logger.debug(`Testing with ${accounts.length} accounts`)
   Logger.debug(accounts)
+  // Wallets effective time is the current time minus half the duration (3 minutes ago)
   let snapshotId
+  let alice, bob, carol, dora, ernie, state, bobState, carolState, doraState, ernieState, testerc20, testerc721, testerc1155, testerc20v2, testerc721v2, testerc1155v2
+
   beforeEach(async function () {
     await TestUtil.init()
     snapshotId = await TestUtil.snapshot()
+    const testData = await TestUtil.deployTestData()
+    alice = testData.alice
+    bob = testData.bob
+    carol = testData.carol
+    dora = testData.dora
+    ernie = testData.ernie
+    state = testData.state
+    bobState = testData.bobState
+    carolState = testData.carolState
+    doraState = testData.doraState
+    ernieState = testData.ernieState
+    testerc20 = testData.testerc20
+    testerc721 = testData.testerc721
+    testerc1155 = testData.testerc1155
+    testerc20v2 = testData.testerc20v2
+    testerc721v2 = testData.testerc721v2
+    testerc1155v2 = testData.testerc1155v2
   })
   afterEach(async function () {
     await TestUtil.revert(snapshotId)
@@ -118,7 +138,8 @@ contract('ONEWallet', (accounts) => {
   // Test forwarding to another wallet
   // Expected result the wallet will be forwarded to
   it('UP-BASIC-8 FORWARD: must be able to set forward to another wallet', async () => {
-    // create wallets and token contracts used througout the tests
+    // Here we have a special case where we want alice's wallet backlinked to carol
+    // create wallets and token contracts used througout the test
     let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'UP-BASIC-8-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
     let { walletInfo: carol, state: carolState } = await TestUtil.makeWallet({ salt: 'UP-BASIC-8-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION, backlinks: [alice.wallet.address] })
 
@@ -173,10 +194,6 @@ contract('ONEWallet', (accounts) => {
   // Test add a backlink from Alices wallet to Carols
   // Expected result: Alices wallet will be backlinked to Carols
   it('UP-BASIC-12 BACKLINK_ADD: must be able to add a backlink', async () => {
-    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'UP-BASIC-12-1-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
-    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'UP-BASIC-12-1-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
-
-    // Begin Tests
     let testTime = Date.now()
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
@@ -211,10 +228,6 @@ contract('ONEWallet', (accounts) => {
   // Test remove a backlink from Alices wallet to Carols
   // Expected result: Alices wallet will not be backlinked to Carols
   it('UP-BASIC-13 BACKLINK_DELETE: must be able to delete a backlink', async () => {
-    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'UP-BASIC-13-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
-    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'UP-BASIC-13.2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
-
-    // Begin Tests
     let testTime = Date.now()
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
@@ -262,11 +275,6 @@ contract('ONEWallet', (accounts) => {
   // Test override a backlink from Alices wallet to Carols with Alices Wallet to Doras
   // Expected result: Alices wallet will be backlinked to Doras
   it('UP-BASIC-14 BACKLINK_OVERRIDE: must be able to override a backlink', async () => {
-    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'UP-BASIC-14-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
-    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'UP-BASIC-14.2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
-    let { walletInfo: dora } = await TestUtil.makeWallet({ salt: 'UP-BASIC-14.3', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
-
-    // Begin Tests
     let testTime = Date.now()
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
@@ -325,6 +333,8 @@ contract('ONEWallet', (accounts) => {
   // Test signing a transaction with a backlinked wallet
   // Expected result the backlinked wallet will sign a transaction for the linked wallet
   it('UP-COMPLEX-8-0 FORWARD-COMMAND: must be able to sign a transaction for a backlinked wallet', async () => {
+    // Here we have a special case where we want alice's wallet backlinked to carol
+    // create wallets and token contracts used througout the test
     let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'UP-COMPLEX-8-0-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
     let { walletInfo: carol, state: carolState } = await TestUtil.makeWallet({ salt: 'UP-COMPLEX-8-0-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION, backlinks: [alice.wallet.address] })
 
@@ -413,7 +423,8 @@ contract('ONEWallet', (accounts) => {
   // Test forwarding to another wallet
   // Expected result all tracked tokens will be forwarded to the destination wallet
   it('UP-COMPLEX-8-1 FORWARD-EXISTING: must be able to forward all assets to another wallet', async () => {
-    // create wallets and token contracts used througout the tests
+    // Here we have a special case where we want alice's wallet backlinked to carol
+    // create wallets and token contracts used througout the test
     let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'UP-COMPLEX-8-1-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
     let { walletInfo: carol, state: carolState } = await TestUtil.makeWallet({ salt: 'UP-COMPLEX-8-1-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION, backlinks: [alice.wallet.address] })
 
@@ -510,7 +521,8 @@ contract('ONEWallet', (accounts) => {
   // Test forwarding to another wallet
   // Expected result all tracked tokens will be automatically forwarded to the destination wallet
   it('UP-COMPLEX-8-2 FORWARD-AUTOMATICALLY-NATIVE: native assets should be forwarded automatically', async () => {
-    // create wallets and token contracts used througout the tests
+    // Here we have a special case where we want alice's wallet backlinked to carol
+    // create wallets and token contracts used througout the test
     let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'UP-COMPLEX-8-2-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
     let { walletInfo: carol, state: carolState } = await TestUtil.makeWallet({ salt: 'UP-COMPLEX-8-2-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION, backlinks: [alice.wallet.address] })
 
@@ -570,7 +582,8 @@ contract('ONEWallet', (accounts) => {
   // Test forwarding to another wallet
   // Expected result all tracked tokens will be automatically forwarded to the destination wallet
   it('UP-COMPLEX-8-3 FORWARD-AUTOMATICALLY-TOKENS: must be able to forward all assets to another wallet', async () => {
-    // create wallets and token contracts used througout the tests
+    // Here we have a special case where we want alice's wallet backlinked to carol
+    // create wallets and token contracts used througout the test
     let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'UP-COMPLEX-8-3-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
     let { walletInfo: carol, state: carolState } = await TestUtil.makeWallet({ salt: 'UP-COMPLEX-8-3-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION, backlinks: [alice.wallet.address] })
 

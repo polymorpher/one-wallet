@@ -103,9 +103,28 @@ contract('ONEWallet', (accounts) => {
   Logger.debug(`Testing with ${accounts.length} accounts`)
   Logger.debug(accounts)
   let snapshotId
+  let alice, bob, carol, dora, ernie, state, bobState, carolState, doraState, ernieState, testerc20, testerc721, testerc1155, testerc20v2, testerc721v2, testerc1155v2
+
   beforeEach(async function () {
     await TestUtil.init()
     snapshotId = await TestUtil.snapshot()
+    const testData = await TestUtil.deployTestData()
+    alice = testData.alice
+    bob = testData.bob
+    carol = testData.carol
+    dora = testData.dora
+    ernie = testData.ernie
+    state = testData.state
+    bobState = testData.bobState
+    carolState = testData.carolState
+    doraState = testData.doraState
+    ernieState = testData.ernieState
+    testerc20 = testData.testerc20
+    testerc721 = testData.testerc721
+    testerc1155 = testData.testerc1155
+    testerc20v2 = testData.testerc20v2
+    testerc721v2 = testData.testerc721v2
+    testerc1155v2 = testData.testerc1155v2
   })
   afterEach(async function () {
     await TestUtil.revert(snapshotId)
@@ -117,14 +136,6 @@ contract('ONEWallet', (accounts) => {
   // Test transferring native currency
   // Expected result alice can transfer funds to bob
   it('CO-BASIC-4 TRANSFER: must be able to transfer native currency', async () => {
-  // create wallets and token contracts used througout the tests
-    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'CO-BASIC-4-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
-    const { walletInfo: bob, state: bobState } = await TestUtil.makeWallet({ salt: 'CO-BASIC-4-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
-
-    // alice and bob both have an initial balance of half an ETH
-    await TestUtil.validateBalance({ address: alice.wallet.address, amount: HALF_ETH })
-    await TestUtil.validateBalance({ address: bob.wallet.address, amount: HALF_ETH })
-
     // Begin Tests
     let testTime = Date.now()
 
@@ -166,7 +177,8 @@ contract('ONEWallet', (accounts) => {
   // Notes: Cannot set this to zero address, the same address or the treasury address
   // Fails to update if you have create alice wallet with `setLastResortAddress: true` as an address already set.
   it('CO-BASIC-5 SET_RECOVERY_ADDRESS: must be able to set recovery address', async () => {
-    // create wallets and token contracts used througout the tests
+    // Here we have a special case where we want alice last resort address not to be set so we can set this to carol
+    // create wallets and token contracts used througout the test
     let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'CO-BASIC-5-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION, setLastResortAddress: false })
     const { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'CO-BASIC-5-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
 
@@ -206,10 +218,8 @@ contract('ONEWallet', (accounts) => {
   // Test recover all native assets from alices wallet
   // Expected result: all native assets will be transferred to her last resort address
   it('CO-BASIC-6 RECOVER: must be able to recover assets', async () => {
-    // create wallets and token contracts used througout the tests
-    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'CO-BASIC-6', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
-
-    assert.strictEqual(state.forwardAddress, ONEConstants.EmptyAddress, 'Expected forward address to be empty' )
+    // verify alice does not have forward address set initially
+    assert.strictEqual(state.forwardAddress, ONEConstants.EmptyAddress, 'Expected forward address to be empty')
     let info = await TestUtil.getInfoParsed(alice.wallet)
     await TestUtil.validateBalance({ address: alice.wallet.address, amount: HALF_ETH })
     await TestUtil.validateBalance({ address: info.recoveryAddress, amount: 0 })
