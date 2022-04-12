@@ -3,7 +3,6 @@ const config = require('../config')
 const unit = require('ethjs-unit')
 const ONEUtil = require('../lib/util')
 const ONEConstants = require('../lib/constants')
-const ONE = require('../lib/onewallet')
 const ONEWallet = require('../lib/onewallet')
 const BN = require('bn.js')
 const ONEDebugger = require('../lib/debug')
@@ -62,7 +61,7 @@ const executeSecurityTransaction = async ({
   const t0 = new BN(info[3]).toNumber()
   const walletEffectiveTime = t0 * INTERVAL
   let index = ONEUtil.timeToIndex({ effectiveTime: walletEffectiveTime, time: testTime })
-  let eotp = await ONE.computeEOTP({ otp, hseed: walletInfo.hseed })
+  let eotp = await ONEWallet.computeEOTP({ otp, hseed: walletInfo.hseed })
   let layers = walletInfo.client.layers
   let paramsHash
   let commitParams

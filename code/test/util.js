@@ -4,7 +4,7 @@ const config = require('../config')
 const base32 = require('hi-base32')
 const BN = require('bn.js')
 const unit = require('ethjs-unit')
-const ONE = require('../lib/onewallet')
+const ONEWallet = require('../lib/onewallet')
 const ONEParser = require('../lib/parser')
 const { backoff } = require('exponential-backoff')
 const ONEUtil = require('../lib/util')
@@ -215,7 +215,7 @@ const makeCores = async ({
     otpSeed2 = base32.encode(byteSeed2)
   }
   effectiveTime = Math.floor(effectiveTime / INTERVAL) * INTERVAL
-  const { seed: computedSeed, seed2: computedSeed2, hseed, root, leaves, layers, maxOperationsPerInterval: slotSize, randomnessResults, counter, innerTrees } = await ONE.computeMerkleTree({
+  const { seed: computedSeed, seed2: computedSeed2, hseed, root, leaves, layers, maxOperationsPerInterval: slotSize, randomnessResults, counter, innerTrees } = await ONEWallet.computeMerkleTree({
     otpSeed,
     otpSeed2,
     effectiveTime,
@@ -270,7 +270,7 @@ const getEOTP = async ({ seed, hseed, effectiveTime, timeOffset }) => {
   const counter = timeOffset && Math.floor((Date.now() + timeOffset) / INTERVAL)
   const otp = ONEUtil.genOTP({ seed, counter })
   const index = ONEUtil.timeToIndex({ effectiveTime, time: timeOffset && (Date.now() + timeOffset) })
-  const eotp = await ONE.computeEOTP({ otp, hseed })
+  const eotp = await ONEWallet.computeEOTP({ otp, hseed })
   return { index, eotp }
 }
 
@@ -752,14 +752,14 @@ const assertStateEqual = async (expectedState, actualState, checkNonce = false) 
 // ==== EXECUTION FUNCTIONS ====
 
 const commitReveal = async ({ layers, Debugger, index, eotp, paramsHash, commitParams, revealParams, wallet }) => {
-  const neighbors = ONE.selectMerkleNeighbors({ layers, index })
+  const neighbors = ONEWallet.selectMerkleNeighbors({ layers, index })
   const neighbor = neighbors[0]
-  const { hash: commitHash } = ONE.computeCommitHash({ neighbor, index, eotp })
+  const { hash: commitHash } = ONEWallet.computeCommitHash({ neighbor, index, eotp })
   if (typeof paramsHash === 'function') {
     const { hash } = paramsHash({ ...commitParams })
     paramsHash = hash
   }
-  const { hash: verificationHash } = ONE.computeVerificationHash({ paramsHash, eotp })
+  const { hash: verificationHash } = ONEWallet.computeVerificationHash({ paramsHash, eotp })
   Logger.debug(`Committing`, { commitHash: ONEUtil.hexString(commitHash), paramsHash: ONEUtil.hexString(paramsHash), verificationHash: ONEUtil.hexString(verificationHash) })
   await wallet.commit(ONEUtil.hexString(commitHash), ONEUtil.hexString(paramsHash), ONEUtil.hexString(verificationHash))
   Logger.debug(`Committed`)

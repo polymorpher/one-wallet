@@ -3,7 +3,6 @@ const config = require('../config')
 const unit = require('ethjs-unit')
 const ONEUtil = require('../lib/util')
 const ONEConstants = require('../lib/constants')
-const ONE = require('../lib/onewallet')
 const ONEWallet = require('../lib/onewallet')
 const BN = require('bn.js')
 const ONEDebugger = require('../lib/debug')
@@ -53,7 +52,7 @@ const executeUpgradeTransaction = async ({
   const t0 = new BN(info[3]).toNumber()
   const walletEffectiveTime = t0 * INTERVAL
   const index = ONEUtil.timeToIndex({ effectiveTime: walletEffectiveTime, time: testTime })
-  const eotp = await ONE.computeEOTP({ otp, hseed: walletInfo.hseed })
+  const eotp = await ONEWallet.computeEOTP({ otp, hseed: walletInfo.hseed })
   let paramsHash
   let commitParams
   let revealParams

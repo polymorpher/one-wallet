@@ -1,5 +1,5 @@
 const ONEUtil = require('../lib/util')
-const ONE = require('../lib/onewallet')
+const ONEWallet = require('../lib/onewallet')
 const INTERVAL = 30000
 // const DURATION = INTERVAL * 8
 const DURATION = INTERVAL * 2 * 60 * 24 * 364
@@ -70,7 +70,7 @@ contract('ONEWallet', (accounts) => {
     const recoveredList = []
     for (let i = 0; i < leaves.length / 32; i++) {
       const otp = ONEUtil.genOTP({ seed, counter: counter + i })
-      const recovered = await ONE.recoverRandomness({ hseed, otp, randomness: 16, hasher: ONEUtil.sha256b, leaf: leaves.subarray(i * 32, i * 32 + 32) })
+      const recovered = await ONEWallet.recoverRandomness({ hseed, otp, randomness: 16, hasher: ONEUtil.sha256b, leaf: leaves.subarray(i * 32, i * 32 + 32) })
       recoveredList.push(recovered)
     }
     assert.deepEqual(recoveredList, randomnessResults, 'Controlled Randomness must be recovered')
@@ -135,7 +135,7 @@ contract('ONEWallet', (accounts) => {
     for (let i = 0; i < leaves.length / 32; i++) {
       const otp = ONEUtil.genOTP({ seed, counter: counter + i })
       const otp2 = ONEUtil.genOTP({ seed: seed2, counter: counter + i })
-      const recovered = await ONE.recoverRandomness({ hseed, otp, otp2, randomness: 16, hasher: ONEUtil.sha256b, leaf: leaves.subarray(i * 32, i * 32 + 32) })
+      const recovered = await ONEWallet.recoverRandomness({ hseed, otp, otp2, randomness: 16, hasher: ONEUtil.sha256b, leaf: leaves.subarray(i * 32, i * 32 + 32) })
       recoveredList.push(recovered)
     }
     assert.deepEqual(recoveredList, randomnessResults, 'Controlled Randomness must be recovered')
@@ -197,7 +197,7 @@ contract('ONEWallet', (accounts) => {
     }
     const counterOffset = 3
     const otp = ONEUtil.genOTP({ seed, counter: counter + counterOffset })
-    const recovered = await ONE.recoverRandomness({ hseed, otp, randomness: 16, hasher: ONEUtil.argon2, leaf: leaves.subarray(counterOffset * 32, counterOffset * 32 + 32) })
+    const recovered = await ONEWallet.recoverRandomness({ hseed, otp, randomness: 16, hasher: ONEUtil.argon2, leaf: leaves.subarray(counterOffset * 32, counterOffset * 32 + 32) })
     // console.log(recovered, randomnessResults[counterOffset])
     assert.equal(recovered, randomnessResults[counterOffset], 'Controlled Randomness must be recovered')
   })
@@ -256,17 +256,17 @@ contract('ONEWallet', (accounts) => {
     const index = ONEUtil.timeToIndex({ effectiveTime })
     const leaf = leaves.subarray(index * 32, index * 32 + 32)
     Logger.debug(`otp=${ONEUtil.decodeOtp(otp)} otp2=${ONEUtil.decodeOtp(otp2)} index=${index}. Recovering rand...`)
-    const rand = await ONE.recoverRandomness({ hseed, otp, otp2, randomness, hasher, leaf })
+    const rand = await ONEWallet.recoverRandomness({ hseed, otp, otp2, randomness, hasher, leaf })
     Logger.debug(`rand=${rand} recovered`)
     assert.ok(rand !== null, 'Recover randomness must succeed')
-    const neighbors = ONE.selectMerkleNeighbors({ layers, index })
+    const neighbors = ONEWallet.selectMerkleNeighbors({ layers, index })
     const neighbor = neighbors[0]
-    const eotp = await ONE.computeEOTP({ otp, otp2, rand, hseed, hasher })
+    const eotp = await ONEWallet.computeEOTP({ otp, otp2, rand, hseed, hasher })
     Logger.debug(`eotp=${ONEUtil.hexString(eotp)} SHA256(eotp)=${ONEUtil.hexString(ONEUtil.sha256(eotp))} leaf=${ONEUtil.hexString(leaf)}`)
     assert.ok(ONEUtil.bytesEqual(ONEUtil.sha256(eotp), leaf), 'SHA256(EOTP) must be leaf')
-    const { hash: commitHash } = ONE.computeCommitHash({ neighbor, index, eotp })
-    const { hash: paramsHash } = ONE.computeTransferHash({ dest: purse.address, amount: ONE_CENT.divn(2) })
-    const { hash: verificationHash } = ONE.computeVerificationHash({ paramsHash, eotp })
+    const { hash: commitHash } = ONEWallet.computeCommitHash({ neighbor, index, eotp })
+    const { hash: paramsHash } = ONEWallet.computeTransferHash({ dest: purse.address, amount: ONE_CENT.divn(2) })
+    const { hash: verificationHash } = ONEWallet.computeVerificationHash({ paramsHash, eotp })
     const neighborsEncoded = neighbors.map(ONEUtil.hexString)
     await web3.eth.sendTransaction({
       from: accounts[0],
