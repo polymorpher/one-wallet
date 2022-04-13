@@ -82,9 +82,9 @@ const executeCoreTransaction = async ({
       eotp = await Flow.EotpBuilders.recovery({ wallet: walletInfo.wallet, layers: walletInfo.client.layers })
       // Commit logic
       paramsHash = ONEWallet.computeRecoveryHash
-      commitParams = { operationType, hseed: walletInfo.hseed }
-      // revealParams = {}
-      revealParams = { operationType, hseed: walletInfo.hseed }
+      // paramsHash = function () { ONEWallet.computeRecoveryHash({ hseed: walletInfo.hseed }) }
+      commitParams = { operationType, data }
+      revealParams = { operationType, data }
       break
     default:
       console.log(`Invalid Operation passed`)
