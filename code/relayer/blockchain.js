@@ -254,9 +254,10 @@ const prepareExecute = (network, logger = console.log) => async (f) => {
       async () => f({
         from,
         nonce: '0x' + new BN(nonce).toString(16),
-        gasPrice: config.gasPrice.clone().addn(numAttempts)
+        gasPrice: config.gasPrice.clone().muln((numAttempts || 0) + 1)
       }), {
         retry: (ex, n) => {
+          console.error(`[error]`, ex)
           if (ex?.abort) {
             logger(`[abort][attempts=${n}]${printNonceStats()}`)
             return false
