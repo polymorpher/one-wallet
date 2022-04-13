@@ -19,14 +19,7 @@ const HALF_ETH = unit.toWei('0.5', 'ether')
 const INTERVAL = 30000 // 30 second Intervals
 const DURATION = INTERVAL * 12 // 6 minute wallet duration
 const getEffectiveTime = () => Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
-
-const Logger = {
-  debug: (...args) => {
-    if (config.verbose) {
-      console.log(...args)
-    }
-  }
-}
+const Logger = TestUtil.Logger
 const Debugger = ONEDebugger(Logger)
 
 // ==== EXECUTION FUNCTIONS ====
