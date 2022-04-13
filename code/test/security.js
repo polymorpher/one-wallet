@@ -6,7 +6,6 @@ const ONEConstants = require('../lib/constants')
 const ONEWallet = require('../lib/onewallet')
 const BN = require('bn.js')
 const ONEDebugger = require('../lib/debug')
-// const assert = require('assert')
 const exp = require('constants')
 
 const NullOperationParams = {

@@ -6,7 +6,6 @@ const ONEConstants = require('../lib/constants')
 const ONEWallet = require('../lib/onewallet')
 const BN = require('bn.js')
 const ONEDebugger = require('../lib/debug')
-const assert = require('assert')
 
 const NullOperationParams = {
   ...ONEConstants.NullOperationParams,
@@ -290,7 +289,7 @@ contract('ONEWallet', (accounts) => {
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
     // backlinkedAddresses
     let backlinks = await alice.wallet.getBacklinks()
-    assert.notDeepStrictEqual(backlinks, state.backlinkedAddresses, 'alice.wallet.backlinkedAddresses should have been updated')
+    assert.notDeepEqual(backlinks, state.backlinkedAddresses, 'alice.wallet.backlinkedAddresses should have been updated')
     assert.strictEqual(backlinks[0].toString(), carol.wallet.address.toString(), 'alice.wallet.backlinkedAddresses should equal carol.wallet.address')
     state.backlinks = backlinks
     // check alice
@@ -337,7 +336,7 @@ contract('ONEWallet', (accounts) => {
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
     // backlinkedAddresses
     let backlinks = await alice.wallet.getBacklinks()
-    assert.notDeepStrictEqual(backlinks, stateLinked.backlinkedAddresses, 'alice.wallet.backlinkedAddresses should have been updated')
+    assert.notDeepEqual(backlinks, stateLinked.backlinkedAddresses, 'alice.wallet.backlinkedAddresses should have been updated')
     assert.strictEqual(backlinks.length, 0, 'alice.wallet.backlinkedAddresses should be empty')
     state.backlinks = backlinks
     // check alice
@@ -385,7 +384,7 @@ contract('ONEWallet', (accounts) => {
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
     // backlinkedAddresses
     let backlinks = await alice.wallet.getBacklinks()
-    assert.notDeepStrictEqual(backlinks, linkedToCarolState.backlinkedAddresses, 'alice.wallet.backlinkedAddresses should have been updated')
+    assert.notDeepEqual(backlinks, linkedToCarolState.backlinkedAddresses, 'alice.wallet.backlinkedAddresses should have been updated')
     assert.strictEqual(backlinks[0].toString(), dora.wallet.address.toString(), 'alice.wallet.backlinkedAddresses should equal dora.wallet.address')
     state.backlinks = backlinks
     // check alice
