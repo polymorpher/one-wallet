@@ -185,6 +185,7 @@ contract('ONEWallet', (accounts) => {
   // ====== COMMAND ======
   // Test wallet issuing a command for a backlinked wallet
   // Expected result Carol will execute a command which adds a signature to Alice's wallet
+  // Note in order to issue a command the wallet must be backlinked and forwarded
   // Logic: This executes command in WalletGraph.sol and wallets must be backlinked
   // Executor.sol calls baclinkAddresses
   //     backlinkAddresses.command(op.tokenType, op.contractAddress, op.tokenId, op.dest, op.amount, op.data);
