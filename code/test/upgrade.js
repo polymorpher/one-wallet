@@ -186,7 +186,87 @@ contract('ONEWallet', (accounts) => {
   // Test wallet issuing a command for a backlinked wallet
   // Expected result Carol will execute a command which adds a signature to Alice's wallet
   // Logic: This executes command in WalletGraph.sol and wallets must be backlinked
-  it('TODO-UP-BASIC-11 COMMAND: must be able to issue a command', async () => {
+  // Executor.sol calls baclinkAddresses
+  //     backlinkAddresses.command(op.tokenType, op.contractAddress, op.tokenId, op.dest, op.amount, op.data);
+  // WalletGraph.sol
+  // function command(IONEWallet[] storage backlinkAddresses, Enums.TokenType tokenType, address contractAddress, uint256 tokenId, address payable dest, uint256 amount, bytes calldata data) public {
+  //  (address backlink, uint16 operationType, bytes memory commandData) = abi.decode(data, (address, uint16, bytes));
+  // after ensuring the wallet is backlinked to the address specified in the op.data 
+  // we call IONEWallet using the operation parameters given, substituting operationType and command Data with that provided in op.data
+  //  try IONEWallet(backlink).reveal(IONEWallet.AuthParams(new bytes32[](0), 0, bytes32(0)), IONEWallet.OperationParams(Enums.OperationType(operationType), tokenType, contractAddress, tokenId, dest, amount, commandData)){
+  // Parameter Overview
+  //  op.token.Type
+  //  op.contractAddress
+  //  op.TokenId
+  //  op.dest
+  //  op.amount
+  //  op.data is decoded using         (address backlink, uint16 operationType, bytes memory commandData) = abi.decode(data, (address, uint16, bytes));
+  //    backlink(address): used to specify the backlinked wallet
+  //    operationType(uint16): used in the commitReveal as the substituted operationType
+  //    commandData(bytes): used in the commitReveal as the substituted data
+
+  it('UP-BASIC-11 COMMAND: must be able to issue a command', async () => {
+    let { walletInfo: carol, state: carolState } = await TestUtil.makeWallet({ salt: 'UP-BASIC-11-0-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION, backlinks: [alice.wallet.address] })
+
+    // Begin Tests
+    let testTime = Date.now()
+
+    // set alice's forwarding address to carol's wallet address
+    // needed for Carol to issue commands for Alices wallet
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    await executeUpgradeTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.FORWARD,
+        dest: carol.wallet.address,
+        testTime
+      }
+    )
+    state = await TestUtil.getState(alice.wallet)
+    carolState = await TestUtil.getState(carol.wallet)
+
+    // Carols uses COMMAND to sign a transaction
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    const hexData = ONEUtil.abi.encodeParameters(['address', 'uint16', 'bytes'], [alice.wallet.address, ONEConstants.OperationType.SIGN, new Uint8Array()])
+    const messageHash = ONEUtil.keccak('hello world')
+    const signature = ONEUtil.keccak('awesome signature')
+    const expiryAtBytes = new BN(0xffffffff).toArrayLike(Uint8Array, 'be', 4)
+    const encodedExpiryAt = new Uint8Array(20)
+    encodedExpiryAt.set(expiryAtBytes)
+    Logger.debug(messageHash.length, signature.length)
+    const data = ONEUtil.hexStringToBytes(hexData)
+
+    let { tx, currentState: carolCurrentState } = await executeUpgradeTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: carol,
+        operationType: ONEConstants.OperationType.COMMAND,
+        tokenId: new BN(messageHash).toString(),
+        dest: ONEUtil.hexString(encodedExpiryAt),
+        amount: new BN(signature).toString(),
+        data,
+        testTime
+      }
+    )
+    let currentState = await TestUtil.getState(alice.wallet)
+    Logger.debug(tx)
+
+    // Validate that the command was dispatched and that executed(SignatureAuthorized)
+    TestUtil.validateEvent({ tx, expectedEvent: 'CommandDispatched' })
+    TestUtil.validateEvent({ tx, expectedEvent: 'SignatureAuthorized' })
+
+    // Alice items that have changed -signatures
+    // check alice signatures have changed by getting the current values and overriding with the expected hash and signature
+    const expectedSignatures = await TestUtil.getSignaturesParsed(alice.wallet)
+    expectedSignatures[0].hash = ONEUtil.hexString(messageHash)
+    expectedSignatures[0].signature = ONEUtil.hexString(signature)
+    state.signatures = await TestUtil.validateSignaturesMutation({ expectedSignatures, wallet: alice.wallet })
+    await TestUtil.assertStateEqual(state, currentState)
+    // Carol Items that have changed - lastOperationTime, commits, trackedTokens
+    carolState = await TestUtil.validateOpsStateMutation({ wallet: carol.wallet, state: carolState })
+    // check carol's wallet hasn't changed
+    await TestUtil.assertStateEqual(carolState, carolCurrentState)
   })
 
   // ====== BACKLINK_ADD ======
@@ -379,7 +459,7 @@ contract('ONEWallet', (accounts) => {
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
 
-    // Carols uses the CALL command to sign a transaction
+    // Carols uses COMMAND to sign a transaction
     const hexData = ONEUtil.abi.encodeParameters(['address', 'uint16', 'bytes'], [alice.wallet.address, ONEConstants.OperationType.SIGN, new Uint8Array()])
     const messageHash = ONEUtil.keccak('hello world')
     const signature = ONEUtil.keccak('awesome signature')
