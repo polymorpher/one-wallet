@@ -286,9 +286,20 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.assertStateEqual(state, currentState)
   })
 
-  // === Negative Use Cases (Event Testing) ===
+  // ==== ADDITIONAL POSTIVE TESTING =====
 
-  // === Scenario (Complex) Testing ===
+  // ==== NEGATIVE USE CASES (EVENT TESTING) ====
 
-  // Combination testing of multiple functions
+  // Test calling TRANSFER with insufficient funds
+  // Expected result this will fail and trigger event InsufficientFund
+  // Logic: if (address(this).balance < amount)
+  it('SE-TRANSFER-4 TRANSFER: must fail with insufficient funds', async () => {
+  })
+
+  // Test calling TRANSFER with insufficient funds
+  // Expected result this will fail and trigger event InsufficientFund
+  // Logic: if (!isWithinLimit(ss, amount))
+  it('SE-TRANSFER-4-1 CHANGE_SPENDING_LIMIT: must fail with insufficient funds', async () => {
+  })
+  // ==== COMPLEX SCENARIO TESTING ====
 })

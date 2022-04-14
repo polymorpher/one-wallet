@@ -371,6 +371,10 @@ contract('ONEWallet', (accounts) => {
   it('TODO-UP-BASIC-29 CREATE: must be able to process a create transactions', async () => {
   })
 
+  // ==== ADDITIONAL POSTIVE TESTING =====
+
+  // ==== NEGATIVE USE CASES (EVENT TESTING) ====
+
   // ==== COMPLEX SCENARIO TESTING ====
   // ====== CALL MULTI ======
   // Test calling mutliple transactions

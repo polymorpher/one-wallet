@@ -131,7 +131,7 @@ First, create a new file and write out how you expect a successful operation to 
 | Contract            | Event                            | Status  | Sample Operation        | Notes             |
 |---------------------|----------------------------------|---------|-------------------------|-------------------|
 | CoreManager         | CoreDisplaced                    | PASS    | DISPLACE                |                   |
-| CoreManager         | CoreDisplacementFailed           | TODO    | DISPLACE                |                   |
+| CoreManager         | CoreDisplacementFailed           | *TODO   | DISPLACE                |                   |
 | DomainManager       | DomainRegistered                 | Phase 2 |                         |                   |
 | DomainManager       | ReverseDomainClaimed             | Phase 2 |                         |                   |
 | DomainManager       | ReverseDomainClaimError          | Phase 2 |                         |                   |
@@ -169,12 +169,12 @@ First, create a new file and write out how you expect a successful operation to 
 | SignatureManager    | SignatureAuthorized              | PASS    | SIGN                    |                   |
 | SignatureManager    | SignatureRevoked                 | TODO    |                         |                   |
 | SignatureManager    | SignatureExpired                 | TODO    |                         |                   |
-| SpendingManager     | ExceedSpendingLimit              | TODO    |                         |                   |
-| SpendingManager     | InsufficientFund                 | TODO    |                         |                   |
+| SpendingManager     | ExceedSpendingLimit              | TODO    | TRANSFER                |                   |
+| SpendingManager     | InsufficientFund                 | TODO    | TRANSFER                |                   |
 | SpendingManager     | SpendingLimitChanged             | PASS    | CHANGE_SPENDING_LIMIT   |                   |
 | SpendingManager     | HighestSpendingLimitChanged      | PASS    | CHANGE_SPENDING_LIMIT   |                   |
-| SpendingManager     | SpendingLimitChangeFailed        | PASS    | CHANGE_SPENDING_LIMIT   |                   |
-| SpendingManager     | SpendingLimitJumped              | TODO    |                         |                   |
+| SpendingManager     | SpendingLimitChangeFailed        | TODO    | CHANGE_SPENDING_LIMIT   |                   |
+| SpendingManager     | SpendingLimitJumped              | PASS    | JUMP_SPENDING_LIMIT     |                   |
 | Staking             | StakingSuccess                   | TODO    |                         |                   |
 | Staking             | StakingFailure                   | TODO    |                         |                   |
 | TokenManager        | ReceivedToken                    | TODO    |                         |                   |

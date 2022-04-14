@@ -312,6 +312,8 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.assertStateEqual(carolState, carolCurrentState)
   })
 
+  // ==== ADDITIONAL POSTIVE TESTING =====
+
   // ==== ADDITIONAL POSITIVE TESTING ERC721 ====
 
   // ====== TRACK ======
@@ -678,6 +680,8 @@ contract('ONEWallet', (accounts) => {
     carolState.trackedTokens = await TestUtil.validateTrackedTokensMutation({ expectedTrackedTokens, wallet: carol.wallet })
     await TestUtil.assertStateEqual(carolState, carolCurrentState)
   })
+
+  // ==== NEGATIVE USE CASES (EVENT TESTING) ====
 
   // ==== COMPLEX SCENARIO TESTING ====
   // TokenTracker Testing (track, multitrack, getTrackedTokens, getBalance, recoverToken) also batch transactions

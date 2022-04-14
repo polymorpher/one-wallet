@@ -392,9 +392,48 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.assertStateEqual(state, currentState)
   })
 
-  // === Negative Use Cases (Event Testing) ===
+  // ==== ADDITIONAL POSTIVE TESTING =====
 
-  // === Scenario (Complex) Testing ===
+  // ==== NEGATIVE USE CASES (EVENT TESTING) ====
+
+  // Test calling DISPLACE when forward has been set
+  // Expected result this will fail and trigger event CoreDisplacementFailed "Wallet deprecated"
+  // Logic: if (forwardAddress != address(0))
+  it('SE-NEGATIVE-7 DISPLACE: must fail if forward address has been set', async () => {
+  })
+
+  // Test calling DISPLACE with an older Time Range
+  // Expected result this will fail and trigger event CoreDisplacementFailed "Must have newer time range"
+  // Logic: (newCore.t0 + newCore.lifespan <= oldCore.t0 + oldCore.lifespan || newCore.t0 <= oldCore.t0)
+  it('SE-NEGATIVE-7-1 DISPLACE: must fail if called with an older Time Range', async () => {
+  })
+
+  // Test calling DISPLACE with the same root
+  // Expected result this will fail and trigger event CoreDisplacementFailed "Must have different root"
+  // Logic: if (newCore.root == oldCore.root) {
+  it('SE-NEGATIVE-7-1 DISPLACE: must fail if called with the same root', async () => {
+  })
+
+  // Test calling CHANGE_SPENDING_LIMIT too early
+  // Expected result this will fail and trigger event SpendingLimitChangeFailed "Too early"
+  // Logic: if (ss.lastLimitAdjustmentTime + ss.spendingInterval > block.timestamp && newLimit > ss.spendingLimit)
+  it('SE-NEGATIVE-24 CHANGE_SPENDING_LIMIT: must fail when called too early', async () => {
+  })
+
+  // Test calling CHANGE_SPENDING_LIMIT too much
+  // Expected result this will fail and trigger event SpendingLimitChangeFailed "Too much""
+  // Logic: if (newLimit > (ss.spendingLimit) * 2 + (1 ether))
+  it('SE-NEGATIVE-24-1 CHANGE_SPENDING_LIMIT: must fail when called changing too much', async () => {
+  })
+
+  // Test calling CHANGE_SPENDING_LIMIT too high
+  // Expected result this will fail and trigger event SpendingLimitChangeFailed "Too high"
+  // Logic: if (newLimit > ss.highestSpendingLimit)
+  it('SE-NEGATIVE-24-2 CHANGE_SPENDING_LIMIT: must fail when called too early', async () => {
+  })
+
+  // ==== COMPLEX SCENARIO TESTING ====
+
   // ====== SPENDING LIMIT RULES ======
   // Test spending limit rules
   // Expected all spending limit rules will be obeyed
@@ -599,6 +638,4 @@ contract('ONEWallet', (accounts) => {
     const purseBalance = await web3.eth.getBalance(purse.address)
     assert.equal(ONE_DIME / 2, purseBalance, 'Purse has correct balance')
   })
-
-  // Combination testing of multiple functions
 })

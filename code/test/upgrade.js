@@ -397,9 +397,11 @@ contract('ONEWallet', (accounts) => {
   it('TODO-UP-BASIC-30 UPGRADE: must be able to process a upgrade transactions', async () => {
   })
 
-  // === Negative Use Cases (Event Testing) ===
+  // ==== ADDITIONAL POSTIVE TESTING =====
 
-  // === Scenario (Complex) Testing ===
+  // ==== NEGATIVE USE CASES (EVENT TESTING) ====
+
+  // ==== COMPLEX SCENARIO TESTING ====
 
   // ====== FORWARD + COMMAND ======
   // Test signing a transaction with a backlinked wallet
