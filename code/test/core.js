@@ -293,13 +293,19 @@ contract('ONEWallet', (accounts) => {
   // Test calling TRANSFER with insufficient funds
   // Expected result this will fail and trigger event InsufficientFund
   // Logic: if (address(this).balance < amount)
-  it('SE-TRANSFER-4 TRANSFER: must fail with insufficient funds', async () => {
+  it('SE-NEGATIVE-4 TRANSFER: must fail with insufficient funds', async () => {
   })
 
-  // Test calling TRANSFER with insufficient funds
-  // Expected result this will fail and trigger event InsufficientFund
+  // Test calling TRANSFER with for an amount that exceeds the spending limit
+  // Expected result this will fail and trigger event ExceedSpendingLimit
   // Logic: if (!isWithinLimit(ss, amount))
-  it('SE-TRANSFER-4-1 CHANGE_SPENDING_LIMIT: must fail with insufficient funds', async () => {
+  it('SE-NEGATIVE-4-1 TRANSFER: must fail with exceedinng spending limit', async () => {
+  })
+
+  // Test calling TRANSFER which fails
+  // Expected result this will fail and trigger event TransferError
+  // Logic: if (!success) where (bool success, bytes memory ret) = dest.call{value : amount}("");
+  it('SE-NEGATIVE-4-1 TRANSFER: must fail with exceedinng spending limit', async () => {
   })
   // ==== COMPLEX SCENARIO TESTING ====
 })

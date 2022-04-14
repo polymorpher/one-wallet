@@ -145,7 +145,7 @@ First, create a new file and write out how you expect a successful operation to 
 | DomainManager       | DomainRenewed                    | Phase 2 |                         |                   |
 | ONEWalletCodeHelper | ONEWalletDeployFailed            | TODO    |                         | FactoryHelper.sol |
 | ONEWalletCodeHelper | ONEWalletDeploySuccess           | TODO    |                         | FactoryHelper.sol |
-| IONEWallet          | TransferError                    | TODO    |                         |                   |
+| IONEWallet          | TransferError                    | *TODO   |                         |                   |
 | IONEWallet          | LastResortAddressNotSet          | TODO    |                         |                   |
 | IONEWallet          | RecoveryAddressUpdated           | PASS    | SET_RECOVERY_ADDRESS    |                   |
 | IONEWallet          | PaymentReceived                  | TODO    |                         |                   |
@@ -169,11 +169,11 @@ First, create a new file and write out how you expect a successful operation to 
 | SignatureManager    | SignatureAuthorized              | PASS    | SIGN                    |                   |
 | SignatureManager    | SignatureRevoked                 | TODO    |                         |                   |
 | SignatureManager    | SignatureExpired                 | TODO    |                         |                   |
-| SpendingManager     | ExceedSpendingLimit              | TODO    | TRANSFER                |                   |
-| SpendingManager     | InsufficientFund                 | TODO    | TRANSFER                |                   |
+| SpendingManager     | ExceedSpendingLimit              | *TODO   | TRANSFER                |                   |
+| SpendingManager     | InsufficientFund                 | *TODO   | TRANSFER                |                   |
 | SpendingManager     | SpendingLimitChanged             | PASS    | CHANGE_SPENDING_LIMIT   |                   |
 | SpendingManager     | HighestSpendingLimitChanged      | PASS    | CHANGE_SPENDING_LIMIT   |                   |
-| SpendingManager     | SpendingLimitChangeFailed        | TODO    | CHANGE_SPENDING_LIMIT   |                   |
+| SpendingManager     | SpendingLimitChangeFailed        | *TODO   | CHANGE_SPENDING_LIMIT   |                   |
 | SpendingManager     | SpendingLimitJumped              | PASS    | JUMP_SPENDING_LIMIT     |                   |
 | Staking             | StakingSuccess                   | TODO    |                         |                   |
 | Staking             | StakingFailure                   | TODO    |                         |                   |
