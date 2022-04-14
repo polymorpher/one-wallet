@@ -748,3 +748,7 @@ contract('ONEWallet', (accounts) => {
   })
 // Combination testing of multiple functions
 })
+
+module.exports = {
+  executeUpgradeTransaction
+}

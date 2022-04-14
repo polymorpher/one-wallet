@@ -1,5 +1,5 @@
 const TestUtil = require('./util')
-const config = require('../config')
+const TestUpgrade = require('./upgrade')
 const unit = require('ethjs-unit')
 const Flow = require('../lib/api/flow')
 const ONEUtil = require('../lib/util')
@@ -288,6 +288,47 @@ contract('ONEWallet', (accounts) => {
 
   // ==== ADDITIONAL POSTIVE TESTING =====
 
+  // Test calling TRANSFER when forwarding address is set
+  // Expected result this will fail and trigger event PaymentForwarded
+  // Logic: // if sender is anyone else (including self), simply forward the payment
+  it('SE-POSITIVE-4 TRANSFER: must forward funds automatically when forward addres is set', async () => {
+    // Here we have a special case where we want alice's wallet backlinked to carol
+    // create wallets and token contracts used througout the test
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'UP-BASIC-8-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+    let { walletInfo: carol, state: carolState } = await TestUtil.makeWallet({ salt: 'UP-BASIC-8-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION, backlinks: [alice.wallet.address] })
+
+    // Begin Tests
+    let testTime = Date.now()
+
+    // set alice's forwarding address to carol's wallet address
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    await TestUpgrade.executeUpgradeTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.FORWARD,
+        dest: carol.wallet.address,
+        testTime
+      }
+    )
+
+    // let tx2 = await TestUtil.fundTokens({ to: alice.wallet.address, amount: ONE_CENT })
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    // bob tranfers ONE CENT to alice which get's forwarded to carol
+    let { tx } = await executeCoreTransaction(
+      {
+        ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
+        walletInfo: bob,
+        operationType: ONEConstants.OperationType.TRANSFER,
+        dest: alice.wallet.address,
+        amount: ONE_CENT,
+        testTime
+      }
+    )
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx, expectedEvent: 'PaymentForwarded' })
+  })
+
   // ==== NEGATIVE USE CASES (EVENT TESTING) ====
 
   // Test calling TRANSFER with insufficient funds
@@ -299,13 +340,19 @@ contract('ONEWallet', (accounts) => {
   // Test calling TRANSFER with for an amount that exceeds the spending limit
   // Expected result this will fail and trigger event ExceedSpendingLimit
   // Logic: if (!isWithinLimit(ss, amount))
-  it('SE-NEGATIVE-4-1 TRANSFER: must fail with exceedinng spending limit', async () => {
+  it('SE-NEGATIVE-4-1 TRANSFER: must fail with exceeding spending limit', async () => {
   })
 
   // Test calling TRANSFER which fails
   // Expected result this will fail and trigger event TransferError
   // Logic: if (!success) where (bool success, bytes memory ret) = dest.call{value : amount}("");
-  it('SE-NEGATIVE-4-1 TRANSFER: must fail with exceedinng spending limit', async () => {
+  it('SE-NEGATIVE-4-1 TRANSFER: must fail with transfer error', async () => {
+  })
+
+  // Test calling RECOVER were last resort address is not set
+  // Expected result this will fail and trigger event LastResortAddressNotSet
+  // Logic: if (!Recovery.isRecoveryAddressSet(recoveryAddress))
+  it('SE-NEGATIVE-6 RECOVER: must fail with last address not set', async () => {
   })
   // ==== COMPLEX SCENARIO TESTING ====
 })

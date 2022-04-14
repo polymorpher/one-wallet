@@ -360,6 +360,10 @@ const makeTokens = async ({
 }
 
 const fundWallet = async ({ from, to, value = HALF_ETH }) => {
+  if (!from) {
+    const accounts = await web3.eth.getAccounts()
+    from = accounts[0]
+  }
   await web3.eth.sendTransaction({ from, to, value })
   const balance = await web3.eth.getBalance(to)
   return new BN(balance).toString()

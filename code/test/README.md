@@ -145,12 +145,12 @@ First, create a new file and write out how you expect a successful operation to 
 | DomainManager       | DomainRenewed                    | Phase 2 |                         |                   |
 | ONEWalletCodeHelper | ONEWalletDeployFailed            | TODO    |                         | FactoryHelper.sol |
 | ONEWalletCodeHelper | ONEWalletDeploySuccess           | TODO    |                         | FactoryHelper.sol |
-| IONEWallet          | TransferError                    | *TODO   |                         |                   |
-| IONEWallet          | LastResortAddressNotSet          | TODO    |                         |                   |
+| IONEWallet          | TransferError                    | *TODO   | TRANSFER                |                   |
+| IONEWallet          | LastResortAddressNotSet          | *TODO   | RECOVER                 |                   |
 | IONEWallet          | RecoveryAddressUpdated           | PASS    | SET_RECOVERY_ADDRESS    |                   |
-| IONEWallet          | PaymentReceived                  | TODO    |                         |                   |
+| IONEWallet          | PaymentReceived                  | N/A     |                         | event not emitted |
 | IONEWallet          | PaymentSent                      | PASS    | TRANSFER                |                   |
-| IONEWallet          | PaymentForwarded                 | TODO    |                         |                   |
+| IONEWallet          | PaymentForwarded                 | PASS    | TRANSFER                |                   |
 | IONEWallet          | AutoRecoveryTriggered            | TODO    |                         |                   |
 | IONEWallet          | AutoRecoveryTriggeredPrematurely | TODO    |                         |                   |
 | IONEWallet          | RecoveryFailure                  | TODO    |                         |                   |
