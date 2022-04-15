@@ -79,14 +79,13 @@ const executeTokenTransaction = async ({
 contract('ONEWallet', (accounts) => {
   Logger.debug(`Testing with ${accounts.length} accounts`)
   Logger.debug(accounts)
-  // Wallets effective time is the current time minus half the duration (3 minutes ago)
   let snapshotId
   let alice, bob, carol, dora, ernie, state, bobState, carolState, doraState, ernieState, testerc20, testerc721, testerc1155, testerc20v2, testerc721v2, testerc1155v2
 
   beforeEach(async function () {
-    await TestUtil.init()
-    snapshotId = await TestUtil.snapshot()
-    const testData = await TestUtil.deployTestData()
+    const testData = await TestUtil.init({})
+    // const testData = await TestUtil.deployTestData()
+    console.log(`testData.alice.wallet.address: ${JSON.stringify(testData.alice.wallet.address)}`)
     alice = testData.alice
     bob = testData.bob
     carol = testData.carol
@@ -103,6 +102,7 @@ contract('ONEWallet', (accounts) => {
     testerc20v2 = testData.testerc20v2
     testerc721v2 = testData.testerc721v2
     testerc1155v2 = testData.testerc1155v2
+    snapshotId = await TestUtil.snapshot()
   })
   afterEach(async function () {
     await TestUtil.revert(snapshotId)

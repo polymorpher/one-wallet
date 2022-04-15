@@ -19,7 +19,7 @@ contract('ONEWallet', (accounts) => {
   // Wallets effective time is the current time minus half the duration (3 minutes ago)
   let snapshotId
   beforeEach(async function () {
-    await TestUtil.init()
+    await TestUtil.init({})
     snapshotId = await TestUtil.snapshot()
   })
   afterEach(async function () {

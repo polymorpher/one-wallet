@@ -107,9 +107,9 @@ contract('ONEWallet', (accounts) => {
   let alice, bob, carol, dora, ernie, state, bobState, carolState, doraState, ernieState, testerc20, testerc721, testerc1155, testerc20v2, testerc721v2, testerc1155v2
 
   beforeEach(async function () {
-    await TestUtil.init()
-    snapshotId = await TestUtil.snapshot()
-    const testData = await TestUtil.deployTestData()
+    const testData = await TestUtil.init({})
+    // const testData = await TestUtil.deployTestData()
+    console.log(`testData.alice.wallet.address: ${JSON.stringify(testData.alice.wallet.address)}`)
     alice = testData.alice
     bob = testData.bob
     carol = testData.carol
@@ -126,6 +126,7 @@ contract('ONEWallet', (accounts) => {
     testerc20v2 = testData.testerc20v2
     testerc721v2 = testData.testerc721v2
     testerc1155v2 = testData.testerc1155v2
+    snapshotId = await TestUtil.snapshot()
   })
   afterEach(async function () {
     await TestUtil.revert(snapshotId)
@@ -291,11 +292,11 @@ contract('ONEWallet', (accounts) => {
   // Test calling TRANSFER when forwarding address is set
   // Expected result this will fail and trigger event PaymentForwarded
   // Logic: // if sender is anyone else (including self), simply forward the payment
-  it('SE-POSITIVE-4 TRANSFER: must forward funds automatically when forward addres is set', async () => {
+  it('CO-POSITIVE-4 TRANSFER: must forward funds automatically when forward addres is set', async () => {
     // Here we have a special case where we want alice's wallet backlinked to carol
     // create wallets and token contracts used througout the test
-    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'UP-BASIC-8-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
-    let { walletInfo: carol, state: carolState } = await TestUtil.makeWallet({ salt: 'UP-BASIC-8-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION, backlinks: [alice.wallet.address] })
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'CP-POSITIVE-4-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+    let { walletInfo: carol, state: carolState } = await TestUtil.makeWallet({ salt: 'CO-POSITIVE-4-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION, backlinks: [alice.wallet.address] })
 
     // Begin Tests
     let testTime = Date.now()
@@ -334,19 +335,19 @@ contract('ONEWallet', (accounts) => {
   // Test calling TRANSFER with insufficient funds
   // Expected result this will fail and trigger event InsufficientFund
   // Logic: if (address(this).balance < amount)
-  it('SE-NEGATIVE-4 TRANSFER: must fail with insufficient funds', async () => {
+  it('CO-NEGATIVE-4 TRANSFER: must fail with insufficient funds', async () => {
   })
 
   // Test calling TRANSFER with for an amount that exceeds the spending limit
   // Expected result this will fail and trigger event ExceedSpendingLimit
   // Logic: if (!isWithinLimit(ss, amount))
-  it('SE-NEGATIVE-4-1 TRANSFER: must fail with exceeding spending limit', async () => {
+  it('CO-NEGATIVE-4-1 TRANSFER: must fail with exceeding spending limit', async () => {
   })
 
   // Test calling TRANSFER which fails
   // Expected result this will fail and trigger event TransferError
   // Logic: if (!success) where (bool success, bytes memory ret) = dest.call{value : amount}("");
-  it('SE-NEGATIVE-4-1 TRANSFER: must fail with transfer error', async () => {
+  it('CO-NEGATIVE-4-1 TRANSFER: must fail with transfer error', async () => {
   })
 
   // Test calling RECOVER were last resort address is not set

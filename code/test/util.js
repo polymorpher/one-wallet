@@ -35,30 +35,56 @@ let Factories
 // eslint-disable-next-line no-unused-vars
 let Libraries
 let Wallet
+let Alice, Bob, Carol, Dora, Ernie, State, BobState, CarolState, DoraState, ErnieState, Testerc20, Testerc721, Testerc1155, Testerc20v2, Testerc721v2, Testerc1155v2
 
 // ==== DEPLOYMENT FUNCTIONS ====
-const init = async () => {
+const init = async ({ testData = true }) => {
   if (Factories && Libraries && Wallet) {
-    return
+    if (testData) {
+      return {
+        alice: Alice, bob: Bob, carol: Carol, dora: Dora, ernie: Ernie, state: State, bobState: BobState, carolState: CarolState, doraState: DoraState, ernieState: ErnieState, testerc20: Testerc20, testerc721: Testerc721, testerc1155: Testerc1155, testerc20v2: Testerc20v2, testerc721v2: Testerc721v2, testerc1155v2: Testerc1155v2
+      }
+    } else {
+      return
+    }
   }
   const { factories, libraries, ONEWalletAbs } = await loadContracts(Logger)
   Factories = factories
   Libraries = libraries
   Wallet = ONEWalletAbs
   Logger.debug('Initialized')
-  // if (testData) {
-  //   let {
-  //     alice, bob, carol, dora, ernie, state, bobState, carolState, doraState, ernieState, testerc20, testerc721, testerc1155, testerc20v2, testerc721v2, testerc1155v2
-  //   } = await deployTestData()
-  //   return {
-  //     alice, bob, carol, dora, ernie, state, bobState, carolState, doraState, ernieState, testerc20, testerc721, testerc1155, testerc20v2, testerc721v2, testerc1155v2
-  //   }
-  // }
+  if (testData) {
+    if (!Alice) {
+      let {
+        alice, bob, carol, dora, ernie, state, bobState, carolState, doraState, ernieState, testerc20, testerc721, testerc1155, testerc20v2, testerc721v2, testerc1155v2
+      } = await deployTestData()
+      Alice = alice
+      Bob = bob
+      Carol = carol
+      Dora = dora
+      Ernie = ernie
+      State = state
+      BobState = bobState
+      CarolState = carolState
+      DoraState = doraState
+      ErnieState = ernieState
+      Testerc20 = testerc20
+      Testerc721 = testerc721
+      Testerc1155 = testerc1155
+      Testerc20v2 = testerc20v2
+      Testerc721v2 = testerc721v2
+      Testerc1155v2 = testerc1155v2
+    }
+    console.log(`Alice.wallet.address: ${JSON.stringify(Alice.wallet.address)}`)
+    return {
+      alice: Alice, bob: Bob, carol: Carol, dora: Dora, ernie: Ernie, state: State, bobState: BobState, carolState: CarolState, doraState: DoraState, ernieState: ErnieState, testerc20: Testerc20, testerc721: Testerc721, testerc1155: Testerc1155, testerc20v2: Testerc20v2, testerc721v2: Testerc721v2, testerc1155v2: Testerc1155v2
+    }
+  }
 }
 
 const deploy = async (initArgs) => {
   if (!Factories) {
-    await init()
+    await init({ testData: false })
   }
   return Factories['ONEWalletFactoryHelper'].deploy(initArgs)
 }

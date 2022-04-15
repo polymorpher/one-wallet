@@ -117,8 +117,8 @@ const executeSecurityTransaction = async ({
       const innerEffectiveTime = Math.floor(effectiveTime / (INTERVAL * 6)) * (INTERVAL * 6)
       const innerExpiryTime = innerEffectiveTime + Math.floor(duration / (INTERVAL * 6)) * (INTERVAL * 6)
       assert.isBelow(testTimeNow, innerExpiryTime, 'Current time must be greater than inner expiry time')
-      const index = ONEUtil.timeToIndex({ time: testTimeNow, effectiveTime: innerEffectiveTime, interval: INTERVAL * 6 }) // passed to Commit Reveal
-      const eotp = await ONEWallet.computeInnerEOTP({ otps }) // passed to Commit Reveal
+      index = ONEUtil.timeToIndex({ time: testTimeNow, effectiveTime: innerEffectiveTime, interval: INTERVAL * 6 }) // passed to Commit Reveal
+      eotp = await ONEWallet.computeInnerEOTP({ otps }) // passed to Commit Reveal
       Logger.debug({
         otps: otps.map(e => {
           const r = new DataView(new Uint8Array(e).buffer)
@@ -163,9 +163,9 @@ contract('ONEWallet', (accounts) => {
   let alice, bob, carol, dora, ernie, state, bobState, carolState, doraState, ernieState, testerc20, testerc721, testerc1155, testerc20v2, testerc721v2, testerc1155v2
 
   beforeEach(async function () {
-    await TestUtil.init()
-    snapshotId = await TestUtil.snapshot()
-    const testData = await TestUtil.deployTestData()
+    const testData = await TestUtil.init({})
+    // const testData = await TestUtil.deployTestData()
+    console.log(`testData.alice.wallet.address: ${JSON.stringify(testData.alice.wallet.address)}`)
     alice = testData.alice
     bob = testData.bob
     carol = testData.carol
@@ -182,6 +182,7 @@ contract('ONEWallet', (accounts) => {
     testerc20v2 = testData.testerc20v2
     testerc721v2 = testData.testerc721v2
     testerc1155v2 = testData.testerc1155v2
+    snapshotId = await TestUtil.snapshot()
   })
   afterEach(async function () {
     await TestUtil.revert(snapshotId)

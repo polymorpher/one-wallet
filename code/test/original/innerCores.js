@@ -20,7 +20,7 @@ contract('ONEWallet', (accounts) => {
   const EFFECTIVE_TIMES = DURATIONS.map(d => Math.floor(NOW / INTERVAL) * INTERVAL - d / 2)
   let snapshotId
   beforeEach(async function () {
-    await TestUtil.init()
+    await TestUtil.init({ testData: false })
     snapshotId = await TestUtil.snapshot()
   })
 
