@@ -247,7 +247,7 @@ router.post('/reveal', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
     const executor = blockchain.prepareExecute(req.network, logger)
     tx = await executor(txArgs => {
       if (!(req.majorVersion >= 14)) {
-        return wallet.reveal(neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data, txArgs)
+        return wallet.methods['reveal(bytes32[],uint32,bytes32,uint8,uint8,address,uint256,address,uint256,bytes)'].sendTransaction(...[neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data], txArgs)
       } else {
         return wallet.reveal(
           [neighbors, index, eotp],
