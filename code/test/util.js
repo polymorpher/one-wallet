@@ -9,6 +9,7 @@ const ONEParser = require('../lib/parser')
 const { backoff } = require('exponential-backoff')
 const ONEUtil = require('../lib/util')
 const ONEConstants = require('../lib/constants')
+const assert = require('assert')
 const TestERC20 = artifacts.require('TestERC20')
 const TestERC721 = artifacts.require('TestERC721')
 const TestERC1155 = artifacts.require('TestERC1155')
@@ -418,10 +419,9 @@ const validateEvent = ({ tx, expectedEvent }) => {
   for (let i = 0; i < events.length || 0; i++) {
     const event = events.filter(e => e.eventName === expectedEvent)[i]
     eventName = event?.eventName
-    Logger.debug(`eventName: ${eventName}`)
     if (eventName === expectedEvent) { return }
   }
-  assert.deepStrictEqual(eventName, expectedEvent, 'Expected event not triggered')
+  assert.fail(eventName, expectedEvent, 'Expected event not triggered', '===')
 }
 
 // ==== ADDRESS VALIDATION HELPER FUNCTIONS ====
