@@ -1,5 +1,4 @@
 const TestUtil = require('./util')
-const TestUpgrade = require('./upgrade')
 const unit = require('ethjs-unit')
 const Flow = require('../lib/api/flow')
 const ONEUtil = require('../lib/util')
@@ -303,7 +302,7 @@ contract('ONEWallet', (accounts) => {
 
     // set alice's forwarding address to carol's wallet address
     testTime = await TestUtil.bumpTestTime(testTime, 60)
-    await TestUpgrade.executeUpgradeTransaction(
+    await TestUtil.executeUpgradeTransaction(
       {
         ...NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,

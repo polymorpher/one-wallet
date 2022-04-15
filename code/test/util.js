@@ -31,6 +31,8 @@ const Logger = {
     }
   }
 }
+const ONEDebugger = require('../lib/debug')
+const Debugger = ONEDebugger(Logger)
 let Factories
 // eslint-disable-next-line no-unused-vars
 let Libraries
@@ -781,6 +783,75 @@ const assertStateEqual = async (expectedState, actualState, checkNonce = false) 
 
 // ==== EXECUTION FUNCTIONS ====
 
+// ==== EXECUTION FUNCTIONS ====
+// executeUpgradeTransaction commits and reveals a wallet transaction
+const executeUpgradeTransaction = async ({
+  walletInfo,
+  operationType,
+  tokenType,
+  contractAddress,
+  tokenId,
+  dest,
+  amount,
+  data,
+  testTime = Date.now(),
+  getCurrentState = true
+}) => {
+  // calculate counter from testTime
+  const counter = Math.floor(testTime / INTERVAL)
+  const otp = ONEUtil.genOTP({ seed: walletInfo.seed, counter })
+  // calculate wallets effectiveTime (creation time) from t0
+  const info = await walletInfo.wallet.getInfo()
+  const t0 = new BN(info[3]).toNumber()
+  const walletEffectiveTime = t0 * INTERVAL
+  const index = ONEUtil.timeToIndex({ effectiveTime: walletEffectiveTime, time: testTime })
+  const eotp = await ONEWallet.computeEOTP({ otp, hseed: walletInfo.hseed })
+  let paramsHash
+  let commitParams
+  let revealParams
+  // Process the Operation
+  switch (operationType) {
+    // Format commit and revealParams for FORWARD Tranasction
+    case ONEConstants.OperationType.FORWARD:
+    case ONEConstants.OperationType.SET_RECOVERY_ADDRESS:
+      paramsHash = ONEWallet.computeDestOnlyHash
+      commitParams = { dest }
+      revealParams = { operationType, dest }
+      break
+    case ONEConstants.OperationType.COMMAND:
+    case ONEConstants.OperationType.TRACK:
+    case ONEConstants.OperationType.RECOVER_SELECTED_TOKENS:
+      paramsHash = ONEWallet.computeGeneralOperationHash
+      commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
+      revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
+      break
+    case ONEConstants.OperationType.BACKLINK_ADD:
+    case ONEConstants.OperationType.BACKLINK_DELETE:
+    case ONEConstants.OperationType.BACKLINK_OVERRIDE:
+      paramsHash = ONEWallet.computeDataHash
+      commitParams = { operationType, data }
+      revealParams = { operationType, data }
+      break
+    default:
+      console.log(`Invalid Operation passed`)
+      assert.strictEqual(operationType, 'A Valid Operation', 'Error invalid operationType passed')
+      return
+  }
+  let { tx, authParams, revealParams: returnedRevealParams } = await commitReveal({
+    Debugger,
+    layers: walletInfo.client.layers,
+    index,
+    eotp,
+    paramsHash,
+    commitParams,
+    revealParams,
+    wallet: walletInfo.wallet
+  })
+  let currentState
+  if (getCurrentState) { currentState = await getState(walletInfo.wallet) }
+  return { tx, authParams, revealParams: returnedRevealParams, currentState }
+}
+
 const commitReveal = async ({ layers, Debugger, index, eotp, paramsHash, commitParams, revealParams, wallet }) => {
   const neighbors = ONEWallet.selectMerkleNeighbors({ layers, index })
   const neighbor = neighbors[0]
@@ -879,5 +950,6 @@ module.exports = {
   assertStateEqual,
 
   // execution
+  executeUpgradeTransaction,
   commitReveal
 }
