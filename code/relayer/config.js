@@ -3,6 +3,7 @@ const BN = require('bn.js')
 const DEBUG = process.env['RELAYER_DEBUG'] === 'true' || process.env['RELAYER_DEBUG'] === '1'
 const config = {
   debug: DEBUG,
+  relayerId: process.env.RELAYER_ID || 'unknown',
   nullAddress: '0x0000000000000000000000000000000000000000',
   verbose: process.env['VERBOSE'] === 'true' || process.env['VERBOSE'] === '1',
   https: {
@@ -25,8 +26,9 @@ const config = {
     },
     'harmony-mainnet': {
       key: process.env.HARMONY_MAINNET_KEY || '',
-      url: process.env.MAINNET_RPC || 'https://api.s0.t.hmny.io',
-      wss: process.env.MAINNET_WSS,
+      beacon: process.env.BEACON_MAINNET_RPC,
+      url: process.env.MAINNET_RPC || process.env.BEACON_MAINNET_RPC || 'https://api.s0.t.hmny.io',
+      wss: process.env.MAINNET_WSS || process.env.BEACON_MAINNET_WSS,
       mnemonic: process.env.HARMONY_MAINNET_MNEMONIC,
       skip: process.env.SKIP_MAINNET,
       numAccounts: process.env.MAINNET_NUM_ACCOUNTS || 1,
