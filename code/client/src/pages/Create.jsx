@@ -7,13 +7,11 @@ import ONEUtil from '../../../lib/util'
 import ONEConstants from '../../../lib/constants'
 import ONENames from '../../../lib/names'
 import Row from 'antd/es/row'
-import Slider from 'antd/es/slider'
 import Tooltip from 'antd/es/tooltip'
 import Button from 'antd/es/button'
 import Space from 'antd/es/space'
 import Typography from 'antd/es/typography'
 import message from '../message'
-import RedoOutlined from '@ant-design/icons/RedoOutlined'
 import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import QuestionCircleOutlined from '@ant-design/icons/QuestionCircleOutlined'
 import humanizeDuration from 'humanize-duration'
@@ -45,7 +43,7 @@ const getGoogleAuthenticatorAppLink = (os) => {
 }
 
 const sectionViews = {
-  setupWalletDetails: 1,
+  setupWalletDetails: 1, // not used
   setupOtp: 2,
   setupSecondOtp: 3,
   prepareWallet: 4,
@@ -53,8 +51,6 @@ const sectionViews = {
 }
 
 const Create = ({ expertMode, showRecovery }) => {
-  // eslint-disable-next-line no-unused-vars
-  const dev = useSelector(state => state.global.dev)
   const { isMobile, os } = useWindowDimensions()
   const dispatch = useDispatch()
   const history = useHistory()
@@ -64,12 +60,10 @@ const Create = ({ expertMode, showRecovery }) => {
   const [effectiveTime, setEffectiveTime] = useState()
 
   const generateNewOtpName = () => ONENames.genName(Object.keys(wallets).map(k => wallets[k].name))
-  const [name, setName] = useState(generateNewOtpName())
-  // eslint-disable-next-line no-unused-vars
-  const [seed, setSeed] = useState(generateOtpSeed())
-  // eslint-disable-next-line no-unused-vars
-  const [seed2, setSeed2] = useState(generateOtpSeed())
-  const [duration, setDuration] = useState(WalletConstants.defaultDuration)
+  const [name] = useState(generateNewOtpName())
+  const [seed] = useState(generateOtpSeed())
+  const [seed2] = useState(generateOtpSeed())
+  const [duration] = useState(WalletConstants.defaultDuration)
   const [showRecoveryDetail, setShowRecoveryDetail] = useState(false)
   const code = useSelector(state => state.cache.code[network])
 
@@ -91,7 +85,6 @@ const Create = ({ expertMode, showRecovery }) => {
 
   const [doubleOtp, setDoubleOtp] = useState(false)
 
-  const [durationVisible, setDurationVisible] = useState(false)
   const [section, setSection] = useState(sectionViews.setupOtp)
   const [qrCodeData, setQRCodeData] = useState()
   const [secondOtpQrCodeData, setSecondOtpQrCodeData] = useState()
@@ -298,7 +291,6 @@ const Create = ({ expertMode, showRecovery }) => {
         dispatch(walletActions.fetchWallet({ address }))
         history.push(Paths.showAddress(address))
       }, 2500)
-      // setSection(4)
     } catch (ex) {
       handleAPIError(ex)
       message.error('Failed to deploy 1wallet. Please try again. If it keeps happening, please report this issue.')
@@ -328,34 +320,6 @@ const Create = ({ expertMode, showRecovery }) => {
 
   return (
     <>
-      {section === sectionViews.setupWalletDetails &&
-        <AnimatedSection>
-          <Heading>What do you want to call your wallet?</Heading>
-          <Hint>This is only stored on your computer to distinguish your wallets.</Hint>
-          <Row align='middle' style={{ marginBottom: 32, marginTop: 16 }}>
-            <Space size='large'>
-              <InputBox
-                prefix={<Button type='text' onClick={() => setName(generateNewOtpName())} style={{ }}><RedoOutlined /></Button>}
-                value={name} onChange={({ target: { value } }) => setName(value)}
-                style={{ padding: 0 }}
-              />
-              <Button type='primary' shape='round' size='large' onClick={() => setSection(sectionViews.setupOtp)}>Next</Button>
-            </Space>
-          </Row>
-          <Space direction='vertical'>
-            <Hint>Next, we will set up a 1wallet that expires in a year. When the wallet expires, you may create a new wallet and transfer the funds. The funds can also be recovered to an address you set later.</Hint>
-            <Link onClick={() => setDurationVisible(true)}>Need more time?</Link>
-            {durationVisible &&
-              <Space>
-                <Slider
-                  style={{ width: 200 }}
-                  value={duration} tooltipVisible={false} onChange={(v) => setDuration(v)}
-                  min={WalletConstants.minDuration} max={WalletConstants.maxDuration}
-                />
-                <Hint>{humanizeDuration(duration, { units: ['y', 'mo'], round: true })}</Hint>
-              </Space>}
-          </Space>
-        </AnimatedSection>}
       {section === sectionViews.setupOtp &&
         <AnimatedSection>
           <Row>
