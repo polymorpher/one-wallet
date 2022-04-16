@@ -45,13 +45,12 @@ const getGoogleAuthenticatorAppLink = (os) => {
 const sectionViews = {
   setupWalletDetails: 1, // not used
   setupOtp: 2,
-  setupSecondOtp: 3,
-  prepareWallet: 4,
-  walletSetupDone: 5
+  prepareWallet: 3,
+  walletSetupDone: 4
 }
 
 const Create = ({ expertMode, showRecovery }) => {
-  const { isMobile, os } = useWindowDimensions()
+  const { isMobile } = useWindowDimensions()
   const dispatch = useDispatch()
   const history = useHistory()
   const network = useSelector(state => state.global.network)
@@ -88,11 +87,8 @@ const Create = ({ expertMode, showRecovery }) => {
   const [section, setSection] = useState(sectionViews.setupOtp)
   const [qrCodeData, setQRCodeData] = useState()
   const [secondOtpQrCodeData, setSecondOtpQrCodeData] = useState()
-  const [otp, setOtp] = useState('')
   const [deploying, setDeploying] = useState()
   const [deployed, setDeployed] = useState(false)
-
-  const otpRef = useRef()
 
   const securityParameters = ONEUtil.securityParameters({
     majorVersion: ONEConstants.MajorVersion,
@@ -165,49 +161,6 @@ const Create = ({ expertMode, showRecovery }) => {
       }
     }
   }, [section, worker, doubleOtp])
-
-  const enableExpertMode = (refresh) => {
-    if (refresh) {
-      window.location.href = Paths.create2
-      return
-    }
-    history.push(Paths.create2)
-    message.success('Expert mode unlocked')
-    setOtp('')
-  }
-  const disableExpertMode = () => {
-    history.push(Paths.create)
-    message.success('Expert mode disabled')
-    setOtp('')
-  }
-  useEffect(() => {
-    const settingUpSecondOtp = section === sectionViews.setupSecondOtp
-    if (otp.length !== 6) {
-      return
-    }
-    if (otp.toLowerCase() === '0x1337' || otp.toLowerCase() === 'expert') {
-      enableExpertMode()
-      return
-    }
-    if (expertMode && (otp === '0x0000' || otp === 'normal')) {
-      disableExpertMode()
-      return
-    }
-    const currentSeed = settingUpSecondOtp ? seed2 : seed
-    const expected = ONEUtil.genOTP({ seed: currentSeed })
-    const code = new DataView(expected.buffer).getUint32(0, false).toString()
-    setOtp('')
-    if (code.padStart(6, '0') !== otp.padStart(6, '0')) {
-      message.error('Code is incorrect. Please try again.')
-      message.debug(`Correct code is ${code.padStart(6, '0')}`)
-      otpRef?.current?.focusInput(0)
-    } else if (doubleOtp && !settingUpSecondOtp) {
-      setSection(sectionViews.setupSecondOtp)
-      otpRef?.current?.focusInput(0)
-    } else {
-      setSection(sectionViews.prepareWallet)
-    }
-  }, [otp])
 
   const storeLayers = async () => {
     if (!root) {
@@ -321,37 +274,8 @@ const Create = ({ expertMode, showRecovery }) => {
   return (
     <>
       {section === sectionViews.setupOtp &&
-        <AnimatedSection>
-          <Row>
-            <Space direction='vertical'>
-              {/* <Heading>Now, scan the QR code with your Google Authenticator</Heading> */}
-              <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
-              {!isMobile && <Hint>Scan the QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use the wallet </Hint>}
-              {isMobile && <Hint>Tap QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use the wallet</Hint>}
-              {buildQRCodeComponent({ seed, name: ONENames.nameWithTime(name, effectiveTime), os, isMobile, qrCodeData })}
-            </Space>
-          </Row>
-          <Row style={{ marginTop: 16 }}>
-            <Space direction='vertical' size='large' align='center' style={{ width: '100%' }}>
-              <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={ONENames.nameWithTime(name, effectiveTime)} />
-              {expertMode && <TwoCodeOption isMobile={isMobile} setDoubleOtp={setDoubleOtp} doubleOtp={doubleOtp} />}
-              {expertMode && <Hint>You can adjust spending limit in the next step</Hint>}
-            </Space>
-          </Row>
-        </AnimatedSection>}
-      {section === sectionViews.setupSecondOtp &&
-        <AnimatedSection>
-          <Row>
-            <Space direction='vertical'>
-              <Heading>Create Your 1wallet (second code)</Heading>
-              <Hint align='center'>{isMobile ? 'Tap' : 'Scan'} to setup the <b>second</b> code</Hint>
-              {buildQRCodeComponent({ seed: seed2, name: ONENames.nameWithTime(getSecondCodeName(name), effectiveTime), os, isMobile, qrCodeData: secondOtpQrCodeData })}
-            </Space>
-          </Row>
-          <Row>
-            <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={ONENames.nameWithTime(getSecondCodeName(name), effectiveTime)} />
-          </Row>
-        </AnimatedSection>}
+        // TODO: move most of read-only data to one ref.
+        <SetupOptSection name={name} expertMode={expertMode} qrCodeData={qrCodeData} secondOtpQrCodeData={secondOtpQrCodeData} effectiveTime={effectiveTime} seed={seed} seed2={seed2} setSection={setSection} doubleOtp={doubleOtp} setDoubleOtp={setDoubleOtp} />}
       {section === sectionViews.prepareWallet &&
         <AnimatedSection>
           <Row>
@@ -434,7 +358,13 @@ const Create = ({ expertMode, showRecovery }) => {
                   {(!deploying && root && deployed === false) && <Text>There was an issue deploying your 1wallet. <Button type='link' onClick={() => (location.href = Paths.create)}>Try again</Button>?</Text>}
                 </TallRow>}
               {!expertMode && <Hint>In beta, you can only spend {WalletConstants.defaultSpendingLimit} ONE per day</Hint>}
-              {!expertMode && <Button type='link' onClick={() => enableExpertMode(true)} style={{ padding: 0 }}>I want to create a higher limit wallet instead</Button>}
+              {!expertMode && (
+                <Button
+                  type='link' onClick={() => {
+                    window.location.href = Paths.create2
+                  }} style={{ padding: 0 }}
+                >I want to create a higher limit wallet instead
+                </Button>)}
               {!root && <WalletCreateProgress progress={progress} isMobile={isMobile} progressStage={progressStage} />}
             </Space>
           </Row>
@@ -448,6 +378,91 @@ const Create = ({ expertMode, showRecovery }) => {
         </AnimatedSection>}
       {section === sectionViews.walletSetupDone &&
         <DoneSection address={address} />}
+    </>
+  )
+}
+
+const SetupOptSection = ({ expertMode, name, secondOtpQrCodeData, qrCodeData, effectiveTime, seed, seed2, setSection, doubleOtp, setDoubleOtp }) => {
+  const { isMobile, os } = useWindowDimensions()
+  const history = useHistory()
+  const [otp, setOtp] = useState('')
+  const [step, setStep] = useState(1) // 1 -> otp, optional 2 -> second otp
+  const otpRef = useRef()
+
+  const enableExpertMode = () => {
+    history.push(Paths.create2)
+    message.success('Expert mode unlocked')
+    setOtp('')
+  }
+
+  const disableExpertMode = () => {
+    history.push(Paths.create)
+    message.success('Expert mode disabled')
+    setOtp('')
+  }
+
+  useEffect(() => {
+    const settingUpSecondOtp = step === 2
+    if (otp.length !== 6) {
+      return
+    }
+    if (otp.toLowerCase() === '0x1337' || otp.toLowerCase() === 'expert') {
+      enableExpertMode()
+      return
+    }
+    if (expertMode && (otp === '0x0000' || otp === 'normal')) {
+      disableExpertMode()
+      return
+    }
+    const currentSeed = settingUpSecondOtp ? seed2 : seed
+    const expected = ONEUtil.genOTP({ seed: currentSeed })
+    const code = new DataView(expected.buffer).getUint32(0, false).toString()
+    setOtp('')
+    if (code.padStart(6, '0') !== otp.padStart(6, '0')) {
+      message.error('Code is incorrect. Please try again.')
+      message.debug(`Correct code is ${code.padStart(6, '0')}`)
+      otpRef?.current?.focusInput(0)
+    } else if (doubleOtp && !settingUpSecondOtp) {
+      setStep(2)
+      otpRef?.current?.focusInput(0)
+    } else {
+      setSection(sectionViews.prepareWallet)
+    }
+  }, [otp])
+
+  return (
+    <>{step === 1 &&
+      <AnimatedSection>
+        <Row>
+          <Space direction='vertical'>
+            {/* <Heading>Now, scan the QR code with your Google Authenticator</Heading> */}
+            <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
+            {!isMobile && <Hint>Scan the QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use the wallet </Hint>}
+            {isMobile && <Hint>Tap QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use the wallet</Hint>}
+            {buildQRCodeComponent({ seed, name: ONENames.nameWithTime(name, effectiveTime), os, isMobile, qrCodeData })}
+          </Space>
+        </Row>
+        <Row style={{ marginTop: 16 }}>
+          <Space direction='vertical' size='large' align='center' style={{ width: '100%' }}>
+            <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={ONENames.nameWithTime(name, effectiveTime)} />
+            {expertMode && <TwoCodeOption isMobile={isMobile} setDoubleOtp={setDoubleOtp} doubleOtp={doubleOtp} />}
+            {expertMode && <Hint>You can adjust spending limit in the next step</Hint>}
+          </Space>
+        </Row>
+      </AnimatedSection>}
+      {step === 2 &&
+        <AnimatedSection>
+          <Row>
+            <Space direction='vertical'>
+              <Heading>Create Your 1wallet (second code)</Heading>
+              <Hint align='center'>{isMobile ? 'Tap' : 'Scan'} to setup the <b>second</b> code</Hint>
+              {buildQRCodeComponent({ seed: seed2, name: ONENames.nameWithTime(getSecondCodeName(name), effectiveTime), os, isMobile, qrCodeData: secondOtpQrCodeData })}
+            </Space>
+          </Row>
+          <Row>
+            <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={ONENames.nameWithTime(getSecondCodeName(name), effectiveTime)} />
+          </Row>
+        </AnimatedSection>}
     </>
   )
 }
