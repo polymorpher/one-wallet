@@ -6,6 +6,7 @@ const ONEConstants = require('../lib/constants')
 const ONEWallet = require('../lib/onewallet')
 const BN = require('bn.js')
 const ONEDebugger = require('../lib/debug')
+const assert = require('assert')
 
 const NullOperationParams = {
   ...ONEConstants.NullOperationParams,
@@ -154,14 +155,14 @@ contract('ONEWallet', (accounts) => {
   })
 
   // ====== REVOKE ======
-  // Test setting of a wallets recovery address
-  // Expected result the wallets recovery address
+  // Test revoking all signatures
+  // Expected result the signature is revoked (by setting contractAddress to non zero all signatures will be revoked)
   // Alice uses the REVOKE command to revoke a transaction, contract logic is as follows
   // Executor.sol execute
   // signatures.revokeHandler(op.contractAddress, op.tokenId, op.dest, op.amount);
   // SignatureManager.sol revokeHandler
   // function revokeHandler(SignatureTracker storage st, address contractAddress, uint256 tokenId, address payable dest, uint256 amount) public {
-  //     function revoke(SignatureTracker storage st, bytes32 hash, bytes32 signature) public returns (bool){
+  //   function revoke(SignatureTracker storage st, bytes32 hash, bytes32 signature) public returns (bool){
   // Revoke Logic
   // contractAddress (if != address(0) then revoke everything base on time if passed )
   // dest = expireAt (if > 0 then revoke all signatures before this time)
@@ -173,17 +174,16 @@ contract('ONEWallet', (accounts) => {
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
 
-    const hexData = ONEUtil.abi.encodeParameters(['address', 'uint16', 'bytes'], [alice.wallet.address, ONEConstants.OperationType.SIGN, new Uint8Array()])
-    const messageHash = ONEUtil.keccak('hello world')
-    const signature = ONEUtil.keccak('awesome signature')
-    // const expiryAtDate = Math.floor(((testTime + 30000) / 1000)) // 5 mins after testTime
-    // let expiryAtBytes = new BN(expiryAtDate).toArrayLike(Uint8Array, 'be', 4)
-    let expiryAtBytes = new BN(0xffffffff).toArrayLike(Uint8Array, 'be', 4)
+    let hexData = ONEUtil.abi.encodeParameters(['address', 'uint16', 'bytes'], [alice.wallet.address, ONEConstants.OperationType.SIGN, new Uint8Array()])
+    let messageHash = ONEUtil.keccak('hello world')
+    let signature = ONEUtil.keccak('awesome signature')
+    let expiryAtDate = Math.floor(((testTime + 30000) / 1000)) // 5 mins after testTime
+    let expiryAtBytes = new BN(expiryAtDate).toArrayLike(Uint8Array, 'be', 4)
     let encodedExpiryAt = new Uint8Array(20)
     encodedExpiryAt.set(expiryAtBytes)
     let data = ONEUtil.hexStringToBytes(hexData)
     // create a signature so that we can revoke it
-    let { tx, currentState } = await executeAppTransaction(
+    let { tx: tx0, currentState: currentStateSigned } = await executeAppTransaction(
       {
         ...NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
@@ -196,7 +196,7 @@ contract('ONEWallet', (accounts) => {
       }
     )
     // Validate succesful event emitted
-    TestUtil.validateEvent({ tx, expectedEvent: 'SignatureAuthorized' })
+    TestUtil.validateEvent({ tx: tx0, expectedEvent: 'SignatureAuthorized' })
 
     // Alice items that have changed -signatures
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
@@ -205,28 +205,69 @@ contract('ONEWallet', (accounts) => {
     expectedSignatures[0].hash = ONEUtil.hexString(messageHash)
     expectedSignatures[0].signature = ONEUtil.hexString(signature)
     state.signatures = await TestUtil.validateSignaturesMutation({ expectedSignatures, wallet: alice.wallet })
-    await TestUtil.assertStateEqual(state, currentState)
+    await TestUtil.assertStateEqual(state, currentStateSigned)
+
+    // add a second signature
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+
+    hexData = ONEUtil.abi.encodeParameters(['address', 'uint16', 'bytes'], [alice.wallet.address, ONEConstants.OperationType.SIGN, new Uint8Array()])
+    messageHash = ONEUtil.keccak('another hello world')
+    signature = ONEUtil.keccak('another awesome signature')
+    expiryAtDate = Math.floor(((testTime + 30000) / 1000)) // 5 mins after testTime
+    expiryAtBytes = new BN(expiryAtDate).toArrayLike(Uint8Array, 'be', 4)
+    encodedExpiryAt = new Uint8Array(20)
+    encodedExpiryAt.set(expiryAtBytes)
+    data = ONEUtil.hexStringToBytes(hexData)
+    // create a second signature so that we can revoke it as well
+    let { tx: tx1, currentState: currentStateSigned2 } = await executeAppTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.SIGN,
+        tokenId: new BN(messageHash).toString(),
+        dest: ONEUtil.hexString(encodedExpiryAt),
+        amount: new BN(signature).toString(),
+        data,
+        testTime
+      }
+    )
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx: tx1, expectedEvent: 'SignatureAuthorized' })
+
+    // Alice items that have changed: signatures
+    state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
+    // check alice signatures have changed by getting the current values and overriding with the expected hash and signature
+    expectedSignatures = await TestUtil.getSignaturesParsed(alice.wallet)
+    expectedSignatures[1].hash = ONEUtil.hexString(messageHash)
+    expectedSignatures[1].signature = ONEUtil.hexString(signature)
+    state.signatures = await TestUtil.validateSignaturesMutation({ expectedSignatures, wallet: alice.wallet })
+    await TestUtil.assertStateEqual(state, currentStateSigned2)
 
     // now revoke the signature
     testTime = await TestUtil.bumpTestTime(testTime, 60)
-    let { currentState: currentStateRevoked } = await executeAppTransaction(
+    let { tx, currentState } = await executeAppTransaction(
       {
         ...NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
         operationType: ONEConstants.OperationType.REVOKE,
+        contractAddress: testerc20.address, // setting the contract address ensures we just remove this signature
+        tokenId: new BN(messageHash).toString(),
+        dest: ONEUtil.hexString(encodedExpiryAt),
+        amount: new BN(signature).toString(),
         data,
         testTime
       }
     )
     // No event is emitted from revokeBefore
-    // TestUtil.validateEvent({ tx2, expectedEvent: 'SignatureRevoked' })
+    TestUtil.validateEvent({ tx, expectedEvent: 'SignatureRevoked' })
 
     // Alice items that have changed -signatures
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
     // check alice signatures have changed by getting the current values and overriding with the expected hash and signature
     expectedSignatures = []
     state.signatures = await TestUtil.validateSignaturesMutation({ expectedSignatures, wallet: alice.wallet })
-    await TestUtil.assertStateEqual(state, currentStateRevoked)
+    await TestUtil.assertStateEqual(state, currentState)
+    // assert.equal('events', 'null', 'lets see the events')
   })
 
   // ====== CALL ======
@@ -373,7 +414,361 @@ contract('ONEWallet', (accounts) => {
 
   // ==== ADDITIONAL POSTIVE TESTING =====
 
+  // ====== REVOKE ======
+  // Test revoking a signature by DATE
+  // Expected result we create two signatures with different expiration dates then revoke the signature with the earlier expiration date
+  // Alice uses the REVOKE command to revoke a transaction, contract logic is as follows
+  // Executor.sol execute
+  // signatures.revokeHandler(op.contractAddress, op.tokenId, op.dest, op.amount);
+  // SignatureManager.sol revokeHandler
+  // function revokeHandler(SignatureTracker storage st, address contractAddress, uint256 tokenId, address payable dest, uint256 amount) public {
+  //   function revoke(SignatureTracker storage st, bytes32 hash, bytes32 signature) public returns (bool){
+  // Revoke Logic
+  // contractAddress (if != address(0) then revoke everything base on time if passed )
+  // dest = expireAt (if > 0 then revoke all signatures before this time)
+  // op.tokenId = hash
+  // op.amount = signature
+  it('TODO-AP-POSITIVE-20 REVOKE-BY-DATE: must be able to revoke a signature', async () => {
+  // Begin Tests
+    let testTime = Date.now()
+
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+
+    let hexData = ONEUtil.abi.encodeParameters(['address', 'uint16', 'bytes'], [alice.wallet.address, ONEConstants.OperationType.SIGN, new Uint8Array()])
+    let messageHash = ONEUtil.keccak('hello world')
+    let signature = ONEUtil.keccak('awesome signature')
+    let expiryAtDate = Math.floor(((testTime + 30000) / 1000)) // 5 mins after testTime
+    let expiryAtBytes = new BN(expiryAtDate).toArrayLike(Uint8Array, 'be', 4)
+    let encodedExpiryAtSig1 = new Uint8Array(20)
+    encodedExpiryAtSig1.set(expiryAtBytes)
+    let data = ONEUtil.hexStringToBytes(hexData)
+    // create a signature so that we can revoke it
+    let { tx: tx0, currentState: currentStateSigned } = await executeAppTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.SIGN,
+        tokenId: new BN(messageHash).toString(),
+        dest: ONEUtil.hexString(encodedExpiryAtSig1),
+        amount: new BN(signature).toString(),
+        data,
+        testTime
+      }
+    )
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx: tx0, expectedEvent: 'SignatureAuthorized' })
+    // Not validatiing here just updating the state
+    state = currentStateSigned
+
+    // add a second signature
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+
+    hexData = ONEUtil.abi.encodeParameters(['address', 'uint16', 'bytes'], [alice.wallet.address, ONEConstants.OperationType.SIGN, new Uint8Array()])
+    messageHash = ONEUtil.keccak('another hello world')
+    signature = ONEUtil.keccak('another awesome signature')
+    expiryAtDate = Math.floor(((testTime + 30000) / 1000)) // 5 mins after testTime
+    expiryAtBytes = new BN(expiryAtDate).toArrayLike(Uint8Array, 'be', 4)
+    let encodedExpiryAtSig2 = new Uint8Array(20)
+    encodedExpiryAtSig2.set(expiryAtBytes)
+    data = ONEUtil.hexStringToBytes(hexData)
+    // create a second signature so that we can revoke it as well
+    let { tx: tx1, currentState: currentStateSigned2 } = await executeAppTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.SIGN,
+        tokenId: new BN(messageHash).toString(),
+        dest: ONEUtil.hexString(encodedExpiryAtSig2),
+        amount: new BN(signature).toString(),
+        data,
+        testTime
+      }
+    )
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx: tx1, expectedEvent: 'SignatureAuthorized' })
+    // Not validatiing here just updating the state
+    state = currentStateSigned2
+
+    // now revoke the first signature by using teh eralier Expiry Date (encodedExpiryAtSig1)
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    let { tx, currentState } = await executeAppTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.REVOKE,
+        // contractAddress: testerc20.address, // setting the contract address ensures we just remove this signature
+        tokenId: new BN(messageHash).toString(),
+        dest: ONEUtil.hexString(encodedExpiryAtSig1),
+        amount: new BN(signature).toString(),
+        data,
+        testTime
+      }
+    )
+    // No event is emitted from revokeBefore
+    TestUtil.validateEvent({ tx, expectedEvent: 'SignatureRevoked' })
+
+    // Alice items that have changed -signatures
+    state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
+    // check alice signatures have changed by getting the current values and overriding with the expected hash and signature
+    let expectedSignatures = await TestUtil.getSignaturesParsed(alice.wallet)
+    expectedSignatures[0].hash = ONEUtil.hexString(messageHash)
+    expectedSignatures[0].signature = ONEUtil.hexString(signature)
+    state.signatures = await TestUtil.validateSignaturesMutation({ expectedSignatures, wallet: alice.wallet })
+    await TestUtil.assertStateEqual(state, currentState)
+  })
+
+  it('TODO-AP-POSITIVE-20-1 REVOKE-BY-SIGNATURE: must be able to revoke a signature', async () => {
+    // Begin Tests
+    let testTime = Date.now()
+
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+
+    let hexData = ONEUtil.abi.encodeParameters(['address', 'uint16', 'bytes'], [alice.wallet.address, ONEConstants.OperationType.SIGN, new Uint8Array()])
+    let messageHash1 = ONEUtil.keccak('hello world')
+    let signature1 = ONEUtil.keccak('awesome signature')
+    let expiryAtDate = Math.floor(((testTime + 30000) / 1000)) // 5 mins after testTime
+    let expiryAtBytes = new BN(expiryAtDate).toArrayLike(Uint8Array, 'be', 4)
+    let encodedExpiryAtSig1 = new Uint8Array(20)
+    encodedExpiryAtSig1.set(expiryAtBytes)
+    let data = ONEUtil.hexStringToBytes(hexData)
+    // create a signature so that we can revoke it
+    let { tx: tx0, currentState: currentStateSigned } = await executeAppTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.SIGN,
+        tokenId: new BN(messageHash1).toString(),
+        dest: ONEUtil.hexString(encodedExpiryAtSig1),
+        amount: new BN(signature1).toString(),
+        data,
+        testTime
+      }
+    )
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx: tx0, expectedEvent: 'SignatureAuthorized' })
+    // Not validatiing here just updating the state
+    state = currentStateSigned
+
+    // add a second signature
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+
+    hexData = ONEUtil.abi.encodeParameters(['address', 'uint16', 'bytes'], [alice.wallet.address, ONEConstants.OperationType.SIGN, new Uint8Array()])
+    let messageHash2 = ONEUtil.keccak('another hello world')
+    let signature2 = ONEUtil.keccak('another awesome signature')
+    expiryAtDate = Math.floor(((testTime + 30000) / 1000)) // 5 mins after testTime
+    expiryAtBytes = new BN(expiryAtDate).toArrayLike(Uint8Array, 'be', 4)
+    let encodedExpiryAtSig2 = new Uint8Array(20)
+    encodedExpiryAtSig2.set(expiryAtBytes)
+    data = ONEUtil.hexStringToBytes(hexData)
+    // create a second signature so that we can revoke it as well
+    let { tx: tx1, currentState: currentStateSigned2 } = await executeAppTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.SIGN,
+        tokenId: new BN(messageHash2).toString(),
+        dest: ONEUtil.hexString(encodedExpiryAtSig2),
+        amount: new BN(signature2).toString(),
+        data,
+        testTime
+      }
+    )
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx: tx1, expectedEvent: 'SignatureAuthorized' })
+    // Not validatiing here just updating the state
+    state = currentStateSigned2
+
+    // now revoke the first signature by using teh eralier Expiry Date (encodedExpiryAtSig1)
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    let { tx, currentState } = await executeAppTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.REVOKE,
+        // contractAddress: testerc20.address, // setting the contract address ensures we just remove this signature
+        tokenId: new BN(messageHash2).toString(),
+        // dest: ONEUtil.hexString(encodedExpiryAtSig1),
+        amount: new BN(signature2).toString(),
+        data,
+        testTime
+      }
+    )
+    // No event is emitted from revokeBefore
+    TestUtil.validateEvent({ tx, expectedEvent: 'SignatureRevoked' })
+
+    // Alice items that have changed -signatures
+    state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state, validateCommits: false })
+    // check alice signatures have changed by getting the current values and overriding with the expected hash and signature
+    // The first signature is the only one that now remains
+    let expectedSignatures = await TestUtil.getSignaturesParsed(alice.wallet)
+    expectedSignatures[0].hash = ONEUtil.hexString(messageHash1)
+    expectedSignatures[0].signature = ONEUtil.hexString(signature1)
+    state.signatures = await TestUtil.validateSignaturesMutation({ expectedSignatures, wallet: alice.wallet, validateCommits: false })
+    await TestUtil.assertStateEqual(state, currentState)
+    // assert.equal('events', 'null', 'lets see the events')
+  })
+
   // ==== NEGATIVE USE CASES (EVENT TESTING) ====
+
+  // Test calling sign twice setting the signature to a different value on the second call.
+  // Expected result this will fail and trigger event SignatureMismatch
+  // Logic: Look up the existing signature by the hash and check the new signature is the same
+  // Signature storage s = st.signatureLocker[hash];
+  // if (s.timestamp != 0) {
+  //     if (s.signature != signature) {
+  //         emit SignatureMismatch(hash, signature, s.signature);
+  it('AP-NEGATIVE-19 SIGN: trigger SignatureMismatch when sending a different signature with the same hash', async () => {
+    // Begin Tests
+    let testTime = Date.now()
+
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+
+    const hexData = ONEUtil.abi.encodeParameters(['address', 'uint16', 'bytes'], [alice.wallet.address, ONEConstants.OperationType.SIGN, new Uint8Array()])
+    const messageHash = ONEUtil.keccak('hello world')
+    let signature = ONEUtil.keccak('awesome signature')
+    let expiryAtBytes = new BN(0xffffffff).toArrayLike(Uint8Array, 'be', 4)
+    let encodedExpiryAt = new Uint8Array(20)
+    encodedExpiryAt.set(expiryAtBytes)
+    let data = ONEUtil.hexStringToBytes(hexData)
+
+    let { tx: tx0 } = await executeAppTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.SIGN,
+        tokenId: new BN(messageHash).toString(),
+        dest: ONEUtil.hexString(encodedExpiryAt),
+        amount: new BN(signature).toString(),
+        data,
+        testTime
+      }
+    )
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx: tx0, expectedEvent: 'SignatureAuthorized' })
+
+    // now set the signature to a different value to trigger the SignatureMismatch
+    signature = ONEUtil.keccak('not quite so awesome signature')
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    let { tx } = await executeAppTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.SIGN,
+        tokenId: new BN(messageHash).toString(),
+        dest: ONEUtil.hexString(encodedExpiryAt),
+        amount: new BN(signature).toString(),
+        data,
+        testTime
+      }
+    )
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx, expectedEvent: 'SignatureMismatch' })
+  })
+
+  // Test calling sign twice.
+  // Expected result this will fail and trigger event SignatureAlreadyExist
+  // Logic: Look up the existing signature by the hash and check the new signature is the same
+  // if (s.timestamp != 0) {
+  //   if (s.signature != signature) {
+  //       emit SignatureMismatch(hash, signature, s.signature);
+  //   } else {
+  //       emit SignatureAlreadyExist(hash, signature);
+  //   }
+  //   return false;
+  it('AP-NEGATIVE-19-1 SIGN: trigger SignatureAlreadyExist when sending the same signature twice', async () => {
+    // Begin Tests
+    let testTime = Date.now()
+
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+
+    const hexData = ONEUtil.abi.encodeParameters(['address', 'uint16', 'bytes'], [alice.wallet.address, ONEConstants.OperationType.SIGN, new Uint8Array()])
+    const messageHash = ONEUtil.keccak('hello world')
+    let signature = ONEUtil.keccak('awesome signature')
+    let expiryAtBytes = new BN(0xffffffff).toArrayLike(Uint8Array, 'be', 4)
+    let encodedExpiryAt = new Uint8Array(20)
+    encodedExpiryAt.set(expiryAtBytes)
+    let data = ONEUtil.hexStringToBytes(hexData)
+
+    let { tx: tx0 } = await executeAppTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.SIGN,
+        tokenId: new BN(messageHash).toString(),
+        dest: ONEUtil.hexString(encodedExpiryAt),
+        amount: new BN(signature).toString(),
+        data,
+        testTime
+      }
+    )
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx: tx0, expectedEvent: 'SignatureAuthorized' })
+
+    // now send the same signature again to trigger SignatureAlreadyExist
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    let { tx } = await executeAppTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.SIGN,
+        tokenId: new BN(messageHash).toString(),
+        dest: ONEUtil.hexString(encodedExpiryAt),
+        amount: new BN(signature).toString(),
+        data,
+        testTime
+      }
+    )
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx, expectedEvent: 'SignatureAlreadyExist' })
+  })
+
+  // Test calling revoke with the timestamp (dest) set to 0 and no hash(tokenId), encodedExpiryAt(dest), signature(amount)
+  // Expected result this will fail and trigger event SignatureNotExist
+  // Logic:
+  //   Signature storage s = st.signatureLocker[hash];
+  //  if (s.timestamp == 0) {
+  it('AP-NEGATIVE-20 REVOKE: must be able to revoke a signature', async () => {
+    // Begin Tests
+    let testTime = Date.now()
+
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+
+    const hexData = ONEUtil.abi.encodeParameters(['address', 'uint16', 'bytes'], [alice.wallet.address, ONEConstants.OperationType.SIGN, new Uint8Array()])
+    const messageHash = ONEUtil.keccak('hello world')
+    const signature = ONEUtil.keccak('awesome signature')
+    let expiryAtBytes = new BN(0xffffffff).toArrayLike(Uint8Array, 'be', 4)
+    let encodedExpiryAt = new Uint8Array(20)
+    encodedExpiryAt.set(expiryAtBytes)
+    let data = ONEUtil.hexStringToBytes(hexData)
+    // create a signature so that we can revoke it
+    await executeAppTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.SIGN,
+        tokenId: new BN(messageHash).toString(),
+        dest: ONEUtil.hexString(encodedExpiryAt),
+        amount: new BN(signature).toString(),
+        data,
+        testTime
+      }
+    )
+
+    // now call revoke the signature without setting a time (dest) hash (op.tokenId) or a signature (op.amount)
+    // this will call revoke and not find the dummy signature and hash thus triggering SignatureNotExist 
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    let { tx } = await executeAppTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.REVOKE,
+        data,
+        testTime
+      }
+    )
+    // SignatureNotExist is emitted when the signature cannot be found
+    TestUtil.validateEvent({ tx, expectedEvent: 'SignatureNotExist' })
+  })
 
   // ==== COMPLEX SCENARIO TESTING ====
   // ====== CALL MULTI ======

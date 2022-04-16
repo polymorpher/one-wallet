@@ -163,12 +163,12 @@ First, create a new file and write out how you expect a successful operation to 
 | IONEWallet          | ExternalCallCompleted            | PASS    | CALL                    |                   |
 | IONEWallet          | ExternalCallFailed               | TODO    |                         |                   |
 | IONEWallet          | TransferError                    | TODO    |                         |                   |
-| SignatureManager    | SignatureMismatch                | TODO    |                         |                   |
-| SignatureManager    | SignatureNotExist                | TODO    |                         |                   |
-| SignatureManager    | SignatureAlreadyExist            | TODO    |                         |                   |
+| SignatureManager    | SignatureMismatch                | PASS    | SIGN                    |                   |
+| SignatureManager    | SignatureNotExist                | PASS    | REVOKE                  |                   |
+| SignatureManager    | SignatureAlreadyExist            | PASS    | SIGN                    |                   |
 | SignatureManager    | SignatureAuthorized              | PASS    | SIGN                    |                   |
-| SignatureManager    | SignatureRevoked                 | TODO    |                         |                   |
-| SignatureManager    | SignatureExpired                 | TODO    |                         |                   |
+| SignatureManager    | SignatureRevoked                 | PASS    | REVOKE                  |                   |
+| SignatureManager    | SignatureExpired                 | N/A     |                         | event not emitted |
 | SpendingManager     | ExceedSpendingLimit              | *TODO   | TRANSFER                |                   |
 | SpendingManager     | InsufficientFund                 | *TODO   | TRANSFER                |                   |
 | SpendingManager     | SpendingLimitChanged             | PASS    | CHANGE_SPENDING_LIMIT   |                   |
@@ -199,8 +199,8 @@ First, create a new file and write out how you expect a successful operation to 
 | Functionality | Positive Use Cases  | Status | Notes |
 |---------------|---------------------|--------|-----------------------------|
 | Application   | BASIC               | PASS   |                             |
-| Application   | REVOKE BY DATE      | TODO   |                             |
-| Application   | REVOKE BY SIGNATURE | TODO   |                             |
+| Application   | REVOKE BY DATE      | PASS   |                             |
+| Application   | REVOKE BY SIGNATURE | PASS   |                             |
 | Application   | CALL WITH PAYMENT   | TODO   | See samples in Swap.jsx     |
 | Application   | MULTICALL           | PASS   |                             |
 | Core          | BASIC               | PASS   |                             |
