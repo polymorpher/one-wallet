@@ -13,6 +13,7 @@ const cloneDeep = require('lodash/fp/cloneDeep')
 const { backOff } = require('exponential-backoff')
 const { rpc } = require('./rpc')
 const BN = require('bn.js')
+const { performance } = require('perf_hooks')
 
 const networks = []
 const providers = {}
@@ -239,14 +240,16 @@ const sampleExecutionAddress = (network) => {
 }
 
 // basic executor that
-const prepareExecute = (network, logger = console.log) => async (f) => {
+const prepareExecute = (network, logger = console.log, abortUnlessRPCError = true) => async (f) => {
   const [fromIndex, from] = sampleExecutionAddress(network)
   logger(`Sampled [${fromIndex}] ${from}`)
   const latestNonce = await rpc.getNonce({ address: from, network })
   const snapshotPendingNonces = pendingNonces[network][from]
   const nonce = latestNonce + snapshotPendingNonces
   pendingNonces[network][from] += 1
-  const printNonceStats = () => `[network=${network}][account=${fromIndex}][nonce=${nonce}][snapshot=${snapshotPendingNonces}][current=${pendingNonces[network][from]}]`
+  const t0 = performance.now()
+  const elapsed = () => (performance.now() - t0).toFixed(3)
+  const printNonceStats = () => `[elapsed=${elapsed()}ms][network=${network}][account=${fromIndex}][nonce=${nonce}][snapshot=${snapshotPendingNonces}][current=${pendingNonces[network][from]}]`
   try {
     logger(`[pending]${printNonceStats()}`)
     let numAttempts = 0
@@ -257,11 +260,17 @@ const prepareExecute = (network, logger = console.log) => async (f) => {
         gasPrice: config.gasPrice.clone().muln((numAttempts || 0) + 1)
       }), {
         retry: (ex, n) => {
-          console.error(`[error]`, ex)
           if (ex?.abort) {
+            console.error(`[error-abort]`, ex)
             logger(`[abort][attempts=${n}]${printNonceStats()}`)
             return false
           }
+          if (!ex?.response?.data && abortUnlessRPCError) {
+            console.error(`[error-abort-before-rpc]`, ex)
+            logger(`[abort-before-rpc][attempts=${n}]${printNonceStats()}`)
+            return false
+          }
+          console.error(`[error]`, ex?.response?.status, ex)
           numAttempts = n
           logger(`[retry][attempts=${n}]${printNonceStats()}`)
           return true
