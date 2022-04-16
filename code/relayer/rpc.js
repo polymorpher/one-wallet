@@ -51,8 +51,7 @@ const rpc = {
       'params': [],
       'id': 1
     })
-    const bn = new BN(result.slice(2), 16)
-    return bn.toNumber()
+    return result
   },
 }
 
