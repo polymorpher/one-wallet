@@ -789,28 +789,21 @@ contract('ONEWallet', (accounts) => {
     // Begin Tests
     let testTime = Date.now()
     testTime = await TestUtil.bumpTestTime(testTime, 60)
-    // Note here we populate each operation as an object then map it to an array
-    // It was felt this was clearer and allows us to leverage default values however it could be done concisely by providing the values in an array as follows
-    // let operationParams = [ONEConstants.OperationType.TRACK, ONEConstants.TokenType.ERC20, testerc20.address, 0, alice.wallet.address, 1 , new Uint8Array()]
-    let destArray = []
-    let amountsArray = []
-    let encodedParamsArray = []
+    let call = {}
+    let callArray = []
     let hexData
     let data
     // Alice transfers 100 ERC20 tokens to Bob
-    destArray.push(testerc20.address)
-    amountsArray.push(0)
-    encodedParamsArray.push(ONEUtil.hexStringToBytes(ONEUtil.encodeCalldata('transfer(address,uint256)', [bob.wallet.address, 100])))
+    call = { amount: 0, dest: testerc20.address, method: 'transfer(address,uint256)', values: [bob.wallet.address, 100] }
+    callArray.push(call)
     // Alice transfers ERC721 NFT id 3 token to Bob
-    destArray.push(testerc721.address)
-    amountsArray.push(0)
-    encodedParamsArray.push(ONEUtil.hexStringToBytes(ONEUtil.encodeCalldata('safeTransferFrom(address,address,uint256)', [alice.wallet.address, bob.wallet.address, 3])))
+    call = { amount: 0, dest: testerc721.address, method: 'safeTransferFrom(address,address,uint256)', values: [alice.wallet.address, bob.wallet.address, 3] }
+    callArray.push(call)
     // Alice transfers ERC1155 ID 3 30 tokens to bob
-    // Alice transfers 100 ERC20 tokens to Bob
-    destArray.push(testerc1155.address)
-    amountsArray.push(0)
-    encodedParamsArray.push(ONEUtil.hexStringToBytes(ONEUtil.encodeCalldata('safeTransferFrom(address,address,uint256,uint256,bytes)', [alice.wallet.address, bob.wallet.address, 3, 30, ONEConstants.NullOperationParams.data ])))
-    hexData = ONEUtil.abi.encodeParameters(['address[]', 'uint256[]', 'bytes[]'], [destArray, amountsArray, encodedParamsArray])
+    call = { amount: 0, dest: testerc1155.address, method: 'safeTransferFrom(address,address,uint256,uint256,bytes)', values: [alice.wallet.address, bob.wallet.address, 3, 30, ONEConstants.NullOperationParams.data] }
+    callArray.push(call)
+    console.log(`callArray: ${JSON.stringify(callArray)}`)
+    hexData = ONEUtil.encodeMultiCall(callArray)
     data = ONEUtil.hexStringToBytes(hexData)
 
     let { tx, currentState } = await executeAppTransaction(
