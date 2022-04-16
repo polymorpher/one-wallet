@@ -447,17 +447,23 @@ const Create = ({ expertMode, showRecovery }) => {
           </Row>
         </AnimatedSection>}
       {section === sectionViews.walletSetupDone &&
-        <AnimatedSection>
-          <Space direction='vertical'>
-            <Heading>You are all set!</Heading>
-            <Space direction='vertical' size='small'>
-              <Hint>Wallet Address</Hint>
-              <Text>{address && getAddress(address).bech32}</Text>
-            </Space>
-            <Button style={{ marginTop: 32 }} disabled={!address} type='primary' shape='round' size='large' onClick={() => history.push(Paths.showAddress(address))}>Go to My Wallet</Button>
-          </Space>
-        </AnimatedSection>}
+        <DoneSection address={address} />}
     </>
+  )
+}
+
+const DoneSection = ({ address }) => {
+  return (
+    <AnimatedSection>
+      <Space direction='vertical'>
+        <Heading>You are all set!</Heading>
+        <Space direction='vertical' size='small'>
+          <Hint>Wallet Address</Hint>
+          <Text>{address && getAddress(address).bech32}</Text>
+        </Space>
+        <Button style={{ marginTop: 32 }} disabled={!address} type='primary' shape='round' size='large' onClick={() => history.push(Paths.showAddress(address))}>Go to My Wallet</Button>
+      </Space>
+    </AnimatedSection>
   )
 }
 
