@@ -79,11 +79,8 @@ const Create = ({ expertMode, showRecovery }) => {
   const [spendingInterval, setSpendingInterval] = useState(WalletConstants.defaultSpendingInterval) // seconds, number
 
   const [worker, setWorker] = useState()
-  const [root, setRoot] = useState()
-  const [hseed, setHseed] = useState()
-  const [layers, setLayers] = useState()
-  const [innerTrees, setInnerTrees] = useState()
-  const [slotSize, setSlotSize] = useState(1)
+
+  const [rhlis, setRhlis] = useState({})
   const [progress, setProgress] = useState(0)
   const [progressStage, setProgressStage] = useState(0)
   const [address, setAddress] = useState() // '0x12345678901234567890'
@@ -133,14 +130,11 @@ const Create = ({ expertMode, showRecovery }) => {
           seed2: doubleOtp && walletInfo.seed2,
           effectiveTime: t,
           duration: walletInfo.duration,
-          slotSize,
+          slotSize: rhlis.slotSize,
           interval: WalletConstants.interval,
           ...securityParameters,
         })
-        setRoot(undefined)
-        setHseed(undefined)
-        setLayers(undefined)
-        setSlotSize(1)
+        setRhlis({ root: undefined, hseed: undefined, layers: undefined, innerTrees: undefined, slotSize: 1 })
         worker.onmessage = (event) => {
           const { status, current, total, stage, result, salt: workerSalt } = event.data
           if (workerSalt && workerSalt !== salt) {
@@ -155,11 +149,7 @@ const Create = ({ expertMode, showRecovery }) => {
           if (status === 'done') {
             message.debug(`[Create] done salt=${salt}`)
             const { hseed, root, layers, maxOperationsPerInterval, innerTrees } = result
-            setRoot(root)
-            setHseed(hseed)
-            setLayers(layers)
-            setSlotSize(maxOperationsPerInterval)
-            setInnerTrees(innerTrees)
+            setRhlis({ root, hseed, layers, slotSize: maxOperationsPerInterval, innerTrees })
             // console.log('Received created wallet from worker:', result)
           }
         }
@@ -168,26 +158,26 @@ const Create = ({ expertMode, showRecovery }) => {
   }, [section, worker, doubleOtp])
 
   const storeLayers = async () => {
-    if (!root) {
+    if (!rhlis.root) {
       message.error('Cannot store credentials of the wallet. Error: Root is not set')
       return
     }
-    return storage.setItem(ONEUtil.hexView(root), layers)
+    return storage.setItem(ONEUtil.hexView(rhlis.root), rhlis.layers)
   }
 
   const storeInnerLayers = async () => {
-    if (!innerTrees || innerTrees.length === 0) {
+    if (!rhlis.innerTrees || rhlis.innerTrees.length === 0) {
       return Promise.resolve([])
     }
     const promises = []
-    for (const { layers: innerLayers, root: innerRoot } of innerTrees) {
+    for (const { layers: innerLayers, root: innerRoot } of rhlis.innerTrees) {
       promises.push(storage.setItem(ONEUtil.hexView(innerRoot), innerLayers))
     }
     return Promise.all(promises)
   }
 
   const deploy = async () => {
-    if (!(root && hseed && layers && slotSize)) {
+    if (!(rhlis.root && rhlis.hseed && rhlis.layers && rhlis.slotSize)) {
       message.error('Cannot deploy wallet. Error: root is not set.')
       return
     }
@@ -199,18 +189,18 @@ const Create = ({ expertMode, showRecovery }) => {
     setDeploying(true)
 
     const identificationKeys = [ONEUtil.getIdentificationKey(walletInfo.seed, true)]
-    const innerCores = ONEUtil.makeInnerCores({ innerTrees, effectiveTime, duration: walletInfo.duration, slotSize, interval: WalletConstants.interval })
+    const innerCores = ONEUtil.makeInnerCores({ innerTrees: rhlis.innerTrees, effectiveTime, duration: walletInfo.duration, slotSize: rhlis.slotSize, interval: WalletConstants.interval })
 
     try {
       const { address } = await api.relayer.create({
-        root: ONEUtil.hexString(root),
+        root: ONEUtil.hexString(rhlis.root),
         identificationKeys,
         innerCores,
-        height: layers.length,
+        height: rhlis.layers.length,
         interval: WalletConstants.interval / 1000,
         t0: effectiveTime / WalletConstants.interval,
         lifespan: walletInfo.duration / WalletConstants.interval,
-        slotSize,
+        slotSize: rhlis.slotSize,
         lastResortAddress: normalizedAddress,
         spendingLimit: ONEUtil.toFraction(spendingLimit).toString(),
         spendingInterval,
@@ -219,13 +209,13 @@ const Create = ({ expertMode, showRecovery }) => {
       const wallet = {
         name: walletInfo.name,
         address,
-        root: ONEUtil.hexView(root),
+        root: ONEUtil.hexView(rhlis.root),
         duration: walletInfo.duration,
-        slotSize,
+        slotSize: rhlis.slotSize,
         effectiveTime,
         lastResortAddress: normalizedAddress,
         spendingLimit: ONEUtil.toFraction(spendingLimit).toString(),
-        hseed: ONEUtil.hexView(hseed),
+        hseed: ONEUtil.hexView(rhlis.hseed),
         spendingInterval: spendingInterval * 1000,
         majorVersion: ONEConstants.MajorVersion,
         minorVersion: ONEConstants.MinorVersion,
@@ -233,7 +223,7 @@ const Create = ({ expertMode, showRecovery }) => {
         localIdentificationKey: identificationKeys[0],
         network,
         doubleOtp,
-        innerRoots: innerTrees.map(({ root }) => ONEUtil.hexView(root)),
+        innerRoots: rhlis.innerTrees.map(({ root }) => ONEUtil.hexView(root)),
         ...securityParameters,
         expert: !!expertMode,
       }
@@ -271,10 +261,10 @@ const Create = ({ expertMode, showRecovery }) => {
 
   useEffect(() => {
     if (section === sectionViews.prepareWallet && !showRecovery &&
-      root && hseed && slotSize && layers && innerTrees) {
+      rhlis.root && rhlis.hseed && rhlis.slotSize && rhlis.layers && rhlis.innerTrees) {
       deploy()
     }
-  }, [section, root, hseed, layers, slotSize, innerTrees])
+  }, [section, rhlis])
 
   return (
     <>
@@ -350,7 +340,7 @@ const Create = ({ expertMode, showRecovery }) => {
               {showRecovery &&
                 <Space>
                   <FlashyButton
-                    disabled={!root || deploying} type='primary' shape='round' size='large'
+                    disabled={!rhlis.root || deploying} type='primary' shape='round' size='large'
                     onClick={() => deploy()}
                   >Confirm: Create Now
                   </FlashyButton>
@@ -358,9 +348,9 @@ const Create = ({ expertMode, showRecovery }) => {
                 </Space>}
               {!showRecovery &&
                 <TallRow>
-                  {(deploying || !root) && <Space><Text>Working on your 1wallet...</Text><LoadingOutlined /></Space>}
-                  {(!deploying && root && deployed) && <Text>Your 1wallet is ready!</Text>}
-                  {(!deploying && root && deployed === false) && <Text>There was an issue deploying your 1wallet. <Button type='link' onClick={() => (location.href = Paths.create)}>Try again</Button>?</Text>}
+                  {(deploying || !rhlis.root) && <Space><Text>Working on your 1wallet...</Text><LoadingOutlined /></Space>}
+                  {(!deploying && rhlis.root && deployed) && <Text>Your 1wallet is ready!</Text>}
+                  {(!deploying && rhlis.root && deployed === false) && <Text>There was an issue deploying your 1wallet. <Button type='link' onClick={() => (location.href = Paths.create)}>Try again</Button>?</Text>}
                 </TallRow>}
               {!expertMode && <Hint>In beta, you can only spend {WalletConstants.defaultSpendingLimit} ONE per day</Hint>}
               {!expertMode && (
@@ -370,7 +360,7 @@ const Create = ({ expertMode, showRecovery }) => {
                   }} style={{ padding: 0 }}
                 >I want to create a higher limit wallet instead
                 </Button>)}
-              {!root && <WalletCreateProgress progress={progress} isMobile={isMobile} progressStage={progressStage} />}
+              {!rhlis.root && <WalletCreateProgress progress={progress} isMobile={isMobile} progressStage={progressStage} />}
             </Space>
           </Row>
           <Row>
