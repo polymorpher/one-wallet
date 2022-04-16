@@ -26,3 +26,5 @@ router.get('/block', async (req, res) => {
     timeDiff: blockDiff * config.networks[network].blockTime,
   })
 })
+
+module.exports = router

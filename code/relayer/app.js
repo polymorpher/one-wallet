@@ -8,6 +8,7 @@ const cookieParser = require('cookie-parser')
 const logger = require('morgan')
 const config = require('./config')
 const _index = require('./routes/index')
+const _monitor = require('./routes/monitor')
 const bodyParser = require('body-parser')
 const app = express()
 const https = require('https')
@@ -91,6 +92,7 @@ if (config.corsOrigins) {
 
 app.use(express.static(path.join(__dirname, 'public')))
 app.options('*', async (_req, res) => res.end())
+app.use('/monitor', _monitor)
 app.use('/', _index)
 
 // catch 404 and forward to error handler
