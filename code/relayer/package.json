@@ -9,6 +9,7 @@
     "debug": "RELAYER_DEBUG=true npm run start"
   },
   "dependencies": {
+    "@elastic/elasticsearch": "^8.1.0",
     "@harmony-js/core": "^0.1.57",
     "@truffle/contract": "4.3.30",
     "@truffle/hdwallet-provider": "^1.5.1",
