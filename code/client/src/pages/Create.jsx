@@ -281,6 +281,7 @@ const Create = ({ expertMode, showRecovery }) => {
       {section === sectionViews.setupOtp &&
         <SetupOptSection expertMode={expertMode} otpReady={otpReady} walletInfo={walletInfo} effectiveTime={effectiveTime} setSection={setSection} doubleOtp={doubleOtp} setDoubleOtp={setDoubleOtp} />}
       {section === sectionViews.prepareWallet &&
+      // TODO: move following to a separate component.
         <AnimatedSection>
           <Row>
             <Space direction='vertical'>
