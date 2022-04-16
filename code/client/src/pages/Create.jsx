@@ -100,7 +100,7 @@ const Create = ({ expertMode, showRecovery }) => {
   })
 
   useEffect(() => {
-    if (!code || !name || !effectiveTime) {
+    if (!code || !effectiveTime) {
       return
     }
     (async function () {
@@ -117,7 +117,7 @@ const Create = ({ expertMode, showRecovery }) => {
       setQRCodeData(otpQrCodeData)
       setSecondOtpQrCodeData(secondOtpQrCodeData)
     })()
-  }, [name, code, network, effectiveTime])
+  }, [code, network, effectiveTime])
 
   useEffect(() => {
     if (section === sectionViews.setupOtp && worker && seed) {
