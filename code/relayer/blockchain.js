@@ -276,7 +276,7 @@ const prepareExecute = (network, logger = console.log, abortUnlessRPCError = tru
           return true
         }
       })
-    logger(`[complete]${printNonceStats()}`, tx)
+    logger(`[complete]${printNonceStats()}`, JSON.stringify(tx, null, 2))
     return tx
   } catch (ex) {
     logger(`[error]${printNonceStats()}`, ex)
