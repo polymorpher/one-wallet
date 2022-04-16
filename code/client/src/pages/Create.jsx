@@ -10,6 +10,7 @@ import Row from 'antd/es/row'
 import Tooltip from 'antd/es/tooltip'
 import Button from 'antd/es/button'
 import Space from 'antd/es/space'
+import Spin from 'antd/es/spin'
 import Typography from 'antd/es/typography'
 import message from '../message'
 import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
@@ -55,14 +56,19 @@ const Create = ({ expertMode, showRecovery }) => {
   const history = useHistory()
   const network = useSelector(state => state.global.network)
   const wallets = useSelector(state => state.wallet)
+  const generateNewOtpName = () => ONENames.genName(Object.keys(wallets).map(k => wallets[k].name))
+
+  // Store info collected across the creation process.
+  const walletInfo = useRef({
+    name: generateNewOtpName(),
+    seed: generateOtpSeed(),
+    seed2: generateOtpSeed(),
+    duration: WalletConstants.defaultDuration
+  }).current
 
   const [effectiveTime, setEffectiveTime] = useState()
+  const [otpReady, setOtpReady] = useState(false)
 
-  const generateNewOtpName = () => ONENames.genName(Object.keys(wallets).map(k => wallets[k].name))
-  const [name] = useState(generateNewOtpName())
-  const [seed] = useState(generateOtpSeed())
-  const [seed2] = useState(generateOtpSeed())
-  const [duration] = useState(WalletConstants.defaultDuration)
   const [showRecoveryDetail, setShowRecoveryDetail] = useState(false)
   const code = useSelector(state => state.cache.code[network])
 
@@ -85,8 +91,6 @@ const Create = ({ expertMode, showRecovery }) => {
   const [doubleOtp, setDoubleOtp] = useState(false)
 
   const [section, setSection] = useState(sectionViews.setupOtp)
-  const [qrCodeData, setQRCodeData] = useState()
-  const [secondOtpQrCodeData, setSecondOtpQrCodeData] = useState()
   const [deploying, setDeploying] = useState()
   const [deployed, setDeployed] = useState(false)
 
@@ -101,22 +105,23 @@ const Create = ({ expertMode, showRecovery }) => {
     }
     (async function () {
       const deployerAddress = config.networks[network].deploy.factory
-      const address = ONEUtil.predictAddress({ seed, deployerAddress, code: ONEUtil.hexStringToBytes(code) })
-      message.debug(`Predicting wallet address ${address} using parameters: ${JSON.stringify({ seed: ONEUtil.base32Encode(seed), deployerAddress })}; code keccak hash=${ONEUtil.hexView(ONEUtil.keccak(code))}`)
+      const address = ONEUtil.predictAddress({ seed: walletInfo.seed, deployerAddress, code: ONEUtil.hexStringToBytes(code) })
+      message.debug(`Predicting wallet address ${address} using parameters: ${JSON.stringify({ seed: ONEUtil.base32Encode(walletInfo.seed), deployerAddress })}; code keccak hash=${ONEUtil.hexView(ONEUtil.keccak(code))}`)
       const oneAddress = util.safeOneAddress(address)
-      const otpDisplayName = `${ONENames.nameWithTime(name, effectiveTime)} [${oneAddress}]`
-      const otpDisplayName2 = `${ONENames.nameWithTime(getSecondCodeName(name), effectiveTime)} [${oneAddress}]`
-      const otpUri = getQRCodeUri(seed, otpDisplayName, OTPUriMode.MIGRATION)
-      const secondOtpUri = getQRCodeUri(seed2, otpDisplayName2, OTPUriMode.MIGRATION)
+      const otpDisplayName = `${ONENames.nameWithTime(walletInfo.name, effectiveTime)} [${oneAddress}]`
+      const otpDisplayName2 = `${ONENames.nameWithTime(getSecondCodeName(walletInfo.name), effectiveTime)} [${oneAddress}]`
+      const otpUri = getQRCodeUri(walletInfo.seed, otpDisplayName, OTPUriMode.MIGRATION)
+      const secondOtpUri = getQRCodeUri(walletInfo.seed2, otpDisplayName2, OTPUriMode.MIGRATION)
       const otpQrCodeData = await qrcode.toDataURL(otpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       const secondOtpQrCodeData = await qrcode.toDataURL(secondOtpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
-      setQRCodeData(otpQrCodeData)
-      setSecondOtpQrCodeData(secondOtpQrCodeData)
+      walletInfo.qrCodeData = otpQrCodeData
+      walletInfo.secondOtpQrCodeData = secondOtpQrCodeData
+      setOtpReady(true)
     })()
   }, [code, network, effectiveTime])
 
   useEffect(() => {
-    if (section === sectionViews.setupOtp && worker && seed) {
+    if (section === sectionViews.setupOtp && worker && walletInfo.seed) {
       const t = Math.floor(Date.now() / WalletConstants.interval6) * WalletConstants.interval6
       const salt = ONEUtil.hexView(generateOtpSeed())
       setEffectiveTime(t)
@@ -124,10 +129,10 @@ const Create = ({ expertMode, showRecovery }) => {
         message.debug(`[Create] posting to worker salt=${salt}`)
         worker.postMessage({
           salt,
-          seed,
-          seed2: doubleOtp && seed2,
+          seed: walletInfo.seed,
+          seed2: doubleOtp && walletInfo.seed2,
           effectiveTime: t,
-          duration,
+          duration: walletInfo.duration,
           slotSize,
           interval: WalletConstants.interval,
           ...securityParameters,
@@ -193,8 +198,8 @@ const Create = ({ expertMode, showRecovery }) => {
     }
     setDeploying(true)
 
-    const identificationKeys = [ONEUtil.getIdentificationKey(seed, true)]
-    const innerCores = ONEUtil.makeInnerCores({ innerTrees, effectiveTime, duration, slotSize, interval: WalletConstants.interval })
+    const identificationKeys = [ONEUtil.getIdentificationKey(walletInfo.seed, true)]
+    const innerCores = ONEUtil.makeInnerCores({ innerTrees, effectiveTime, duration: walletInfo.duration, slotSize, interval: WalletConstants.interval })
 
     try {
       const { address } = await api.relayer.create({
@@ -204,7 +209,7 @@ const Create = ({ expertMode, showRecovery }) => {
         height: layers.length,
         interval: WalletConstants.interval / 1000,
         t0: effectiveTime / WalletConstants.interval,
-        lifespan: duration / WalletConstants.interval,
+        lifespan: walletInfo.duration / WalletConstants.interval,
         slotSize,
         lastResortAddress: normalizedAddress,
         spendingLimit: ONEUtil.toFraction(spendingLimit).toString(),
@@ -212,10 +217,10 @@ const Create = ({ expertMode, showRecovery }) => {
       })
       // console.log('Deployed. Received contract address', address)
       const wallet = {
-        name,
+        name: walletInfo.name,
         address,
         root: ONEUtil.hexView(root),
-        duration,
+        duration: walletInfo.duration,
         slotSize,
         effectiveTime,
         lastResortAddress: normalizedAddress,
@@ -274,8 +279,7 @@ const Create = ({ expertMode, showRecovery }) => {
   return (
     <>
       {section === sectionViews.setupOtp &&
-        // TODO: move most of read-only data to one ref.
-        <SetupOptSection name={name} expertMode={expertMode} qrCodeData={qrCodeData} secondOtpQrCodeData={secondOtpQrCodeData} effectiveTime={effectiveTime} seed={seed} seed2={seed2} setSection={setSection} doubleOtp={doubleOtp} setDoubleOtp={setDoubleOtp} />}
+        <SetupOptSection expertMode={expertMode} otpReady={otpReady} walletInfo={walletInfo} effectiveTime={effectiveTime} setSection={setSection} doubleOtp={doubleOtp} setDoubleOtp={setDoubleOtp} />}
       {section === sectionViews.prepareWallet &&
         <AnimatedSection>
           <Row>
@@ -382,12 +386,13 @@ const Create = ({ expertMode, showRecovery }) => {
   )
 }
 
-const SetupOptSection = ({ expertMode, name, secondOtpQrCodeData, qrCodeData, effectiveTime, seed, seed2, setSection, doubleOtp, setDoubleOtp }) => {
+const SetupOptSection = ({ expertMode, otpReady, walletInfo, effectiveTime, setSection, doubleOtp, setDoubleOtp }) => {
   const { isMobile, os } = useWindowDimensions()
   const history = useHistory()
   const [otp, setOtp] = useState('')
   const [step, setStep] = useState(1) // 1 -> otp, optional 2 -> second otp
   const otpRef = useRef()
+  const { name, secondOtpQrCodeData, qrCodeData, seed, seed2 } = walletInfo
 
   const enableExpertMode = () => {
     history.push(Paths.create2)
@@ -429,6 +434,10 @@ const SetupOptSection = ({ expertMode, name, secondOtpQrCodeData, qrCodeData, ef
       setSection(sectionViews.prepareWallet)
     }
   }, [otp])
+
+  if (!otpReady) {
+    return <Spin />
+  }
 
   return (
     <>{step === 1 &&
