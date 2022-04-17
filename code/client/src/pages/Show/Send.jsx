@@ -130,6 +130,12 @@ const Send = ({
 
   return (
     <AnimatedSection wide title={<Title level={isMobile ? 5 : 2}>{isMobile ? '' : 'Send: '}{titleSuffix}</Title>} onClose={onClose}>
+      <AverageRow>
+        <Warning>
+          DO NOT send funds to centralized exchanges<br /><br />
+          Centralized exchange such as Binance and crypto.com cannot detect deposits from smart contracts at ths time. We are working on <Link href='https://github.com/polymorpher/one-wallet/issues/293' target='_blank' rel='noreferrer'>a new solution</Link> to address this issue in future releases.
+        </Warning>
+      </AverageRow>
       <Row align='middle' style={{ marginBottom: '10px' }}>
         <Col>
           {isNFT && <Title level={4}>{metadata?.displayName}</Title>}
@@ -200,11 +206,6 @@ const Send = ({
         </Col>
       </Row>
       <CommitRevealProgress stage={stage} />
-      <AverageRow>
-        <Warning>
-          Please do not send funds to exchange-owned addresses such as Binance and crypto.com (custody wallet). Their automated system cannot detect deposits from smart contracts at the moment. They are still <Link href='https://github.com/polymorpher/one-wallet/issues/93' target='_blank' rel='noreferrer'>working on it</Link>.
-        </Warning>
-      </AverageRow>
     </AnimatedSection>
   )
 }
