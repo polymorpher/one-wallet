@@ -266,7 +266,7 @@ const prepareExecute = (network, logger = Logger.log, abortUnlessRPCError = true
             logger(`[abort][attempts=${n}]${printNonceStats()}`)
             return false
           }
-          if (!ex?.response?.data && abortUnlessRPCError) {
+          if (!ex?.receipt && !ex?.response?.data && abortUnlessRPCError) {
             console.error(`[error-abort-before-rpc]`, ex)
             logger(`[abort-before-rpc][attempts=${n}]${printNonceStats()}`)
             return false
