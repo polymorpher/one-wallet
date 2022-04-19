@@ -14,7 +14,7 @@ const { parseTx, parseError, checkParams } = require('./util')
 const { transfer, recover, setRecoveryAddress, tokenOperation } = require('./v5')
 const { Persist } = require('../persist/index')
 const { Logger } = require('../logger')
-const { getUA, getIP } = require('../util')
+const { getUA, getIP, getCoreArray, getCoreObjects, hasEmptyCoreRoot } = require('../util')
 
 router.get('/health', generalLimiter(), async (req, res) => {
   Logger.log('[/health]', req.fingerprint)
@@ -110,28 +110,18 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
     // since we renamed dailyLimit to spendingLimit we must make sure client is not using the old name / format
     return res.status(StatusCodes.BAD_REQUEST).json({ error: 'spendingLimit cannot be 0' })
   }
-  const oldCoreTransformed = []
-  for (let oldCore of oldCores) {
-    const { root: oldRoot, height: oldHeight, interval: oldInterval, t0: oldT0, lifespan: oldLifespan, slotSize: oldSlotSize } = oldCore
-    oldCoreTransformed.push([oldRoot, oldHeight, oldInterval, oldT0, oldLifespan, oldSlotSize])
-    if (!oldRoot) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: `old core has empty root: ${JSON.stringify(oldCore)}` })
-    }
+  if (hasEmptyCoreRoot(oldCores)) {
+    return res.status(StatusCodes.BAD_REQUEST).json({ error: `old core has empty root: ${JSON.stringify(oldCores)}` })
   }
-  const innerCoreTransformed = []
-  for (let innerCore of innerCores) {
-    if (innerCore.length > 0) {
-      innerCoreTransformed.push([...innerCore])
-      continue
-    }
-    const { root: innerRoot, height: innerHeight, interval: innerInterval, t0: innerT0, lifespan: innertLifespan, slotSize: innerSlotSize } = innerCore
-    innerCoreTransformed.push([innerRoot, innerHeight, innerInterval, innerT0, innertLifespan, innerSlotSize])
-    if (!innerRoot) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: `inner core has empty root: ${JSON.stringify(innerCore)}` })
-    }
+  const oldCoreArrays = getCoreArray(oldCores)
+  if (hasEmptyCoreRoot(innerCores)) {
+    return res.status(StatusCodes.BAD_REQUEST).json({ error: `inner core has empty root: ${JSON.stringify(oldCores)}` })
   }
+  const innerCoreArrays = getCoreArray(innerCores)
+
   const persistArgs = { index: 'new-requests',
     ...inputParams,
+    innerCores: getCoreObjects(innerCoreArrays),
     spendingLimit: parseFloat(ONEUtil.toOne(spendingLimit)),
     spentAmount: parseFloat(ONEUtil.toOne(spentAmount)),
     highestSpendingLimit: parseFloat(ONEUtil.toOne(highestSpendingLimit)),
@@ -145,8 +135,8 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
       [ new BN(spendingLimit), new BN(spentAmount), new BN(lastSpendingInterval), new BN(spendingInterval), new BN(lastLimitAdjustmentTime), new BN(highestSpendingLimit) ],
       lastResortAddress,
       backlinks,
-      oldCoreTransformed,
-      innerCoreTransformed,
+      oldCoreArrays,
+      innerCoreArrays,
       identificationKeys,
     ]
     const logger = (...args) => Logger.log(`[/new]`, ...args)
