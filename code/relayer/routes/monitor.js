@@ -35,7 +35,7 @@ router.get('/stats', async (req, res) => {
     Persist.count({ index: 'reveal-requests' }),
     Persist.count({ index: 'other-requests' }),
   ])
-  const [numNewRequests, numCommitRequests, numRevealRequests, numOtherRequests] = Promise.race([timeout, pAll])
+  const [numNewRequests, numCommitRequests, numRevealRequests, numOtherRequests] = await Promise.race([timeout, pAll])
 
   const timeout2 = new Promise((resolve) => setTimeout(() => resolve([null, null, null, null]), 1000))
   const pAll2 = Promise.all([
@@ -45,7 +45,7 @@ router.get('/stats', async (req, res) => {
     Persist.count({ index: 'other-requests', query: { term: { state: Persist.States.SUCCESS } } }),
   ])
 
-  const [numNewRequestsSuccess, numCommitRequestsSuccess, numRevealRequestsSuccess, numOtherRequestsSuccess] = Promise.race([timeout2, pAll2])
+  const [numNewRequestsSuccess, numCommitRequestsSuccess, numRevealRequestsSuccess, numOtherRequestsSuccess] = await Promise.race([timeout2, pAll2])
 
   res.json({
     numNewRequests,
