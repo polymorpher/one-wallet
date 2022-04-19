@@ -35,29 +35,55 @@ const Persist = {
   },
   client: () => client,
 
-  count: async ({ index, before, after, query }) => {
-    if (!client) return
-    const body = { index }
+  buildQuery: ({ before, after, query }) => {
+    let q
     if (before && after) {
-      body.query = { range: { time: { lte: before, gte: after } } }
+      q = { range: { time: { lte: before, gte: after } } }
     } else if (after) {
-      body.query = { range: { time: { lte: after } } }
+      q = { range: { time: { lte: after } } }
     } else if (before) {
-      body.query = { range: { time: { lte: before } } }
+      q = { range: { time: { lte: before } } }
     }
     if (query) {
-      body.query = { bool: { must: body.query ? [query, body.query] : [query] } }
+      q = { bool: { must: q ? [query, q] : [query] } }
     }
+    return q
+  },
+
+  count: async ({ index, before, after, query }) => {
+    if (!client) return
+    const body = { index, query: Persist.buildQuery({ before, after, query }) }
     const res = await client.count(body)
     return res?.count
   },
 
-  recent: async ({ index, after, limit }) => {
+  stats: async ({ index, field, before, after, query }) => {
     if (!client) return
-    const body = { index }
-    if (after) {
-      body.query = { range: { time: { after } } }
+    const body = {
+      index,
+      query: Persist.buildQuery({ before, after, query }),
+      size: 0,
+      aggs: {
+        percentile: {
+          percentiles: {
+            field
+          }
+        },
+        average: {
+          avg: {
+            field
+          }
+        }
+      }
     }
+    const { aggregations: { percentile, average } } = await client.search(body)
+    return { percentile: percentile.values, average: average.value }
+  },
+
+  recent: async ({ index, before, after, query, limit }) => {
+    if (!client) return
+    const body = { index, query: Persist.buildQuery({ before, after, query }), }
+
     if (limit) {
       body.size = limit
     }

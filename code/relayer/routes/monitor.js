@@ -47,15 +47,37 @@ router.get('/stats', async (req, res) => {
 
   const [numNewRequestsSuccess, numCommitRequestsSuccess, numRevealRequestsSuccess, numOtherRequestsSuccess] = await Promise.race([timeout2, pAll2])
 
+  const timeout3 = new Promise((resolve) => setTimeout(() => resolve([null, null, null, null]), 1000))
+  const pAll3 = Promise.all([
+    Persist.stats({ index: 'new-requests', field: 'responseTime', query: { term: { state: Persist.States.SUCCESS } } }),
+    Persist.stats({ index: 'commit-requests', field: 'responseTime', query: { term: { state: Persist.States.SUCCESS } } }),
+    Persist.stats({ index: 'reveal-requests', field: 'responseTime', query: { term: { state: Persist.States.SUCCESS } } }),
+    Persist.stats({ index: 'other-requests', field: 'responseTime', query: { term: { state: Persist.States.SUCCESS } } }),
+  ])
+
+  const [newRequestsSuccessStats, commitRequestsSuccessStats, revealRequestsSuccessStats, otherRequestsSuccessStats] = await Promise.race([timeout3, pAll3])
+
   res.json({
-    numNewRequests,
-    numNewRequestsSuccess,
-    numCommitRequests,
-    numCommitRequestsSuccess,
-    numRevealRequests,
-    numRevealRequestsSuccess,
-    numOtherRequests,
-    numOtherRequestsSuccess
+    new: {
+      num: numNewRequests,
+      success: numNewRequestsSuccess,
+      stats: newRequestsSuccessStats,
+    },
+    commit: {
+      num: numCommitRequests,
+      success: numCommitRequestsSuccess,
+      stats: commitRequestsSuccessStats,
+    },
+    reveal: {
+      num: numRevealRequests,
+      success: numRevealRequestsSuccess,
+      stats: revealRequestsSuccessStats,
+    },
+    other: {
+      num: numOtherRequests,
+      success: numOtherRequestsSuccess,
+      stats: otherRequestsSuccessStats,
+    }
   })
 })
 
