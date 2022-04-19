@@ -159,8 +159,8 @@ export const WalletHeaderV2 = () => {
       {matchedWallet && (
         <>
           <WalletSelectorV2 onAddressSelected={onAddressSelected} filter={e => e.majorVersion >= 10} useHex style={{ background: secondaryBgColor, border: `1px solid ${secondaryBorderColor}`, margin: '0 4px', padding: '4px 0', borderRadius: '16px' }} selectStyle={{}} />
-          <SecondaryButton style={{ marginRight: '8px', height: '100%', borderRadius: '15px' }}>Send</SecondaryButton>
-          <SecondaryButton style={{ marginRight: '8px', height: '100%', borderRadius: '15px' }}>Receive</SecondaryButton>
+          <SecondaryButton onClick={() => history.push(Paths.showAddress(selectedAddress, 'transfer'))} style={{ marginRight: '8px', height: '100%', borderRadius: '15px' }}>Send</SecondaryButton>
+          <SecondaryButton onClick={() => history.push(Paths.showAddress(selectedAddress, 'qr'))} style={{ marginRight: '8px', height: '100%', borderRadius: '15px' }}>Receive</SecondaryButton>
         </>)}
       <StatsInfoV2 />
       {dev && <Button key='toggle' shape='circle' icon={relayerEditVisible ? <CloseOutlined /> : <SettingOutlined />} onClick={() => setRelayerEditVisible(!relayerEditVisible)} />}
