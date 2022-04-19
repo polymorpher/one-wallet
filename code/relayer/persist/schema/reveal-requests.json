@@ -70,6 +70,31 @@
             }
           }
         }
+      },
+      "ip": {
+        "type": "ip",
+        "ignore_malformed": "true"
+      },
+      "ua": {
+        "type": "keyword"
+      },
+      "browser": {
+        "type": "keyword"
+      },
+      "browserVersion": {
+        "type": "keyword"
+      },
+      "engine": {
+        "type": "keyword"
+      },
+      "engineVersion": {
+        "type": "keyword"
+      },
+      "os": {
+        "type": "keyword"
+      },
+      "osVersion": {
+        "type": "keyword"
       }
     }
   }
