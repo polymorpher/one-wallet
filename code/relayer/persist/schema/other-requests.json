@@ -10,6 +10,12 @@
       "code": {
         "type": "integer"
       },
+      "responseTime": {
+        "type": "double"
+      },
+      "time": {
+        "type": "date"
+      },
       "address": {
         "type": "keyword"
       },
@@ -21,8 +27,18 @@
           "tx": {
             "type": "keyword"
           },
+          "logs": {
+            "type": "object",
+            "enabled": false
+          },
           "receipt": {
             "properties": {
+              "blockHash": {
+                "type": "keyword"
+              },
+              "transactionHash": {
+                "type": "keyword"
+              },
               "blockNumber": {
                 "type": "unsigned_long"
               },
@@ -37,6 +53,18 @@
               },
               "to": {
                 "type": "keyword"
+              },
+              "logsBloom": {
+                "type": "object",
+                "enabled": false
+              },
+              "logs": {
+                "type": "object",
+                "enabled": false
+              },
+              "rawLogs": {
+                "type": "object",
+                "enabled": false
               }
             }
           }

@@ -15,6 +15,7 @@ const https = require('https')
 const http = require('http')
 const env = process.env.NODE_ENV || 'development'
 const fs = require('fs')
+const { Persist } = require('./persist/index')
 const blockchain = require('./blockchain')
 Error.stackTraceLimit = 100
 app.locals.ENV = env
@@ -38,6 +39,9 @@ let httpsOptions = {
   key: fs.readFileSync(config.https.key),
   cert: fs.readFileSync(config.https.cert)
 }
+
+Persist.init()
+
 if (config.https.only) {
   const httpApp = express()
   const httpRouter = express.Router()

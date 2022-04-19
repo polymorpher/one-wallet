@@ -1,4 +1,5 @@
 const config = require('../config')
+const { performance } = require('perf_hooks')
 const express = require('express')
 const router = express.Router()
 const { StatusCodes } = require('http-status-codes')
@@ -47,6 +48,7 @@ router.use((req, res, next) => {
     req.contract = blockchain.getWalletContract(network)
   }
   req.provider = blockchain.getProvider(network)
+  req.requestTime = performance.now()
   next()
 })
 
@@ -171,16 +173,16 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
     const { logs } = receipt
     const successLog = logs.find(log => log.event === 'ONEWalletDeploySuccess')
     if (!successLog) {
-      Persist.add({ state: Persist.States.FAILURE, predictedAddress, receipt, ...persistArgs })
+      Persist.add({ state: Persist.States.FAILURE, predictedAddress, responseTime: performance.now() - req.requestTime, receipt, ...persistArgs })
       return res.status(StatusCodes.NOT_ACCEPTABLE).json({ predictedAddress, receipt })
     }
     const address = successLog.args['addr']
-    Persist.add({ state: Persist.States.SUCCESS, address, receipt, ...persistArgs })
+    Persist.add({ state: Persist.States.SUCCESS, address, receipt, responseTime: performance.now() - req.requestTime, ...persistArgs })
     return res.json({ success: true, address, receipt })
   } catch (ex) {
     console.error(ex)
     const { code, error, success, extra } = parseError(ex)
-    Persist.add({ state: Persist.States.ERROR, code, error, extra, ...persistArgs })
+    Persist.add({ state: Persist.States.ERROR, code, error, extra, responseTime: performance.now() - req.requestTime, ...persistArgs })
     return res.status(code).json({ error, success, extra })
   }
 })
@@ -231,12 +233,12 @@ router.post('/commit', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
       }
     })
     const parsedTx = parseTx(receipt)
-    Persist.add({ state: Persist.States.SUCCESS, receipt, ...persistArgs })
+    Persist.add({ state: Persist.States.SUCCESS, receipt, responseTime: performance.now() - req.requestTime, ...persistArgs })
     return res.json(parsedTx)
   } catch (ex) {
     console.error(ex)
     const { code, error, success } = parseError(ex)
-    Persist.add({ state: Persist.States.ERROR, code, error, ...persistArgs })
+    Persist.add({ state: Persist.States.ERROR, responseTime: performance.now() - req.requestTime, code, error, ...persistArgs })
     return res.status(code).json({ error, success })
   }
 })
@@ -276,7 +278,7 @@ router.post('/reveal', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
     tokenId,
     dest,
     amount,
-    data: Buffer.from(ONEUtil.hexStringToBytes(data || '0x')).toString('base64'),
+    data: Buffer.from(ONEUtil.hexStringToBytes(data) || '').toString('base64'),
     ...getUA(req),
     ...getIP(req)
   }
@@ -299,12 +301,12 @@ router.post('/reveal', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
       }
     })
     const parsedTx = parseTx(receipt)
-    Persist.add({ state: Persist.States.SUCCESS, receipt, ...persistArgs })
+    Persist.add({ state: Persist.States.SUCCESS, receipt, responseTime: performance.now() - req.requestTime, ...persistArgs })
     return res.json(parsedTx)
   } catch (ex) {
     console.error(ex)
     const { code, error, success } = parseError(ex)
-    Persist.add({ state: Persist.States.ERROR, code, error, ...persistArgs })
+    Persist.add({ state: Persist.States.ERROR, code, error, responseTime: performance.now() - req.requestTime, ...persistArgs })
     return res.status(code).json({ error, success })
   }
 })
@@ -314,7 +316,13 @@ router.post('/retire', generalLimiter({ max: 6 }), walletAddressLimiter({ max: 6
   if (!checkParams({ address }, res)) {
     return
   }
-  const persistArgs = { index: 'other-requests', requestType: 'retire', address }
+  const persistArgs = {
+    index: 'other-requests',
+    requestType: 'retire',
+    address,
+    ...getUA(req),
+    ...getIP(req)
+  }
   // TODO parameter verification
   try {
     const wallet = await req.contract(address)
@@ -325,15 +333,14 @@ router.post('/retire', generalLimiter({ max: 6 }), walletAddressLimiter({ max: 6
     Persist.add({
       state: Persist.States.SUCCESS,
       receipt,
+      responseTime: performance.now() - req.requestTime,
       ...persistArgs,
-      ...getUA(req),
-      ...getIP(req)
     })
     return res.json(parsedTx)
   } catch (ex) {
     console.error(ex)
     const { code, error, success } = parseError(ex)
-    Persist.add({ state: Persist.States.ERROR, code, error, ...persistArgs })
+    Persist.add({ state: Persist.States.ERROR, code, error, responseTime: performance.now() - req.requestTime, ...persistArgs })
     return res.status(code).json({ error, success })
   }
 })
