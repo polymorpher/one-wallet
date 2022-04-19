@@ -9,10 +9,13 @@ import Typography from 'antd/es/typography'
 import WalletAddress from '../components/WalletAddress'
 import SearchOutlined from '@ant-design/icons/SearchOutlined'
 import util from '../util'
+import Paths from '../constants/paths'
 import ONEUtil from '../../../lib/util'
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useHistory } from 'react-router'
 import walletActions from '../state/modules/wallet/actions'
+import { globalActions } from '../state/modules/global'
 const { Text, Paragraph } = Typography
 
 export const WALLET_OUTDATED_DISABLED_TEXT = 'This wallet cannot be used for this purpose. It might be too old. Please upgrade or use a wallet with a newer version'
@@ -77,7 +80,8 @@ const WalletSelectorBase = ({
   onAddressSelected, filter = e => e, disabledText, useHex, showOlderVersions, style = {}, selectStyle = {
     width: '100%',
     borderBottom: '1px dashed black'
-  }
+  },
+  extraOptions
 }) => {
   const network = useSelector(state => state.global.network)
   const wallets = useSelector(state => state.wallet)
@@ -132,11 +136,25 @@ const WalletSelectorBase = ({
             </Select.Option>
           )
         })}
+        {extraOptions.map((option, index) => (
+          <Select.Option key={'custom-option-' + index} style={{ padding: 0 }}>
+            <Row align='left'>
+              <Col span={24}>
+                {option}
+              </Col>
+            </Row>
+          </Select.Option>))}
       </Select>
     </AverageRow>
   )
 }
 
 export const WalletSelectorV2 = ({ ...args }) => {
-  return <WalletSelectorBase {...args} />
+  const dispatch = useDispatch()
+  const history = useHistory()
+  const createWallet = () => {
+    dispatch(globalActions.selectWallet(''))
+    history.push(Paths.create)
+  }
+  return <WalletSelectorBase {...args} extraOptions={[<Button key='create-wallet-button' type='text' onClick={createWallet}>Create</Button>]} />
 }

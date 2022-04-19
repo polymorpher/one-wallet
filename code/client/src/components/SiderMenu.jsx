@@ -24,7 +24,7 @@ import RestoreIcon from '../assets/icons/restore.svg?el'
 import config from '../config'
 import Paths from '../constants/paths'
 import styled from 'styled-components'
-import { useWindowDimensions } from '../util'
+import util, { useWindowDimensions } from '../util'
 import { useSelector } from 'react-redux'
 import { getColorPalette } from '../theme'
 import { StatsInfo, LineDivider } from './StatsInfo'
@@ -122,21 +122,21 @@ const DeskstopSiderMenuV2 = ({ action, nav, ...args }) => {
       <Row justify='center' style={{ marginBottom: 24 }}><SiderLink href='https://harmony.one/1wallet'>{config.appName} {config.version}</SiderLink></Row>
 
       <Menu theme={theme} mode='inline' onClick={nav} selectedKeys={[action]}>
-        <Menu.Item key='overview' icon={<OverviewIcon fill={action === 'overview' ? 'currentColor' : secondaryTextColor} />}>Overview</Menu.Item>
-        <Menu.Item key='assets' icon={<AssetsIcon fill={action === 'assets' ? 'currentColor' : secondaryTextColor} />}>Assets</Menu.Item>
-        <Menu.Item key='nft' icon={<NFTIcon fill={action === 'nft' ? 'currentColor' : secondaryTextColor} />}>NFTs</Menu.Item>
-        <Menu.Item key='swap' icon={<SwapIcon fill={action === 'swap' ? 'currentColor' : secondaryTextColor} />}>Swap</Menu.Item>
-        <Menu.Item key='stake' icon={<StakeIcon fill={action === 'stake' ? 'currentColor' : secondaryTextColor} />}>Stake</Menu.Item>
-        <Menu.Item key='restore' icon={<RestoreIcon fill={action === 'restore' ? 'currentColor' : secondaryTextColor} />}>Restore</Menu.Item>
+        <Menu.Item key='wallet' icon={<OverviewIcon fill={action === 'overview' ? 'currentColor' : secondaryTextColor} />}>Overview</Menu.Item>
+        <Menu.Item key='wallet/assets' icon={<AssetsIcon fill={action === 'assets' ? 'currentColor' : secondaryTextColor} />}>Assets</Menu.Item>
+        <Menu.Item key='wallet/nft' icon={<NFTIcon fill={action === 'nft' ? 'currentColor' : secondaryTextColor} />}>NFTs</Menu.Item>
+        <Menu.Item key='wallet/swap' icon={<SwapIcon fill={action === 'swap' ? 'currentColor' : secondaryTextColor} />}>Swap</Menu.Item>
+        <Menu.Item key='wallet/stake' icon={<StakeIcon fill={action === 'stake' ? 'currentColor' : secondaryTextColor} />}>Stake</Menu.Item>
+        <Menu.Item key='internal/restore' icon={<RestoreIcon fill={action === 'restore' ? 'currentColor' : secondaryTextColor} />}>Restore</Menu.Item>
       </Menu>
       <LineDivider />
       <Menu theme={theme} mode='inline' className='secondary-menu' onClick={nav} selectedKeys={[action]} style={{ color: secondaryTextColor, textTransform: 'uppercase' }}>
-        <Menu.Item key='grant'><SiderLink href='https://harmony.one/wallet'>Grants</SiderLink></Menu.Item>
-        <Menu.Item key='audit'><SiderLink href='https://github.com/polymorpher/one-wallet/tree/master/audits'>Audits</SiderLink></Menu.Item>
-        <Menu.Item key='wiki'><SiderLink href='https://github.com/polymorpher/one-wallet/wiki'>Wiki</SiderLink></Menu.Item>
-        <Menu.Item key='bug'><SiderLink href='https://github.com/polymorpher/one-wallet/issues'>Bugs</SiderLink></Menu.Item>
-        <Menu.Item key='network'><SiderLink href='https://github.com/polymorpher/one-wallet/issues'>Network</SiderLink></Menu.Item>
-        <Menu.Item key='tools'>Tools</Menu.Item>
+        <Menu.Item key='external/grant'><SiderLink href='https://harmony.one/wallet'>Grants</SiderLink></Menu.Item>
+        <Menu.Item key='external/audit'><SiderLink href='https://github.com/polymorpher/one-wallet/tree/master/audits'>Audits</SiderLink></Menu.Item>
+        <Menu.Item key='external/wiki'><SiderLink href='https://github.com/polymorpher/one-wallet/wiki'>Wiki</SiderLink></Menu.Item>
+        <Menu.Item key='external/bug'><SiderLink href='https://github.com/polymorpher/one-wallet/issues'>Bugs</SiderLink></Menu.Item>
+        <Menu.Item key='external/network'><SiderLink href='https://github.com/polymorpher/one-wallet/issues'>Network</SiderLink></Menu.Item>
+        <Menu.Item key='internal/tools'>Tools</Menu.Item>
       </Menu>
     </Layout.Sider>
   )
@@ -158,13 +158,26 @@ const SiderMenu = ({ ...args }) => {
 }
 
 export const SiderMenuV2 = ({ ...args }) => {
-  const { isMobile } = useWindowDimensions()
   const history = useHistory()
-  const match = useRouteMatch('/:action')
-  const { action } = match ? match.params : {}
-  args.action = action
+  const { isMobile } = useWindowDimensions()
+  const wallets = useSelector(state => state.wallet)
+  const selectedAddress = useSelector(state => state.global.selectedWallet)
+  const network = useSelector(state => state.global.network)
+  const networkWallets = util.filterNetworkWallets(wallets, network)
+  const matchedOrFirstWallet = networkWallets.filter(w => w.address === selectedAddress)[0] ?? networkWallets[0]
+
   args.nav = ({ key }) => {
-    history.push(Paths[key])
+    if (key.startsWith('wallet')) {
+      if (matchedOrFirstWallet) {
+        const [, action] = key.split('/')
+        history.push(Paths.showAddress(matchedOrFirstWallet.address, action))
+      } else {
+        history.push(Paths.create)
+      }
+    } else if (key.startsWith('internal')) {
+      const [, action] = key.split('/')
+      history.push(Paths[action])
+    }
   }
 
   return isMobile

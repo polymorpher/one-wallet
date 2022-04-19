@@ -92,11 +92,13 @@ const LocalRoutes = () => {
               exact
               path={Paths.root}
               render={() => {
-                return (
-                  networkWallets && networkWallets.length
-                    ? <Redirect to={Paths.wallets} component={ListPage} />
-                    : <Redirect to={Paths.create} component={CreatePage} />
-                )
+                const hasWallets = networkWallets && networkWallets.length > 0
+                if (!hasWallets) {
+                  return <Redirect to={Paths.create} component={CreatePage} />
+                }
+                return v2ui
+                  ? <Redirect to={Paths.showAddress(networkWallets[0].address)} component={ShowPage} />
+                  : <Redirect to={Paths.wallets} component={ListPage} />
               }}
             />
           </Switch>

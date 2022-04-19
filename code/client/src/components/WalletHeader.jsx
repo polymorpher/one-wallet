@@ -10,7 +10,8 @@ import Button from 'antd/es/button'
 import Space from 'antd/es/space'
 import Row from 'antd/es/row'
 import Typography from 'antd/es/typography'
-import { useRouteMatch, useHistory } from 'react-router'
+import { matchPath, useRouteMatch, useHistory } from 'react-router'
+import { useLocation } from 'react-router-dom'
 import { titleCase } from 'title-case'
 import { useSelector, useDispatch } from 'react-redux'
 import SearchOutlined from '@ant-design/icons/SearchOutlined'
@@ -18,6 +19,7 @@ import LockOutlined from '@ant-design/icons/LockOutlined'
 import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import SettingOutlined from '@ant-design/icons/SettingOutlined'
 import config from '../config'
+import Paths from '../constants/paths'
 import util, { useWindowDimensions } from '../util'
 import { Hint } from './Text'
 import WalletAddress from './WalletAddress'
@@ -25,7 +27,6 @@ import { globalActions } from '../state/modules/global'
 import { StatsInfoV2 } from './StatsInfo'
 import { getColorPalette } from '../theme'
 import { WalletSelectorV2 } from '../integration/Common'
-// import Paths from '../constants/paths'
 const { Text, Link } = Typography
 
 // const SelectorLabel = styled.span`
@@ -132,24 +133,37 @@ const WalletHeader = () => {
 }
 
 export const WalletHeaderV2 = () => {
+  const history = useHistory()
+  const location = useLocation()
   const { isMobile } = useWindowDimensions()
   const theme = useSelector(state => state.global.v2ui ? state.global.theme : 'dark')
   const dev = useSelector(state => state.global.dev)
-  const match = useRouteMatch('/:action/:address?')
-  const { address: routeAddress } = match ? match.params : {}
-  const address = routeAddress && util.safeNormalizedAddress(routeAddress) || ''
+  const selectedAddress = useSelector(state => state.global.selectedWallet)
   const wallets = useSelector(state => state.wallet)
-  const wallet = wallets[address] || {}
+  const network = useSelector(state => state.global.network)
+  const networkWallets = util.filterNetworkWallets(wallets, network)
+  const matchedWallet = networkWallets.filter(w => w.address === selectedAddress)[0]
   const [settingsVisible, setSettingsVisible] = useState(false)
   const [relayerEditVisible, setRelayerEditVisible] = useState(false)
   const { primaryBgColor, secondaryBgColor, secondaryBorderColor } = getColorPalette(theme)
+
+  const onAddressSelected = (e) => {
+    history.push(Paths.showAddress(e.value))
+  }
+
+  useEffect(() => {
+    if (networkWallets.length > 0 && !selectedAddress && matchPath(location.pathname, Paths.show)) {
+      history.push(Paths.showAddress(networkWallets[0].address))
+    }
+  })
+
   return (
     <Row
       style={{ background: primaryBgColor, padding: isMobile ? 8 : 24 }}
       justify='center'
     >
       {/* Wallet selector + send + receive if wallet exists */}
-      {wallet && <WalletSelectorV2 onAddressSelected={(a) => console.log(a)} filter={e => e.majorVersion >= 10} useHex style={{ background: secondaryBgColor, border: `1px solid ${secondaryBorderColor}`, margin: '0 16px', padding: '16px 0', borderRadius: '16px' }} selectStyle={{}} />}
+      {matchedWallet && <WalletSelectorV2 onAddressSelected={onAddressSelected} filter={e => e.majorVersion >= 10} useHex style={{ background: secondaryBgColor, border: `1px solid ${secondaryBorderColor}`, margin: '0 16px', padding: '16px 0', borderRadius: '16px' }} selectStyle={{}} />}
       <StatsInfoV2 />
       {dev && <Button key='toggle' shape='circle' icon={relayerEditVisible ? <CloseOutlined /> : <SettingOutlined />} onClick={() => setRelayerEditVisible(!relayerEditVisible)} />}
       {dev && relayerEditVisible &&
