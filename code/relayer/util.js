@@ -1,7 +1,9 @@
 const { isString, pick } = require('lodash')
 const UAParser = require('ua-parser-js')
 const getIP = req => {
-  return { ip: isString(req) ? req : (req.headers['x-forwarded-for'] || req.connection.remoteAddress) }
+  let ip = isString(req) ? req : (req.headers['x-forwarded-for'] || req.connection.remoteAddress)
+  ip = ip.replace('::ffff:', '')
+  return { ip }
 }
 const undefinedReg = /undefined/gi
 const getUA = req => {
