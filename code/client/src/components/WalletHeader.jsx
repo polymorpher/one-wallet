@@ -26,6 +26,7 @@ import { globalActions } from '../state/modules/global'
 import { StatsInfoV2 } from './StatsInfo'
 import { useTheme, getColorPalette } from '../theme'
 import { WalletSelectorV2 } from '../integration/Common'
+import { SecondaryButton } from '../components/Buttons'
 const { Text, Link } = Typography
 
 // const SelectorLabel = styled.span`
@@ -151,11 +152,16 @@ export const WalletHeaderV2 = () => {
 
   return (
     <Row
-      style={{ background: primaryBgColor, padding: isMobile ? 8 : 24 }}
+      style={{ background: primaryBgColor, padding: isMobile ? 8 : 24, alignItems: 'center' }}
       justify='center'
     >
       {/* Wallet selector + send + receive if wallet exists */}
-      {matchedWallet && <WalletSelectorV2 onAddressSelected={onAddressSelected} filter={e => e.majorVersion >= 10} useHex style={{ background: secondaryBgColor, border: `1px solid ${secondaryBorderColor}`, margin: '0 16px', padding: '16px 0', borderRadius: '16px' }} selectStyle={{}} />}
+      {matchedWallet && (
+        <>
+          <WalletSelectorV2 onAddressSelected={onAddressSelected} filter={e => e.majorVersion >= 10} useHex style={{ background: secondaryBgColor, border: `1px solid ${secondaryBorderColor}`, margin: '0 4px', padding: '4px 0', borderRadius: '16px' }} selectStyle={{}} />
+          <SecondaryButton style={{ marginRight: '8px', height: '100%', borderRadius: '15px' }}>Send</SecondaryButton>
+          <SecondaryButton style={{ marginRight: '8px', height: '100%', borderRadius: '15px' }}>Receive</SecondaryButton>
+        </>)}
       <StatsInfoV2 />
       {dev && <Button key='toggle' shape='circle' icon={relayerEditVisible ? <CloseOutlined /> : <SettingOutlined />} onClick={() => setRelayerEditVisible(!relayerEditVisible)} />}
       {dev && relayerEditVisible &&

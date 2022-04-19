@@ -44,7 +44,7 @@ export const StatsInfo = () => {
       {stats
         ? (
           <Row style={{ marginBottom: 16 }} justify='center'>
-            <Row style={{ marginBottom: 8 }}>
+            <Row style={{ lineHeight: 15 }}>
               <Tag color='dimgray' style={{ margin: 0, width: 64, borderRadius: 0, textAlign: 'center' }}>wallets</Tag>
               <Tag color='lightseagreen' style={{ width: 80, borderRadius: 0, textAlign: 'center' }}>{stats.count.toLocaleString()}</Tag>
             </Row>
@@ -88,13 +88,13 @@ export const StatsInfoV2 = () => {
       ? (
         <Row style={{ color: primaryTextColor }} justify='center' className='wallet-stats-info'>
           <Tag color={secondaryBgColor} style={{ margin: 0, padding: '4px 32px' }}>
-            <Statistic style={{ marginBottom: 8 }} title='ONE price' value={onePrice} prefix='$' valueStyle={{ color: primaryTextColor, fontWeight: 'bold' }} />
+            <Statistic style={{ lineHeight: '16px' }} title='ONE price' value={onePrice} prefix='$' valueStyle={{ color: primaryTextColor, fontWeight: 'bold' }} />
           </Tag>
           <Tag color={secondaryBgColor} style={{ margin: '0 -1px', padding: '4px 32px' }}>
-            <Statistic style={{ marginBottom: 8 }} title='1Wallet count' value={stats.count} valueStyle={{ color: primaryTextColor, fontWeight: 'bold' }} />
+            <Statistic style={{ lineHeight: '16px' }} title='1Wallet count' value={stats.count} valueStyle={{ color: primaryTextColor, fontWeight: 'bold' }} />
           </Tag>
           <Tag color={secondaryBgColor} style={{ margin: 0, padding: '4px 32px' }}>
-            <Statistic style={{ marginBottom: 8 }} title='Total managed' value={(stats.totalAmount * onePrice).toFixed(2)} prefix='$' valueStyle={{ color: primaryTextColor, fontWeight: 'bold' }} />
+            <Statistic style={{ lineHeight: '16px' }} title='Total managed' value={(stats.totalAmount * onePrice).toFixed(2)} prefix='$' valueStyle={{ color: primaryTextColor, fontWeight: 'bold' }} />
           </Tag>
         </Row>)
       : (

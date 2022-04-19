@@ -11,6 +11,9 @@ export function getColorPalette (theme) {
     primaryBgColor: theme === 'dark' ? 'black' : 'white',
     secondaryBgColor: theme === 'dark' ? '#666' : '#fafafa',
     primaryBorderColor: theme === 'dark' ? '#fafafa' : '#555',
-    secondaryBorderColor: '#d9d9d9'
+    secondaryBorderColor: '#d9d9d9',
+    primaryButtonBgColor: theme === 'dark' ? '#666' : '#00ADE8',
+    secondaryButtonBgColor: theme === 'dark' ? '#333' : '#4F5963',
+    buttonTextColor: theme === 'dark' ? 'black' : 'white',
   }
 }
