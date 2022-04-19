@@ -276,7 +276,7 @@ router.post('/reveal', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
     tokenId,
     dest,
     amount,
-    data: Buffer.from(ONEUtil.hexStringToBytes(data)).toString('base64'),
+    data: Buffer.from(ONEUtil.hexStringToBytes(data || '0x')).toString('base64'),
     ...getUA(req),
     ...getIP(req)
   }
