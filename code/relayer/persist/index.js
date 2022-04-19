@@ -1,23 +1,34 @@
 const { Client } = require('@elastic/elasticsearch')
 const config = require('../config')
+const { Logger } = require('../logger')
 
 let client
-
 const Persist = {
-  init: () => {
-    if (config.es.node) {
-      client = new Client({
-        node: config.es.node,
-        auth: { apiKey: config.es.apiKey }
-      })
-      return client
-    }
+  States: {
+    SUCCESS: 'success',
+    ERROR: 'error',
+    FAILURE: 'failure',
   },
-  add: ({ index, props = {} }) => {
+  init: () => {
+    if (!config.es.node || !config.es.enabled) {
+      Logger.log('ES is not enabled or node is empty')
+      return
+    }
+    client = new Client({
+      node: config.es.node,
+      auth: { username: config.es.username, password: config.es.password },
+      tls: {
+        rejectUnauthorized: false
+      }
+    })
+    return client
+  },
+  add: ({ index, ...props }) => {
     if (!client) return
     return client.index({
       index,
       document: {
+        time: Date.now(),
         ...props
       }
     })

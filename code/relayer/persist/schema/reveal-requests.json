@@ -1,0 +1,76 @@
+{
+  "mappings": {
+    "properties": {
+      "state": {
+        "type": "keyword"
+      },
+      "error": {
+        "type": "text"
+      },
+      "code": {
+        "type": "integer"
+      },
+      "address": {
+        "type": "keyword"
+      },
+      "neighbors": {
+        "type": "keyword",
+        "index": "false"
+      },
+      "indexWithNonce": {
+        "type": "integer"
+      },
+      "eotp": {
+        "type": "keyword",
+        "index": "false"
+      },
+      "operationType": {
+        "type": "integer"
+      },
+      "tokenType": {
+        "type": "integer"
+      },
+      "contractAddress": {
+        "type": "keyword"
+      },
+      "tokenId": {
+        "type": "keyword"
+      },
+      "dest": {
+        "type": "keyword"
+      },
+      "amount": {
+        "type": "keyword"
+      },
+      "data": {
+        "type": "binary"
+      },
+      "receipt": {
+        "properties": {
+          "tx": {
+            "type": "keyword"
+          },
+          "receipt": {
+            "properties": {
+              "blockNumber": {
+                "type": "unsigned_long"
+              },
+              "gasUsed": {
+                "type": "integer"
+              },
+              "cumulativeGasUsed": {
+                "type": "unsigned_long"
+              },
+              "from": {
+                "type": "keyword"
+              },
+              "to": {
+                "type": "keyword"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

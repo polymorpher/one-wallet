@@ -1,0 +1,53 @@
+{
+  "mappings": {
+    "properties": {
+      "state": {
+        "type": "keyword"
+      },
+      "error": {
+        "type": "text"
+      },
+      "code": {
+        "type": "integer"
+      },
+      "address": {
+        "type": "keyword"
+      },
+      "hash": {
+        "type": "keyword"
+      },
+      "paramsHash": {
+        "type": "keyword"
+      },
+      "verificationHash": {
+        "type": "keyword"
+      },
+      "receipt": {
+        "properties": {
+          "tx": {
+            "type": "keyword"
+          },
+          "receipt": {
+            "properties": {
+              "blockNumber": {
+                "type": "unsigned_long"
+              },
+              "gasUsed": {
+                "type": "integer"
+              },
+              "cumulativeGasUsed": {
+                "type": "unsigned_long"
+              },
+              "from": {
+                "type": "keyword"
+              },
+              "to": {
+                "type": "keyword"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
