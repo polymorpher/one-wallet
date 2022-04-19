@@ -10,8 +10,7 @@ import Button from 'antd/es/button'
 import Space from 'antd/es/space'
 import Row from 'antd/es/row'
 import Typography from 'antd/es/typography'
-import { matchPath, useRouteMatch, useHistory } from 'react-router'
-import { useLocation } from 'react-router-dom'
+import { useRouteMatch, useHistory } from 'react-router'
 import { titleCase } from 'title-case'
 import { useSelector, useDispatch } from 'react-redux'
 import SearchOutlined from '@ant-design/icons/SearchOutlined'
@@ -134,7 +133,6 @@ const WalletHeader = () => {
 
 export const WalletHeaderV2 = () => {
   const history = useHistory()
-  const location = useLocation()
   const { isMobile } = useWindowDimensions()
   const theme = useSelector(state => state.global.v2ui ? state.global.theme : 'dark')
   const dev = useSelector(state => state.global.dev)
@@ -150,12 +148,6 @@ export const WalletHeaderV2 = () => {
   const onAddressSelected = (e) => {
     history.push(Paths.showAddress(e.value))
   }
-
-  useEffect(() => {
-    if (networkWallets.length > 0 && !selectedAddress && matchPath(location.pathname, Paths.show)) {
-      history.push(Paths.showAddress(networkWallets[0].address))
-    }
-  })
 
   return (
     <Row
