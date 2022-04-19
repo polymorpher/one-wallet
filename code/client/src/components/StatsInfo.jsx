@@ -6,12 +6,12 @@ import Statistic from 'antd/es/statistic'
 import Spin from 'antd/es/spin'
 import abbr from '../abbr'
 import { useDispatch, useSelector } from 'react-redux'
-import { getColorPalette } from '../theme'
+import { getColorPalette, useTheme } from '../theme'
 import WalletConstants from '../constants/wallet'
 import { cacheActions } from '../state/modules/cache'
 
 export const LineDivider = ({ children }) => {
-  const theme = useSelector(state => state.global.v2ui ? state.global.theme : 'dark')
+  const theme = useTheme()
   const { primaryBorderColor: color } = getColorPalette(theme)
   return (
     <Divider style={{ borderColor: color, opacity: 0.5, color: color, fontSize: 14 }}>
@@ -67,7 +67,7 @@ export const StatsInfoV2 = () => {
   const onePrice = useSelector(state => state.global.price)
   const [stats, setStats] = useState(null)
   const dispatch = useDispatch()
-  const theme = useSelector(state => state.global.v2ui ? state.global.theme : 'dark')
+  const theme = useTheme()
   const { primaryTextColor, secondaryBgColor } = getColorPalette(theme)
 
   useEffect(() => {

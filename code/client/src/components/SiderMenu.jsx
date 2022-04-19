@@ -26,7 +26,7 @@ import Paths from '../constants/paths'
 import styled from 'styled-components'
 import util, { useWindowDimensions } from '../util'
 import { useSelector } from 'react-redux'
-import { getColorPalette } from '../theme'
+import { useTheme, getColorPalette } from '../theme'
 import { StatsInfo, LineDivider } from './StatsInfo'
 const { Link } = Typography
 
@@ -47,7 +47,7 @@ const mobileMenuItemStyle = {
 }
 
 const MobileSiderMenu = ({ action, nav, ...args }) => {
-  const theme = useSelector(state => state.global.v2ui ? state.global.theme : 'dark')
+  const theme = useTheme()
   return (
     <Menu
       theme={theme}
@@ -69,7 +69,7 @@ const MobileSiderMenu = ({ action, nav, ...args }) => {
 
 const DeskstopSiderMenu = ({ action, nav, ...args }) => {
   const history = useHistory()
-  const theme = useSelector(state => state.global.v2ui ? (state.global.theme ?? 'light') : 'dark')
+  const theme = useTheme()
   const { primaryTextColor } = getColorPalette(theme)
 
   return (
@@ -107,7 +107,7 @@ const DeskstopSiderMenu = ({ action, nav, ...args }) => {
 
 const DeskstopSiderMenuV2 = ({ action, nav, ...args }) => {
   const history = useHistory()
-  const theme = useSelector(state => state.global.v2ui ? (state.global.theme ?? 'light') : 'dark')
+  const theme = useTheme()
 
   const { primaryTextColor, secondaryTextColor } = getColorPalette(theme)
 

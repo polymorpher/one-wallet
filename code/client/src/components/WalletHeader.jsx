@@ -24,7 +24,7 @@ import { Hint } from './Text'
 import WalletAddress from './WalletAddress'
 import { globalActions } from '../state/modules/global'
 import { StatsInfoV2 } from './StatsInfo'
-import { getColorPalette } from '../theme'
+import { useTheme, getColorPalette } from '../theme'
 import { WalletSelectorV2 } from '../integration/Common'
 const { Text, Link } = Typography
 
@@ -134,7 +134,7 @@ const WalletHeader = () => {
 export const WalletHeaderV2 = () => {
   const history = useHistory()
   const { isMobile } = useWindowDimensions()
-  const theme = useSelector(state => state.global.v2ui ? state.global.theme : 'dark')
+  const theme = useTheme()
   const dev = useSelector(state => state.global.dev)
   const selectedAddress = useSelector(state => state.global.selectedWallet)
   const wallets = useSelector(state => state.wallet)

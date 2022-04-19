@@ -1,3 +1,9 @@
+import { useSelector } from 'react-redux'
+
+export function useTheme () {
+  return useSelector(state => state.global.v2ui ? (state.global.theme ?? 'light') : 'dark')
+}
+
 export function getColorPalette (theme) {
   return {
     primaryTextColor: theme === 'dark' ? 'white' : 'black',
