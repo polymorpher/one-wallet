@@ -1,4 +1,6 @@
 const TestUtil = require('./util')
+const { cloneDeep } = require('lodash')
+const { keccak256 } = require('web3-utils')
 const unit = require('ethjs-unit')
 const ONEUtil = require('./../lib/util')
 const ONEDebugger = require('./../lib/debug')
@@ -22,14 +24,14 @@ const THREE_ETH = unit.toWei('3', 'ether')
 const FOUR_ETH = unit.toWei('4', 'ether')
 const INTERVAL = 30000 // 30 second Intervals
 const INTERVAL6 = INTERVAL * 6 // 6 intervals is 3 minutes
-const NOW = Math.floor(Date.now() / (INTERVAL)) * INTERVAL - 5000
+const NOW_MINUS_5 = Math.floor(Date.now() / (INTERVAL)) * INTERVAL - 5000
 const duration = INTERVAL * 2 * 60 * 24 * 4 // 4 day wallet duration
-const getEffectiveTime = () => Math.floor(NOW / INTERVAL6) * INTERVAL6 - duration / 2
+const getEffectiveTime = () => Math.floor(NOW_MINUS_5 / INTERVAL6) * INTERVAL6 - duration / 2
 // constants used for displace testing
 const SLOT_SIZE = 1
 const MULTIPLES = process.env.LIGHT ? [24] : [24, 26, 28, 30, 32, 34, 36]
 const DURATIONS = MULTIPLES.map(e => INTERVAL * e) // need to be greater than 16 to trigger innerCore generations
-const EFFECTIVE_TIMES = DURATIONS.map(d => Math.floor(NOW / INTERVAL) * INTERVAL - d / 2)
+// const EFFECTIVE_TIMES = DURATIONS.map(d => Math.floor(NOW_MINUS_5 / INTERVAL) * INTERVAL - d / 2)
 
 const Logger = TestUtil.Logger
 const Debugger = ONEDebugger(Logger)
@@ -105,8 +107,8 @@ const executeSecurityTransaction = async ({
       break
     case ONEConstants.OperationType.DISPLACE:
       // Client Logic
-      const testTimeNow = Math.floor(testTime / (INTERVAL)) * INTERVAL - 5000
-      tOtpCounter = Math.floor(testTimeNow / INTERVAL)
+      // const testTimeNow = Math.floor(testTime / (INTERVAL)) * INTERVAL - 5000
+      tOtpCounter = Math.floor(testTime / INTERVAL)
       const baseCounter = Math.floor(tOtpCounter / 6) * 6
       Logger.debug(`tOtpCounter=${tOtpCounter} baseCounter=${baseCounter} c=${treeIndex}`)
       otpb = ONEUtil.genOTP({ seed: walletInfo.seed, counter: baseCounter + treeIndex, n: 6 })
@@ -116,8 +118,8 @@ const executeSecurityTransaction = async ({
       }
       const innerEffectiveTime = Math.floor(effectiveTime / (INTERVAL * 6)) * (INTERVAL * 6)
       const innerExpiryTime = innerEffectiveTime + Math.floor(duration / (INTERVAL * 6)) * (INTERVAL * 6)
-      assert.isBelow(testTimeNow, innerExpiryTime, 'Current time must be greater than inner expiry time')
-      index = ONEUtil.timeToIndex({ time: testTimeNow, effectiveTime: innerEffectiveTime, interval: INTERVAL * 6 }) // passed to Commit Reveal
+      assert.isBelow(testTime, innerExpiryTime, 'Current time must be greater than inner expiry time')
+      index = ONEUtil.timeToIndex({ time: testTime, effectiveTime: innerEffectiveTime, interval: INTERVAL * 6 }) // passed to Commit Reveal
       eotp = await ONEWallet.computeInnerEOTP({ otps }) // passed to Commit Reveal
       Logger.debug({
         otps: otps.map(e => {
@@ -188,87 +190,11 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.revert(snapshotId)
   })
 
-  const testForTime = async ({ multiple, effectiveTime, duration, seedBase = '0xdeadbeef1234567890023456789012', numTrees = 6, checkDisplacementSuccess = false }) => {
-    Logger.debug('testing:', { multiple, effectiveTime, duration })
-    const purse = web3.eth.accounts.create()
-    const creationSeed = '0x' + (new BN(ONEUtil.hexStringToBytes(seedBase)).addn(duration).toString('hex'))
-    const creationPackage = await TestUtil.createWallet({
-      seed: creationSeed,
-      effectiveTime,
-      duration,
-      maxOperationsPerInterval: SLOT_SIZE,
-      lastResortAddress: purse.address,
-      spendingLimit: ONE_ETH
-    })
-    const {
-      wallet,
-      seed,
-      client: { innerTrees, },
-    } = creationPackage
-
-    // TestUtil.printInnerTrees({ Debugger, innerTrees })
-    const newSeed = '0xdeedbeaf1234567890123456789012'
-    const newEffectiveTime = Math.floor(NOW / INTERVAL / 6) * INTERVAL * 6
-    const { core: newCore, innerCores: newInnerCores, identificationKeys: newKeys, vars: { seed: newComputedSeed, hseed: newHseed, client: { layers: newLayers } } } = await TestUtil.makeCores({
-      seed: newSeed,
-      effectiveTime: newEffectiveTime,
-      duration: duration,
-    })
-    const data = ONEWallet.encodeDisplaceDataHex({ core: newCore, innerCores: newInnerCores, identificationKey: newKeys[0] })
-
-    const tOtpCounter = Math.floor(NOW / INTERVAL)
-    const baseCounter = Math.floor(tOtpCounter / 6) * 6
-    for (let c = 0; c < numTrees; c++) {
-      Logger.debug(`tOtpCounter=${tOtpCounter} baseCounter=${baseCounter} c=${c}`)
-      const otpb = ONEUtil.genOTP({ seed, counter: baseCounter + c, n: 6 })
-      const otps = []
-      for (let i = 0; i < 6; i++) {
-        otps.push(otpb.subarray(i * 4, i * 4 + 4))
-      }
-      const innerEffectiveTime = Math.floor(effectiveTime / (INTERVAL * 6)) * (INTERVAL * 6)
-      const innerExpiryTime = innerEffectiveTime + Math.floor(duration / (INTERVAL * 6)) * (INTERVAL * 6)
-      assert.isBelow(NOW, innerExpiryTime, 'Current time must be greater than inner expiry time')
-      const index = ONEUtil.timeToIndex({ time: NOW, effectiveTime: innerEffectiveTime, interval: INTERVAL * 6 })
-      const eotp = await ONEWallet.computeInnerEOTP({ otps })
-      // const treeIndex = Math.floor((NOW - effectiveTime) / INTERVAL) % 6
-      const treeIndex = c
-      Logger.debug({
-        otps: otps.map(e => {
-          const r = new DataView(new Uint8Array(e).buffer)
-          return r.getUint32(0, false)
-        }),
-        eotp: ONEUtil.hexString(eotp),
-        index,
-        treeIndex
-      })
-      Debugger.printLayers({ layers: innerTrees[treeIndex].layers })
-
-      const { tx, authParams, revealParams } = await TestUtil.commitReveal({
-        Debugger,
-        layers: innerTrees[treeIndex].layers,
-        index,
-        eotp,
-        paramsHash: ONEWallet.computeDataHash,
-        commitParams: { data: ONEUtil.hexStringToBytes(data) },
-        revealParams: { data, operationType: ONEConstants.OperationType.DISPLACE },
-        wallet
-      })
-      const successLog = tx.logs.find(log => log.event === 'CoreDisplaced') || tx.receipt.rawLogs.find(log => log.topics.includes('0x0b6dd4942da3070d72e5249990ad2b2703efd3f3a99c79cd0ce1a8eb50f8fdf4'))
-      if (checkDisplacementSuccess && !successLog) {
-        console.error(tx, authParams, revealParams)
-        Logger.debug(tx.receipt.rawLogs)
-        throw new Error('CoreDisplaced log missing')
-      }
-    }
-    return { wallet, newCore, newInnerCores, newKeys, newSeed: newComputedSeed, newEffectiveTime, newHseed, newLayers }
-    // assert.equal(ONE_CENT, balance, 'Wallet has correct balance')
-  }
-
-  const testForTime2 = async ({ multiple, effectiveTime, duration, seedBase = '0xdeadbeef1234567890023456789012', numTrees = 6, checkDisplacementSuccess = false, testTime = Date.now() }) => {
+  const testForTime = async ({ multiple, effectiveTime, duration, seedBase = '0xdeadbeef1234567890023456789012', numTrees = 6, checkDisplacementSuccess = false, testTime = Date.now() }) => {
     Logger.debug('testing:', { multiple, effectiveTime, duration })
     const creationSeed = '0x' + (new BN(ONEUtil.hexStringToBytes(seedBase)).addn(duration).toString('hex'))
-    // const salt = 'SE-GENERAL-0-1' + Date.now()
     let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: creationSeed, deployer: accounts[0], effectiveTime, duration })
+    TestUtil.printInnerTrees({ Debugger, innerTrees: alice.client.innerTrees })
     // Start Tests
     const newSeed = '0xdeedbeaf1234567890123456789012'
     const testTimeNow = Math.floor(testTime / (INTERVAL)) * INTERVAL - 5000
@@ -278,10 +204,11 @@ contract('ONEWallet', (accounts) => {
       effectiveTime: newEffectiveTime,
       duration: duration,
     })
-    const data = ONEWallet.encodeDisplaceDataHex({ core: newCore, innerCores: newInnerCores, identificationKey: newKeys[0] })
     for (let c = 0; c < numTrees; c++) {
-      // Begin Tests
-      // alice changes the spending limit
+      newCore[3] += c
+      newCore[0] = keccak256(c.toString())
+      const data = ONEWallet.encodeDisplaceDataHex({ core: newCore, innerCores: newInnerCores, identificationKey: newKeys[0] })
+      Logger.debug(`counter: ${c}`)
       let { tx, currentState } = await executeSecurityTransaction(
         {
           ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
@@ -313,13 +240,16 @@ contract('ONEWallet', (accounts) => {
   // Note: this is currently tested in innerCores.js
   it('SE-BASIC-7 DISPLACE: must allow displace operation using 6x6 otps for different durations authenticate otp from new core after displacement', async () => {
     let testTime = Date.now()
-    // testTime = await TestUtil.bumpTestTime(testTime, 60)
-    const testTimeNow = NOW
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    testTime = Math.floor(testTime / (INTERVAL)) * INTERVAL - 5000
+    // const testTimeNow = NOW_MINUS_5
     // const testTimeNow = Math.floor(testTime / (INTERVAL)) * INTERVAL - 5000
     const multiple = 24
     const duration = INTERVAL * 24 // need to be greater than 16 to trigger innerCore generations
-    const effectiveTime = Math.floor(testTimeNow / INTERVAL) * INTERVAL - 24 / 2
+    const effectiveTime = Math.floor(testTime / INTERVAL) * INTERVAL - (duration / 2)
+    // await testForTime({ multiple, effectiveTime, duration, testTime })
     await testForTime({ multiple, effectiveTime, duration, testTime })
+    // assert.equal('events', 'NoEvents', 'lets see the events')
   })
 
   // ====== CHANGE_SPENDING_LIMIT ======
@@ -597,14 +527,23 @@ contract('ONEWallet', (accounts) => {
 
   // ===== DISPLACE TESTING FOR DIFFERENT DURATIONS ====
   it('SE-COMPLEX-7: must allow displace operation using 6x6 otps for different durations', async () => {
+    // Begin Tests
+    let testTime = Date.now()
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    testTime = Math.floor(testTime / (INTERVAL)) * INTERVAL - 5000
+    const EFFECTIVE_TIMES = DURATIONS.map(d => Math.floor(testTime / INTERVAL) * INTERVAL - d / 2)
     for (let i = 0; i < MULTIPLES.length; i++) {
-      let testTime = Date.now()
       // testTime = await TestUtil.bumpTestTime(testTime, 60)
       await testForTime({ multiple: MULTIPLES[i], effectiveTime: EFFECTIVE_TIMES[i], duration: DURATIONS[i], testTime })
     }
   })
   // ===== DISPLACEMENT AUTHENTICATION TESTING ====
   it('SE-COMPLEX-7-0: must authenticate otp from new core after displacement', async () => {
+    // Begin Tests
+    let testTime = Date.now()
+    // testTime = await TestUtil.bumpTestTime(testTime, 60)
+    testTime = Math.floor(testTime / (INTERVAL)) * INTERVAL - 5000
+    const EFFECTIVE_TIMES = DURATIONS.map(d => Math.floor(testTime / INTERVAL) * INTERVAL - d / 2)
     const { wallet, newSeed, newEffectiveTime, newHseed, newLayers } = await testForTime({
       multiple: MULTIPLES[0],
       effectiveTime: EFFECTIVE_TIMES[0],
@@ -614,9 +553,9 @@ contract('ONEWallet', (accounts) => {
       checkDisplacementSuccess: true
     })
     Logger.debug('newSeed', newSeed)
-    const counter = Math.floor(NOW / INTERVAL)
+    const counter = Math.floor(testTime / INTERVAL)
     const otp = ONEUtil.genOTP({ seed: newSeed, counter })
-    const index = ONEUtil.timeToIndex({ time: NOW, effectiveTime: newEffectiveTime })
+    const index = ONEUtil.timeToIndex({ time: testTime, effectiveTime: newEffectiveTime })
     const eotp = await ONEWallet.computeEOTP({ otp, hseed: newHseed })
     const purse = web3.eth.accounts.create()
 
@@ -625,6 +564,7 @@ contract('ONEWallet', (accounts) => {
       to: wallet.address,
       value: ONE_DIME
     })
+    // testTime = await TestUtil.bumpTestTime(testTime, 60)
     await TestUtil.commitReveal({
       Debugger,
       layers: newLayers,

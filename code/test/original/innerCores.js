@@ -1,4 +1,5 @@
 const TestUtil = require('../util')
+const { keccak256 } = require('web3-utils')
 const unit = require('ethjs-unit')
 const ONEUtil = require('../../lib/util')
 const ONEDebugger = require('../../lib/debug')
@@ -27,7 +28,7 @@ contract('ONEWallet', (accounts) => {
   afterEach(async function () {
     await TestUtil.revert(snapshotId)
   })
-  const testForTime = async (multiple, effectiveTime, duration, seedBase = '0xdeadbeef1234567890023456789012', numTrees = 6, checkDisplacementSuccess = false) => {
+  const testForTime = async (multiple, effectiveTime, duration, seedBase = '0xdeadbeef1234567890023456789012', numTrees = 6, checkDisplacementSuccess = true) => {
     console.log('testing:', { multiple, effectiveTime, duration })
     const purse = web3.eth.accounts.create()
     const creationSeed = '0x' + (new BN(ONEUtil.hexStringToBytes(seedBase)).addn(duration).toString('hex'))
@@ -53,11 +54,13 @@ contract('ONEWallet', (accounts) => {
       effectiveTime: newEffectiveTime,
       duration: duration,
     })
-    const data = ONEWallet.encodeDisplaceDataHex({ core: newCore, innerCores: newInnerCores, identificationKey: newKeys[0] })
 
     const tOtpCounter = Math.floor(NOW / INTERVAL)
     const baseCounter = Math.floor(tOtpCounter / 6) * 6
     for (let c = 0; c < numTrees; c++) {
+      newCore[3] += c
+      newCore[0] = keccak256(c.toString())
+      const data = ONEWallet.encodeDisplaceDataHex({ core: newCore, innerCores: newInnerCores, identificationKey: newKeys[0] })
       console.log(`tOtpCounter=${tOtpCounter} baseCounter=${baseCounter} c=${c}`)
       const otpb = ONEUtil.genOTP({ seed, counter: baseCounter + c, n: 6 })
       const otps = []
