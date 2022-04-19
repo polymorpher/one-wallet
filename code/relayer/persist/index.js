@@ -35,7 +35,7 @@ const Persist = {
   },
   client: () => client,
 
-  count: async ({ index, before, after }) => {
+  count: async ({ index, before, after, query }) => {
     if (!client) return
     const body = { index }
     if (before && after) {
@@ -44,6 +44,9 @@ const Persist = {
       body.query = { range: { time: { lte: after } } }
     } else if (before) {
       body.query = { range: { time: { lte: before } } }
+    }
+    if (query) {
+      body.query = { bool: { must: body.query ? [query, body.query] : [query] } }
     }
     const res = await client.count(body)
     return res?.count
