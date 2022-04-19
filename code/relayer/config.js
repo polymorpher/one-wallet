@@ -50,8 +50,9 @@ const config = {
   cache: process.env.CACHE || 'cache',
   es: {
     enabled: process.env.ES_ENABLED === 'true' || process.env.ES_ENABLED === '1',
-    node: process.env.ES_NODE || 'http://localhost:9200',
-    apiKey: process.env.ES_API_KEY
+    node: process.env.ES_NODE || 'https://localhost:9200',
+    username: process.env.ES_USERNAME,
+    password: process.env.ES_PASSWORD,
   }
 }
 module.exports = config
