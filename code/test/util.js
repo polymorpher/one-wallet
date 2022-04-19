@@ -4,6 +4,7 @@ const config = require('../config')
 const base32 = require('hi-base32')
 const BN = require('bn.js')
 const unit = require('ethjs-unit')
+const Flow = require('../lib/api/flow')
 const ONEWallet = require('../lib/onewallet')
 const ONEParser = require('../lib/parser')
 const { backoff } = require('exponential-backoff')
@@ -796,6 +797,89 @@ const assertStateEqual = async (expectedState, actualState, checkNonce = false) 
 // ==== EXECUTION FUNCTIONS ====
 
 // ==== EXECUTION FUNCTIONS ====
+
+const executeCoreTransaction = async ({
+  walletInfo,
+  layers,
+  index,
+  eotp,
+  operationType,
+  tokenType,
+  contractAddress,
+  tokenId,
+  dest,
+  amount,
+  data,
+  testTime = Date.now(),
+  getCurrentState = true
+}) => {
+  // Default layers if not passed
+  if (!layers) { layers = walletInfo.client.layers }
+  if (!index) {
+  // calculate wallets effectiveTime (creation time) from t0
+    const info = await walletInfo.wallet.getInfo()
+    const t0 = new BN(info[3]).toNumber()
+    const walletEffectiveTime = t0 * INTERVAL
+    index = ONEUtil.timeToIndex({ effectiveTime: walletEffectiveTime, time: testTime })
+  }
+  if (!eotp) {
+    // calculate counter from testTime
+    const counter = Math.floor(testTime / INTERVAL)
+    const otp = ONEUtil.genOTP({ seed: walletInfo.seed, counter })
+    eotp = await ONEWallet.computeEOTP({ otp, hseed: walletInfo.hseed })
+  }
+  let paramsHash
+  let commitParams
+  let revealParams
+  // Process the Operation
+  switch (operationType) {
+    // Format commit and revealParams for TRANSFER Tranasction
+    case ONEConstants.OperationType.TRANSFER:
+      paramsHash = ONEWallet.computeTransferHash
+      commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
+      revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
+      break
+    case ONEConstants.OperationType.SET_RECOVERY_ADDRESS:
+      paramsHash = ONEWallet.computeDestOnlyHash
+      commitParams = { operationType, dest }
+      revealParams = { operationType, dest }
+      break
+    case ONEConstants.OperationType.CHANGE_SPENDING_LIMIT:
+    case ONEConstants.OperationType.JUMP_SPENDING_LIMIT:
+      paramsHash = ONEWallet.computeAmountHash
+      commitParams = { operationType, amount }
+      revealParams = { operationType, amount }
+      break
+    case ONEConstants.OperationType.RECOVER:
+      // Client logic
+      index = 2 ** (walletInfo.client.layers.length - 1) - 1 // The last leaf is reserved for recovery, without requiring otp
+      eotp = await Flow.EotpBuilders.recovery({ wallet: walletInfo.wallet, layers: walletInfo.client.layers })
+      // Commit logic
+      paramsHash = ONEWallet.computeRecoveryHash
+      // paramsHash = function () { ONEWallet.computeRecoveryHash({ hseed: walletInfo.hseed }) }
+      commitParams = { operationType, data }
+      revealParams = { operationType, data }
+      break
+    default:
+      console.log(`Invalid Operation passed`)
+      assert.strictEqual(operationType, 'A Valid Operation', 'Error invalid operationType passed')
+      return
+  }
+  let { tx, authParams, revealParams: returnedRevealParams } = await commitReveal({
+    Debugger,
+    layers,
+    index,
+    eotp,
+    paramsHash,
+    commitParams,
+    revealParams,
+    wallet: walletInfo.wallet
+  })
+  let currentState
+  if (getCurrentState) { currentState = await getState(walletInfo.wallet) }
+  return { tx, authParams, revealParams: returnedRevealParams, currentState }
+}
+
 // executeUpgradeTransaction commits and reveals a wallet transaction
 const executeUpgradeTransaction = async ({
   walletInfo,
@@ -962,6 +1046,7 @@ module.exports = {
   assertStateEqual,
 
   // execution
+  executeCoreTransaction,
   executeUpgradeTransaction,
   commitReveal
 }

@@ -20,83 +20,6 @@ const getEffectiveTime = () => Math.floor(Date.now() / INTERVAL / 6) * INTERVAL 
 const Logger = TestUtil.Logger
 const Debugger = ONEDebugger(Logger)
 
-// ==== EXECUTION FUNCTIONS ====
-// executeStandardTransaction commits and reveals a wallet transaction
-const executeCoreTransaction = async ({
-  walletInfo,
-  operationType,
-  tokenType,
-  contractAddress,
-  tokenId,
-  dest,
-  amount,
-  data,
-  address,
-  randomSeed,
-  testTime = Date.now(),
-  getCurrentState = true
-}) => {
-  // calculate counter from testTime
-  const counter = Math.floor(testTime / INTERVAL)
-  const otp = ONEUtil.genOTP({ seed: walletInfo.seed, counter })
-  // calculate wallets effectiveTime (creation time) from t0
-  const info = await walletInfo.wallet.getInfo()
-  const t0 = new BN(info[3]).toNumber()
-  const walletEffectiveTime = t0 * INTERVAL
-  let index = ONEUtil.timeToIndex({ effectiveTime: walletEffectiveTime, time: testTime })
-  let eotp = await ONEWallet.computeEOTP({ otp, hseed: walletInfo.hseed })
-  let paramsHash
-  let commitParams
-  let revealParams
-  // Process the Operation
-  switch (operationType) {
-    // Format commit and revealParams for TRANSFER Tranasction
-    case ONEConstants.OperationType.TRANSFER:
-      paramsHash = ONEWallet.computeTransferHash
-      commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
-      revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
-      break
-    case ONEConstants.OperationType.SET_RECOVERY_ADDRESS:
-      paramsHash = ONEWallet.computeDestOnlyHash
-      commitParams = { operationType, dest }
-      revealParams = { operationType, dest }
-      break
-    case ONEConstants.OperationType.CHANGE_SPENDING_LIMIT:
-    case ONEConstants.OperationType.JUMP_SPENDING_LIMIT:
-      paramsHash = ONEWallet.computeAmountHash
-      commitParams = { operationType, amount }
-      revealParams = { operationType, amount }
-      break
-    case ONEConstants.OperationType.RECOVER:
-      // Client logic
-      index = 2 ** (walletInfo.client.layers.length - 1) - 1 // The last leaf is reserved for recovery, without requiring otp
-      eotp = await Flow.EotpBuilders.recovery({ wallet: walletInfo.wallet, layers: walletInfo.client.layers })
-      // Commit logic
-      paramsHash = ONEWallet.computeRecoveryHash
-      // paramsHash = function () { ONEWallet.computeRecoveryHash({ hseed: walletInfo.hseed }) }
-      commitParams = { operationType, data }
-      revealParams = { operationType, data }
-      break
-    default:
-      console.log(`Invalid Operation passed`)
-      assert.strictEqual(operationType, 'A Valid Operation', 'Error invalid operationType passed')
-      return
-  }
-  let { tx, authParams, revealParams: returnedRevealParams } = await TestUtil.commitReveal({
-    Debugger,
-    layers: walletInfo.client.layers,
-    index,
-    eotp,
-    paramsHash,
-    commitParams,
-    revealParams,
-    wallet: walletInfo.wallet
-  })
-  let currentState
-  if (getCurrentState) { currentState = await TestUtil.getState(walletInfo.wallet) }
-  return { tx, authParams, revealParams: returnedRevealParams, currentState }
-}
-
 // ==== Validation Helpers ====
 
 contract('ONEWallet', (accounts) => {
@@ -142,7 +65,7 @@ contract('ONEWallet', (accounts) => {
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // alice tranfers ONE CENT to bob
-    let { tx, currentState } = await executeCoreTransaction(
+    let { tx, currentState } = await TestUtil.executeCoreTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
@@ -191,7 +114,7 @@ contract('ONEWallet', (accounts) => {
     assert.strictEqual(aliceInfoInitial.recoveryAddress, ONEConstants.EmptyAddress, `Alice should initally have last address set to zero address`)
 
     // alice sets her recovery address to bobs
-    let { tx, currentState } = await executeCoreTransaction(
+    let { tx, currentState } = await TestUtil.executeCoreTransaction(
       {
         ...NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
@@ -265,7 +188,7 @@ contract('ONEWallet', (accounts) => {
     let testTime = Date.now()
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // Recover Alices wallet
-    let { tx, currentState } = await executeCoreTransaction(
+    let { tx, currentState } = await TestUtil.executeCoreTransaction(
       {
         ...NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
@@ -315,7 +238,7 @@ contract('ONEWallet', (accounts) => {
     // let tx2 = await TestUtil.fundTokens({ to: alice.wallet.address, amount: ONE_CENT })
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // bob tranfers ONE CENT to alice which get's forwarded to carol
-    let { tx } = await executeCoreTransaction(
+    let { tx } = await TestUtil.executeCoreTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         walletInfo: bob,
