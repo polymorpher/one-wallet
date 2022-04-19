@@ -134,7 +134,8 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
     spentAmount: parseFloat(ONEUtil.toOne(spentAmount)),
     highestSpendingLimit: parseFloat(ONEUtil.toOne(highestSpendingLimit)),
     ...getUA(req),
-    ...getIP(req) }
+    ...getIP(req)
+  }
   // TODO parameter verification
   try {
     const initArgs = [
@@ -205,7 +206,15 @@ router.post('/commit', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
       return res.status(StatusCodes.BAD_REQUEST).json({ error: 'verificationHash is missing or malformed', params: { hash, paramsHash, verificationHash, address } })
     }
   }
-  const persistArgs = { index: 'commit-requests', hash, paramsHash, verificationHash, address }
+  const persistArgs = {
+    index: 'commit-requests',
+    hash,
+    paramsHash,
+    verificationHash,
+    address,
+    ...getUA(req),
+    ...getIP(req)
+  }
   try {
     // eslint-disable-next-line new-cap
     const wallet = new req.contract(address)
@@ -267,7 +276,9 @@ router.post('/reveal', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
     tokenId,
     dest,
     amount,
-    data: Buffer.from(ONEUtil.hexStringToBytes(data)).toString('base64')
+    data: Buffer.from(ONEUtil.hexStringToBytes(data)).toString('base64'),
+    ...getUA(req),
+    ...getIP(req)
   }
   // TODO parameter verification
   try {
@@ -311,7 +322,13 @@ router.post('/retire', generalLimiter({ max: 6 }), walletAddressLimiter({ max: 6
     const executor = blockchain.prepareExecute(req.network, logger)
     const receipt = await executor(txArgs => wallet.retire(txArgs))
     const parsedTx = parseTx(receipt)
-    Persist.add({ state: Persist.States.SUCCESS, receipt, ...persistArgs })
+    Persist.add({
+      state: Persist.States.SUCCESS,
+      receipt,
+      ...persistArgs,
+      ...getUA(req),
+      ...getIP(req)
+    })
     return res.json(parsedTx)
   } catch (ex) {
     console.error(ex)
