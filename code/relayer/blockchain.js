@@ -13,6 +13,8 @@ const cloneDeep = require('lodash/fp/cloneDeep')
 const { backOff } = require('exponential-backoff')
 const { rpc } = require('./rpc')
 const BN = require('bn.js')
+const { performance } = require('perf_hooks')
+const { Logger } = require('./logger')
 
 const networks = []
 const providers = {}
@@ -43,7 +45,7 @@ const initCachedContracts = async () => {
   await ensureDir(p)
   for (let network of networks) {
     if (config.networks[network].skip) {
-      console.log(`[${network}] Skipped`)
+      Logger.log(`[${network}] Skipped`)
       continue
     }
     libraries[network] = {}
@@ -62,7 +64,7 @@ const initCachedContracts = async () => {
         if (knownAddresses[libName]) {
           const libAddress = knownAddresses[libName](network)
           if (libAddress) {
-            console.log(`[${network}][${libName}] Found contract known address at ${libAddress}`)
+            Logger.log(`[${network}][${libName}] Found contract known address at ${libAddress}`)
             // const instance = new c(libAddress)
             const instance = new c(libAddress)
             if (!factoryContracts[libName]) {
@@ -78,7 +80,7 @@ const initCachedContracts = async () => {
         const content = await fs.readFile(fp, { encoding: 'utf-8' })
         const [address, hash] = content.split(',')
         if (hash === expectedHash) {
-          console.log(`[${network}][${libName}] Found existing deployed contract at address ${address}`)
+          Logger.log(`[${network}][${libName}] Found existing deployed contract at address ${address}`)
           // const instance = new c(address)
           const instance = new c(address)
           if (!factoryContracts[libName]) {
@@ -86,16 +88,16 @@ const initCachedContracts = async () => {
           } else {
             factories[network][libName] = instance
           }
-          console.log(`[${network}][${libName}] Initialized contract at ${address}`)
+          Logger.log(`[${network}][${libName}] Initialized contract at ${address}`)
           continue
         } else {
-          console.log(`[${network}][${libName}] Contract code is changed. Redeploying`)
+          Logger.log(`[${network}][${libName}] Contract code is changed. Redeploying`)
         }
       } catch {}
-      console.log(`[${network}][${libName}] Contract address is not cached or is outdated. Deploying new instance`)
+      Logger.log(`[${network}][${libName}] Contract address is not cached or is outdated. Deploying new instance`)
       if (dependencies[libName]) {
         for (let dep of dependencies[libName]) {
-          console.log(`[${network}][${libName}] Contract depends on ${dep.contractName}. Linking...`)
+          Logger.log(`[${network}][${libName}] Contract depends on ${dep.contractName}. Linking...`)
           if (!libraries[network][dep.contractName]) {
             throw new Error(`[${network}][${dep.contractName}] Contract is not deployed yet`)
           }
@@ -112,12 +114,12 @@ const initCachedContracts = async () => {
           const instance = await c.new(...args)
           if (!factoryContracts[libName]) {
             libraries[network][libName] = instance
-            // console.log(`libraries[${network}][${libName}] = ${instance.address}`)
+            // Logger.log(`libraries[${network}][${libName}] = ${instance.address}`)
           } else {
-            // console.log(`factories[${network}][${libName}] = ${instance.address}`)
+            // Logger.log(`factories[${network}][${libName}] = ${instance.address}`)
             factories[network][libName] = instance
           }
-          console.log(`[${network}][${libName}] Deployed at ${instance.address}`)
+          Logger.log(`[${network}][${libName}] Deployed at ${instance.address}`)
           await fs.writeFile(fp, `${instance.address},${expectedHash}`, { encoding: 'utf-8' })
         }, {
           retry: (ex, n) => {
@@ -135,10 +137,10 @@ const initCachedContracts = async () => {
 }
 
 const init = async () => {
-  console.log(`Version=${ONEConfig.version}; LibraryVersion=${ONEConfig.lastLibraryUpdateVersion}`)
+  Logger.log(`Version=${ONEConfig.version}; LibraryVersion=${ONEConfig.lastLibraryUpdateVersion}`)
   Object.keys(config.networks).forEach(k => {
     if (config.networks[k].skip) {
-      console.log(`[${k}] Skipped initialization`)
+      Logger.log(`[${k}] Skipped initialization`)
       return
     }
     const n = config.networks[k]
@@ -175,7 +177,7 @@ const init = async () => {
     contractsV5[k] = c5
     contractsV6[k] = c6
   })
-  console.log('init complete:', {
+  Logger.log('init complete:', {
     networks,
     providers: JSON.stringify(Object.keys(providers).map(k => [k, pick(['gasLimit', 'gasPrice', 'addresses'], providers[k])]), null, 2),
     contracts: Object.keys(contracts),
@@ -183,7 +185,7 @@ const init = async () => {
     contractsV6: Object.keys(contractsV6),
   })
   await initCachedContracts()
-  console.log('library initialization complete')
+  Logger.log('library initialization complete')
   for (let network in libraries) {
     for (let libraryName in libraries[network]) {
       const n = await contracts[network].detectNetwork()
@@ -198,10 +200,10 @@ const init = async () => {
         process.exit(2)
       }
 
-      console.log(`Linked ${network} (${JSON.stringify(n)}) ${libraryName} with ${libraries[network][libraryName].address}`)
+      Logger.log(`Linked ${network} (${JSON.stringify(n)}) ${libraryName} with ${libraries[network][libraryName].address}`)
     }
   }
-  console.log({
+  Logger.log({
     factories,
     libraries,
   })
@@ -211,7 +213,7 @@ const init = async () => {
     pendingNonces[network] = {}
     for (const address of addresses) {
       pendingNonces[network][address] = 0
-      console.log(`[${network}][${address}] Set pending nonce = 0`)
+      Logger.log(`[${network}][${address}] Set pending nonce = 0`)
     }
   }
 }
@@ -239,14 +241,16 @@ const sampleExecutionAddress = (network) => {
 }
 
 // basic executor that
-const prepareExecute = (network, logger = console.log) => async (f) => {
+const prepareExecute = (network, logger = Logger.log, abortUnlessRPCError = true) => async (f) => {
   const [fromIndex, from] = sampleExecutionAddress(network)
   logger(`Sampled [${fromIndex}] ${from}`)
   const latestNonce = await rpc.getNonce({ address: from, network })
   const snapshotPendingNonces = pendingNonces[network][from]
   const nonce = latestNonce + snapshotPendingNonces
   pendingNonces[network][from] += 1
-  const printNonceStats = () => `[network=${network}][account=${fromIndex}][nonce=${nonce}][snapshot=${snapshotPendingNonces}][current=${pendingNonces[network][from]}]`
+  const t0 = performance.now()
+  const elapsed = () => (performance.now() - t0).toFixed(3)
+  const printNonceStats = () => `[elapsed=${elapsed()}ms][network=${network}][account=${fromIndex}][nonce=${nonce}][snapshot=${snapshotPendingNonces}][current=${pendingNonces[network][from]}]`
   try {
     logger(`[pending]${printNonceStats()}`)
     let numAttempts = 0
@@ -257,17 +261,23 @@ const prepareExecute = (network, logger = console.log) => async (f) => {
         gasPrice: config.gasPrice.clone().muln((numAttempts || 0) + 1)
       }), {
         retry: (ex, n) => {
-          console.error(`[error]`, ex)
           if (ex?.abort) {
+            console.error(`[error-abort]`, ex)
             logger(`[abort][attempts=${n}]${printNonceStats()}`)
             return false
           }
+          if (!ex?.receipt && !ex?.response?.data && abortUnlessRPCError) {
+            console.error(`[error-abort-before-rpc]`, ex)
+            logger(`[abort-before-rpc][attempts=${n}]${printNonceStats()}`)
+            return false
+          }
+          console.error(`[error]`, ex?.response?.status, ex)
           numAttempts = n
           logger(`[retry][attempts=${n}]${printNonceStats()}`)
           return true
         }
       })
-    logger(`[complete]${printNonceStats()}`, tx)
+    logger(`[complete]${printNonceStats()}`, JSON.stringify(tx, null, 2))
     return tx
   } catch (ex) {
     logger(`[error]${printNonceStats()}`, ex)

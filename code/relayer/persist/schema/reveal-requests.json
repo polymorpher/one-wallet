@@ -1,0 +1,129 @@
+{
+  "mappings": {
+    "properties": {
+      "state": {
+        "type": "keyword"
+      },
+      "error": {
+        "type": "text"
+      },
+      "code": {
+        "type": "integer"
+      },
+      "responseTime": {
+        "type": "double"
+      },
+      "time": {
+        "type": "date"
+      },
+      "address": {
+        "type": "keyword"
+      },
+      "neighbors": {
+        "type": "keyword",
+        "index": "false"
+      },
+      "indexWithNonce": {
+        "type": "integer"
+      },
+      "eotp": {
+        "type": "keyword",
+        "index": "false"
+      },
+      "operationType": {
+        "type": "integer"
+      },
+      "tokenType": {
+        "type": "integer"
+      },
+      "contractAddress": {
+        "type": "keyword"
+      },
+      "tokenId": {
+        "type": "keyword"
+      },
+      "dest": {
+        "type": "keyword"
+      },
+      "amount": {
+        "type": "keyword"
+      },
+      "data": {
+        "type": "binary"
+      },
+      "receipt": {
+        "properties": {
+          "tx": {
+            "type": "keyword"
+          },
+          "logs": {
+            "type": "object",
+            "enabled": false
+          },
+          "receipt": {
+            "properties": {
+              "blockHash": {
+                "type": "keyword"
+              },
+              "transactionHash": {
+                "type": "keyword"
+              },
+              "blockNumber": {
+                "type": "unsigned_long"
+              },
+              "gasUsed": {
+                "type": "integer"
+              },
+              "cumulativeGasUsed": {
+                "type": "unsigned_long"
+              },
+              "from": {
+                "type": "keyword"
+              },
+              "to": {
+                "type": "keyword"
+              },
+              "logsBloom": {
+                "type": "object",
+                "enabled": false
+              },
+              "logs": {
+                "type": "object",
+                "enabled": false
+              },
+              "rawLogs": {
+                "type": "object",
+                "enabled": false
+              }
+            }
+          }
+        }
+      },
+      "ip": {
+        "type": "ip",
+        "ignore_malformed": "true"
+      },
+      "ua": {
+        "type": "keyword"
+      },
+      "browser": {
+        "type": "keyword"
+      },
+      "browserVersion": {
+        "type": "keyword"
+      },
+      "engine": {
+        "type": "keyword"
+      },
+      "engineVersion": {
+        "type": "keyword"
+      },
+      "os": {
+        "type": "keyword"
+      },
+      "osVersion": {
+        "type": "keyword"
+      }
+    }
+  }
+}

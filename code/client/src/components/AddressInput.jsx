@@ -80,10 +80,13 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
     state.last = v
     state.lastTime = Date.now()
     const pattern = WalletConstants.qrcodePattern
-    const m = v.match(pattern)
+    let m = v.match(pattern)
     if (!m) {
-      message.error('Unrecognizable code')
-      return
+      m = util.isValidBech32(v) && v.match(WalletConstants.oneAddressPattern)
+      if (!m) {
+        message.error('Unrecognizable code')
+        return
+      }
     }
     const maybeAddress = m[1]
     const validAddress = util.safeNormalizedAddress(maybeAddress)

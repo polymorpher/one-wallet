@@ -110,7 +110,7 @@ const Call = ({
       return
     }
 
-    const args = { ...ONEConstants.NullOperationParams, amount, operationType: ONEConstants.OperationType.CALL }
+    const args = { ...ONEConstants.NullOperationParams, amount, operationType: ONEConstants.OperationType.CALL, contractAddress: dest }
     SmartFlows.commitReveal({
       wallet,
       forwardWallet,
