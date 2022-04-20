@@ -369,7 +369,7 @@ function getMobileOS () {
 }
 
 export const Breakpoints = {
-  LARGE: 1200,
+  LARGE: 1280,
   MOBILE: 992,
 }
 

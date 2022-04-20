@@ -69,11 +69,9 @@ const MobileSiderMenu = ({ action, nav, ...args }) => {
 
 const DeskstopSiderMenu = ({ action, nav, ...args }) => {
   const history = useHistory()
-  const theme = useTheme()
-  const { primaryTextColor } = getColorPalette(theme)
 
   return (
-    <Layout.Sider collapsed={false} {...args} theme={theme}>
+    <Layout.Sider collapsed={false} {...args} theme='dark'>
       {/* <Image src='/assets/harmony.svg' /> */}
       <Row justify='center'>
         <SiderLink href='https://harmony.one/'>
@@ -81,24 +79,24 @@ const DeskstopSiderMenu = ({ action, nav, ...args }) => {
         </SiderLink>
       </Row>
 
-      <Row justify='center' style={{ marginBottom: 24 }}><SiderLink style={{ color: primaryTextColor }} href='https://harmony.one/1wallet'>{config.appName} {config.version}</SiderLink></Row>
+      <Row justify='center' style={{ marginBottom: 24 }}><SiderLink style={{ color: 'white' }} href='https://harmony.one/1wallet'>{config.appName} {config.version}</SiderLink></Row>
 
       <StatsInfo />
 
-      <Menu theme={theme} mode='inline' onClick={nav} selectedKeys={[action]}>
+      <Menu theme='dark' mode='inline' onClick={nav} selectedKeys={[action]}>
         <Menu.Item key='create' icon={<PlusCircleOutlined />}>Create</Menu.Item>
         <Menu.Item key='wallets' icon={<UnorderedListOutlined />}>Wallets</Menu.Item>
         <Menu.Item key='restore' icon={<HistoryOutlined />}>Restore</Menu.Item>
       </Menu>
       <LineDivider />
-      <Menu theme={theme} mode='inline' selectable={false}>
+      <Menu theme='dark' mode='inline' selectable={false}>
         <Menu.Item key='grant' icon={<DollarOutlined />}><SiderLink style={{ color: null }} href='https://harmony.one/wallet'>Grants</SiderLink></Menu.Item>
         <Menu.Item key='bug' icon={<GithubOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/issues'>Bug Report</SiderLink></Menu.Item>
         <Menu.Item key='audit' icon={<AuditOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/tree/master/audits'>Audits</SiderLink></Menu.Item>
         <Menu.Item key='wiki' icon={<InfoCircleOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/wiki'>Wiki</SiderLink></Menu.Item>
       </Menu>
       <LineDivider />
-      <Menu theme={theme} mode='inline' onClick={nav} selectedKeys={[action]}>
+      <Menu theme='dark' mode='inline' onClick={nav} selectedKeys={[action]}>
         <Menu.Item key='tools' icon={<ToolOutlined />}>Tools</Menu.Item>
       </Menu>
     </Layout.Sider>
