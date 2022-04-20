@@ -1,0 +1,196 @@
+{
+  "mappings": {
+    "properties": {
+      "state": {
+        "type": "keyword"
+      },
+      "error": {
+        "type": "text"
+      },
+      "code": {
+        "type": "integer"
+      },
+      "responseTime": {
+        "type": "double"
+      },
+      "time": {
+        "type": "date"
+      },
+      "address": {
+        "type": "keyword"
+      },
+      "predictedAddress": {
+        "type": "keyword"
+      },
+      "extra": {
+        "properties": {
+          "predictedAddress": {
+            "type": "keyword"
+          }
+        }
+      },
+      "root": {
+        "type": "keyword"
+      },
+      "height": {
+        "type": "integer"
+      },
+      "interval": {
+        "type": "integer"
+      },
+      "t0": {
+        "type": "integer"
+      },
+      "lifespan": {
+        "type": "integer"
+      },
+      "slotSize": {
+        "type": "integer"
+      },
+      "lastResortAddress": {
+        "type": "keyword"
+      },
+      "spendingLimit": {
+        "type": "double"
+      },
+      "spentAmount": {
+        "type": "double"
+      },
+      "lastSpendingInterval": {
+        "type": "integer"
+      },
+      "spendingInterval": {
+        "type": "integer"
+      },
+      "lastLimitAdjustmentTime": {
+        "type": "integer"
+      },
+      "highestSpendingLimit": {
+        "type": "double"
+      },
+      "identificationKeys": {
+        "type": "keyword"
+      },
+      "backlinks": {
+        "type": "keyword"
+      },
+      "oldCores": {
+        "properties": {
+          "root": {
+            "type": "keyword"
+          },
+          "height": {
+            "type": "integer"
+          },
+          "interval": {
+            "type": "integer"
+          },
+          "t0": {
+            "type": "integer"
+          },
+          "lifespan": {
+            "type": "integer"
+          },
+          "slotSize": {
+            "type": "integer"
+          }
+        }
+      },
+      "innerCores": {
+        "properties": {
+          "root": {
+            "type": "keyword"
+          },
+          "height": {
+            "type": "integer"
+          },
+          "interval": {
+            "type": "integer"
+          },
+          "t0": {
+            "type": "integer"
+          },
+          "lifespan": {
+            "type": "integer"
+          },
+          "slotSize": {
+            "type": "integer"
+          }
+        }
+      },
+      "receipt": {
+        "properties": {
+          "tx": {
+            "type": "keyword"
+          },
+          "logs": {
+            "type": "object",
+            "enabled": false
+          },
+          "receipt": {
+            "properties": {
+              "blockHash": {
+                "type": "keyword"
+              },
+              "transactionHash": {
+                "type": "keyword"
+              },
+              "blockNumber": {
+                "type": "unsigned_long"
+              },
+              "gasUsed": {
+                "type": "integer"
+              },
+              "cumulativeGasUsed": {
+                "type": "unsigned_long"
+              },
+              "from": {
+                "type": "keyword"
+              },
+              "to": {
+                "type": "keyword"
+              },
+              "logsBloom": {
+                "type": "object",
+                "enabled": false
+              },
+              "logs": {
+                "type": "object",
+                "enabled": false
+              },
+              "rawLogs": {
+                "type": "object",
+                "enabled": false
+              }
+            }
+          }
+        }
+      },
+      "ip": {
+        "type": "ip",
+        "ignore_malformed": "true"
+      },
+      "ua": {
+        "type": "keyword"
+      },
+      "browser": {
+        "type": "keyword"
+      },
+      "browserVersion": {
+        "type": "keyword"
+      },
+      "engine": {
+        "type": "keyword"
+      },
+      "engineVersion": {
+        "type": "keyword"
+      },
+      "os": {
+        "type": "keyword"
+      },
+      "osVersion": {
+        "type": "keyword"
+      }
+    }
+  }
+}
