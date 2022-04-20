@@ -7,6 +7,7 @@ export const initialState = {
   version: {},
   clientVersion: '',
   needCodeUpdate: true,
+  walletConnectSession: null,
 }
 
 const reducer = handleActions(
@@ -42,6 +43,10 @@ const reducer = handleActions(
     [cacheActions.updateGlobalStats]: (state, action) => ({
       ...state,
       global: { ...state.global, stats: action.payload }
+    }),
+    [cacheActions.updateWalletConnectSession]: (state, action) => ({
+      ...state,
+      walletConnectSession: action.payload
     }),
   },
   {

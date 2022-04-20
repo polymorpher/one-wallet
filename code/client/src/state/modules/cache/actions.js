@@ -7,6 +7,7 @@ const updateVersion = createAction('UPDATE_VERSION')
 const updateClientVersion = createAction('UPDATE_CLIENT_VERSION')
 const fetchGlobalStats = createAction('FETCH_GLOBAL_STATS')
 const updateGlobalStats = createAction('UPDATE_GLOBAL_STATS')
+const updateWalletConnectSession = createAction('UPDATE_WALLET_CONNECT_SESSION')
 
 export default {
   fetchCode,
@@ -16,5 +17,6 @@ export default {
   updateCode,
   clearCode,
   fetchGlobalStats,
-  updateGlobalStats
+  updateGlobalStats,
+  updateWalletConnectSession
 }
