@@ -146,8 +146,6 @@ contract('ONEWallet', (accounts) => {
 
   beforeEach(async function () {
     const testData = await TestUtil.init({})
-    // const testData = await TestUtil.deployTestData()
-    console.log(`testData.alice.wallet.address: ${JSON.stringify(testData.alice.wallet.address)}`)
     alice = testData.alice
     bob = testData.bob
     carol = testData.carol
@@ -412,8 +410,6 @@ contract('ONEWallet', (accounts) => {
     for (let i = 0; i < 6; i++) {
       otps.push(otpb.subarray(i * 4, i * 4 + 4))
     }
-    console.log(`otpb: ${JSON.stringify(otpb)}`)
-    console.log(`otps: ${JSON.stringify(otps)}`)
     const innerEffectiveTime = Math.floor(effectiveTime / (INTERVAL * 6)) * (INTERVAL * 6)
     const innerExpiryTime = innerEffectiveTime + Math.floor(duration / (INTERVAL * 6)) * (INTERVAL * 6)
     assert.isBelow(testTime, innerExpiryTime, 'Current time must be greater than inner expiry time')
@@ -474,8 +470,6 @@ contract('ONEWallet', (accounts) => {
     for (let i = 0; i < 6; i++) {
       otps.push(otpb.subarray(i * 4, i * 4 + 4))
     }
-    console.log(`otpb: ${JSON.stringify(otpb)}`)
-    console.log(`otps: ${JSON.stringify(otps)}`)
     const innerEffectiveTime = Math.floor(effectiveTime / (INTERVAL * 6)) * (INTERVAL * 6)
     const innerExpiryTime = innerEffectiveTime + Math.floor(duration / (INTERVAL * 6)) * (INTERVAL * 6)
     assert.isBelow(testTime, innerExpiryTime, 'Current time must be greater than inner expiry time')
@@ -536,8 +530,6 @@ contract('ONEWallet', (accounts) => {
     for (let i = 0; i < 6; i++) {
       otps.push(otpb.subarray(i * 4, i * 4 + 4))
     }
-    console.log(`otpb: ${JSON.stringify(otpb)}`)
-    console.log(`otps: ${JSON.stringify(otps)}`)
     const innerEffectiveTime = Math.floor(effectiveTime / (INTERVAL * 6)) * (INTERVAL * 6)
     const innerExpiryTime = innerEffectiveTime + Math.floor(duration / (INTERVAL * 6)) * (INTERVAL * 6)
     assert.isBelow(testTime, innerExpiryTime, 'Current time must be greater than inner expiry time')
@@ -783,7 +775,6 @@ contract('ONEWallet', (accounts) => {
     const counter = Math.floor(testTime / INTERVAL)
     const otp = ONEUtil.genOTP({ seed: alice.seed, counter })
     const index = ONEUtil.timeToIndex({ time: testTime, effectiveTime: newEffectiveTime })
-    console.log(`index: ${index}`)
     const eotp = await ONEWallet.computeEOTP({ otp, hseed: alice.hseed })
     // alice tranfers ONE CENT to bob
     let { tx, currentState } = await TestUtil.executeCoreTransaction(
