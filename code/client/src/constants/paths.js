@@ -1,7 +1,8 @@
 export const base = process.env.PUBLIC_URL || ''
 export default {
   root: base + '/',
-  dev: base + '/dev',
+  dev: base + '/dev', // opt-in / opt-out of the dev mode
+  v2ui: base + '/v2ui', // opt-in / opt-out of the v2ui
   create: base + '/create', // simplified, mobile oriented
   create1: base + '/create1', // desktop mode
   create2: base + '/create2', // expert mode

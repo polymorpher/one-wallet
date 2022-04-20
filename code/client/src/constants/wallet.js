@@ -14,6 +14,9 @@ export default {
   fetchDelaysAfterTransfer: [0, 2000, 5000],
   defaultRecoveryAddressLabel: '1wallet DAO',
   redPacketDuration: 3600 * 1000 * 24 * 5,
+  oneAddressPattern: /(one1[a-z0-9]{38})/,
+  // See https://en.bitcoin.it/wiki/Bech32 or https://zips.z.cash/zip-0173 for a nice table
+  oneAddressExcludeCharacters: ['1', 'b', 'i', 'o'],
   qrcodePattern: /\/to\/([a-zA-Z0-9]{42})/,
   unwrapPattern: /\/unwrap\?data=[a-zA-Z0-9]+/,
 
