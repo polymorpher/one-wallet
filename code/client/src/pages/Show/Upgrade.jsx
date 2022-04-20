@@ -56,7 +56,8 @@ const Upgrade = ({ address, prompt, onClose }) => {
   const maxSpend = BN.min(util.getMaxSpending(wallet), new BN(balance))
   const { formatted: maxSpendFormatted } = util.computeBalance(maxSpend.toString())
   const balanceGreaterThanLimit = new BN(balance).gt(new BN(maxSpend))
-  const needSetRecoveryAddressFirst = balanceGreaterThanLimit && util.isDefaultRecoveryAddress(lastResortAddress)
+  // const needSetRecoveryAddressFirst = balanceGreaterThanLimit && util.isDefaultRecoveryAddress(lastResortAddress)
+  const needSetRecoveryAddressFirst = util.isDefaultRecoveryAddress(lastResortAddress)
   const needSpecialSteps = balanceGreaterThanLimit && !util.isDefaultRecoveryAddress(lastResortAddress)
   const [minTransferGas] = useState(100000)
   const { isMobile } = useWindowDimensions()
@@ -239,10 +240,7 @@ const Upgrade = ({ address, prompt, onClose }) => {
             {needSetRecoveryAddressFirst &&
               <>
                 <Title level={4}>
-                  You have a high value wallet.
-                </Title>
-                <Title level={4}>
-                  Please set a recovery address first.
+                  To protect your assets, please set a recovery address prior to upgrading.
                 </Title>
                 <Button size='large' type='primary' shape='round' onClick={() => { skip(); history.push(Paths.showAddress(address, 'help')) }}>Set Now</Button>
               </>}

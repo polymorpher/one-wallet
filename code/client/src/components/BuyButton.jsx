@@ -53,7 +53,6 @@ export const CurrencyChooser = ({ visible, confirm, onClose }) => {
             })}
           </Select>
         </Space>
-        <Text>* Purchase via USD will become available soon.</Text>
       </Space>
     </Modal>
   )
