@@ -12,16 +12,15 @@ const TestUtil = require('./util')
 // const HALF_ETH = unit.toWei('0.5', 'ether')
 const INTERVAL = 30000 // 30 second Intervals
 const DURATION = INTERVAL * 12 // 6 minute wallet duration
-// const SLOT_SIZE = 1 // 1 transaction per interval
-const EFFECTIVE_TIME = Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
+const getEffectiveTime = () => Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
 
 // === TESTING
 contract('ONEWallet', (accounts) => {
   // Wallets effective time is the current time minus half the duration (3 minutes ago)
   let snapshotId
   beforeEach(async function () {
+    await TestUtil.init({})
     snapshotId = await TestUtil.snapshot()
-    await TestUtil.init()
   })
   afterEach(async function () {
     await TestUtil.revert(snapshotId)
@@ -32,9 +31,9 @@ contract('ONEWallet', (accounts) => {
   // ====== CREATE_WALLET ======
   // Test creation and validation of wallet
   // Expected result the wallet is now created and validate
-  it('EX.UTILITY.1: must be able to create and validate a wallet', async () => {
-    let { walletInfo: alice, walletOldState: aliceOldState } = await TestUtil.makeWallet({ salt: 'TT-WALLET-1', deployer: accounts[0], effectiveTime: EFFECTIVE_TIME, duration: DURATION })
-    let aliceCurrentState = await TestUtil.getState(alice.wallet)
-    await TestUtil.checkONEWalletStateChange(aliceOldState, aliceCurrentState)
+  it('EX.UTILITY-1: must be able to create and validate a wallet', async () => {
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'EX-UTILITY-1-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+    let currentState = await TestUtil.getState(alice.wallet)
+    await TestUtil.assertStateEqual(state, currentState)
   })
 })

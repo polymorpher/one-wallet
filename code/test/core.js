@@ -1,14 +1,11 @@
 const TestUtil = require('./util')
-const config = require('../config')
 const unit = require('ethjs-unit')
 const Flow = require('../lib/api/flow')
 const ONEUtil = require('../lib/util')
 const ONEConstants = require('../lib/constants')
-const ONE = require('../lib/onewallet')
 const ONEWallet = require('../lib/onewallet')
 const BN = require('bn.js')
 const ONEDebugger = require('../lib/debug')
-const assert = require('assert')
 
 const NullOperationParams = {
   ...ONEConstants.NullOperationParams,
@@ -20,82 +17,8 @@ const HALF_ETH = unit.toWei('0.5', 'ether')
 const INTERVAL = 30000 // 30 second Intervals
 const DURATION = INTERVAL * 12 // 6 minute wallet duration
 const getEffectiveTime = () => Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
-
-const Logger = {
-  debug: (...args) => {
-    if (config.verbose) {
-      console.log(...args)
-    }
-  }
-}
+const Logger = TestUtil.Logger
 const Debugger = ONEDebugger(Logger)
-
-// ==== EXECUTION FUNCTIONS ====
-// executeStandardTransaction commits and reveals a wallet transaction
-const executeCoreTransaction = async ({
-  walletInfo,
-  operationType,
-  tokenType,
-  contractAddress,
-  tokenId,
-  dest,
-  amount,
-  data,
-  address,
-  randomSeed,
-  testTime = Date.now(),
-  getCurrentState = true
-}) => {
-  // calculate counter from testTime
-  const counter = Math.floor(testTime / INTERVAL)
-  const otp = ONEUtil.genOTP({ seed: walletInfo.seed, counter })
-  // calculate wallets effectiveTime (creation time) from t0
-  const info = await walletInfo.wallet.getInfo()
-  const t0 = new BN(info[3]).toNumber()
-  const walletEffectiveTime = t0 * INTERVAL
-  const index = ONEUtil.timeToIndex({ effectiveTime: walletEffectiveTime, time: testTime })
-  const eotp = await ONE.computeEOTP({ otp, hseed: walletInfo.hseed })
-  let paramsHash
-  let commitParams
-  let revealParams
-  // Process the Operation
-  switch (operationType) {
-    // Format commit and revealParams for TRANSFER Tranasction
-    case ONEConstants.OperationType.TRANSFER:
-      paramsHash = ONEWallet.computeTransferHash
-      commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
-      revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
-      break
-    case ONEConstants.OperationType.SET_RECOVERY_ADDRESS:
-      paramsHash = ONEWallet.computeDestOnlyHash
-      commitParams = { operationType, dest }
-      revealParams = { operationType, dest }
-      break
-    case ONEConstants.OperationType.CHANGE_SPENDING_LIMIT:
-    case ONEConstants.OperationType.JUMP_SPENDING_LIMIT:
-      paramsHash = ONEWallet.computeAmountHash
-      commitParams = { operationType, amount }
-      revealParams = { operationType, amount }
-      break
-    default:
-      console.log(`Invalid Operation passed`)
-      assert.strictEqual('A Valid Operation', operationType, 'Error invalid operationType passed')
-      return
-  }
-  let { tx, authParams, revealParams: returnedRevealParams } = await TestUtil.commitReveal({
-    Debugger,
-    layers: walletInfo.client.layers,
-    index,
-    eotp,
-    paramsHash,
-    commitParams,
-    revealParams,
-    wallet: walletInfo.wallet
-  })
-  let currentState
-  if (getCurrentState) { currentState = await TestUtil.getState(walletInfo.wallet) }
-  return { tx, authParams, revealParams: returnedRevealParams, currentState }
-}
 
 // ==== Validation Helpers ====
 
@@ -103,8 +26,28 @@ contract('ONEWallet', (accounts) => {
   Logger.debug(`Testing with ${accounts.length} accounts`)
   Logger.debug(accounts)
   let snapshotId
+  let alice, bob, carol, dora, ernie, state, bobState, carolState, doraState, ernieState, testerc20, testerc721, testerc1155, testerc20v2, testerc721v2, testerc1155v2
+
   beforeEach(async function () {
-    await TestUtil.init()
+    const testData = await TestUtil.init({})
+    // const testData = await TestUtil.deployTestData()
+    console.log(`testData.alice.wallet.address: ${JSON.stringify(testData.alice.wallet.address)}`)
+    alice = testData.alice
+    bob = testData.bob
+    carol = testData.carol
+    dora = testData.dora
+    ernie = testData.ernie
+    state = testData.state
+    bobState = testData.bobState
+    carolState = testData.carolState
+    doraState = testData.doraState
+    ernieState = testData.ernieState
+    testerc20 = testData.testerc20
+    testerc721 = testData.testerc721
+    testerc1155 = testData.testerc1155
+    testerc20v2 = testData.testerc20v2
+    testerc721v2 = testData.testerc721v2
+    testerc1155v2 = testData.testerc1155v2
     snapshotId = await TestUtil.snapshot()
   })
   afterEach(async function () {
@@ -117,20 +60,12 @@ contract('ONEWallet', (accounts) => {
   // Test transferring native currency
   // Expected result alice can transfer funds to bob
   it('CO-BASIC-4 TRANSFER: must be able to transfer native currency', async () => {
-  // create wallets and token contracts used througout the tests
-    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'CO-BASIC-4-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
-    const { walletInfo: bob, state: bobState } = await TestUtil.makeWallet({ salt: 'CO-BASIC-4-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
-
-    // alice and bob both have an initial balance of half an ETH
-    await TestUtil.validateBalance({ address: alice.wallet.address, amount: HALF_ETH })
-    await TestUtil.validateBalance({ address: bob.wallet.address, amount: HALF_ETH })
-
     // Begin Tests
     let testTime = Date.now()
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     // alice tranfers ONE CENT to bob
-    let { tx, currentState } = await executeCoreTransaction(
+    let { tx, currentState } = await TestUtil.executeCoreTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
@@ -166,20 +101,20 @@ contract('ONEWallet', (accounts) => {
   // Notes: Cannot set this to zero address, the same address or the treasury address
   // Fails to update if you have create alice wallet with `setLastResortAddress: true` as an address already set.
   it('CO-BASIC-5 SET_RECOVERY_ADDRESS: must be able to set recovery address', async () => {
-    // create wallets and token contracts used througout the tests
+    // Here we have a special case where we want alice last resort address not to be set so we can set this to carol
+    // create wallets and token contracts used througout the test
     let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'CO-BASIC-5-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION, setLastResortAddress: false })
     const { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'CO-BASIC-5-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
 
     // Begin Tests
     let testTime = Date.now()
-
     testTime = await TestUtil.bumpTestTime(testTime, 60)
 
     let aliceInfoInitial = await TestUtil.getInfoParsed(alice.wallet)
     assert.strictEqual(aliceInfoInitial.recoveryAddress, ONEConstants.EmptyAddress, `Alice should initally have last address set to zero address`)
 
     // alice sets her recovery address to bobs
-    let { tx, currentState } = await executeCoreTransaction(
+    let { tx, currentState } = await TestUtil.executeCoreTransaction(
       {
         ...NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
@@ -202,14 +137,12 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.assertStateEqual(state, currentState)
   })
 
-  // ==== RECOVER =====
+  // ==== RECOVER TO BE REPLACED=====
   // Test recover all native assets from alices wallet
   // Expected result: all native assets will be transferred to her last resort address
-  it('CO-BASIC-6 RECOVER: must be able to recover assets', async () => {
-    // create wallets and token contracts used througout the tests
-    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'CO-BASIC-6', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
-
-    assert.strictEqual(ONEConstants.EmptyAddress, state.forwardAddress, 'Expected forward address to be empty' )
+  it('CO-BASIC-6 RECOVER-ORIGINAL: must be able to recover assets', async () => {
+    // verify alice does not have forward address set initially
+    assert.strictEqual(state.forwardAddress, ONEConstants.EmptyAddress, 'Expected forward address to be empty')
     let info = await TestUtil.getInfoParsed(alice.wallet)
     await TestUtil.validateBalance({ address: alice.wallet.address, amount: HALF_ETH })
     await TestUtil.validateBalance({ address: info.recoveryAddress, amount: 0 })
@@ -217,11 +150,11 @@ contract('ONEWallet', (accounts) => {
     // Begin Tests
     const index = 2 ** (alice.client.layers.length - 1) - 1
     const eotp = await Flow.EotpBuilders.recovery({ wallet: alice.wallet, layers: alice.client.layers })
-    const neighbors = ONE.selectMerkleNeighbors({ layers: alice.client.layers, index })
+    const neighbors = ONEWallet.selectMerkleNeighbors({ layers: alice.client.layers, index })
     const neighbor = neighbors[0]
-    const { hash: commitHash } = ONE.computeCommitHash({ neighbor, index, eotp })
-    const { hash: recoveryHash, bytes: recoveryData } = ONE.computeRecoveryHash({ hseed: alice.hseed })
-    const { hash: verificationHash } = ONE.computeVerificationHash({ paramsHash: recoveryHash, eotp })
+    const { hash: commitHash } = ONEWallet.computeCommitHash({ neighbor, index, eotp })
+    const { hash: recoveryHash, bytes: recoveryData } = ONEWallet.computeRecoveryHash({ hseed: alice.hseed })
+    const { hash: verificationHash } = ONEWallet.computeVerificationHash({ paramsHash: recoveryHash, eotp })
     const neighborsEncoded = neighbors.map(ONEUtil.hexString)
     await alice.wallet.commit(ONEUtil.hexString(commitHash), ONEUtil.hexString(recoveryHash), ONEUtil.hexString(verificationHash))
     const tx = await alice.wallet.reveal(
@@ -241,9 +174,108 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.assertStateEqual(state, currentState)
   })
 
-  // === Negative Use Cases (Event Testing) ===
+  // ==== RECOVER =====
+  // Test recover all native assets from alices wallet
+  // Expected result: all native assets will be transferred to her last resort address
+  it('CO-BASIC-6 RECOVER-NEW: must be able to recover assets', async () => {
+    // verify alice does not have forward address set initially
+    assert.strictEqual(state.forwardAddress, ONEConstants.EmptyAddress, 'Expected forward address to be empty')
+    let info = await TestUtil.getInfoParsed(alice.wallet)
+    await TestUtil.validateBalance({ address: alice.wallet.address, amount: HALF_ETH })
+    await TestUtil.validateBalance({ address: info.recoveryAddress, amount: 0 })
 
-  // === Scenario (Complex) Testing ===
+    // Begin Tests
+    let testTime = Date.now()
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    // Recover Alices wallet
+    let { tx, currentState } = await TestUtil.executeCoreTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.RECOVER,
+        testTime
+      }
+    )
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx, expectedEvent: 'RecoveryTriggered' })
 
-  // Combination testing of multiple functions
+    // let currentState = await TestUtil.getState(alice.wallet)
+    await TestUtil.validateBalance({ address: alice.wallet.address, amount: 0 })
+    await TestUtil.validateBalance({ address: info.recoveryAddress, amount: HALF_ETH })
+    // Alice Items that have changed - nonce, lastOperationTime, commits
+    state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
+    // Alice's forward address should now be the recovery address
+    state.forwardAddress = await TestUtil.validateFowardAddressMutation({ expectedForwardAddress: info.recoveryAddress, wallet: alice.wallet })
+    await TestUtil.assertStateEqual(state, currentState)
+  })
+
+  // ==== ADDITIONAL POSTIVE TESTING =====
+
+  // Test calling TRANSFER when forwarding address is set
+  // Expected result this will fail and trigger event PaymentForwarded
+  // Logic: // if sender is anyone else (including self), simply forward the payment
+  it('CO-POSITIVE-4 TRANSFER: must forward funds automatically when forward addres is set', async () => {
+    // Here we have a special case where we want alice's wallet backlinked to carol
+    // create wallets and token contracts used througout the test
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'CP-POSITIVE-4-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+    let { walletInfo: carol, state: carolState } = await TestUtil.makeWallet({ salt: 'CO-POSITIVE-4-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION, backlinks: [alice.wallet.address] })
+
+    // Begin Tests
+    let testTime = Date.now()
+
+    // set alice's forwarding address to carol's wallet address
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    await TestUtil.executeUpgradeTransaction(
+      {
+        ...NullOperationParams, // Default all fields to Null values than override
+        walletInfo: alice,
+        operationType: ONEConstants.OperationType.FORWARD,
+        dest: carol.wallet.address,
+        testTime
+      }
+    )
+
+    // let tx2 = await TestUtil.fundTokens({ to: alice.wallet.address, amount: ONE_CENT })
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    // bob tranfers ONE CENT to alice which get's forwarded to carol
+    let { tx } = await TestUtil.executeCoreTransaction(
+      {
+        ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
+        walletInfo: bob,
+        operationType: ONEConstants.OperationType.TRANSFER,
+        dest: alice.wallet.address,
+        amount: ONE_CENT,
+        testTime
+      }
+    )
+    // Validate succesful event emitted
+    TestUtil.validateEvent({ tx, expectedEvent: 'PaymentForwarded' })
+  })
+
+  // ==== NEGATIVE USE CASES (EVENT TESTING) ====
+
+  // Test calling TRANSFER with insufficient funds
+  // Expected result this will fail and trigger event InsufficientFund
+  // Logic: if (address(this).balance < amount)
+  it('CO-NEGATIVE-4 TRANSFER: must fail with insufficient funds', async () => {
+  })
+
+  // Test calling TRANSFER with for an amount that exceeds the spending limit
+  // Expected result this will fail and trigger event ExceedSpendingLimit
+  // Logic: if (!isWithinLimit(ss, amount))
+  it('CO-NEGATIVE-4-1 TRANSFER: must fail with exceeding spending limit', async () => {
+  })
+
+  // Test calling TRANSFER which fails
+  // Expected result this will fail and trigger event TransferError
+  // Logic: if (!success) where (bool success, bytes memory ret) = dest.call{value : amount}("");
+  it('CO-NEGATIVE-4-1 TRANSFER: must fail with transfer error', async () => {
+  })
+
+  // Test calling RECOVER were last resort address is not set
+  // Expected result this will fail and trigger event LastResortAddressNotSet
+  // Logic: if (!Recovery.isRecoveryAddressSet(recoveryAddress))
+  it('SE-NEGATIVE-6 RECOVER: must fail with last address not set', async () => {
+  })
+  // ==== COMPLEX SCENARIO TESTING ====
 })

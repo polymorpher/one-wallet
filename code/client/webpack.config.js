@@ -43,7 +43,17 @@ module.exports = {
         }
       },
       {
-        test: /\.(png|svg|jpg|gif)$/,
+        test: /\.svg$/i,
+        type: 'asset',
+        resourceQuery: { not: [/el/] }, // exclude react component if *.svg?el
+      },
+      {
+        test: /\.svg$/i,
+        resourceQuery: /el/, // *.svg?el
+        use: ['@svgr/webpack'],
+      },
+      {
+        test: /\.(png|jpg|gif)$/,
         use: [
           'file-loader',
         ],
