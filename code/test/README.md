@@ -131,7 +131,7 @@ First, create a new file and write out how you expect a successful operation to 
 | Contract            | Event                            | Status  | Sample Operation        | Notes             |
 |---------------------|----------------------------------|---------|-------------------------|-------------------|
 | CoreManager         | CoreDisplaced                    | PASS    | DISPLACE                |                   |
-| CoreManager         | CoreDisplacementFailed           | *TODO   | DISPLACE                |                   |
+| CoreManager         | CoreDisplacementFailed           | PASS    | DISPLACE                |                   |
 | DomainManager       | DomainRegistered                 | Phase 2 |                         |                   |
 | DomainManager       | ReverseDomainClaimed             | Phase 2 |                         |                   |
 | DomainManager       | ReverseDomainClaimError          | Phase 2 |                         |                   |
