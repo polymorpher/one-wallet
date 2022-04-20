@@ -8,6 +8,7 @@ import Modal from 'antd/es/modal'
 import Input from 'antd/es/input'
 import Button from 'antd/es/button'
 import Space from 'antd/es/space'
+import Row from 'antd/es/row'
 import Typography from 'antd/es/typography'
 import { useRouteMatch, useHistory } from 'react-router'
 import { titleCase } from 'title-case'
@@ -17,11 +18,15 @@ import LockOutlined from '@ant-design/icons/LockOutlined'
 import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import SettingOutlined from '@ant-design/icons/SettingOutlined'
 import config from '../config'
-import util, { useWindowDimensions } from '../util'
+import Paths from '../constants/paths'
+import util, { Breakpoints, useWindowDimensions } from '../util'
 import { Hint } from './Text'
 import WalletAddress from './WalletAddress'
 import { globalActions } from '../state/modules/global'
-// import Paths from '../constants/paths'
+import { StatsInfoV2 } from './StatsInfo'
+import { useTheme, getColorPalette } from '../theme'
+import { WalletSelectorV2 } from '../integration/Common'
+import { SecondaryButton } from '../components/Buttons'
 const { Text, Link } = Typography
 
 // const SelectorLabel = styled.span`
@@ -29,6 +34,7 @@ const { Text, Link } = Typography
 // `
 const NetworkSelector = () => {
   const networkId = useSelector(state => state.global.network)
+  const v2ui = useSelector(state => state.global.v2ui)
   const dispatch = useDispatch()
   const networks = config.networks
   const onChange = (v) => {
@@ -37,7 +43,7 @@ const NetworkSelector = () => {
   return (
     <>
       {/* <SelectorLabel>Network</SelectorLabel> */}
-      <Select style={{ width: 200 }} bordered={false} value={networkId} onChange={onChange}>
+      <Select style={{ width: v2ui ? 130 : 200 }} bordered={false} value={networkId} onChange={onChange}>
         {Object.keys(networks).map(k => {
           return <Select.Option key={k} value={k}>{networks[k].name} </Select.Option>
         })}
@@ -124,6 +130,50 @@ const WalletHeader = () => {
         <SecretSettings key='settings' visible={settingsVisible} onClose={() => setSettingsVisible(false)} />
       ]}
     />
+  )
+}
+
+export const WalletHeaderV2 = () => {
+  const history = useHistory()
+  const { isMobile, width } = useWindowDimensions()
+  const theme = useTheme()
+  const dev = useSelector(state => state.global.dev)
+  const selectedAddress = useSelector(state => state.global.selectedWallet)
+  const wallets = useSelector(state => state.wallet)
+  const network = useSelector(state => state.global.network)
+  const networkWallets = util.filterNetworkWallets(wallets, network)
+  const matchedWallet = networkWallets.filter(w => w.address === selectedAddress)[0]
+  const [settingsVisible, setSettingsVisible] = useState(false)
+  const [relayerEditVisible, setRelayerEditVisible] = useState(false)
+  const { primaryBgColor, secondaryBgColor, secondaryBorderColor } = getColorPalette(theme)
+
+  const onAddressSelected = (e) => {
+    history.push(Paths.showAddress(e.value))
+  }
+
+  return (
+    <Row
+      style={{ background: primaryBgColor, padding: isMobile ? 8 : 24, alignItems: 'center' }}
+      justify='center'
+    >
+      {/* Wallet selector + send + receive if wallet exists */}
+      {matchedWallet && (
+        <>
+          <WalletSelectorV2 onAddressSelected={onAddressSelected} filter={e => e.majorVersion >= 10} useHex style={{ background: secondaryBgColor, border: `1px solid ${secondaryBorderColor}`, margin: '0 4px', padding: '4px 0', borderRadius: '16px' }} selectStyle={{}} />
+          <SecondaryButton onClick={() => history.push(Paths.showAddress(selectedAddress, 'transfer'))} style={{ marginRight: '8px', height: '100%', borderRadius: '15px' }}>Send</SecondaryButton>
+          <SecondaryButton onClick={() => history.push(Paths.showAddress(selectedAddress, 'qr'))} style={{ marginRight: '8px', height: '100%', borderRadius: '15px' }}>Receive</SecondaryButton>
+        </>)}
+      {width >= Breakpoints.LARGE && <StatsInfoV2 />}
+      {dev && <Button key='toggle' shape='circle' icon={relayerEditVisible ? <CloseOutlined /> : <SettingOutlined />} onClick={() => setRelayerEditVisible(!relayerEditVisible)} />}
+      {dev && relayerEditVisible &&
+        <Space size='small' key='relayer'>
+          <Button shape='circle' icon={<LockOutlined />} onClick={() => setSettingsVisible(true)} />
+          <RelayerSelector />
+          <Divider type='vertical' />
+        </Space>}
+      <NetworkSelector key='network' />
+      <SecretSettings key='settings' visible={settingsVisible} onClose={() => setSettingsVisible(false)} />
+    </Row>
   )
 }
 

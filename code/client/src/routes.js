@@ -6,8 +6,8 @@ import Paths from './constants/paths'
 import Layout from 'antd/es/layout'
 import Row from 'antd/es/row'
 import Spin from 'antd/es/spin'
-import SiderMenu from './components/SiderMenu'
-import WalletHeader from './components/WalletHeader'
+import SiderMenu, { SiderMenuV2 } from './components/SiderMenu'
+import WalletHeader, { WalletHeaderV2 } from './components/WalletHeader'
 import CreatePage from './pages/Create'
 import AddressDetailPage from './pages/Contacts/AddressDetail'
 import ListPage from './pages/List'
@@ -25,6 +25,7 @@ import cacheActions from './state/modules/cache/actions'
 const LocalRoutes = () => {
   const dispatch = useDispatch()
   const dev = useSelector(state => state.global.dev)
+  const v2ui = useSelector(state => state.global.v2ui)
   const wallets = useSelector(state => state.wallet)
   const network = useSelector(state => state.global.network)
   const networkWallets = util.filterNetworkWallets(wallets, network)
@@ -45,13 +46,15 @@ const LocalRoutes = () => {
   }, [needCodeUpdate, clientVersion])
 
   return (
-    <Layout style={{
-      minHeight: '100vh'
-    }}
+    <Layout
+      style={{
+        minHeight: '100vh'
+      }}
+      className={v2ui ? 'v2ui' : ''}
     >
-      <SiderMenu />
+      {v2ui ? <SiderMenuV2 /> : <SiderMenu />}
       <Layout>
-        <WalletHeader />
+        {v2ui ? <WalletHeaderV2 /> : <WalletHeader />}
         <Layout.Content
           style={
             {
@@ -69,6 +72,12 @@ const LocalRoutes = () => {
                 return <Redirect to={Paths.root} />
               }}
             />
+            <Route
+              path={Paths.v2ui} render={() => {
+                dispatch(globalActions.setV2Ui(!v2ui))
+                return <Redirect to={Paths.root} />
+              }}
+            />
             <Route path={Paths.auth} component={WalletAuth} />
             <Route path={Paths.create} component={CreatePage} />
             <Route path={Paths.create1} render={() => <CreatePage showRecovery />} />
@@ -83,11 +92,13 @@ const LocalRoutes = () => {
               exact
               path={Paths.root}
               render={() => {
-                return (
-                  networkWallets && networkWallets.length
-                    ? <Redirect to={Paths.wallets} component={ListPage} />
-                    : <Redirect to={Paths.create} component={CreatePage} />
-                )
+                const hasWallets = networkWallets && networkWallets.length > 0
+                if (!hasWallets) {
+                  return <Redirect to={Paths.create} component={CreatePage} />
+                }
+                return v2ui
+                  ? <Redirect to={Paths.showAddress(networkWallets[0].address)} component={ShowPage} />
+                  : <Redirect to={Paths.wallets} component={ListPage} />
               }}
             />
           </Switch>
