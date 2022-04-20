@@ -1,6 +1,14 @@
-# 1wallet (ONE Wallet)
+# 1wallet
 
-Telegram group: https://t.me/the1wallet
+### 1wallet infrastructure
+
+1wallet is an open source project, consisting of the core (libraries, contracts, tests), the relayer backend, a web-browser based client, and potentially another browser-extension based client (in development). You may use it as the infrastructure to build your own wallet or applications, but we are not responsible for any theft, loss, or security issues. We will not be providing any guidance or service, beyond issues which we deem to be of public interest (at our discretion).
+
+### Modulo (commercial version)
+
+For businesses requiring guidance for integration, security protection, loss prevention, service-level agreements, reliable APIs, cross-chain use cases, or custom solutions, please checkout Modulo (https://modulo.so) - Advanced infrastructure for building secure, frictionless, programmable crypto wallets. 
+
+## Overview
 
 1wallet is designed for people who want the best and the latest from the world of crypto, but do not want to deal with senseless "mnemonic words", "private keys", or "seed phrases". 
 

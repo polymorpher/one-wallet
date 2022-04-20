@@ -8,12 +8,14 @@ const cookieParser = require('cookie-parser')
 const logger = require('morgan')
 const config = require('./config')
 const _index = require('./routes/index')
+const _monitor = require('./routes/monitor')
 const bodyParser = require('body-parser')
 const app = express()
 const https = require('https')
 const http = require('http')
 const env = process.env.NODE_ENV || 'development'
 const fs = require('fs')
+const { Persist } = require('./persist/index')
 const blockchain = require('./blockchain')
 Error.stackTraceLimit = 100
 app.locals.ENV = env
@@ -37,6 +39,9 @@ let httpsOptions = {
   key: fs.readFileSync(config.https.key),
   cert: fs.readFileSync(config.https.cert)
 }
+
+Persist.init()
+
 if (config.https.only) {
   const httpApp = express()
   const httpRouter = express.Router()
@@ -91,6 +96,7 @@ if (config.corsOrigins) {
 
 app.use(express.static(path.join(__dirname, 'public')))
 app.options('*', async (_req, res) => res.end())
+app.use('/monitor', _monitor)
 app.use('/', _index)
 
 // catch 404 and forward to error handler

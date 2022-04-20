@@ -5,6 +5,7 @@ import values from 'lodash/fp/values'
 import ONEUtil from '../../lib/util'
 import ONEConstants from '../../lib/constants'
 import { AddressError } from './constants/errors'
+import WalletConstants from './constants/wallet'
 import BN from 'bn.js'
 import config from './config'
 import ONENames from '../../lib/names'
@@ -279,6 +280,18 @@ const util = {
   canStake: (wallet) => {
     const { majorVersion } = wallet
     return majorVersion >= 16
+  },
+
+  isValidBech32: (address) => {
+    if (address.length !== 42 || !address.startsWith('one1')) {
+      return false
+    }
+    for (const c of WalletConstants.oneAddressExcludeCharacters) {
+      if (address.indexOf(c) >= 0) {
+        return false
+      }
+    }
+    return true
   }
 }
 

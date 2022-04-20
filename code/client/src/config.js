@@ -17,16 +17,17 @@ const config = mergeAll({}, baseConfig, {
   transak: {
     staging: {
       apiKey: '50f1c430-7807-4760-a337-57583de69f73',
-      defaultCurrency: 'NZD',
+      defaultCurrency: 'USD',
       environment: 'STAGING'
     },
     production: {
       apiKey: '28c4ba82-b701-4d05-a44c-1466fbb99265',
-      defaultCurrency: 'NZD',
+      defaultCurrency: 'USD',
       environment: 'PRODUCTION'
     },
-    currencies: ['NZD', 'AUD', 'EUR', 'GBP', 'CHF', 'SEK', 'PLN', 'NOK', 'MXN', 'DKK', 'CAD', 'ARS', 'BRL', 'CLP', 'CRC', 'DOP', 'IDR', 'ILS', 'JPY', 'KRW', 'MYR', 'PYG', 'PEN', 'PHP', 'SGD', 'ZAR', 'TZS', 'THB', 'TRY', 'BBD', 'BMD', 'BGN', 'HRK', 'CZK', 'FKP', 'FJD', 'GIP', 'HUF', 'ISK', 'JMD', 'KES', 'MDL', 'RON'],
+    currencies: ['USD', 'NZD', 'AUD', 'EUR', 'GBP', 'CHF', 'SEK', 'PLN', 'NOK', 'MXN', 'DKK', 'CAD', 'ARS', 'BRL', 'CLP', 'CRC', 'DOP', 'IDR', 'ILS', 'JPY', 'KRW', 'MYR', 'PYG', 'PEN', 'PHP', 'SGD', 'ZAR', 'TZS', 'THB', 'TRY', 'BBD', 'BMD', 'BGN', 'HRK', 'CZK', 'FKP', 'FJD', 'GIP', 'HUF', 'ISK', 'JMD', 'KES', 'MDL', 'RON'],
     countries: [
+      'US',
       'NZ', 'AU', 'EU', 'GB', 'CH', 'SE',
       'PL', 'NO', 'MX', 'DK', 'CA', 'AR',
       'BR', 'CL', 'CR', 'DO', 'ID', 'IL',
