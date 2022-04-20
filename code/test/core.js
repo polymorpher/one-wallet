@@ -137,47 +137,10 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.assertStateEqual(state, currentState)
   })
 
-  // ==== RECOVER TO BE REPLACED=====
-  // Test recover all native assets from alices wallet
-  // Expected result: all native assets will be transferred to her last resort address
-  it('CO-BASIC-6 RECOVER-ORIGINAL: must be able to recover assets', async () => {
-    // verify alice does not have forward address set initially
-    assert.strictEqual(state.forwardAddress, ONEConstants.EmptyAddress, 'Expected forward address to be empty')
-    let info = await TestUtil.getInfoParsed(alice.wallet)
-    await TestUtil.validateBalance({ address: alice.wallet.address, amount: HALF_ETH })
-    await TestUtil.validateBalance({ address: info.recoveryAddress, amount: 0 })
-
-    // Begin Tests
-    const index = 2 ** (alice.client.layers.length - 1) - 1
-    const eotp = await Flow.EotpBuilders.recovery({ wallet: alice.wallet, layers: alice.client.layers })
-    const neighbors = ONEWallet.selectMerkleNeighbors({ layers: alice.client.layers, index })
-    const neighbor = neighbors[0]
-    const { hash: commitHash } = ONEWallet.computeCommitHash({ neighbor, index, eotp })
-    const { hash: recoveryHash, bytes: recoveryData } = ONEWallet.computeRecoveryHash({ hseed: alice.hseed })
-    const { hash: verificationHash } = ONEWallet.computeVerificationHash({ paramsHash: recoveryHash, eotp })
-    const neighborsEncoded = neighbors.map(ONEUtil.hexString)
-    await alice.wallet.commit(ONEUtil.hexString(commitHash), ONEUtil.hexString(recoveryHash), ONEUtil.hexString(verificationHash))
-    const tx = await alice.wallet.reveal(
-      [neighborsEncoded, index, ONEUtil.hexString(eotp)],
-      [ONEConstants.OperationType.RECOVER, ONEConstants.TokenType.NONE, ONEConstants.EmptyAddress, 0, ONEConstants.EmptyAddress, 0, ONEUtil.hexString(recoveryData)]
-    )
-    // Validate succesful event emitted
-    TestUtil.validateEvent({ tx, expectedEvent: 'RecoveryTriggered' })
-
-    let currentState = await TestUtil.getState(alice.wallet)
-    await TestUtil.validateBalance({ address: alice.wallet.address, amount: 0 })
-    await TestUtil.validateBalance({ address: info.recoveryAddress, amount: HALF_ETH })
-    // Alice Items that have changed - nonce, lastOperationTime, commits
-    state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
-    // Alice's forward address should now be the recovery address
-    state.forwardAddress = await TestUtil.validateFowardAddressMutation({ expectedForwardAddress: info.recoveryAddress, wallet: alice.wallet })
-    await TestUtil.assertStateEqual(state, currentState)
-  })
-
   // ==== RECOVER =====
   // Test recover all native assets from alices wallet
   // Expected result: all native assets will be transferred to her last resort address
-  it('CO-BASIC-6 RECOVER-NEW: must be able to recover assets', async () => {
+  it('CO-BASIC-6 RECOVER: must be able to recover assets', async () => {
     // verify alice does not have forward address set initially
     assert.strictEqual(state.forwardAddress, ONEConstants.EmptyAddress, 'Expected forward address to be empty')
     let info = await TestUtil.getInfoParsed(alice.wallet)
@@ -187,11 +150,15 @@ contract('ONEWallet', (accounts) => {
     // Begin Tests
     let testTime = Date.now()
     testTime = await TestUtil.bumpTestTime(testTime, 60)
+    const index = 2 ** (alice.client.layers.length - 1) - 1
+    const eotp = await Flow.EotpBuilders.recovery({ wallet: alice.wallet, layers: alice.client.layers })
     // Recover Alices wallet
     let { tx, currentState } = await TestUtil.executeCoreTransaction(
       {
         ...NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
+        index,
+        eotp,
         operationType: ONEConstants.OperationType.RECOVER,
         testTime
       }
@@ -217,8 +184,8 @@ contract('ONEWallet', (accounts) => {
   it('CO-POSITIVE-4 TRANSFER: must forward funds automatically when forward addres is set', async () => {
     // Here we have a special case where we want alice's wallet backlinked to carol
     // create wallets and token contracts used througout the test
-    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'CP-POSITIVE-4-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
-    let { walletInfo: carol, state: carolState } = await TestUtil.makeWallet({ salt: 'CO-POSITIVE-4-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION, backlinks: [alice.wallet.address] })
+    let { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'CP-POSITIVE-4-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
+    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'CO-POSITIVE-4-2', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION, backlinks: [alice.wallet.address] })
 
     // Begin Tests
     let testTime = Date.now()

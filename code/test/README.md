@@ -100,7 +100,7 @@ First, create a new file and write out how you expect a successful operation to 
 | 3   | OVERRIDE_TRACK               | PASS     | Token    |                                                            |
 | 4   | TRANSFER                     | PASS     | Core     |                                                            |
 | 5   | SET_RECOVERY_ADDRESS         | PASS     | Core     |                                                            |
-| 6   | RECOVER	                     | *PASS    | Core     |                                                            |
+| 6   | RECOVER	                     | PASS    | Core     |                                                            |
 | 7   | DISPLACE	                 | PASS     | Security |                                                            |
 | 8   | FORWARD                      | PASS     | Upgrade  |                                                            |
 | 9   | RECOVER_SELECTED_TOKENS      | PASS     | Token    |                                                            |
