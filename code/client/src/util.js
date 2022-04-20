@@ -368,9 +368,14 @@ function getMobileOS () {
   return OSType.Unknown
 }
 
+export const Breakpoints = {
+  LARGE: 1200,
+  MOBILE: 992,
+}
+
 export function useWindowDimensions () {
   const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions())
-  const isMobile = !(windowDimensions.width >= 992)
+  const isMobile = !(windowDimensions.width >= Breakpoints.MOBILE)
 
   const os = isMobile && getMobileOS()
 

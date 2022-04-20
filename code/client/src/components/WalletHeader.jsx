@@ -19,7 +19,7 @@ import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import SettingOutlined from '@ant-design/icons/SettingOutlined'
 import config from '../config'
 import Paths from '../constants/paths'
-import util, { useWindowDimensions } from '../util'
+import util, { Breakpoints, useWindowDimensions } from '../util'
 import { Hint } from './Text'
 import WalletAddress from './WalletAddress'
 import { globalActions } from '../state/modules/global'
@@ -34,6 +34,7 @@ const { Text, Link } = Typography
 // `
 const NetworkSelector = () => {
   const networkId = useSelector(state => state.global.network)
+  const v2ui = useSelector(state => state.global.v2ui)
   const dispatch = useDispatch()
   const networks = config.networks
   const onChange = (v) => {
@@ -42,7 +43,7 @@ const NetworkSelector = () => {
   return (
     <>
       {/* <SelectorLabel>Network</SelectorLabel> */}
-      <Select style={{ width: 200 }} bordered={false} value={networkId} onChange={onChange}>
+      <Select style={{ width: v2ui ? 130 : 200 }} bordered={false} value={networkId} onChange={onChange}>
         {Object.keys(networks).map(k => {
           return <Select.Option key={k} value={k}>{networks[k].name} </Select.Option>
         })}
@@ -134,7 +135,7 @@ const WalletHeader = () => {
 
 export const WalletHeaderV2 = () => {
   const history = useHistory()
-  const { isMobile } = useWindowDimensions()
+  const { isMobile, width } = useWindowDimensions()
   const theme = useTheme()
   const dev = useSelector(state => state.global.dev)
   const selectedAddress = useSelector(state => state.global.selectedWallet)
@@ -162,7 +163,7 @@ export const WalletHeaderV2 = () => {
           <SecondaryButton onClick={() => history.push(Paths.showAddress(selectedAddress, 'transfer'))} style={{ marginRight: '8px', height: '100%', borderRadius: '15px' }}>Send</SecondaryButton>
           <SecondaryButton onClick={() => history.push(Paths.showAddress(selectedAddress, 'qr'))} style={{ marginRight: '8px', height: '100%', borderRadius: '15px' }}>Receive</SecondaryButton>
         </>)}
-      <StatsInfoV2 />
+      {width >= Breakpoints.LARGE && <StatsInfoV2 />}
       {dev && <Button key='toggle' shape='circle' icon={relayerEditVisible ? <CloseOutlined /> : <SettingOutlined />} onClick={() => setRelayerEditVisible(!relayerEditVisible)} />}
       {dev && relayerEditVisible &&
         <Space size='small' key='relayer'>

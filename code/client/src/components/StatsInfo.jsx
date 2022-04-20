@@ -87,13 +87,13 @@ export const StatsInfoV2 = () => {
     stats
       ? (
         <Row style={{ color: primaryTextColor }} justify='center' className='wallet-stats-info'>
-          <Tag color={secondaryBgColor} style={{ margin: 0, padding: '4px 32px' }}>
+          <Tag color={secondaryBgColor} style={{ margin: 0, padding: '4px 24px' }}>
             <Statistic style={{ lineHeight: '16px' }} title='ONE price' value={onePrice} prefix='$' valueStyle={{ color: primaryTextColor, fontWeight: 'bold' }} />
           </Tag>
-          <Tag color={secondaryBgColor} style={{ margin: '0 -1px', padding: '4px 32px' }}>
+          <Tag color={secondaryBgColor} style={{ margin: '0 -1px', padding: '4px 24px' }}>
             <Statistic style={{ lineHeight: '16px' }} title='1Wallet count' value={stats.count} valueStyle={{ color: primaryTextColor, fontWeight: 'bold' }} />
           </Tag>
-          <Tag color={secondaryBgColor} style={{ margin: 0, padding: '4px 32px' }}>
+          <Tag color={secondaryBgColor} style={{ margin: 0, padding: '4px 24px' }}>
             <Statistic style={{ lineHeight: '16px' }} title='Total managed' value={(stats.totalAmount * onePrice).toFixed(2)} prefix='$' valueStyle={{ color: primaryTextColor, fontWeight: 'bold' }} />
           </Tag>
         </Row>)
