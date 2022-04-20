@@ -133,7 +133,7 @@ const Send = ({
       <AverageRow>
         <Warning>
           DO NOT send funds to centralized exchanges<br /><br />
-          Centralized exchange such as Binance and crypto.com cannot detect deposits from smart contracts at ths time. We are working on <Link href='https://github.com/polymorpher/one-wallet/issues/293' target='_blank' rel='noreferrer'>a new solution</Link> to address this issue in future releases.
+          Centralized exchange such as Binance and crypto.com cannot detect deposits from smart contracts at this time. We are working on <Link href='https://github.com/polymorpher/one-wallet/issues/293' target='_blank' rel='noreferrer'>a new solution</Link> to address this issue in future releases.
         </Warning>
       </AverageRow>
       <Row align='middle' style={{ marginBottom: '10px' }}>
