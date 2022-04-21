@@ -13,7 +13,6 @@ const ONE_CENT = unit.toWei('0.01', 'ether')
 const SLOT_SIZE = 1
 
 contract('ONEWallet', (accounts) => {
-  // 2021-06-13T03:55:00.000Z
   let snapshotId
   beforeEach(async function () {
     await TestUtil.init({ testData: false })
@@ -25,8 +24,9 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.revert(snapshotId)
   })
 
+  // 2021-06-13T03:55:00.000Z
   const EFFECTIVE_TIME = Math.floor(1623556500000 / INTERVAL) * INTERVAL - DURATION / 2
-  it('must generate consistent, recoverable randomness', async () => {
+  it('Client_Randomness_Recover: must generate consistent, recoverable randomness', async () => {
     const {
       seed,
       hseed,
@@ -44,6 +44,7 @@ contract('ONEWallet', (accounts) => {
         lifespan,
         interval
       } } = await createWallet({
+      skipDeploy: true,
       effectiveTime: EFFECTIVE_TIME,
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
@@ -68,6 +69,7 @@ contract('ONEWallet', (accounts) => {
         interval
       } })
     const { randomnessResults: randomnessResults2 } = await createWallet({
+      skipDeploy: true,
       effectiveTime: EFFECTIVE_TIME,
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
@@ -106,6 +108,7 @@ contract('ONEWallet', (accounts) => {
         lifespan,
         interval
       } } = await createWallet({
+      skipDeploy: true,
       effectiveTime: EFFECTIVE_TIME,
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
@@ -132,6 +135,7 @@ contract('ONEWallet', (accounts) => {
         interval
       } })
     const { randomnessResults: randomnessResults2 } = await createWallet({
+      skipDeploy: true,
       effectiveTime: EFFECTIVE_TIME,
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
@@ -152,7 +156,7 @@ contract('ONEWallet', (accounts) => {
     assert.deepEqual(recoveredList, randomnessResults, 'Controlled Randomness must be recovered')
   })
 
-  it('must generate consistent, recoverable randomness with argon2', async () => {
+  it('argon2_gen: must generate consistent, recoverable randomness with argon2', async () => {
     const {
       seed,
       hseed,
@@ -170,6 +174,7 @@ contract('ONEWallet', (accounts) => {
         lifespan,
         interval
       } } = await createWallet({
+      skipDeploy: true,
       effectiveTime: EFFECTIVE_TIME,
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
@@ -287,8 +292,8 @@ contract('ONEWallet', (accounts) => {
     Logger.debug(`Deposited ${ONE_CENT.toString()} wei`)
     await wallet.commit(ONEUtil.hexString(commitHash), ONEUtil.hexString(paramsHash), ONEUtil.hexString(verificationHash))
     const tx = await wallet.reveal(
-      neighborsEncoded, index, ONEUtil.hexString(eotp),
-      ONEConstants.OperationType.TRANSFER, ONEConstants.TokenType.NONE, ONEConstants.EmptyAddress, 0, purse.address, ONE_CENT.divn(2), '0x'
+      [neighborsEncoded, index, ONEUtil.hexString(eotp)],
+      [ONEConstants.OperationType.TRANSFER, ONEConstants.TokenType.NONE, ONEConstants.EmptyAddress, 0, purse.address, ONE_CENT.divn(2), '0x']
     )
     Logger.debug('tx=', tx)
     assert.ok(tx.tx, 'Transaction must succeed')
@@ -298,11 +303,11 @@ contract('ONEWallet', (accounts) => {
     assert.equal(ONE_CENT.divn(2).toString(), purseBalance, `Purse must have correct balance: ${ONE_CENT.divn(2)}`)
   }
 
-  it('Client_Transfer_SHA256: must compute EOTP correctly and complete transfer, using double OTP + argon2', async () => {
+  it('Client_Transfer_SHA256: must compute EOTP correctly and complete transfer, using double OTP + sha256b', async () => {
     await transferTest({ hasher: ONEUtil.sha256b })
   })
 
-  it('Client_Transfer_ARGON2: must compute EOTP correctly and complete transfer, using double OTP + sha256b', async () => {
+  it('Client_Transfer_ARGON2: must compute EOTP correctly and complete transfer, using double OTP + argon2 ', async () => {
     await transferTest({ hasher: ONEUtil.argon2 })
   })
 })

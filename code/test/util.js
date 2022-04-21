@@ -1,6 +1,5 @@
 const { loadContracts } = require('../extensions/loader')
 const axios = require('axios')
-const crypto = require('crypto')
 const { range, cloneDeep } = require('lodash')
 const config = require('../config')
 const base32 = require('hi-base32')
@@ -201,7 +200,7 @@ const printInnerTrees = ({ Debugger, innerTrees }) => {
 }
 
 const makeCores = async ({
-  salt = new BN(crypto.randomBytes(32)),
+  salt = new BN(0),
   seed = '0x' + (new BN(ONEUtil.hexStringToBytes('0xdeadbeef1234567890123456789012')).add(salt).toString('hex')),
   seed2 = '0x' + (new BN(ONEUtil.hexStringToBytes('0x1234567890deadbeef123456789012')).add(salt).toString('hex')),
   maxOperationsPerInterval = 1,
@@ -296,7 +295,8 @@ const createWallet = async ({
   randomness = 0,
   hasher = ONEUtil.sha256b,
   spendingInterval = 3000,
-  backlinks = []
+  backlinks = [],
+  skipDeploy = false,
 }) => {
   const { core, innerCores, identificationKeys, vars } = await makeCores({ salt, seed, maxOperationsPerInterval, doubleOtp, effectiveTime, duration, randomness, hasher })
   const initArgs = [
@@ -308,20 +308,20 @@ const createWallet = async ({
     innerCores,
     identificationKeys,
   ]
-  const tx = await deploy(initArgs)
+  const tx = await (!skipDeploy && deploy(initArgs))
   Logger.debug('Creating ONEWallet contract with parameters', initArgs)
   Logger.debug(tx)
-  const successLog = tx.logs.find(log => log.event === 'ONEWalletDeploySuccess')
+  const successLog = skipDeploy || tx.logs.find(log => log.event === 'ONEWalletDeploySuccess')
   if (!successLog) {
     throw new Error('Wallet deploy unsuccessful')
   }
   // Logger.debug(successLog)
-  const address = successLog.args.addr
+  const address = successLog?.args?.addr
   // Logger.debug('Address', address)
   return {
     identificationKeys,
     address,
-    wallet: new Wallet(address),
+    wallet: !skipDeploy && new Wallet(address),
     ...vars
   }
 }
