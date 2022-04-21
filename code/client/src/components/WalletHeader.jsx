@@ -8,8 +8,10 @@ import Modal from 'antd/es/modal'
 import Input from 'antd/es/input'
 import Button from 'antd/es/button'
 import Space from 'antd/es/space'
+import Switch from 'antd/es/switch'
 import Row from 'antd/es/row'
 import Typography from 'antd/es/typography'
+import ConfigProvider from 'antd/es/config-provider'
 import { useRouteMatch, useHistory } from 'react-router'
 import { titleCase } from 'title-case'
 import { useSelector, useDispatch } from 'react-redux'
@@ -133,6 +135,7 @@ const WalletHeader = () => {
 }
 
 export const WalletHeaderV2 = () => {
+  const dispatch = useDispatch()
   const history = useHistory()
   const { isMobile, width } = useWindowDimensions()
   const theme = useTheme()
@@ -148,6 +151,13 @@ export const WalletHeaderV2 = () => {
 
   const onAddressSelected = (e) => {
     history.push(Paths.showAddress(e.value))
+  }
+
+  const onThemeChange = () => {
+    ConfigProvider.config({
+      theme: getColorPalette(theme),
+    })
+    dispatch(globalActions.setUiTheme(theme === 'dark' ? 'light' : 'dark'))
   }
 
   return (
@@ -181,6 +191,7 @@ export const WalletHeaderV2 = () => {
         <NetworkSelector key='network' />
       </div>
       <SecretSettings key='settings' visible={settingsVisible} onClose={() => setSettingsVisible(false)} />
+      <Switch checkedChildren='Dark' unCheckedChildren='Light' onChange={onThemeChange} />
     </div>
   )
 }
