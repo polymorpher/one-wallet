@@ -1,4 +1,5 @@
 const { loadContracts } = require('../extensions/loader')
+const axios = require('axios')
 const crypto = require('crypto')
 const { range, cloneDeep } = require('lodash')
 const config = require('../config')
@@ -35,51 +36,21 @@ let Factories
 // eslint-disable-next-line no-unused-vars
 let Libraries
 let Wallet
-let Alice, Bob, Carol, Dora, Ernie, State, BobState, CarolState, DoraState, ErnieState, Testerc20, Testerc721, Testerc1155, Testerc20v2, Testerc721v2, Testerc1155v2
-
+let TestDeployments
 // ==== DEPLOYMENT FUNCTIONS ====
 const init = async ({ testData = true }) => {
-  if (Factories && Libraries && Wallet) {
-    if (testData) {
-      return {
-        alice: Alice, bob: Bob, carol: Carol, dora: Dora, ernie: Ernie, state: State, bobState: BobState, carolState: CarolState, doraState: DoraState, ernieState: ErnieState, testerc20: Testerc20, testerc721: Testerc721, testerc1155: Testerc1155, testerc20v2: Testerc20v2, testerc721v2: Testerc721v2, testerc1155v2: Testerc1155v2
-      }
-    } else {
-      return
-    }
+  if (!(Factories && Libraries && Wallet)) {
+    const { factories, libraries, ONEWalletAbs } = await loadContracts(Logger)
+    Factories = factories
+    Libraries = libraries
+    Wallet = ONEWalletAbs
+    Logger.debug('Initialized')
   }
-  const { factories, libraries, ONEWalletAbs } = await loadContracts(Logger)
-  Factories = factories
-  Libraries = libraries
-  Wallet = ONEWalletAbs
-  Logger.debug('Initialized')
-  if (testData) {
-    if (!Alice) {
-      let {
-        alice, bob, carol, dora, ernie, state, bobState, carolState, doraState, ernieState, testerc20, testerc721, testerc1155, testerc20v2, testerc721v2, testerc1155v2
-      } = await deployTestData()
-      Alice = alice
-      Bob = bob
-      Carol = carol
-      Dora = dora
-      Ernie = ernie
-      State = state
-      BobState = bobState
-      CarolState = carolState
-      DoraState = doraState
-      ErnieState = ernieState
-      Testerc20 = testerc20
-      Testerc721 = testerc721
-      Testerc1155 = testerc1155
-      Testerc20v2 = testerc20v2
-      Testerc721v2 = testerc721v2
-      Testerc1155v2 = testerc1155v2
-    }
-    console.log(`Alice.wallet.address: ${JSON.stringify(Alice.wallet.address)}`)
-    return {
-      alice: Alice, bob: Bob, carol: Carol, dora: Dora, ernie: Ernie, state: State, bobState: BobState, carolState: CarolState, doraState: DoraState, ernieState: ErnieState, testerc20: Testerc20, testerc721: Testerc721, testerc1155: Testerc1155, testerc20v2: Testerc20v2, testerc721v2: Testerc721v2, testerc1155v2: Testerc1155v2
-    }
+  if (testData && !TestDeployments) {
+    TestDeployments = await deployTestData()
+    console.log(`HelperDeployments.alice.wallet.address: ${JSON.stringify(TestDeployments.alice.wallet.address)}`)
   }
+  return testData && TestDeployments
 }
 
 const deploy = async (initArgs) => {
@@ -122,20 +93,32 @@ const getClient = async () => {
   return web3.eth.getNodeInfo()
 }
 
+const sendTestRPC = async (data, callback) => {
+  if (!config.stableTestRPC) {
+    return web3.currentProvider.send(data, callback)
+  }
+  try {
+    const { data: r } = await axios.post(config.networks['eth-ganache'].url, data)
+    callback(null, r)
+  } catch (ex) {
+    callback(ex)
+  }
+}
+
 const increaseTime = async (seconds) => {
   const client = await getClient()
   if (client.indexOf('TestRPC') === -1) {
     throw new Error('Client is not ganache-cli and cannot forward time')
   }
 
-  await web3.currentProvider.send({
+  await sendTestRPC({
     jsonrpc: '2.0',
     method: 'evm_increaseTime',
     params: [seconds],
     id: 0,
-  }, (err) => err && console.error(err))
+  })
 
-  await web3.currentProvider.send({
+  await sendTestRPC({
     jsonrpc: '2.0',
     method: 'evm_mine',
     params: [],
@@ -148,7 +131,7 @@ const increaseTime = async (seconds) => {
 const snapshot = async () => {
   console.log('Taking EVM Snapshot')
   return new Promise((resolve, reject) => {
-    web3.currentProvider.send({ jsonrpc: '2.0', method: 'evm_snapshot' },
+    sendTestRPC({ jsonrpc: '2.0', method: 'evm_snapshot' },
       (err, { result } = {}) => {
         if (err) {
           reject(err)
@@ -161,7 +144,7 @@ const snapshot = async () => {
 const revert = async (id) => {
   console.log(`EVM reverting to ${id}`)
   return new Promise((resolve, reject) => {
-    web3.currentProvider.send({ jsonrpc: '2.0', method: 'evm_revert', params: [id] }, (err, { result } = {}) => {
+    sendTestRPC({ jsonrpc: '2.0', method: 'evm_revert', params: [id] }, (err, { result } = {}) => {
       if (err) {
         reject(err)
       }
