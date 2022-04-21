@@ -83,18 +83,20 @@ export const StatsInfoV2 = () => {
     }
   }, [])
 
+  const statsValueStyle = { color: primaryTextColor, fontWeight: 'bold', fontSize: '12px' }
+
   return (
     stats
       ? (
         <Row style={{ color: primaryTextColor }} justify='center' className='wallet-stats-info'>
           <Tag color={secondaryBgColor} style={{ margin: 0, padding: '4px 24px' }}>
-            <Statistic style={{ lineHeight: '16px' }} title='ONE price' value={onePrice} prefix='$' valueStyle={{ color: primaryTextColor, fontWeight: 'bold' }} />
+            <Statistic style={{ lineHeight: '16px' }} title='ONE price' value={onePrice} prefix='$' valueStyle={statsValueStyle} />
           </Tag>
           <Tag color={secondaryBgColor} style={{ margin: '0 -1px', padding: '4px 24px' }}>
-            <Statistic style={{ lineHeight: '16px' }} title='1Wallet count' value={stats.count} valueStyle={{ color: primaryTextColor, fontWeight: 'bold' }} />
+            <Statistic style={{ lineHeight: '16px' }} title='1Wallet count' value={stats.count} valueStyle={statsValueStyle} />
           </Tag>
           <Tag color={secondaryBgColor} style={{ margin: 0, padding: '4px 24px' }}>
-            <Statistic style={{ lineHeight: '16px' }} title='Total managed' value={(stats.totalAmount * onePrice).toFixed(2)} prefix='$' valueStyle={{ color: primaryTextColor, fontWeight: 'bold' }} />
+            <Statistic style={{ lineHeight: '16px' }} title='Total managed' value={(stats.totalAmount * onePrice).toFixed(2)} prefix='$' valueStyle={statsValueStyle} />
           </Tag>
         </Row>)
       : (

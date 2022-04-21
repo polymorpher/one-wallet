@@ -2,8 +2,10 @@
 import { useSelector } from 'react-redux'
 
 // Variables shared with ant theme system: https://ant.design/docs/react/customize-theme#Ant-Design-Less-variables
+// the ant variables are supported through css variables, the list of all available ones:
+// https://github.com/ant-design/ant-design/blob/master/components/style/themes/variable.less
 export const lightTheme = {
-  primaryColor: 'red', // primary color for all components
+  primaryColor: 'blue', // primary color for all components
   linkColor: '#1890ff', // link color
   successColor: '#52c41a', // success state color
   warningColor: '#faad14', // warning state color
