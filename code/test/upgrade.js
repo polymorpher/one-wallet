@@ -25,7 +25,7 @@ contract('ONEWallet', (accounts) => {
   let alice, carol, dora, state
 
   beforeEach(async function () {
-    ({ alice, carol, dora, state } = await TestUtil.init({}))
+    ({ alice, carol, dora, state } = await TestUtil.init())
     snapshotId = await TestUtil.snapshot()
     console.log(`Taken snapshot id=${snapshotId}`)
   })
