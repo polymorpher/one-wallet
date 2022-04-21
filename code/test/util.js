@@ -98,9 +98,9 @@ const sendTestRPC = async (data, callback) => {
   }
   try {
     const { data: r } = await axios.post(config.networks['eth-ganache'].url, data)
-    callback(null, r)
+    callback && callback(null, r)
   } catch (ex) {
-    callback(ex)
+    callback && callback(ex)
   }
 }
 
@@ -115,7 +115,7 @@ const increaseTime = async (seconds) => {
     method: 'evm_increaseTime',
     params: [seconds],
     id: 0,
-  })
+  }, (err) => err && console.error(err))
 
   await sendTestRPC({
     jsonrpc: '2.0',
