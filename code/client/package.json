@@ -82,7 +82,7 @@
     "@sentry/react": "^6.8.0",
     "@sentry/tracing": "^6.8.0",
     "@transak/transak-sdk": "^1.0.31",
-    "antd": "^4.16.2",
+    "antd": "4.17.0",
     "axios": "^0.21.1",
     "bn.js": "^5.2.0",
     "broadcast-channel": "^4.7.0",
