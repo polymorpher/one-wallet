@@ -215,7 +215,8 @@ First, create a new file and write out how you expect a successful operation to 
 
 | Area          | Scenario            | Status | Notes                       |
 |---------------|---------------------|--------|-----------------------------|
-| App           | CALL: must be able to call multiple transactions | PASS |  |
+| App           | CALL must be able to call multiple transactions | PASS |  |
+| Security      | complex spending_limit rule testing             | PASS |  |
 | Security      | must allow displace operation using 6x6 otps for different durations | PASS |
 | Security      | must authenticate otp from new core after displacement               | *TODO | |
 | Token         | TokenTracker Testing  multiple token types | PASS | |
