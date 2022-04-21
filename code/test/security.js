@@ -197,7 +197,7 @@ contract('ONEWallet', (accounts) => {
     TestUtil.printInnerTrees({ Debugger, innerTrees: alice.client.innerTrees })
     // Start Tests
     const newSeed = '0xdeedbeaf1234567890123456789012'
-    const newEffectiveTime = Math.floor(testTime / INTERVAL / 6) * INTERVAL * 6
+    const newEffectiveTime = Math.floor(testTime / INTERVAL / 6) * INTERVAL * 6 - 5000
     const { core: newCore, innerCores: newInnerCores, identificationKeys: newKeys, vars: { seed: newComputedSeed, hseed: newHseed, client: newClient } } = await TestUtil.makeCores({
       seed: newSeed,
       effectiveTime: newEffectiveTime,
@@ -758,9 +758,7 @@ contract('ONEWallet', (accounts) => {
     // Begin Tests
     let testTime = Date.now()
     testTime = await TestUtil.bumpTestTime(testTime, 60)
-    testTime = Math.floor(testTime / (INTERVAL)) * INTERVAL - 5000
     const EFFECTIVE_TIMES = DURATIONS.map(d => Math.floor(testTime / INTERVAL) * INTERVAL - d / 2)
-    // const { wallet, newSeed, newEffectiveTime, newHseed, newLayers } = await testForTime({
     let { walletInfo: alice, state, newEffectiveTime } = await testForTime({
       multiple: MULTIPLES[0],
       effectiveTime: EFFECTIVE_TIMES[0],
@@ -781,7 +779,6 @@ contract('ONEWallet', (accounts) => {
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
-        layers: alice.client.layers,
         index,
         eotp,
         operationType: ONEConstants.OperationType.TRANSFER,

@@ -672,7 +672,7 @@ const validateSignaturesMutation = async ({ expectedSignatures, wallet }) => {
     assert.equal(signatures[i].timestamp.toString(), expectedSignatures[i].timestamp.toString(), 'Expected timestamp to have changed')
     assert.equal(signatures[i].expireAt.toString(), expectedSignatures[i].expireAt.toString(), 'Expected expireAt to have changed')
     const v = await wallet.isValidSignature(expectedSignatures[i].hash, expectedSignatures[i].signature)
-    Logger.debug(`i:" ${JSON.stringify(i)}`)
+    Logger.debug(`i: ${JSON.stringify(i)}`)
     Logger.debug(`expectedSignatures[i].hash ${JSON.stringify(expectedSignatures[i].hash)}`)
     Logger.debug(`expectedSignatures[i].signature) ${JSON.stringify(expectedSignatures[i].signature)}`)
     Logger.debug(v)
@@ -851,12 +851,10 @@ const executeCoreTransaction = async ({
       revealParams = { operationType, amount }
       break
     case ONEConstants.OperationType.RECOVER:
-      // Client logic
-      index = 2 ** (walletInfo.client.layers.length - 1) - 1 // The last leaf is reserved for recovery, without requiring otp
-      eotp = await Flow.EotpBuilders.recovery({ wallet: walletInfo.wallet, layers: walletInfo.client.layers })
-      // Commit logic
-      paramsHash = ONEWallet.computeRecoveryHash
-      // paramsHash = function () { ONEWallet.computeRecoveryHash({ hseed: walletInfo.hseed }) }
+      // Commit logic calclulate the paramsHash and recoveryData here as we need to pass the data
+      const { hash: recoveryHash, bytes: recoveryData } = ONEWallet.computeRecoveryHash({ hseed: walletInfo.hseed })
+      data = ONEUtil.hexString(recoveryData)
+      paramsHash = recoveryHash // Pass the calculated value rather than calling the function in CommitReveal
       commitParams = { operationType, data }
       revealParams = { operationType, data }
       break

@@ -100,7 +100,7 @@ First, create a new file and write out how you expect a successful operation to 
 | 3   | OVERRIDE_TRACK               | PASS     | Token    |                                                            |
 | 4   | TRANSFER                     | PASS     | Core     |                                                            |
 | 5   | SET_RECOVERY_ADDRESS         | PASS     | Core     |                                                            |
-| 6   | RECOVER	                     | *PASS    | Core     |                                                            |
+| 6   | RECOVER	                     | PASS    | Core     |                                                            |
 | 7   | DISPLACE	                 | PASS     | Security |                                                            |
 | 8   | FORWARD                      | PASS     | Upgrade  |                                                            |
 | 9   | RECOVER_SELECTED_TOKENS      | PASS     | Token    |                                                            |
@@ -212,3 +212,32 @@ First, create a new file and write out how you expect a successful operation to 
 | Upgrade       | BASIC               | PASS   |                             |
 
 ### Appendix D: Complex Scenario Testing Status Overview
+
+| Area          | Scenario            | Status | Notes                       |
+|---------------|---------------------|--------|-----------------------------|
+| App           | CALL must be able to call multiple transactions | PASS |  |
+| Security      | complex spending_limit rule testing             | PASS |  |
+| Security      | must allow displace operation using 6x6 otps for different durations | PASS |
+| Security      | must authenticate otp from new core after displacement               | *TODO | |
+| Token         | TokenTracker Testing  multiple token types | PASS | |
+| Token         | Must be able to recover selected tokens    | PASS | |
+| Upgrade       | Must be able to sign a transaction with a backlinked wallet | PASS | |
+| Upgrade       | must be able to forward all assets to another wallet | *PASS | Forwards Native Asset and Tracked Tokens (does not forward untracked tokens) |
+| Upgrade       | when a wallet is backlinked, native assets sent to the original wallet gets forwarded automatically | PASS | |
+| Upgrade       | when a wallet is backlinked, tokens sent to the original wallet gets forwarded automatically | *PASS | Forwards Native Asset and Tracked Tokens (does not forward untracked tokens) |
+
+
+
+### Appendix E: Reversion Testing
+
+| Contract            | Revert                           | Status  | Contract Function       | Notes             |
+|---------------------|----------------------------------|---------|-------------------------|-------------------|
+| Reveal              | Bad recovery proof               | TODO    | isCorrectRecoveryProof  | WARNING: Clients should not use eotps that *may* be used for recovery. The time slots should be manually excluded for use.|
+| Reveal              | Proof is incorrect               | TODO    | isCorrectProof          | `require(auth.neighbors.length == core.height - 1, "Bad neighbors size");` |
+| Reveal              | Proof is incorrect               | TODO    | isCorrectProof          | `require(auth.neighbors.length == oldCores[i].height - 1, "Bad old neighbors size");` |
+| Reveal              | No commit                        | TODO    | verifyReveal            | `require(cc.length > 0, "No commit found")` |
+| Reveal              | No commit                        | TODO    | verifyReveal            | `require(c.paramsHash == paramsHash, "Param mismatch");` |
+| Reveal              | No commit                        | TODO    | verifyReveal            | `require(t == index \|\| t - 1 == index, "Time mismatch")` |
+| Reveal              | No commit                        | TODO    | verifyReveal            | `require(nonce >= expectedNonce, "Nonce too low")` |
+| Reveal              | No commit                        | TODO    | verifyReveal            | `require(!c.completed, "Commit already done")` |
+| Reveal              | No commit                        | TODO    | verifyReveal            | `require(uint32(block.timestamp) - c.timestamp < CommitManager.REVEAL_MAX_DELAY, "Too late"` |
