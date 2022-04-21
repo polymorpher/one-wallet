@@ -1,24 +1,21 @@
 const { loadContracts } = require('../extensions/loader')
+const crypto = require('crypto')
 const { range, cloneDeep } = require('lodash')
 const config = require('../config')
 const base32 = require('hi-base32')
 const BN = require('bn.js')
 const unit = require('ethjs-unit')
-const Flow = require('../lib/api/flow')
 const ONEWallet = require('../lib/onewallet')
 const ONEParser = require('../lib/parser')
 const { backoff } = require('exponential-backoff')
 const ONEUtil = require('../lib/util')
 const ONEConstants = require('../lib/constants')
-// const assert = require('assert')
 const TestERC20 = artifacts.require('TestERC20')
 const TestERC721 = artifacts.require('TestERC721')
 const TestERC1155 = artifacts.require('TestERC1155')
 const SALT_BASE = new BN(process.env.SALT_BASE || Date.now())
 const HALF_ETH = unit.toWei('0.5', 'ether')
 const ONE_ETH = unit.toWei('1', 'ether')
-const VALID_SIGNATURE_VALUE = '0x1626ba7e'
-// const INVALID_SIGNATURE_VALUE = '0xffffffff'
 const DUMMY_HEX = '0x'
 const INTERVAL = 30000 // 30 second Intervals
 const DURATION = INTERVAL * 12 // 6 minute wallet duration
@@ -221,7 +218,7 @@ const printInnerTrees = ({ Debugger, innerTrees }) => {
 }
 
 const makeCores = async ({
-  salt = new BN(0),
+  salt = new BN(crypto.randomBytes(32)),
   seed = '0x' + (new BN(ONEUtil.hexStringToBytes('0xdeadbeef1234567890123456789012')).add(salt).toString('hex')),
   seed2 = '0x' + (new BN(ONEUtil.hexStringToBytes('0x1234567890deadbeef123456789012')).add(salt).toString('hex')),
   maxOperationsPerInterval = 1,
