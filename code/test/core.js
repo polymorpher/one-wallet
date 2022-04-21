@@ -137,7 +137,7 @@ contract('ONEWallet', (accounts) => {
     await TestUtil.assertStateEqual(state, currentState)
   })
 
-  // ==== RECOVER =====
+  // ==== RECOVER TO BE REPLACED=====
   // Test recover all native assets from alices wallet
   // Expected result: all native assets will be transferred to her last resort address
   it('CO-BASIC-6 RECOVER: must be able to recover assets', async () => {
