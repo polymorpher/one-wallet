@@ -890,13 +890,11 @@ const executeUpgradeTransaction = async ({
   switch (operationType) {
     // Format commit and revealParams for FORWARD Tranasction
     case ONEConstants.OperationType.FORWARD:
-    case ONEConstants.OperationType.SET_RECOVERY_ADDRESS:
       paramsHash = ONEWallet.computeDestOnlyHash
       commitParams = { dest }
       revealParams = { operationType, dest }
       break
     case ONEConstants.OperationType.COMMAND:
-    case ONEConstants.OperationType.TRACK:
     case ONEConstants.OperationType.RECOVER_SELECTED_TOKENS:
       paramsHash = ONEWallet.computeGeneralOperationHash
       commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
