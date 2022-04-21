@@ -1,5 +1,4 @@
 const TestUtil = require('./util')
-const config = require('../config')
 const unit = require('ethjs-unit')
 const ONEUtil = require('../lib/util')
 const ONEConstants = require('../lib/constants')
@@ -23,32 +22,16 @@ contract('ONEWallet', (accounts) => {
   Logger.debug(`Testing with ${accounts.length} accounts`)
   Logger.debug(accounts)
   let snapshotId
-  let alice, bob, carol, dora, ernie, state, bobState, carolState, doraState, ernieState, testerc20, testerc721, testerc1155, testerc20v2, testerc721v2, testerc1155v2
+  let alice, carol, dora, state
 
   beforeEach(async function () {
-    const testData = await TestUtil.init({})
-    // const testData = await TestUtil.deployTestData()
-    console.log(`testData.alice.wallet.address: ${JSON.stringify(testData.alice.wallet.address)}`)
-    alice = testData.alice
-    bob = testData.bob
-    carol = testData.carol
-    dora = testData.dora
-    ernie = testData.ernie
-    state = testData.state
-    bobState = testData.bobState
-    carolState = testData.carolState
-    doraState = testData.doraState
-    ernieState = testData.ernieState
-    testerc20 = testData.testerc20
-    testerc721 = testData.testerc721
-    testerc1155 = testData.testerc1155
-    testerc20v2 = testData.testerc20v2
-    testerc721v2 = testData.testerc721v2
-    testerc1155v2 = testData.testerc1155v2
+    ({ alice, carol, dora, state } = await TestUtil.init({}))
     snapshotId = await TestUtil.snapshot()
+    console.log(`Taken snapshot id=${snapshotId}`)
   })
   afterEach(async function () {
     await TestUtil.revert(snapshotId)
+    await TestUtil.sleep(500)
   })
 
   // === BASIC POSITIVE UPGRADE WALLET ====
@@ -112,7 +95,7 @@ contract('ONEWallet', (accounts) => {
   // WalletGraph.sol
   // function command(IONEWallet[] storage backlinkAddresses, Enums.TokenType tokenType, address contractAddress, uint256 tokenId, address payable dest, uint256 amount, bytes calldata data) public {
   //  (address backlink, uint16 operationType, bytes memory commandData) = abi.decode(data, (address, uint16, bytes));
-  // after ensuring the wallet is backlinked to the address specified in the op.data 
+  // after ensuring the wallet is backlinked to the address specified in the op.data
   // we call IONEWallet using the operation parameters given, substituting operationType and command Data with that provided in op.data
   //  try IONEWallet(backlink).reveal(IONEWallet.AuthParams(new bytes32[](0), 0, bytes32(0)), IONEWallet.OperationParams(Enums.OperationType(operationType), tokenType, contractAddress, tokenId, dest, amount, commandData)){
   // Parameter Overview
