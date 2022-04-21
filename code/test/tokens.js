@@ -1,6 +1,4 @@
 const TestUtil = require('./util')
-const config = require('../config')
-const unit = require('ethjs-unit')
 const ONEUtil = require('../lib/util')
 const ONEConstants = require('../lib/constants')
 const ONEWallet = require('../lib/onewallet')
@@ -13,9 +11,6 @@ const NullOperationParams = {
 
 }
 const INTERVAL = 30000 // 30 second Intervals
-const DURATION = INTERVAL * 12 // 6 minute wallet duration
-const getEffectiveTime = () => Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
-const HALF_ETH = unit.toWei('0.5', 'ether')
 const Logger = TestUtil.Logger
 const Debugger = ONEDebugger(Logger)
 
@@ -76,36 +71,18 @@ const executeTokenTransaction = async ({
 }
 
 // === TESTING
-contract('ONEWallet', (accounts) => {
-  Logger.debug(`Testing with ${accounts.length} accounts`)
-  Logger.debug(accounts)
+contract('ONEWallet', () => {
   let snapshotId
-  let alice, bob, carol, dora, ernie, state, bobState, carolState, doraState, ernieState, testerc20, testerc721, testerc1155, testerc20v2, testerc721v2, testerc1155v2
+  let alice, bob, carol, state, bobState, carolState, testerc20, testerc721, testerc1155, testerc20v2, testerc721v2, testerc1155v2
 
   beforeEach(async function () {
-    const testData = await TestUtil.init({})
-    // const testData = await TestUtil.deployTestData()
-    console.log(`testData.alice.wallet.address: ${JSON.stringify(testData.alice.wallet.address)}`)
-    alice = testData.alice
-    bob = testData.bob
-    carol = testData.carol
-    dora = testData.dora
-    ernie = testData.ernie
-    state = testData.state
-    bobState = testData.bobState
-    carolState = testData.carolState
-    doraState = testData.doraState
-    ernieState = testData.ernieState
-    testerc20 = testData.testerc20
-    testerc721 = testData.testerc721
-    testerc1155 = testData.testerc1155
-    testerc20v2 = testData.testerc20v2
-    testerc721v2 = testData.testerc721v2
-    testerc1155v2 = testData.testerc1155v2
+    ({ alice, bob, carol, state, bobState, carolState, testerc20, testerc721, testerc1155, testerc20v2, testerc721v2, testerc1155v2 } = await TestUtil.init())
     snapshotId = await TestUtil.snapshot()
+    console.log(`Taken snapshot id=${snapshotId}`)
   })
   afterEach(async function () {
     await TestUtil.revert(snapshotId)
+    await TestUtil.sleep(500)
   })
 
   // === BASIC POSITIVE TESTING ERC20 ====
@@ -114,9 +91,7 @@ contract('ONEWallet', (accounts) => {
   // Test tacking of an ERC20 token
   // Expected result: the token is now tracked
   it('TO-BASIC-0 TRACK: must be able to track ERC20 tokens', async () => {
-    console.log(snapshotId)
     let testTime = Date.now()
-
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     let { tx, currentState: bobCurrentState } = await executeTokenTransaction(
       {
