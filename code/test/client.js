@@ -1,8 +1,9 @@
 const ONEUtil = require('../lib/util')
 const ONEWallet = require('../lib/onewallet')
+const BN = require('bn.js')
 const INTERVAL = 30000
-// const DURATION = INTERVAL * 8
-const DURATION = INTERVAL * 2 * 60 * 24 * 364
+const DURATION = INTERVAL * 8
+// const DURATION = INTERVAL * 2 * 60 * 24 * 364
 const { Logger, createWallet } = require('./util')
 const ONEConstants = require('../lib/constants')
 const unit = require('ethjs-unit')
@@ -84,12 +85,14 @@ contract('ONEWallet', (accounts) => {
     for (let i = 0; i < leaves.length / 32; i++) {
       const otp = ONEUtil.genOTP({ seed, counter: counter + i })
       const recovered = await ONEWallet.recoverRandomness({ hseed, otp, randomness: 16, hasher: ONEUtil.sha256b, leaf: leaves.subarray(i * 32, i * 32 + 32) })
+      Logger.debug(`i=${i}/${leaves.length}, recovered=${recovered}`)
+      assert.deepEqual(recovered, randomnessResults[i], 'Controlled Randomness must be recovered')
       recoveredList.push(recovered)
     }
     assert.deepEqual(recoveredList, randomnessResults, 'Controlled Randomness must be recovered')
   })
 
-  it('must generate consistent, recoverable randomness with double OTP', async () => {
+  it('Client_Double_OTP: must generate consistent, recoverable randomness with double OTP', async () => {
     const {
       seed,
       seed2,
@@ -156,7 +159,7 @@ contract('ONEWallet', (accounts) => {
     assert.deepEqual(recoveredList, randomnessResults, 'Controlled Randomness must be recovered')
   })
 
-  it('argon2_gen: must generate consistent, recoverable randomness with argon2', async () => {
+  it('Client_ARGON2_Gen: must generate consistent, recoverable randomness with argon2', async () => {
     const {
       seed,
       hseed,
@@ -200,6 +203,7 @@ contract('ONEWallet', (accounts) => {
         interval
       } })
     const { randomnessResults: randomnessResults2 } = await createWallet({
+      skipDeploy: true,
       effectiveTime: EFFECTIVE_TIME,
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
@@ -241,6 +245,7 @@ contract('ONEWallet', (accounts) => {
         interval
       } } = await createWallet({
       effectiveTime,
+      salt: new BN(ONEUtil.keccak('Client_Transfer_1')),
       duration: DURATION,
       maxOperationsPerInterval: SLOT_SIZE,
       lastResortAddress: ONEConstants.EmptyAddress,
