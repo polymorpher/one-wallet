@@ -349,8 +349,8 @@ contract('ONEWallet', (accounts) => {
     testTime = Math.floor(testTime / INTERVAL) * INTERVAL + INTERVAL
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     let walletEffectiveTime = Math.floor(testTime / INTERVAL / (multiple / 2)) * INTERVAL * (multiple / 2) - (duration / 2) // walletEffectiveTime (when the wallet theoretically was created) is half the duration of the wallet
-    let { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'UP-BASIC-8-1', deployer: accounts[0], effectiveTime: walletEffectiveTime, duration, buildInnerTrees: true })
-    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'UP-BASIC-8-2', deployer: accounts[0], effectiveTime: walletEffectiveTime, duration, backlinks: [alice.wallet.address], buildInnerTrees: true })
+    let { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'SE-NEGATIVE-7-1', deployer: accounts[0], effectiveTime: walletEffectiveTime, duration, buildInnerTrees: true })
+    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'SE-NEGATIVE-7-2', deployer: accounts[0], effectiveTime: walletEffectiveTime, duration, backlinks: [alice.wallet.address], buildInnerTrees: true })
 
     // set alice's forwarding address to carol's wallet address
     // testTime = await TestUtil.bumpTestTime(testTime, 60)
