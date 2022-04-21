@@ -160,7 +160,7 @@ contract('ONEWallet', (accounts) => {
   //      otps: [{"0":0,"1":6,"2":11,"3":217},{"0":0,"1":13,"2":245,"3":73},{"0":0,"1":0,"2":73,"3":83},{"0":0,"1":13,"2":85,"3":212},{"0":0,"1":2,"2":104,"3":150},{"0":0,"1":11,"2":7,"3":74}]
   //   we calculate the index for the otp (based on the testTime, effectiveTime and duration)
   //   we call displace which updates the wallet with 6 new Root entries in innercores, updates the Info, and OldInfo
-  //   we validate that the wallet was succesfully updated
+  //   we validate that the wallet was successfully updated
   // endfor
   // we return the wallet(alice), newEffectiveTime and state (i.e. alices wallet with 24 new cores added and 6 oldInfos)
   const testForTime = async ({ multiple, effectiveTime, duration, seedBase = '0xdeadbeef1234567890023456789012', numTrees = 6, checkDisplacementSuccess = false, testTime = Date.now() }) => {
@@ -283,7 +283,7 @@ contract('ONEWallet', (accounts) => {
       }
     )
 
-    // Validate succesful event emitted
+    // Validate successful event emitted
     TestUtil.validateEvent({ tx, expectedEvent: 'SpendingLimitChanged' })
     TestUtil.validateEvent({ tx, expectedEvent: 'HighestSpendingLimitChanged' })
 
@@ -363,7 +363,7 @@ contract('ONEWallet', (accounts) => {
         testTime
       }
     )
-    // Validate succesful event emitted
+    // Validate successful event emitted
     TestUtil.validateEvent({ tx: tx0, expectedEvent: 'ForwardAddressUpdated' })
 
     testTime = await TestUtil.bumpTestTime(testTime, 60)
@@ -372,11 +372,11 @@ contract('ONEWallet', (accounts) => {
     const newSeed = '0xdeedbeaf1234567890123456789012'
     const tOtpCounter = Math.floor(testTime / INTERVAL)
     const baseCounter = Math.floor(tOtpCounter / 6) * 6
-    let newEffectiveTime = (Math.floor(walletEffectiveTime / INTERVAL) + 1) * INTERVAL
+    let newEffectiveTime = walletEffectiveTime + INTERVAL6
     let { core: newCore, innerCores: newInnerCores, identificationKeys: newKeys } = await TestUtil.makeCores({
       seed: newSeed,
-      effectiveTime: newEffectiveTime,
       duration: duration,
+      effectiveTime: newEffectiveTime,
       buildInnerTrees: true
     })
     const data = ONEWallet.encodeDisplaceDataHex({ core: newCore, innerCores: newInnerCores, identificationKey: newKeys[0] })
@@ -591,7 +591,7 @@ contract('ONEWallet', (accounts) => {
         testTime
       }
     )
-    // Validate succesful event emitted
+    // Validate successful event emitted
     TestUtil.validateEvent({ tx: tx1, expectedEvent: 'SpendingLimitChanged' })
     TestUtil.validateEvent({ tx: tx1, expectedEvent: 'HighestSpendingLimitChanged' })
     // Alice Items that have changed - nonce, lastOperationTime, commits, spendingState
@@ -640,7 +640,7 @@ contract('ONEWallet', (accounts) => {
         testTime
       }
     )
-    // Validate succesful event emitted
+    // Validate successful event emitted
     TestUtil.validateEvent({ tx: tx3, expectedEvent: 'SpendingLimitChanged' })
     // TestUtil.validateEvent({ tx, expectedEvent: 'HighestSpendingLimitChanged' })
     // Alice Items that have changed - nonce, lastOperationTime, commits, spendingState
@@ -712,7 +712,7 @@ contract('ONEWallet', (accounts) => {
         testTime
       }
     )
-    // Validate succesful event emitted
+    // Validate successful event emitted
     TestUtil.validateEvent({ tx: tx6, expectedEvent: 'SpendingLimitChanged' })
     TestUtil.validateEvent({ tx: tx6, expectedEvent: 'HighestSpendingLimitChanged' })
     // Alice Items that have changed - nonce, lastOperationTime, commits, spendingState
@@ -774,7 +774,7 @@ contract('ONEWallet', (accounts) => {
     )
     let bobCurrentState = await TestUtil.getState(bob.wallet)
 
-    // Validate succesful event emitted
+    // Validate successful event emitted
     TestUtil.validateEvent({ tx, expectedEvent: 'PaymentSent' })
 
     // Check alice's balance bob's is updated after the transfer
