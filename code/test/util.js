@@ -49,7 +49,8 @@ const init = async ({ testData = true } = {}) => {
     TestDeployments = await deployTestData()
     console.log(`HelperDeployments.alice.wallet.address: ${JSON.stringify(TestDeployments.alice.wallet.address)}`)
   }
-  return testData && TestDeployments
+  const { state, bobState, carolState, doraState, ernieState } = TestDeployments
+  return testData && { ...TestDeployments, ...cloneDeep({ state, bobState, carolState, doraState, ernieState }) }
 }
 
 const deploy = async (initArgs) => {
