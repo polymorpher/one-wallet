@@ -72,32 +72,16 @@ contract('ONEWallet', (accounts) => {
   Logger.debug(`Testing with ${accounts.length} accounts`)
   Logger.debug(accounts)
   let snapshotId
-  let alice, bob, carol, dora, ernie, state, bobState, carolState, doraState, ernieState, testerc20, testerc721, testerc1155, testerc20v2, testerc721v2, testerc1155v2
+  let alice, bob, state, bobState, testerc20, testerc721, testerc1155
 
   beforeEach(async function () {
-    const testData = await TestUtil.init({})
-    // const testData = await TestUtil.deployTestData()
-    console.log(`testData.alice.wallet.address: ${JSON.stringify(testData.alice.wallet.address)}`)
-    alice = testData.alice
-    bob = testData.bob
-    carol = testData.carol
-    dora = testData.dora
-    ernie = testData.ernie
-    state = testData.state
-    bobState = testData.bobState
-    carolState = testData.carolState
-    doraState = testData.doraState
-    ernieState = testData.ernieState
-    testerc20 = testData.testerc20
-    testerc721 = testData.testerc721
-    testerc1155 = testData.testerc1155
-    testerc20v2 = testData.testerc20v2
-    testerc721v2 = testData.testerc721v2
-    testerc1155v2 = testData.testerc1155v2
+    ({ alice, bob, state, bobState, testerc20, testerc721, testerc1155 } = await TestUtil.init())
     snapshotId = await TestUtil.snapshot()
+    console.log(`Taken snapshot id=${snapshotId}`)
   })
   afterEach(async function () {
     await TestUtil.revert(snapshotId)
+    await TestUtil.sleep(500)
   })
 
   // === BASIC POSITIVE TESTING APP FUNCTIONS ====
@@ -755,7 +739,7 @@ contract('ONEWallet', (accounts) => {
     )
 
     // now call revoke the signature without setting a time (dest) hash (op.tokenId) or a signature (op.amount)
-    // this will call revoke and not find the dummy signature and hash thus triggering SignatureNotExist 
+    // this will call revoke and not find the dummy signature and hash thus triggering SignatureNotExist
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     let { tx } = await executeAppTransaction(
       {
