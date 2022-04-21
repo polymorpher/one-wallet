@@ -16,6 +16,7 @@ contract('ONEWallet', (accounts) => {
   // 2021-06-13T03:55:00.000Z
   let snapshotId
   beforeEach(async function () {
+    await TestUtil.init({ testData: false })
     snapshotId = await TestUtil.snapshot()
     console.log(`Taken snapshot id=${snapshotId}`)
   })
