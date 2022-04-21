@@ -205,6 +205,7 @@ const makeCores = async ({
   seed2 = '0x' + (new BN(ONEUtil.hexStringToBytes('0x1234567890deadbeef123456789012')).add(salt).toString('hex')),
   maxOperationsPerInterval = 1,
   doubleOtp = false,
+  buildInnerTrees = false,
   effectiveTime,
   duration,
   randomness = 0,
@@ -225,6 +226,7 @@ const makeCores = async ({
   }
   effectiveTime = Math.floor(effectiveTime / INTERVAL) * INTERVAL
   const { seed: computedSeed, seed2: computedSeed2, hseed, root, leaves, layers, maxOperationsPerInterval: slotSize, randomnessResults, counter, innerTrees } = await ONEWallet.computeMerkleTree({
+    buildInnerTrees,
     otpSeed,
     otpSeed2,
     effectiveTime,
@@ -297,8 +299,9 @@ const createWallet = async ({
   spendingInterval = 3000,
   backlinks = [],
   skipDeploy = false,
+  buildInnerTrees = false,
 }) => {
-  const { core, innerCores, identificationKeys, vars } = await makeCores({ salt, seed, maxOperationsPerInterval, doubleOtp, effectiveTime, duration, randomness, hasher })
+  const { core, innerCores, identificationKeys, vars } = await makeCores({ salt, seed, maxOperationsPerInterval, doubleOtp, effectiveTime, duration, randomness, hasher, buildInnerTrees })
   const initArgs = [
     core,
     [ new BN(spendingLimit), new BN(0), new BN(0), new BN(spendingInterval), new BN(0), new BN(spendingLimit) ],
