@@ -1,24 +1,21 @@
 const { loadContracts } = require('../extensions/loader')
+const axios = require('axios')
 const { range, cloneDeep } = require('lodash')
 const config = require('../config')
 const base32 = require('hi-base32')
 const BN = require('bn.js')
 const unit = require('ethjs-unit')
-const Flow = require('../lib/api/flow')
 const ONEWallet = require('../lib/onewallet')
 const ONEParser = require('../lib/parser')
 const { backoff } = require('exponential-backoff')
 const ONEUtil = require('../lib/util')
 const ONEConstants = require('../lib/constants')
-// const assert = require('assert')
 const TestERC20 = artifacts.require('TestERC20')
 const TestERC721 = artifacts.require('TestERC721')
 const TestERC1155 = artifacts.require('TestERC1155')
 const SALT_BASE = new BN(process.env.SALT_BASE || Date.now())
 const HALF_ETH = unit.toWei('0.5', 'ether')
 const ONE_ETH = unit.toWei('1', 'ether')
-const VALID_SIGNATURE_VALUE = '0x1626ba7e'
-// const INVALID_SIGNATURE_VALUE = '0xffffffff'
 const DUMMY_HEX = '0x'
 const INTERVAL = 30000 // 30 second Intervals
 const DURATION = INTERVAL * 12 // 6 minute wallet duration
@@ -38,51 +35,22 @@ let Factories
 // eslint-disable-next-line no-unused-vars
 let Libraries
 let Wallet
-let Alice, Bob, Carol, Dora, Ernie, State, BobState, CarolState, DoraState, ErnieState, Testerc20, Testerc721, Testerc1155, Testerc20v2, Testerc721v2, Testerc1155v2
-
+let TestDeployments
 // ==== DEPLOYMENT FUNCTIONS ====
-const init = async ({ testData = true }) => {
-  if (Factories && Libraries && Wallet) {
-    if (testData) {
-      return {
-        alice: Alice, bob: Bob, carol: Carol, dora: Dora, ernie: Ernie, state: State, bobState: BobState, carolState: CarolState, doraState: DoraState, ernieState: ErnieState, testerc20: Testerc20, testerc721: Testerc721, testerc1155: Testerc1155, testerc20v2: Testerc20v2, testerc721v2: Testerc721v2, testerc1155v2: Testerc1155v2
-      }
-    } else {
-      return
-    }
+const init = async ({ testData = true } = {}) => {
+  if (!(Factories && Libraries && Wallet)) {
+    const { factories, libraries, ONEWalletAbs } = await loadContracts(Logger)
+    Factories = factories
+    Libraries = libraries
+    Wallet = ONEWalletAbs
+    Logger.debug('Initialized')
   }
-  const { factories, libraries, ONEWalletAbs } = await loadContracts(Logger)
-  Factories = factories
-  Libraries = libraries
-  Wallet = ONEWalletAbs
-  Logger.debug('Initialized')
-  if (testData) {
-    if (!Alice) {
-      let {
-        alice, bob, carol, dora, ernie, state, bobState, carolState, doraState, ernieState, testerc20, testerc721, testerc1155, testerc20v2, testerc721v2, testerc1155v2
-      } = await deployTestData()
-      Alice = alice
-      Bob = bob
-      Carol = carol
-      Dora = dora
-      Ernie = ernie
-      State = state
-      BobState = bobState
-      CarolState = carolState
-      DoraState = doraState
-      ErnieState = ernieState
-      Testerc20 = testerc20
-      Testerc721 = testerc721
-      Testerc1155 = testerc1155
-      Testerc20v2 = testerc20v2
-      Testerc721v2 = testerc721v2
-      Testerc1155v2 = testerc1155v2
-    }
-    console.log(`Alice.wallet.address: ${JSON.stringify(Alice.wallet.address)}`)
-    return {
-      alice: Alice, bob: Bob, carol: Carol, dora: Dora, ernie: Ernie, state: State, bobState: BobState, carolState: CarolState, doraState: DoraState, ernieState: ErnieState, testerc20: Testerc20, testerc721: Testerc721, testerc1155: Testerc1155, testerc20v2: Testerc20v2, testerc721v2: Testerc721v2, testerc1155v2: Testerc1155v2
-    }
+  if (testData && !TestDeployments) {
+    TestDeployments = await deployTestData()
+    console.log(`HelperDeployments.alice.wallet.address: ${JSON.stringify(TestDeployments.alice.wallet.address)}`)
   }
+  const { state, bobState, carolState, doraState, ernieState } = TestDeployments || {}
+  return testData && { ...TestDeployments, ...cloneDeep({ state, bobState, carolState, doraState, ernieState }) }
 }
 
 const deploy = async (initArgs) => {
@@ -125,20 +93,32 @@ const getClient = async () => {
   return web3.eth.getNodeInfo()
 }
 
+const sendTestRPC = async (data, callback) => {
+  if (!config.stableTestRPC) {
+    return web3.currentProvider.send(data, callback)
+  }
+  try {
+    const { data: r } = await axios.post(config.networks['eth-ganache'].url, data)
+    callback && callback(null, r)
+  } catch (ex) {
+    callback && callback(ex)
+  }
+}
+
 const increaseTime = async (seconds) => {
   const client = await getClient()
   if (client.indexOf('TestRPC') === -1) {
     throw new Error('Client is not ganache-cli and cannot forward time')
   }
 
-  await web3.currentProvider.send({
+  await sendTestRPC({
     jsonrpc: '2.0',
     method: 'evm_increaseTime',
     params: [seconds],
     id: 0,
   }, (err) => err && console.error(err))
 
-  await web3.currentProvider.send({
+  await sendTestRPC({
     jsonrpc: '2.0',
     method: 'evm_mine',
     params: [],
@@ -151,7 +131,7 @@ const increaseTime = async (seconds) => {
 const snapshot = async () => {
   console.log('Taking EVM Snapshot')
   return new Promise((resolve, reject) => {
-    web3.currentProvider.send({ jsonrpc: '2.0', method: 'evm_snapshot' },
+    sendTestRPC({ jsonrpc: '2.0', method: 'evm_snapshot' },
       (err, { result } = {}) => {
         if (err) {
           reject(err)
@@ -164,7 +144,7 @@ const snapshot = async () => {
 const revert = async (id) => {
   console.log(`EVM reverting to ${id}`)
   return new Promise((resolve, reject) => {
-    web3.currentProvider.send({ jsonrpc: '2.0', method: 'evm_revert', params: [id] }, (err, { result } = {}) => {
+    sendTestRPC({ jsonrpc: '2.0', method: 'evm_revert', params: [id] }, (err, { result } = {}) => {
       if (err) {
         reject(err)
       }
@@ -226,6 +206,7 @@ const makeCores = async ({
   seed2 = '0x' + (new BN(ONEUtil.hexStringToBytes('0x1234567890deadbeef123456789012')).add(salt).toString('hex')),
   maxOperationsPerInterval = 1,
   doubleOtp = false,
+  buildInnerTrees = false,
   effectiveTime,
   duration,
   randomness = 0,
@@ -246,6 +227,7 @@ const makeCores = async ({
   }
   effectiveTime = Math.floor(effectiveTime / INTERVAL) * INTERVAL
   const { seed: computedSeed, seed2: computedSeed2, hseed, root, leaves, layers, maxOperationsPerInterval: slotSize, randomnessResults, counter, innerTrees } = await ONEWallet.computeMerkleTree({
+    buildInnerTrees,
     otpSeed,
     otpSeed2,
     effectiveTime,
@@ -316,9 +298,11 @@ const createWallet = async ({
   randomness = 0,
   hasher = ONEUtil.sha256b,
   spendingInterval = 3000,
-  backlinks = []
+  backlinks = [],
+  skipDeploy = false,
+  buildInnerTrees = false,
 }) => {
-  const { core, innerCores, identificationKeys, vars } = await makeCores({ salt, seed, maxOperationsPerInterval, doubleOtp, effectiveTime, duration, randomness, hasher })
+  const { core, innerCores, identificationKeys, vars } = await makeCores({ salt, seed, maxOperationsPerInterval, doubleOtp, effectiveTime, duration, randomness, hasher, buildInnerTrees })
   const initArgs = [
     core,
     [ new BN(spendingLimit), new BN(0), new BN(0), new BN(spendingInterval), new BN(0), new BN(spendingLimit) ],
@@ -328,20 +312,20 @@ const createWallet = async ({
     innerCores,
     identificationKeys,
   ]
-  const tx = await deploy(initArgs)
+  const tx = await (!skipDeploy && deploy(initArgs))
   Logger.debug('Creating ONEWallet contract with parameters', initArgs)
   Logger.debug(tx)
-  const successLog = tx.logs.find(log => log.event === 'ONEWalletDeploySuccess')
+  const successLog = skipDeploy || tx.logs.find(log => log.event === 'ONEWalletDeploySuccess')
   if (!successLog) {
     throw new Error('Wallet deploy unsuccessful')
   }
   // Logger.debug(successLog)
-  const address = successLog.args.addr
+  const address = successLog?.args?.addr
   // Logger.debug('Address', address)
   return {
     identificationKeys,
     address,
-    wallet: new Wallet(address),
+    wallet: !skipDeploy && new Wallet(address),
     ...vars
   }
 }
@@ -357,7 +341,8 @@ const makeWallet = async ({
   fundAmount = HALF_ETH,
   setLastResortAddress = true,
   backlinks = [],
-  validate = true
+  validate = true,
+  buildInnerTrees = false,
 }) => {
   let lastResortAddress = setLastResortAddress ? (await web3.eth.accounts.create()).address : ONEConstants.EmptyAddress
   const { wallet, seed, hseed, client: { layers, innerTrees } } = await createWallet({
@@ -367,7 +352,8 @@ const makeWallet = async ({
     maxOperationsPerInterval,
     lastResortAddress,
     spendingLimit,
-    backlinks
+    backlinks,
+    buildInnerTrees
   })
   let balance = await fundWallet({ to: wallet.address, from: deployer, value: fundAmount })
   if (validate) { await validateBalance({ address: wallet.address, amount: fundAmount }) }
@@ -907,13 +893,11 @@ const executeUpgradeTransaction = async ({
   switch (operationType) {
     // Format commit and revealParams for FORWARD Tranasction
     case ONEConstants.OperationType.FORWARD:
-    case ONEConstants.OperationType.SET_RECOVERY_ADDRESS:
       paramsHash = ONEWallet.computeDestOnlyHash
       commitParams = { dest }
       revealParams = { operationType, dest }
       break
     case ONEConstants.OperationType.COMMAND:
-    case ONEConstants.OperationType.TRACK:
     case ONEConstants.OperationType.RECOVER_SELECTED_TOKENS:
       paramsHash = ONEWallet.computeGeneralOperationHash
       commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
@@ -1046,5 +1030,7 @@ module.exports = {
   // execution
   executeCoreTransaction,
   executeUpgradeTransaction,
-  commitReveal
+  commitReveal,
+
+  sleep
 }

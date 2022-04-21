@@ -21,21 +21,24 @@ contract('ONEWallet', (accounts) => {
   let snapshotId
   beforeEach(async function () {
     snapshotId = await TestUtil.snapshot()
+    console.log(`Taken snapshot id=${snapshotId}`)
   })
 
   afterEach(async function () {
     await TestUtil.revert(snapshotId)
+    await TestUtil.sleep(500)
   })
 
   it('SpendLimit_Basic: must obey spend limit changing rules', async () => {
     const purse = web3.eth.accounts.create()
     const { wallet, seed, hseed, client: { layers, innerTrees, } } = await TestUtil.createWallet({
-      salt: new BN(10),
+      salt: new BN(ONEUtil.keccak('SpendLimit_Basic')),
       effectiveTime,
       duration,
       maxOperationsPerInterval: SLOT_SIZE,
       lastResortAddress: purse.address,
-      spendingLimit: ONE_ETH
+      spendingLimit: ONE_ETH,
+      buildInnerTrees: true
     })
     {
       const newLimit = ONE_ETH.muln(2)

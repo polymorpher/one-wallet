@@ -1,11 +1,8 @@
 const TestUtil = require('./util')
 const unit = require('ethjs-unit')
 const Flow = require('../lib/api/flow')
-const ONEUtil = require('../lib/util')
 const ONEConstants = require('../lib/constants')
-const ONEWallet = require('../lib/onewallet')
 const BN = require('bn.js')
-const ONEDebugger = require('../lib/debug')
 
 const NullOperationParams = {
   ...ONEConstants.NullOperationParams,
@@ -18,7 +15,6 @@ const INTERVAL = 30000 // 30 second Intervals
 const DURATION = INTERVAL * 12 // 6 minute wallet duration
 const getEffectiveTime = () => Math.floor(Date.now() / INTERVAL / 6) * INTERVAL * 6 - DURATION / 2
 const Logger = TestUtil.Logger
-const Debugger = ONEDebugger(Logger)
 
 // ==== Validation Helpers ====
 
@@ -26,32 +22,16 @@ contract('ONEWallet', (accounts) => {
   Logger.debug(`Testing with ${accounts.length} accounts`)
   Logger.debug(accounts)
   let snapshotId
-  let alice, bob, carol, dora, ernie, state, bobState, carolState, doraState, ernieState, testerc20, testerc721, testerc1155, testerc20v2, testerc721v2, testerc1155v2
+  let alice, bob, state, bobState
 
   beforeEach(async function () {
-    const testData = await TestUtil.init({})
-    // const testData = await TestUtil.deployTestData()
-    console.log(`testData.alice.wallet.address: ${JSON.stringify(testData.alice.wallet.address)}`)
-    alice = testData.alice
-    bob = testData.bob
-    carol = testData.carol
-    dora = testData.dora
-    ernie = testData.ernie
-    state = testData.state
-    bobState = testData.bobState
-    carolState = testData.carolState
-    doraState = testData.doraState
-    ernieState = testData.ernieState
-    testerc20 = testData.testerc20
-    testerc721 = testData.testerc721
-    testerc1155 = testData.testerc1155
-    testerc20v2 = testData.testerc20v2
-    testerc721v2 = testData.testerc721v2
-    testerc1155v2 = testData.testerc1155v2
+    ({ alice, bob, state, bobState } = await TestUtil.init())
     snapshotId = await TestUtil.snapshot()
+    console.log(`Taken snapshot id=${snapshotId}`)
   })
   afterEach(async function () {
     await TestUtil.revert(snapshotId)
+    await TestUtil.sleep(500)
   })
 
   // === BASIC POSITIVE TESTING CORE ====
@@ -181,7 +161,7 @@ contract('ONEWallet', (accounts) => {
   // Test calling TRANSFER when forwarding address is set
   // Expected result this will fail and trigger event PaymentForwarded
   // Logic: // if sender is anyone else (including self), simply forward the payment
-  it('CO-POSITIVE-4 TRANSFER: must forward funds automatically when forward addres is set', async () => {
+  it('CO-POSITIVE-4 TRANSFER: must forward funds automatically when forward address is set', async () => {
     // Here we have a special case where we want alice's wallet backlinked to carol
     // create wallets and token contracts used througout the test
     let { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'CP-POSITIVE-4-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration: DURATION })
