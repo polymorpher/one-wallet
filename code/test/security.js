@@ -1,5 +1,4 @@
 const TestUtil = require('./util')
-const { cloneDeep } = require('lodash')
 const { keccak256 } = require('web3-utils')
 const unit = require('ethjs-unit')
 const ONEUtil = require('./../lib/util')
@@ -7,14 +6,13 @@ const ONEDebugger = require('./../lib/debug')
 const ONEWallet = require('./../lib/onewallet')
 const ONEConstants = require('./../lib/constants')
 const BN = require('bn.js')
-// const { assert } = require('console')
 
 const NullOperationParams = {
   ...ONEConstants.NullOperationParams,
   data: new Uint8Array()
 
 }
-const DUMMY_HEX = '0x'
+
 const ONE_CENT = unit.toWei('0.01', 'ether')
 const ONE_DIME = unit.toWei('0.1', 'ether')
 const HALF_ETH = unit.toWei('0.5', 'ether')
@@ -79,17 +77,6 @@ const executeSecurityTransaction = async ({
   let otps
   // Process the Operation
   switch (operationType) {
-    // Format commit and revealParams for TRANSFER Tranasction
-    case ONEConstants.OperationType.TRANSFER:
-      paramsHash = ONEWallet.computeTransferHash
-      commitParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
-      revealParams = { operationType, tokenType, contractAddress, tokenId, dest, amount, data }
-      break
-    case ONEConstants.OperationType.SET_RECOVERY_ADDRESS:
-      paramsHash = ONEWallet.computeDestOnlyHash
-      commitParams = { operationType, dest }
-      revealParams = { operationType, dest }
-      break
     case ONEConstants.OperationType.CHANGE_SPENDING_LIMIT:
       paramsHash = ONEWallet.computeAmountHash
       commitParams = { operationType, amount }
@@ -142,30 +129,16 @@ contract('ONEWallet', (accounts) => {
   Logger.debug(`Testing with ${accounts.length} accounts`)
   Logger.debug(accounts)
   let snapshotId
-  let alice, bob, carol, dora, ernie, state, bobState, carolState, doraState, ernieState, testerc20, testerc721, testerc1155, testerc20v2, testerc721v2, testerc1155v2
+  let alice, bob, state, bobState
 
   beforeEach(async function () {
-    const testData = await TestUtil.init({})
-    alice = testData.alice
-    bob = testData.bob
-    carol = testData.carol
-    dora = testData.dora
-    ernie = testData.ernie
-    state = testData.state
-    bobState = testData.bobState
-    carolState = testData.carolState
-    doraState = testData.doraState
-    ernieState = testData.ernieState
-    testerc20 = testData.testerc20
-    testerc721 = testData.testerc721
-    testerc1155 = testData.testerc1155
-    testerc20v2 = testData.testerc20v2
-    testerc721v2 = testData.testerc721v2
-    testerc1155v2 = testData.testerc1155v2
+    ({ alice, bob, state, bobState } = await TestUtil.init())
     snapshotId = await TestUtil.snapshot()
+    console.log(`Taken snapshot id=${snapshotId}`)
   })
   afterEach(async function () {
     await TestUtil.revert(snapshotId)
+    await TestUtil.sleep(500)
   })
 
   // testForTime Logic overview
@@ -193,7 +166,7 @@ contract('ONEWallet', (accounts) => {
   const testForTime = async ({ multiple, effectiveTime, duration, seedBase = '0xdeadbeef1234567890023456789012', numTrees = 6, checkDisplacementSuccess = false, testTime = Date.now() }) => {
     Logger.debug('testing:', { multiple, effectiveTime, duration })
     const creationSeed = '0x' + (new BN(ONEUtil.hexStringToBytes(seedBase)).addn(duration).toString('hex'))
-    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: creationSeed, deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: creationSeed, deployer: accounts[0], effectiveTime, duration, buildInnerTrees: true })
     TestUtil.printInnerTrees({ Debugger, innerTrees: alice.client.innerTrees })
     // Start Tests
     const newSeed = '0xdeedbeaf1234567890123456789012'
@@ -202,6 +175,7 @@ contract('ONEWallet', (accounts) => {
       seed: newSeed,
       effectiveTime: newEffectiveTime,
       duration: duration,
+      buildInnerTrees: true
     })
     for (let c = 0; c < numTrees; c++) {
       newCore[3] += c
@@ -335,7 +309,7 @@ contract('ONEWallet', (accounts) => {
   // Authentication: from function authenticate in reveal.sol
   // if innerCores are empty, this operation (in this case) is doomed to fail. This is intended. Client should warn the user not to lower the limit too much if the wallet has no innerCores (use Extend to set first innerCores). Client should also advise the user the use Recovery feature to get their assets out, if they are stuck with very low limit and do not want to wait to double them each spendInterval.
   it('SE-BASIC-25 JUMP_SPENDING_LIMIT: must be able to jump the spending limit', async () => {
-    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'CO-BASIC-25-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration })
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'CO-BASIC-25-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration, buildInnerTrees: true })
     let testTime = Date.now()
     testTime = await TestUtil.bumpTestTime(testTime, 240)
     // alice JUMPS the spending limit
@@ -375,8 +349,8 @@ contract('ONEWallet', (accounts) => {
     const duration = INTERVAL * 24 // need to be greater than 16 to trigger innerCore generations
     const effectiveTime = Math.floor(testTime / INTERVAL) * INTERVAL - (duration / 2)
 
-    let { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'SE-NEGATIVE-7-1', deployer: accounts[0], effectiveTime, duration })
-    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'SE-NEGATIVE-7-2', deployer: accounts[0], effectiveTime, duration, backlinks: [alice.wallet.address] })
+    let { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'SE-NEGATIVE-7-1', deployer: accounts[0], effectiveTime, duration, buildInnerTrees: true })
+    let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'SE-NEGATIVE-7-2', deployer: accounts[0], effectiveTime, duration, backlinks: [alice.wallet.address], buildInnerTrees: true })
 
     // set alice's forwarding address to carol's wallet address
     // testTime = await TestUtil.bumpTestTime(testTime, 60)
@@ -395,7 +369,8 @@ contract('ONEWallet', (accounts) => {
     const { core: newCore, innerCores: newInnerCores, identificationKeys: newKeys } = await TestUtil.makeCores({
       seed: alice.seed,
       effectiveTime,
-      duration
+      duration,
+      buildInnerTrees: true
     })
     // Here we increase t0 and assign a new root
     newCore[3] += 1
@@ -451,11 +426,12 @@ contract('ONEWallet', (accounts) => {
     testTime = Math.floor(testTime / (INTERVAL)) * INTERVAL - 5000
     const duration = INTERVAL * 24 // need to be greater than 16 to trigger innerCore generations
     const effectiveTime = Math.floor(testTime / INTERVAL) * INTERVAL - (duration / 2)
-    let { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'SE-NEGATIVE-7-1-1', deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'SE-NEGATIVE-7-1-1', deployer: accounts[0], effectiveTime, duration, buildInnerTrees: true })
     const { core: newCore, innerCores: newInnerCores, identificationKeys: newKeys } = await TestUtil.makeCores({
       seed: alice.seed,
       effectiveTime,
-      duration
+      duration,
+      buildInnerTrees: true
     })
     // Here we do  not increase t0 (newCore[3]) which causes CoreDisplacementFailed Must have newer time range
     // newCore[3] += 1
@@ -511,11 +487,12 @@ contract('ONEWallet', (accounts) => {
     testTime = Math.floor(testTime / (INTERVAL)) * INTERVAL - 5000
     const duration = INTERVAL * 24 // need to be greater than 16 to trigger innerCore generations
     const effectiveTime = Math.floor(testTime / INTERVAL) * INTERVAL - (duration / 2)
-    let { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'SE-NEGATIVE-7-2-1', deployer: accounts[0], effectiveTime, duration })
+    let { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'SE-NEGATIVE-7-2-1', deployer: accounts[0], effectiveTime, duration, buildInnerTrees: true })
     const { core: newCore, innerCores: newInnerCores, identificationKeys: newKeys } = await TestUtil.makeCores({
       seed: alice.seed,
       effectiveTime,
-      duration
+      duration,
+      buildInnerTrees: true
     })
     // Here we do  not change the root (newCore[0]) which causes CoreDisplacementFailed "Must have different root"
     newCore[3] += 1
@@ -593,7 +570,7 @@ contract('ONEWallet', (accounts) => {
   // Authentication: from function authenticate in reveal.sol
   // if innerCores are empty, this operation (in this case) is doomed to fail. This is intended. Client should warn the user not to lower the limit too much if the wallet has no innerCores (use Extend to set first innerCores). Client should also advise the user the use Recovery feature to get their assets out, if they are stuck with very low limit and do not want to wait to double them each spendInterval.
   it('SE-COMPLEX-24-25 SPENDING LIMIT RULES: must be able to update spending limit according to the rules', async () => {
-    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'SE-COMPLEX-24-25-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration })
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'SE-COMPLEX-24-25-1', deployer: accounts[0], effectiveTime: getEffectiveTime(), duration, buildInnerTrees: true })
     let testTime = Date.now()
     // alice changes the spending limit to TWO_ETH
     testTime = await TestUtil.bumpTestTime(testTime, 60)

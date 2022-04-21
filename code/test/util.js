@@ -341,7 +341,8 @@ const makeWallet = async ({
   fundAmount = HALF_ETH,
   setLastResortAddress = true,
   backlinks = [],
-  validate = true
+  validate = true,
+  buildInnerTrees = false,
 }) => {
   let lastResortAddress = setLastResortAddress ? (await web3.eth.accounts.create()).address : ONEConstants.EmptyAddress
   const { wallet, seed, hseed, client: { layers, innerTrees } } = await createWallet({
@@ -351,7 +352,8 @@ const makeWallet = async ({
     maxOperationsPerInterval,
     lastResortAddress,
     spendingLimit,
-    backlinks
+    backlinks,
+    buildInnerTrees
   })
   let balance = await fundWallet({ to: wallet.address, from: deployer, value: fundAmount })
   if (validate) { await validateBalance({ address: wallet.address, amount: fundAmount }) }
