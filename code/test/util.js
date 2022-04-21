@@ -37,7 +37,7 @@ let Libraries
 let Wallet
 let TestDeployments
 // ==== DEPLOYMENT FUNCTIONS ====
-const init = async ({ testData = true }) => {
+const init = async ({ testData = true } = {}) => {
   if (!(Factories && Libraries && Wallet)) {
     const { factories, libraries, ONEWalletAbs } = await loadContracts(Logger)
     Factories = factories
@@ -1027,5 +1027,7 @@ module.exports = {
   // execution
   executeCoreTransaction,
   executeUpgradeTransaction,
-  commitReveal
+  commitReveal,
+
+  sleep
 }
