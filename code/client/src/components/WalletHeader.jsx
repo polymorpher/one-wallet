@@ -34,7 +34,6 @@ const { Text, Link } = Typography
 // `
 const NetworkSelector = () => {
   const networkId = useSelector(state => state.global.network)
-  const v2ui = useSelector(state => state.global.v2ui)
   const dispatch = useDispatch()
   const networks = config.networks
   const onChange = (v) => {
@@ -43,7 +42,7 @@ const NetworkSelector = () => {
   return (
     <>
       {/* <SelectorLabel>Network</SelectorLabel> */}
-      <Select style={{ width: v2ui ? 130 : 200 }} bordered={false} value={networkId} onChange={onChange}>
+      <Select style={{ width: 160 }} bordered={false} value={networkId} onChange={onChange}>
         {Object.keys(networks).map(k => {
           return <Select.Option key={k} value={k}>{networks[k].name} </Select.Option>
         })}
@@ -152,28 +151,37 @@ export const WalletHeaderV2 = () => {
   }
 
   return (
-    <Row
-      style={{ background: primaryBgColor, padding: isMobile ? 8 : 24, alignItems: 'center' }}
-      justify='center'
+    <div
+      style={{
+        background: primaryBgColor,
+        padding: isMobile ? 8 : 24,
+        alignItems: 'center',
+        display: 'flex',
+        justifyContent: 'space-around',
+        flexWrap: 'wrap',
+        gap: '16px'
+      }}
     >
       {/* Wallet selector + send + receive if wallet exists */}
       {matchedWallet && (
-        <>
+        <div style={{ display: 'flex', height: '100%', alignItems: 'center', gap: '8px' }}>
           <WalletSelectorV2 onAddressSelected={onAddressSelected} filter={e => e.majorVersion >= 10} useHex style={{ background: secondaryBgColor, border: `1px solid ${secondaryBorderColor}`, margin: '0 4px', padding: '4px 0', borderRadius: '16px' }} selectStyle={{}} />
-          <SecondaryButton onClick={() => history.push(Paths.showAddress(selectedAddress, 'transfer'))} style={{ marginRight: '8px', height: '100%', borderRadius: '15px' }}>Send</SecondaryButton>
-          <SecondaryButton onClick={() => history.push(Paths.showAddress(selectedAddress, 'qr'))} style={{ marginRight: '8px', height: '100%', borderRadius: '15px' }}>Receive</SecondaryButton>
-        </>)}
+          <SecondaryButton onClick={() => history.push(Paths.showAddress(selectedAddress, 'transfer'))} style={{ padding: '8px 16px', height: '100%', borderRadius: '15px' }}>Send</SecondaryButton>
+          <SecondaryButton onClick={() => history.push(Paths.showAddress(selectedAddress, 'qr'))} style={{ padding: '8px 16px', height: '100%', borderRadius: '15px' }}>Receive</SecondaryButton>
+        </div>)}
       {width >= Breakpoints.LARGE && <StatsInfoV2 />}
-      {dev && <Button key='toggle' shape='circle' icon={relayerEditVisible ? <CloseOutlined /> : <SettingOutlined />} onClick={() => setRelayerEditVisible(!relayerEditVisible)} />}
-      {dev && relayerEditVisible &&
-        <Space size='small' key='relayer'>
-          <Button shape='circle' icon={<LockOutlined />} onClick={() => setSettingsVisible(true)} />
-          <RelayerSelector />
-          <Divider type='vertical' />
-        </Space>}
-      <NetworkSelector key='network' />
+      <div style={{ display: 'flex', height: '100%', alignItems: 'center' }}>
+        {dev && <Button key='toggle' shape='circle' icon={relayerEditVisible ? <CloseOutlined /> : <SettingOutlined />} onClick={() => setRelayerEditVisible(!relayerEditVisible)} />}
+        {dev && relayerEditVisible &&
+          <Space size='small' key='relayer'>
+            <Button shape='circle' icon={<LockOutlined />} onClick={() => setSettingsVisible(true)} />
+            <RelayerSelector />
+            <Divider type='vertical' />
+          </Space>}
+        <NetworkSelector key='network' />
+      </div>
       <SecretSettings key='settings' visible={settingsVisible} onClose={() => setSettingsVisible(false)} />
-    </Row>
+    </div>
   )
 }
 
