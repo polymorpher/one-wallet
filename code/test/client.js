@@ -6,6 +6,7 @@ const DURATION = INTERVAL * 2 * 60 * 24 * 364
 const { Logger, createWallet } = require('./util')
 const ONEConstants = require('../lib/constants')
 const unit = require('ethjs-unit')
+const TestUtil = require('./util')
 
 const ONE_ETH = unit.toWei('1', 'ether')
 const ONE_CENT = unit.toWei('0.01', 'ether')
@@ -13,6 +14,15 @@ const SLOT_SIZE = 1
 
 contract('ONEWallet', (accounts) => {
   // 2021-06-13T03:55:00.000Z
+  let snapshotId
+  beforeEach(async function () {
+    snapshotId = await TestUtil.snapshot()
+    console.log(`Taken snapshot id=${snapshotId}`)
+  })
+
+  afterEach(async function () {
+    await TestUtil.revert(snapshotId)
+  })
 
   const EFFECTIVE_TIME = Math.floor(1623556500000 / INTERVAL) * INTERVAL - DURATION / 2
   it('must generate consistent, recoverable randomness', async () => {
