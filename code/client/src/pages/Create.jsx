@@ -33,6 +33,7 @@ import { FlashyButton } from '../components/Buttons'
 import { buildQRCodeComponent, getQRCodeUri, getSecondCodeName, OTPUriMode } from '../components/OtpTools'
 import { OtpSetup, TwoCodeOption } from '../components/OtpSetup'
 import config from '../config'
+import SignupAccount from './Create/SignupAccount'
 const { Text, Link } = Typography
 
 const getGoogleAuthenticatorAppLink = (os) => {
@@ -71,6 +72,7 @@ const Create = ({ expertMode, showRecovery }) => {
 
   // related to state variables that may change during or after the creation process
   const [walletState, setWalletState] = useState({
+    predictedAddress: undefined,
     address: undefined,
     doubleOtp: false,
     otpQrCodeData: undefined,
@@ -104,7 +106,7 @@ const Create = ({ expertMode, showRecovery }) => {
       const secondOtpUri = getQRCodeUri(setupConfig.seed2, otpDisplayName2, OTPUriMode.MIGRATION)
       const otpQrCodeData = await qrcode.toDataURL(otpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       const secondOtpQrCodeData = await qrcode.toDataURL(secondOtpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
-      setWalletState(s => ({ ...s, otpQrCodeData, secondOtpQrCodeData }))
+      setWalletState(s => ({ ...s, otpQrCodeData, secondOtpQrCodeData, predictedAddress: address }))
       setOtpReady(true)
     })()
   }, [code, network, coreSettings.effectiveTime, walletState.address, walletState.doubleOtp])
@@ -394,6 +396,13 @@ const SetupOtpSection = ({ expertMode, otpReady, setupConfig, walletState, setWa
   const otpRef = useRef()
   const { name, seed, seed2 } = setupConfig
   const { secondOtpQrCodeData, otpQrCodeData, doubleOtp } = walletState
+  const [showAccount, setShowAccount] = useState(false)
+  const [allowAutofill, setAllowAutoFill] = useState(false)
+  const toggleShowAccount = (e) => {
+    e && e.stopPropagation()
+    setShowAccount(v => !v)
+    return false
+  }
   const enableExpertMode = () => {
     history.push(Paths.create2)
     message.success('Expert mode unlocked')
@@ -446,14 +455,16 @@ const SetupOtpSection = ({ expertMode, otpReady, setupConfig, walletState, setWa
           <Space direction='vertical'>
             {/* <Heading>Now, scan the QR code with your Google Authenticator</Heading> */}
             <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
-            {!isMobile && <Hint>Scan the QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use the wallet </Hint>}
+            {!isMobile && <Hint>Scan QR code to setup {getGoogleAuthenticatorAppLink(os)} and the wallet </Hint>}
             {isMobile && <Hint>Tap QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use the wallet</Hint>}
+            <Hint>Optional: <Link href='#' onClick={toggleShowAccount}>sign-up</Link> for FaceID / fingerprint auth code, backup, and alerts </Hint>
+            {showAccount && <SignupAccount seed={seed} name={name} address={walletState.predictedAddress} effectiveTime={effectiveTime} setAllowOTPAutoFill={setAllowAutoFill} />}
             {buildQRCodeComponent({ seed, name: ONENames.nameWithTime(name, effectiveTime), os, isMobile, qrCodeData: otpQrCodeData })}
           </Space>
         </Row>
         <Row style={{ marginTop: 16 }}>
           <Space direction='vertical' size='large' align='center' style={{ width: '100%' }}>
-            <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={ONENames.nameWithTime(name, effectiveTime)} />
+            <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={ONENames.nameWithTime(name, effectiveTime)} autofill={allowAutofill} />
             {expertMode && <TwoCodeOption isMobile={isMobile} setDoubleOtp={d => setWalletState(s => ({ ...s, doubleOtp: d }))} doubleOtp={doubleOtp} />}
             {expertMode && <Hint>You can adjust spending limit in the next step</Hint>}
           </Space>
