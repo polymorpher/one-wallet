@@ -24,7 +24,7 @@ router.post('/signup',
   limiter(),
   body('username').isLength({ min: 4, max: 256 }).trim().matches(/[a-z0-9_-]+/),
   body('email').isEmail().trim().escape(),
-  body('password').isLength({ min: 4, max: 64 }),
+  body('password').isLength({ min: 8, max: 64 }),
   async (req, res) => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
