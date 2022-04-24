@@ -53,6 +53,11 @@ let rpcBase = axios.create({
   timeout: TIMEOUT,
 })
 
+let backendBase = axios.create({
+  baseURL: config.backend.url,
+  timeout: 10000,
+})
+
 const initAPI = (store) => {
   store.subscribe(() => {
     const state = store.getState()
@@ -926,6 +931,12 @@ const api = {
 
       return result
     },
+  },
+  backend: {
+    signup: async ({ username, password, email }) => {
+      const { data: { success, error } } = await backendBase.post('/signup', { username, password, email })
+      return { success, error }
+    }
   }
 }
 
