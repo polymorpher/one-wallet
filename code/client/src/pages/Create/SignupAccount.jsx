@@ -49,8 +49,8 @@ const SignupAccount = ({ seed, name, address, effectiveTime, setAllowOTPAutoFill
       if (parts.length >= 3) {
         host = parts[parts.length - 2] + '.' + parts[parts.length - 1]
       }
-      window.location.href = getQRCodeUri(seed, otpDisplayName, OTPUriMode.APPLE, host)
       setAllowOTPAutoFill(true)
+      window.location.href = getQRCodeUri(seed, otpDisplayName, OTPUriMode.APPLE, host)
     }
     return false
   }
