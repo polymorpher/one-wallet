@@ -65,5 +65,9 @@ module.exports = {
       name: 'Test Relayer',
       url: 'https://relayer.onewallet.hiddenstate.xyz'
     }
+  },
+  backend: {
+    url: process.env.BACKEND_URL || 'http://localhost:3002'
+    // url: 'https://dev2.hiddenstate.xyz'
   }
 }
