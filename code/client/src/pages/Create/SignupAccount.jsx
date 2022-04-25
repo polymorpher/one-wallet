@@ -13,6 +13,9 @@ import { api } from '../../../../lib/api'
 import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined'
 import { getQRCodeUri, OTPUriMode } from '../../components/OtpTools'
 import ONENames from '../../../../lib/names'
+import { useHistory } from 'react-router'
+import Modal from 'antd/es/modal'
+import Spin from 'antd/es/spin'
 
 const genUsername = ({ name, address, effectiveTime }) => {
   const date = new Date(effectiveTime).toISOString().slice(2, 10)
@@ -23,6 +26,7 @@ const genUsername = ({ name, address, effectiveTime }) => {
 }
 
 const SignupAccount = ({ seed, name, address, effectiveTime, setAllowOTPAutoFill }) => {
+  const history = useHistory()
   const { isMobile } = useWindowDimensions()
   const [username, setUsername] = useState(genUsername({ name, address, effectiveTime }))
   const [email, setEmail] = useState('')
@@ -32,27 +36,69 @@ const SignupAccount = ({ seed, name, address, effectiveTime, setAllowOTPAutoFill
   const validUsername = username === '' || (username.length >= 4 && username.length < 64 && username.match(/[a-z0-9_-]+/))
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
-
-  const otpDisplayName = `${ONENames.nameWithTime(name, effectiveTime)} [${util.safeOneAddress(address)}]`
+  const [showSetupOTP, setShowSetupOTP] = useState(false)
+  const [signingUp, setSigningUp] = useState(false)
 
   const isSafariTest = isSafari()
 
-  const signup = async (e) => {
-    e.stopPropagation()
-    const { success, error } = await api.backend.signup({ username, password, email })
-    if (!success) {
-      setError(`Failed to signup. Error: ${error}`)
-    } else {
-      setSuccess(true)
-      let host = new URL(location.href).host
-      const parts = host.split('.')
-      if (parts.length >= 3) {
-        host = parts[parts.length - 2] + '.' + parts[parts.length - 1]
+  const setupCode = () => {
+    isSafariTest && Modal.confirm({
+      title: 'Safari users',
+      closable: true,
+      content: (
+        <Space direction='vertical' style={{ width: '100%' }}>
+          <Text>If you want to let Safari (on all devices) autofill verification codes, instead of using Google Authenticator</Text>
+          <Text>Please allow the browser to save your password and to open "System Preferences", then select the username you just created and save the "verification code".</Text>
+          <Text>This is OPTIONAL. If you don't want to use it, just click cancel.</Text>
+        </Space>
+      ),
+      onOk: () => {
+        let host = encodeURIComponent(new URL(location.href).host)
+        const parts = host.split('.')
+        if (parts.length >= 3) {
+          host = encodeURIComponent(parts[parts.length - 2] + '.' + parts[parts.length - 1])
+        }
+        setAllowOTPAutoFill(true)
+        setShowSetupOTP(false)
+        history.push(history.location.pathname + '#submitted')
+        console.log(host)
+        window.location.href = getQRCodeUri(seed, host + ':' + username, OTPUriMode.APPLE, host)
+      },
+      onCancel: () => {
+        setShowSetupOTP(true)
+        setAllowOTPAutoFill(false)
       }
-      setAllowOTPAutoFill(true)
-      window.location.href = getQRCodeUri(seed, otpDisplayName, OTPUriMode.APPLE, host)
+    })
+  }
+
+  const signup = async (e) => {
+    e.preventDefault()
+
+    if (!username || !password || !email || !validUsername || !validPassword || !validEmail) {
+      setError('Please check your information and resubmit')
+      setTimeout(() => setError(''), 3000)
+      return
     }
-    return false
+    setError('')
+    setSigningUp(true)
+    try {
+      const { success, error } = await api.backend.signup({ username, password, email })
+      if (!success) {
+        setError(`Failed to signup. Error: ${error}`)
+      } else {
+        setSuccess(true)
+        setError('')
+        isSafariTest && setupCode()
+
+        // window.open(getQRCodeUri(seed, otpDisplayName, OTPUriMode.APPLE, host), '_self')
+      }
+    } catch (ex) {
+      console.error(ex)
+      setError('Failed to signup. Network error.')
+      setSuccess(false)
+    } finally {
+      setSigningUp(false)
+    }
   }
 
   return (
@@ -63,7 +109,7 @@ const SignupAccount = ({ seed, name, address, effectiveTime, setAllowOTPAutoFill
           <Col xs={isMobile ? 24 : 6}>
             <Space>
               <Label>Wallet ID</Label>
-              <Tooltip title={'A unique identifier of your wallet. You don\'t need to remember this. It helps password-savers in Safari and other browsers to auto-fill auth code for the correct wallet'}><QuestionCircleOutlined /></Tooltip>
+              <Tooltip title={'A unique identifier of your wallet. You don\'t need to remember this. It helps password-savers in Safari and other browsers to autofill verification code for the correct wallet'}><QuestionCircleOutlined /></Tooltip>
             </Space>
           </Col>
           <Col xs={isMobile ? 24 : 18}>
@@ -108,19 +154,19 @@ const SignupAccount = ({ seed, name, address, effectiveTime, setAllowOTPAutoFill
           </Col>
         </Row>
         <Row justify='center'>
-          {!success && <Button shape='round' htmlType='submit' size='large' type='primary' style={{ width: '60%', minWidth: '320px', margin: 16 }}>Sign Up {isSafariTest && '& Setup Auto-Fill'}</Button>}
-          {error && <Text style={{ color: 'red' }}>{error}</Text>}
+          {!success && <Space><Button shape='round' htmlType='submit' size='large' type='primary' style={{ width: '60%', minWidth: '320px', margin: 16 }}>Sign Up {isSafariTest && '& Setup Auto-Fill'}</Button>{signingUp && <Spin />}</Space>}
+          {error && <Text style={{ color: 'red', marginBottom: 24 }}>{error}</Text>}
           {success &&
-            <Space direction='vertical' style={{ margin: 16 }} size='large'>
+            <Space direction='vertical' align='center' style={{ margin: 16 }} size='large'>
               <Space><CheckCircleOutlined style={{ color: 'green', fontSize: 16 }} /> <Text style={{ color: 'green', fontSize: 16 }}>Success!</Text> </Space>
+              {showSetupOTP && <Button shape='round' onClick={setupCode} size='large' type='primary'>Save Password & Setup Verification Code</Button>}
             </Space>}
         </Row>
         <Row>
           <Space direction='vertical'>
-            {isSafariTest && <Text style={{ color: 'red' }}><b>Safari Users</b>: To setup auth-code auto-fill, please allow the browser to save your password and to open "System Preferences"</Text>}
             <Text>Signing up is optional, but you get the following benefits:</Text>
-            <Text>- Sync Wallets <Tooltip title={'Backup and restore your wallets using the cloud. Cloud backups are encrypted. Even when they are compromised, hackers won\'t be able to access your wallets without auth codes from authenticators'}><QuestionCircleOutlined /></Tooltip></Text>
-            <Text>- Auto-fill Auth Code <Tooltip title={'only available in Safari on macOS / iOS. Instead of using Google Authenticator, you may setup auth codes as "verification codes" in saved passwords, and use FaceID / Fingerprint / Admin password to automatically fill-in the auth code'}><QuestionCircleOutlined /></Tooltip></Text>
+            <Text>- Sync Wallets <Tooltip title={'Backup and restore your wallets using the cloud. Cloud backups are encrypted. Even when they are compromised, hackers won\'t be able to access your wallets without verification codes from authenticators'}><QuestionCircleOutlined /></Tooltip></Text>
+            <Text>- Auto-fill Auth Code <Tooltip title='only available in Safari on macOS / iOS. Instead of using Google Authenticator, you may setup verification codes in saved passwords, and use system built-in security (e.g. FaceID / Fingerprint) to autofill the verification code'><QuestionCircleOutlined /></Tooltip></Text>
             <Text>- Alerts (coming soon) <Tooltip title='You can get email alerts when your wallet makes transactions meeting your custom criteria.'><QuestionCircleOutlined /></Tooltip></Text>
             <Text>These services are currently centralized, but they are open source and will be decentralized soon.</Text>
           </Space>
