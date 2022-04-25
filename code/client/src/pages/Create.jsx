@@ -24,7 +24,7 @@ import { balanceActions } from '../state/modules/balance'
 import WalletConstants from '../constants/wallet'
 import util, { useWindowDimensions, OSType, generateOtpSeed } from '../util'
 import { handleAPIError, handleAddressError } from '../handler'
-import { Hint, Heading, InputBox, Warning } from '../components/Text'
+import { Hint, Heading, InputBox, Warning, Text, Link } from '../components/Text'
 import { getAddress } from '@harmony-js/crypto'
 import AddressInput from '../components/AddressInput'
 import WalletCreateProgress from '../components/WalletCreateProgress'
@@ -34,7 +34,6 @@ import { buildQRCodeComponent, getQRCodeUri, getSecondCodeName, OTPUriMode } fro
 import { OtpSetup, TwoCodeOption } from '../components/OtpSetup'
 import config from '../config'
 import SignupAccount from './Create/SignupAccount'
-const { Text, Link } = Typography
 
 const getGoogleAuthenticatorAppLink = (os) => {
   let link = 'https://apps.apple.com/us/app/google-authenticator/id388497605'

@@ -1,10 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react'
 import Button from 'antd/es/button'
 import Space from 'antd/es/space'
-import Typography from 'antd/es/typography'
 import Col from 'antd/es/col'
 import message from '../../message'
-import { Hint, Warning } from '../../components/Text'
+import { Hint, Warning, Link, Text, Title } from '../../components/Text'
 import { AverageRow, TallRow } from '../../components/Grid'
 import { CommitRevealProgress } from '../../components/CommitRevealProgress'
 import AnimatedSection from '../../components/AnimatedSection'
@@ -42,7 +41,7 @@ import humanizeDuration from 'humanize-duration'
 import { OtpSuperStack } from '../../components/OtpSuperStack'
 import ONENames from '../../../../lib/names'
 import EnsureExecutable from './EnsureExecutable'
-const { Title, Text } = Typography
+import SignupAccount from '../Create/SignupAccount'
 
 const Subsections = {
   init: 'init', // choose method,
@@ -116,6 +115,14 @@ const Extend = ({
   const [showSecondCode, setShowSecondCode] = useState()
   const duration = wallet.duration || WalletConstants.defaultDuration
   const slotSize = wallet.slotSize
+
+  const [showAccount, setShowAccount] = useState(false)
+  const [allowAutofill, setAllowAutoFill] = useState(false)
+  const toggleShowAccount = (e) => {
+    e && e.preventDefault()
+    setShowAccount(v => !v)
+    return false
+  }
 
   const reset = () => {
     setNewCoreParams({ root: null, hseed: null, layers: null, innerTrees: [] })
@@ -468,6 +475,8 @@ const Extend = ({
             <Hint>Scan or tap the QR code to setup a new authenticator code</Hint>
             {!showSecondCode &&
               <>
+                <Hint>Optional: <Link href='#' onClick={toggleShowAccount}>sign-up</Link> to enable backup, alerts, verification code autofill</Hint>
+                {showAccount && <SignupAccount seed={seed} name={name} address={address} effectiveTime={effectiveTime} setAllowOTPAutoFill={setAllowAutoFill} />}
                 {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData })}
                 <OtpSetup isMobile={isMobile} otpRef={validationOtpRef} otpValue={validationOtp} setOtpValue={setValidationOtp} name={ONENames.nameWithTime(name, effectiveTime)} />
                 {(dev || expert) && <TwoCodeOption isMobile={isMobile} setDoubleOtp={setDoubleOtp} doubleOtp={doubleOtp} />}
@@ -487,7 +496,7 @@ const Extend = ({
           <AverageRow>
             {method === 'new' &&
               <Space direction='vertical'>
-                <Text style={{ color: 'red' }}>You should use new verification code from now on, but your old auth code may still work for this wallet on other devices.</Text>
+                <Text style={{ color: 'red' }}>You should use new verification code from now on, but your old verification code may still work for this wallet on other devices.</Text>
                 <Text>Use your old verification codes to confirm this operation. </Text>
                 <Text>- {autoWalletNameHint(wallet)}</Text>
                 {
