@@ -166,8 +166,8 @@ const SignupAccount = ({ seed, name, address, effectiveTime, setAllowOTPAutoFill
           <Space direction='vertical'>
             <Text>Signing up is optional, but you get the following benefits:</Text>
             <Text>- Sync Wallets <Tooltip title={'Backup and restore your wallets using the cloud. Cloud backups are encrypted. Even when they are compromised, hackers won\'t be able to access your wallets without verification codes from authenticators'}><QuestionCircleOutlined /></Tooltip></Text>
-            <Text>- Auto-fill Auth Code <Tooltip title='only available in Safari on macOS / iOS. Instead of using Google Authenticator, you may setup verification codes in saved passwords, and use system built-in security (e.g. FaceID / Fingerprint) to autofill the verification code'><QuestionCircleOutlined /></Tooltip></Text>
-            <Text>- Alerts (coming soon) <Tooltip title='You can get email alerts when your wallet makes transactions meeting your custom criteria.'><QuestionCircleOutlined /></Tooltip></Text>
+            <Text>- Autofill Verification Code <Tooltip title='only available in Safari on macOS / iOS. Instead of using Google Authenticator, you may setup verification codes in saved passwords, and use system built-in security (e.g. FaceID / Fingerprint) to autofill the verification code'><QuestionCircleOutlined /></Tooltip></Text>
+            <Text>- Alerts (Coming Soon) <Tooltip title='You can get email alerts when your wallet makes transactions meeting your custom criteria.'><QuestionCircleOutlined /></Tooltip></Text>
             <Text>These services are currently centralized, but they are open source and will be decentralized soon.</Text>
           </Space>
         </Row>

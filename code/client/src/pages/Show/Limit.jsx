@@ -158,12 +158,12 @@ const Limit = ({
         <Space direction='vertical' size='small'>
           <Title level={4}>Increase spending limit</Title>
           <Text>- up to double the current limit + 1 ONE (once per {spendingIntervalText})</Text>
-          <Text>- up to all-time-high limit, with 6x6 auth codes (anytime) </Text>
+          <Text>- up to all-time-high limit, with 6x6 verification codes (anytime) </Text>
           <Divider />
           <Title level={4}>Decrease spending limit</Title>
           <Text>- to any amount below the current limit (anytime)</Text>
           <Text>- tips: decrease to 0 ONE to freeze wallet if you suspect hacks</Text>
-          <Text>- tips: you can restore back to all-time-high later with 6x6 auth codes</Text>
+          <Text>- tips: you can restore back to all-time-high later with 6x6 verification codes</Text>
         </Space>
       </AverageRow>
       <Divider />

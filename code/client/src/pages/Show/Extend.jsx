@@ -436,7 +436,7 @@ const Extend = ({
           <TallRow>
             <Space direction='vertical' size='large' style={{ width: '100%' }} align='center'>
               <Button shape='round' size='large' type='primary' onClick={() => setMethod('new')}>Setup new code</Button>
-              <Hint>If you have the wallet on other devices, your old auth code may still work on other devices.</Hint>
+              <Hint>If you have the wallet on other devices, your old verification code may still work on other devices.</Hint>
             </Space>
           </TallRow>
         </Subsection>}
@@ -487,13 +487,13 @@ const Extend = ({
           <AverageRow>
             {method === 'new' &&
               <Space direction='vertical'>
-                <Text style={{ color: 'red' }}>You should use new auth code from now on, but your old auth code may still work for this wallet on other devices.</Text>
-                <Text>Use your old auth codes to confirm this operation. </Text>
+                <Text style={{ color: 'red' }}>You should use new verification code from now on, but your old auth code may still work for this wallet on other devices.</Text>
+                <Text>Use your old verification codes to confirm this operation. </Text>
                 <Text>- {autoWalletNameHint(wallet)}</Text>
                 {
                   wallet?.oldInfos?.length &&
                     <>
-                      <Text style={{ marginTop: 24 }}>This wallet was renewed before. Your old auth code account could also be one of the followings:</Text>
+                      <Text style={{ marginTop: 24 }}>This wallet was renewed before. Your old verification code account could also be one of the followings:</Text>
                       {name.split(' ').length >= 3 && <Text>- {ONENames.nameWithTime(name)}</Text>}
                       {wallet.oldInfos.map(o => o.effectiveTime).map(t => ONENames.nameWithTime(name, t)).map(str => <Text key={str}>- {str}</Text>)}
                     </>
@@ -506,7 +506,7 @@ const Extend = ({
               {moreAuthRequired &&
                 <OtpSuperStack
                   otpStates={otpStates}
-                  action={`confirm ${method === 'new' ? 'using old auth codes' : ''}`}
+                  action={`confirm ${method === 'new' ? 'using old verification codes' : ''}`}
                   wideLabel={isMobile}
                   shouldAutoFocus
                   onComplete={() => setOtpComplete(true)}
@@ -518,7 +518,7 @@ const Extend = ({
                   walletName={autoWalletNameHint(wallet)}
                   otpState={otpState}
                   onComplete={() => setOtpComplete(true)}
-                  action={`confirm ${method === 'new' ? 'using old auth code' : ''}`}
+                  action={`confirm ${method === 'new' ? 'using old verification code' : ''}`}
                 />}
             </Col>
           </AverageRow>
