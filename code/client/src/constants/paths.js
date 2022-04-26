@@ -34,10 +34,11 @@ export default {
   // v2 only
   // The url structure should be used for matching.
   matchStructure: '/:category?/:address?/:section?',
-  overview: '/show/:address',
-  nft: '/show/:address/nft',
-  assets: '/show/:address/assets',
-  swap: '/show/:address/swap',
+  overview: base + '/show/:address',
+  nft: base + '/show/:address/nft',
+  assets: base + '/show/:address/assets',
+  swap: base + '/show/:address/swap',
+  stake: base + '/show/:address/stake',
   // TODO: switching v1 path to v2 with above structure.
 }
 

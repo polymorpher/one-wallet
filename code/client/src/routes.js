@@ -11,6 +11,7 @@ import WalletHeader, { WalletHeaderV2 } from './components/WalletHeader'
 import { NFTDashboardV2 } from './pages/Show/NFTDashboard'
 import { ERC20GridV2 } from './components/ERC20Grid'
 import { SwapV2 } from './pages/Show/Swap'
+import { StakeV2 } from './pages/Show/Stake/Stake'
 import CreatePage from './pages/Create'
 import AddressDetailPage from './pages/Contacts/AddressDetail'
 import ListPage from './pages/List'
@@ -81,16 +82,6 @@ const LocalRoutes = () => {
                 return <Redirect to={Paths.root} />
               }}
             />
-            {/* Dedicated v2 routes. */}
-            {v2ui && (
-              <>
-                <Route path={Paths.overview} exact component={ShowPage} />
-                <Route path={Paths.nft} component={NFTDashboardV2} />
-                <Route path={Paths.assets} component={ERC20GridV2} />
-                <Route path={Paths.swap} component={SwapV2} />
-              </>
-            )}
-
             <Route path={Paths.auth} component={WalletAuth} />
             <Route path={Paths.create} component={CreatePage} />
             <Route path={Paths.create1} render={() => <CreatePage showRecovery />} />
@@ -98,9 +89,19 @@ const LocalRoutes = () => {
             <Route path={Paths.wallets} component={ListPage} />
             <Route path={Paths.restore} component={RestorePage} />
             <Route path={Paths.address} component={AddressDetailPage} exact />
-            <Route path={Paths.show} component={ShowPage} />
+            {!v2ui && <Route path={Paths.show} component={ShowPage} />}
             <Route path={Paths.tools} component={ToolsPage} />
             <Route path={Paths.unwrap} component={Unwrap} />
+            {/* Dedicated v2 routes. */}
+            {v2ui && (
+              <>
+                <Route path={Paths.overview} exact component={ShowPage} />
+                <Route path={Paths.nft} component={NFTDashboardV2} />
+                <Route path={Paths.assets} component={ERC20GridV2} />
+                <Route path={Paths.swap} component={SwapV2} />
+                <Route path={Paths.stake} component={StakeV2} />
+              </>
+            )}
             <Route
               exact
               path={Paths.root}
