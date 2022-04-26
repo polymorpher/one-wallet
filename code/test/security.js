@@ -468,49 +468,33 @@ contract('ONEWallet', (accounts) => {
   // Expected result this will fail and trigger event CoreDisplacementFailed "Must have different root"
   // Logic: if (newCore.root == oldCore.root) {
   it('SE-NEGATIVE-7-2 DISPLACE: must fail if called with the same root', async () => {
-    const multiple = 24 // number of 30 second slots wallet is active for
-    const duration = INTERVAL * multiple // need to be greater than 16 to trigger innerCore generations
-    let testTime = Date.now()
-    testTime = Math.floor(testTime / INTERVAL) * INTERVAL + INTERVAL
-    testTime = await TestUtil.bumpTestTime(testTime, 60)
-    let walletEffectiveTime = Math.floor(testTime / INTERVAL6) * INTERVAL6 - (INTERVAL6 / 2) // walletEffectiveTime (when the wallet theoretically was created) 90 seconds before testime (regardless of the wallet duration)
-    let { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'SE-NEGATIVE-7-2-1', deployer: accounts[0], effectiveTime: walletEffectiveTime, duration, buildInnerTrees: true })
-    let newEffectiveTime = (Math.floor(walletEffectiveTime / INTERVAL) + 1) * INTERVAL
+    const multiple = 8 // number of 30 second slots wallet is active for
+    const duration = INTERVAL6 * multiple // need to be greater than 16 to trigger innerCore generations
+    const OFFSET = 45000
+    const treeIndex = Math.floor(OFFSET / INTERVAL)
+    let testTime = Math.floor(Date.now() / INTERVAL6) * INTERVAL6 + OFFSET
+    let walletEffectiveTime = Math.floor(testTime / INTERVAL6) * INTERVAL6 - duration / 2 // walletEffectiveTime (when the wallet theoretically was created) is half the duration of the wallet
+    let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'SE-NEGATIVE-7-2-1', deployer: accounts[0], effectiveTime: walletEffectiveTime, duration, buildInnerTrees: true })
+    let newEffectiveTime = walletEffectiveTime + INTERVAL6
     const { core: newCore, innerCores: newInnerCores, identificationKeys: newKeys } = await TestUtil.makeCores({
       seed: alice.seed,
       effectiveTime: newEffectiveTime,
       duration,
       buildInnerTrees: true
     })
-    // Here we do  not change the root (newCore[0]) which causes CoreDisplacementFailed "Must have different root"
-    newCore[3] += 1
-    // newCore[0] = keccak256(c.toString())
+    // Here we do not change the root (newCore[0]) which causes CoreDisplacementFailed "Must have different root"
+    newCore[0] = state.info.root
     const data = ONEWallet.encodeDisplaceDataHex({ core: newCore, innerCores: newInnerCores, identificationKey: newKeys[0] })
-    Logger.debug(`counter: ${1}`)
-    const tOtpCounter = Math.floor(testTime / INTERVAL)
-    const baseCounter = Math.floor(tOtpCounter / 6) * 6
-    Logger.debug(`tOtpCounter=${tOtpCounter} baseCounter=${baseCounter} c=${1}`)
-    const otpb = ONEUtil.genOTP({ seed: alice.seed, counter: baseCounter + 1, n: 6 })
-    const otps = []
-    for (let i = 0; i < 6; i++) {
-      otps.push(otpb.subarray(i * 4, i * 4 + 4))
-    }
-    const innerEffectiveTime = Math.floor(newEffectiveTime / (INTERVAL * 6)) * (INTERVAL * 6)
-    const innerExpiryTime = innerEffectiveTime + Math.floor(duration / (INTERVAL * 6)) * (INTERVAL * 6)
-    assert.isBelow(testTime, innerExpiryTime, 'Current time must be greater than inner expiry time')
-    const index = ONEUtil.timeToIndex({ time: testTime, effectiveTime: innerEffectiveTime, interval: INTERVAL * 6 }) // passed to Commit Reveal
+    const otpb = ONEUtil.genOTP({ seed: alice.seed, counter: Math.floor(testTime / INTERVAL), n: 6 })
+    const otps = range(6).map(i => otpb.subarray(i * 4, i * 4 + 4))
+    const index = ONEUtil.timeToIndex({ time: testTime, effectiveTime: walletEffectiveTime, interval: INTERVAL6 }) // passed to Commit Reveal
     const eotp = await ONEWallet.computeInnerEOTP({ otps }) // passed to Commit Reveal
     Logger.debug({
-      otps: otps.map(e => {
-        const r = new DataView(new Uint8Array(e).buffer)
-        return r.getUint32(0, false)
-      }),
+      otps: otps.map(e => new DataView(new Uint8Array(e).buffer).getUint32(0, false)),
       eotp: ONEUtil.hexString(eotp),
       index,
-      c: 1
     })
-    Debugger.printLayers({ layers: alice.client.innerTrees[1].layers })
-    const layers = alice.client.innerTrees[1].layers // passed to commitReveal
+    const layers = alice.client.innerTrees[treeIndex].layers // passed to commitReveal
     let { tx } = await executeSecurityTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override

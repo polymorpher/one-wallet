@@ -359,7 +359,7 @@ const makeWallet = async ({
   if (validate) { await validateBalance({ address: wallet.address, amount: fundAmount }) }
   const state = await getState(wallet)
 
-  return { walletInfo: { wallet: wallet, seed, hseed, client: { layers, innerTrees }, lastResortAddress }, state, balance }
+  return { walletInfo: { wallet, seed, hseed, client: { layers, innerTrees }, lastResortAddress }, state, balance }
 }
 
 // makeTokens makes test ERC20, ERC20Decimals9, ERC721, ERC1155
