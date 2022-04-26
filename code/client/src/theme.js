@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux'
 // 2. custom variables that will be used in the jsx code.
 export const lightTheme = {
   // Ant CSS variables
-  primaryColor: 'blue',
+  primaryColor: '#1890ff',
 
   // custom variables
   primaryTextColor: 'black',

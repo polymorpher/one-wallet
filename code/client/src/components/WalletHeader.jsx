@@ -157,10 +157,11 @@ export const WalletHeaderV2 = () => {
   }
 
   const onThemeChange = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark'
     ConfigProvider.config({
-      theme: getColorPalette(theme),
+      theme: getColorPalette(newTheme),
     })
-    dispatch(globalActions.setUiTheme(theme === 'dark' ? 'light' : 'dark'))
+    dispatch(globalActions.setUiTheme(newTheme))
   }
 
   return (
@@ -194,7 +195,7 @@ export const WalletHeaderV2 = () => {
         <NetworkSelector key='network' />
       </div>
       <SecretSettings key='settings' visible={settingsVisible} onClose={() => setSettingsVisible(false)} />
-      <Switch checkedChildren='Dark' unCheckedChildren='Light' onChange={onThemeChange} />
+      <Switch checkedChildren='Dark' unCheckedChildren='Light' onChange={onThemeChange} checked={theme === 'dark'} />
     </div>
   )
 }
