@@ -229,7 +229,7 @@ library Reveal {
             // NOT batchable
             IONEWallet.OperationParams[] memory batchParams = abi.decode(op.data, (IONEWallet.OperationParams[]));
             for (uint256 i = 0; i < batchParams.length; i++) {
-                require(isBatchable(op.operationType, recoveryAddress, innerCores.length), "Bad batch op");
+                require(isBatchable(batchParams[i].operationType, recoveryAddress, innerCores.length), "Bad batch op");
             }
             authenticateCores(core, oldCores, commitState, auth, op, false, false);
         } else {

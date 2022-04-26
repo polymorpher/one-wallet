@@ -63,6 +63,8 @@
     "babel-loader": "8.0.6",
     "babel-register": "^6.23.0",
     "bn.js": "^5.2.0",
+    "chai": "^4.3.6",
+    "chai-as-promised": "^7.1.1",
     "copy-webpack-plugin": "^8.1.1",
     "core-js": "^3.13.0",
     "eslint": "^7.26.0",

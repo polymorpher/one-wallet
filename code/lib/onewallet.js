@@ -361,6 +361,16 @@ const computeDataHash = ({ data }) => {
   return { hash: keccak(input), bytes: input }
 }
 
+const computeDestDataHash = ({ dest, data }) => {
+  const destBytes = hexStringToBytes(dest, 32)
+  const input = new Uint8Array(32 + data.length)
+  input.set(destBytes)
+  if (data.length > 0) {
+    input.set(data, 32)
+  }
+  return { hash: keccak(input), bytes: input }
+}
+
 const computeAmountHash = ({ amount }) => {
   const amountBytes = new BN(amount).toArrayLike(Uint8Array, 'be', 32)
   const input = new Uint8Array(32)
@@ -459,6 +469,7 @@ module.exports = {
   computeTransferDomainHash,
   computeAmountHash,
   computeDestOnlyHash,
+  computeDestDataHash,
 
   // operation - encoders
   encodeBuyDomainData,
