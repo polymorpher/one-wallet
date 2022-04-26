@@ -30,6 +30,26 @@ To run an individual test use
 ```
 VERBOSE=0 truffle test --network=ganache --compile-none --grep 'AD-WALLET-1'
 ```
+## Test Data Overview
+Before each test we deploy the OneWallet Contracts and test data (through ulitity helper functions in `util.js`). The form of users and token contracts funded as follows
+
+### Test Users
+All users are funded with HALF_ETH (half the native token) and initially have a SpendingLimit of ONE_ETH (one native token). Also alice is funded with tokens as follows
+* alice: Primary user funded with 1000 testerc20, 2 testerc721 tokens [2,3], 50 testerc115 tokens [(2,20),(3,30)]
+* bob: used  for testing token transfers from alice and tracking tokens
+* carol: used for testing backlinks with alice
+* dora: used for testing overriding backlinks
+* ernie: general purpose user
+
+We deploy the following contracts using account[0] with the following initial funds, some of which are used to fund alice
+* ERC20: testerc20 10000000 of which 1000 are used to fund alice
+* ERC721: testerc721 10 tokens [0,1,2,3,4,5,6,7,8,9] of which [2,3] are used to fund alice
+* ERC1155: testerc1155 10 tokens [0,1,2,3,4,5,6,7,8,9] with quantities of [10,20,30,40,50,66,70,80,90,100] of which [(2,20),(3,30)] are used to fund alice
+
+We also deploy the following contracts which can be used for additional tracking or transfer function (no initial funding is done from these contracts)
+* ERC20: testerc20 10000000 
+* ERC721: testerc721 10 tokens [0,1,2,3,4,5,6,7,8,9] 
+* ERC1155: testerc1155 10 tokens [0,1,2,3,4,5,6,7,8,9] with quantities of [10,20,30,40,50,66,70,80,90,100] 
 
 ## Tests Areas
 
@@ -80,23 +100,23 @@ First, create a new file and write out how you expect a successful operation to 
 | 3   | OVERRIDE_TRACK               | PASS     | Token    |                                                            |
 | 4   | TRANSFER                     | PASS     | Core     |                                                            |
 | 5   | SET_RECOVERY_ADDRESS         | PASS     | Core     |                                                            |
-| 6   | RECOVER	                     | PASS     | Core     |                                                            |
-| 7   | DISPLACE	                    | PASS     | Security |                                                            |
+| 6   | RECOVER	                     | PASS    | Core     |                                                            |
+| 7   | DISPLACE	                 | PASS     | Security |                                                            |
 | 8   | FORWARD                      | PASS     | Upgrade  |                                                            |
-| 9   | RECOVER_SELECTED_TOKENS      | TODO     | Token    |                                                            |
+| 9   | RECOVER_SELECTED_TOKENS      | PASS     | Token    |                                                            |
 | 10  | BUY_DOMAIN                   | Phase 2  | Domain   |                                                            |
-| 11  | COMMAND                      | PASS     | Upgrade  | More tests needed for different commands                   |
-| 12  | BACKLINK_ADD                 | TODO     | Upgrade  |                                                            |
-| 13  | BACKLINK_DELETE              | TODO     | Upgrade  |                                                            |
-| 14  | BACKLINK_OVERRIDE            | TODO     | Upgrade  |                                                            |
-| 15  | RENEW_DOMAIN	                | Phase 2  | Domain   |                                                            |
+| 11  | COMMAND                      | PASS     | Upgrade  |                                                            |
+| 12  | BACKLINK_ADD                 | PASS     | Upgrade  |                                                            |
+| 13  | BACKLINK_DELETE              | PASS     | Upgrade  |                                                            |
+| 14  | BACKLINK_OVERRIDE            | PASS     | Upgrade  |                                                            |
+| 15  | RENEW_DOMAIN	             | Phase 2  | Domain   |                                                            |
 | 16  | TRANSFER_DOMAIN	             | Phase 2  | Domain   |                                                            |
 | 17  | RECLAIM_REVERSE_DOMAIN       | Phase 2  | Domain   |                                                            |
 | 18  | RECLAIM_DOMAIN_FROM_BACKLINK | Phase 2  | Domain   |                                                            |
-| 19  | SIGN	                        | TODO     | App      |                                                            |
-| 20  | REVOKE                       | TODO     | App      |                                                            |
-| 21  | CALL                         | TODO     | App      |                                                            |
-| 22  | BATCH                        | TODO     | App      |                                                            |
+| 19  | SIGN	                     | PASS     | App      |                                                            |
+| 20  | REVOKE                       | PASS     | App      |                                                            |
+| 21  | CALL                         | PASS     | App      |                                                            |
+| 22  | BATCH                        | PASS     | App      |                                                            |
 | 23  | NOOP                         | N/A      | N/A      | This is reserved as a default value and for error checking |
 | 24  | CHANGE_SPENDING_LIMIT        | PASS     | Security |                                                            |
 | 25  | JUMP_SPENDING_LIMIT          | PASS     | Security |                                                            |
@@ -105,3 +125,119 @@ First, create a new file and write out how you expect a successful operation to 
 | 28  | COLLECT_REWARD               | Phase 1  | Staking  |                                                            |
 | 29  | CREATE                       | RESERVED | App      |                                                            |
 | 30  | UPGRADE                      | RESERVED | Upgrade  |                                                            | 
+
+### Appendix B: EVENT Testing Status Overview
+
+| Contract            | Event                            | Status  | Sample Operation        | Notes             |
+|---------------------|----------------------------------|---------|-------------------------|-------------------|
+| CoreManager         | CoreDisplaced                    | PASS    | DISPLACE                |                   |
+| CoreManager         | CoreDisplacementFailed           | PASS    | DISPLACE                |                   |
+| DomainManager       | DomainRegistered                 | Phase 2 |                         |                   |
+| DomainManager       | ReverseDomainClaimed             | Phase 2 |                         |                   |
+| DomainManager       | ReverseDomainClaimError          | Phase 2 |                         |                   |
+| DomainManager       | InvalidFQDN                      | Phase 2 |                         |                   |
+| DomainManager       | DomainRegistrationFailed         | Phase 2 |                         |                   |
+| DomainManager       | AttemptRegistration              | Phase 2 |                         |                   |
+| DomainManager       | DomainTransferFailed             | Phase 2 |                         |                   |
+| DomainManager       | AttemptRenewal                   | Phase 2 |                         |                   |
+| DomainManager       | DomainRenewalFailed              | Phase 2 |                         |                   |
+| DomainManager       | DomainTransferred                | Phase 2 |                         |                   |
+| DomainManager       | DomainRenewed                    | Phase 2 |                         |                   |
+| ONEWalletCodeHelper | ONEWalletDeployFailed            | TODO    |                         | FactoryHelper.sol |
+| ONEWalletCodeHelper | ONEWalletDeploySuccess           | TODO    |                         | FactoryHelper.sol |
+| IONEWallet          | TransferError                    | *TODO   | TRANSFER                |                   |
+| IONEWallet          | LastResortAddressNotSet          | *TODO   | RECOVER                 |                   |
+| IONEWallet          | RecoveryAddressUpdated           | PASS    | SET_RECOVERY_ADDRESS    |                   |
+| IONEWallet          | PaymentReceived                  | N/A     |                         | event not emitted |
+| IONEWallet          | PaymentSent                      | PASS    | TRANSFER                |                   |
+| IONEWallet          | PaymentForwarded                 | PASS    | TRANSFER                |                   |
+| IONEWallet          | AutoRecoveryTriggered            | TODO    |                         |                   |
+| IONEWallet          | AutoRecoveryTriggeredPrematurely | TODO    |                         |                   |
+| IONEWallet          | RecoveryFailure                  | TODO    |                         |                   |
+| IONEWallet          | RecoveryTriggered                | PASS    |  RECOVER                |                   |
+| IONEWallet          | Retired                          | TODO    |                         |                   |
+| IONEWallet          | ForwardedBalance                 | TODO    |                         |                   |
+| IONEWallet          | ForwardAddressUpdated            | PASS    | FORWARD                 |                   |
+| IONEWallet          | ForwardAddressAlreadySet         | TODO    |                         |                   |
+| IONEWallet          | ForwardAddressInvalid            | TODO    |                         |                   |
+| IONEWallet          | ExternalCallCompleted            | PASS    | CALL                    |                   |
+| IONEWallet          | ExternalCallFailed               | TODO    |                         |                   |
+| IONEWallet          | TransferError                    | TODO    |                         |                   |
+| SignatureManager    | SignatureMismatch                | PASS    | SIGN                    |                   |
+| SignatureManager    | SignatureNotExist                | PASS    | REVOKE                  |                   |
+| SignatureManager    | SignatureAlreadyExist            | PASS    | SIGN                    |                   |
+| SignatureManager    | SignatureAuthorized              | PASS    | SIGN                    |                   |
+| SignatureManager    | SignatureRevoked                 | PASS    | REVOKE                  |                   |
+| SignatureManager    | SignatureExpired                 | N/A     |                         | event not emitted |
+| SpendingManager     | ExceedSpendingLimit              | *TODO   | TRANSFER                |                   |
+| SpendingManager     | InsufficientFund                 | *TODO   | TRANSFER                |                   |
+| SpendingManager     | SpendingLimitChanged             | PASS    | CHANGE_SPENDING_LIMIT   |                   |
+| SpendingManager     | HighestSpendingLimitChanged      | PASS    | CHANGE_SPENDING_LIMIT   |                   |
+| SpendingManager     | SpendingLimitChangeFailed        | *TODO   | CHANGE_SPENDING_LIMIT   |                   |
+| SpendingManager     | SpendingLimitJumped              | PASS    | JUMP_SPENDING_LIMIT     |                   |
+| Staking             | StakingSuccess                   | TODO    |                         |                   |
+| Staking             | StakingFailure                   | TODO    |                         |                   |
+| TokenManager        | ReceivedToken                    | TODO    |                         |                   |
+| TokenManager        | ForwardedToken                   | TODO    |                         |                   |
+| TokenTracker        | TokenTransferFailed              | TODO    |                         |                   |
+| TokenTracker        | TokenTransferError               | TODO    |                         |                   |
+| TokenTracker        | TokenTransferSucceeded           | PASS    | TRANSFER_TOKEN          |                   |
+| TokenTracker        | TokenRecovered                   | PASS    | RECOVER_SELECTED_TOKENS |                   |
+| TokenTracker        | BalanceRetrievalError            | TODO    |                         |                   |
+| TokenTracker        | TokenTracked                     | PASS    | TRACK                   |                   |
+| TokenTracker        | TokenUntracked                   | PASS    | UNTRACK                 |                   |
+| TokenTracker        | TokenNotFound                    | TODO    |                         |                   |
+| WalletGraph         | BackLinkAltered                  | PASS    | BACKLINK_ADD            |                   |
+| WalletGraph         | InvalidBackLinkIndex             | TODO    |                         |                   |
+| WalletGraph         | CommandDispatched                | TODO    |                         |                   |
+| WalletGraph         | CommandFailed                    | TODO    |                         |                   |
+| WalletGraph         | BackLinkUpdated                  | TODO    |                         |                   |
+| WalletGraph         | BackLinkUpdateError              | TODO    |                         |                   |
+
+### Appendix C: Positive Use Case Testing Status Overview
+
+| Functionality | Positive Use Cases  | Status | Notes |
+|---------------|---------------------|--------|-----------------------------|
+| Application   | BASIC               | PASS   |                             |
+| Application   | REVOKE BY DATE      | PASS   |                             |
+| Application   | REVOKE BY SIGNATURE | PASS   |                             |
+| Application   | CALL WITH PAYMENT   | TODO   | See samples in Swap.jsx     |
+| Application   | MULTICALL           | PASS   |                             |
+| Core          | BASIC               | PASS   |                             |
+| Security      | BASIC               | PASS   |                             |
+| Token         | BASIC               | PASS   |                             |
+| Token         | ERC20               | PASS   |                             |
+| Token         | ERC721              | PASS   |                             |
+| Token         | ERC1155             | PASS   |                             |
+| Upgrade       | BASIC               | PASS   |                             |
+
+### Appendix D: Complex Scenario Testing Status Overview
+
+| Area          | Scenario            | Status | Notes                       |
+|---------------|---------------------|--------|-----------------------------|
+| App           | CALL must be able to call multiple transactions | PASS |  |
+| Security      | complex spending_limit rule testing             | PASS |  |
+| Security      | must allow displace operation using 6x6 otps for different durations | PASS |
+| Security      | must authenticate otp from new core after displacement               | *TODO | |
+| Token         | TokenTracker Testing  multiple token types | PASS | |
+| Token         | Must be able to recover selected tokens    | PASS | |
+| Upgrade       | Must be able to sign a transaction with a backlinked wallet | PASS | |
+| Upgrade       | must be able to forward all assets to another wallet | *PASS | Forwards Native Asset and Tracked Tokens (does not forward untracked tokens) |
+| Upgrade       | when a wallet is backlinked, native assets sent to the original wallet gets forwarded automatically | PASS | |
+| Upgrade       | when a wallet is backlinked, tokens sent to the original wallet gets forwarded automatically | *PASS | Forwards Native Asset and Tracked Tokens (does not forward untracked tokens) |
+
+
+
+### Appendix E: Reversion Testing
+
+| Contract            | Revert                           | Status  | Contract Function       | Notes             |
+|---------------------|----------------------------------|---------|-------------------------|-------------------|
+| Reveal              | Bad recovery proof               | TODO    | isCorrectRecoveryProof  | WARNING: Clients should not use eotps that *may* be used for recovery. The time slots should be manually excluded for use.|
+| Reveal              | Proof is incorrect               | TODO    | isCorrectProof          | `require(auth.neighbors.length == core.height - 1, "Bad neighbors size");` |
+| Reveal              | Proof is incorrect               | TODO    | isCorrectProof          | `require(auth.neighbors.length == oldCores[i].height - 1, "Bad old neighbors size");` |
+| Reveal              | No commit                        | TODO    | verifyReveal            | `require(cc.length > 0, "No commit found")` |
+| Reveal              | No commit                        | TODO    | verifyReveal            | `require(c.paramsHash == paramsHash, "Param mismatch");` |
+| Reveal              | No commit                        | TODO    | verifyReveal            | `require(t == index \|\| t - 1 == index, "Time mismatch")` |
+| Reveal              | No commit                        | TODO    | verifyReveal            | `require(nonce >= expectedNonce, "Nonce too low")` |
+| Reveal              | No commit                        | TODO    | verifyReveal            | `require(!c.completed, "Commit already done")` |
+| Reveal              | No commit                        | TODO    | verifyReveal            | `require(uint32(block.timestamp) - c.timestamp < CommitManager.REVEAL_MAX_DELAY, "Too late"` |

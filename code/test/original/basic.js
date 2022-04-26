@@ -1,11 +1,11 @@
-const TestUtil = require('./util')
+const TestUtil = require('../util')
 const unit = require('ethjs-unit')
-const ONEUtil = require('../lib/util')
-const ONEDebugger = require('../lib/debug')
-const ONE = require('../lib/onewallet')
-const ONEConstants = require('../lib/constants')
-const Flow = require('../lib/api/flow')
-const ONEWallet = require('../lib/onewallet')
+const ONEUtil = require('../../lib/util')
+const ONEDebugger = require('../../lib/debug')
+const ONE = require('../../lib/onewallet')
+const ONEConstants = require('../../lib/constants')
+const Flow = require('../../lib/api/flow')
+const ONEWallet = require('../../lib/onewallet')
 const BN = require('bn.js')
 
 const INTERVAL = 30000
@@ -68,7 +68,7 @@ contract('ONEWallet', (accounts) => {
     })
     Logger.debug(`Sent ${ONE_CENT} to ${address}`)
     const balance = await web3.eth.getBalance(address)
-    assert.equal(ONE_CENT, balance, 'Wallet has correct balance')
+    assert.equal(balance, ONE_CENT, 'Wallet has correct balance')
   })
 
   it('Wallet_CommitReveal: must commit and reveal a transfer successfully', async () => {
@@ -105,8 +105,8 @@ contract('ONEWallet', (accounts) => {
 
     const walletBalance = await web3.eth.getBalance(wallet.address)
     const purseBalance = await web3.eth.getBalance(purse.address)
-    assert.equal(ONE_CENT / 2, walletBalance, 'Wallet has correct balance')
-    assert.equal(ONE_CENT / 2, purseBalance, 'Purse has correct balance')
+    assert.equal(walletBalance, ONE_CENT / 2, 'Wallet has correct balance')
+    assert.equal(purseBalance, ONE_CENT / 2, 'Purse has correct balance')
   })
 
   it('Wallet_spendingLimit: must respect daily limit', async () => {
@@ -142,8 +142,8 @@ contract('ONEWallet', (accounts) => {
     )
     const walletBalance = await web3.eth.getBalance(wallet.address)
     const purseBalance = await web3.eth.getBalance(purse.address)
-    assert.equal(ONE_DIME, walletBalance, 'Wallet has original balance')
-    assert.equal(0, purseBalance, 'Purse has 0 balance')
+    assert.equal(walletBalance, ONE_DIME, 'Wallet has original balance')
+    assert.equal(purseBalance, 0, 'Purse has 0 balance')
   })
 
   it('Wallet_Recover: must recover funds to recovery address without using otp', async () => {
@@ -178,7 +178,7 @@ contract('ONEWallet', (accounts) => {
     assert.ok(tx.tx, 'Transaction must succeed')
     const walletBalance = await web3.eth.getBalance(wallet.address)
     const purseBalance = await web3.eth.getBalance(purse.address)
-    assert.equal(0, walletBalance, 'Wallet has 0 balance')
-    assert.equal(ONE_DIME, purseBalance, 'Purse has entire balance')
+    assert.equal(walletBalance, 0, 'Wallet has 0 balance')
+    assert.equal(purseBalance, ONE_DIME, 'Purse has entire balance')
   })
 })

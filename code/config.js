@@ -32,6 +32,7 @@ module.exports = {
       numAccounts: process.env.GANACHE_NUM_ACCOUNTS || 1,
     },
   },
+  stableTestRPC: process.env.STABLE_TEST_RPC === 'true',
   gasLimit: process.env.GAS_LIMIT,
   gasPrice: process.env.GAS_PRICE,
   verbose: process.env.VERBOSE === 'true' || process.env.VERBOSE === '1'

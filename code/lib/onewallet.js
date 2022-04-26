@@ -177,6 +177,7 @@ const selectMerkleNeighbors = ({
 }) => {
   const r = []
   let j = 0
+  console.log(`layers.length       : ${layers.length}`)
   while (j < layers.length - 1) {
     const i = index % 2 === 0 ? index + 1 : index - 1
     const p = i - (layerOffsets[j] || 0)
@@ -188,6 +189,12 @@ const selectMerkleNeighbors = ({
     //   node: hexView(n),
     //   offset: layerOffsets[j] || 0 })
     r.push(n)
+    console.log(`j                  : ${j}`)
+    console.log(`index              : ${index}`)
+    console.log(`i                  : ${i}`)
+    console.log(`p                  : ${p}`)
+    console.log(`n                  : ${n}`)
+    console.log(`r                  : ${JSON.stringify(r)}`)
     index >>= 1
     j += 1
   }
@@ -361,6 +368,16 @@ const computeDataHash = ({ data }) => {
   return { hash: keccak(input), bytes: input }
 }
 
+const computeDestDataHash = ({ dest, data }) => {
+  const destBytes = hexStringToBytes(dest, 32)
+  const input = new Uint8Array(32 + data.length)
+  input.set(destBytes)
+  if (data.length > 0) {
+    input.set(data, 32)
+  }
+  return { hash: keccak(input), bytes: input }
+}
+
 const computeAmountHash = ({ amount }) => {
   const amountBytes = new BN(amount).toArrayLike(Uint8Array, 'be', 32)
   const input = new Uint8Array(32)
@@ -459,6 +476,7 @@ module.exports = {
   computeTransferDomainHash,
   computeAmountHash,
   computeDestOnlyHash,
+  computeDestDataHash,
 
   // operation - encoders
   encodeBuyDomainData,
