@@ -103,9 +103,23 @@ const DeskstopSiderMenu = ({ action, nav, ...args }) => {
   )
 }
 
-const DeskstopSiderMenuV2 = ({ action, nav, ...args }) => {
+const RouteActionMap = {
+  show: 'wallet',
+  nft: 'wallet/nft',
+  assets: 'wallet/assets',
+  swap: 'wallet/swap',
+  stake: 'wallet/stake',
+  restore: 'internal/restore',
+  tool: 'internal/tool',
+}
+
+const DeskstopSiderMenuV2 = ({ nav, ...args }) => {
   const history = useHistory()
   const theme = useTheme()
+  const match = useRouteMatch(Paths.matchStructure)
+  const { category, section } = match ? match.params : {}
+
+  const action = RouteActionMap[section] ?? RouteActionMap[category]
 
   const { primaryTextColor, secondaryTextColor } = getColorPalette(theme)
 
@@ -120,12 +134,14 @@ const DeskstopSiderMenuV2 = ({ action, nav, ...args }) => {
       <Row justify='center' style={{ marginBottom: 24 }}><SiderLink href='https://harmony.one/1wallet'>{config.appName} {config.version}</SiderLink></Row>
 
       <Menu theme={theme} mode='inline' onClick={nav} selectedKeys={[action]}>
-        <Menu.Item key='wallet' icon={<OverviewIcon fill={action === 'overview' ? 'currentColor' : secondaryTextColor} />}>Overview</Menu.Item>
-        <Menu.Item key='wallet/assets' icon={<AssetsIcon fill={action === 'assets' ? 'currentColor' : secondaryTextColor} />}>Assets</Menu.Item>
-        <Menu.Item key='wallet/nft' icon={<NFTIcon fill={action === 'nft' ? 'currentColor' : secondaryTextColor} />}>NFTs</Menu.Item>
-        <Menu.Item key='wallet/swap' icon={<SwapIcon fill={action === 'swap' ? 'currentColor' : secondaryTextColor} />}>Swap</Menu.Item>
-        <Menu.Item key='wallet/stake' icon={<StakeIcon fill={action === 'stake' ? 'currentColor' : secondaryTextColor} />}>Stake</Menu.Item>
-        <Menu.Item key='internal/restore' icon={<RestoreIcon fill={action === 'restore' ? 'currentColor' : secondaryTextColor} />}>Restore</Menu.Item>
+        {[
+          { key: RouteActionMap.show, IconEl: OverviewIcon, label: 'Overview' },
+          { key: RouteActionMap.assets, IconEl: AssetsIcon, label: 'Assets' },
+          { key: RouteActionMap.nft, IconEl: NFTIcon, label: 'NFTs' },
+          { key: RouteActionMap.swap, IconEl: SwapIcon, label: 'Swap' },
+          { key: RouteActionMap.stake, IconEl: StakeIcon, label: 'Stake' },
+          { key: RouteActionMap.restore, IconEl: RestoreIcon, label: 'Restore' },
+        ].map(({ key, IconEl, label }) => <Menu.Item key={key} icon={<IconEl fill={action === 'overview' ? 'currentColor' : secondaryTextColor} />}>{label}</Menu.Item>)}
       </Menu>
       <LineDivider />
       <Menu theme={theme} mode='inline' className='secondary-menu' onClick={nav} selectedKeys={[action]} style={{ color: secondaryTextColor, textTransform: 'uppercase' }}>

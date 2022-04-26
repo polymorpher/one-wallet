@@ -9,7 +9,6 @@ import Input from 'antd/es/input'
 import Button from 'antd/es/button'
 import Space from 'antd/es/space'
 import Switch from 'antd/es/switch'
-import Row from 'antd/es/row'
 import Typography from 'antd/es/typography'
 import ConfigProvider from 'antd/es/config-provider'
 import { useRouteMatch, useHistory } from 'react-router'
@@ -20,7 +19,7 @@ import LockOutlined from '@ant-design/icons/LockOutlined'
 import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import SettingOutlined from '@ant-design/icons/SettingOutlined'
 import config from '../config'
-import Paths from '../constants/paths'
+import Paths, { UrlCategory } from '../constants/paths'
 import util, { Breakpoints, useWindowDimensions } from '../util'
 import { Hint } from './Text'
 import WalletAddress from './WalletAddress'
@@ -148,9 +147,13 @@ export const WalletHeaderV2 = () => {
   const [settingsVisible, setSettingsVisible] = useState(false)
   const [relayerEditVisible, setRelayerEditVisible] = useState(false)
   const { primaryBgColor, secondaryBgColor, secondaryBorderColor } = getColorPalette(theme)
+  const match = useRouteMatch(Paths.matchStructure)
+  const { category } = match ? match.params : {}
 
   const onAddressSelected = (e) => {
-    history.push(Paths.showAddress(e.value))
+    if (category !== UrlCategory.WALLET) {
+      history.push(Paths.showAddress(e.value))
+    }
   }
 
   const onThemeChange = () => {
