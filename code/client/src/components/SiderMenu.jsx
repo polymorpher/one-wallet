@@ -116,7 +116,7 @@ const RouteActionMap = {
 const DeskstopSiderMenuV2 = ({ nav, ...args }) => {
   const history = useHistory()
   const theme = useTheme()
-  const match = useRouteMatch('/:category/:addr?/:section?')
+  const match = useRouteMatch(Paths.matchStructure)
   const { category, section } = match ? match.params : {}
 
   const action = RouteActionMap[section] ?? RouteActionMap[category]
