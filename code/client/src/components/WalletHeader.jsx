@@ -178,7 +178,7 @@ export const WalletHeaderV2 = () => {
       {/* Wallet selector + send + receive if wallet exists */}
       {matchedWallet && (
         <div style={{ display: 'flex', height: '100%', alignItems: 'center', gap: '8px' }}>
-          <WalletSelectorV2 onAddressSelected={onAddressSelected} filter={e => e.majorVersion >= 10} useHex style={{ background: secondaryBgColor, border: `1px solid ${secondaryBorderColor}`, margin: '0 4px', padding: '4px 0', borderRadius: '16px' }} selectStyle={{}} />
+          <WalletSelectorV2 onAddressSelected={onAddressSelected} filter={w => w.majorVersion >= 10} selectedAddress={selectedAddress} useHex style={{ background: secondaryBgColor, border: `1px solid ${secondaryBorderColor}`, margin: '0 4px', padding: '4px 0', borderRadius: '16px' }} selectStyle={{}} />
           <SecondaryButton onClick={() => history.push(Paths.showAddress(selectedAddress, 'transfer'))} style={{ padding: '8px 16px', height: '100%', borderRadius: '15px' }}>Send</SecondaryButton>
           <SecondaryButton onClick={() => history.push(Paths.showAddress(selectedAddress, 'qr'))} style={{ padding: '8px 16px', height: '100%', borderRadius: '15px' }}>Receive</SecondaryButton>
         </div>)}
