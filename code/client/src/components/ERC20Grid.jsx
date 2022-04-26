@@ -306,3 +306,10 @@ export const ERC20Grid = ({ address }) => {
     </>
   )
 }
+
+// match is from route matches.
+export const ERC20GridV2 = ({ match = {} }) => {
+  const { address } = match.params ?? {}
+  const normalizedAddr = util.safeNormalizedAddress(address)
+  return <ERC20Grid address={normalizedAddr} />
+}

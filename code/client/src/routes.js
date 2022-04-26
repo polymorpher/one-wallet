@@ -9,6 +9,8 @@ import Spin from 'antd/es/spin'
 import SiderMenu, { SiderMenuV2 } from './components/SiderMenu'
 import WalletHeader, { WalletHeaderV2 } from './components/WalletHeader'
 import { NFTDashboardV2 } from './pages/Show/NFTDashboard'
+import { ERC20GridV2 } from './components/ERC20Grid'
+import { SwapV2 } from './pages/Show/Swap'
 import CreatePage from './pages/Create'
 import AddressDetailPage from './pages/Contacts/AddressDetail'
 import ListPage from './pages/List'
@@ -81,7 +83,12 @@ const LocalRoutes = () => {
             />
             {/* Dedicated v2 routes. */}
             {v2ui && (
-              <Route path={Paths.nft} component={NFTDashboardV2} />
+              <>
+                <Route path={Paths.overview} exact component={ShowPage} />
+                <Route path={Paths.nft} component={NFTDashboardV2} />
+                <Route path={Paths.assets} component={ERC20GridV2} />
+                <Route path={Paths.swap} component={SwapV2} />
+              </>
             )}
 
             <Route path={Paths.auth} component={WalletAuth} />
