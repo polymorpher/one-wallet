@@ -886,6 +886,16 @@ const executeUpgradeTransaction = async ({
   const walletEffectiveTime = t0 * INTERVAL
   const index = ONEUtil.timeToIndex({ effectiveTime: walletEffectiveTime, time: testTime })
   const eotp = await ONEWallet.computeEOTP({ otp, hseed: walletInfo.hseed })
+  console.log(`testTime           : ${testTime}`)
+  console.log(`INTERVAL           : ${INTERVAL}`)
+  console.log(`counter            : ${counter}`)
+  console.log(`otp                : ${otp}`)
+  console.log(`t0                 : ${t0}`)
+  console.log(`walletEffectiveTime: ${walletEffectiveTime}`)
+  console.log(`hseed              : ${walletInfo.hseed}`)
+  console.log(`index              : ${index}`)
+  console.log(`eotp               : ${eotp}`)
+  console.log(`walletInfo.client.layers : ${JSON.stringify(walletInfo.client.layers)}`)
   let paramsHash
   let commitParams
   let revealParams
@@ -933,6 +943,10 @@ const executeUpgradeTransaction = async ({
 const commitReveal = async ({ layers, Debugger, index, eotp, paramsHash, commitParams, revealParams, wallet }) => {
   const neighbors = ONEWallet.selectMerkleNeighbors({ layers, index })
   const neighbor = neighbors[0]
+  console.log(`neighbors          : ${JSON.stringify(neighbors)}`)
+  console.log(`neighbor           : ${neighbor}}`)
+  console.log(`neighbors.length   : ${neighbors.length}`)
+  console.log(`layers.height      : ${layers.length}`)
   const { hash: commitHash } = ONEWallet.computeCommitHash({ neighbor, index, eotp })
   if (typeof paramsHash === 'function') {
     const { hash } = paramsHash({ ...commitParams })

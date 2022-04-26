@@ -369,7 +369,7 @@ contract('ONEWallet', (accounts) => {
     // testTimeBump  + 180: 1650669120000
     // innerEffectiveTime : 1650668760000
     // innerExpiryTime    : 1650669480000
-    const multiple = 8 // number of 30 second slots wallet is active for
+    const multiple = 24 // number of 30 second slots wallet is active for
     const duration = INTERVAL * multiple // need to be greater than 16 to trigger innerCore generations
     let testTime = Date.now()
     console.log(`testTime           : ${testTime}`)
@@ -379,11 +379,12 @@ contract('ONEWallet', (accounts) => {
     console.log(`testTimeBump  + 180: ${testTime}`)
     let walletEffectiveTime = Math.floor(testTime / INTERVAL6) * INTERVAL6 - INTERVAL * 3// walletEffectiveTime (when the wallet theoretically was created) is half the duration of the wallet
     console.log(`walletEffectiveTime: ${walletEffectiveTime}`)
+    console.log(`duration           : ${duration}`)
     let { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'SE-NEGATIVE-7-1', deployer: accounts[0], effectiveTime: walletEffectiveTime, duration, buildInnerTrees: true })
     let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'SE-NEGATIVE-7-2', deployer: accounts[0], effectiveTime: walletEffectiveTime, duration, backlinks: [alice.wallet.address], buildInnerTrees: true })
 
     // set alice's forwarding address to carol's wallet address
-    // testTime = await TestUtil.bumpTestTime(testTime, 60)
+    testTime = await TestUtil.bumpTestTime(testTime, 240)
     let { tx: tx0 } = await TestUtil.executeUpgradeTransaction(
       {
         ...NullOperationParams, // Default all fields to Null values than override

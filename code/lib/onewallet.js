@@ -177,6 +177,7 @@ const selectMerkleNeighbors = ({
 }) => {
   const r = []
   let j = 0
+  console.log(`layers.length       : ${layers.length}`)
   while (j < layers.length - 1) {
     const i = index % 2 === 0 ? index + 1 : index - 1
     const p = i - (layerOffsets[j] || 0)
@@ -188,6 +189,12 @@ const selectMerkleNeighbors = ({
     //   node: hexView(n),
     //   offset: layerOffsets[j] || 0 })
     r.push(n)
+    console.log(`j                  : ${j}`)
+    console.log(`index              : ${index}`)
+    console.log(`i                  : ${i}`)
+    console.log(`p                  : ${p}`)
+    console.log(`n                  : ${n}`)
+    console.log(`r                  : ${JSON.stringify(r)}`)
     index >>= 1
     j += 1
   }
