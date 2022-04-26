@@ -8,8 +8,6 @@ const BN = require('bn.js')
 const chaiAsPromised = require('chai-as-promised')
 const chai = require('chai')
 const { range } = require('lodash')
-const { executeUpgradeTransaction } = require('./util')
-const { Command } = require('../lib/api/command')
 const assert = chai.assert
 chai.use(chaiAsPromised)
 
@@ -34,7 +32,6 @@ const NOW_MINUS_5 = Math.floor(Date.now() / (INTERVAL)) * INTERVAL - 5000
 const duration = INTERVAL * 2 * 60 * 24 * 4 // 4 day wallet duration
 const getEffectiveTime = () => Math.floor(NOW_MINUS_5 / INTERVAL6) * INTERVAL6 - duration / 2
 // constants used for displace testing
-const SLOT_SIZE = 1
 const MULTIPLES = process.env.LIGHT ? [24] : [24, 26, 28, 30, 32, 34, 36]
 const DURATIONS = MULTIPLES.map(e => INTERVAL * e) // need to be greater than 16 to trigger innerCore generations
 // const EFFECTIVE_TIMES = DURATIONS.map(d => Math.floor(NOW_MINUS_5 / INTERVAL) * INTERVAL - d / 2)
@@ -197,15 +194,12 @@ contract('ONEWallet', (accounts) => {
         buildInnerTrees: true
       }))
       const data = ONEWallet.encodeDisplaceDataHex({ core: newCore, innerCores: newInnerCores, identificationKey: newKeys[0] })
-      Logger.debug(`tOtpCounter=${tOtpCounter} baseCounter=${baseCounter} c=${c}`)
       const otpb = ONEUtil.genOTP({ seed: alice.seed, counter: baseCounter + c, n: NUM_OTPS })
       const otps = []
       for (let i = 0; i < NUM_OTPS; i++) {
         otps.push(otpb.subarray(i * 4, i * 4 + 4))
       }
       const innerEffectiveTime = Math.floor(effectiveTime / (INTERVAL * NUM_OTPS)) * (INTERVAL * NUM_OTPS)
-      const innerExpiryTime = innerEffectiveTime + Math.floor(duration / (INTERVAL6)) * (INTERVAL6)
-      assert.isBelow(testTime, innerExpiryTime, 'Current time must be greater than inner expiry time')
       const index = ONEUtil.timeToIndex({ time: testTime, effectiveTime: innerEffectiveTime, interval: INTERVAL6 }) // passed to Commit Reveal
       const eotp = await ONEWallet.computeInnerEOTP({ otps }) // passed to Commit Reveal
       const treeIndex = c
@@ -241,17 +235,13 @@ contract('ONEWallet', (accounts) => {
         state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
         // Alice items that have changed identificationKeys, infos, oldInfos, innerCores
         // Identification keys now have the newKeys added
-        const expectedIdentificationKeys = await alice.wallet.getIdentificationKeys()
-        state.identificationKeys = expectedIdentificationKeys
+        state.identificationKeys = await alice.wallet.getIdentificationKeys()
         // info t0 and root have changed
-        const expectedInfo = await TestUtil.getInfoParsed(alice.wallet)
-        state.info = expectedInfo
+        state.info = await TestUtil.getInfoParsed(alice.wallet)
         // oldInfos has the previous info appended to it
-        const expectedOldInfos = await TestUtil.getOldInfosParsed(alice.wallet)
-        state.oldInfos = expectedOldInfos
+        state.oldInfos = await TestUtil.getOldInfosParsed(alice.wallet)
         // innerCores will have new entries added (6 new entries per iteration)
-        const expectedInnerCores = await TestUtil.getInnerCoresParsed(alice.wallet)
-        state.innerCores = expectedInnerCores
+        state.innerCores = await TestUtil.getInnerCoresParsed(alice.wallet)
 
         await TestUtil.assertStateEqual(state, currentState)
       }
@@ -357,13 +347,13 @@ contract('ONEWallet', (accounts) => {
   // Expected result: this will fail with a revert
   // Logic: if (forwardAddress != address(0))
   it('SE-NEGATIVE-7 DISPLACE: must fail if forward address has been set', async () => {
-    const multiple = 8 // number of 30 second slots wallet is active for
-    const duration = INTERVAL6 * multiple // need to be greater than 16 to trigger innerCore generations
+    const multiple = 8
+    const duration = INTERVAL6 * multiple
     const OFFSET = 45000
     const treeIndex = Math.floor(OFFSET / INTERVAL)
-    let testTime = Date.now()
-    testTime = Math.floor(testTime / INTERVAL6) * INTERVAL6 + OFFSET
-    let walletEffectiveTime = Math.floor(testTime / INTERVAL6) * INTERVAL6 - duration / 2// walletEffectiveTime (when the wallet theoretically was created) is half the duration of the wallet
+    let testTime = Math.floor(Date.now() / INTERVAL6) * INTERVAL6 + OFFSET
+    testTime = await TestUtil.bumpTestTime(testTime, 1)
+    let walletEffectiveTime = Math.floor(testTime / INTERVAL6) * INTERVAL6 - duration / 2
     let { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'SE-NEGATIVE-7-1', deployer: accounts[0], effectiveTime: walletEffectiveTime, duration, buildInnerTrees: true })
     let { walletInfo: carol } = await TestUtil.makeWallet({ salt: 'SE-NEGATIVE-7-2', deployer: accounts[0], effectiveTime: walletEffectiveTime, duration, backlinks: [alice.wallet.address], buildInnerTrees: true })
 
@@ -380,8 +370,6 @@ contract('ONEWallet', (accounts) => {
     )
     // Validate successful event emitted
     TestUtil.validateEvent({ tx: tx0, expectedEvent: 'ForwardAddressUpdated' })
-    testTime = await TestUtil.bumpTestTime(testTime, 180)
-
     // Start Displacement Tests
     const newSeed = '0xdeedbeaf1234567890123456789012'
     let newEffectiveTime = walletEffectiveTime - INTERVAL6
@@ -423,11 +411,12 @@ contract('ONEWallet', (accounts) => {
   // Expected result: this will fail and trigger event CoreDisplacementFailed "Must have newer time range"
   // Logic: (newCore.t0 + newCore.lifespan <= oldCore.t0 + oldCore.lifespan || newCore.t0 <= oldCore.t0)
   it('SE-NEGATIVE-7-1 DISPLACE: must fail if called with an older or the same time range', async () => {
-    const multiple = 8 // number of 30 second slots wallet is active for
-    const duration = INTERVAL6 * multiple // need to be greater than 16 to trigger innerCore generations
+    const multiple = 8
+    const duration = INTERVAL6 * multiple
     const OFFSET = 45000
     const treeIndex = Math.floor(OFFSET / INTERVAL)
     let testTime = Math.floor(Date.now() / INTERVAL6) * INTERVAL6 + OFFSET
+    testTime = await TestUtil.bumpTestTime(testTime, 0)
     let walletEffectiveTime = Math.floor(testTime / INTERVAL6) * INTERVAL6 - duration / 2 // walletEffectiveTime (when the wallet theoretically was created) is half the duration of the wallet
     let { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'SE-NEGATIVE-7-1-1', deployer: accounts[0], effectiveTime: walletEffectiveTime, duration, buildInnerTrees: true })
     const { core: newCore, innerCores: newInnerCores, identificationKeys: newKeys } = await TestUtil.makeCores({
@@ -468,11 +457,12 @@ contract('ONEWallet', (accounts) => {
   // Expected result this will fail and trigger event CoreDisplacementFailed "Must have different root"
   // Logic: if (newCore.root == oldCore.root) {
   it('SE-NEGATIVE-7-2 DISPLACE: must fail if called with the same root', async () => {
-    const multiple = 8 // number of 30 second slots wallet is active for
-    const duration = INTERVAL6 * multiple // need to be greater than 16 to trigger innerCore generations
+    const multiple = 8
+    const duration = INTERVAL6 * multiple
     const OFFSET = 45000
     const treeIndex = Math.floor(OFFSET / INTERVAL)
     let testTime = Math.floor(Date.now() / INTERVAL6) * INTERVAL6 + OFFSET
+    testTime = await TestUtil.bumpTestTime(testTime, 0)
     let walletEffectiveTime = Math.floor(testTime / INTERVAL6) * INTERVAL6 - duration / 2 // walletEffectiveTime (when the wallet theoretically was created) is half the duration of the wallet
     let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'SE-NEGATIVE-7-2-1', deployer: accounts[0], effectiveTime: walletEffectiveTime, duration, buildInnerTrees: true })
     let newEffectiveTime = walletEffectiveTime + INTERVAL6
@@ -644,7 +634,7 @@ contract('ONEWallet', (accounts) => {
 
     // alice JUMPS the spending limit after waiting 4 minutes
     testTime = await TestUtil.bumpTestTime(testTime, 2400)
-    let { tx: tx5, currentState: currentState5 } = await executeSecurityTransaction(
+    let { currentState: currentState5 } = await executeSecurityTransaction(
       {
         ...ONEConstants.NullOperationParams, // Default all fields to Null values than override
         walletInfo: alice,
@@ -696,9 +686,8 @@ contract('ONEWallet', (accounts) => {
     // Begin Tests
     let testTime = Date.now()
     const EFFECTIVE_TIMES = DURATIONS.map(d => Math.floor(testTime / INTERVAL) * INTERVAL - d / 2)
+    testTime = await TestUtil.bumpTestTime(testTime, 60)
     for (let i = 0; i < MULTIPLES.length; i++) {
-      testTime = await TestUtil.bumpTestTime(testTime, 60)
-      testTime = Math.floor(testTime / (INTERVAL)) * INTERVAL - 5000
       await testForTime({ multiple: MULTIPLES[i], effectiveTime: EFFECTIVE_TIMES[i], duration: DURATIONS[i], testTime })
     }
   })
