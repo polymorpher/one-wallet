@@ -57,7 +57,7 @@ module.exports = {
     ...(DEBUG && {
       dev: {
         name: 'Local Relayer',
-        url: process.env.LOCAL_RELAYER_URL || 'http://127.0.0.1:3001'
+        url: process.env.LOCAL_RELAYER_URL || 'https://127.0.0.1:8445'
         // url: 'https://dev.hiddenstate.xyz'
       }
     }),
@@ -65,5 +65,9 @@ module.exports = {
       name: 'Test Relayer',
       url: 'https://relayer.onewallet.hiddenstate.xyz'
     }
+  },
+  backend: {
+    url: process.env.BACKEND_URL || 'https://localhost:8446'
+    // url: 'https://dev2.hiddenstate.xyz'
   }
 }

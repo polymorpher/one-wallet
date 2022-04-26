@@ -23,17 +23,33 @@ export const Hint = styled(Text).attrs(() => ({ type: 'secondary' }))`
   color: #888888;
 `
 
-export const InputBox = styled(Input).attrs(({ $num, $decimal, ...props }) => ({
+export const InputBox = styled(Input).attrs(({ $num, $decimal, type, autoComplete, ...props }) => ({
   size: props.size || 'large',
+  autoComplete,
+  type,
   ...($num && { inputMode: 'numeric', type: 'number' }),
   ...($decimal && { inputMode: 'decimal', type: 'number' })
 }))`
   width: ${props => typeof props.width === 'number' ? `${props.width || 400}px` : (props.width || 'auto')};
-  margin-top: ${props => props.margin || '32px'};
-  margin-bottom: ${props => props.margin || '32px'};
+  margin-top: ${props => props.$marginTop || props.margin || '32px'};
+  margin-bottom: ${props => props.$marginBottom || props.margin || '32px'};
   border: none;
   border-bottom: 1px dashed black;
   font-size: 16px;
+  &:hover{
+    border-bottom: 1px dashed black;
+  }
+`
+
+export const InputPassword = styled(Input.Password).attrs(({ autoComplete, ...props }) => ({
+  size: props.size || 'large',
+  autoComplete,
+}))`
+  margin-top: ${props => props.$marginTop || props.margin || '32px'};
+  margin-bottom: ${props => props.$marginBottom || props.margin || '32px'};
+  font-size: 16px;
+  border: none;
+  border-bottom: 1px dashed black;
   &:hover{
     border-bottom: 1px dashed black;
   }

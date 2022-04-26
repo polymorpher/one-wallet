@@ -62,17 +62,21 @@ export const OTPUriMode = {
   STANDARD: 0,
   MIGRATION: 1,
   TOTP: 2, // seems deprecated, should not use unless it is for testing
+  APPLE: 3,
 }
 
-export const getQRCodeUri = (otpSeed, otpDisplayName, mode = OTPUriMode.STANDARD) => {
+export const getQRCodeUri = (otpSeed, otpDisplayName, mode = OTPUriMode.STANDARD, issuer = 'Harmony') => {
   if (mode === OTPUriMode.STANDARD) {
     // otpauth://TYPE/LABEL?PARAMETERS
-    return `otpauth://totp/${otpDisplayName}?secret=${ONEUtil.base32Encode(otpSeed)}&issuer=Harmony`
+    return `otpauth://totp/${otpDisplayName}?secret=${ONEUtil.base32Encode(otpSeed)}&issuer=${issuer}`
+  }
+  if (mode === OTPUriMode.APPLE) {
+    return `apple-otpauth://totp/${otpDisplayName}?secret=${ONEUtil.base32Encode(otpSeed)}&issuer=${issuer}`
   }
   if (mode === OTPUriMode.MIGRATION) {
     const payload = MigrationPayload.create({
       otpParameters: [{
-        issuer: 'Harmony',
+        issuer,
         secret: otpSeed,
         name: otpDisplayName,
         algorithm: MigrationPayload.Algorithm.ALGORITHM_SHA1,

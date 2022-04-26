@@ -68,9 +68,9 @@ const Restore = () => {
           </Space>
           <Divider><Hint>Or</Hint></Divider>
           <Space direction='vertical' size='large' style={{ width: '100%' }}>
-            <Heading>Use auth codes + recovery file</Heading>
+            <Heading>Use verification codes + recovery file</Heading>
             <Button shape='round' size='large' type='primary' onClick={() => setSection(Sections.SyncRecoveryFile)} icon={<FieldBinaryOutlined />}>Begin</Button>
-            <Hint>New method. Works with all authenticators. You need (1) wallet recovery file (2) your authenticator. Provide 6-digit auth code for 6 times (30 seconds each time). Setup a new authenticator code after that.</Hint>
+            <Hint>New method. Works with all authenticators. You need (1) wallet recovery file (2) your authenticator. Provide 6-digit verification code for 6 times (30 seconds each time). Setup a new authenticator code after that.</Hint>
           </Space>
           <Divider><Hint>Or</Hint></Divider>
           <Space direction='vertical' size='large'>

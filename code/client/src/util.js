@@ -409,6 +409,11 @@ export const useWaitExecution = (func, runCondition, wait, dependencies) => {
   }, dependencies)
 }
 
+export const isSafari = () => {
+  const s = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+  return (!!window.safari) || s
+}
+
 if (window) {
   window.ONEWallet = window.ONEWallet || {}
   window.ONEWallet.util = util

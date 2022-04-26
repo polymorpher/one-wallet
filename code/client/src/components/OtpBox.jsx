@@ -2,7 +2,7 @@ import OtpInput from 'react-otp-input'
 import React, { forwardRef } from 'react'
 import { useWindowDimensions } from '../util'
 
-const OtpBox = ({ onChange, value, inputStyle, containerStyle, numOnly = true, ...params }, ref) => {
+const OtpBox = ({ onChange, value, inputStyle, containerStyle, numOnly = true, autofill = true, ...params }, ref) => {
   const { isMobile } = useWindowDimensions()
   return (
     <OtpInput
@@ -28,6 +28,7 @@ const OtpBox = ({ onChange, value, inputStyle, containerStyle, numOnly = true, .
       }}
       separator={<span> </span>}
       {...params}
+      autoComplete={autofill && 'one-time-code'}
     />
   )
 }
