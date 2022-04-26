@@ -12,7 +12,6 @@ import Button from 'antd/es/button'
 import Space from 'antd/es/space'
 import Spin from 'antd/es/spin'
 import Card from 'antd/es/card'
-import Typography from 'antd/es/typography'
 import message from '../message'
 import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import QuestionCircleOutlined from '@ant-design/icons/QuestionCircleOutlined'
@@ -36,7 +35,6 @@ import { OtpSetup, OtpSetup2, TwoCodeOption, TwoCodeOption2 } from '../component
 import config from '../config'
 import SignupAccount from './Create/SignupAccount'
 import { useTheme, getColorPalette } from '../theme'
-const { Text, Link } = Typography
 
 const getGoogleAuthenticatorAppLink = (os) => {
   let link = 'https://apps.apple.com/us/app/google-authenticator/id388497605'
