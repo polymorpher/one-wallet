@@ -9,7 +9,7 @@ import QuestionCircleOutlined from '@ant-design/icons/QuestionCircleOutlined'
 import SnippetsOutlined from '@ant-design/icons/SnippetsOutlined'
 import React from 'react'
 
-export const OtpSetup = ({ isMobile, otpRef, otpValue, setOtpValue, name }) => {
+export const OtpSetup = ({ isMobile, otpRef, otpValue, setOtpValue, name, autofill = false }) => {
   return (
     <Space direction='vertical' size='large' align='center' style={{ width: '100%' }}>
       <Hint>Copy the 6-digit code from authenticator</Hint>
@@ -17,6 +17,7 @@ export const OtpSetup = ({ isMobile, otpRef, otpValue, setOtpValue, name }) => {
         Code for <b>Harmony ({name})</b>
       </Hint>
       <OtpBox
+        autofill={autofill}
         shouldAutoFocus={!isMobile}
         ref={otpRef}
         value={otpValue}
