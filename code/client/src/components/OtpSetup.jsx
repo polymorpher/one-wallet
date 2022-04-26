@@ -30,10 +30,10 @@ export const OtpSetup = ({ isMobile, otpRef, otpValue, setOtpValue, name }) => {
 
 export const OtpSetup2 = ({ isMobile, otpRef, otpValue, setOtpValue, name }) => {
   return (
-    <Row align='center' style={{ width: '100%', alignItems: 'center' }}>
+    <Row align='middle' style={{ width: '100%', alignItems: 'center', flexWrap: 'nowrap' }}>
       <div style={{ marginRight: '16px', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ margin: 0 }}>To create, enter Authentication Code</div>
-        <div style={{ fontSize: 'smaller' }}>Harmony ({name})</div>
+        <div style={{ margin: 0 }}>To create, enter verification code</div>
+        <div style={{ fontSize: 'smaller', overflowWrap: 'break-word' }}>Harmony ({name})</div>
       </div>
       <OtpBox
         shouldAutoFocus={!isMobile}
@@ -41,7 +41,7 @@ export const OtpSetup2 = ({ isMobile, otpRef, otpValue, setOtpValue, name }) => 
         value={otpValue}
         onChange={setOtpValue}
         numOnly={isMobile}
-        containerStyle={{ minWidth: '300px' }}
+        containerStyle={{ minWidth: '300px', flexWrap: 'nowrap' }}
         inputStyle={{ height: '60px', color: 'black' }}
       />
       {isMobile && <Button type='default' shape='round' icon={<SnippetsOutlined />} onClick={() => { navigator.clipboard.readText().then(t => setOtpValue(t)) }}>Paste from Clipboard</Button>}

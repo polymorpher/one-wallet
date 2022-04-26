@@ -44,7 +44,7 @@ export const CurrencyChooser = ({ visible, confirm, onClose }) => {
             {config.transak.currencies.map((c, i) => {
               return (
                 <Select.Option key={c} value={c}>
-                  <Row align='center'>
+                  <Row align='middle'>
                     <Col span={12}><Flag src={`/flags/${countries[i]}.svg`} /></Col>
                     <Col span={12}><Text>{c}</Text></Col>
                   </Row>
