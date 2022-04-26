@@ -18,9 +18,9 @@ export const Heading = styled(Title).attrs((props) => ({ level: 2, ...props }))`
   //color: #1f1f1f;
 `
 
-export const Hint = styled(Text).attrs(() => ({ type: 'secondary' }))`
+export const Hint = styled(Text).attrs((props) => ({ type: 'secondary', ...props }))`
   font-size: 16px;
-  color: #888888;
+  color: ${props => props.color ?? '#888888'};
 `
 
 export const InputBox = styled(Input).attrs(({ $num, $decimal, ...props }) => ({

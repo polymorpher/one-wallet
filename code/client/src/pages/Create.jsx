@@ -11,12 +11,13 @@ import Tooltip from 'antd/es/tooltip'
 import Button from 'antd/es/button'
 import Space from 'antd/es/space'
 import Spin from 'antd/es/spin'
+import Card from 'antd/es/card'
 import Typography from 'antd/es/typography'
 import message from '../message'
 import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import QuestionCircleOutlined from '@ant-design/icons/QuestionCircleOutlined'
 import humanizeDuration from 'humanize-duration'
-import AnimatedSection from '../components/AnimatedSection'
+import AnimatedSection, { AnimatedSection2 } from '../components/AnimatedSection'
 import qrcode from 'qrcode'
 import storage from '../storage'
 import walletActions from '../state/modules/wallet/actions'
@@ -31,8 +32,9 @@ import WalletCreateProgress from '../components/WalletCreateProgress'
 import { TallRow } from '../components/Grid'
 import { FlashyButton } from '../components/Buttons'
 import { buildQRCodeComponent, getQRCodeUri, getSecondCodeName, OTPUriMode } from '../components/OtpTools'
-import { OtpSetup, TwoCodeOption } from '../components/OtpSetup'
+import { OtpSetup, OtpSetup2, TwoCodeOption, TwoCodeOption2 } from '../components/OtpSetup'
 import config from '../config'
+import { useTheme, getColorPalette } from '../theme'
 const { Text, Link } = Typography
 
 const getGoogleAuthenticatorAppLink = (os) => {
@@ -58,6 +60,7 @@ const securityParameters = ONEUtil.securityParameters({
 const Create = ({ expertMode, showRecovery }) => {
   const { isMobile } = useWindowDimensions()
   const network = useSelector(state => state.global.network)
+  const v2ui = useSelector(state => state.global.v2ui)
   const wallets = useSelector(state => state.wallet)
   const generateNewOtpName = () => ONENames.genName(Object.keys(wallets).map(k => wallets[k].name))
 
@@ -162,14 +165,14 @@ const Create = ({ expertMode, showRecovery }) => {
   }, [])
 
   return (
-    <>
+    <div className={v2ui ? 'wallet-creation-flow' : ''}>
       {section === sectionViews.setupOtp &&
         <SetupOtpSection expertMode={expertMode} otpReady={otpReady} effectiveTime={coreSettings.effectiveTime} walletState={walletState} setWalletState={setWalletState} setupConfig={setupConfig} setSection={setSection} />}
       {section === sectionViews.prepareWallet &&
         <PrepareWalletSection showRecovery={showRecovery} expertMode={expertMode} coreSettings={coreSettings} setupConfig={setupConfig} walletState={walletState} setWalletState={setWalletState} progress={progress} progressStage={progressStage} network={network} />}
       {section === sectionViews.walletSetupDone &&
         <DoneSection address={walletState.address} />}
-    </>
+    </div>
   )
 }
 
@@ -387,7 +390,9 @@ const PrepareWalletSection = ({ expertMode, showRecovery, coreSettings, setupCon
 }
 
 const SetupOtpSection = ({ expertMode, otpReady, setupConfig, walletState, setWalletState, effectiveTime, setSection }) => {
+  const { otpInputBackground, optInputTextColor } = getColorPalette(useTheme())
   const { isMobile, os } = useWindowDimensions()
+  const v2ui = useSelector(state => state.global.v2ui)
   const history = useHistory()
   const [otp, setOtp] = useState('')
   const [step, setStep] = useState(1) // 1 -> otp, optional 2 -> second otp
@@ -439,40 +444,65 @@ const SetupOtpSection = ({ expertMode, otpReady, setupConfig, walletState, setWa
     return <Spin />
   }
 
-  return (
-    <>{step === 1 &&
-      <AnimatedSection>
-        <Row>
-          <Space direction='vertical'>
-            {/* <Heading>Now, scan the QR code with your Google Authenticator</Heading> */}
-            <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
-            {!isMobile && <Hint>Scan the QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use the wallet </Hint>}
-            {isMobile && <Hint>Tap QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use the wallet</Hint>}
-            {buildQRCodeComponent({ seed, name: ONENames.nameWithTime(name, effectiveTime), os, isMobile, qrCodeData: otpQrCodeData })}
-          </Space>
-        </Row>
-        <Row style={{ marginTop: 16 }}>
-          <Space direction='vertical' size='large' align='center' style={{ width: '100%' }}>
-            <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={ONENames.nameWithTime(name, effectiveTime)} />
-            {expertMode && <TwoCodeOption isMobile={isMobile} setDoubleOtp={d => setWalletState(s => ({ ...s, doubleOtp: d }))} doubleOtp={doubleOtp} />}
-            {expertMode && <Hint>You can adjust spending limit in the next step</Hint>}
-          </Space>
-        </Row>
-      </AnimatedSection>}
-      {step === 2 &&
-        <AnimatedSection>
-          <Row>
-            <Space direction='vertical'>
+  if (v2ui) {
+    return (
+      <AnimatedSection2 SectionEl={Card} bodyStyle={{ padding: 0 }}>
+        <Space direction='vertical' style={{ width: '100%', padding: '32px 32px 16px 32px' }}>
+          {step === 1 &&
+            <>
+              <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
+              <Hint>{isMobile ? 'Tap' : 'Scan'} the QR code to setup {getGoogleAuthenticatorAppLink(os)}. {!v2ui && 'You need it to use the wallet'} </Hint>
+              {buildQRCodeComponent({ seed, name: ONENames.nameWithTime(name, effectiveTime), os, isMobile, qrCodeData: otpQrCodeData })}
+            </>}
+          {step === 2 &&
+            <>
               <Heading>Create Your 1wallet (second code)</Heading>
               <Hint align='center'>{isMobile ? 'Tap' : 'Scan'} to setup the <b>second</b> code</Hint>
               {buildQRCodeComponent({ seed: seed2, name: ONENames.nameWithTime(getSecondCodeName(name), effectiveTime), os, isMobile, qrCodeData: secondOtpQrCodeData })}
-            </Space>
-          </Row>
-          <Row>
-            <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={ONENames.nameWithTime(getSecondCodeName(name), effectiveTime)} />
-          </Row>
-        </AnimatedSection>}
-    </>
+            </>}
+        </Space>
+        <Space direction='vertical' size='large' align='center' style={{ width: '100%', background: otpInputBackground, color: optInputTextColor, borderRadius: '0 0 16px 16px', padding: '32px' }}>
+          {step === 1 && (
+            <>
+              <OtpSetup2 isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={ONENames.nameWithTime(name, effectiveTime)} />
+              {expertMode && (
+                <>
+                  <TwoCodeOption2 isMobile={isMobile} setDoubleOtp={d => setWalletState(s => ({ ...s, doubleOtp: d }))} doubleOtp={doubleOtp} />
+                  <Hint style={{ color: optInputTextColor, fontSize: '14px' }}>You can adjust spending limit in the next step</Hint>
+                </>)}
+            </>)}
+          {step === 2 &&
+            <OtpSetup2 isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={ONENames.nameWithTime(getSecondCodeName(name), effectiveTime)} />}
+        </Space>
+      </AnimatedSection2>
+    )
+  }
+
+  return (
+    <AnimatedSection>
+      <Space direction='vertical' style={{ width: '100%' }}>
+        {step === 1 &&
+          <>
+            <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
+            <Hint>{isMobile ? 'Tap' : 'Scan'} the QR code to setup {getGoogleAuthenticatorAppLink(os)}. {!v2ui && 'You need it to use the wallet'} </Hint>
+            {buildQRCodeComponent({ seed, name: ONENames.nameWithTime(name, effectiveTime), os, isMobile, qrCodeData: otpQrCodeData })}
+          </>}
+        {step === 2 &&
+          <>
+            <Heading>Create Your 1wallet (second code)</Heading>
+            <Hint align='center'>{isMobile ? 'Tap' : 'Scan'} to setup the <b>second</b> code</Hint>
+            {buildQRCodeComponent({ seed: seed2, name: ONENames.nameWithTime(getSecondCodeName(name), effectiveTime), os, isMobile, qrCodeData: secondOtpQrCodeData })}
+          </>}
+      </Space>
+      {step === 1 &&
+        <Space direction='vertical' size='large' align='center' style={{ width: '100%', marginTop: '16px' }}>
+          <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={ONENames.nameWithTime(name, effectiveTime)} />
+          {expertMode && <TwoCodeOption isMobile={isMobile} setDoubleOtp={d => setWalletState(s => ({ ...s, doubleOtp: d }))} doubleOtp={doubleOtp} />}
+          {expertMode && <Hint>You can adjust spending limit in the next step</Hint>}
+        </Space>}
+      {step === 2 &&
+        <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={ONENames.nameWithTime(getSecondCodeName(name), effectiveTime)} />}
+    </AnimatedSection>
   )
 }
 

@@ -170,7 +170,7 @@ export const NFTGridItem = ({
           </Carousel>
         </Row>}
       {fullView && !metadata &&
-        <AverageRow align='center' style={{ flexDirection: 'column', height: '100%' }}>
+        <AverageRow align='middle' style={{ flexDirection: 'column', height: '100%' }}>
           <Space direction='vertical' align='center' style={{ width: '100%' }}>
             <Text>Loading...<Spin /></Text>
             <Text type='secondary'>(daVinci assets may be very slow)</Text>
