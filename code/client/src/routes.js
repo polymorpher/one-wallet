@@ -96,10 +96,10 @@ const LocalRoutes = () => {
             {v2ui && (
               <>
                 <Route path={Paths.overview} exact component={ShowPage} />
-                <Route path={Paths.nft} component={NFTDashboardV2} />
-                <Route path={Paths.assets} component={ERC20GridV2} />
-                <Route path={Paths.swap} component={SwapV2} />
-                <Route path={Paths.stake} component={StakeV2} />
+                <Route path={Paths.nft} exact component={NFTDashboardV2} />
+                <Route path={Paths.assets} exact component={ERC20GridV2} />
+                <Route path={Paths.swap} exact component={SwapV2} />
+                <Route path={Paths.stake} exact component={StakeV2} />
               </>
             )}
             <Route

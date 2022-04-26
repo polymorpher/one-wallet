@@ -19,7 +19,7 @@ import LockOutlined from '@ant-design/icons/LockOutlined'
 import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import SettingOutlined from '@ant-design/icons/SettingOutlined'
 import config from '../config'
-import Paths, { UrlCategory } from '../constants/paths'
+import Paths from '../constants/paths'
 import util, { Breakpoints, useWindowDimensions } from '../util'
 import { Hint } from './Text'
 import WalletAddress from './WalletAddress'
@@ -147,11 +147,10 @@ export const WalletHeaderV2 = () => {
   const [settingsVisible, setSettingsVisible] = useState(false)
   const [relayerEditVisible, setRelayerEditVisible] = useState(false)
   const { primaryBgColor, secondaryBgColor, secondaryBorderColor } = getColorPalette(theme)
-  const match = useRouteMatch(Paths.matchStructure)
-  const { category } = match ? match.params : {}
 
   const onAddressSelected = (e) => {
-    if (category !== UrlCategory.WALLET) {
+    // Only change if a new address is selected.
+    if (selectedAddress !== e.value) {
       history.push(Paths.showAddress(e.value))
     }
   }

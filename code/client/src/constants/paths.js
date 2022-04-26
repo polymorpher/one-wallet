@@ -34,12 +34,12 @@ export default {
   // v2 only
   // The url structure should be used for matching.
   matchStructure: '/:category?/:address?/:section?',
+  // TODO: keeping `show` for now for backward compatibility.
   overview: base + '/show/:address',
   nft: base + '/show/:address/nft',
   assets: base + '/show/:address/assets',
   swap: base + '/show/:address/swap',
   stake: base + '/show/:address/stake',
-  // TODO: switching v1 path to v2 with above structure.
 }
 
 export const UrlCategory = {
