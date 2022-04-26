@@ -461,7 +461,7 @@ const SetupOtpSection = ({ expertMode, otpReady, setupConfig, walletState, setWa
               {buildQRCodeComponent({ seed: seed2, name: ONENames.nameWithTime(getSecondCodeName(name), effectiveTime), os, isMobile, qrCodeData: secondOtpQrCodeData })}
             </>}
         </Space>
-        <Space direction='vertical' size='large' align='center' style={{ width: '100%', background: otpInputBackground, color: optInputTextColor, borderRadius: '0 0 15px 15px', padding: '32px' }}>
+        <Space direction='vertical' size='large' align='center' style={{ width: '100%', background: otpInputBackground, color: optInputTextColor, borderRadius: '0 0 16px 16px', padding: '32px' }}>
           {step === 1 && (
             <>
               <OtpSetup2 isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={ONENames.nameWithTime(name, effectiveTime)} />

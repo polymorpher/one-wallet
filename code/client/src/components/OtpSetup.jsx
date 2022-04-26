@@ -42,7 +42,7 @@ export const OtpSetup2 = ({ isMobile, otpRef, otpValue, setOtpValue, name }) => 
         onChange={setOtpValue}
         numOnly={isMobile}
         containerStyle={{ minWidth: '300px', flexWrap: 'nowrap' }}
-        inputStyle={{ height: '60px', color: 'black' }}
+        inputStyle={{ height: '64px', color: 'black' }}
       />
       {isMobile && <Button type='default' shape='round' icon={<SnippetsOutlined />} onClick={() => { navigator.clipboard.readText().then(t => setOtpValue(t)) }}>Paste from Clipboard</Button>}
     </Row>
@@ -72,7 +72,7 @@ export const TwoCodeOption2 = ({ doubleOtp, setDoubleOtp }) => {
           Use two codes to enhance security
         </Hint>
         <Tooltip title={<div>You will need to scan another QR-code on the next page. Each time you make a transaction, you will need to type in two 6-digit codes, which are shown simultaneously next to each other on your Google Authenticator.<br /><br />This is advisable if you intend to make larger transactions with this wallet</div>}>
-          <QuestionCircleOutlined style={{ marginLeft: '5px' }} />
+          <QuestionCircleOutlined style={{ marginLeft: '8px' }} />
         </Tooltip>
       </Row>
     </Checkbox>
