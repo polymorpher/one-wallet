@@ -31,25 +31,26 @@ To run an individual test use
 VERBOSE=0 truffle test --network=ganache --compile-none --grep 'AD-WALLET-1'
 ```
 ## Test Data Overview
-Before each test we deploy the OneWallet Contracts and test data (through ulitity helper functions in `util.js`). The form of users and token contracts funded as follows
+Before each test, some wallets are automatically deployed. They are encapsulated in a test data object. See `deployTestData` and `init` functions in `util.js` for more details. A breakdown of the test data object is given below.
 
 ### Test Users
-All users are funded with HALF_ETH (half the native token) and initially have a SpendingLimit of ONE_ETH (one native token). Also alice is funded with tokens as follows
-* alice: Primary user funded with 1000 testerc20, 2 testerc721 tokens [2,3], 50 testerc115 tokens [(2,20),(3,30)]
-* bob: used  for testing token transfers from alice and tracking tokens
-* carol: used for testing backlinks with alice
+All users are funded with HALF_ETH (half the native token) and initially have a SpendingLimit of ONE_ETH (one native token). The test users are:
+
+* alice: primary user funded with 1000 TestERC20, 2 TestERC721 tokens with id 2 and 3, and 50 TestERC1155 tokens with 20 of token 2, and 30 of token 3.
+* bob: used for testing token transfers from alice and tracking tokens
+* carol: used for testing backlinks and forwarding operations involving alice
 * dora: used for testing overriding backlinks
-* ernie: general purpose user
+* ernie: general purpose testing user
 
-We deploy the following contracts using account[0] with the following initial funds, some of which are used to fund alice
-* ERC20: testerc20 10000000 of which 1000 are used to fund alice
-* ERC721: testerc721 10 tokens [0,1,2,3,4,5,6,7,8,9] of which [2,3] are used to fund alice
-* ERC1155: testerc1155 10 tokens [0,1,2,3,4,5,6,7,8,9] with quantities of [10,20,30,40,50,66,70,80,90,100] of which [(2,20),(3,30)] are used to fund alice
+The following token contracts are deployed using the first account available in the environment:
+* testerc20: ERC20 contract (TestERC20) with 10000000 minted supply, of which 1000 tokens are given to alice.
+* testerc721: ERC721 contract (TestERC721) with 10 different tokens [0,1,2,3,4,5,6,7,8,9]. Token [2,3] are given to alice.
+* testerc1155: ERC1155 contract (TestERC1155) with 10 types of tokens [0,1,2,3,4,5,6,7,8,9]. They have corresponding supply of [10,20,30,40,50,66,70,80,90,100], which are minted ahead of time. Here, 50 TestERC1155 tokens with 20 of token 2 and 30 of token 3 are given to alice.
 
-We also deploy the following contracts which can be used for additional tracking or transfer function (no initial funding is done from these contracts)
-* ERC20: testerc20 10000000 
-* ERC721: testerc721 10 tokens [0,1,2,3,4,5,6,7,8,9] 
-* ERC1155: testerc1155 10 tokens [0,1,2,3,4,5,6,7,8,9] with quantities of [10,20,30,40,50,66,70,80,90,100] 
+The following contracts are also deployed to provide additional helpers for tests. Note that no initial transfer were made from these contracts. The tokens and amounts minted ahead of the time are the same.
+* testerc20v2 (ERC20)
+* testerc721v2 (ERC721)
+* testerc1155v2 (ERC1155)
 
 ## Tests Areas
 
