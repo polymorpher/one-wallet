@@ -1,9 +1,9 @@
-const TestUtil = require('./util')
+const TestUtil = require('../util')
 const unit = require('ethjs-unit')
-const ONEUtil = require('../lib/util')
-const ONEDebugger = require('../lib/debug')
-const ONEConstants = require('../lib/constants')
-const ONEWallet = require('../lib/onewallet')
+const ONEUtil = require('../../lib/util')
+const ONEDebugger = require('../../lib/debug')
+const ONEConstants = require('../../lib/constants')
+const ONEWallet = require('../../lib/onewallet')
 const BN = require('bn.js')
 
 const INTERVAL = 30000

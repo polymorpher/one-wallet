@@ -769,4 +769,15 @@ const Swap = ({ address }) => {
   )
 }
 
+// match is from route matches.
+export const SwapV2 = ({ match = {} }) => {
+  const { address } = match.params ?? {}
+  const normalizedAddr = util.safeNormalizedAddress(address)
+  return (
+    <div style={{ width: '600px', padding: '16px', margin: 'auto', background: 'white' }}>
+      <Swap address={normalizedAddr} />
+    </div>
+  )
+}
+
 export default Swap

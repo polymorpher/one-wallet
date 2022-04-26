@@ -1,4 +1,5 @@
 export const base = process.env.PUBLIC_URL || ''
+
 export default {
   root: base + '/',
   dev: base + '/dev', // opt-in / opt-out of the dev mode
@@ -29,4 +30,22 @@ export default {
     }
     return base + `/auth/${action}/${address}`
   },
+
+  // v2 only
+  // The url structure should be used for matching.
+  matchStructure: '/:category?/:address?/:section?',
+  // TODO: keeping `show` for now for backward compatibility.
+  overview: base + '/show/:address',
+  nft: base + '/show/:address/nft',
+  assets: base + '/show/:address/assets',
+  swap: base + '/show/:address/swap',
+  stake: base + '/show/:address/stake',
+}
+
+export const UrlCategory = {
+  WALLET: 'show',
+  TOOLS: 'tools',
+  RESTORE: 'restore',
+  AUTH: 'auth',
+  CONTACTS: 'contacts',
 }

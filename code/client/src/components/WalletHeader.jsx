@@ -9,7 +9,6 @@ import Input from 'antd/es/input'
 import Button from 'antd/es/button'
 import Space from 'antd/es/space'
 import Switch from 'antd/es/switch'
-import Row from 'antd/es/row'
 import Typography from 'antd/es/typography'
 import ConfigProvider from 'antd/es/config-provider'
 import { useRouteMatch, useHistory } from 'react-router'
@@ -150,14 +149,18 @@ export const WalletHeaderV2 = () => {
   const { primaryBgColor, secondaryBgColor, secondaryBorderColor } = getColorPalette(theme)
 
   const onAddressSelected = (e) => {
-    history.push(Paths.showAddress(e.value))
+    // Only change if a new address is selected.
+    if (selectedAddress !== e.value) {
+      history.push(Paths.showAddress(e.value))
+    }
   }
 
   const onThemeChange = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark'
     ConfigProvider.config({
-      theme: getColorPalette(theme),
+      theme: getColorPalette(newTheme),
     })
-    dispatch(globalActions.setUiTheme(theme === 'dark' ? 'light' : 'dark'))
+    dispatch(globalActions.setUiTheme(newTheme))
   }
 
   return (
@@ -191,7 +194,7 @@ export const WalletHeaderV2 = () => {
         <NetworkSelector key='network' />
       </div>
       <SecretSettings key='settings' visible={settingsVisible} onClose={() => setSettingsVisible(false)} />
-      <Switch checkedChildren='Dark' unCheckedChildren='Light' onChange={onThemeChange} />
+      <Switch checkedChildren='Dark' unCheckedChildren='Light' onChange={onThemeChange} checked={theme === 'dark'} />
     </div>
   )
 }

@@ -1,9 +1,9 @@
-const TestUtil = require('./util')
+const TestUtil = require('../util')
 const unit = require('ethjs-unit')
-const ONEUtil = require('../lib/util')
-const ONEDebugger = require('../lib/debug')
-const ONEWallet = require('../lib/onewallet')
-const ONEConstants = require('../lib/constants')
+const ONEUtil = require('../../lib/util')
+const ONEDebugger = require('../../lib/debug')
+const ONEWallet = require('../../lib/onewallet')
+const ONEConstants = require('../../lib/constants')
 const BN = require('bn.js')
 const INTERVAL = 30000
 const SLOT_SIZE = 1
@@ -20,13 +20,16 @@ contract('ONEWallet', (accounts) => {
   const EFFECTIVE_TIMES = DURATIONS.map(d => Math.floor(NOW / INTERVAL) * INTERVAL - d / 2)
   let snapshotId
   beforeEach(async function () {
+    await TestUtil.init()
     snapshotId = await TestUtil.snapshot()
+    console.log(`Taken snapshot id=${snapshotId}`)
   })
 
   afterEach(async function () {
     await TestUtil.revert(snapshotId)
+    await TestUtil.sleep(500)
   })
-  const testForTime = async (multiple, effectiveTime, duration, seedBase = '0xdeadbeef1234567890023456789012', numTrees = 6, checkDisplacementSuccess = false) => {
+  const testForTime = async (multiple, effectiveTime, duration, seedBase = '0xdeadbeef1234567890023456789012', numTrees = 6, checkDisplacementSuccess = true) => {
     console.log('testing:', { multiple, effectiveTime, duration })
     const purse = web3.eth.accounts.create()
     const creationSeed = '0x' + (new BN(ONEUtil.hexStringToBytes(seedBase)).addn(duration).toString('hex'))
@@ -36,7 +39,8 @@ contract('ONEWallet', (accounts) => {
       duration,
       maxOperationsPerInterval: SLOT_SIZE,
       lastResortAddress: purse.address,
-      spendingLimit: ONE_ETH
+      spendingLimit: ONE_ETH,
+      buildInnerTrees: true
     })
     const {
       wallet,
@@ -46,17 +50,21 @@ contract('ONEWallet', (accounts) => {
 
     TestUtil.printInnerTrees({ Debugger, innerTrees })
     const newSeed = '0xdeedbeaf1234567890123456789012'
-    const newEffectiveTime = Math.floor(NOW / INTERVAL / 6) * INTERVAL * 6
-    const { core: newCore, innerCores: newInnerCores, identificationKeys: newKeys, vars: { seed: newComputedSeed, hseed: newHseed, client: { layers: newLayers } } } = await TestUtil.makeCores({
-      seed: newSeed,
-      effectiveTime: newEffectiveTime,
-      duration: duration,
-    })
-    const data = ONEWallet.encodeDisplaceDataHex({ core: newCore, innerCores: newInnerCores, identificationKey: newKeys[0] })
 
+    let newCore, newInnerCores, newKeys, newEffectiveTime, newComputedSeed, newHseed, newLayers
     const tOtpCounter = Math.floor(NOW / INTERVAL)
     const baseCounter = Math.floor(tOtpCounter / 6) * 6
     for (let c = 0; c < numTrees; c++) {
+      ({ core: newCore, innerCores: newInnerCores, identificationKeys: newKeys, vars: { seed: newComputedSeed, hseed: newHseed, client: { layers: newLayers } } } = await TestUtil.makeCores({
+        seed: newSeed,
+        effectiveTime: (Math.floor(NOW / INTERVAL / 6) + c) * INTERVAL * 6,
+        duration: duration,
+        buildInnerTrees: true
+      }))
+
+      newEffectiveTime = (Math.floor(NOW / INTERVAL / 6) + c) * INTERVAL * 6
+
+      const data = ONEWallet.encodeDisplaceDataHex({ core: newCore, innerCores: newInnerCores, identificationKey: newKeys[0] })
       console.log(`tOtpCounter=${tOtpCounter} baseCounter=${baseCounter} c=${c}`)
       const otpb = ONEUtil.genOTP({ seed, counter: baseCounter + c, n: 6 })
       const otps = []
@@ -107,11 +115,13 @@ contract('ONEWallet', (accounts) => {
     }
   })
   it('InnerCores_New: must authenticate otp from new core after displacement', async () => {
-    const { wallet, newSeed, newEffectiveTime, newHseed, newLayers } = await testForTime(MULTIPLES[0], EFFECTIVE_TIMES[0], DURATIONS[0], '0xdeadbeef1234567890123456789012', 1, true)
+    const numTrees = 1
+    const { wallet, newSeed, newEffectiveTime, newHseed, newLayers } = await testForTime(MULTIPLES[0], EFFECTIVE_TIMES[0], DURATIONS[0], '0xdeadbeef1234567890123456789012', numTrees, true)
     console.log('newSeed', newSeed)
-    const counter = Math.floor(NOW / INTERVAL)
+    const testTime = await TestUtil.bumpTestTime(NOW, 180 * numTrees)
+    const counter = Math.floor(testTime / INTERVAL)
     const otp = ONEUtil.genOTP({ seed: newSeed, counter })
-    const index = ONEUtil.timeToIndex({ time: NOW, effectiveTime: newEffectiveTime })
+    const index = ONEUtil.timeToIndex({ time: testTime, effectiveTime: newEffectiveTime })
     const eotp = await ONEWallet.computeEOTP({ otp, hseed: newHseed })
     const purse = web3.eth.accounts.create()
 
