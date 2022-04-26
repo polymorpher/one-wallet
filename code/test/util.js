@@ -105,6 +105,15 @@ const sendTestRPC = async (data, callback) => {
   }
 }
 
+const mine = async () => {
+  await sendTestRPC({
+    jsonrpc: '2.0',
+    method: 'evm_mine',
+    params: [],
+    id: new Date().getTime(),
+  }, (err) => err && console.error(err))
+}
+
 const increaseTime = async (seconds) => {
   const client = await getClient()
   if (client.indexOf('TestRPC') === -1) {
@@ -115,15 +124,10 @@ const increaseTime = async (seconds) => {
     jsonrpc: '2.0',
     method: 'evm_increaseTime',
     params: [seconds],
-    id: 0,
+    id: new Date().getTime(),
   }, (err) => err && console.error(err))
 
-  await sendTestRPC({
-    jsonrpc: '2.0',
-    method: 'evm_mine',
-    params: [],
-    id: 0,
-  }, (err) => err && console.error(err))
+  await mine()
 
   console.log('EVM increased time by', seconds)
 }
@@ -167,8 +171,9 @@ const bumpTestTime = async (testEffectiveTime, bumpSeconds) => {
   Logger.debug(`Simulated Timestamp       : ${testEffectiveTime}`)
   Logger.debug(`Simulated increase (secs) : ${bumpSeconds}`)
   testEffectiveTime = testEffectiveTime + (bumpSeconds * 1000)
+  await mine()
   const blockNumber = await web3.eth.getBlockNumber()
-  const chainTime = await ((await web3.eth.getBlock(blockNumber)).timestamp) * 1000
+  const chainTime = (await web3.eth.getBlock(blockNumber)).timestamp * 1000
   const chainBumpSeconds = Math.floor((testEffectiveTime - chainTime) / 1000)
   Logger.debug(`Current System Time       : ${Date.now()}`)
   Logger.debug(`Block Number              : ${JSON.stringify(blockNumber)}`)
