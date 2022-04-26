@@ -8,6 +8,7 @@ import Row from 'antd/es/row'
 import Spin from 'antd/es/spin'
 import SiderMenu, { SiderMenuV2 } from './components/SiderMenu'
 import WalletHeader, { WalletHeaderV2 } from './components/WalletHeader'
+import { NFTDashboardV2 } from './pages/Show/NFTDashboard'
 import CreatePage from './pages/Create'
 import AddressDetailPage from './pages/Contacts/AddressDetail'
 import ListPage from './pages/List'
@@ -78,6 +79,11 @@ const LocalRoutes = () => {
                 return <Redirect to={Paths.root} />
               }}
             />
+            {/* Dedicated v2 routes. */}
+            {v2ui && (
+              <Route path={Paths.nft} component={NFTDashboardV2} />
+            )}
+
             <Route path={Paths.auth} component={WalletAuth} />
             <Route path={Paths.create} component={CreatePage} />
             <Route path={Paths.create1} render={() => <CreatePage showRecovery />} />
