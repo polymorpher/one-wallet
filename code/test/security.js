@@ -258,12 +258,12 @@ contract('ONEWallet', (accounts) => {
   // Test must allow displace operation using 6x6 otps for different durations
   // Expected result: can authenticate otp from new core after displacement
   it('SE-BASIC-7 DISPLACE: must allow displace operation using 6x6 otps for different durations authenticate otp from new core after displacement', async () => {
-    let testTime = Date.now()
-    testTime = Math.floor(testTime / INTERVAL6) * INTERVAL6 + (INTERVAL3)
-    testTime = await TestUtil.bumpTestTime(testTime, 60)
     const multiple = 24
-    const duration = INTERVAL * 24 // need to be greater than 16 to trigger innerCore generations
-    const effectiveTime = Math.floor(testTime / INTERVAL6) * INTERVAL6 - INTERVAL3
+    const duration = INTERVAL * multiple
+    const OFFSET = 45000
+    let testTime = Math.floor(Date.now() / INTERVAL6) * INTERVAL6 + OFFSET
+    testTime = await TestUtil.bumpTestTime(testTime, 0)
+    let effectiveTime = Math.floor(testTime / INTERVAL6) * INTERVAL6 - duration / 2 // walletEffectiveTime (when the wallet theoretically was created) is half the duration of the wallet
     await testForTime({ multiple, effectiveTime, duration, testTime })
     // assert.equal('events', 'NoEvents', 'lets see the events')
   })
@@ -326,7 +326,7 @@ contract('ONEWallet', (accounts) => {
         testTime
       }
     )
-    // JUMP_SPENDING_LIMIT does not trgger an event
+    // JUMP_SPENDING_LIMIT does not trigger an event
     // Alice Items that have changed - nonce, lastOperationTime, commits, spendingState
     state = await TestUtil.validateOpsStateMutation({ wallet: alice.wallet, state })
     // Spending State
@@ -346,9 +346,10 @@ contract('ONEWallet', (accounts) => {
   // Test calling DISPLACE when forward has been set
   // Expected result: this will fail with a revert
   // Logic: if (forwardAddress != address(0))
+  // Note: multiple must be greater than 16 to generate innerTrees
   it('SE-NEGATIVE-7 DISPLACE: must fail if forward address has been set', async () => {
-    const multiple = 8
-    const duration = INTERVAL6 * multiple
+    const multiple = 24
+    const duration = INTERVAL * multiple
     const OFFSET = 45000
     const treeIndex = Math.ceil(OFFSET / INTERVAL)
     let testTime = Math.ceil(Date.now() / INTERVAL6) * INTERVAL6 + OFFSET
@@ -372,7 +373,7 @@ contract('ONEWallet', (accounts) => {
     TestUtil.validateEvent({ tx: tx0, expectedEvent: 'ForwardAddressUpdated' })
     // Start Displacement Tests
     const newSeed = '0xdeedbeaf1234567890123456789012'
-    let newEffectiveTime = walletEffectiveTime - INTERVAL6
+    let newEffectiveTime = walletEffectiveTime + INTERVAL6
     let { core: newCore, innerCores: newInnerCores, identificationKeys: newKeys } = await TestUtil.makeCores({
       seed: newSeed,
       duration,
@@ -683,8 +684,9 @@ contract('ONEWallet', (accounts) => {
 
   // ===== DISPLACE TESTING FOR DIFFERENT DURATIONS ====
   it('SE-COMPLEX-7: must allow displace operation using 6x6 otps for different durations', async () => {
-    // Begin Tests
-    let testTime = Date.now()
+    const OFFSET = 45000
+    let testTime = Math.floor(Date.now() / INTERVAL6) * INTERVAL6 + OFFSET
+    testTime = await TestUtil.bumpTestTime(testTime, 0)
     const EFFECTIVE_TIMES = DURATIONS.map(d => Math.floor(testTime / INTERVAL) * INTERVAL - d / 2)
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     for (let i = 0; i < MULTIPLES.length; i++) {
@@ -693,9 +695,9 @@ contract('ONEWallet', (accounts) => {
   })
   // ===== DISPLACEMENT AUTHENTICATION TESTING ====
   it('SE-COMPLEX-7-0: must authenticate otp from new core after displacement', async () => {
-    let testTime = Date.now()
-    testTime = Math.floor(testTime / INTERVAL) * INTERVAL + INTERVAL
-    testTime = await TestUtil.bumpTestTime(testTime, 60)
+    const OFFSET = 45000
+    let testTime = Math.floor(Date.now() / INTERVAL6) * INTERVAL6 + OFFSET
+    testTime = await TestUtil.bumpTestTime(testTime, 0)
     const EFFECTIVE_TIMES = DURATIONS.map(d => Math.floor(testTime / INTERVAL) * INTERVAL - d / 2)
     let { walletInfo: alice, state, newEffectiveTime } = await testForTime({
       multiple: MULTIPLES[0],
