@@ -173,7 +173,12 @@ const bumpTestTime = async (testEffectiveTime, bumpSeconds) => {
   testEffectiveTime = testEffectiveTime + (bumpSeconds * 1000)
   await mine()
   const blockNumber = await web3.eth.getBlockNumber()
-  const chainTime = (await web3.eth.getBlock(blockNumber)).timestamp * 1000
+  let block = await web3.eth.getBlock(blockNumber)
+  while (!block) {
+    await sleep(100)
+    block = await web3.eth.getBlock(blockNumber)
+  }
+  const chainTime = block.timestamp * 1000
   const chainBumpSeconds = Math.floor((testEffectiveTime - chainTime) / 1000)
   Logger.debug(`Current System Time       : ${Date.now()}`)
   Logger.debug(`Block Number              : ${JSON.stringify(blockNumber)}`)
