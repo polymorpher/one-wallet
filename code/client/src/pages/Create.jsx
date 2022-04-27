@@ -450,8 +450,8 @@ const SetupOtpSection = ({ expertMode, otpReady, setupConfig, walletState, setWa
   return (
     <>{step === 1 &&
       <AnimatedSection>
-        <Row>
-          <Space direction='vertical'>
+        <Row justify='center'>
+          <Space direction='vertical' align='center' style={{ width: '100%' }}>
             {/* <Heading>Now, scan the QR code with your Google Authenticator</Heading> */}
             <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
             {!isMobile && <Hint>Scan QR code to setup {getGoogleAuthenticatorAppLink(os)} and the wallet </Hint>}
@@ -461,7 +461,7 @@ const SetupOtpSection = ({ expertMode, otpReady, setupConfig, walletState, setWa
             {buildQRCodeComponent({ seed, name: ONENames.nameWithTime(name, effectiveTime), os, isMobile, qrCodeData: otpQrCodeData })}
           </Space>
         </Row>
-        <Row style={{ marginTop: 16 }}>
+        <Row justify='center' style={{ marginTop: 16 }}>
           <Space direction='vertical' size='large' align='center' style={{ width: '100%' }}>
             <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={ONENames.nameWithTime(name, effectiveTime)} autofill={allowAutofill} />
             {expertMode && <TwoCodeOption isMobile={isMobile} setDoubleOtp={d => setWalletState(s => ({ ...s, doubleOtp: d }))} doubleOtp={doubleOtp} />}
