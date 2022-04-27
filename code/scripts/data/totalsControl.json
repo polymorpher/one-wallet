@@ -1,0 +1,20 @@
+{
+    "controlInformation": [
+        {
+            "relayerAddress": "0xc8cd0c9ca68b853f73917c36e9276770a8d8e4e0",
+            "refreshWallets": true,
+            "refreshBalances": true,
+            "lastExtractTime": "2021-06-13T22:22:21.704Z",
+            "walletCount": 530,
+            "totalBalance": "117221.599093431812640656"
+        },
+        {
+            "relayerAddress": "0xe0b00c60b17cb7987ad79f04efd7e2572c4a6100",
+            "refreshWallets": true,
+            "refreshBalances": true,
+            "lastExtractTime": "2021-06-13T22:22:21.704Z",
+            "walletCount": 528,
+            "totalBalance": "117221.599093431812640656"
+        }
+    ]
+}
