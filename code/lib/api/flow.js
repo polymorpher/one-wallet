@@ -242,7 +242,7 @@ const Flows = {
         innerTrees,
         message })
       eotp = derived?.eotp
-      index = index >= 0 ? index : derived?.index
+      index = (index < 0 || !index) ? derived?.index : index
       layers = layers || derived?.layers
     }
     if (!eotp) {

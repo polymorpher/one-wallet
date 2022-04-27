@@ -32,8 +32,8 @@ const getCoreArray = cores => {
     if (core.length > 0) {
       return [...core]
     }
-    const { root, height, interval, t0, lifespan, slotSize } = core
-    return [ root, height, interval, t0, lifespan, slotSize ]
+    const { root, height, interval, t0, lifespan, maxOperationsPerInterval } = core
+    return [ root, height, interval, t0, lifespan, maxOperationsPerInterval ]
   })
 }
 
