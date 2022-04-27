@@ -26,7 +26,6 @@ const THREE_ETH = unit.toWei('3', 'ether')
 const FOUR_ETH = unit.toWei('4', 'ether')
 const NUM_OTPS = 6 // number of OTPS we use 6
 const INTERVAL = 30000 // 30 second Intervals
-const INTERVAL3 = INTERVAL * NUM_OTPS / 2 // 3 intervals is 90 seconds we use this for caculating walletEffectiveTime (creation time) = testTime - INTERVAL3
 const INTERVAL6 = INTERVAL * NUM_OTPS // 6 intervals is 3 minutes we are using 6 otps for authentication
 const NOW_MINUS_5 = Math.floor(Date.now() / (INTERVAL)) * INTERVAL - 5000
 const duration = INTERVAL * 2 * 60 * 24 * 4 // 4 day wallet duration
@@ -261,7 +260,7 @@ contract('ONEWallet', (accounts) => {
     const multiple = 24
     const duration = INTERVAL * multiple
     const OFFSET = 45000
-    let testTime = Math.floor(Date.now() / INTERVAL6) * INTERVAL6 + OFFSET
+    let testTime = Math.ceil(Date.now() / INTERVAL6) * INTERVAL6 + OFFSET
     testTime = await TestUtil.bumpTestTime(testTime, 0)
     let effectiveTime = Math.floor(testTime / INTERVAL6) * INTERVAL6 - duration / 2 // walletEffectiveTime (when the wallet theoretically was created) is half the duration of the wallet
     await testForTime({ multiple, effectiveTime, duration, testTime })
@@ -351,7 +350,7 @@ contract('ONEWallet', (accounts) => {
     const multiple = 24
     const duration = INTERVAL * multiple
     const OFFSET = 45000
-    const treeIndex = Math.ceil(OFFSET / INTERVAL)
+    const treeIndex = Math.floor(OFFSET / INTERVAL)
     let testTime = Math.ceil(Date.now() / INTERVAL6) * INTERVAL6 + OFFSET
     testTime = await TestUtil.bumpTestTime(testTime, 0)
     let walletEffectiveTime = Math.floor(testTime / INTERVAL6) * INTERVAL6 - duration / 2
@@ -412,11 +411,11 @@ contract('ONEWallet', (accounts) => {
   // Expected result: this will fail and trigger event CoreDisplacementFailed "Must have newer time range"
   // Logic: (newCore.t0 + newCore.lifespan <= oldCore.t0 + oldCore.lifespan || newCore.t0 <= oldCore.t0)
   it('SE-NEGATIVE-7-1 DISPLACE: must fail if called with an older or the same time range', async () => {
-    const multiple = 8
-    const duration = INTERVAL6 * multiple
+    const multiple = 24
+    const duration = INTERVAL * multiple
     const OFFSET = 45000
     const treeIndex = Math.floor(OFFSET / INTERVAL)
-    let testTime = Math.floor(Date.now() / INTERVAL6) * INTERVAL6 + OFFSET
+    let testTime = Math.ceil(Date.now() / INTERVAL6) * INTERVAL6 + OFFSET
     testTime = await TestUtil.bumpTestTime(testTime, 0)
     let walletEffectiveTime = Math.floor(testTime / INTERVAL6) * INTERVAL6 - duration / 2 // walletEffectiveTime (when the wallet theoretically was created) is half the duration of the wallet
     let { walletInfo: alice } = await TestUtil.makeWallet({ salt: 'SE-NEGATIVE-7-1-1', deployer: accounts[0], effectiveTime: walletEffectiveTime, duration, buildInnerTrees: true })
@@ -458,11 +457,11 @@ contract('ONEWallet', (accounts) => {
   // Expected result this will fail and trigger event CoreDisplacementFailed "Must have different root"
   // Logic: if (newCore.root == oldCore.root) {
   it('SE-NEGATIVE-7-2 DISPLACE: must fail if called with the same root', async () => {
-    const multiple = 8
-    const duration = INTERVAL6 * multiple
+    const multiple = 24
+    const duration = INTERVAL * multiple
     const OFFSET = 45000
     const treeIndex = Math.floor(OFFSET / INTERVAL)
-    let testTime = Math.floor(Date.now() / INTERVAL6) * INTERVAL6 + OFFSET
+    let testTime = Math.ceil(Date.now() / INTERVAL6) * INTERVAL6 + OFFSET
     testTime = await TestUtil.bumpTestTime(testTime, 0)
     let walletEffectiveTime = Math.floor(testTime / INTERVAL6) * INTERVAL6 - duration / 2 // walletEffectiveTime (when the wallet theoretically was created) is half the duration of the wallet
     let { walletInfo: alice, state } = await TestUtil.makeWallet({ salt: 'SE-NEGATIVE-7-2-1', deployer: accounts[0], effectiveTime: walletEffectiveTime, duration, buildInnerTrees: true })
@@ -685,7 +684,7 @@ contract('ONEWallet', (accounts) => {
   // ===== DISPLACE TESTING FOR DIFFERENT DURATIONS ====
   it('SE-COMPLEX-7: must allow displace operation using 6x6 otps for different durations', async () => {
     const OFFSET = 45000
-    let testTime = Math.floor(Date.now() / INTERVAL6) * INTERVAL6 + OFFSET
+    let testTime = Math.ceil(Date.now() / INTERVAL6) * INTERVAL6 + OFFSET
     testTime = await TestUtil.bumpTestTime(testTime, 0)
     const EFFECTIVE_TIMES = DURATIONS.map(d => Math.floor(testTime / INTERVAL) * INTERVAL - d / 2)
     testTime = await TestUtil.bumpTestTime(testTime, 60)
@@ -696,7 +695,7 @@ contract('ONEWallet', (accounts) => {
   // ===== DISPLACEMENT AUTHENTICATION TESTING ====
   it('SE-COMPLEX-7-0: must authenticate otp from new core after displacement', async () => {
     const OFFSET = 45000
-    let testTime = Math.floor(Date.now() / INTERVAL6) * INTERVAL6 + OFFSET
+    let testTime = Math.ceil(Date.now() / INTERVAL6) * INTERVAL6 + OFFSET
     testTime = await TestUtil.bumpTestTime(testTime, 0)
     const EFFECTIVE_TIMES = DURATIONS.map(d => Math.floor(testTime / INTERVAL) * INTERVAL - d / 2)
     let { walletInfo: alice, state, newEffectiveTime } = await testForTime({
