@@ -164,8 +164,10 @@ const Create = ({ expertMode, showRecovery }) => {
     }
   }, [])
 
+  const wrapperStyle = v2ui ? { display: 'flex', justifyContent: 'center' } : {}
+
   return (
-    <div className={v2ui ? 'wallet-creation-flow' : ''}>
+    <div style={wrapperStyle}>
       {section === sectionViews.setupOtp &&
         <SetupOtpSection expertMode={expertMode} otpReady={otpReady} effectiveTime={coreSettings.effectiveTime} walletState={walletState} setWalletState={setWalletState} setupConfig={setupConfig} setSection={setSection} />}
       {section === sectionViews.prepareWallet &&
