@@ -15,15 +15,8 @@ const Web3 = require('web3')
 const web3 = new Web3(Web3.givenProvider || 'https://api.s0.t.hmny.io')
 const BN = require('bn.js')
 const unit = require('ethjs-unit')
-// const { path } = require('path')
-// const { config } = require('./config')
-// const TotalsManager = {
-//   path: config.defaultTotalsPath,
-//   logger: config.debug ? console.log : () => {}
-// }
 const now = Date.now()
 const nowDateISOString = new Date().toISOString()
-// const t0 = process.env.T0 ? Date.parse(process.env.T0) : now - 3600 * 1000 * 24 * 3
 const relayerAddress = process.env.relayerAddress || '0xc8cd0c9ca68b853f73917c36e9276770a8d8e4e0'
 const rlp = require('rlp')
 const ONEUtil = require('../lib/util')
@@ -92,17 +85,12 @@ const updateRelayerInfo = async ({ relayerControl }) => {
   let totalBalance = new BN(0)
   let { jsonObject: relayerInfo } = await readJsonFile({ file: relayerFile })
   if (!relayerInfo.wallets) { relayerInfo.wallets = [] }
-  // console.log(`relayerFile: ${relayerFile}`)
-  // console.log(`relayerInfo: ${JSON.stringify(relayerInfo)}`)
   let id = 0
   let pageIndex = 0
   let tMin = now
   const lastExtractTime = nowDateISOString
-  // console.log(lastExtractTime)
   const addresses = []
   const t0 = relayerControl.lastExtractTime ? Date.parse(relayerControl.lastExtractTime) : now - 3600 * 1000 * 24 * 3
-  // console.log(`t0: ${t0}`)
-  // console.log(`Date.parse(relayerControl.lastExtractTime): ${Date.parse(relayerControl.lastExtractTime)}`)
   while (tMin > t0) {
     const { data } = await axios.post('https://api.s0.t.hmny.io', makeRequest({ id, pageIndex }))
     const { result: { transactions } } = data
@@ -136,35 +124,15 @@ const updateRelayerInfo = async ({ relayerControl }) => {
     await new Promise((resolve) => setTimeout(resolve, 250))
   }
   // Loop appending each address to relayerInfo
-  // console.log(`relayerInfo.wallets: ${JSON.stringify(relayerInfo.wallets)}`)
   // DeDup relayerInfo and order by CreationDate
   relayerInfo.wallets.filter((v, i, a) => a.findIndex(v2 => (v2.walletAddress === v.walletAddress)) === i)
-  // relayerInfo.wallets.filter((v, i, a) => a.findIndex(v2 => (v2.id === v.id)) === i)
   // const relayerInfo.wallets = [...new Map(arr.map(v => [v.walletAddress, v])).values()] // if order doesn't matter
-  // Loop through relayerInfo  getting Balance and updating lastExtractedTime
+  // Loop through relayerInfo  getting Balances
   for (let i = 0; i < relayerInfo.wallets.length; i++) {
-    // const walletBalance = new BN(await web3.eth.getBalance(relayerInfo.wallets[i].walletAddress))
     const walletBalance = new BN(await web3.eth.getBalance(relayerInfo.wallets[i].walletAddress))
     totalBalance = totalBalance.add(walletBalance)
-    // unit.toWei('0.5', 'ether')
-    // relayerInfo.wallets[i].balance = new BN(unit.toWei(walletBalance, 'ether'))
     relayerInfo.wallets[i].balance = unit.fromWei(walletBalance, 'ether')
-    // totalBalance += relayerInfo.wallets[i].balance
-    // console.log(`relayerInfo.wallets[i].balance: ${relayerInfo.wallets[i].walletAddress}`)
-    // console.log(`walletBalance: ${walletBalance.toString()}`)
-    // console.log(`relayerInfo.wallets[i].balance: ${relayerInfo.wallets[i].balance}`)
-    // console.log(`totalBalance: ${totalBalance.toString()}`)
-    // console.log(`totalBalancefromWei: ${unit.fromWei(totalBalance, 'ether')}`)
   }
-  // write relayerInfo File
-  // update relayerControlNew
-
-  // console.log(`Got ${addresses.length} addresses from ${timeString(t0)} to ${timeString(now)}`)
-  // addresses.forEach(a => {
-  //   const { walletAddress, time } = a
-  //   console.log(`${timeString(time)} ${walletAddress}`)
-  // })
-  // relayerInfo = addresses
   let relayerControlNew = {
     relayerAddress: relayerControl.relayerAddress,
     refreshWallets: relayerControl.refreshWallets,
@@ -172,11 +140,9 @@ const updateRelayerInfo = async ({ relayerControl }) => {
     lastExtractTime,
     walletCount: relayerInfo.wallets.length,
     totalBalance
-    // totalBalance: unit.fromWei(totalBalance, 'ether')
   }
   // Update Relayer Info
   await writeJsonFile({ file: relayerFile, jsonObject: relayerInfo })
-  // console.log(`relayerInfo: ${JSON.stringify(relayerInfo)}`)
   console.log(`relayerControlNew: ${JSON.stringify(relayerControlNew)}`)
   return { relayerControlNew }
 }
@@ -186,26 +152,18 @@ async function f () {
   let { jsonObject: initialTotals } = await readJsonFile({ file: totalsFile })
   console.log(`totals: ${JSON.stringify(initialTotals)}`)
   let { jsonObject: totalsControl } = await readJsonFile({ file: totalsControlFile })
-  // console.log(`totalsControl         : ${JSON.stringify(totalsControl)}`)
 
   let walletCount = 0
   let totalBalance = new BN(0)
   for (let i = 0; i < totalsControl.controlInformation.length; i++) {
     let relayerControl = totalsControl.controlInformation[i]
-    // console.log(`totalsControl.controlInformation[i] : ${JSON.stringify(totalsControl.controlInformation[i])}`)
-    // console.log(`relayerControl      : ${JSON.stringify(relayerControl)}`)
     let { relayerControlNew } = await updateRelayerInfo({ relayerControl })
-    // console.log(`relayerControlNew   : ${JSON.stringify(relayerControlNew)}`)
-    // console.log(`relayerWalletCount  : ${relayerControlNew.walletCount}`)
-    // console.log(`relayerTotalBalance : ${relayerControlNew.totalBalance}`)
     // Update Totals
     walletCount += relayerControlNew.walletCount
     totalBalance = totalBalance.add(relayerControlNew.totalBalance)
     // format the relayer totalBalance
     totalsControl.controlInformation[i] = relayerControlNew
     totalsControl.controlInformation[i].totalBalance = unit.fromWei(relayerControlNew.totalBalance, 'ether')
-    // console.log(`totalsControl.controlInformation[i].walletCount : ${totalsControl.controlInformation[i].walletCount}`)
-    // console.log(`totalsControl.controlInformation[i].totalBalance: ${totalsControl.controlInformation[i].totalBalance}`)
     console.log(`totalBalance: ${walletCount}`)
     console.log(`totalBalance: ${totalBalance}`)
   }
@@ -215,7 +173,7 @@ async function f () {
   // Update Totals
   let totals = { walletCount, totalBalance: unit.fromWei(totalBalance, 'ether') }
   await writeJsonFile({ file: totalsFile, jsonObject: totals })
-  console.log(`totalsControl: ${JSON.stringify(totals)}`)
+  console.log(`totals: ${JSON.stringify(totals)}`)
 }
 
 f().catch(e => console.error(e))
