@@ -132,7 +132,7 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
   try {
     const initArgs = [
       [root, height, interval, t0, lifespan, slotSize],
-      [ new BN(spendingLimit), new BN(spentAmount), new BN(lastSpendingInterval), new BN(spendingInterval), new BN(lastLimitAdjustmentTime), new BN(highestSpendingLimit) ],
+      [ new BN(spendingLimit).toString(), new BN(spentAmount).toString(), new BN(lastSpendingInterval).toString(), new BN(spendingInterval).toString(), new BN(lastLimitAdjustmentTime).toString(), new BN(highestSpendingLimit).toString() ],
       lastResortAddress,
       backlinks,
       oldCoreArrays,
