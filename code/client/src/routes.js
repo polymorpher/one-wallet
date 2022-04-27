@@ -93,19 +93,27 @@ const LocalRoutes = () => {
             <Route path={Paths.tools} component={ToolsPage} />
             <Route path={Paths.unwrap} component={Unwrap} />
             {/* Dedicated v2 routes. */}
-            {v2ui && (
-              <>
-                <Route path={Paths.overview} exact component={ShowPage} />
-                <Route path={Paths.nft} exact component={NFTDashboardV2} />
-                <Route path={Paths.assets} exact component={ERC20GridV2} />
-                <Route path={Paths.swap} exact component={SwapV2} />
-                <Route path={Paths.stake} exact component={StakeV2} />
-              </>
-            )}
+            {v2ui && <Route path={Paths.overview} exact component={ShowPage} />}
+            {v2ui && <Route path={Paths.nft} exact component={NFTDashboardV2} />}
+            {v2ui && <Route path={Paths.assets} exact component={ERC20GridV2} />}
+            {v2ui && <Route path={Paths.swap} exact component={SwapV2} />}
+            {v2ui && <Route path={Paths.stake} exact component={StakeV2} />}
             <Route
               exact
               path={Paths.root}
               render={() => {
+                const hasWallets = networkWallets && networkWallets.length > 0
+                if (!hasWallets) {
+                  return <Redirect to={Paths.create} component={CreatePage} />
+                }
+                return v2ui
+                  ? <Redirect to={Paths.showAddress(networkWallets[0].address)} component={ShowPage} />
+                  : <Redirect to={Paths.wallets} component={ListPage} />
+              }}
+            />
+            {/* Fallthrough paths to handle any unrecognized paths. */}
+            <Route
+              path='*' exact render={() => {
                 const hasWallets = networkWallets && networkWallets.length > 0
                 if (!hasWallets) {
                   return <Redirect to={Paths.create} component={CreatePage} />

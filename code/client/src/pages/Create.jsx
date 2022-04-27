@@ -504,12 +504,12 @@ const SetupOtpSection = ({ expertMode, otpReady, setupConfig, walletState, setWa
             {buildQRCodeComponent({ seed: seed2, name: ONENames.nameWithTime(getSecondCodeName(name), effectiveTime), os, isMobile, qrCodeData: secondOtpQrCodeData })}
           </>}
       </Space>
-      {step === 1 &&
-          <Space direction='vertical' size='large' align='center' style={{ width: '100%', marginTop: '16px'}}>
-            <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={ONENames.nameWithTime(name, effectiveTime)} autofill={allowAutofill} />
-            {expertMode && <TwoCodeOption isMobile={isMobile} setDoubleOtp={d => setWalletState(s => ({ ...s, doubleOtp: d }))} doubleOtp={doubleOtp} />}
-            {expertMode && <Hint>You can adjust spending limit in the next step</Hint>}
-        </Space>}
+      {step === 1 && (
+        <Space direction='vertical' size='large' align='center' style={{ width: '100%', marginTop: '16px' }}>
+          <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={ONENames.nameWithTime(name, effectiveTime)} autofill={allowAutofill} />
+          {expertMode && <TwoCodeOption isMobile={isMobile} setDoubleOtp={d => setWalletState(s => ({ ...s, doubleOtp: d }))} doubleOtp={doubleOtp} />}
+          {expertMode && <Hint>You can adjust spending limit in the next step</Hint>}
+        </Space>)}
       {step === 2 &&
         <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={ONENames.nameWithTime(getSecondCodeName(name), effectiveTime)} />}
     </AnimatedSection>
