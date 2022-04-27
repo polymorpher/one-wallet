@@ -456,7 +456,7 @@ const SetupOtpSection = ({ expertMode, otpReady, setupConfig, walletState, setWa
             <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
             {!isMobile && <Hint>Scan QR code to setup {getGoogleAuthenticatorAppLink(os)} and the wallet </Hint>}
             {isMobile && <Hint>Tap QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use the wallet</Hint>}
-            <Hint>Optional: <Link href='#' onClick={toggleShowAccount}>sign-up</Link> to enable backup, alerts, verification code autofill</Hint>
+            {/* <Hint>Optional: <Link href='#' onClick={toggleShowAccount}>sign-up</Link> to enable backup, alerts, verification code autofill</Hint> */}
             {showAccount && <SignupAccount seed={seed} name={name} address={walletState.predictedAddress} effectiveTime={effectiveTime} setAllowOTPAutoFill={setAllowAutoFill} />}
             {buildQRCodeComponent({ seed, name: ONENames.nameWithTime(name, effectiveTime), os, isMobile, qrCodeData: otpQrCodeData })}
           </Space>
