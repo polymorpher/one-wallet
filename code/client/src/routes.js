@@ -99,6 +99,8 @@ const LocalRoutes = () => {
             {v2ui && <Route path={Paths.assets} exact component={ERC20GridV2} />}
             {v2ui && <Route path={Paths.swap} exact component={SwapV2} />}
             {v2ui && <Route path={Paths.stake} exact component={StakeV2} />}
+            {/* Fuzzy match so we still can render other sections in the tab fashion. */}
+            {v2ui && <Route path={Paths.walletfuzzyaction} exact component={ShowPage} />}
             <Route
               exact
               path={Paths.root}

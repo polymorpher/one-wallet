@@ -40,6 +40,8 @@ export default {
   assets: base + '/show/:address/assets',
   swap: base + '/show/:address/swap',
   stake: base + '/show/:address/stake',
+  // Fuzzy match, will remove once move every section to it's own route
+  walletfuzzyaction: base + '/show/:address/:action',
 }
 
 export const UrlCategory = {
