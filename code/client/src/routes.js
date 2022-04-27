@@ -32,6 +32,7 @@ const LocalRoutes = () => {
   const v2ui = useSelector(state => state.global.v2ui)
   const wallets = useSelector(state => state.wallet)
   const network = useSelector(state => state.global.network)
+  const selectedAddress = useSelector(state => state.global.selectedWallet)
   const networkWallets = util.filterNetworkWallets(wallets, network)
   const { isMobile } = useWindowDimensions()
 
@@ -107,7 +108,7 @@ const LocalRoutes = () => {
                   return <Redirect to={Paths.create} component={CreatePage} />
                 }
                 return v2ui
-                  ? <Redirect to={Paths.showAddress(networkWallets[0].address)} component={ShowPage} />
+                  ? <Redirect to={Paths.showAddress(selectedAddress ?? networkWallets[0].address)} component={ShowPage} />
                   : <Redirect to={Paths.wallets} component={ListPage} />
               }}
             />
@@ -119,7 +120,7 @@ const LocalRoutes = () => {
                   return <Redirect to={Paths.create} component={CreatePage} />
                 }
                 return v2ui
-                  ? <Redirect to={Paths.showAddress(networkWallets[0].address)} component={ShowPage} />
+                  ? <Redirect to={Paths.showAddress(selectedAddress ?? networkWallets[0].address)} component={ShowPage} />
                   : <Redirect to={Paths.wallets} component={ListPage} />
               }}
             />
