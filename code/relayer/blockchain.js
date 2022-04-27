@@ -258,7 +258,8 @@ const prepareExecute = (network, logger = Logger.log, abortUnlessRPCError = true
       async () => f({
         from,
         nonce: '0x' + new BN(nonce).toString(16),
-        gasPrice: config.gasPrice.clone().muln((numAttempts || 0) + 1)
+        gasPrice: config.gasPrice.clone().muln((numAttempts || 0) + 1),
+        value: 0,
       }), {
         retry: (ex, n) => {
           if (ex?.abort) {
