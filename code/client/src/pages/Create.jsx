@@ -451,7 +451,7 @@ const SetupOtpSection = ({ expertMode, otpReady, setupConfig, walletState, setWa
     <>{step === 1 &&
       <AnimatedSection>
         <Row justify='center'>
-          <Space direction='vertical' align='center' style={{ width: '100%' }}>
+          <Space direction='vertical' style={{ width: '100%' }}>
             {/* <Heading>Now, scan the QR code with your Google Authenticator</Heading> */}
             <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
             {!isMobile && <Hint>Scan QR code to setup {getGoogleAuthenticatorAppLink(os)} and the wallet </Hint>}
