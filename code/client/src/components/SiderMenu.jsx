@@ -25,9 +25,10 @@ import config from '../config'
 import Paths from '../constants/paths'
 import styled from 'styled-components'
 import util, { useWindowDimensions } from '../util'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useTheme, getColorPalette } from '../theme'
 import { StatsInfo, LineDivider } from './StatsInfo'
+import { globalActions } from '../state/modules/global'
 const { Link } = Typography
 
 const SiderLink = styled(Link).attrs((e) => ({
@@ -173,15 +174,22 @@ const SiderMenu = ({ ...args }) => {
 
 export const SiderMenuV2 = ({ ...args }) => {
   const history = useHistory()
+  const dispatch = useDispatch()
   const { isMobile } = useWindowDimensions()
   const wallets = useSelector(state => state.wallet)
   const selectedAddress = useSelector(state => state.global.selectedWallet)
   const network = useSelector(state => state.global.network)
   const networkWallets = util.filterNetworkWallets(wallets, network)
-  const matchedOrFirstWallet = networkWallets.filter(w => w.address === selectedAddress)[0] ?? networkWallets[0]
+  const matchedWallet = networkWallets.filter(w => w.address === selectedAddress)[0]
 
   args.nav = ({ key }) => {
     if (key.startsWith('wallet')) {
+    // If no matched wallet, default to select the first if exists.
+      if (!matchedWallet && networkWallets[0]) {
+        dispatch(globalActions.selectWallet(networkWallets[0].address))
+      }
+      const matchedOrFirstWallet = matchedWallet ?? networkWallets[0]
+
       if (matchedOrFirstWallet) {
         const [, action] = key.split('/')
         history.push(Paths.showAddress(matchedOrFirstWallet.address, action))
