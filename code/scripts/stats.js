@@ -29,7 +29,6 @@ const batchGetBalance = async (addresses) => {
   const balances = []
   for (const c of chunks) {
     const b = await Promise.all(c.map(a => api.blockchain.getBalance({ address: a })))
-    console.log(b)
     balances.push(...b)
     await new Promise((resolve) => setTimeout(resolve, SLEEP_BETWEEN_RPC))
   }
