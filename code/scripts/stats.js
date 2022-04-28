@@ -121,9 +121,9 @@ async function exec () {
     }
   }
   const newStats = {
-    totalBalance: updateBalance ? totalBalance.toString() : stats.totalBalance,
+    totalBalance: totalBalance.toString(),
     totalAddresses,
-    lastBalanceUpdate: updateBalance ? now : stats.lastBalanceUpdate,
+    lastBalanceUpdate: stats.lastBalanceUpdate,
     lastScanTime: now
   }
   console.log(`writing new stats`, newStats)
