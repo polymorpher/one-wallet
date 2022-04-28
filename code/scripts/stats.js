@@ -1,5 +1,6 @@
 require('dotenv').config()
 const { min, chunk, uniqBy } = require('lodash')
+const readline = require('readline')
 const { promises: fs } = require('fs')
 const BN = require('bn.js')
 const rlp = require('rlp')
@@ -14,6 +15,7 @@ const T0 = process.env.T0 ? Date.parse(process.env.T0) : Date.now() - 3600 * 100
 const RELAYER_ADDRESSES = (process.env.RELAYER_ADDRESSES || '0xc8cd0c9ca68b853f73917c36e9276770a8d8e4e0').split(',').map(s => s.toLowerCase().trim())
 const STATS_CACHE = process.env.STATS_CACHE || './data/stats.json'
 const ADDRESSES_CACHE = process.env.ADDRESSES_CACHE || './data/addresses.csv'
+const ADDRESSES_TEMP = process.env.ADDRESSES_TEMP || './data/addresses.temp.csv'
 const MAX_BALANCE_AGE = parseInt(process.env.MAX_BALANCE_AGE || 3600 * 1000 * 24)
 const SLEEP_BETWEEN_RPC = parseInt(process.env.SLEEP_BETWEEN_RPC || 100)
 const RPC_BATCH_SIZE = parseInt(process.env.RPC_BATCH_SIZE || 50)
@@ -102,12 +104,46 @@ const scan = async ({ address, from = T0, to = Date.now(), retrieveBalance = tru
   return { balances, wallets: uniqueWallets }
 }
 
+async function refreshAllBalance () {
+  const now = Date.now()
+  const fp = await fs.open(ADDRESSES_CACHE, 'r')
+  const fp2 = await fs.open(ADDRESSES_TEMP, 'w+')
+  const rs = fp.createReadStream()
+  const rl = readline.createInterface({ input: rs, crlfDelay: Infinity })
+  const buf = []
+  let totalBalance = new BN(0)
+  const flush = async () => {
+    const balances = await batchGetBalance(buf.map(e => e[0]))
+    totalBalance = totalBalance.add(balances.reduce((r, b) => r.add(new BN(b)), new BN(0)))
+    console.log(`Flushing balance update of size ${RPC_BATCH_SIZE}. Total balance = ${totalBalance.toString()}`)
+    const hexBalances = balances.map(b => ONEUtil.hexView(new BN(b).toArrayLike(Uint8Array, 'be', 32)))
+    const out = buf.map((e, i) => [...e, hexBalances[i]])
+    await fp2.write(out.map(e => e.join(',')).join('\n') + '\n')
+    buf.splice(0, buf.length)
+  }
+  for await (const line of rl) {
+    const [address, hexTime] = line.split(',')
+    buf.push([address, hexTime])
+    if (buf.length >= RPC_BATCH_SIZE) {
+      await flush()
+    }
+  }
+  await flush()
+  await fp.close()
+  await fs.cp(ADDRESSES_TEMP, ADDRESSES_CACHE, { force: true })
+  await fs.rm(ADDRESSES_TEMP)
+  console.log(`Balance refresh complete. Total balance: ${ONEUtil.toOne(totalBalance.toString())}; Time elapsed: ${Math.floor(Date.now() - now)}ms`)
+  return {
+    totalBalance,
+    lastBalanceRefresh: now
+  }
+}
+
 async function exec () {
   const fp = await fs.open(STATS_CACHE, 'a+')
   const fp2 = await fs.open(ADDRESSES_CACHE, 'a+')
-  const stats = JSON.parse((await fs.readFile(STATS_CACHE, { encoding: 'utf-8' }) || '{}'))
+  const stats = JSON.parse((await fp.readFile({ encoding: 'utf-8' }) || '{}'))
   const now = Date.now()
-  const updateBalance = now - (stats.lastBalanceUpdate || 0) >= MAX_BALANCE_AGE
   const from = stats.lastScanTime || 0
   let totalBalance = new BN(stats.totalBalance)
   let totalAddresses = stats.totalAddresses
@@ -116,18 +152,35 @@ async function exec () {
     totalAddresses += wallets.length
     if (balances) {
       totalBalance = totalBalance.add(balances.reduce((r, b) => r.add(new BN(b)), new BN(0)))
-      const s = wallets.map((w, i) => `${w.address},${w.creationTime},${balances[i]}`).join('\n')
+      const s = wallets.map((w, i) => {
+        const hexTime = ONEUtil.hexView(new BN(w.creationTime).toArrayLike(Uint8Array, 'be', 4))
+        const hexBalance = ONEUtil.hexView(new BN(balances[i]).toArrayLike(Uint8Array, 'be', 32))
+        return `${w.address},${hexTime},${hexBalance}`
+      }).join('\n')
       await fp2.write(s + '\n')
     }
   }
   const newStats = {
     totalBalance: totalBalance.toString(),
     totalAddresses,
-    lastBalanceUpdate: stats.lastBalanceUpdate,
+    lastBalanceRefresh: stats.lastBalanceRefresh || 0,
     lastScanTime: now
   }
   console.log(`writing new stats`, newStats)
+  await fp.truncate()
   await fp.write(JSON.stringify(newStats), 0, 'utf-8')
+
+  const updateBalance = now - (stats.lastBalanceRefresh || 0) >= MAX_BALANCE_AGE
+  if (!updateBalance) {
+    return
+  }
+  await fp2.close()
+  const s = await refreshAllBalance()
+  const refreshedStats = { ...newStats, ...s }
+  console.log(`writing refreshed stats`, refreshedStats)
+  await fp.truncate()
+  await fp.write(JSON.stringify(refreshedStats), 0, 'utf-8')
+  await fp.close()
 }
 
 exec().catch(e => console.error(e))
