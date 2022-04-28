@@ -1,0 +1,92 @@
+{
+    "controlInformation": [
+        {
+            "relayerAddress": "0xC8cD0C9Ca68b853F73917c36E9276770A8D8E4E0",
+            "refreshWallets": true,
+            "refreshBalances": true,
+            "lastExtractTime": "2021-06-13T22:22:21.704Z",
+            "walletCount": 0,
+            "totalBalance": "0"
+        },
+        {
+            "relayerAddress": "0xfBe4dAdBbDB04Bf3CAbA788D9a7eb23e55313b1F",
+            "refreshWallets": true,
+            "refreshBalances": true,
+            "lastExtractTime": "2021-06-13T22:22:21.704Z",
+            "walletCount": 0,
+            "totalBalance": "0"
+        },
+        {
+            "relayerAddress": "0xE0b00c60B17cB7987aD79F04Efd7e2572C4a6100",
+            "refreshWallets": true,
+            "refreshBalances": true,
+            "lastExtractTime": "2021-06-13T22:22:21.704Z",
+            "walletCount": 0,
+            "totalBalance": "0"
+        },
+        {
+            "relayerAddress": "0xe76433Fe7261bDe3e0bbb18F12fE01d0D424E9cD",
+            "refreshWallets": true,
+            "refreshBalances": true,
+            "lastExtractTime": "2021-06-13T22:22:21.704Z",
+            "walletCount": 0,
+            "totalBalance": "0"
+        },
+        {
+            "relayerAddress": "0xbbf2950F6Bf37928b83AB6d0D183fE6302238AC5",
+            "refreshWallets": true,
+            "refreshBalances": true,
+            "lastExtractTime": "2021-06-13T22:22:21.704Z",
+            "walletCount": 0,
+            "totalBalance": "0"
+        },
+        {
+            "relayerAddress": "0xc292a5cf79b4942E489f74Ce9997A726789Cd5ED",
+            "refreshWallets": true,
+            "refreshBalances": true,
+            "lastExtractTime": "2021-06-13T22:22:21.704Z",
+            "walletCount": 0,
+            "totalBalance": "0"
+        },
+        {
+            "relayerAddress": "0xe4f9c8318E6861e38bF65Ff494BABD5D3a4573a8",
+            "refreshWallets": true,
+            "refreshBalances": true,
+            "lastExtractTime": "2021-06-13T22:22:21.704Z",
+            "walletCount": 0,
+            "totalBalance": "0"
+        },
+        {
+            "relayerAddress": "0xe60Ba21dbee59E4BCA4489E049313CC4603aeA17",
+            "refreshWallets": true,
+            "refreshBalances": true,
+            "lastExtractTime": "2021-06-13T22:22:21.704Z",
+            "walletCount": 0,
+            "totalBalance": "0"
+        },
+        {
+            "relayerAddress": "0xE55201A6c90c75AC3d6aB8855E749D00807E26a4",
+            "refreshWallets": true,
+            "refreshBalances": true,
+            "lastExtractTime": "2021-06-13T22:22:21.704Z",
+            "walletCount": 0,
+            "totalBalance": "0"
+        },
+        {
+            "relayerAddress": "0x1b494Fd8Fec1094f4515d5793DbCD70a457e88Ed",
+            "refreshWallets": true,
+            "refreshBalances": true,
+            "lastExtractTime": "2021-06-13T22:22:21.704Z",
+            "walletCount": 0,
+            "totalBalance": "0"
+        },
+        {
+            "relayerAddress": "0xf8440BCbCFDb18564f3674DCF04EdEEe42bb747d",
+            "refreshWallets": true,
+            "refreshBalances": true,
+            "lastExtractTime": "2021-06-13T22:22:21.704Z",
+            "walletCount": 0,
+            "totalBalance": "0"
+        },
+    ]
+}
