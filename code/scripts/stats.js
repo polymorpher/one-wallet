@@ -104,7 +104,7 @@ const scan = async ({ address, from = T0, to = Date.now(), retrieveBalance = tru
 
 async function exec () {
   const fp = await fs.open(STATS_CACHE, 'a+')
-  const fp2 = await fs.open(ADDRESSES_CACHE, 'w+')
+  const fp2 = await fs.open(ADDRESSES_CACHE, 'a+')
   const stats = JSON.parse((await fs.readFile(STATS_CACHE, { encoding: 'utf-8' }) || '{}'))
   const now = Date.now()
   const updateBalance = now - (stats.lastBalanceUpdate || 0) >= MAX_BALANCE_AGE
