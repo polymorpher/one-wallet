@@ -167,7 +167,7 @@ const initBlockchain = (store) => {
     }
   }
   switchNetwork()
-  store.subscribe(() => {
+  store && store.subscribe(() => {
     const state = store.getState()
     const { network } = state.global
     if (network && network !== activeNetwork) {
@@ -176,7 +176,7 @@ const initBlockchain = (store) => {
       switchNetwork()
     }
   })
-  if (config.debug) console.log('blockchain init complete:', { networks })
+  if (config.debug) console.log('blockchain init complete:', { networks, activeNetwork })
 }
 const parseCommits = (result) => {
   const [hashes, paramsHashes, verificationHashes, timestamps, completed] = Object.keys(result).map(k => result[k])
@@ -925,6 +925,17 @@ const api = {
       const { data: { result } } = await rpcBase.post('', {
         jsonrpc: '2.0',
         method: 'eth_getTransactionReceipt',
+        params: [txHash],
+        id: 1
+      })
+
+      return result
+    },
+
+    getTransaction: async (txHash) => {
+      const { data: { result } } = await rpcBase.post('', {
+        jsonrpc: '2.0',
+        method: 'eth_getTransactionByHash',
         params: [txHash],
         id: 1
       })
