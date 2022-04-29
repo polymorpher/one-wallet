@@ -15,6 +15,7 @@ library ONEWalletCodeHelper {
 interface IONEWalletFactoryHelper{
     event ONEWalletDeployFailed(uint256 salt, bytes32 codeHash);
     event ONEWalletDeploySuccess(address addr, uint256 salt, bytes32 codeHash);
+    function factory() external view returns (ONEWalletFactory);
     function getVersion() external pure returns (uint32, uint32);
     function deploy(IONEWallet.InitParams memory args) payable external returns (address);
     function predict(bytes memory identificationKey) external view returns (address);
@@ -23,7 +24,7 @@ interface IONEWalletFactoryHelper{
 }
 
 contract ONEWalletFactoryHelper is IONEWalletFactoryHelper {
-    ONEWalletFactory public factory = ONEWalletFactory(address(0));
+    ONEWalletFactory public override factory = ONEWalletFactory(address(0));
     constructor(ONEWalletFactory factory_){
         factory = factory_;
     }
