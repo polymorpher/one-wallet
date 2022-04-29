@@ -147,11 +147,13 @@ export const WalletHeaderV2 = () => {
   const [settingsVisible, setSettingsVisible] = useState(false)
   const [relayerEditVisible, setRelayerEditVisible] = useState(false)
   const { primaryBgColor, secondaryBgColor, secondaryBorderColor } = getColorPalette(theme)
+  const match = useRouteMatch(Paths.matchStructure)
 
   const onAddressSelected = (e) => {
     // Only change if a new address is selected.
     if (selectedAddress !== e.value) {
-      history.push(Paths.showAddress(e.value))
+      history.push(Paths.showAddress(e.value, match?.params?.section))
+      dispatch(globalActions.selectWallet(e.value))
     }
   }
 

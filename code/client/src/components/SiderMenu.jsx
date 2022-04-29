@@ -104,6 +104,21 @@ const DeskstopSiderMenu = ({ action, nav, ...args }) => {
   )
 }
 
+const SiderMenu = ({ ...args }) => {
+  const { isMobile } = useWindowDimensions()
+  const history = useHistory()
+  const match = useRouteMatch('/:action')
+  const { action } = match ? match.params : {}
+  args.action = action
+  args.nav = ({ key }) => {
+    history.push(Paths[key])
+  }
+
+  return isMobile
+    ? <MobileSiderMenu {...args} />
+    : <DeskstopSiderMenu {...args} />
+}
+
 const RouteActionMap = {
   show: 'wallet',
   nft: 'wallet/nft',
@@ -157,19 +172,36 @@ const DeskstopSiderMenuV2 = ({ nav, ...args }) => {
   )
 }
 
-const SiderMenu = ({ ...args }) => {
-  const { isMobile } = useWindowDimensions()
-  const history = useHistory()
-  const match = useRouteMatch('/:action')
-  const { action } = match ? match.params : {}
-  args.action = action
-  args.nav = ({ key }) => {
-    history.push(Paths[key])
-  }
+const MobileSiderMenuV2 = ({ nav, ...args }) => {
+  const theme = useTheme()
+  const { secondaryTextColor } = getColorPalette(theme)
+  const match = useRouteMatch(Paths.matchStructure)
+  const { category, section } = match ? match.params : {}
+  const action = RouteActionMap[section] ?? RouteActionMap[category]
 
-  return isMobile
-    ? <MobileSiderMenu {...args} />
-    : <DeskstopSiderMenu {...args} />
+  return (
+    <Menu
+      theme={theme}
+      mode='horizontal'
+      onClick={nav}
+      selectedKeys={[action]}
+    >
+      {[
+        { key: RouteActionMap.show, IconEl: OverviewIcon, label: 'Overview' },
+        { key: RouteActionMap.assets, IconEl: AssetsIcon, label: 'Assets' },
+        { key: RouteActionMap.nft, IconEl: NFTIcon, label: 'NFTs' },
+        { key: RouteActionMap.swap, IconEl: SwapIcon, label: 'Swap' },
+        { key: RouteActionMap.stake, IconEl: StakeIcon, label: 'Stake' },
+        { key: RouteActionMap.restore, IconEl: RestoreIcon, label: 'Restore' },
+      ].map(({ key, IconEl, label }) => <Menu.Item key={key} style={{ display: 'flex', alignItems: 'center' }} icon={<IconEl fill={action === 'overview' ? 'currentColor' : secondaryTextColor} />}>{label}</Menu.Item>)}
+      <Menu.Item key='external/grant'><SiderLink href='https://harmony.one/wallet'>Grants</SiderLink></Menu.Item>
+      <Menu.Item key='external/audit'><SiderLink href='https://github.com/polymorpher/one-wallet/tree/master/audits'>Audits</SiderLink></Menu.Item>
+      <Menu.Item key='external/wiki'><SiderLink href='https://github.com/polymorpher/one-wallet/wiki'>Wiki</SiderLink></Menu.Item>
+      <Menu.Item key='external/bug'><SiderLink href='https://github.com/polymorpher/one-wallet/issues'>Bugs</SiderLink></Menu.Item>
+      <Menu.Item key='external/network'><SiderLink href='https://github.com/polymorpher/one-wallet/issues'>Network</SiderLink></Menu.Item>
+      <Menu.Item key='internal/tools'>Tools</Menu.Item>
+    </Menu>
+  )
 }
 
 export const SiderMenuV2 = ({ ...args }) => {
@@ -184,7 +216,7 @@ export const SiderMenuV2 = ({ ...args }) => {
 
   args.nav = ({ key }) => {
     if (key.startsWith('wallet')) {
-    // If no matched wallet, default to select the first if exists.
+      // If no matched wallet, default to select the first if exists.
       if (!matchedWallet && networkWallets[0]) {
         dispatch(globalActions.selectWallet(networkWallets[0].address))
       }
@@ -203,7 +235,7 @@ export const SiderMenuV2 = ({ ...args }) => {
   }
 
   return isMobile
-    ? <MobileSiderMenu {...args} />
+    ? <MobileSiderMenuV2 {...args} />
     : <DeskstopSiderMenuV2 {...args} />
 }
 
