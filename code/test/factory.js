@@ -23,16 +23,16 @@ contract('ONEWallet', (accounts) => {
       spendingLimit: ONE_ETH
     })
     const code = await TestUtil.getFactory('ONEWalletFactoryHelper').getCode()
-    const deployerAddress = (await TestUtil.getFactory('ONEWalletFactory')).address
+    const factoryAddress = (await TestUtil.getFactory('ONEWalletFactory')).address
     const factoryDeployerAddress = await TestUtil.getFactory('ONEWalletFactoryHelper').factory()
-    assert.equal(deployerAddress, factoryDeployerAddress, 'deployer address must equal factory address on contract')
+    assert.equal(factoryAddress, factoryDeployerAddress, 'deployer address must equal factory address on contract')
     assert.equal(ONEUtil.hexString(byteSeed), ONEUtil.hexString(seed), 'deployer address must equal factory address on contract')
     assert.equal(identificationKeys[0], ONEUtil.getIdentificationKey(seed, true), 'generated idKey equals key computed using seed')
     const contractIdenteificationKey = await wallet.identificationKey()
     assert.equal(identificationKeys[0], contractIdenteificationKey, 'Wallet idKey equals computed idKey')
     const predictedAddress = ONEUtil.predictAddress({
       identificationKey: identificationKeys[0],
-      deployerAddress,
+      factoryAddress,
       code: ONEUtil.hexStringToBytes(code)
     })
     const factoryPredictedAddress = await TestUtil.getFactory('ONEWalletFactoryHelper').predict(identificationKeys[0])
