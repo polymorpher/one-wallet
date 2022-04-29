@@ -8,6 +8,7 @@ const rlp = require('rlp')
 const ONEUtil = require('../lib/util')
 const { setConfig } = require('../lib/config/provider')
 const config = require('../lib/config/common')
+const assert = require('assert')
 setConfig(config)
 const { api, initBlockchain } = require('../lib/api')
 initBlockchain()
@@ -22,6 +23,47 @@ const MAX_BALANCE_AGE = parseInt(process.env.MAX_BALANCE_AGE || 3600 * 1000 * 24
 const SLEEP_BETWEEN_RPC = parseInt(process.env.SLEEP_BETWEEN_RPC || 150)
 const RPC_BATCH_SIZE = parseInt(process.env.RPC_BATCH_SIZE || 50)
 const PAGE_SIZE = parseInt(process.env.PAGE_SIZE || 500)
+const SAFE_MODE = process.env.SAFE_MODE === 'true'
+
+const parseHexNumber = n => new BN(n.slice(2), 16).toNumber()
+
+const codeCache = {}
+const factoryAddresses = {}
+
+const getCode = async (deployerAddress) => {
+  if (codeCache[deployerAddress]) {
+    return codeCache[deployerAddress]
+  }
+  const code = await api.factory.getCode({ deployer: deployerAddress })
+  codeCache[deployerAddress] = ONEUtil.hexStringToBytes(code)
+  return codeCache[deployerAddress]
+}
+const getFactoryAddress = async (deployerAddress) => {
+  if (factoryAddresses[deployerAddress]) {
+    return factoryAddresses[deployerAddress]
+  }
+  const factoryAddress = await api.factory.getFactoryAddress({ deployer: deployerAddress })
+  factoryAddresses[deployerAddress] = factoryAddress
+  return factoryAddress
+}
+
+const getPredictedAddress = async ({ input, deployerAddress }) => {
+  const s = 'tuple(tuple(bytes32,uint8,uint8,uint32,uint32,uint8),tuple(uint256,uint256,uint32,uint32,uint32,uint256),address,address[],tuple(bytes32,uint8,uint8,uint32,uint32,uint8)[],tuple(bytes32,uint8,uint8,uint32,uint32,uint8)[],bytes[])'
+  const args = ONEUtil.abi.decodeParameters([s], input.slice(10))
+  const identificationKeys = args[0][args[0].length - 1]
+  const key = identificationKeys[0]
+  const code = await getCode(deployerAddress)
+  const factoryAddress = await getFactoryAddress(deployerAddress)
+  const predicted = ONEUtil.predictAddress({ code, identificationKey: key, factoryAddress })
+  if (SAFE_MODE) {
+    const onChainPredicted = await api.factory.predictAddress({ identificationKey: key, deployer: deployerAddress })
+    const verified = await api.factory.verify({ address: predicted, deployer: deployerAddress })
+    assert(verified, 'must be 1wallet deployed by factory')
+    assert(predicted === onChainPredicted, 'predicted address must equal to on-chain predicted address')
+    console.log(`SAFE mode check succeeded: address=${predicted} key=${key}`)
+  }
+  return predicted
+}
 
 const computeDirectCreationContractAddress = (from, nonce) => {
   const encoded = new Uint8Array(rlp.encode([from, nonce]))
@@ -60,7 +102,7 @@ const search = async ({ address, target }) => {
       continue
     }
     const { timestamp } = await api.rpc.getTransaction(h)
-    const t = new BN(timestamp.slice(2), 16).toNumber() * 1000
+    const t = parseHexNumber(timestamp) * 1000
     if (t <= target) {
       right = mid
       mid = Math.floor((left + right) / 2)
@@ -88,18 +130,33 @@ const scan = async ({ address, from = T0, to = Date.now(), retrieveBalance = tru
       break
     }
     // console.log(transactions)
-    tMin = Math.min(tMin, min(transactions.map(t => new BN(t.timestamp.slice(2), 16).toNumber() * 1000)))
-    const creations = transactions.filter(e => e.input.startsWith('0x60806040'))
-    console.log(`Searched transaction history down to time = ${timeString(tMin)}; at page ${pageIndex}; retrieved ${transactions.length} transactions from relayer; ${creations.length} creations of 1wallet`)
-
-    creations.forEach((t) => {
+    tMin = Math.min(tMin, min(transactions.map(t => parseHexNumber(t.timestamp) * 1000)))
+    const directCreations = transactions.filter(e => e.input.startsWith('0x60806040'))
+    for (const t of directCreations) {
       const { timestamp, nonce } = t
-      const time = timestamp * 1000
+      const time = parseHexNumber(timestamp) * 1000
       if (time < from) {
         return
       }
-      wallets.push({ address: computeDirectCreationContractAddress(nonce), creationTime: time })
-    })
+      const a = computeDirectCreationContractAddress(address, parseHexNumber(nonce))
+      wallets.push({ address: a, creationTime: time })
+    }
+    const factoryCreations = transactions.filter(e => e.input.startsWith('0xf31e87d9'))
+    for (const t of factoryCreations) {
+      const { timestamp, input, to: deployerAddress } = t
+      const time = parseHexNumber(timestamp) * 1000
+      if (time < from) {
+        continue
+      }
+      const address = await getPredictedAddress({ input, deployerAddress })
+      wallets.push({ address, creationTime: time })
+    }
+
+    console.log(`Searched transaction history down to time = ${timeString(tMin)}`)
+    console.log(`at page ${pageIndex}; retrieved ${transactions.length} transactions from relayer;`)
+    console.log(`${directCreations.length} direct creations of 1wallet`)
+    console.log(`${factoryCreations.length} factory creations of 1wallet`)
+
     pageIndex++
     await new Promise((resolve) => setTimeout(resolve, SLEEP_BETWEEN_RPC))
   }
@@ -188,3 +245,13 @@ async function exec () {
 }
 
 exec().catch(e => console.error(e))
+
+// For testing
+// async function g () {
+//   const a = await getPredictedAddress({
+//     input: '0xf31e87d90000000000000000000000000000000000000000000000000000000000000020c4ddca2ddeeb18241d4b6538f30b2b04ec177e6ed17cd552d72c711a2802306a0000000000000000000000000000000000000000000000000000000000000015000000000000000000000000000000000000000000000000000000000000001e000000000000000000000000000000000000000000000000000000000346006000000000000000000000000000000000000000000000000000000000000fff00000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000010f0cf064dd59200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000015180000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010f0cf064dd592000000000000000000000000000007534978f9fa903150ed429c486d1f42b7fdb7a6100000000000000000000000000000000000000000000000000000000000002200000000000000000000000000000000000000000000000000000000000000240000000000000000000000000000000000000000000000000000000000000026000000000000000000000000000000000000000000000000000000000000002800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000401b8c25008d2b2cd43d4939ea0e6bbca0bffabd4d2a3e7ea8d166036953765fd4953b6973bd909f4b9ba508dd4de7e1761be478c20761859988eca001f91b9122',
+//     deployerAddress: '0xc4a963ec3615842007a2cbdafdef8eeb66992e5e'
+//   })
+//   console.log(a)
+// }
+// g().catch(e => console.error(e))
