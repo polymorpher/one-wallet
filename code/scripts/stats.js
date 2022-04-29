@@ -15,7 +15,7 @@ const moment = require('moment-timezone')
 const T0 = process.env.T0 ? Date.parse(process.env.T0) : Date.now() - 3600 * 1000 * 24 * 3
 const RELAYER_ADDRESSES = (process.env.RELAYER_ADDRESSES || '0xc8cd0c9ca68b853f73917c36e9276770a8d8e4e0').split(',').map(s => s.toLowerCase().trim())
 const STATS_CACHE = process.env.STATS_CACHE || './data/stats.json'
-const ARCHIVE_RPC_URL = process.env.ARCHIVE_RPC_URL || 'https://a.api.s0.t.hmny.io'
+const ARCHIVE_RPC_URL = process.env.ARCHIVE_RPC_URL || config.networks[config.defaults.network].url
 const ADDRESSES_CACHE = process.env.ADDRESSES_CACHE || './data/addresses.csv'
 const ADDRESSES_TEMP = process.env.ADDRESSES_TEMP || './data/addresses.temp.csv'
 const MAX_BALANCE_AGE = parseInt(process.env.MAX_BALANCE_AGE || 3600 * 1000 * 24)
@@ -79,7 +79,6 @@ const search = async ({ address, target }) => {
 const scan = async ({ address, from = T0, to = Date.now(), retrieveBalance = true }) => {
   let pageIndex = await search({ address, target: to })
   let tMin = to
-  console.log({ from, to })
   const wallets = []
   while (tMin > from) {
     const transactions = await api.rpc.getTransactionHistory({ base, address, pageIndex, pageSize: PAGE_SIZE, fullTx: true })
