@@ -207,17 +207,17 @@ const api = {
   },
   walletStats: {
     getStats: async () => {
-      const { data } = await axios.get('https://explorer-v2-api.hmny.io/v0/1wallet/metrics')
-      const totalAmount = Math.round(ONEUtil.toOne(new BN(data.totalAmount)))
+      const { data: { totalBalance, totalAddresses } } = await base.get('/stats')
+      const totalAmount = Math.round(ONEUtil.toOne(new BN(totalBalance)))
 
       return {
-        count: data.count,
+        count: totalAddresses,
         totalAmount: totalAmount
       }
     }
   },
   factory: {
-    getCode: async ({ deployer }) => {
+    getCode: async ({ deployer } = {}) => {
       const c = new web3.eth.Contract(IONEWalletFactoryHelper, deployer || config.networks[activeNetwork].deploy.deployer)
       return c.methods.getCode().call()
     },
@@ -228,7 +228,7 @@ const api = {
       const minorVersion = r[1].toString()
       return `${majorVersion}.${minorVersion}`
     },
-    getFactoryAddress: async ({ deployer }) => {
+    getFactoryAddress: async ({ deployer } = {}) => {
       const c = new web3.eth.Contract(IONEWalletFactoryHelper, deployer || config.networks[activeNetwork].deploy.deployer)
       return c.methods.factory().call()
     },
