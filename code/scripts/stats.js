@@ -152,10 +152,10 @@ const scan = async ({ address, from = T0, to = Date.now(), retrieveBalance = tru
         continue
       }
       const address = await getPredictedAddress({ input, deployerAddress })
-      if (address) {
+      if (!address) {
         console.warn(`Empty address prediction from transaction ${t.hash}; possibly failed transactions with incorrect parameters`)
-        wallets.push({ address, creationTime: time })
       }
+      wallets.push({ address, creationTime: time })
     }
 
     console.log(`Searched transaction history down to time = ${timeString(tMin)}`)
