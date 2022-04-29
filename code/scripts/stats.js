@@ -1,7 +1,8 @@
 require('dotenv').config()
 const { min, chunk, uniqBy } = require('lodash')
 const readline = require('readline')
-const { promises: fs } = require('fs')
+const { promises: fs, constants: fsConstants, createReadStream } = require('fs')
+const unit = require('ethjs-unit')
 const BN = require('bn.js')
 const rlp = require('rlp')
 const ONEUtil = require('../lib/util')
@@ -32,8 +33,22 @@ const batchGetBalance = async (addresses) => {
   const chunks = chunk(addresses, RPC_BATCH_SIZE)
   const balances = []
   for (const c of chunks) {
-    const b = await Promise.all(c.map(a => api.blockchain.getBalance({ address: a })))
+    console.log(`c[0]: ${JSON.stringify(c[0])}`)
+    // const b = await Promise.all(c.map(a => api.blockchain.getBalance({ address: a })))
+    const b = await Promise.all(c.map(a => api.blockchain.getBalance({ address: '0xdc9d1024241e488848250340770c2b97452c720d' })))
+    // console.log(`b:${JSON.stringify(b)}`)
+    // const b2 = await c.map(a => api.blockchain.getBalance({ address: a }))
+    // console.log(`b2:${JSON.stringify(b2)}`)
+    // const walletBalance = new BN(await web3.eth.getBalance(c[0]))
+    // console.log(`walletBalance:${JSON.stringify(walletBalance)}`)
+    // const bS = await Promise.all(c.map(a => api.blockchain.getBalance({ address: '0xdc9d1024241e488848250340770c2b97452c720d' })))
+    // console.log(`bS:${JSON.stringify(bS)}`)
+    // const b2S = await c.map(a => api.blockchain.getBalance({ address: '0xdc9d1024241e488848250340770c2b97452c720d' }))
+    // console.log(`b2S:${JSON.stringify(b2S)}`)
+    // const walletBalanceS = new BN(await web3.eth.getBalance('0xdc9d1024241e488848250340770c2b97452c720d'))
+    // console.log(`walletBalanceS:${JSON.stringify(walletBalanceS)}`)
     balances.push(...b)
+    // console.log(`balances: ${JSON.stringify(balances)}`)
     await new Promise((resolve) => setTimeout(resolve, SLEEP_BETWEEN_RPC))
   }
   return balances
@@ -48,6 +63,7 @@ const search = async ({ address, target }) => {
   while (right < 0 || (left + 1 < right && left !== mid)) {
     console.log(`Binary searching pageIndex`, { left, mid, right })
     const transactions = await api.rpc.getTransactionHistory({ address, pageIndex: mid, pageSize: PAGE_SIZE, fullTx: false })
+    console.log(`transactions[0]: ${JSON.stringify(transactions[0])}`)
     const h = transactions[transactions.length - 1]
     if (!h) {
       right = mid
@@ -83,12 +99,17 @@ const scan = async ({ address, from = T0, to = Date.now(), retrieveBalance = tru
       tMin = from
       break
     }
-    // console.log(transactions)
+    // console.log(`transactions:${JSON.stringify(transactions)}`)
+    // console.log(`transactions[0]: ${JSON.stringify(transactions[0])}`)
+    console.log(`transactions.length: ${transactions.length}`)
     tMin = Math.min(tMin, min(transactions.map(t => new BN(t.timestamp.slice(2), 16).toNumber() * 1000)))
     const creations = transactions.filter(e => e.input.startsWith('0x60806040'))
+    // console.log(`creations:${JSON.stringify(creations)}`)
+    console.log(`creations.length: ${creations.length}`)
     console.log(`Searched transaction history down to time = ${timeString(tMin)}; at page ${pageIndex}; retrieved ${transactions.length} transactions from relayer; ${creations.length} creations of 1wallet`)
 
     creations.forEach((t) => {
+      // console.log(`In creations`)
       const { timestamp, nonce } = t
       const time = timestamp * 1000
       if (time < from) {
@@ -108,7 +129,8 @@ async function refreshAllBalance () {
   const now = Date.now()
   const fp = await fs.open(ADDRESSES_CACHE, 'r')
   const fp2 = await fs.open(ADDRESSES_TEMP, 'w+')
-  const rs = fp.createReadStream()
+  // const rs = fp.createReadStream()
+  const rs = createReadStream(ADDRESSES_CACHE)
   const rl = readline.createInterface({ input: rs, crlfDelay: Infinity })
   const buf = []
   let totalBalance = new BN(0)
@@ -130,11 +152,14 @@ async function refreshAllBalance () {
   }
   await flush()
   await fp.close()
-  await fs.cp(ADDRESSES_TEMP, ADDRESSES_CACHE, { force: true })
+  // await fs.cp(ADDRESSES_TEMP, ADDRESSES_CACHE, { force: true })
+  // await fs.rm(ADDRESSES_TEMP)
+  // await fs.copyFile(ADDRESSES_TEMP, ADDRESSES_CACHE, fsConstants.COPYFILE_FICLONE_FORCE)
+  await fs.copyFile(ADDRESSES_TEMP, ADDRESSES_CACHE)
   await fs.rm(ADDRESSES_TEMP)
   console.log(`Balance refresh complete. Total balance: ${ONEUtil.toOne(totalBalance.toString())}; Time elapsed: ${Math.floor(Date.now() - now)}ms`)
   return {
-    totalBalance,
+    totalBalance: totalBalance.toString(),
     lastBalanceRefresh: now
   }
 }
@@ -145,15 +170,26 @@ async function exec () {
   const stats = JSON.parse((await fp.readFile({ encoding: 'utf-8' }) || '{}'))
   const now = Date.now()
   const from = stats.lastScanTime || 0
+  console.log(`from: ${new Date(from).toISOString()}`)
   let totalBalance = new BN(stats.totalBalance)
   let totalAddresses = stats.totalAddresses
   for (const address of RELAYER_ADDRESSES) {
+    console.log(`relayerAddress: ${address}`)
     const { balances, wallets } = await scan({ address, from })
     totalAddresses += wallets.length
     if (balances) {
       totalBalance = totalBalance.add(balances.reduce((r, b) => r.add(new BN(b)), new BN(0)))
+      // console.log(`wallets.length: ${wallets.length}`)
+      // console.log(`wallets[0]: ${JSON.stringify(wallets[0])}`)
+      // console.log(`balances.length: ${balances.length}`)
+      // console.log(`totalBalance: ${totalBalance}`)
+      // console.log(`totalBalanceFormatted: ${unit.fromWei(totalBalance, 'ether')}`)
+      // const hexTime0 = ONEUtil.hexView(new BN(wallets[0].creationTime).toArrayLike(Uint8Array, 'be', 32))
+      // const hexBalance0 = ONEUtil.hexView(new BN(balances[0]).toArrayLike(Uint8Array, 'be', 32))
+      // console.log(`hexTime0: ${hexTime0}`)
+      // console.log(`hexBalance0: ${hexBalance0}`)
       const s = wallets.map((w, i) => {
-        const hexTime = ONEUtil.hexView(new BN(w.creationTime).toArrayLike(Uint8Array, 'be', 4))
+        const hexTime = ONEUtil.hexView(new BN(w.creationTime).toArrayLike(Uint8Array, 'be', 32))
         const hexBalance = ONEUtil.hexView(new BN(balances[i]).toArrayLike(Uint8Array, 'be', 32))
         return `${w.address},${hexTime},${hexBalance}`
       }).join('\n')
