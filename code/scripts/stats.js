@@ -229,16 +229,21 @@ async function exec () {
   const existingRelayers = stats.relayers || []
   let totalBalance = new BN(stats.totalBalance)
   let totalAddresses = stats.totalAddresses || 0
+  const addressMap = {}
   for (const address of RELAYER_ADDRESSES) {
     const { balances, wallets } = await scan({ address, from: existingRelayers.includes(address) && from })
     totalAddresses += wallets.length
     if (balances) {
       totalBalance = totalBalance.add(balances.reduce((r, b) => r.add(new BN(b)), new BN(0)))
       const s = wallets.map((w, i) => {
+        if (addressMap[w.address]) {
+          return ''
+        }
+        addressMap[w.address] = true
         const hexTime = ONEUtil.hexView(new BN(w.creationTime).toArrayLike(Uint8Array, 'be', 8))
         const hexBalance = ONEUtil.hexView(new BN(balances[i]).toArrayLike(Uint8Array, 'be', 32))
         return `${w.address},${hexTime},${hexBalance}`
-      }).join('\n')
+      }).filter(e => e).join('\n')
       await fp2.write(s + '\n')
     }
   }
