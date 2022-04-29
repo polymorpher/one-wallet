@@ -25,6 +25,14 @@ const RPC_BATCH_SIZE = parseInt(process.env.RPC_BATCH_SIZE || 50)
 const PAGE_SIZE = parseInt(process.env.PAGE_SIZE || 500)
 const SAFE_MODE = process.env.SAFE_MODE === 'true'
 
+console.log('stats initializing', {
+  RELAYER_ADDRESSES,
+  ARCHIVE_RPC_URL,
+  MAX_BALANCE_AGE,
+  SLEEP_BETWEEN_RPC,
+  SAFE_MODE,
+})
+
 const parseHexNumber = n => new BN(n.slice(2), 16).toNumber()
 
 const codeCache = {}
