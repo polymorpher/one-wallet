@@ -13,7 +13,7 @@ setConfig(config)
 const { api, initBlockchain } = require('../lib/api')
 initBlockchain()
 const moment = require('moment-timezone')
-const T0 = process.env.T0 ? Date.parse(process.env.T0) : Date.now() - 3600 * 1000 * 24 * 3
+const T0 = process.env.T0 ? Date.parse(process.env.T0) : 0
 const RELAYER_ADDRESSES = (process.env.RELAYER_ADDRESSES || '0xc8cd0c9ca68b853f73917c36e9276770a8d8e4e0').split(',').map(s => s.toLowerCase().trim())
 const STATS_CACHE = process.env.STATS_CACHE || './data/stats.json'
 const ARCHIVE_RPC_URL = process.env.ARCHIVE_RPC_URL || config.networks[config.defaults.network].url
@@ -159,10 +159,10 @@ const scan = async ({ address, from = T0, to = Date.now(), retrieveBalance = tru
       wallets.push({ address, creationTime: time })
     }
 
-    console.log(`Searched transaction history down to time = ${timeString(tMin)}`)
-    console.log(`at page ${pageIndex}; retrieved ${transactions.length} transactions from relayer;`)
-    console.log(`${directCreations.length} direct creations of 1wallet`)
-    console.log(`${factoryCreations.length} factory creations of 1wallet`)
+    console.log(`[${address}] Searched transaction history down to time = ${timeString(tMin)}`)
+    console.log(`- at page ${pageIndex}; retrieved ${transactions.length} transactions from relayer;`)
+    console.log(`- ${directCreations.length} direct creations of 1wallet`)
+    console.log(`- ${factoryCreations.length} factory creations of 1wallet`)
 
     pageIndex++
     await new Promise((resolve) => setTimeout(resolve, SLEEP_BETWEEN_RPC))
@@ -213,10 +213,11 @@ async function exec () {
   const stats = JSON.parse((await fp.readFile({ encoding: 'utf-8' }) || '{}'))
   const now = Date.now()
   const from = stats.lastScanTime || 0
+  const existingRelayers = stats.relayers || []
   let totalBalance = new BN(stats.totalBalance)
   let totalAddresses = stats.totalAddresses || 0
   for (const address of RELAYER_ADDRESSES) {
-    const { balances, wallets } = await scan({ address, from })
+    const { balances, wallets } = await scan({ address, from: existingRelayers.includes(address) && from })
     totalAddresses += wallets.length
     if (balances) {
       totalBalance = totalBalance.add(balances.reduce((r, b) => r.add(new BN(b)), new BN(0)))
@@ -232,7 +233,8 @@ async function exec () {
     totalBalance: totalBalance.toString(),
     totalAddresses,
     lastBalanceRefresh: stats.lastBalanceRefresh || 0,
-    lastScanTime: now
+    lastScanTime: now,
+    relayers: RELAYER_ADDRESSES,
   }
   console.log(`writing new stats`, newStats)
   await fp.truncate()
