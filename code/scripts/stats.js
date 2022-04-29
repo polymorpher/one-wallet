@@ -52,6 +52,9 @@ const getPredictedAddress = async ({ input, deployerAddress }) => {
   const args = ONEUtil.abi.decodeParameters([s], input.slice(10))
   const identificationKeys = args[0][args[0].length - 1]
   const key = identificationKeys[0]
+  if (!key) {
+    return null
+  }
   const code = await getCode(deployerAddress)
   const factoryAddress = await getFactoryAddress(deployerAddress)
   const predicted = ONEUtil.predictAddress({ code, identificationKey: key, factoryAddress })
@@ -149,7 +152,10 @@ const scan = async ({ address, from = T0, to = Date.now(), retrieveBalance = tru
         continue
       }
       const address = await getPredictedAddress({ input, deployerAddress })
-      wallets.push({ address, creationTime: time })
+      if (address) {
+        console.warn(`Empty address prediction from transaction ${t.hash}; possibly failed transactions with incorrect parameters`)
+        wallets.push({ address, creationTime: time })
+      }
     }
 
     console.log(`Searched transaction history down to time = ${timeString(tMin)}`)
