@@ -33,22 +33,8 @@ const batchGetBalance = async (addresses) => {
   const chunks = chunk(addresses, RPC_BATCH_SIZE)
   const balances = []
   for (const c of chunks) {
-    console.log(`c[0]: ${JSON.stringify(c[0])}`)
-    // const b = await Promise.all(c.map(a => api.blockchain.getBalance({ address: a })))
     const b = await Promise.all(c.map(a => api.blockchain.getBalance({ address: '0xdc9d1024241e488848250340770c2b97452c720d' })))
-    // console.log(`b:${JSON.stringify(b)}`)
-    // const b2 = await c.map(a => api.blockchain.getBalance({ address: a }))
-    // console.log(`b2:${JSON.stringify(b2)}`)
-    // const walletBalance = new BN(await web3.eth.getBalance(c[0]))
-    // console.log(`walletBalance:${JSON.stringify(walletBalance)}`)
-    // const bS = await Promise.all(c.map(a => api.blockchain.getBalance({ address: '0xdc9d1024241e488848250340770c2b97452c720d' })))
-    // console.log(`bS:${JSON.stringify(bS)}`)
-    // const b2S = await c.map(a => api.blockchain.getBalance({ address: '0xdc9d1024241e488848250340770c2b97452c720d' }))
-    // console.log(`b2S:${JSON.stringify(b2S)}`)
-    // const walletBalanceS = new BN(await web3.eth.getBalance('0xdc9d1024241e488848250340770c2b97452c720d'))
-    // console.log(`walletBalanceS:${JSON.stringify(walletBalanceS)}`)
     balances.push(...b)
-    // console.log(`balances: ${JSON.stringify(balances)}`)
     await new Promise((resolve) => setTimeout(resolve, SLEEP_BETWEEN_RPC))
   }
   return balances
@@ -63,7 +49,6 @@ const search = async ({ address, target }) => {
   while (right < 0 || (left + 1 < right && left !== mid)) {
     console.log(`Binary searching pageIndex`, { left, mid, right })
     const transactions = await api.rpc.getTransactionHistory({ address, pageIndex: mid, pageSize: PAGE_SIZE, fullTx: false })
-    console.log(`transactions[0]: ${JSON.stringify(transactions[0])}`)
     const h = transactions[transactions.length - 1]
     if (!h) {
       right = mid
@@ -155,6 +140,7 @@ async function refreshAllBalance () {
   // await fs.cp(ADDRESSES_TEMP, ADDRESSES_CACHE, { force: true })
   // await fs.rm(ADDRESSES_TEMP)
   // await fs.copyFile(ADDRESSES_TEMP, ADDRESSES_CACHE, fsConstants.COPYFILE_FICLONE_FORCE)
+  await fs.rm(ADDRESSES_CACHE)
   await fs.copyFile(ADDRESSES_TEMP, ADDRESSES_CACHE)
   await fs.rm(ADDRESSES_TEMP)
   console.log(`Balance refresh complete. Total balance: ${ONEUtil.toOne(totalBalance.toString())}; Time elapsed: ${Math.floor(Date.now() - now)}ms`)
@@ -170,7 +156,7 @@ async function exec () {
   const stats = JSON.parse((await fp.readFile({ encoding: 'utf-8' }) || '{}'))
   const now = Date.now()
   const from = stats.lastScanTime || 0
-  console.log(`from: ${new Date(from).toISOString()}`)
+  console.log(`from: ${new Date(from).toISOString()}`) // 1641695325095 is Jan 9th 2022 and 1623217821095 is June 9th 2021 (just before wallets were created)
   let totalBalance = new BN(stats.totalBalance)
   let totalAddresses = stats.totalAddresses
   for (const address of RELAYER_ADDRESSES) {
@@ -179,15 +165,6 @@ async function exec () {
     totalAddresses += wallets.length
     if (balances) {
       totalBalance = totalBalance.add(balances.reduce((r, b) => r.add(new BN(b)), new BN(0)))
-      // console.log(`wallets.length: ${wallets.length}`)
-      // console.log(`wallets[0]: ${JSON.stringify(wallets[0])}`)
-      // console.log(`balances.length: ${balances.length}`)
-      // console.log(`totalBalance: ${totalBalance}`)
-      // console.log(`totalBalanceFormatted: ${unit.fromWei(totalBalance, 'ether')}`)
-      // const hexTime0 = ONEUtil.hexView(new BN(wallets[0].creationTime).toArrayLike(Uint8Array, 'be', 32))
-      // const hexBalance0 = ONEUtil.hexView(new BN(balances[0]).toArrayLike(Uint8Array, 'be', 32))
-      // console.log(`hexTime0: ${hexTime0}`)
-      // console.log(`hexBalance0: ${hexBalance0}`)
       const s = wallets.map((w, i) => {
         const hexTime = ONEUtil.hexView(new BN(w.creationTime).toArrayLike(Uint8Array, 'be', 32))
         const hexBalance = ONEUtil.hexView(new BN(balances[i]).toArrayLike(Uint8Array, 'be', 32))
@@ -214,6 +191,7 @@ async function exec () {
   const s = await refreshAllBalance()
   const refreshedStats = { ...newStats, ...s }
   console.log(`writing refreshed stats`, refreshedStats)
+  console.log(`total balance ETH: ${unit.fromWei(refreshedStats.totalBalance, 'ether')}`)
   await fp.truncate()
   await fp.write(JSON.stringify(refreshedStats), 0, 'utf-8')
   await fp.close()

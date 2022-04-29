@@ -1,7 +1,7 @@
 {
-    "totalBalance": "780000000000000000000",
-    "totalAddresses": 156,
-    "lastBalanceRefresh": 1651190395692,
+    "totalBalance": "0",
+    "totalAddresses": 0,
+    "lastBalanceRefresh": 0,
     "lastScanTime": 1641695325095 // 2022-01-09T02
 
 }
