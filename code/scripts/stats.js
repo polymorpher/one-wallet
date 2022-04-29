@@ -154,6 +154,7 @@ const scan = async ({ address, from = T0, to = Date.now(), retrieveBalance = tru
       const address = await getPredictedAddress({ input, deployerAddress })
       if (!address) {
         console.warn(`Empty address prediction from transaction ${t.hash}; possibly failed transactions with incorrect parameters`)
+        continue
       }
       wallets.push({ address, creationTime: time })
     }
