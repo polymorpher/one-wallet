@@ -475,7 +475,7 @@ const Extend = ({
             <Hint>Scan or tap the QR code to setup a new authenticator code</Hint>
             {!showSecondCode &&
               <>
-                <Hint>Optional: <Link href='#' onClick={toggleShowAccount}>sign-up</Link> to enable backup, alerts, verification code autofill</Hint>
+                {/* <Hint>Optional: <Link href='#' onClick={toggleShowAccount}>sign-up</Link> to enable backup, alerts, verification code autofill</Hint> */}
                 {showAccount && <SignupAccount seed={seed} name={name} address={address} effectiveTime={effectiveTime} setAllowOTPAutoFill={setAllowAutoFill} />}
                 {buildQRCodeComponent({ seed, name, os, isMobile, qrCodeData })}
                 <OtpSetup isMobile={isMobile} otpRef={validationOtpRef} otpValue={validationOtp} setOtpValue={setValidationOtp} name={ONENames.nameWithTime(name, effectiveTime)} />
