@@ -167,7 +167,7 @@ const initBlockchain = (store) => {
     }
   }
   switchNetwork()
-  store.subscribe(() => {
+  store && store.subscribe(() => {
     const state = store.getState()
     const { network } = state.global
     if (network && network !== activeNetwork) {
@@ -176,7 +176,7 @@ const initBlockchain = (store) => {
       switchNetwork()
     }
   })
-  if (config.debug) console.log('blockchain init complete:', { networks })
+  if (config.debug) console.log('blockchain init complete:', { networks, activeNetwork })
 }
 const parseCommits = (result) => {
   const [hashes, paramsHashes, verificationHashes, timestamps, completed] = Object.keys(result).map(k => result[k])
@@ -197,6 +197,7 @@ const api = {
       return headers
     }
   },
+  web3,
   binance: {
     getPrice: async () => {
       const { data } = await axios.get('https://api.binance.com/api/v3/ticker/24hr?symbol=ONEUSDT')
@@ -216,8 +217,8 @@ const api = {
     }
   },
   factory: {
-    getCode: async () => {
-      const c = new web3.eth.Contract(IONEWalletFactoryHelper, config.networks[activeNetwork].deploy.deployer)
+    getCode: async ({ deployer }) => {
+      const c = new web3.eth.Contract(IONEWalletFactoryHelper, deployer || config.networks[activeNetwork].deploy.deployer)
       return c.methods.getCode().call()
     },
     getVersion: async () => {
@@ -227,12 +228,16 @@ const api = {
       const minorVersion = r[1].toString()
       return `${majorVersion}.${minorVersion}`
     },
-    predictAddress: async ({ identificationKey }) => {
-      const c = new web3.eth.Contract(IONEWalletFactoryHelper, config.networks[activeNetwork].deploy.deployer)
+    getFactoryAddress: async ({ deployer }) => {
+      const c = new web3.eth.Contract(IONEWalletFactoryHelper, deployer || config.networks[activeNetwork].deploy.deployer)
+      return c.methods.factory().call()
+    },
+    predictAddress: async ({ identificationKey, deployer }) => {
+      const c = new web3.eth.Contract(IONEWalletFactoryHelper, deployer || config.networks[activeNetwork].deploy.deployer)
       return c.methods.predict(identificationKey).call()
     },
-    verify: async ({ address }) => {
-      const c = new web3.eth.Contract(IONEWalletFactoryHelper, config.networks[activeNetwork].deploy.deployer)
+    verify: async ({ address, deployer }) => {
+      const c = new web3.eth.Contract(IONEWalletFactoryHelper, deployer || config.networks[activeNetwork].deploy.deployer)
       return c.methods.verify(address).call()
     }
   },
@@ -902,8 +907,8 @@ const api = {
     },
   },
   rpc: {
-    getTransactionHistory: async ({ address, pageSize = 50, pageIndex = 0, fullTx = false }) => {
-      const { data } = await rpcBase.post('', {
+    getTransactionHistory: async ({ base = rpcBase, address, pageSize = 50, pageIndex = 0, fullTx = false }) => {
+      const { data } = await base.post('', {
         jsonrpc: '2.0',
         method: 'eth_getTransactionsHistory', // eth_ method is non-standard, but we still want to use it because it returns normalized addresses and transaction hashes
         params: [
@@ -925,6 +930,17 @@ const api = {
       const { data: { result } } = await rpcBase.post('', {
         jsonrpc: '2.0',
         method: 'eth_getTransactionReceipt',
+        params: [txHash],
+        id: 1
+      })
+
+      return result
+    },
+
+    getTransaction: async (txHash) => {
+      const { data: { result } } = await rpcBase.post('', {
+        jsonrpc: '2.0',
+        method: 'eth_getTransactionByHash',
         params: [txHash],
         id: 1
       })
