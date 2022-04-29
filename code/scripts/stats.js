@@ -186,6 +186,7 @@ async function refreshAllBalance () {
   const fp2 = await fs.open(ADDRESSES_TEMP, 'w+')
   const rs = fp.createReadStream()
   const rl = readline.createInterface({ input: rs, crlfDelay: Infinity })
+  const bufMap = {}
   const buf = []
   let totalBalance = new BN(0)
   const flush = async () => {
@@ -199,6 +200,10 @@ async function refreshAllBalance () {
   }
   for await (const line of rl) {
     const [address, hexTime] = line.split(',')
+    if (bufMap[address]) {
+      continue
+    }
+    bufMap[address] = true
     buf.push([address, hexTime])
     if (buf.length >= RPC_BATCH_SIZE) {
       await flush()
