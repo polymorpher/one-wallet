@@ -1,4 +1,5 @@
 require('dotenv').config()
+const axios = require('axios')
 const { min, chunk, uniqBy } = require('lodash')
 const readline = require('readline')
 const { promises: fs } = require('fs')
@@ -14,10 +15,11 @@ const moment = require('moment-timezone')
 const T0 = process.env.T0 ? Date.parse(process.env.T0) : Date.now() - 3600 * 1000 * 24 * 3
 const RELAYER_ADDRESSES = (process.env.RELAYER_ADDRESSES || '0xc8cd0c9ca68b853f73917c36e9276770a8d8e4e0').split(',').map(s => s.toLowerCase().trim())
 const STATS_CACHE = process.env.STATS_CACHE || './data/stats.json'
+const ARCHIVE_RPC_URL = process.env.ARCHIVE_RPC_URL || 'https://a.api.s0.t.hmny.io'
 const ADDRESSES_CACHE = process.env.ADDRESSES_CACHE || './data/addresses.csv'
 const ADDRESSES_TEMP = process.env.ADDRESSES_TEMP || './data/addresses.temp.csv'
 const MAX_BALANCE_AGE = parseInt(process.env.MAX_BALANCE_AGE || 3600 * 1000 * 24)
-const SLEEP_BETWEEN_RPC = parseInt(process.env.SLEEP_BETWEEN_RPC || 100)
+const SLEEP_BETWEEN_RPC = parseInt(process.env.SLEEP_BETWEEN_RPC || 150)
 const RPC_BATCH_SIZE = parseInt(process.env.RPC_BATCH_SIZE || 50)
 const PAGE_SIZE = parseInt(process.env.PAGE_SIZE || 500)
 
@@ -29,9 +31,10 @@ const computeDirectCreationContractAddress = (from, nonce) => {
 
 const batchGetBalance = async (addresses) => {
   console.log(`Retrieving balances of ${addresses.length} addresses with batch size = ${RPC_BATCH_SIZE}`)
-  const chunks = chunk(addresses, RPC_BATCH_SIZE)
+  const chunks = chunk(addresses.filter(e => e), RPC_BATCH_SIZE)
   const balances = []
   for (const c of chunks) {
+    console.log(`Getting balance for ${c.length} addresses [${c.slice(0, 3).join(',')}, ...]`)
     const b = await Promise.all(c.map(a => api.blockchain.getBalance({ address: a })))
     balances.push(...b)
     await new Promise((resolve) => setTimeout(resolve, SLEEP_BETWEEN_RPC))
@@ -43,11 +46,13 @@ const timeString = timestamp => {
   return moment(timestamp).tz('America/Los_Angeles').format('YYYY-MM-DDTHH:mm:ssZ')
 }
 
+const base = axios.create({ baseURL: ARCHIVE_RPC_URL, timeout: 10000 })
+
 const search = async ({ address, target }) => {
   let left = 0; let mid = 1; let right = -1
   while (right < 0 || (left + 1 < right && left !== mid)) {
     console.log(`Binary searching pageIndex`, { left, mid, right })
-    const transactions = await api.rpc.getTransactionHistory({ address, pageIndex: mid, pageSize: PAGE_SIZE, fullTx: false })
+    const transactions = await api.rpc.getTransactionHistory({ base, address, pageIndex: mid, pageSize: PAGE_SIZE, fullTx: false })
     const h = transactions[transactions.length - 1]
     if (!h) {
       right = mid
@@ -77,7 +82,7 @@ const scan = async ({ address, from = T0, to = Date.now(), retrieveBalance = tru
   console.log({ from, to })
   const wallets = []
   while (tMin > from) {
-    const transactions = await api.rpc.getTransactionHistory({ address, pageIndex, pageSize: PAGE_SIZE, fullTx: true })
+    const transactions = await api.rpc.getTransactionHistory({ base, address, pageIndex, pageSize: PAGE_SIZE, fullTx: true })
     if (!transactions || transactions.length === 0) {
       console.log(`Out of data at page ${pageIndex}; Exiting transaction history query loop`)
       tMin = from
@@ -134,7 +139,7 @@ async function refreshAllBalance () {
   await fs.rm(ADDRESSES_TEMP)
   console.log(`Balance refresh complete. Total balance: ${ONEUtil.toOne(totalBalance.toString())}; Time elapsed: ${Math.floor(Date.now() - now)}ms`)
   return {
-    totalBalance,
+    totalBalance: totalBalance.toString(),
     lastBalanceRefresh: now
   }
 }
@@ -146,14 +151,14 @@ async function exec () {
   const now = Date.now()
   const from = stats.lastScanTime || 0
   let totalBalance = new BN(stats.totalBalance)
-  let totalAddresses = stats.totalAddresses
+  let totalAddresses = stats.totalAddresses || 0
   for (const address of RELAYER_ADDRESSES) {
     const { balances, wallets } = await scan({ address, from })
     totalAddresses += wallets.length
     if (balances) {
       totalBalance = totalBalance.add(balances.reduce((r, b) => r.add(new BN(b)), new BN(0)))
       const s = wallets.map((w, i) => {
-        const hexTime = ONEUtil.hexView(new BN(w.creationTime).toArrayLike(Uint8Array, 'be', 4))
+        const hexTime = ONEUtil.hexView(new BN(w.creationTime).toArrayLike(Uint8Array, 'be', 8))
         const hexBalance = ONEUtil.hexView(new BN(balances[i]).toArrayLike(Uint8Array, 'be', 32))
         return `${w.address},${hexTime},${hexBalance}`
       }).join('\n')
