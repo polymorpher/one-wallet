@@ -197,6 +197,7 @@ const api = {
       return headers
     }
   },
+  web3,
   binance: {
     getPrice: async () => {
       const { data } = await axios.get('https://api.binance.com/api/v3/ticker/24hr?symbol=ONEUSDT')
@@ -216,8 +217,8 @@ const api = {
     }
   },
   factory: {
-    getCode: async () => {
-      const c = new web3.eth.Contract(IONEWalletFactoryHelper, config.networks[activeNetwork].deploy.deployer)
+    getCode: async ({ deployer }) => {
+      const c = new web3.eth.Contract(IONEWalletFactoryHelper, deployer || config.networks[activeNetwork].deploy.deployer)
       return c.methods.getCode().call()
     },
     getVersion: async () => {
@@ -227,12 +228,16 @@ const api = {
       const minorVersion = r[1].toString()
       return `${majorVersion}.${minorVersion}`
     },
-    predictAddress: async ({ identificationKey }) => {
-      const c = new web3.eth.Contract(IONEWalletFactoryHelper, config.networks[activeNetwork].deploy.deployer)
+    getFactoryAddress: async ({ deployer }) => {
+      const c = new web3.eth.Contract(IONEWalletFactoryHelper, deployer || config.networks[activeNetwork].deploy.deployer)
+      return c.methods.factory().call()
+    },
+    predictAddress: async ({ identificationKey, deployer }) => {
+      const c = new web3.eth.Contract(IONEWalletFactoryHelper, deployer || config.networks[activeNetwork].deploy.deployer)
       return c.methods.predict(identificationKey).call()
     },
-    verify: async ({ address }) => {
-      const c = new web3.eth.Contract(IONEWalletFactoryHelper, config.networks[activeNetwork].deploy.deployer)
+    verify: async ({ address, deployer }) => {
+      const c = new web3.eth.Contract(IONEWalletFactoryHelper, deployer || config.networks[activeNetwork].deploy.deployer)
       return c.methods.verify(address).call()
     }
   },
