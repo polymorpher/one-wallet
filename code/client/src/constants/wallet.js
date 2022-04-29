@@ -21,5 +21,5 @@ export default {
   unwrapPattern: /\/unwrap\?data=[a-zA-Z0-9]+/,
 
   expiringSoonThreshold: 3600 * 24 * 1000 * 30 * 3, // 3 months
-  globalStatsCacheDuration: 600 * 1000,
+  globalStatsCacheDuration: 60 * 1000,
 }
