@@ -39,7 +39,7 @@ async function exec () {
       bins[bin].upgradedBalance = bins[bin].upgradedBalance.add(balance)
       bins[bin].numUpgradedWallets += 1
     } else {
-      bins[bin].originalBalance = bins[bin].upgradedBalance.add(balance)
+      bins[bin].originalBalance = bins[bin].originalBalance.add(balance)
       bins[bin].numOriginalWallets += 1
     }
   }
