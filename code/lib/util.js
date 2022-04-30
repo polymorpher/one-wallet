@@ -372,8 +372,8 @@ const utils = {
     }
   },
 
-  predictAddress: ({ seed, identificationKey, deployerAddress, code }) => {
-    // console.log({ seed, identificationKey, deployerAddress, code })
+  predictAddress: ({ seed, identificationKey, factoryAddress, code }) => {
+    // console.log({ seed, identificationKey, factoryAddress, code })
     const bytes = new Uint8Array(1 + 20 + 32 + 32) // bytes.concat(bytes1(0xff), bytes20(address(this)), bytes32(salt), keccak256(code));
     if (!identificationKey) {
       identificationKey = utils.getIdentificationKey(seed, true)
@@ -382,7 +382,7 @@ const utils = {
       }
     }
     bytes.set(new Uint8Array([255]))
-    bytes.set(utils.hexStringToBytes(deployerAddress), 1)
+    bytes.set(utils.hexStringToBytes(factoryAddress), 1)
     bytes.set(utils.keccak(utils.hexStringToBytes(identificationKey)), 21)
     bytes.set(utils.keccak(code), 53)
     const hash = utils.keccak(bytes)

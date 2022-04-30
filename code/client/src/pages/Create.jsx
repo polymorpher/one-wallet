@@ -95,9 +95,9 @@ const Create = ({ expertMode, showRecovery }) => {
       return
     }
     (async function () {
-      const deployerAddress = config.networks[network].deploy.factory
-      const address = ONEUtil.predictAddress({ seed: setupConfig.seed, deployerAddress, code: ONEUtil.hexStringToBytes(code) })
-      message.debug(`Predicting wallet address ${address} using parameters: ${JSON.stringify({ seed: ONEUtil.base32Encode(setupConfig.seed), deployerAddress })}; code keccak hash=${ONEUtil.hexView(ONEUtil.keccak(code))}`)
+      const factoryAddress = config.networks[network].deploy.factory
+      const address = ONEUtil.predictAddress({ seed: setupConfig.seed, factoryAddress, code: ONEUtil.hexStringToBytes(code) })
+      message.debug(`Predicting wallet address ${address} using parameters: ${JSON.stringify({ seed: ONEUtil.base32Encode(setupConfig.seed), deployerAddress: factoryAddress })}; code keccak hash=${ONEUtil.hexView(ONEUtil.keccak(code))}`)
       const oneAddress = util.safeOneAddress(address)
       const otpDisplayName = `${ONENames.nameWithTime(setupConfig.name, coreSettings.effectiveTime)} [${oneAddress}]`
       const otpDisplayName2 = `${ONENames.nameWithTime(getSecondCodeName(setupConfig.name), coreSettings.effectiveTime)} [${oneAddress}]`
@@ -450,18 +450,18 @@ const SetupOtpSection = ({ expertMode, otpReady, setupConfig, walletState, setWa
   return (
     <>{step === 1 &&
       <AnimatedSection>
-        <Row>
-          <Space direction='vertical'>
+        <Row justify='center'>
+          <Space direction='vertical' style={{ width: '100%' }}>
             {/* <Heading>Now, scan the QR code with your Google Authenticator</Heading> */}
             <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
             {!isMobile && <Hint>Scan QR code to setup {getGoogleAuthenticatorAppLink(os)} and the wallet </Hint>}
             {isMobile && <Hint>Tap QR code to setup {getGoogleAuthenticatorAppLink(os)}. You need it to use the wallet</Hint>}
-            <Hint>Optional: <Link href='#' onClick={toggleShowAccount}>sign-up</Link> to enable backup, alerts, verification code autofill</Hint>
+            {/* <Hint>Optional: <Link href='#' onClick={toggleShowAccount}>sign-up</Link> to enable backup, alerts, verification code autofill</Hint> */}
             {showAccount && <SignupAccount seed={seed} name={name} address={walletState.predictedAddress} effectiveTime={effectiveTime} setAllowOTPAutoFill={setAllowAutoFill} />}
             {buildQRCodeComponent({ seed, name: ONENames.nameWithTime(name, effectiveTime), os, isMobile, qrCodeData: otpQrCodeData })}
           </Space>
         </Row>
-        <Row style={{ marginTop: 16 }}>
+        <Row justify='center' style={{ marginTop: 16 }}>
           <Space direction='vertical' size='large' align='center' style={{ width: '100%' }}>
             <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={ONENames.nameWithTime(name, effectiveTime)} autofill={allowAutofill} />
             {expertMode && <TwoCodeOption isMobile={isMobile} setDoubleOtp={d => setWalletState(s => ({ ...s, doubleOtp: d }))} doubleOtp={doubleOtp} />}

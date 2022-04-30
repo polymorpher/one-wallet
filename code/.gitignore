@@ -127,3 +127,5 @@ webclient/dist
 
 build/contracts/*
 /contracts/upgrade/
+/data/addresses.csv
+/data/stats.json

@@ -1,4 +1,5 @@
 const config = require('../config')
+const fs = require('fs').promises
 const { performance } = require('perf_hooks')
 const express = require('express')
 const router = express.Router()
@@ -337,6 +338,17 @@ router.post('/retire', generalLimiter({ max: 6 }), walletAddressLimiter({ max: 6
 
 router.get('/sushi', generalLimiter({ max: 120 }), walletAddressLimiter({ max: 120 }), async (req, res) => {
   res.json(SushiData)
+})
+
+router.get('/stats', generalLimiter({ max: 120 }), async (req, res) => {
+  try {
+    const data = await fs.readFile(config.stats.path, { encoding: 'utf-8' })
+    const parsed = JSON.parse(data || '{}')
+    return res.json(parsed)
+  } catch (ex) {
+    console.error(ex)
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'stats not ready' })
+  }
 })
 
 module.exports = router
