@@ -96,7 +96,7 @@ const Create = ({ expertMode, showRecovery }) => {
     }
     (async function () {
       const factoryAddress = config.networks[network].deploy.factory
-      const address = ONEUtil.predictAddress({ seed: setupConfig.seed, deployerAddress: factoryAddress, code: ONEUtil.hexStringToBytes(code) })
+      const address = ONEUtil.predictAddress({ seed: setupConfig.seed, factoryAddress, code: ONEUtil.hexStringToBytes(code) })
       message.debug(`Predicting wallet address ${address} using parameters: ${JSON.stringify({ seed: ONEUtil.base32Encode(setupConfig.seed), deployerAddress: factoryAddress })}; code keccak hash=${ONEUtil.hexView(ONEUtil.keccak(code))}`)
       const oneAddress = util.safeOneAddress(address)
       const otpDisplayName = `${ONENames.nameWithTime(setupConfig.name, coreSettings.effectiveTime)} [${oneAddress}]`
