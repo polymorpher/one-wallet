@@ -6,7 +6,6 @@ import Typography from 'antd/es/typography'
 import Divider from 'antd/es/divider'
 import Button from 'antd/es/button'
 import Col from 'antd/es/col'
-import unionWith from 'lodash/fp/unionWith'
 import isNull from 'lodash/fp/isNull'
 import isUndefined from 'lodash/fp/isUndefined'
 import uniqBy from 'lodash/fp/uniqBy'
@@ -188,14 +187,9 @@ export const ERC20Grid = ({ address }) => {
     const f = async () => {
       let tts = await api.blockchain.getTrackedTokens({ address })
       tts = tts.filter(e => e.tokenType === ONEConstants.TokenType.ERC20)
-      // console.log('tts filtered', tts)
       tts.forEach(tt => { tt.key = ONEUtil.hexView(ONE.computeTokenKey(tt).hash) })
-      tts = unionWith((a, b) => a.key === b.key, tts, defaultTrackedTokens, trackedTokens).filter(e => untrackedTokenKeys.find(k => k === e.key) === undefined)
 
       await Promise.all(tts.map(async tt => {
-        // if (tt.name && tt.symbol) {
-        //   return
-        // }
         try {
           const { name, symbol, decimals } = await api.blockchain.getTokenMetadata(tt)
           tt.name = name
@@ -205,12 +199,11 @@ export const ERC20Grid = ({ address }) => {
           console.error(ex)
         }
       }))
-      // console.log('tts merged', tts)
       if (cancelled) {
         return
       }
-      // tts = uniqBy(tts, t => t.key)
-      setCurrentTrackedTokens(tts)
+      // Merge to existing list.
+      setCurrentTrackedTokens(ptts => uniqBy(t => t.key, [...ptts, ...tts]))
     }
     // dispatch(walletActions.untrackTokens({ address, keys: trackedTokens.map(e => e.key) }))
     f()
