@@ -33,8 +33,10 @@ async function exec () {
       const { majorVersion } = await api.blockchain.getVersion({ address: a })
       const { lastResortAddress } = await api.blockchain.getWallet({ address: a })
       const innerCores = majorVersion >= 15 ? (await api.blockchain.getInnerCores({ address: a })) : []
-      const isTimeless = majorVersion >= 15 && innerCores.length === 0 || (majorVersion === 14 && lastResortAddress.toLowerCase() === '0x02f2cf45dd4bacba091d78502dba3b2f431a54d3')
       const isUpgrade = backlinks.length > 0
+      const isTimeless = !isUpgrade && (majorVersion >= 15 && innerCores.length === 0
+      // || (majorVersion === 14 && lastResortAddress.toLowerCase() === '0x02f2cf45dd4bacba091d78502dba3b2f431a54d3')
+      )
 
       const bin = time.div(new BN(BIN_SIZE)).toNumber()
       if (!bins[bin]) {
@@ -43,7 +45,8 @@ async function exec () {
           upgradedBalance: new BN(0),
           numOriginalWallets: 0,
           numUpgradedWallets: 0,
-          numTimeless: 0
+          numTimeless: 0,
+          timelessBalance: new BN(0)
         }
       }
       if (isUpgrade) {
@@ -55,6 +58,7 @@ async function exec () {
       }
       if (isTimeless) {
         bins[bin].numTimeless += 1
+        bins[bin].timelessBalance = bins[bin].timelessBalance.add(balance)
       }
     } catch (ex) {
       console.error(ex)
@@ -65,10 +69,11 @@ async function exec () {
   }
   const sortedBins = sortBy(Object.entries(bins), e => e[0])
   for (const b of sortedBins) {
-    const { originalBalance, upgradedBalance, numOriginalWallets, numUpgradedWallets, numTimeless } = b[1]
+    const { originalBalance, upgradedBalance, numOriginalWallets, numUpgradedWallets, numTimeless, timelessBalance } = b[1]
     console.log(timeString(b[0] * BIN_SIZE), {
       originalBalance: ONEUtil.toOne(originalBalance),
       upgradedBalance: ONEUtil.toOne(upgradedBalance),
+      timelessBalance: ONEUtil.toOne(timelessBalance),
       numOriginalWallets,
       numUpgradedWallets,
       numTimeless
