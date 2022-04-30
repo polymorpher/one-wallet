@@ -208,10 +208,10 @@ const api = {
   walletStats: {
     getStats: async () => {
       const { data: { totalBalance, totalAddresses } } = await base.get('/stats')
-      const totalAmount = Math.round(ONEUtil.toOne(new BN(totalBalance)))
+      const totalAmount = Math.round(ONEUtil.toOne(new BN(totalBalance || 0)))
 
       return {
-        count: totalAddresses,
+        count: totalAddresses || 0,
         totalAmount: totalAmount
       }
     }
