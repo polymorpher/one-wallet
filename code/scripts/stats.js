@@ -237,7 +237,7 @@ async function exec () {
       addressMap[a] = true
     })
     totalAddresses += newWalletWithBalances.length
-    if (balances) {
+    if (balances?.length > 0) {
       totalBalance = totalBalance.add(newWalletWithBalances.map(w => w.balance).reduce((r, b) => r.add(new BN(b)), new BN(0)))
       const s = newWalletWithBalances.map((w, i) => {
         const hexTime = ONEUtil.hexView(new BN(w.creationTime).toArrayLike(Uint8Array, 'be', 8))
