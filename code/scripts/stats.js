@@ -147,7 +147,7 @@ const scan = async ({ address, from = T0, to = Date.now(), retrieveBalance = tru
       const { timestamp, nonce } = t
       const time = parseHexNumber(timestamp) * 1000
       if (time < from) {
-        return
+        continue
       }
       const a = computeDirectCreationContractAddress(address, parseHexNumber(nonce))
       wallets.push({ address: a, creationTime: time })
