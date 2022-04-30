@@ -176,7 +176,7 @@ const scan = async ({ address, from = T0, to = Date.now(), retrieveBalance = tru
     await new Promise((resolve) => setTimeout(resolve, SLEEP_BETWEEN_RPC))
   }
   const uniqueWallets = uniqBy(wallets, w => w.address)
-  const balances = retrieveBalance && await batchGetBalance(uniqueWallets.map(w => w.address))
+  const balances = (retrieveBalance && await batchGetBalance(uniqueWallets.map(w => w.address))) || []
   return { balances, wallets: uniqueWallets }
 }
 
@@ -232,16 +232,16 @@ async function exec () {
   const addressMap = {}
   for (const address of RELAYER_ADDRESSES) {
     const { balances, wallets } = await scan({ address, from: existingRelayers.includes(address) && from })
-    totalAddresses += wallets.length
+    const newWalletWithBalances = wallets.map((w, i) => ({ ...w, balance: balances[i] || '0' })).filter(w => !addressMap[w.address])
+    newWalletWithBalances.forEach(a => {
+      addressMap[a] = true
+    })
+    totalAddresses += newWalletWithBalances.length
     if (balances) {
-      totalBalance = totalBalance.add(balances.reduce((r, b) => r.add(new BN(b)), new BN(0)))
-      const s = wallets.map((w, i) => {
-        if (addressMap[w.address]) {
-          return ''
-        }
-        addressMap[w.address] = true
+      totalBalance = totalBalance.add(newWalletWithBalances.map(w => w.balance).reduce((r, b) => r.add(new BN(b)), new BN(0)))
+      const s = newWalletWithBalances.map((w, i) => {
         const hexTime = ONEUtil.hexView(new BN(w.creationTime).toArrayLike(Uint8Array, 'be', 8))
-        const hexBalance = ONEUtil.hexView(new BN(balances[i]).toArrayLike(Uint8Array, 'be', 32))
+        const hexBalance = ONEUtil.hexView(new BN(w.balance).toArrayLike(Uint8Array, 'be', 32))
         return `${w.address},${hexTime},${hexBalance}`
       }).filter(e => e).join('\n')
       await fp2.write(s + '\n')
