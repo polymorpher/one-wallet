@@ -27,11 +27,25 @@ const User = ({
     }
     const passwordHash = ONEUtil.hexView(ONEUtil.keccak(`${password}|${config.secret}`))
     const [u] = await UserPrototype.find(['username', username], ['passwordHash', passwordHash])
-    // console.log(u)
     if (!u || (u.passwordHash !== passwordHash) || (u.username !== username)) {
       return false
     }
     return u
+  },
+  verifyByEmail: async ({ email, password }) => {
+    if (!password || !email) {
+      return false
+    }
+    const passwordHash = ONEUtil.hexView(ONEUtil.keccak(`${password}|${config.secret}`))
+    const users = await UserPrototype.find(['email', email], ['passwordHash', passwordHash])
+    if (!(users.length > 0)) {
+      return false
+    }
+    const malformedUsers = users.filter(u => u.passwordHash !== passwordHash || u.email !== email)
+    if (malformedUsers.length > 0) {
+      return false
+    }
+    return users
   }
 })
 
