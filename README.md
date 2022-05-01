@@ -1,5 +1,7 @@
 # 1wallet
 
+**Disclaimer**: Issues or suggestions related to the iOS app implementation (Timeless) should not be reported to this repository or the developers here. If you experience any issue with that app or any frontend implementation other than 1wallet.crazy.one, please consult with the corresponding app's developers accordingly.  
+
 ### 1wallet infrastructure
 
 1wallet is an open source project, consisting of the core (libraries, contracts, tests), the relayer backend, a web-browser based client, and potentially another browser-extension based client (in development). You may use it as the infrastructure to build your own wallet or applications, but we are not responsible for any theft, loss, or security issues. We will not be providing any guidance or service, beyond issues which we deem to be of public interest (at our discretion).
