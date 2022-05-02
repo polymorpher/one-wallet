@@ -205,7 +205,7 @@ const utils = {
       return new BN(numberLike.slice(2), 16)
     }
     if (typeof numberLike === 'number' && numberLike > 1e+14) {
-      return new BN(String(numberLike))
+      return new BN(String(numberLike.toLocaleString('fullwide', { useGrouping: false })))
     }
     return new BN(numberLike)
   },
