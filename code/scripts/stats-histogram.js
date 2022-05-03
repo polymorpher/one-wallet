@@ -33,6 +33,7 @@ const freshBin = () => ({
   numWeb100: 0,
   numEmptyAccount: 0,
   webBalance: new BN(0),
+  webStakedBalance: new BN(0),
   num7dayActiveWeb: 0,
   num7dayActiveTimeless: 0,
   num7dayActive: 0,
@@ -51,6 +52,7 @@ const makeBinJson = ({ originalBalance,
   numWeb,
   numWeb100,
   webBalance,
+  webStakedBalance,
   numEmptyAccount,
   num7dayActiveWeb,
   num7dayActiveTimeless,
@@ -69,6 +71,7 @@ const makeBinJson = ({ originalBalance,
   numWeb,
   numWeb100,
   webBalance: ONEUtil.toOne(webBalance),
+  webStakedBalance: ONEUtil.toOne(webStakedBalance),
   numEmptyAccount,
   num7dayActiveWeb,
   num7dayActiveTimeless,
@@ -101,6 +104,8 @@ async function exec () {
       const innerCores = majorVersion >= 15 ? (await api.blockchain.getInnerCores({ address: a })) : []
       const backlinks = majorVersion >= 9 ? (await api.blockchain.getBacklinks({ address: a })) : []
       const [{ timestamp } = {}] = await api.rpc.getTransactionHistory({ address: a, pageSize: 1, fullTx: true })
+      const delegations = await api.staking.getDelegations({ address: a })
+      const totalStaked = delegations.reduce((r, e) => r.add(ONEUtil.toBN(e.amount)), new BN(0))
       const timestampParsed = parseHexNumber(timestamp) || 0
       const is7dayActive = timestampParsed * 1000 >= Date.now() - 3600 * 1000 * 24 * 7
       const is30dayActive = timestampParsed * 1000 >= Date.now() - 3600 * 1000 * 24 * 30
@@ -121,7 +126,8 @@ async function exec () {
         bins[bin].timelessBalance = bins[bin].timelessBalance.add(balance)
       } else {
         bins[bin].numWeb += 1
-        bins[bin].webBalance = bins[bin].webBalance.add(balance)
+        bins[bin].webBalance = bins[bin].webBalance.add(balance).add(totalStaked)
+        bins[bin].webStakedBalance = bins[bin].webStakedBalance.add(totalStaked)
       }
       if (balance.gte(THRESHOLD100)) {
         if (isTimeless) {
@@ -167,6 +173,7 @@ async function exec () {
       numWeb,
       numWeb100,
       webBalance,
+      webStakedBalance,
       numEmptyAccount,
       num7dayActiveWeb,
       num7dayActiveTimeless,
@@ -179,6 +186,7 @@ async function exec () {
     aggBin.upgradedBalance = aggBin.upgradedBalance.add(upgradedBalance)
     aggBin.timelessBalance = aggBin.timelessBalance.add(timelessBalance)
     aggBin.webBalance = aggBin.webBalance.add(webBalance)
+    aggBin.webStakedBalance = aggBin.webStakedBalance.add(webStakedBalance)
     aggBin.numOriginalWallets += numOriginalWallets
     aggBin.numUpgradedWallets += numUpgradedWallets
     aggBin.numTimeless += numTimeless
