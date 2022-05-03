@@ -105,7 +105,11 @@ async function exec () {
       const backlinks = majorVersion >= 9 ? (await api.blockchain.getBacklinks({ address: a })) : []
       const [{ timestamp } = {}] = await api.rpc.getTransactionHistory({ address: a, pageSize: 1, fullTx: true })
       const delegations = await api.staking.getDelegations({ address: a })
-      const totalStaked = delegations.reduce((r, e) => r.add(ONEUtil.toBN(e.amount)), new BN(0))
+      const totalStaked = delegations.reduce((r, e) => {
+        const amount = r.add(ONEUtil.toBN(e.amount))
+        const undelegated = e.undelegations.map(e => ONEUtil.toBN(e.Amount)).reduce((rr, ee) => rr.add(ee), new BN(0))
+        return amount.add(undelegated)
+      }, new BN(0))
       const timestampParsed = parseHexNumber(timestamp) || 0
       const is7dayActive = timestampParsed * 1000 >= Date.now() - 3600 * 1000 * 24 * 7
       const is30dayActive = timestampParsed * 1000 >= Date.now() - 3600 * 1000 * 24 * 30
