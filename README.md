@@ -4,7 +4,7 @@
 
 ### wallet infrastructure (1wallet core + web app)
 
-1wallet infrastructure is an open source project, consisting of the core (libraries, contracts, tests), the relayer backend, a web-browser based client, and potentially another browser-extension based client (in development). You may use it as the infrastructure to build your own wallet or applications, but we are not responsible for any theft, loss, or security issues. We will not be providing any guidance or service, beyond issues which we deem to be of public interest (at our discretion).
+The wallet infrastructure (1wallet core + web app) is an open source project, consisting of the core (libraries, contracts, tests), the relayer backend, a web-browser based client, and potentially another browser-extension based client (in development). You may use it as the infrastructure to build your own wallet or applications, but we are not responsible for any theft, loss, or security issues. We will not be providing any guidance or service, beyond issues which we deem to be of public interest (at our discretion).
 
 ### Modulo (Pro / commercial version)
 
