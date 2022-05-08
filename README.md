@@ -1,4 +1,4 @@
-# Modulo / wallet infrastructure (1wallet core + web app)
+# 1wallet core + web app / wallet infrastructure / Modulo 
 
 **Disclaimer**: Issues or suggestions related to the iOS app implementation (Timeless) should not be reported to this repository or the developers here. If you experience any issue with that app or any frontend implementation other than 1wallet.crazy.one, please consult with the corresponding app's developers accordingly.  
 
