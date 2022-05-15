@@ -203,7 +203,7 @@ export const ERC20Grid = ({ address }) => {
         return
       }
       // Merge to existing list.
-      setCurrentTrackedTokens(ptts => uniqBy(t => t.key, [...ptts, ...tts]))
+      setCurrentTrackedTokens(ptts => uniqBy(t => t.key, [...ptts, ...tts]).filter(e => untrackedTokenKeys.find(k => k === e.key) === undefined))
     }
     // dispatch(walletActions.untrackTokens({ address, keys: trackedTokens.map(e => e.key) }))
     f()
