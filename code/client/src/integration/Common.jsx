@@ -27,6 +27,12 @@ export const WalletSelector = ({ from, onAddressSelected, filter = e => e, disab
   from = util.safeNormalizedAddress(from)
   const selectedWallet = from && wallets[from]
   const buildAddressObject = wallet => wallet && wallet.address ? ({ value: wallet.address, label: `(${wallet.name}) ${util.ellipsisAddress(useHex ? wallet.address : util.safeOneAddress(wallet.address))}` }) : {}
+  const history = useHistory()
+
+  const createWallet = () => {
+    dispatch(globalActions.selectWallet(''))
+    history.push(Paths.create)
+  }
 
   useEffect(() => {
     if (from) {
@@ -70,7 +76,10 @@ export const WalletSelector = ({ from, onAddressSelected, filter = e => e, disab
           <AverageRow>
             <Text>Select a wallet you want to use:</Text>
           </AverageRow>
-          <WalletSelectorBase onAddressSelected={onAddressSelected} filter={filter} disabledText={disabledText} useHex={useHex} showOlderVersions={showOlderVersions} />
+          <WalletSelectorBase
+            onAddressSelected={onAddressSelected} filter={filter} disabledText={disabledText} useHex={useHex} showOlderVersions={showOlderVersions}
+            extraOptions={[<Button key='create-wallet-button' style={{ width: '100%', textAlign: 'left' }} type='text' onClick={createWallet}>Create New Wallet</Button>]}
+          />
         </>)}
     </>
   )
@@ -81,19 +90,21 @@ const WalletSelectorBase = ({
     width: '100%',
     borderBottom: '1px dashed black'
   },
-  extraOptions
+  extraOptions = [],
+  selectedAddress
 }) => {
   const network = useSelector(state => state.global.network)
   const wallets = useSelector(state => state.wallet)
   const walletList = Object.keys(wallets).map(e => wallets[e]).filter(e => e.network === network && (showOlderVersions ? (!e.temp || !util.isEmptyAddress(e.forwardAddress)) : !e.temp))
   const buildAddressObject = wallet => wallet && wallet.address ? ({ value: wallet.address, label: `(${wallet.name}) ${util.ellipsisAddress(useHex ? wallet.address : util.safeOneAddress(wallet.address))}` }) : {}
+  const selectedWallet = selectedAddress && walletList.find(w => w.address === selectedAddress)
   const firstEligibleWallet = walletList.find(filter)
-  const defaultUserAddress = firstEligibleWallet ? buildAddressObject(firstEligibleWallet) : {}
-  const [selectedAddress, setSelectedAddress] = useState(defaultUserAddress)
+  const defaultUserAddress = selectedWallet ? buildAddressObject(selectedWallet) : firstEligibleWallet ? buildAddressObject(firstEligibleWallet) : {}
+  const [selectedAddr, setSelectedAddr] = useState(defaultUserAddress)
 
   useEffect(() => {
-    onAddressSelected && onAddressSelected(selectedAddress)
-  }, [selectedAddress])
+    onAddressSelected && onAddressSelected(selectedAddr)
+  }, [selectedAddr])
 
   return (
     <AverageRow style={style}>
@@ -104,7 +115,7 @@ const WalletSelectorBase = ({
         bordered={false}
         showSearch
         style={selectStyle}
-        value={selectedAddress}
+        value={selectedAddr}
         onBlur={() => {}}
         onSearch={() => {}}
       >
@@ -124,7 +135,7 @@ const WalletSelectorBase = ({
                       type='text'
                       style={{ textAlign: 'left', height: '50px', opacity: enabled ? 1.0 : 0.5 }}
                       onClick={() => {
-                        setSelectedAddress({ value: address, label: displayText })
+                        setSelectedAddr({ value: address, label: displayText })
                       }}
                       disabled={!enabled}
                     >
@@ -156,5 +167,5 @@ export const WalletSelectorV2 = ({ ...args }) => {
     dispatch(globalActions.selectWallet(''))
     history.push(Paths.create)
   }
-  return <WalletSelectorBase {...args} extraOptions={[<Button key='create-wallet-button' type='text' onClick={createWallet}>Create</Button>]} />
+  return <WalletSelectorBase {...args} extraOptions={[<Button key='create-wallet-button' type='text' onClick={createWallet}>Create New Wallet</Button>]} />
 }

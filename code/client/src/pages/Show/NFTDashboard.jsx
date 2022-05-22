@@ -6,6 +6,7 @@ import Divider from 'antd/es/divider'
 import React, { useState } from 'react'
 import { TallRow } from '../../components/Grid'
 import { NFTGrid } from '../../components/NFTGrid'
+import util from '../../util'
 
 import BuyDaVinci from './BuyDaVinci'
 const { Title } = Typography
@@ -39,6 +40,13 @@ const NFTDashboard = ({ address }) => {
       <NFTGrid address={address} />
     </Space>
   )
+}
+
+// match is from route matches.
+export const NFTDashboardV2 = ({ match = {} }) => {
+  const { address } = match.params ?? {}
+  const normalizedAddr = util.safeNormalizedAddress(address)
+  return <NFTDashboard address={normalizedAddr} />
 }
 
 export default NFTDashboard
