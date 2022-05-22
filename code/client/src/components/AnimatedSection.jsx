@@ -7,6 +7,9 @@ import Space from 'antd/es/space'
 import { useWindowDimensions } from '../util'
 import CloseOutlined from '@ant-design/icons/CloseOutlined'
 
+const DefaultEmptySection = styled.div`
+`
+
 const Section = styled(Card)`
   padding: 32px;
   position: ${props => props['data-show'] ? 'relative' : 'fixed'};
@@ -81,6 +84,26 @@ const AnimatedSection = ({ show = true, wide, children, style, onClose, ...param
         >
           {children}
         </Section>
+      )}
+    </Transition>
+  )
+}
+
+export const AnimatedSection2 = ({ show = true, SectionEl = DefaultEmptySection, children, style, ...params }) => {
+  return (
+    <Transition in={show} timeout={300}>
+      {state => (
+        <SectionEl
+          style={{
+            maxWidth: '640px',
+            ...defaultStyle,
+            ...transitionStyles[state],
+            ...style
+          }}
+          {...params}
+        >
+          {children}
+        </SectionEl>
       )}
     </Transition>
   )

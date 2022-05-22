@@ -344,4 +344,11 @@ const Stake = ({
   )
 }
 
+// match is from route matches.
+export const StakeV2 = ({ match = {} }) => {
+  const { address } = match.params ?? {}
+  const normalizedAddr = util.safeNormalizedAddress(address)
+  return <Stake address={normalizedAddr} />
+}
+
 export default Stake

@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux'
 // 2. custom variables that will be used in the jsx code.
 export const lightTheme = {
   // Ant CSS variables
-  primaryColor: 'blue',
+  primaryColor: '#1890ff',
 
   // custom variables
   primaryTextColor: 'black',
@@ -19,6 +19,8 @@ export const lightTheme = {
   primaryButtonBgColor: '#00ADE8',
   secondaryButtonBgColor: '#4F5963',
   buttonTextColor: 'white',
+  otpInputBackground: 'linear-gradient(260deg, #111111 10%, #4F5963 100%)',
+  optInputTextColor: 'white',
 }
 
 export const darkTheme = {
@@ -35,6 +37,8 @@ export const darkTheme = {
   primaryButtonBgColor: '#666',
   secondaryButtonBgColor: '#333',
   buttonTextColor: 'black',
+  otpInputBackground: 'linear-gradient(260deg, #111111 10%, #4F5963 100%)',
+  optInputTextColor: 'white',
 }
 
 export function useTheme () {
