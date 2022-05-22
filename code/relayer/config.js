@@ -53,6 +53,10 @@ const config = {
     node: process.env.ES_NODE || 'https://localhost:9200',
     username: process.env.ES_USERNAME,
     password: process.env.ES_PASSWORD,
+  },
+  stats: {
+    // relevant to relayer root directory
+    path: process.env.STATS_PATH || '../data/stats.json'
   }
 }
 module.exports = config

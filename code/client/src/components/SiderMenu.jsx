@@ -80,7 +80,7 @@ const DeskstopSiderMenu = ({ action, nav, ...args }) => {
         </SiderLink>
       </Row>
 
-      <Row justify='center' style={{ marginBottom: 24 }}><SiderLink style={{ color: 'white' }} href='https://harmony.one/1wallet'>{config.appName} {config.version}</SiderLink></Row>
+      <Row justify='center' style={{ marginBottom: 24 }}><SiderLink style={{ color: 'white' }} href='https://github.com/polymorpher/one-wallet'>{config.appName} {config.version}</SiderLink></Row>
 
       <StatsInfo />
 
@@ -91,7 +91,7 @@ const DeskstopSiderMenu = ({ action, nav, ...args }) => {
       </Menu>
       <LineDivider />
       <Menu theme='dark' mode='inline' selectable={false}>
-        <Menu.Item key='grant' icon={<DollarOutlined />}><SiderLink style={{ color: null }} href='https://harmony.one/wallet'>Grants</SiderLink></Menu.Item>
+        <Menu.Item key='grant' icon={<DollarOutlined />}><SiderLink style={{ color: null }} href='https://modulo.so'>Pro Version</SiderLink></Menu.Item>
         <Menu.Item key='bug' icon={<GithubOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/issues'>Bug Report</SiderLink></Menu.Item>
         <Menu.Item key='audit' icon={<AuditOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/tree/master/audits'>Audits</SiderLink></Menu.Item>
         <Menu.Item key='wiki' icon={<InfoCircleOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/wiki'>Wiki</SiderLink></Menu.Item>
