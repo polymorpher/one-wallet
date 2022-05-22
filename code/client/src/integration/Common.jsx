@@ -27,6 +27,12 @@ export const WalletSelector = ({ from, onAddressSelected, filter = e => e, disab
   from = util.safeNormalizedAddress(from)
   const selectedWallet = from && wallets[from]
   const buildAddressObject = wallet => wallet && wallet.address ? ({ value: wallet.address, label: `(${wallet.name}) ${util.ellipsisAddress(useHex ? wallet.address : util.safeOneAddress(wallet.address))}` }) : {}
+  const history = useHistory()
+
+  const createWallet = () => {
+    dispatch(globalActions.selectWallet(''))
+    history.push(Paths.create)
+  }
 
   useEffect(() => {
     if (from) {
@@ -70,7 +76,10 @@ export const WalletSelector = ({ from, onAddressSelected, filter = e => e, disab
           <AverageRow>
             <Text>Select a wallet you want to use:</Text>
           </AverageRow>
-          <WalletSelectorBase onAddressSelected={onAddressSelected} filter={filter} disabledText={disabledText} useHex={useHex} showOlderVersions={showOlderVersions} />
+          <WalletSelectorBase
+            onAddressSelected={onAddressSelected} filter={filter} disabledText={disabledText} useHex={useHex} showOlderVersions={showOlderVersions}
+            extraOptions={[<Button key='create-wallet-button' style={{ width: '100%', textAlign: 'left' }} type='text' onClick={createWallet}>Create New Wallet</Button>]}
+          />
         </>)}
     </>
   )
@@ -81,7 +90,7 @@ const WalletSelectorBase = ({
     width: '100%',
     borderBottom: '1px dashed black'
   },
-  extraOptions,
+  extraOptions = [],
   selectedAddress
 }) => {
   const network = useSelector(state => state.global.network)
@@ -158,5 +167,5 @@ export const WalletSelectorV2 = ({ ...args }) => {
     dispatch(globalActions.selectWallet(''))
     history.push(Paths.create)
   }
-  return <WalletSelectorBase {...args} extraOptions={[<Button key='create-wallet-button' type='text' onClick={createWallet}>Create</Button>]} />
+  return <WalletSelectorBase {...args} extraOptions={[<Button key='create-wallet-button' type='text' onClick={createWallet}>Create New Wallet</Button>]} />
 }
