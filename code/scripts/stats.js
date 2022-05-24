@@ -24,6 +24,7 @@ const SLEEP_BETWEEN_RPC = parseInt(process.env.SLEEP_BETWEEN_RPC || 150)
 const RPC_BATCH_SIZE = parseInt(process.env.RPC_BATCH_SIZE || 50)
 const PAGE_SIZE = parseInt(process.env.PAGE_SIZE || 500)
 const SAFE_MODE = process.env.SAFE_MODE === 'true'
+const RECALIBRATE_PERIOD = parseInt(process.env.RECALIBRATE_PERIOD || 3600 * 1000 * 24 * 7)
 
 console.log('stats initializing', {
   RELAYER_ADDRESSES,
@@ -225,7 +226,8 @@ async function exec () {
   const fp2 = await fs.open(ADDRESSES_CACHE, 'a+')
   const stats = JSON.parse((await fp.readFile({ encoding: 'utf-8' }) || '{}'))
   const now = Date.now()
-  const from = stats.lastScanTime || 0
+  const recalibrate = (now - parseInt(stats.calibrationTime || 0) > RECALIBRATE_PERIOD)
+  const from = recalibrate ? 0 : (stats.lastScanTime || 0)
   const existingRelayers = stats.relayers || []
   let totalBalance = new BN(stats.totalBalance)
   let totalAddresses = stats.totalAddresses || 0
