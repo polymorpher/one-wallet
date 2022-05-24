@@ -223,10 +223,13 @@ async function refreshAllBalance () {
 
 async function exec () {
   const fp = await fs.open(STATS_CACHE, 'a+')
-  const fp2 = await fs.open(ADDRESSES_CACHE, 'a+')
   const stats = JSON.parse((await fp.readFile({ encoding: 'utf-8' }) || '{}'))
   const now = Date.now()
-  const recalibrate = (now - parseInt(stats.calibrationTime || 0) > RECALIBRATE_PERIOD)
+  const calibrationTime = parseInt(stats.calibrationTime || 0)
+  const recalibrate = (now - calibrationTime > RECALIBRATE_PERIOD)
+
+  const fp2 = await fs.open(ADDRESSES_CACHE, 'a+')
+
   const from = recalibrate ? 0 : (stats.lastScanTime || 0)
   const existingRelayers = stats.relayers || []
   let totalBalance = new BN(stats.totalBalance)
@@ -255,6 +258,7 @@ async function exec () {
     lastBalanceRefresh: stats.lastBalanceRefresh || 0,
     lastScanTime: now,
     relayers: RELAYER_ADDRESSES,
+    calibrationTime: recalibrate ? now : calibrationTime,
   }
   console.log(`writing new stats`, newStats)
   await fp.truncate()
