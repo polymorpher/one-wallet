@@ -227,7 +227,9 @@ async function exec () {
   const now = Date.now()
   const calibrationTime = parseInt(stats.calibrationTime || 0)
   const recalibrate = (now - calibrationTime > RECALIBRATE_PERIOD)
-
+  if (recalibrate) {
+    console.log('Recalibrating addresses and balances...')
+  }
   const fp2 = await fs.open(ADDRESSES_CACHE, 'a+')
 
   const from = recalibrate ? 0 : (stats.lastScanTime || 0)
