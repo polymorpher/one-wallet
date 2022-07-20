@@ -144,7 +144,7 @@ const init = async () => {
       return
     }
     const n = config.networks[k]
-    if (n.key) {
+    if (n.key || n.mnemonic) {
       try {
         providers[k] = new HDWalletProvider({
           mnemonic: n.mnemonic,
