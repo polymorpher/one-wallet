@@ -80,7 +80,7 @@ const EOTPDerivation = {
           if (idKeyIndex === identificationKeys.length - 1) {
             layers = await storage.getItem(root)
           } else {
-            const info = oldInfos[idKeyIndex]
+            const info = oldInfos[idKeyIndex] ? oldInfos[idKeyIndex] : wallet
             layers = await storage.getItem(info.root)
             effectiveTime = info.effectiveTime
             root = info.root
