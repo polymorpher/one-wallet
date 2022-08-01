@@ -54,6 +54,10 @@ export const WalletSelector = ({ from, onAddressSelected, filter = e => e, disab
     }
   }, [from, wallets, network])
 
+  useEffect(() => {
+    from && selectedWallet && onAddressSelected && onAddressSelected(buildAddressObject(selectedWallet))
+  }, [from, selectedWallet])
+
   return (
     <>
       {from && !selectedWallet &&
