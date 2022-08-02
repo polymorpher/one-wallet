@@ -20,7 +20,7 @@ const ARCHIVE_RPC_URL = process.env.ARCHIVE_RPC_URL || config.networks[config.de
 const ADDRESSES_CACHE = process.env.ADDRESSES_CACHE || './data/addresses.csv'
 const ADDRESSES_TEMP = process.env.ADDRESSES_TEMP || './data/addresses.temp.csv'
 const MAX_BALANCE_AGE = parseInt(process.env.MAX_BALANCE_AGE || 3600 * 1000 * 24)
-const SLEEP_BETWEEN_RPC = parseInt(process.env.SLEEP_BETWEEN_RPC || 150)
+const SLEEP_BETWEEN_RPC = parseInt(process.env.SLEEP_BETWEEN_RPC || 500)
 const RPC_BATCH_SIZE = parseInt(process.env.RPC_BATCH_SIZE || 50)
 const PAGE_SIZE = parseInt(process.env.PAGE_SIZE || 500)
 const SAFE_MODE = process.env.SAFE_MODE === 'true'
