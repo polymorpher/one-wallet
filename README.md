@@ -1,4 +1,4 @@
-# 1wallet core + web app / wallet infrastructure / modulo.so 
+# 1wallet core + web app / wallet infrastructure / modulo.so OTP Wallet infrastructure
 
 **Disclaimer**: Issues or suggestions related to the iOS app implementation (Timeless) should not be reported to this repository or the developers here. If you experience any issue with that app or any frontend implementation other than 1wallet.crazy.one, please consult with the corresponding app's developers accordingly.  
 
@@ -35,7 +35,7 @@ Since Google Authenticator operates offline and is well insulated<sup>1</sup> on
 
 1wallet is non-custodial. Only you, who controls the Google Authenticator that scanned the setup QR code, can access and control the wallet. The wallet's operations do not rely on any centralized server operated by any company.
 
-1wallet is EVM compatible. It currently operates exclusively on [Harmony network](https://harmony.one).
+1wallet is EVM compatible and may operate on multiple networks. It was first launched on [Harmony network](https://harmony.one) in Sep 2021
 
 [1]: Unless you use rooted or jailbreak devices, in which case you need to take care of security insulation by yourself
 
