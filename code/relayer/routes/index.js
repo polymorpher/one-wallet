@@ -316,7 +316,7 @@ router.post('/retire', generalLimiter({ max: 6 }), walletAddressLimiter({ max: 6
   }
   // TODO parameter verification
   try {
-    const wallet = await req.contract(address)
+    const wallet = new req.contract(address)
     const logger = (...args) => Logger.log(`[/retire]`, ...args)
     const executor = blockchain.prepareExecute(req.network, logger)
     const receipt = await executor(txArgs => wallet.retire(txArgs))
