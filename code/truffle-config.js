@@ -33,7 +33,8 @@ module.exports = {
     'harmony-mainnet': {
       provider: () => config.networks['harmony-mainnet'].key && BuildProvider(config.networks['harmony-mainnet']),
       network_id: config.networks['harmony-mainnet'].networkId,
-      gas: config.gasLimit
+      gas: config.gasLimit,
+      gasPrice: config.gasPrice,
     }
   },
 

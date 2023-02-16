@@ -1,3 +1,4 @@
+require('dotenv').config()
 const { promises: fs } = require('fs')
 const { sortBy } = require('lodash')
 const BN = require('bn.js')
