@@ -200,7 +200,7 @@ const api = {
   web3,
   binance: {
     getPrice: async () => {
-      const { data } = await axios.get('https://api.binance.com/api/v3/ticker/24hr?symbol=ONEUSDT')
+      const { data } = await axios.get('https://api.binance.us/api/v3/ticker/24hr?symbol=ONEUSDT')
       const { lastPrice } = data
       return parseFloat(lastPrice)
     }
