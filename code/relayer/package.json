@@ -4,7 +4,7 @@
   "private": true,
   "main": "app.js",
   "scripts": {
-    "start": "npm run compile && node ./bin/run.js",
+    "start": "node ./bin/run.js",
     "compile": "truffle compile",
     "debug": "RELAYER_DEBUG=true npm run start"
   },

@@ -13,6 +13,7 @@ const ONEWalletCodeHelper = require('../build/contracts/ONEWalletCodeHelper.json
 const Reveal = require('../build/contracts/Reveal.json')
 const ONEWallet = require('../build/contracts/ONEWallet.json')
 const IONEWallet = require('../build/contracts/IONEWallet.json')
+const ProxyWallet = require('../build/contracts/ProxyWallet.json')
 
 const baseLibraries = [Staking, DomainManager, TokenTracker, WalletGraph, CommitManager, SignatureManager, SpendingManager, Reveal, CoreManager, Executor]
 const factoryLibraries = [ONEWalletCodeHelper]
@@ -28,6 +29,7 @@ const dependencies = {
 }
 
 module.exports = {
+  ProxyWallet,
   WalletGraph,
   CommitManager,
   SignatureManager,

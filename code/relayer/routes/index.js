@@ -47,6 +47,7 @@ router.use((req, res, next) => {
     req.contract = blockchain.getWalletContract(network, 6)
   } else {
     req.contract = blockchain.getWalletContract(network)
+    req.proxy = blockchain.getProxyWallet(network)
   }
   req.provider = blockchain.getProvider(network)
   req.requestTime = performance.now()
@@ -209,12 +210,16 @@ router.post('/commit', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
     ...getIP(req)
   }
   try {
-    // eslint-disable-next-line new-cap
+    const requireProxy = address === config.proxy.source
     const wallet = new req.contract(address)
+    const proxy = requireProxy ? new req.proxy(config.proxy.target) : undefined
     const logger = (...args) => Logger.log(`[/commit]`, ...args)
     const executor = blockchain.prepareExecute(req.network, logger)
     const receipt = await executor(txArgs => {
       if (req.majorVersion >= 7) {
+        if (proxy) {
+          return proxy.commit(address, hash, paramsHash, verificationHash, txArgs)
+        }
         return wallet.commit(hash, paramsHash, verificationHash, txArgs)
         // tx = await wallet.sendTransaction(txreq)
       } else if (req.majorVersion >= 6) {
@@ -242,6 +247,7 @@ router.post('/reveal', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
   if (config.debug || config.verbose) {
     Logger.log(`[/reveal] `, { neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
   }
+  const requireProxy = address === config.proxy.source
   if (!(req.majorVersion >= 6)) {
     operationType = parseInt(operationType || -1)
     if (!(operationType > 0)) {
@@ -277,6 +283,7 @@ router.post('/reveal', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
   try {
     // eslint-disable-next-line new-cap
     const wallet = new req.contract(address)
+    const proxy = requireProxy ? new req.proxy(config.proxy.target) : undefined
     // Logger.log({ neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
     const logger = (...args) => Logger.log(`[/reveal]`, ...args)
     const executor = blockchain.prepareExecute(req.network, logger)
@@ -284,6 +291,11 @@ router.post('/reveal', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
       if (!(req.majorVersion >= 14)) {
         return wallet.methods['reveal(bytes32[],uint32,bytes32,uint8,uint8,address,uint256,address,uint256,bytes)'].sendTransaction(...[neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data], txArgs)
       } else {
+        if (proxy) {
+          return proxy.reveal(address, [neighbors, index, eotp],
+            [operationType, tokenType, contractAddress, tokenId, dest, amount, data],
+            txArgs)
+        }
         return wallet.reveal(
           [neighbors, index, eotp],
           [operationType, tokenType, contractAddress, tokenId, dest, amount, data],

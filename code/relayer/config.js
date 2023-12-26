@@ -67,6 +67,10 @@ const config = {
   stats: {
     // relevant to relayer root directory
     path: process.env.STATS_PATH || '../data/stats.json'
+  },
+  proxy: {
+    source: process.env.PROXY_SOURCE || '',
+    target: process.env.PROXY_TARGET || '',
   }
 }
 module.exports = config
