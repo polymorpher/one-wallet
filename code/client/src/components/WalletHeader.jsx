@@ -8,7 +8,9 @@ import Modal from 'antd/es/modal'
 import Input from 'antd/es/input'
 import Button from 'antd/es/button'
 import Space from 'antd/es/space'
+import Switch from 'antd/es/switch'
 import Typography from 'antd/es/typography'
+import ConfigProvider from 'antd/es/config-provider'
 import { useRouteMatch, useHistory } from 'react-router'
 import { titleCase } from 'title-case'
 import { useSelector, useDispatch } from 'react-redux'
@@ -17,11 +19,15 @@ import LockOutlined from '@ant-design/icons/LockOutlined'
 import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import SettingOutlined from '@ant-design/icons/SettingOutlined'
 import config from '../config'
-import util, { useWindowDimensions } from '../util'
+import Paths from '../constants/paths'
+import util, { Breakpoints, useWindowDimensions } from '../util'
 import { Hint } from './Text'
 import WalletAddress from './WalletAddress'
 import { globalActions } from '../state/modules/global'
-// import Paths from '../constants/paths'
+import { StatsInfoV2 } from './StatsInfo'
+import { useTheme, getColorPalette } from '../theme'
+import { WalletSelectorV2 } from '../integration/Common'
+import { SecondaryButton } from '../components/Buttons'
 const { Text, Link } = Typography
 
 // const SelectorLabel = styled.span`
@@ -37,7 +43,7 @@ const NetworkSelector = () => {
   return (
     <>
       {/* <SelectorLabel>Network</SelectorLabel> */}
-      <Select style={{ width: 200 }} bordered={false} value={networkId} onChange={onChange}>
+      <Select style={{ width: 160 }} bordered={false} value={networkId} onChange={onChange}>
         {Object.keys(networks).map(k => {
           return <Select.Option key={k} value={k}>{networks[k].name} </Select.Option>
         })}
@@ -124,6 +130,74 @@ const WalletHeader = () => {
         <SecretSettings key='settings' visible={settingsVisible} onClose={() => setSettingsVisible(false)} />
       ]}
     />
+  )
+}
+
+export const WalletHeaderV2 = () => {
+  const dispatch = useDispatch()
+  const history = useHistory()
+  const { isMobile, width } = useWindowDimensions()
+  const theme = useTheme()
+  const dev = useSelector(state => state.global.dev)
+  const selectedAddress = useSelector(state => state.global.selectedWallet)
+  const wallets = useSelector(state => state.wallet)
+  const network = useSelector(state => state.global.network)
+  const networkWallets = util.filterNetworkWallets(wallets, network)
+  const matchedWallet = networkWallets.filter(w => w.address === selectedAddress)[0]
+  const [settingsVisible, setSettingsVisible] = useState(false)
+  const [relayerEditVisible, setRelayerEditVisible] = useState(false)
+  const { primaryBgColor, secondaryBgColor, secondaryBorderColor } = getColorPalette(theme)
+  const match = useRouteMatch(Paths.matchStructure)
+
+  const onAddressSelected = (e) => {
+    // Only change if a new address is selected.
+    if (selectedAddress !== e.value) {
+      history.push(Paths.showAddress(e.value, match?.params?.section))
+      dispatch(globalActions.selectWallet(e.value))
+    }
+  }
+
+  const onThemeChange = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark'
+    ConfigProvider.config({
+      theme: getColorPalette(newTheme),
+    })
+    dispatch(globalActions.setUiTheme(newTheme))
+  }
+
+  return (
+    <div
+      style={{
+        background: primaryBgColor,
+        padding: isMobile ? 8 : 24,
+        alignItems: 'center',
+        display: 'flex',
+        justifyContent: 'space-around',
+        flexWrap: 'wrap',
+        gap: '16px'
+      }}
+    >
+      {/* Wallet selector + send + receive if wallet exists */}
+      {matchedWallet && (
+        <div style={{ display: 'flex', height: '100%', alignItems: 'center', gap: '8px' }}>
+          <WalletSelectorV2 onAddressSelected={onAddressSelected} filter={w => w.majorVersion >= 10} selectedAddress={selectedAddress} useHex style={{ background: secondaryBgColor, border: `1px solid ${secondaryBorderColor}`, margin: '0 4px', padding: '4px 0', borderRadius: '16px' }} selectStyle={{}} />
+          <SecondaryButton onClick={() => history.push(Paths.showAddress(selectedAddress, 'transfer'))} style={{ padding: '8px 16px', height: '100%', borderRadius: '15px' }}>Send</SecondaryButton>
+          <SecondaryButton onClick={() => history.push(Paths.showAddress(selectedAddress, 'qr'))} style={{ padding: '8px 16px', height: '100%', borderRadius: '15px' }}>Receive</SecondaryButton>
+        </div>)}
+      {width >= Breakpoints.LARGE && <StatsInfoV2 />}
+      <div style={{ display: 'flex', height: '100%', alignItems: 'center' }}>
+        {dev && <Button key='toggle' shape='circle' icon={relayerEditVisible ? <CloseOutlined /> : <SettingOutlined />} onClick={() => setRelayerEditVisible(!relayerEditVisible)} />}
+        {dev && relayerEditVisible &&
+          <Space size='small' key='relayer'>
+            <Button shape='circle' icon={<LockOutlined />} onClick={() => setSettingsVisible(true)} />
+            <RelayerSelector />
+            <Divider type='vertical' />
+          </Space>}
+        <NetworkSelector key='network' />
+      </div>
+      <SecretSettings key='settings' visible={settingsVisible} onClose={() => setSettingsVisible(false)} />
+      <Switch checkedChildren='Dark' unCheckedChildren='Light' onChange={onThemeChange} checked={theme === 'dark'} />
+    </div>
   )
 }
 

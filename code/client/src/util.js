@@ -378,9 +378,14 @@ function getMobileOS () {
   return OSType.Unknown
 }
 
+export const Breakpoints = {
+  LARGE: 1280,
+  MOBILE: 992,
+}
+
 export function useWindowDimensions () {
   const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions())
-  const isMobile = !(windowDimensions.width >= 992)
+  const isMobile = !(windowDimensions.width >= Breakpoints.MOBILE)
 
   const os = isMobile && getMobileOS()
 
@@ -412,6 +417,11 @@ export const useWaitExecution = (func, runCondition, wait, dependencies) => {
       clearTimeout(timeout)
     }
   }, dependencies)
+}
+
+export const isSafari = () => {
+  const s = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+  return (!!window.safari) || s
 }
 
 if (window) {

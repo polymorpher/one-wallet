@@ -5,7 +5,7 @@ module.exports = {
   appId: 'ONEWallet',
   appName: '1wallet',
   version: `v0.${Constants.MajorVersion}.${Constants.MinorVersion}`,
-  lastLibraryUpdateVersion: `v0.${Constants.MajorVersion}.${Constants.MinorVersion}`,
+  lastLibraryUpdateVersion: `v0.${Constants.MajorVersion}.1`,
   // lastLibraryUpdateVersion: `v0.16.0`, // use this for manual override
   minWalletVersion: parseInt(process.env.MIN_WALLET_VERSION || 9),
   minUpgradableVersion: parseInt(process.env.MIN_UPGRADABLE_WALLET_VERSION || 9),
@@ -57,7 +57,7 @@ module.exports = {
     ...(DEBUG && {
       dev: {
         name: 'Local Relayer',
-        url: process.env.LOCAL_RELAYER_URL || 'http://127.0.0.1:3001'
+        url: process.env.LOCAL_RELAYER_URL || 'https://127.0.0.1:8445'
         // url: 'https://dev.hiddenstate.xyz'
       }
     }),
@@ -65,5 +65,9 @@ module.exports = {
       name: 'Test Relayer',
       url: 'https://relayer.onewallet.hiddenstate.xyz'
     }
+  },
+  backend: {
+    url: process.env.BACKEND_URL || 'https://localhost:8446'
+    // url: 'https://dev2.hiddenstate.xyz'
   }
 }

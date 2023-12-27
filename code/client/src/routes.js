@@ -6,8 +6,12 @@ import Paths from './constants/paths'
 import Layout from 'antd/es/layout'
 import Row from 'antd/es/row'
 import Spin from 'antd/es/spin'
-import SiderMenu from './components/SiderMenu'
-import WalletHeader from './components/WalletHeader'
+import SiderMenu, { SiderMenuV2 } from './components/SiderMenu'
+import WalletHeader, { WalletHeaderV2 } from './components/WalletHeader'
+import { NFTDashboardV2 } from './pages/Show/NFTDashboard'
+import { ERC20GridV2 } from './components/ERC20Grid'
+import { SwapV2 } from './pages/Show/Swap'
+import { StakeV2 } from './pages/Show/Stake/Stake'
 import CreatePage from './pages/Create'
 import AddressDetailPage from './pages/Contacts/AddressDetail'
 import ListPage from './pages/List'
@@ -25,8 +29,10 @@ import cacheActions from './state/modules/cache/actions'
 const LocalRoutes = () => {
   const dispatch = useDispatch()
   const dev = useSelector(state => state.global.dev)
+  const v2ui = useSelector(state => state.global.v2ui)
   const wallets = useSelector(state => state.wallet)
   const network = useSelector(state => state.global.network)
+  const selectedAddress = useSelector(state => state.global.selectedWallet)
   const networkWallets = util.filterNetworkWallets(wallets, network)
   const { isMobile } = useWindowDimensions()
 
@@ -45,13 +51,15 @@ const LocalRoutes = () => {
   }, [needCodeUpdate, clientVersion])
 
   return (
-    <Layout style={{
-      minHeight: '100vh'
-    }}
+    <Layout
+      style={{
+        minHeight: '100vh'
+      }}
+      className={v2ui ? 'v2ui' : ''}
     >
-      <SiderMenu />
+      {v2ui ? <SiderMenuV2 /> : <SiderMenu />}
       <Layout>
-        <WalletHeader />
+        {v2ui ? <WalletHeaderV2 /> : <WalletHeader />}
         <Layout.Content
           style={
             {
@@ -69,6 +77,12 @@ const LocalRoutes = () => {
                 return <Redirect to={Paths.root} />
               }}
             />
+            <Route
+              path={Paths.v2ui} render={() => {
+                dispatch(globalActions.setV2Ui(!v2ui))
+                return <Redirect to={Paths.root} />
+              }}
+            />
             <Route path={Paths.auth} component={WalletAuth} />
             <Route path={Paths.create} component={CreatePage} />
             <Route path={Paths.create1} render={() => <CreatePage showRecovery />} />
@@ -76,18 +90,40 @@ const LocalRoutes = () => {
             <Route path={Paths.wallets} component={ListPage} />
             <Route path={Paths.restore} component={RestorePage} />
             <Route path={Paths.address} component={AddressDetailPage} exact />
-            <Route path={Paths.show} component={ShowPage} />
+            {!v2ui && <Route path={Paths.show} component={ShowPage} />}
             <Route path={Paths.tools} component={ToolsPage} />
             <Route path={Paths.unwrap} component={Unwrap} />
+            {/* Dedicated v2 routes. */}
+            {v2ui && <Route path={Paths.overview} exact component={ShowPage} />}
+            {v2ui && <Route path={Paths.nft} exact component={NFTDashboardV2} />}
+            {v2ui && <Route path={Paths.assets} exact component={ERC20GridV2} />}
+            {v2ui && <Route path={Paths.swap} exact component={SwapV2} />}
+            {v2ui && <Route path={Paths.stake} exact component={StakeV2} />}
+            {/* Fuzzy match so we still can render other sections in the tab fashion. */}
+            {v2ui && <Route path={Paths.walletfuzzyaction} exact component={ShowPage} />}
             <Route
               exact
               path={Paths.root}
               render={() => {
-                return (
-                  networkWallets && networkWallets.length
-                    ? <Redirect to={Paths.wallets} component={ListPage} />
-                    : <Redirect to={Paths.create} component={CreatePage} />
-                )
+                const hasWallets = networkWallets && networkWallets.length > 0
+                if (!hasWallets) {
+                  return <Redirect to={Paths.create} component={CreatePage} />
+                }
+                return v2ui
+                  ? <Redirect to={Paths.showAddress(selectedAddress ?? networkWallets[0].address)} component={ShowPage} />
+                  : <Redirect to={Paths.wallets} component={ListPage} />
+              }}
+            />
+            {/* Fallthrough paths to handle any unrecognized paths. */}
+            <Route
+              path='*' exact render={() => {
+                const hasWallets = networkWallets && networkWallets.length > 0
+                if (!hasWallets) {
+                  return <Redirect to={Paths.create} component={CreatePage} />
+                }
+                return v2ui
+                  ? <Redirect to={Paths.showAddress(selectedAddress ?? networkWallets[0].address)} component={ShowPage} />
+                  : <Redirect to={Paths.wallets} component={ListPage} />
               }}
             />
           </Switch>

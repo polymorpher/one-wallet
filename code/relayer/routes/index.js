@@ -1,4 +1,5 @@
 const config = require('../config')
+const fs = require('fs').promises
 const { performance } = require('perf_hooks')
 const express = require('express')
 const router = express.Router()
@@ -46,6 +47,7 @@ router.use((req, res, next) => {
     req.contract = blockchain.getWalletContract(network, 6)
   } else {
     req.contract = blockchain.getWalletContract(network)
+    req.proxy = blockchain.getProxyWallet(network)
   }
   req.provider = blockchain.getProvider(network)
   req.requestTime = performance.now()
@@ -132,7 +134,7 @@ router.post('/new', rootHashLimiter({ max: 60 }), generalLimiter({ max: 10 }), g
   try {
     const initArgs = [
       [root, height, interval, t0, lifespan, slotSize],
-      [ new BN(spendingLimit), new BN(spentAmount), new BN(lastSpendingInterval), new BN(spendingInterval), new BN(lastLimitAdjustmentTime), new BN(highestSpendingLimit) ],
+      [new BN(spendingLimit), new BN(spentAmount), new BN(lastSpendingInterval), new BN(spendingInterval), new BN(lastLimitAdjustmentTime), new BN(highestSpendingLimit)],
       lastResortAddress,
       backlinks,
       oldCoreArrays,
@@ -208,12 +210,16 @@ router.post('/commit', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
     ...getIP(req)
   }
   try {
-    // eslint-disable-next-line new-cap
+    const requireProxy = address === config.proxy.source
     const wallet = new req.contract(address)
+    const proxy = requireProxy ? new req.proxy(config.proxy.target) : undefined
     const logger = (...args) => Logger.log(`[/commit]`, ...args)
     const executor = blockchain.prepareExecute(req.network, logger)
     const receipt = await executor(txArgs => {
       if (req.majorVersion >= 7) {
+        if (proxy) {
+          return proxy.commit(address, hash, paramsHash, verificationHash, txArgs)
+        }
         return wallet.commit(hash, paramsHash, verificationHash, txArgs)
         // tx = await wallet.sendTransaction(txreq)
       } else if (req.majorVersion >= 6) {
@@ -241,6 +247,7 @@ router.post('/reveal', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
   if (config.debug || config.verbose) {
     Logger.log(`[/reveal] `, { neighbors, index, eotp, address, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
   }
+  const requireProxy = address === config.proxy.source
   if (!(req.majorVersion >= 6)) {
     operationType = parseInt(operationType || -1)
     if (!(operationType > 0)) {
@@ -276,6 +283,7 @@ router.post('/reveal', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
   try {
     // eslint-disable-next-line new-cap
     const wallet = new req.contract(address)
+    const proxy = requireProxy ? new req.proxy(config.proxy.target) : undefined
     // Logger.log({ neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data })
     const logger = (...args) => Logger.log(`[/reveal]`, ...args)
     const executor = blockchain.prepareExecute(req.network, logger)
@@ -283,6 +291,11 @@ router.post('/reveal', generalLimiter({ max: 240 }), walletAddressLimiter({ max:
       if (!(req.majorVersion >= 14)) {
         return wallet.methods['reveal(bytes32[],uint32,bytes32,uint8,uint8,address,uint256,address,uint256,bytes)'].sendTransaction(...[neighbors, index, eotp, operationType, tokenType, contractAddress, tokenId, dest, amount, data], txArgs)
       } else {
+        if (proxy) {
+          return proxy.reveal(address, [neighbors, index, eotp],
+            [operationType, tokenType, contractAddress, tokenId, dest, amount, data],
+            txArgs)
+        }
         return wallet.reveal(
           [neighbors, index, eotp],
           [operationType, tokenType, contractAddress, tokenId, dest, amount, data],
@@ -315,7 +328,7 @@ router.post('/retire', generalLimiter({ max: 6 }), walletAddressLimiter({ max: 6
   }
   // TODO parameter verification
   try {
-    const wallet = await req.contract(address)
+    const wallet = new req.contract(address)
     const logger = (...args) => Logger.log(`[/retire]`, ...args)
     const executor = blockchain.prepareExecute(req.network, logger)
     const receipt = await executor(txArgs => wallet.retire(txArgs))
@@ -337,6 +350,17 @@ router.post('/retire', generalLimiter({ max: 6 }), walletAddressLimiter({ max: 6
 
 router.get('/sushi', generalLimiter({ max: 120 }), walletAddressLimiter({ max: 120 }), async (req, res) => {
   res.json(SushiData)
+})
+
+router.get('/stats', generalLimiter({ max: 120 }), async (req, res) => {
+  try {
+    const data = await fs.readFile(config.stats.path, { encoding: 'utf-8' })
+    const parsed = JSON.parse(data || '{}')
+    return res.json(parsed)
+  } catch (ex) {
+    console.error(ex)
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'stats not ready' })
+  }
 })
 
 module.exports = router

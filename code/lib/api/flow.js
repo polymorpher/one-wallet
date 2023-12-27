@@ -115,6 +115,7 @@ const EOTPDerivation = {
     index = index || ONEUtil.timeToIndex({ effectiveTime })
     if (index < 0) {
       index = layers[0].length / 32 - 1
+      message.debug(`[RECOVERY] Setting index to be last leaf at position ${index}`)
     }
     let nonce // should get from blockchain, but omitted for now because all wallets have maxOperationsPerInterval set to 1.
     let rand
@@ -241,7 +242,7 @@ const Flows = {
         innerTrees,
         message })
       eotp = derived?.eotp
-      index = index || derived?.index
+      index = (index < 0 || !index) ? derived?.index : index
       layers = layers || derived?.layers
     }
     if (!eotp) {

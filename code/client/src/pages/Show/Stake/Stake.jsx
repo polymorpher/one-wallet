@@ -150,7 +150,7 @@ const Stake = ({
       key: 'amount',
       // eslint-disable-next-line react/display-name
       render: (text, record) => {
-        return util.formatNumber(ONEUtil.toOne(String(record.amount) || 0))
+        return util.formatNumber(ONEUtil.toOne(ONEUtil.toBN(record.amount || 0)))
       }
     }, {
       title: 'Reward (ONE)',
@@ -158,7 +158,7 @@ const Stake = ({
       key: 'reward',
       // eslint-disable-next-line react/display-name
       render: (text, record) => {
-        return util.formatNumber(ONEUtil.toOne(String(record.reward) || 0))
+        return util.formatNumber(ONEUtil.toOne(ONEUtil.toBN(record.reward || 0)))
       }
     }, {
       title: 'Action',
@@ -195,7 +195,7 @@ const Stake = ({
       key: 'amount',
       // eslint-disable-next-line react/display-name
       render: (text, record) => {
-        return util.formatNumber(ONEUtil.toOne(String(record.amount) || 0))
+        return util.formatNumber(ONEUtil.toOne(ONEUtil.toBN(record.amount || 0)))
       }
     }, {
       title: 'Complete In',
@@ -342,6 +342,13 @@ const Stake = ({
       <Table dataSource={undelegations} columns={undelegationColumns} loading={undelegations === null} />
     </StakeCommon>
   )
+}
+
+// match is from route matches.
+export const StakeV2 = ({ match = {} }) => {
+  const { address } = match.params ?? {}
+  const normalizedAddr = util.safeNormalizedAddress(address)
+  return <Stake address={normalizedAddr} />
 }
 
 export default Stake
