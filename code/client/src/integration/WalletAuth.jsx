@@ -41,7 +41,8 @@ const WalletAuth = () => {
   }, [network])
 
   if (action === 'walletconnect') {
-    return <WalletConnect wc={wc} />
+    // return <WalletConnect wc={wc} />
+    return <></>
   }
 
   if (!action || !callback || !caller) {
