@@ -95,9 +95,6 @@ module.exports = {
     publicPath: '/',
     hashFunction: 'sha256',
   },
-  experiments: {
-    futureDefaults: true
-  },
   externals: {
     path: 'path',
     fs: 'fs',
