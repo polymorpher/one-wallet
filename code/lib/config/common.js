@@ -21,6 +21,7 @@ module.exports = {
       'eth-ganache': {
         name: 'Ganache',
         url: process.env.GANACHE_RPC || 'http://127.0.0.1:7545',
+        chainId: 1337,
         // explorer: 'https://explorer.harmony.one/#/tx/{{txId}}',
         deploy: {
           factory: process.env.DEPLOY_FACTORY_GANACHE,

@@ -242,6 +242,12 @@ const api = {
     }
   },
   blockchain: {
+    getChainInfo: () => {
+      return {
+        chainId: config.networks[activeNetwork].chainId,
+        activeNetwork,
+      }
+    },
     getOldInfos: async ({ address, raw }) => {
       const c = oneWallet(address)
       const res = await c.methods.getOldInfos().call()
