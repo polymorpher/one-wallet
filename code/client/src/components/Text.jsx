@@ -35,7 +35,7 @@ export const InputBox = styled(Input).attrs(({ $num, $decimal, type, autoComplet
   margin-bottom: ${props => props.$marginBottom || props.margin || '32px'};
   border: none;
   border-bottom: 1px dashed black;
-  font-size: 16px;
+  font-size: ${props => props.$fontSize || '16px'};
   &:hover{
     border-bottom: 1px dashed black;
   }
