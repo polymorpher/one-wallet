@@ -123,3 +123,14 @@ export const LabeledRow = ({ label, doubleRow = false, ultrawide = false, isMobi
     </AverageRow>
   )
 }
+
+export const SiderLink = styled(Link).attrs((e) => ({
+  ...e,
+  style: { ...e.style },
+  target: '_blank',
+  rel: 'noopener noreferrer'
+}))`
+  &:hover {
+    opacity: 0.8;
+  }
+`

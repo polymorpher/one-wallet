@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useSelector } from 'react-redux'
-import { InputBox, Link, Text } from '../components/Text'
+import { InputBox, Label, Link, SiderLink, Text } from '../components/Text'
 import Image from 'antd/es/image'
 import { Row } from 'antd/es/grid'
 import ConfigProvider from 'antd/es/config-provider'
@@ -18,7 +18,9 @@ import { Web3Wallet } from '@walletconnect/web3wallet'
 import { WalletConnectId } from '../config'
 import api from '../api'
 import { web3Provider } from './Web3Provider'
-
+import Col from 'antd/es/col'
+import WCLogo from '../../assets/wc.png'
+import QrcodeOutlined from '@ant-design/icons/QrcodeOutlined'
 // see https://docs.walletconnect.com/2.0/specs/sign/error-codes
 const UNSUPPORTED_CHAIN_ERROR_CODE = 5100
 const INVALID_METHOD_ERROR_CODE = 1001
@@ -82,10 +84,10 @@ const WalletConnect = ({ wcSesssionUri }) => {
   const wallets = useSelector(state => state.wallet)
   // const walletConnectSession = useSelector(state => state.cache.walletConnectSession)
   const walletList = Object.keys(wallets).filter(addr => util.safeNormalizedAddress(addr))
-  const [selectedAddress, setSelectedAddress] = useState({ value: walletList[0] })
+  const [selectedAddress, setSelectedAddress] = useState({ value: walletList[0]?.address, label: walletList[0]?.name })
   const [loading, setLoading] = useState(false)
   // Default to QR unless a session uri is provided.
-  const [isScanMode, setScanMode] = useState(!wcSesssionUri)
+  const [isScanMode, setScanMode] = useState(false)
   const [hasCamera, setHasCamera] = useState(false)
   const [uri, setUri] = useState(wcSesssionUri || '')
   const [peerMeta, setPeerMeta] = useState(null)
@@ -112,7 +114,7 @@ const WalletConnect = ({ wcSesssionUri }) => {
       const activeSessions = web3Wallet.getActiveSessions()
       const compatibleSession = Object.keys(activeSessions)
         .map(topic => activeSessions[topic])
-        .find(session => session.namespaces[EVMBasedNamespaces].accounts[0] === `${EVMBasedNamespaces}:${chainId}:${selectedAddress}`)
+        .find(session => session.namespaces[EVMBasedNamespaces].accounts[0] === `${EVMBasedNamespaces}:${chainId}:${selectedAddress.value}`)
 
       if (compatibleSession) {
         setWcSession(compatibleSession)
@@ -125,7 +127,8 @@ const WalletConnect = ({ wcSesssionUri }) => {
 
         message.debug(`Session proposal: ${JSON.stringify(proposal)}`)
 
-        const account = `${EVMBasedNamespaces}:${chainId}:${selectedAddress}`
+        const account = `${EVMBasedNamespaces}:${chainId}:${selectedAddress.value}`
+        console.log('selectedAddress', selectedAddress)
         const chain = `${EVMBasedNamespaces}:${chainId}`
         const events = requiredNamespaces[EVMBasedNamespaces]?.events || [] // accept all events, similar to Gnosis Safe
 
@@ -141,6 +144,7 @@ const WalletConnect = ({ wcSesssionUri }) => {
               },
             },
           })
+          console.log('wcSession', wcSession)
           setWcSession(wcSession)
           setError(undefined)
         } catch (error) {
@@ -297,52 +301,64 @@ const WalletConnect = ({ wcSesssionUri }) => {
           <Spin size='large' />
         </Row>)}
       {error && (
-        <Text type='danger'>Error: ${error}</Text>
+        <Text type='danger'>Error: {error}</Text>
       )}
-      {!wcSession
-        ? (peerMeta && peerMeta.name
-            ? <PromptView peerMeta={peerMeta} /* approveSession={approveSession} rejectSession={rejectSession} */ />
-            : (
-              <>
-                <WalletSelector onAddressSelected={setSelectedAddress} filter={e => e.majorVersion >= 10} showOlderVersions={false} useHex={false} />
-                {/* If no camera or `uri` provided, do not show the qr scanner initially. */}
-                {(!isScanMode || !hasCamera) && (
-                  <>
-                    <InputBox margin='auto' width={440} value={uri} onChange={({ target: { value } }) => setUri(value)} placeholder='Paste wc: uri...' />
-                    {hasCamera && <Button onClick={() => setScanMode(true)}>Scan</Button>}
-                  </>)}
-                {selectedAddress.value && isScanMode && hasCamera && <QrCodeScanner shouldInit uploadBtnText='Upload QR Code Instead' onScan={onScan} />}
-              </>))
-        : (
-          <>
-            <Row type='flex' justify='center' align='middle'>
-              <Text>{selectedAddress.value}</Text>
-              <Button type='link' onClick={wcDisconnect}>Disconnect</Button>
-            </Row>
-            <ConfigProvider renderEmpty={() => (
-              <Text>No pending requests for this wallet.</Text>
-            )}
-            >
-              <List
-                style={{ marginTop: '24px' }}
-                size='large'
-                bordered
-                dataSource={requests}
+      {/* <PromptView peerMeta={peerMeta} /* approveSession={approveSession} rejectSession={rejectSession} /> */}
+      {!wcSession &&
+        <>
+          <Row type='flex' justify='center' style={{ margin: '16px' }}>
+            <Image preview={false} src={WCLogo} style={{ height: 64 }} />
+          </Row>
+
+          <WalletSelector onAddressSelected={setSelectedAddress} filter={e => e.majorVersion >= 10} showOlderVersions={false} useHex={false} />
+          <Text style={{ marginTop: 16, marginBottom: 16 }}>
+            Connect your wallet to any dApp (e.g. <SiderLink href='https://multisig.harmony.one/'>Safe</SiderLink>, <SiderLink href='https://swap.harmony.one/'>Swap</SiderLink>, <SiderLink href='https://1.country/'>.country</SiderLink>)<br /><br />
+            1. Select the wallet you want to connect to <br />
+            2. Copy the connection link from the dApp's WalletConnect prompt, or scan the QR Code from that prompt <br />
+            3. That's it! You can now use the wallet just like MetaMask or other mobile wallets
+          </Text>
+          <Row align='baseline' style={{ marginTop: 16, marginBottom: 16 }}>
+            <Col xs={4}>
+              <Button size='large' onClick={() => setScanMode(e => !e)}>
+                <QrcodeOutlined style={{ fontSize: 24 }} />
+              </Button>
+            </Col>
+            <Col xs={20}>
+              <InputBox margin='auto' width={440} value={uri} onChange={({ target: { value } }) => setUri(value)} placeholder='Scan QR Code or paste connection link here (wc:...)' />
+            </Col>
+          </Row>
+          {selectedAddress.value && isScanMode && <QrCodeScanner shouldInit uploadBtnText='Upload QR Code Instead' onScan={onScan} />}
+        </>}
+      {wcSession && (
+        <>
+          <Row type='flex' justify='center' align='middle'>
+            <Text>{selectedAddress.value}</Text>
+            <Button type='link' onClick={wcDisconnect}>Disconnect</Button>
+          </Row>
+          <ConfigProvider renderEmpty={() => (
+            <Text>No pending requests for this wallet.</Text>
+          )}
+          >
+            <List
+              style={{ marginTop: '24px' }}
+              size='large'
+              bordered
+              dataSource={requests}
                 // TODO: customize item render based on request method type.
-                renderItem={item => (
-                  <List.Item
-                    actions={[<Button key='request-list-action-approve' onClick={() => {}/* approveRequest(item) */}>Approve</Button>, <Button key='request-list-action-reject' onClick={() => {}/* rejectRequest(item) */}>Reject</Button>]}
-                  >
-                    {item.method}
-                    {item.method === 'eth_sendTransaction' &&
-                      <Send
-                        address={selectedAddress.value} onSuccess={() => alert('a')}
-                        prefillAmount={10}
-                      />}
-                  </List.Item>)}
-              />
-            </ConfigProvider>
-          </>)}
+              renderItem={item => (
+                <List.Item
+                  actions={[<Button key='request-list-action-approve' onClick={() => {}/* approveRequest(item) */}>Approve</Button>, <Button key='request-list-action-reject' onClick={() => {}/* rejectRequest(item) */}>Reject</Button>]}
+                >
+                  {item.method}
+                  {item.method === 'eth_sendTransaction' &&
+                    <Send
+                      address={selectedAddress.value} onSuccess={() => alert('a')}
+                      prefillAmount={10}
+                    />}
+                </List.Item>)}
+            />
+          </ConfigProvider>
+        </>)}
     </AnimatedSection>
   )
 }

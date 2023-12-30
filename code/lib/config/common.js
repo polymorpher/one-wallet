@@ -35,7 +35,7 @@ module.exports = {
       url: process.env.MAINNET_RPC || 'https://api.s0.t.hmny.io',
       explorer: 'https://explorer.harmony.one/tx/{{txId}}',
       production: true,
-      chainId: 1,
+      chainId: 1666600000,
       deploy: {
         factory: process.env.DEPLOY_FACTORY_MAINNET || '',
         deployer: process.env.DEPLOY_DEPLOYER_MAINNET || '',
@@ -46,7 +46,7 @@ module.exports = {
       name: 'Harmony Testnet',
       url: process.env.TESTNET_RPC || 'https://api.s0.b.hmny.io',
       explorer: 'https://explorer.pops.one/tx/{{txId}}',
-      chainId: 2,
+      chainId: 1666600001,
       deploy: {
         factory: process.env.DEPLOY_FACTORY_TESTNET || '',
         deployer: process.env.DEPLOY_DEPLOYER_TESTNET || '',
