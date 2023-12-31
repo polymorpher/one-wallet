@@ -1,8 +1,8 @@
 const axios = require('axios')
 const config = require('../config/provider').getConfig()
-const Contract = require('web3-eth-contract')
+const { Contract } = require('web3-eth-contract')
 const isEqual = require('lodash/fp/isEqual')
-const Web3 = require('web3')
+const { Web3 } = require('web3')
 const ONEWalletContractAbi = require('../../build/abi/IONEWallet.json')
 const IONEWalletFactoryHelper = require('../../build/abi/IONEWalletFactoryHelper.json')
 const IERC20 = require('../../build/abi/IERC20.json')
@@ -379,12 +379,12 @@ const api = {
         highestSpendingLimit: highestSpendingLimit.toString(),
       }
     },
-    getBalance: async ({ address }) => {
-      const balance = await web3.eth.getBalance(address)
+    getBalance: async ({ address, blockNumber }) => {
+      const balance = await web3.eth.getBalance(address, blockNumber)
       return balance
     },
-    getCode: async ({ address }) => {
-      const code = await web3.eth.getCode(address)
+    getCode: async ({ address, blockNumber }) => {
+      const code = await web3.eth.getCode(address, blockNumber)
       return code
     },
     /**
@@ -873,6 +873,8 @@ const api = {
         validatorAddress: validator_address
       }))
     },
+  },
+  rpc: {
     getEpoch: async () => {
       const { data: { result } } = await rpcBase.post('', {
         'jsonrpc': '2.0',
@@ -911,8 +913,6 @@ const api = {
         totalSupply,
       }
     },
-  },
-  rpc: {
     getTransactionHistory: async ({ base = rpcBase, address, pageSize = 50, pageIndex = 0, fullTx = false }) => {
       const { data } = await base.post('', {
         jsonrpc: '2.0',
@@ -953,6 +953,86 @@ const api = {
 
       return result
     },
+    getTransactionCount: async ({ address, blockNumber }) => {
+      const { data: { result } } = await rpcBase.post('', {
+        jsonrpc: '2.0',
+        method: 'eth_getTransactionCount',
+        params: [address, blockNumber],
+        id: 1
+      })
+
+      return new BN(result.slice(2), 16).toNumber()
+    },
+
+    getStorageAt: async ({ address, position, blockNumber }) => {
+      const { data: { result } } = await rpcBase.post('', {
+        jsonrpc: '2.0',
+        method: 'eth_getStorageAt',
+        params: [address, position, blockNumber],
+        id: 1
+      })
+      return result
+    },
+
+    getBlockByNumber: async ({ blockNumber, includeTransactionDetails }) => {
+      const { data: { result } } = await rpcBase.post('', {
+        jsonrpc: '2.0',
+        method: 'eth_getBlockByNumber',
+        params: [blockNumber, includeTransactionDetails],
+        id: 1
+      })
+      return result
+    },
+
+    getBlockByHash: async ({ blockHash, includeTransactionDetails }) => {
+      const { data: { result } } = await rpcBase.post('', {
+        jsonrpc: '2.0',
+        method: 'eth_getBlockByHash',
+        params: [blockHash, includeTransactionDetails],
+        id: 1
+      })
+      return result
+    },
+
+    getEstimateGas: async ({ transaction }) => {
+      const { data: { result } } = await rpcBase.post('', {
+        jsonrpc: '2.0',
+        method: 'eth_estimateGas',
+        params: [transaction],
+        id: 1
+      })
+      return new BN(result.slice(2), 16).toNumber()
+    },
+
+    simulateCall: async ({ transaction }) => {
+      const { data: { result } } = await rpcBase.post('', {
+        jsonrpc: '2.0',
+        method: 'eth_call',
+        params: [transaction],
+        id: 1
+      })
+      return result
+    },
+
+    getLogs: async ({ filter }) => {
+      const { data: { result } } = await rpcBase.post('', {
+        jsonrpc: '2.0',
+        method: 'eth_getLogs',
+        params: [filter],
+        id: 1
+      })
+      return result
+    },
+
+    gasPrice: async () => {
+      const { data: { result } } = await rpcBase.post('', {
+        jsonrpc: '2.0',
+        method: 'eth_gasPrice',
+        params: [],
+        id: 1
+      })
+      return new BN(result.slice(2), 16).toNumber()
+    }
   },
   backend: {
     signup: async ({ username, password, email }) => {

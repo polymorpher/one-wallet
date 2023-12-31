@@ -32,6 +32,7 @@ const Sign = ({
   prefillMessageInput, // optional string, the message itself
   prefillUseRawMessage, // optional boolean, whether or not eth signing header should be attached. True means not to attach header
   prefillDuration, // optional string that can be parsed into an integer, the number of milliseconds of the validity of the signature
+  prefillEip712TypedData,
   shouldAutoFocus,
   headless,
 }) => {
@@ -43,8 +44,8 @@ const Sign = ({
   const doubleOtp = wallet.doubleOtp
   const { otpInput, otp2Input, resetOtp } = otpState
 
-  const [messageInput, setMessageInput] = useState(prefillMessageInput)
-  const [useRawMessage, setUseRawMessage] = useState(prefillUseRawMessage)
+  const [messageInput, setMessageInput] = useState(prefillEip712TypedData ? JSON.stringify(prefillEip712TypedData, null, 2) : prefillMessageInput)
+  const [useRawMessage, setUseRawMessage] = useState(prefillUseRawMessage || prefillEip712TypedData)
 
   prefillDuration = parseInt(prefillDuration)
   const [duration, setDuration] = useState(prefillDuration)
@@ -63,7 +64,9 @@ const Sign = ({
     if (invalidOtp || invalidOtp2) return
 
     let message = messageInput
-    if (!useRawMessage) {
+    if (prefillEip712TypedData) {
+      message = ONEUtil.hexStringToBytes(ONEUtil.encodeEIP712TypedData(prefillEip712TypedData))
+    } else if (!useRawMessage) {
       message = ONEUtil.ethMessage(message)
     }
     const hash = ONEUtil.keccak(message)
@@ -113,13 +116,21 @@ const Sign = ({
   const inner = (
     <>
       <Space direction='vertical' size='large'>
+        {prefillEip712TypedData && (
+          <Hint>
+            Note: This request is strongly typed (EIP712) so to allow more readability
+          </Hint>
+        )}
         <Space align='baseline' size='large'>
           <Label wide><Hint>Message</Hint></Label>
           <TextArea
-            style={{ border: '1px dashed black', margin: 'auto', width: 424 }} autoSize value={messageInput} onChange={({ target: { value } }) => setMessageInput(value)}
-            disabled={typeof prefillMessageInput !== 'undefined'}
+            style={{ border: '1px dashed black', margin: 'auto', width: 424 }} autoSize
+            value={messageInput}
+            onChange={({ target: { value } }) => setMessageInput(value)}
+            disabled={typeof prefillMessageInput !== 'undefined' || typeof prefillEip712TypedData !== 'undefined'}
           />
         </Space>
+
         <Space align='baseline' size='large'>
           <Label wide><Hint>Header</Hint></Label>
           <Checkbox checked={!useRawMessage} onChange={({ target: { checked } }) => setUseRawMessage(!checked)} disabled={typeof prefillUseRawMessage !== 'undefined'} />
@@ -145,6 +156,7 @@ const Sign = ({
             />
             <Hint>{humanizeDuration(duration, { largest: 2, round: true })}</Hint>
           </Space>}
+
         <OtpStack shouldAutoFocus={shouldAutoFocus} wideLabel walletName={autoWalletNameHint(wallet)} doubleOtp={doubleOtp} otpState={otpState} onComplete={doSign} action='confirm' />
       </Space>
       <Row justify='start' style={{ marginTop: 24 }}>

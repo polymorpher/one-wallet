@@ -13,6 +13,7 @@ import ONENames from '../../lib/names'
 const util = {
   // TODO: rewrite using BN to achieve 100% precision
   formatNumber: ONEUtil.formatNumber,
+  isObjectEIP712TypedData: ONEUtil.isObjectEIP712TypedData,
 
   ellipsisAddress: (address) => {
     if (!address || address.length < 10) {

@@ -31,10 +31,10 @@
     "keccak": "^3.0.1",
     "lodash": "^4.17.21",
     "truffle-contract-size": "^2.0.1",
-    "web3": "^1.4.0",
-    "web3-eth-abi": "^1.5.2",
-    "web3-eth-contract": "^1.6.1",
-    "web3-utils": "^1.6.1"
+    "web3": "^4.3.0",
+    "web3-eth-abi": "^4.1.4",
+    "web3-eth-contract": "^4.1.4",
+    "web3-utils": "^4.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.14.2",

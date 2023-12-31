@@ -14,7 +14,7 @@ import { Core } from '@walletconnect/core'
 import { Web3Wallet } from '@walletconnect/web3wallet'
 import { WalletConnectId } from '../config'
 import api from '../api'
-import { web3Provider } from './Web3Provider'
+import { SimpleWeb3Provider } from './Web3Provider'
 import WCLogo from '../../assets/wc.png'
 import QrcodeOutlined from '@ant-design/icons/QrcodeOutlined'
 import Space from 'antd/es/space'
@@ -52,13 +52,11 @@ const SupportedMethods = [
   'eth_gasPrice',
   'wallet_getPermissions',
   'wallet_requestPermissions',
-  'safe_setSettings',
 ]
 
 const WalletConnect = ({ wcSesssionUri }) => {
   // const dispatch = useDispatch()
   const wallets = useSelector(state => state.wallet)
-  // const walletConnectSession = useSelector(state => state.cache.walletConnectSession)
   const walletList = Object.keys(wallets).filter(addr => util.safeNormalizedAddress(addr))
   const [selectedAddress, setSelectedAddress] = useState({ value: walletList[0]?.address, label: walletList[0]?.name })
   const [loading, setLoading] = useState(false)
@@ -71,6 +69,7 @@ const WalletConnect = ({ wcSesssionUri }) => {
   const [wcSession, setWcSession] = useState()
   const [error, setError] = useState('')
   const [hint, setHint] = useState('')
+  const [web3Provider] = useState(SimpleWeb3Provider({}))
 
   useEffect(() => {
     if (!isWcInitialized && web3Wallet) {
