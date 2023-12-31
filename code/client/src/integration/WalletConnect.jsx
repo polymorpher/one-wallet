@@ -54,6 +54,8 @@ const SupportedMethods = [
   'wallet_requestPermissions',
 ]
 
+const devOnlyMethods = ['eth_sign']
+
 const WalletConnect = ({ wcSesssionUri }) => {
   // const dispatch = useDispatch()
   const wallets = useSelector(state => state.wallet)
@@ -70,6 +72,7 @@ const WalletConnect = ({ wcSesssionUri }) => {
   const [error, setError] = useState('')
   const [hint, setHint] = useState('')
   const [web3Provider] = useState(SimpleWeb3Provider({}))
+  const dev = useSelector(state => state.global.dev)
 
   useEffect(() => {
     if (!isWcInitialized && web3Wallet) {
@@ -194,6 +197,9 @@ const WalletConnect = ({ wcSesssionUri }) => {
 
         try {
           setError('')
+          if (!dev && devOnlyMethods.includes(method)) {
+            throw new Error(`${method} is only available when dev mode is enabled`)
+          }
           const result = await web3Provider.send(method, params)
           await web3Wallet.respondSessionRequest({
             topic,
