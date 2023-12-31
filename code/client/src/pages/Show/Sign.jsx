@@ -33,6 +33,7 @@ const Sign = ({
   prefillUseRawMessage, // optional boolean, whether or not eth signing header should be attached. True means not to attach header
   prefillDuration, // optional string that can be parsed into an integer, the number of milliseconds of the validity of the signature
   prefillEip712TypedData,
+  skipHash,
   shouldAutoFocus,
   headless,
 }) => {
@@ -69,7 +70,7 @@ const Sign = ({
     } else if (!useRawMessage) {
       message = ONEUtil.ethMessage(message)
     }
-    const hash = ONEUtil.keccak(message)
+    const hash = !skipHash ? ONEUtil.keccak(message) : message
     const tokenId = new BN(hash).toString()
 
     const expiryAt = noExpiry ? 0xffffffff : Math.floor(((Date.now() + duration) / 1000))
