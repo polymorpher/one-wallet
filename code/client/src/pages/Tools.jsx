@@ -277,6 +277,9 @@ const Tools = () => {
       {section === Sections.Home &&
         <AnimatedSection wide>
           <Space direction='vertical' style={{ width: '100%' }}>
+            <Title level={3}>Wallet Connect</Title>
+            <Button type='primary' shape='round' onClick={() => history.push(Paths.doAuth('walletconnect'))}>Connect your wallet to dApp</Button>
+            <Divider />
             <Title level={3}>MetaMask</Title>
             <Button type='primary' shape='round' onClick={() => openTool(Sections.MetamaskAdd)}>Switch to Harmony Shard 0</Button>
             <Button type='primary' shape='round' onClick={() => openTool(Sections.MetamaskAddS1)}>Switch to Harmony Shard 1</Button>
