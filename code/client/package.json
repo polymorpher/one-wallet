@@ -117,8 +117,7 @@
     "svg-country-flags": "^1.2.10",
     "title-case": "^3.0.3",
     "unique-names-generator": "^4.5.0",
-    "uuid": "^8.3.2",
-    "web3": "^4.3.0"
+    "uuid": "^8.3.2"
   },
   "resolutions": {
     "tar": ">=4.4.15"
