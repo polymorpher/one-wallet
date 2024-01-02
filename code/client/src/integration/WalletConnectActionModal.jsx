@@ -12,10 +12,10 @@ const WalletConnectActionModal = () => {
 
   useEffect(() => {
     const sid = Web3ProviderCommunicator.subscribe((request) => {
-      console.log('Received request', request)
+      // console.log('Received request', request)
       setPendingRequests(e => [...e, request])
     })
-    console.log(`Subscribed to Web3ProviderCommunicator. id=${sid}`)
+    // console.log(`Subscribed to Web3ProviderCommunicator. id=${sid}`)
     return () => {
       Web3ProviderCommunicator.unsubscribe(sid)
     }
@@ -26,7 +26,7 @@ const WalletConnectActionModal = () => {
   }, [activeRequest])
   const onSignSuccess = (txId, { hash, signature }) => {
     const signatureStr = ONEUtil.hexString(signature)
-    console.log('WC sign completed', { action, hash, message, messageHash, typedData })
+    // console.log('WC sign completed', { action, hash, message, messageHash, typedData })
     Web3ProviderCommunicator.completeRequest(id, null, { signature: signatureStr })
   }
   const onCallSuccess = (txId) => {

@@ -17,7 +17,7 @@ const SimpleCommunicator = () => {
 
   const completeRequest = async (id, error, result) => {
     const r = requests[id]
-    console.log(`Cancelling ${id}`, error, r)
+    // console.log(`Completing ${id}`, 'error', error, 'request', r)
     if (!r) {
       throw new Error(`Request ${id} does not exist`)
     }
