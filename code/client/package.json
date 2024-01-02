@@ -120,6 +120,10 @@
     "uuid": "^8.3.2"
   },
   "resolutions": {
-    "tar": ">=4.4.15"
+    "tar": ">=4.4.15",
+    "web3": "^4.3.0",
+    "web3-eth-abi": "^4.1.4",
+    "web3-eth-contract": "^4.1.4",
+    "web3-utils": "^4.1.0"
   }
 }

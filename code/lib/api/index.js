@@ -129,24 +129,20 @@ const initBlockchain = (store) => {
 
   Object.keys(providers).forEach(network => {
     getOneWalletContractWithProvider[network] = (address) => {
-      Contract.setProvider(providers[network])
-      return new Contract(ONEWalletContractAbi, address)
+      return new Contract(ONEWalletContractAbi, address, { provider: providers[network] })
     }
     Object.keys(tokenContractsWithProvider).forEach(t => {
       tokenContractsWithProvider[t][network] = (address) => {
-        Contract.setProvider(providers[network])
-        return new Contract(tokenContractTemplates[t], address)
+        return new Contract(tokenContractTemplates[t], address, { provider: providers[network] })
       }
       tokenMetadataWithProvider[t][network] = (address) => {
-        Contract.setProvider(providers[network])
-        return new Contract(tokenMetadataTemplates[t], address)
+        return new Contract(tokenMetadataTemplates[t], address, { provider: providers[network] })
       }
     })
     if (network === 'harmony-mainnet') {
-      Contract.setProvider(providers[network])
-      resolverWithProvider = (address) => new Contract(Resolver, address)
-      reverseResolverWithProvider = (address) => new Contract(ReverseResolver, address)
-      registrarWithProvider = (address) => new Contract(Registrar, address)
+      resolverWithProvider = (address) => new Contract(Resolver, address, { provider: providers[network] })
+      reverseResolverWithProvider = (address) => new Contract(ReverseResolver, address, { provider: providers[network] })
+      registrarWithProvider = (address) => new Contract(Registrar, address, { provider: providers[network] })
     }
   })
   const switchNetwork = () => {
@@ -381,7 +377,7 @@ const api = {
     },
     getBalance: async ({ address, blockNumber }) => {
       const balance = await web3.eth.getBalance(address, blockNumber)
-      return balance
+      return balance.toString()
     },
     getCode: async ({ address, blockNumber }) => {
       const code = await web3.eth.getCode(address, blockNumber)
