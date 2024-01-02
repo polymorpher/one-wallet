@@ -320,7 +320,7 @@ const WalletConnect = ({ wcSesssionUri }) => {
             </Space>
           </Row>
           <Space direction='vertical' style={{ marginTop: 16, marginBottom: 16, width: '100%', marginLeft: 16 }}>
-            <Hint style={{ whiteSpace: 'nowrap' }}>Your wallet</Hint>
+            <Hint style={{ whiteSpace: 'nowrap' }}>Your wallet: {selectedAddress.label}</Hint>
             <WalletAddress address={selectedAddress.value} alwaysShowOptions onClick={() => window.open(Paths.showAddress(selectedAddress.value), '_blank')} />
           </Space>
           <Row justify='center' style={{ marginTop: 32, marginBottom: 64 }}>

@@ -38,7 +38,7 @@ const WalletConnectActionModal = () => {
     setPendingRequests(rqs => rqs.filter(e => e.id !== id))
   }
   return (
-    <Modal title='Wallet Connect Request' visible={visible} onCancel={onClose} width={720} footer={null}>
+    <Modal title={`Wallet Connect: ${action}`} visible={visible} onCancel={onClose} width={720} footer={null}>
       {action === 'sign' && (
         <Sign
           address={address}
