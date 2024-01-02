@@ -4,7 +4,6 @@ import Layout from 'antd/es/layout'
 import Image from 'antd/es/image'
 import Row from 'antd/es/row'
 import Menu from 'antd/es/menu'
-import Typography from 'antd/es/typography'
 import PlusCircleOutlined from '@ant-design/icons/PlusCircleOutlined'
 import UnorderedListOutlined from '@ant-design/icons/UnorderedListOutlined'
 import HistoryOutlined from '@ant-design/icons/HistoryOutlined'
@@ -23,24 +22,12 @@ import StakeIcon from '../assets/icons/stake.svg?el'
 import RestoreIcon from '../assets/icons/restore.svg?el'
 import config from '../config'
 import Paths from '../constants/paths'
-import styled from 'styled-components'
 import util, { useWindowDimensions } from '../util'
 import { useDispatch, useSelector } from 'react-redux'
 import { useTheme, getColorPalette } from '../theme'
 import { StatsInfo, LineDivider } from './StatsInfo'
 import { globalActions } from '../state/modules/global'
-const { Link } = Typography
-
-const SiderLink = styled(Link).attrs((e) => ({
-  ...e,
-  style: { ...e.style },
-  target: '_blank',
-  rel: 'noopener noreferrer'
-}))`
-  &:hover {
-    opacity: 0.8;
-  }
-`
+import { SiderLink } from './Text'
 
 const mobileMenuItemStyle = {
   padding: '0 10px',

@@ -452,6 +452,13 @@ const utils = {
     return utils.hexStringToBytes(hexData)
   },
 
+  isObjectEIP712TypedData: (obj) => {
+    return typeof obj === 'object' && obj != null && 'domain' in obj && 'types' in obj && 'message' in obj
+  },
+
+  encodeEIP712TypedData: (obj) => {
+    return abi.getEncodedEip712Data(obj)
+  },
   web3utils
 }
 module.exports = utils

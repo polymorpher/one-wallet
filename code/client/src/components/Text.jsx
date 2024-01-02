@@ -35,7 +35,7 @@ export const InputBox = styled(Input).attrs(({ $num, $decimal, type, autoComplet
   margin-bottom: ${props => props.$marginBottom || props.margin || '32px'};
   border: none;
   border-bottom: 1px dashed black;
-  font-size: 16px;
+  font-size: ${props => props.$fontSize || '16px'};
   &:hover{
     border-bottom: 1px dashed black;
   }
@@ -123,3 +123,14 @@ export const LabeledRow = ({ label, doubleRow = false, ultrawide = false, isMobi
     </AverageRow>
   )
 }
+
+export const SiderLink = styled(Link).attrs((e) => ({
+  ...e,
+  style: { ...e.style },
+  target: '_blank',
+  rel: 'noopener noreferrer'
+}))`
+  &:hover {
+    opacity: 0.8;
+  }
+`

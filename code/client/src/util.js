@@ -13,6 +13,7 @@ import ONENames from '../../lib/names'
 const util = {
   // TODO: rewrite using BN to achieve 100% precision
   formatNumber: ONEUtil.formatNumber,
+  isObjectEIP712TypedData: ONEUtil.isObjectEIP712TypedData,
 
   ellipsisAddress: (address) => {
     if (!address || address.length < 10) {
@@ -319,6 +320,16 @@ export const updateQRCodeState = (newValue, state) => {
 export const generateOtpSeed = () => {
   const otpSeedBuffer = new Uint8Array(32)
   return window.crypto.getRandomValues(otpSeedBuffer)
+}
+
+export const checkCamera = async () => {
+  try {
+    const d = await navigator.mediaDevices.enumerateDevices()
+    const cams = d.filter(e => e.kind === 'videoinput')
+    return [cams.length > 0, cams]
+  } catch (e) {
+    return [false, []]
+  }
 }
 
 export function getWindowDimensions () {

@@ -148,6 +148,7 @@ const Call = ({
                 currentWallet={wallet}
                 disabled={!!prefillDest}
               />
+              <Hint style={{ fontSize: 12, color: '#aaa' }}>(equivalent to {util.safeNormalizedAddress(transferTo.value)})</Hint>
             </Col>
           </AverageRow>
           <AverageRow align='middle' gutter={8} style={{ flexWrap: 'nowrap' }}>
