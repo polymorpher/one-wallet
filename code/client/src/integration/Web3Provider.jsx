@@ -1,5 +1,6 @@
 import api from '../api'
 import util from '../util'
+import { useEffect, useState } from 'react'
 
 const SimpleCommunicator = () => {
   const requests = {}
@@ -16,6 +17,7 @@ const SimpleCommunicator = () => {
 
   const completeRequest = async (id, error, result) => {
     const r = requests[id]
+    console.log(`Cancelling ${id}`, error, r)
     if (!r) {
       throw new Error(`Request ${id} does not exist`)
     }
@@ -72,10 +74,29 @@ const commonSignatureCallback = (resolve, reject) => (error, result) => {
   resolve(signature || '0x')
 }
 // see also https://eips.ethereum.org/EIPS/eip-1193
-export const SimpleWeb3Provider = ({ onActiveModuleChange, address }) => {
-  address = address?.toLowerCase()
-  const send = async (method, params, id) => {
-    console.log('web3Provider', { id, method, params })
+export const SimpleWeb3Provider = ({ defaultAddress } = {}) => {
+  // For testing
+  // useEffect(() => {
+  //   Web3ProviderCommunicator.enqueueRequest({
+  //     id: 1704163097860232,
+  //     action: 'call',
+  //     address: '0x3864615fA0a8bc759f4EF4c9b9e746D271b6D2Bb',
+  //     tx: {
+  //       gas: 251410,
+  //       gasPrice: '0x174876e800',
+  //       from: '0x3864615fa0a8bc759f4ef4c9b9e746d271b6d2bb',
+  //       to: '0xc22834581ebc8527d974f8a1c97e1bea4ef910bc',
+  //       data: '0x1688f0b9000000000000000000000000fb1bffc9d739b8d520daf37df666da4c687191ea00000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000018cc7e547c90000000000000000000000000000000000000000000000000000000000000164b63e800d0000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000140000000000000000000000000017062a1de2fe6b99be3d9d37841fed19f57380400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000003864615fa0a8bc759f4ef4c9b9e746d271b6d2bb000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+  //       value: '0'
+  //     }
+  //   })
+  // }, [])
+  const send = async (method, params, id, address) => {
+    address = address ?? defaultAddress
+    console.log('Web3Provider send', { id, method, params, address })
+    if (!address) {
+      throw new Error('address is not set')
+    }
     if (method === 'eth_accounts') {
       return [address]
     } else if (method === 'net_version' || method === 'eth_chainId') {
@@ -83,7 +104,7 @@ export const SimpleWeb3Provider = ({ onActiveModuleChange, address }) => {
       return chainId
     } else if (method === 'personal_sign') {
       const [message, requestedAddress] = params
-      if (address !== requestedAddress?.toLowerCase()) {
+      if (address.toLowerCase() !== requestedAddress?.toLowerCase()) {
         throw new Error('Requested address is not wallet address')
       }
       return new Promise((resolve, reject) => {
@@ -93,7 +114,7 @@ export const SimpleWeb3Provider = ({ onActiveModuleChange, address }) => {
       })
     } else if (method === 'eth_sign') {
       const [requestedAddress, messageHash] = params
-      if (address !== requestedAddress?.toLowerCase()) {
+      if (address.toLowerCase() !== requestedAddress?.toLowerCase()) {
         throw new Error('Requested address is not wallet address')
       }
       return new Promise((resolve, reject) => {
@@ -104,7 +125,7 @@ export const SimpleWeb3Provider = ({ onActiveModuleChange, address }) => {
     } else if (method === 'eth_signTypedData' || method === 'eth_signTypedData_v4') {
       const [requestedAddress, typedData] = params
       const parsedTypedData = typeof typedData === 'string' ? JSON.parse(typedData) : typedData
-      if (requestedAddress.toLowerCase() !== address) {
+      if (requestedAddress.toLowerCase() !== address.toLowerCase()) {
         throw new Error('Requested address is not wallet address')
       }
       if (!util.isObjectEIP712TypedData(parsedTypedData)) {

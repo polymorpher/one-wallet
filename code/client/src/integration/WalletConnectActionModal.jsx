@@ -2,7 +2,7 @@ import { Web3ProviderCommunicator } from './Web3Provider'
 import Modal from 'antd/es/modal'
 import React, { useState, useEffect } from 'react'
 import Sign from '../pages/Show/Sign'
-import ONEUtil from '../../lib/util'
+import ONEUtil from '../../../lib/util'
 import Call from '../pages/Show/Call'
 const WalletConnectActionModal = () => {
   const [visible, setVisible] = useState(false)
@@ -12,17 +12,17 @@ const WalletConnectActionModal = () => {
 
   useEffect(() => {
     const sid = Web3ProviderCommunicator.subscribe((request) => {
+      console.log('Received request', request)
       setPendingRequests(e => [...e, request])
     })
+    console.log(`Subscribed to Web3ProviderCommunicator. id=${sid}`)
     return () => {
       Web3ProviderCommunicator.unsubscribe(sid)
     }
   }, [])
 
   useEffect(() => {
-    if (activeRequest >= 1) {
-      setVisible(true)
-    }
+    setVisible(!!activeRequest)
   }, [activeRequest])
   const onSignSuccess = (txId, { hash, signature }) => {
     const signatureStr = ONEUtil.hexString(signature)
@@ -31,11 +31,14 @@ const WalletConnectActionModal = () => {
   }
   const onCallSuccess = (txId) => {
     Web3ProviderCommunicator.completeRequest(id, null, txId)
+    setPendingRequests(rqs => rqs.filter(e => e.id !== id))
   }
-  const onClose = () => Web3ProviderCommunicator.completeRequest(id, Error('User cancelled'))
-
+  const onClose = () => {
+    Web3ProviderCommunicator.completeRequest(id, Error('Transaction was rejected: User cancelled'))
+    setPendingRequests(rqs => rqs.filter(e => e.id !== id))
+  }
   return (
-    <Modal title='Relayer password' visible={visible} onCancel={() => setVisible(false)}>
+    <Modal title='Wallet Connect Request' visible={visible} onCancel={onClose} width={720} footer={null}>
       {action === 'sign' && (
         <Sign
           address={address}

@@ -20,6 +20,7 @@ import QrcodeOutlined from '@ant-design/icons/QrcodeOutlined'
 import Space from 'antd/es/space'
 import WalletAddress from '../components/WalletAddress'
 import Paths from '../constants/paths'
+import WalletConnectActionModal from './WalletConnectActionModal'
 // see https://docs.walletconnect.com/2.0/specs/sign/error-codes
 const UNSUPPORTED_CHAIN_ERROR_CODE = 5100
 const INVALID_METHOD_ERROR_CODE = 1001
@@ -71,7 +72,7 @@ const WalletConnect = ({ wcSesssionUri }) => {
   const [wcSession, setWcSession] = useState()
   const [error, setError] = useState('')
   const [hint, setHint] = useState('')
-  const [web3Provider] = useState(SimpleWeb3Provider({}))
+  const [web3Provider] = useState(SimpleWeb3Provider({ defaultAddress: selectedAddress.value }))
   const dev = useSelector(state => state.global.dev)
 
   useEffect(() => {
@@ -174,7 +175,7 @@ const WalletConnect = ({ wcSesssionUri }) => {
 
   // session_request needs to be a separate Effect because a valid wcSession should be present
   useEffect(() => {
-    if (isWcInitialized && web3Wallet && wcSession) {
+    if (isWcInitialized && web3Wallet && wcSession && web3Provider) {
       const { chainId, activeNetwork } = api.blockchain.getChainInfo()
 
       web3Wallet.on('session_request', async event => {
@@ -200,7 +201,7 @@ const WalletConnect = ({ wcSesssionUri }) => {
           if (!dev && devOnlyMethods.includes(method)) {
             throw new Error(`${method} is only available when dev mode is enabled`)
           }
-          const result = await web3Provider.send(method, params)
+          const result = await web3Provider.send(method, params, id, selectedAddress.value)
           await web3Wallet.respondSessionRequest({
             topic,
             response: {
@@ -224,7 +225,7 @@ const WalletConnect = ({ wcSesssionUri }) => {
     wcSession,
     isWcInitialized,
     web3Wallet,
-    web3Provider,
+    web3Provider
   ])
 
   useEffect(() => {
@@ -274,6 +275,7 @@ const WalletConnect = ({ wcSesssionUri }) => {
 
   return (
     <AnimatedSection>
+      <WalletConnectActionModal />
       {loading && (
         <Row type='flex' justify='center' align='middle' style={{ minHeight: '100vh' }}>
           <Spin size='large' />
