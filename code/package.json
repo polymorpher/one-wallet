@@ -31,10 +31,10 @@
     "keccak": "^3.0.1",
     "lodash": "^4.17.21",
     "truffle-contract-size": "^2.0.1",
-    "web3": "^1.4.0",
-    "web3-eth-abi": "^1.5.2",
-    "web3-eth-contract": "^1.6.1",
-    "web3-utils": "^1.6.1"
+    "web3": "^4.3.0",
+    "web3-eth-abi": "^4.1.4",
+    "web3-eth-contract": "^4.1.4",
+    "web3-utils": "^4.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.14.2",
@@ -53,11 +53,10 @@
     "@babel/plugin-transform-react-jsx": "^7.12.17",
     "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.14.2",
-    "@ensdomains/ens-contracts": "^0.0.7",
-    "@ensdomains/subdomain-registrar-core": "https://github.com/polymorpher/subdomain-registrar-core#0.3.4",
+    "@ensdomains/subdomain-registrar-core": "https://github.com/polymorpher/subdomain-registrar-core#0.3.5",
     "@harmony-js/core": "^0.1.57",
     "@harmony-js/crypto": "^0.1.56",
-    "@truffle/contract": "^4.3.23",
+    "@truffle/contract": "^4.6.31",
     "assert": "^1.5.0",
     "babel-jest": "24.9.0",
     "babel-loader": "8.0.6",

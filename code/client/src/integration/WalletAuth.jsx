@@ -12,6 +12,7 @@ import AnimatedSection from '../components/AnimatedSection'
 import RequestSignature from './RequestSignature'
 import message from '../message'
 import { Text } from '../components/Text'
+import WalletConnect from './WalletConnect'
 
 const WalletAuth = () => {
   const dispatch = useDispatch()
@@ -21,8 +22,7 @@ const WalletAuth = () => {
 
   const qs = querystring.parse(location.search)
   const callback = qs.callback && Buffer.from(qs.callback, 'base64').toString()
-  const caller = qs.caller
-  const network = qs.network
+  const { wc, caller, network } = qs
   const { amount, dest, from, calldata } = qs
   const { message: msg, raw, duration, comment } = qs
   // if (!action || !callback || !caller) {
@@ -39,6 +39,11 @@ const WalletAuth = () => {
       }
     }
   }, [network])
+
+  if (action === 'walletconnect') {
+    return <WalletConnect wcSesssionUri={wc} />
+    // return <></>
+  }
 
   if (!action || !callback || !caller) {
     message.error('The app did not specify a callback, an action, or its identity. Please ask the app developer to fix it.')

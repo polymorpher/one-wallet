@@ -5,3 +5,6 @@ backup.eslintrc.js
 /cache
 /es.env
 /scripts/es.sh
+/deploy/cp-contracts.sh
+/scripts/upload-cache.sh
+/scripts/download-cache.sh

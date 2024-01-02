@@ -18,9 +18,9 @@ export const Heading = styled(Title).attrs((props) => ({ level: 2, ...props }))`
   //color: #1f1f1f;
 `
 
-export const Hint = styled(Text).attrs(() => ({ type: 'secondary' }))`
+export const Hint = styled(Text).attrs((props) => ({ type: 'secondary', ...props }))`
   font-size: 16px;
-  color: #888888;
+  color: ${props => props.color ?? '#888888'};
 `
 
 export const InputBox = styled(Input).attrs(({ $num, $decimal, type, autoComplete, ...props }) => ({
@@ -35,7 +35,7 @@ export const InputBox = styled(Input).attrs(({ $num, $decimal, type, autoComplet
   margin-bottom: ${props => props.$marginBottom || props.margin || '32px'};
   border: none;
   border-bottom: 1px dashed black;
-  font-size: 16px;
+  font-size: ${props => props.$fontSize || '16px'};
   &:hover{
     border-bottom: 1px dashed black;
   }
@@ -123,3 +123,14 @@ export const LabeledRow = ({ label, doubleRow = false, ultrawide = false, isMobi
     </AverageRow>
   )
 }
+
+export const SiderLink = styled(Link).attrs((e) => ({
+  ...e,
+  style: { ...e.style },
+  target: '_blank',
+  rel: 'noopener noreferrer'
+}))`
+  &:hover {
+    opacity: 0.8;
+  }
+`

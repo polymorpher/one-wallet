@@ -20,10 +20,11 @@ const ARCHIVE_RPC_URL = process.env.ARCHIVE_RPC_URL || config.networks[config.de
 const ADDRESSES_CACHE = process.env.ADDRESSES_CACHE || './data/addresses.csv'
 const ADDRESSES_TEMP = process.env.ADDRESSES_TEMP || './data/addresses.temp.csv'
 const MAX_BALANCE_AGE = parseInt(process.env.MAX_BALANCE_AGE || 3600 * 1000 * 24)
-const SLEEP_BETWEEN_RPC = parseInt(process.env.SLEEP_BETWEEN_RPC || 150)
+const SLEEP_BETWEEN_RPC = parseInt(process.env.SLEEP_BETWEEN_RPC || 500)
 const RPC_BATCH_SIZE = parseInt(process.env.RPC_BATCH_SIZE || 50)
 const PAGE_SIZE = parseInt(process.env.PAGE_SIZE || 500)
 const SAFE_MODE = process.env.SAFE_MODE === 'true'
+const RECALIBRATE_PERIOD = parseInt(process.env.RECALIBRATE_PERIOD || 3600 * 1000 * 24 * 7)
 
 console.log('stats initializing', {
   RELAYER_ADDRESSES,
@@ -222,10 +223,16 @@ async function refreshAllBalance () {
 
 async function exec () {
   const fp = await fs.open(STATS_CACHE, 'a+')
-  const fp2 = await fs.open(ADDRESSES_CACHE, 'a+')
   const stats = JSON.parse((await fp.readFile({ encoding: 'utf-8' }) || '{}'))
   const now = Date.now()
-  const from = stats.lastScanTime || 0
+  const calibrationTime = parseInt(stats.calibrationTime || 0)
+  const recalibrate = (now - calibrationTime > RECALIBRATE_PERIOD)
+  if (recalibrate) {
+    console.log('Recalibrating addresses and balances...')
+  }
+  const fp2 = await fs.open(ADDRESSES_CACHE, 'a+')
+
+  const from = recalibrate ? 0 : (stats.lastScanTime || 0)
   const existingRelayers = stats.relayers || []
   let totalBalance = new BN(stats.totalBalance)
   let totalAddresses = stats.totalAddresses || 0
@@ -253,6 +260,7 @@ async function exec () {
     lastBalanceRefresh: stats.lastBalanceRefresh || 0,
     lastScanTime: now,
     relayers: RELAYER_ADDRESSES,
+    calibrationTime: recalibrate ? now : calibrationTime,
   }
   console.log(`writing new stats`, newStats)
   await fp.truncate()

@@ -4,6 +4,7 @@ const ONEUtil = require('../lib/util')
 const TruffleContract = require('@truffle/contract')
 const { ONEWallet, factoryContractsList, factoryContracts, libraryList, dependencies } = require('../extensions/contracts')
 const { ONEWalletV5, ONEWalletV6 } = require('../extensions/deprecated')
+const { ProxyWallet } = require('../extensions/contracts')
 const { knownAddresses } = require('../extensions/loader')
 const HDWalletProvider = require('@truffle/hdwallet-provider')
 const fs = require('fs/promises')
@@ -20,6 +21,7 @@ const networks = []
 const providers = {}
 const pendingNonces = {}
 const contracts = {}
+const proxyWalelts = {}
 const contractsV5 = {}
 const contractsV6 = {}
 const factories = {}
@@ -144,7 +146,7 @@ const init = async () => {
       return
     }
     const n = config.networks[k]
-    if (n.key) {
+    if (n.key || n.mnemonic) {
       try {
         providers[k] = new HDWalletProvider({
           mnemonic: n.mnemonic,
@@ -168,6 +170,8 @@ const init = async () => {
     c5.setProvider(providers[k])
     const c6 = TruffleContract(ONEWalletV6)
     c6.setProvider(providers[k])
+    const p = TruffleContract(ProxyWallet)
+    p.setProvider(providers[k])
     const from = providers[k].addresses[0]
     const params = { from, gas: config.gasLimit, gasPrice: config.gasPrice }
     c.defaults(params)
@@ -176,6 +180,7 @@ const init = async () => {
     contracts[k] = c
     contractsV5[k] = c5
     contractsV6[k] = c6
+    proxyWalelts[k] = p
   })
   Logger.log('init complete:', {
     networks,
@@ -303,6 +308,7 @@ module.exports = {
       return contractsV6[network]
     }
   },
+  getProxyWallet: (network) => proxyWalelts[network],
   getLibraries: (network) => libraries[network],
   getFactory: (network, name) => factories[network][name || 'ONEWalletFactoryHelper'],
   prepareExecute

@@ -1,5 +1,6 @@
 import { handleActions } from 'redux-actions'
 import cacheActions from './actions'
+import omit from 'lodash/fp/omit'
 
 export const initialState = {
   code: {},
@@ -7,6 +8,7 @@ export const initialState = {
   version: {},
   clientVersion: '',
   needCodeUpdate: true,
+  walletConnectRequests: null,
 }
 
 const reducer = handleActions(
@@ -42,6 +44,14 @@ const reducer = handleActions(
     [cacheActions.updateGlobalStats]: (state, action) => ({
       ...state,
       global: { ...state.global, stats: action.payload }
+    }),
+    [cacheActions.enqueueWalletConnectRequest]: (state, action) => ({
+      ...state,
+      walletConnectRequests: { ...state.walletConnectRequests, [action.payload.id]: action.payload }
+    }),
+    [cacheActions.removeWalletConnectRequest]: (state, action) => ({
+      ...state,
+      walletConnectRequests: omit(state.walletConnectRequests, action.payload)
     }),
   },
   {

@@ -9,8 +9,7 @@ const Dotenv = require('dotenv-webpack')
 module.exports = {
   devServer: {
     port: 3000,
-    https: true,
-    http2: true,
+    server: 'https',
     historyApiFallback: true,
     hot: false,
     client: {
@@ -54,9 +53,7 @@ module.exports = {
       },
       {
         test: /\.(png|jpg|gif)$/,
-        use: [
-          'file-loader',
-        ],
+        type: 'asset/resource'
       },
       {
         test: /\.(scss|css)$/,
@@ -95,9 +92,9 @@ module.exports = {
     filename: '[name].js',
     path: path.resolve(__dirname, 'dist'),
     clean: true,
-    publicPath: '/'
+    publicPath: '/',
+    hashFunction: 'sha256',
   },
-
   externals: {
     path: 'path',
     fs: 'fs',
@@ -114,6 +111,11 @@ module.exports = {
       https: require.resolve('https-browserify'),
       crypto: require.resolve('crypto-browserify')
     }
+  },
+  node: {
+    global: true,
+    __filename: false,
+    __dirname: true,
   },
   plugins: [
     new Dotenv(),

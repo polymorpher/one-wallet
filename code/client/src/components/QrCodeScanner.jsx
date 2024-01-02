@@ -11,7 +11,7 @@ import UploadOutlined from '@ant-design/icons/UploadOutlined'
 import jsQR from 'jsqr'
 import { getDataURLFromFile, getTextFromFile } from './Common'
 
-const QrCodeScanner = ({ onScan, shouldInit, style }) => {
+const QrCodeScanner = ({ onScan, shouldInit, style, uploadBtnText = 'Use Image or JSON Instead' }) => {
   const ref = useRef()
   const { isMobile } = useWindowDimensions()
   const [videoDevices, setVideoDevices] = useState([])
@@ -160,7 +160,7 @@ const QrCodeScanner = ({ onScan, shouldInit, style }) => {
           beforeUpload={beforeUpload}
           onChange={onQrcodeChange}
         >
-          <Button shape='round' icon={qrCodeImageUploading ? <LoadingOutlined /> : <UploadOutlined />}>Use Image or JSON Instead</Button>
+          <Button shape='round' icon={qrCodeImageUploading ? <LoadingOutlined /> : <UploadOutlined />}>{uploadBtnText}</Button>
         </Upload>
       </Row>
     </>

@@ -69,9 +69,9 @@ const Stake = ({
   useEffect(() => {
     async function init () {
       const result = await api.staking.getDelegations({ address })
-      const blockNumber = await api.staking.getBlockNumber()
-      const epoch = await api.staking.getEpoch()
-      const networkInfo = await api.staking.getNetworkInfo()
+      const blockNumber = await api.rpc.getBlockNumber()
+      const epoch = await api.rpc.getEpoch()
+      const networkInfo = await api.rpc.getNetworkInfo()
       setDelegations(result.map((e, i) => ({ ...e, key: `${i}` })))
       const totalReward = result.map(e => String(e.reward)).reduce((a, b) => a.add(new BN(b)), new BN(0))
       setReward(util.computeBalance(totalReward.toString(), price))
@@ -342,6 +342,13 @@ const Stake = ({
       <Table dataSource={undelegations} columns={undelegationColumns} loading={undelegations === null} />
     </StakeCommon>
   )
+}
+
+// match is from route matches.
+export const StakeV2 = ({ match = {} }) => {
+  const { address } = match.params ?? {}
+  const normalizedAddr = util.safeNormalizedAddress(address)
+  return <Stake address={normalizedAddr} />
 }
 
 export default Stake

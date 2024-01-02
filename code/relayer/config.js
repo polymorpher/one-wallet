@@ -36,6 +36,16 @@ const config = {
       numAccounts: process.env.MAINNET_NUM_ACCOUNTS || 1,
       blockTime: 2,
     },
+    'polygon-mainnet': {
+      key: process.env.POLYGON_MAINNET_KEY || '',
+      beacon: process.env.POLYGON_BEACON_MAINNET_RPC || process.env.POLYGON_MAINNET_RPC,
+      url: process.env.POLYGON_MAINNET_RPC || process.env.POLYGON_BEACON_MAINNET_RPC || 'https://polygon-rpc.com/',
+      wss: process.env.POLYGON_MAINNET_WSS || process.env.POLYGON_BEACON_MAINNET_WSS,
+      mnemonic: process.env.POLYGON_MAINNET_MNEMONIC,
+      skip: process.env.SKIP_POLYGON_MAINNET,
+      numAccounts: process.env.POLYGON_MAINNET_NUM_ACCOUNTS || 1,
+      blockTime: 3,
+    },
     'eth-ganache': {
       url: process.env.GANACHE_RPC || 'http://127.0.0.1:7545',
       wss: process.env.GANACHE_WSS,
@@ -57,6 +67,10 @@ const config = {
   stats: {
     // relevant to relayer root directory
     path: process.env.STATS_PATH || '../data/stats.json'
+  },
+  proxy: {
+    source: process.env.PROXY_SOURCE || '',
+    target: process.env.PROXY_TARGET || '',
   }
 }
 module.exports = config

@@ -42,4 +42,6 @@ const config = mergeAll({}, baseConfig, {
   scanDelay: 250,
 })
 
+export const WalletConnectId = process.env.WALLET_CONNECT_ID || ''
+
 export default config

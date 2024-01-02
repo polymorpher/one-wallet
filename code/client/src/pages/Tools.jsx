@@ -21,12 +21,15 @@ import { TallRow } from '../components/Grid'
 import { matchPath, useHistory, useLocation } from 'react-router'
 import Paths from '../constants/paths'
 import MetaMaskAdd from '../../assets/metamask-add.png'
+import MetaMaskAddS1 from '../../assets/metamask-s1-add.jpg'
 import MetaMaskSwitch from '../../assets/metamask-switch.png'
+import MetaMaskSwitchS1 from '../../assets/metamask-s1-switch.jpg'
 const { Text, Title } = Typography
 
 const Sections = {
   SushiEncoder: 'safe-sushi',
   MetamaskAdd: 'metamask-add',
+  MetamaskAddS1: 'metamask-add-s1',
   Home: '',
 }
 
@@ -34,6 +37,7 @@ const ToolMap = {
   'safe-sushi': true,
   '': true,
   'metamask-add': true,
+  'metamask-add-s1': true,
 }
 const SushiSwapEncoder = ({ onClose }) => {
   const [inputAmount, setInputAmount] = useState('')
@@ -170,7 +174,7 @@ const addHarmonyNetwork = async () => {
         method: 'wallet_addEthereumChain',
         params: [{
           chainId: '0x63564C40', // A 0x-prefixed hexadecimal string
-          chainName: 'Harmony Mainnet Shard 0',
+          chainName: 'Harmony Shard 0',
           nativeCurrency: {
             name: 'ONE',
             symbol: 'ONE',
@@ -183,7 +187,46 @@ const addHarmonyNetwork = async () => {
       message.success('Added Harmony Network on MetaMask')
     } catch (ex2) {
       // message.error('Failed to add Harmony network:' + ex.toString())
-      message.error('Failed to add Harmony network:' + ex.message)
+      message.error('Failed to add Harmony Shard 0:' + ex.message)
+    }
+  }
+}
+
+const addHarmonyNetworkS1 = async () => {
+  if (!window.ethereum || !window.ethereum.isMetaMask) {
+    message.error('MetaMask not found')
+    return
+  }
+  try {
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: '0x63564C41' }],
+    })
+    message.success('Switched to Harmony Shard 1 on MetaMask')
+  } catch (ex) {
+    console.error(ex)
+    if (ex.code !== 4902) {
+      message.error('Failed to switch to Harmony Shard 1:' + ex.message)
+      return
+    }
+    try {
+      await window.ethereum.request({
+        method: 'wallet_addEthereumChain',
+        params: [{
+          chainId: '0x63564C41', // A 0x-prefixed hexadecimal string
+          chainName: 'Harmony Shard 1',
+          nativeCurrency: {
+            name: 'ONE',
+            symbol: 'ONE',
+            decimals: 18
+          },
+          rpcUrls: ['https://s1.api.harmony.one'],
+          blockExplorerUrls: ['https://explorer.harmony.one/']
+        }]
+      })
+      message.success('Added Harmony Shard 1 on MetaMask')
+    } catch (ex2) {
+      message.error('Failed to add Harmony Shard 1:' + ex.message)
     }
   }
 }
@@ -210,6 +253,8 @@ const Tools = () => {
   useEffect(() => {
     if (section === Sections.MetamaskAdd) {
       addHarmonyNetwork()
+    } else if (section === Sections.MetamaskAddS1) {
+      addHarmonyNetworkS1()
     }
   }, [section])
 
@@ -232,13 +277,22 @@ const Tools = () => {
       {section === Sections.Home &&
         <AnimatedSection wide>
           <Space direction='vertical' style={{ width: '100%' }}>
+            <Title level={3}>Wallet Connect</Title>
+            <Button type='primary' shape='round' onClick={() => history.push(Paths.doAuth('walletconnect'))}>Connect your wallet to dApp</Button>
+            <Divider />
             <Title level={3}>MetaMask</Title>
-            <Button type='primary' shape='round' onClick={() => openTool(Sections.MetamaskAdd)}>Switch to Harmony Network</Button>
+            <Button type='primary' shape='round' onClick={() => openTool(Sections.MetamaskAdd)}>Switch to Harmony Shard 0</Button>
+            <Button type='primary' shape='round' onClick={() => openTool(Sections.MetamaskAddS1)}>Switch to Harmony Shard 1</Button>
             <Divider />
             <Title level={3}>Harmony Safe</Title>
             <Space wrap>
               <Button type='primary' shape='round' href='http://multisig.harmony.one' target='_blank'>Open Harmony MultiSig</Button>
               <Button type='primary' shape='round' onClick={() => openTool(Sections.SushiEncoder)}>SushiSwap Transaction Encoder</Button>
+            </Space>
+            <Divider />
+            <Title level={3}>Auth</Title>
+            <Space wrap>
+              <Button type='primary' shape='round' href='/auth/walletconnect'>Wallet Connect</Button>
             </Space>
             {dev &&
               <>
@@ -253,7 +307,7 @@ const Tools = () => {
           <SushiSwapEncoder onClose={() => openTool()} />
         </AnimatedSection>}
       {section === Sections.MetamaskAdd &&
-        <AnimatedSection title='Switch to Harmony Network' wide>
+        <AnimatedSection title='Switch to Harmony Shard 0' wide>
           <Space direction='vertical' style={{ width: '100%' }}>
             <Text>This tool helps you quickly setup MetaMask for Harmony. Follow the instructions on MetaMask extension to complete the setup</Text>
             <Divider />
@@ -265,6 +319,22 @@ const Tools = () => {
             <TallRow justify='space-between'>
               <Button type='text' danger onClick={() => openTool()}>Cancel</Button>
               <Button type='primary' shape='round' onClick={addHarmonyNetwork}>Retry</Button>
+            </TallRow>
+          </Space>
+        </AnimatedSection>}
+      {section === Sections.MetamaskAddS1 &&
+        <AnimatedSection title='Switch to Harmony Shard 1' wide>
+          <Space direction='vertical' style={{ width: '100%' }}>
+            <Text>This tool helps you quickly setup MetaMask for Harmony Shard 1. Follow the instructions on MetaMask extension to complete the setup</Text>
+            <Divider />
+            <Text>You should see something like this. Verify the information and click "Approve" to proceed.</Text>
+            <Row justify='center'><Image src={MetaMaskAddS1} style={{ objectFit: 'contain', maxHeight: 600 }} /></Row>
+            <Divider />
+            <Text>If you already had Harmony Shard 1 on MetaMask, it will help you switch to Harmony Shard 1 instead.</Text>
+            <Row justify='center'><Image src={MetaMaskSwitchS1} style={{ objectFit: 'contain', maxHeight: 600 }} /></Row>
+            <TallRow justify='space-between'>
+              <Button type='text' danger onClick={() => openTool()}>Cancel</Button>
+              <Button type='primary' shape='round' onClick={addHarmonyNetworkS1}>Retry</Button>
             </TallRow>
           </Space>
         </AnimatedSection>}
