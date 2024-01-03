@@ -367,7 +367,14 @@ const PrepareWalletSection = ({ expertMode, showRecovery, coreSettings, setupCon
             <TallRow>
               {(deploying || !coreSettings.root) && <Space><Text>Working on your 1wallet...</Text><LoadingOutlined /></Space>}
               {(!deploying && coreSettings.root && deployed) && <Text>Your 1wallet is ready!</Text>}
-              {(!deploying && coreSettings.root && deployed === false) && <Text>There was an issue deploying your 1wallet. <Button type='link' onClick={() => (location.href = Paths.create)}>Try again</Button>?</Text>}
+              {(!deploying && coreSettings.root && deployed === false) && (
+                <Space direction='vertical'>
+                  <Text>There was an issue deploying your 1wallet. </Text>
+                  <Space>
+                    <Button shape='round' danger onClick={() => (location.href = Paths.create)}>Restart</Button>
+                    <Button shape='round' type='primary' onClick={() => deploy()}>Try Again</Button>
+                  </Space>
+                </Space>)}
             </TallRow>}
           {!expertMode && <Hint>In beta, you can only spend {WalletConstants.defaultSpendingLimit} ONE per day</Hint>}
           {!expertMode && (
