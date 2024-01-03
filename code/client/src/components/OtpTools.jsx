@@ -129,6 +129,7 @@ export const NAME_ADDRESS_COMBINED_PATTERN = /([A-Za-z ]+)([0-9\- :]+)\[([a-z0-9
 
 // input is assumed to be already gone through decodeURIComponent
 export const parseAuthAccountName = (rawName) => {
+  rawName = decodeURIComponent(rawName)
   if (rawName.indexOf('[') > 0) {
     const m = rawName.match(NAME_ADDRESS_COMBINED_PATTERN)
     if (!m) {
