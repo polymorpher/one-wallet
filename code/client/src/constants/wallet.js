@@ -4,7 +4,7 @@ export default {
   interval6: ONEConstants.INTERVAL6,
   // defaultDuration: 3600 * 1000 * 24 * 364,
   defaultDuration: 3600 * 1000 * 24 * 272, // 272 days corresponds to a life span of 2**17 * 6 (multiply by 30 seconds, divide by 3600 * 24 * 1000 to get the number of days: 273.06)
-  defaultSpendingLimit: 1000, // ONEs
+  defaultSpendingLimit: 50000, // ONEs
   defaultSpendingInterval: ONEConstants.DefaultSpendingInterval,
   minDuration: 3600 * 1000 * 24 * 120,
   maxDuration: 3600 * 1000 * 24 * 364 * 2,

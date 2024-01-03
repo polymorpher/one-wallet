@@ -52,7 +52,7 @@ export const deleteWalletLocally = async ({ wallet, wallets, dispatch, history, 
 }
 
 export const cleanStorage = async ({ wallets }) => {
-  message.debug('Scanning orphaned trees from storage')
+  // message.debug('Scanning orphaned trees from storage')
   const keys = await storage.keys()
   const roots = flatten(Object.values(wallets).map(e => [e.root, ...(e.oldInfos || []).map(e => e.root), ...(e.innerRoots || [])])).map(e => [e, true])
   const rootLookup = Object.fromEntries(roots)
@@ -64,5 +64,7 @@ export const cleanStorage = async ({ wallets }) => {
     }
   }
   await Promise.all(promises)
-  message.debug(`Deleted ${promises.length}/${keys.length} trees from storage`, 15)
+  if (promises.length > 0) {
+    message.debug(`Deleted ${promises.length}/${keys.length} trees from storage`, 15)
+  }
 }
