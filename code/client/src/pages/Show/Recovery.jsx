@@ -6,7 +6,7 @@ import Space from 'antd/es/space'
 import util, { useWindowDimensions } from '../../util'
 import WalletAddress from '../../components/WalletAddress'
 import WarningOutlined from '@ant-design/icons/WarningOutlined'
-import React from 'react'
+import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import Paths from '../../constants/paths'
 import { useHistory } from 'react-router'
@@ -14,7 +14,7 @@ import { SimpleWalletExport, InnerTree } from '../../proto/wallet'
 import message from '../../message'
 import storage from '../../storage'
 import { retryUpgrade } from './show-util'
-
+import CheckOutlined from '@ant-design/icons/CheckOutlined'
 const Recovery = ({ address }) => {
   const dispatch = useDispatch()
   const history = useHistory()
@@ -25,6 +25,13 @@ const Recovery = ({ address }) => {
   const oneLastResort = util.safeOneAddress(lastResortAddress)
   const oneAddress = util.safeOneAddress(address)
   const isRecoveryFileSupported = majorVersion >= 15 && innerRoots?.length > 0
+
+  const [cloudBackupProgress, setCloudBackupProgress] = useState(0)
+  const [cloudBackupExist, setCloudBackupExist] = useState(false)
+  const [cloudBackupExpired, setCloudBackupExpired] = useState(true)
+  const doCloudBackup = () => {
+
+  }
 
   const showRecovery = () => { history.push(Paths.showAddress(oneAddress, 'recover')) }
 
@@ -83,7 +90,7 @@ const Recovery = ({ address }) => {
             />
           </Col>}
       </Row>
-      <Row align='middle'>
+      <Row align='baseline'>
         <Col span={isMobile ? 24 : 10}><span /></Col>
         {!util.isRecoveryAddressSet(lastResortAddress) &&
           <Col>
@@ -95,18 +102,24 @@ const Recovery = ({ address }) => {
         <Row justify='end'>
           <Button type='primary' size='large' shape='round' onClick={showRecovery} icon={<WarningOutlined />}>Recover funds</Button>
         </Row>}
-      <Row align='middle' style={{ marginTop: 32 }}>
+      <Row align='baseline' style={{ marginTop: 32 }}>
         <Col span={isMobile ? 24 : 10}> <Title level={3}>Recovery File</Title></Col>
         <Col>
-          <Button type='primary' size='large' shape='round' onClick={exportRecovery} disabled={!isRecoveryFileSupported}> Download </Button>
+          <Space>
+            <Button type='primary' size='large' shape='round' onClick={exportRecovery} disabled={!isRecoveryFileSupported}> Download </Button>
+            <Button size='large' shape='round' onClick={doCloudBackup} disabled={cloudBackupExist}> Cloud Backup {cloudBackupExist && <CheckOutlined />}</Button>
+          </Space>
         </Col>
       </Row>
+      {cloudBackupExist && !cloudBackupExpired && <Text>A cloud backup of the recovery file was made on {cloudBackupTime}</Text>}
+      {cloudBackupExpired && <Text style={{ color: 'red' }}>The cloud backup of the recovery file was expired (made on {cloudBackupTime})</Text>}
       {!isRecoveryFileSupported &&
         <Text style={{ color: 'red' }}>
           Recovery file is only available to wallets created from v15, or wallets upgraded to v15 then renewed.
           {majorVersion >= 15 ? <Link onClick={() => history.push(Paths.showAddress(address, 'extend'))}>(renew now)</Link> : <Link onClick={() => retryUpgrade({ dispatch, history, address })}> (upgrade now, then renew)</Link>}
         </Text>}
       <Hint>You can use the recovery file and your authenticator to restore your wallet on any device. You do not need to keep this file confidential, because it cannot be used without your authenticator - the correct 6-digit authenticator code is required for six consecutive times. Feel free to upload this file in any personal or public storage, such as Google Drive, iCloud, IPFS, Keybase.</Hint>
+
     </Space>
   )
 }
