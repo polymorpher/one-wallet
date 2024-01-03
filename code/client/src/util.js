@@ -425,6 +425,19 @@ export const isSafari = () => {
   return (!!window.safari) || s
 }
 
+export const downloadBlob = (data, filename = 'data.1wallet') => {
+  const href = URL.createObjectURL(data)
+  const link = document.createElement('a')
+  link.href = href
+  link.setAttribute('download', filename) // or any other extension
+  document.body.appendChild(link)
+  link.click()
+
+  // clean up "a" element & remove ObjectURL
+  document.body.removeChild(link)
+  URL.revokeObjectURL(href)
+}
+
 if (window) {
   window.ONEWallet = window.ONEWallet || {}
   window.ONEWallet.util = util
