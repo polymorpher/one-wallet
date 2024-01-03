@@ -14,6 +14,7 @@ import Spin from 'antd/es/spin'
 import Card from 'antd/es/card'
 import message from '../message'
 import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
+import CheckOutlined from '@ant-design/icons/CheckOutlined'
 import QuestionCircleOutlined from '@ant-design/icons/QuestionCircleOutlined'
 import humanizeDuration from 'humanize-duration'
 import AnimatedSection, { AnimatedSection2 } from '../components/AnimatedSection'
@@ -41,7 +42,7 @@ const getGoogleAuthenticatorAppLink = (os) => {
   if (os === OSType.Android) {
     link = 'https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2'
   }
-  return <Link href={link} target='_blank' rel='noreferrer'>Google Authenticator</Link>
+  return <Link href={link} target='_blank' rel='noreferrer'>authenticator</Link>
 }
 
 const sectionViews = {
@@ -61,6 +62,7 @@ const Create = ({ expertMode, showRecovery }) => {
   const network = useSelector(state => state.global.network)
   const v2ui = useSelector(state => state.global.v2ui)
   const wallets = useSelector(state => state.wallet)
+
   const generateNewOtpName = () => ONENames.genName(Object.keys(wallets).map(k => wallets[k].name))
 
   // Configurations for creating the wallet - cannot be directly changed by the UI (right they cannot be changed at all)
@@ -91,6 +93,7 @@ const Create = ({ expertMode, showRecovery }) => {
   const [progressStage, setProgressStage] = useState(0)
 
   const [section, setSection] = useState(sectionViews.setupOtp)
+  const [qrCodeMode, setQrCodeMode] = useState(OTPUriMode.STANDARD)
 
   useEffect(() => {
     if (!code || !coreSettings.effectiveTime) {
@@ -103,14 +106,15 @@ const Create = ({ expertMode, showRecovery }) => {
       const oneAddress = util.safeOneAddress(address)
       const otpDisplayName = `${ONENames.nameWithTime(setupConfig.name, coreSettings.effectiveTime)} [${oneAddress}]`
       const otpDisplayName2 = `${ONENames.nameWithTime(getSecondCodeName(setupConfig.name), coreSettings.effectiveTime)} [${oneAddress}]`
-      const otpUri = getQRCodeUri(setupConfig.seed, otpDisplayName, OTPUriMode.MIGRATION)
-      const secondOtpUri = getQRCodeUri(setupConfig.seed2, otpDisplayName2, OTPUriMode.MIGRATION)
-      const otpQrCodeData = await qrcode.toDataURL(otpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
+      const otpUri = getQRCodeUri(setupConfig.seed, otpDisplayName, qrCodeMode)
+      const secondOtpUri = getQRCodeUri(setupConfig.seed2, otpDisplayName2, qrCodeMode)
+      const color = qrCodeMode === OTPUriMode.MIGRATION ? { dark: '#00008B' } : {}
+      const otpQrCodeData = await qrcode.toDataURL(otpUri, { color, errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       const secondOtpQrCodeData = await qrcode.toDataURL(secondOtpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       setWalletState(s => ({ ...s, otpQrCodeData, secondOtpQrCodeData, predictedAddress: address }))
       setOtpReady(true)
     })()
-  }, [code, network, coreSettings.effectiveTime, walletState.address, walletState.doubleOtp])
+  }, [code, network, coreSettings.effectiveTime, walletState.address, walletState.doubleOtp, qrCodeMode])
 
   useEffect(() => {
     if (section === sectionViews.setupOtp && worker && setupConfig.seed) {
@@ -169,7 +173,10 @@ const Create = ({ expertMode, showRecovery }) => {
   return (
     <div style={wrapperStyle}>
       {section === sectionViews.setupOtp &&
-        <SetupOtpSection expertMode={expertMode} otpReady={otpReady} effectiveTime={coreSettings.effectiveTime} walletState={walletState} setWalletState={setWalletState} setupConfig={setupConfig} setSection={setSection} />}
+        <SetupOtpSection
+          setQrCodeMode={setQrCodeMode} qrCodeMode={qrCodeMode}
+          expertMode={expertMode} otpReady={otpReady} effectiveTime={coreSettings.effectiveTime} walletState={walletState} setWalletState={setWalletState} setupConfig={setupConfig} setSection={setSection}
+        />}
       {section === sectionViews.prepareWallet &&
         <PrepareWalletSection showRecovery={showRecovery} expertMode={expertMode} coreSettings={coreSettings} setupConfig={setupConfig} walletState={walletState} setWalletState={setWalletState} progress={progress} progressStage={progressStage} network={network} />}
       {section === sectionViews.walletSetupDone &&
@@ -398,7 +405,7 @@ const PrepareWalletSection = ({ expertMode, showRecovery, coreSettings, setupCon
   )
 }
 
-const SetupOtpSection = ({ expertMode, otpReady, setupConfig, walletState, setWalletState, effectiveTime, setSection }) => {
+const SetupOtpSection = ({ expertMode, otpReady, setupConfig, walletState, setWalletState, effectiveTime, setSection, setQrCodeMode, qrCodeMode }) => {
   const { otpInputBackground, optInputTextColor } = getColorPalette(useTheme())
   const { isMobile, os } = useWindowDimensions()
   const v2ui = useSelector(state => state.global.v2ui)
@@ -467,7 +474,7 @@ const SetupOtpSection = ({ expertMode, otpReady, setupConfig, walletState, setWa
           {step === 1 &&
             <>
               <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
-              <Hint>{isMobile ? 'Tap' : 'Scan'} the QR code to setup {getGoogleAuthenticatorAppLink(os)}. {!v2ui && 'You need it to use the wallet'} </Hint>
+              <Hint>{isMobile ? 'Tap' : 'Scan'} the QR code to setup your {getGoogleAuthenticatorAppLink(os)}. {!v2ui && 'You need it to use the wallet'} </Hint>
               {buildQRCodeComponent({ seed, name: ONENames.nameWithTime(name, effectiveTime), os, isMobile, qrCodeData: otpQrCodeData })}
             </>}
           {step === 2 &&
@@ -500,8 +507,7 @@ const SetupOtpSection = ({ expertMode, otpReady, setupConfig, walletState, setWa
         {step === 1 &&
           <>
             <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
-            {!isMobile && <Hint>Scan QR code to setup {getGoogleAuthenticatorAppLink(os)} and the wallet </Hint>}
-            <Hint>{isMobile ? 'Tap' : 'Scan'} the QR code to setup {getGoogleAuthenticatorAppLink(os)} and the wallet</Hint>
+            <Hint>{isMobile ? 'Tap' : 'Scan'} the QR code to setup OTP {getGoogleAuthenticatorAppLink(os)} for the wallet</Hint>
             <Hint>Optional: <Link href='#' onClick={toggleShowAccount}>sign-up</Link> to enable backup, alerts, verification code autofill</Hint>
             {showAccount && <SignupAccount seed={seed} name={name} address={walletState.predictedAddress} effectiveTime={effectiveTime} setAllowOTPAutoFill={setAllowAutoFill} />}
             {buildQRCodeComponent({ seed, name: ONENames.nameWithTime(name, effectiveTime), os, isMobile, qrCodeData: otpQrCodeData })}
@@ -521,6 +527,16 @@ const SetupOtpSection = ({ expertMode, otpReady, setupConfig, walletState, setWa
         </Space>)}
       {step === 2 &&
         <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={ONENames.nameWithTime(getSecondCodeName(name), effectiveTime)} />}
+      <Space style={{ marginTop: 32, justifyContent: 'center', display: 'flex' }}>
+        <Hint>Code prompting wrong authenticator app?</Hint>
+        <Button
+          style={{ color: 'darkblue' }}
+          shape='round'
+          onClick={() => setQrCodeMode(OTPUriMode.MIGRATION)} disabled={qrCodeMode === OTPUriMode.MIGRATION}
+        >
+          Use Google Auth QR {qrCodeMode === OTPUriMode.MIGRATION && <CheckOutlined />}
+        </Button>
+      </Space>
     </AnimatedSection>
   )
 }
