@@ -9,7 +9,7 @@ const path = require('path')
 const multer = Multer({
   storage: Multer.memoryStorage(),
   limits: {
-    fileSize: 500 * 1024 * 1024, // no larger than 5mb, you can change as needed.
+    fileSize: 500 * 1024 * 1024, // no larger than 500mb, you can change as needed.
   },
 })
 

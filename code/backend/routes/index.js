@@ -37,7 +37,7 @@ router.post('/signup',
         return res.json({ success: false, error: 'user already exists' })
       }
       Logger.log(`[/signup]`, u)
-      res.json({ success: true })
+      res.json({ success: true, user: { username, email } })
     } catch (ex) {
       console.error(ex)
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'internal' })
@@ -54,7 +54,8 @@ router.post('/login', limiter(), async (req, res) => {
     if (!u) {
       return res.status(StatusCodes.NOT_FOUND).send()
     }
-    return res.json({ success: true })
+    const { email } = u
+    return res.json({ success: true, user: { email, username } })
   } catch (ex) {
     console.error(ex)
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'internal' })
