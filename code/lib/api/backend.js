@@ -6,7 +6,7 @@ let backendBase = axios.create({
   timeout: 10000,
 })
 
-// currently, we require username and password to be present for every route behind auth-wall
+// currently, we require username (or email) and password to be present for every route behind auth-wall
 const backendApis = {
   signup: async ({ username, password, email }) => {
     const { data: { success, user } } = await backendBase.post('/signup', { username, password, email })
@@ -16,16 +16,16 @@ const backendApis = {
     const { data: { success, user } } = await backendBase.post('/login', { username, password })
     return { success, user }
   },
-  download: async ({ username, password, encrypted }) => {
-    const { data } = await backendBase.post('/backup/download', { username, password, encrypted }, { responseType: 'blob' })
+  download: async ({ email, username, password, encrypted }) => {
+    const { data } = await backendBase.post('/backup/download', { email, username, password, encrypted }, { responseType: 'blob' })
     return data
   },
   downloadPublic: async ({ username }) => {
     const { data } = await backendBase.post('/backup/download-public', { username }, { responseType: 'blob' })
     return data
   },
-  list: async ({ username, password }) => {
-    const { data: { plain, encrypted } } = await backendBase.post('/backup/list', { username, password })
+  list: async ({ email, username, password }) => {
+    const { data: { plain, encrypted } } = await backendBase.post('/backup/list', { email, username, password })
     return { plain, encrypted }
   }
 

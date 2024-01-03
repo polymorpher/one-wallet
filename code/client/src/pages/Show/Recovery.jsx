@@ -1,4 +1,4 @@
-import { Text, Hint, Title, Link } from '../../components/Text'
+import { Text, Hint, Title, Link, InputBox, InputPassword } from '../../components/Text'
 import Button from 'antd/es/button'
 import Col from 'antd/es/col'
 import Row from 'antd/es/row'
@@ -15,6 +15,8 @@ import message from '../../message'
 import storage from '../../storage'
 import { retryUpgrade } from './show-util'
 import CheckOutlined from '@ant-design/icons/CheckOutlined'
+import Spin from 'antd/es/spin'
+
 const Recovery = ({ address }) => {
   const dispatch = useDispatch()
   const history = useHistory()
@@ -28,7 +30,13 @@ const Recovery = ({ address }) => {
 
   const [cloudBackupProgress, setCloudBackupProgress] = useState(0)
   const [cloudBackupExist, setCloudBackupExist] = useState(false)
+  const [cloudBackupTime, setCloudBackupTime] = useState(0)
   const [cloudBackupExpired, setCloudBackupExpired] = useState(true)
+  const [cloudBackupPanelVisible, setCloudBackupPanelVisible] = useState(false)
+  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
   const doCloudBackup = () => {
 
   }
@@ -107,12 +115,39 @@ const Recovery = ({ address }) => {
         <Col>
           <Space>
             <Button type='primary' size='large' shape='round' onClick={exportRecovery} disabled={!isRecoveryFileSupported}> Download </Button>
-            <Button size='large' shape='round' onClick={doCloudBackup} disabled={cloudBackupExist}> Cloud Backup {cloudBackupExist && <CheckOutlined />}</Button>
+            {!cloudBackupPanelVisible && <Button size='large' shape='round' onClick={() => setCloudBackupPanelVisible(true)} disabled={cloudBackupExist}> Cloud Backup {cloudBackupExist && <CheckOutlined />}</Button>}
           </Space>
         </Col>
       </Row>
-      {cloudBackupExist && !cloudBackupExpired && <Text>A cloud backup of the recovery file was made on {cloudBackupTime}</Text>}
-      {cloudBackupExpired && <Text style={{ color: 'red' }}>The cloud backup of the recovery file was expired (made on {cloudBackupTime})</Text>}
+      <form action='#' onSubmit={doCloudBackup}>
+        {cloudBackupPanelVisible && <Space style={{ display: 'flex' }}>
+          <InputBox
+            margin='8px'
+            $marginBottom='0px'
+            placeholder='youremail@gmail.com'
+            style={{ flex: 1 }}
+            value={email}
+            autoComplete='email'
+            onChange={({ target: { value } }) => setEmail(value)}
+          />
+          <InputPassword
+            size='large'
+            margin='8px'
+            $marginBottom='0px'
+            placeholder='password'
+            autoComplete='password'
+            style={{ flex: 1 }}
+            value={password}
+            onChange={({ target: { value } }) => setPassword(value)}
+          />
+          <Button size='large' shape='round' onClick={doCloudBackup} disabled={cloudBackupProgress > 0} style={{ flex: 1 }}>
+            Make Cloud Backup {cloudBackupProgress > 0 && cloudBackupProgress < 1 && <Spin />} {cloudBackupProgress === 1 && <CheckOutlined />}
+          </Button>
+
+        </Space>}
+      </form>
+      {cloudBackupExist && !cloudBackupExpired && <Text>A cloud backup of the recovery file was made on {new Date(cloudBackupTime).toLocaleString()}</Text>}
+      {cloudBackupExpired && <Text style={{ color: 'red' }}>The recovery file's cloud backup is expired (made on {new Date(cloudBackupTime).toLocaleString()})</Text>}
       {!isRecoveryFileSupported &&
         <Text style={{ color: 'red' }}>
           Recovery file is only available to wallets created from v15, or wallets upgraded to v15 then renewed.
