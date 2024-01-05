@@ -20,8 +20,11 @@ const Backup = ({
     if (!address || !root) {
       return true
     }
-    const u = await BackupPrototype.find(['address', address], ['root', root])
-    if (u) {
+    const u = await BackupPrototype.get(address)
+    if (!u) {
+      return false
+    }
+    if (u.root === root) {
       return true
     }
     return false
@@ -42,8 +45,11 @@ const Backup = ({
     if (!email || !address) {
       return null
     }
-    const [u] = await BackupPrototype.find(['email', email], ['address', address])
+    const u = await BackupPrototype.get(address)
     if (!u) {
+      return null
+    }
+    if (u.email !== email) {
       return null
     }
     return u
@@ -52,8 +58,11 @@ const Backup = ({
     if (!username || !address) {
       return null
     }
-    const [u] = await BackupPrototype.find(['username', username], ['address', address])
+    const u = await BackupPrototype.get(address)
     if (!u) {
+      return null
+    }
+    if (u.username !== username) {
       return null
     }
     return u

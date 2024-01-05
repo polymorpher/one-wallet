@@ -17,6 +17,16 @@ export const handleAPIError = (ex) => {
   Sentry.captureException(ex)
 }
 
+export const unwrapErrpr = ex => {
+  if (ex.response?.data?.error) {
+    return ex.response?.data?.error
+  }
+  if (ex.response?.data) {
+    return JSON.stringify(ex.response?.data)
+  }
+  return ex.toString()
+}
+
 export const handleAddressError = (err) => {
   if (!err) {
     return

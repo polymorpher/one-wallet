@@ -65,13 +65,19 @@ router.post('/upload', authed(), multer.single('file'), async (req, res, next) =
     res.status(StatusCodes.CONFLICT).json({ error: 'Address and root already has backup', address, root })
     return
   }
-  console.log({ isPublic, root, address, file: req.file })
+  console.log({ isPublic, root, address, file: req.file, hasDuplicate })
   const email = req.auth.email
   const username = req.auth.fromEmail ? '' : req.auth.user.username
   const publicSuffix = isPublic ? ':public' : ''
   const blob = bucket.file(`${email}:${address}${publicSuffix}.backup`)
   const s = blob.createWriteStream()
-  await Backup.addNew({ address, username, email, isPublic, root })
+  try {
+    await Backup.addNew({ address, username, email, isPublic, root })
+  } catch (ex) {
+    console.error(ex)
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Something unexpected happened. Please try again' })
+    return
+  }
   s.on('error', err => next(err))
   s.on('finish', () => res.json({ success: true }))
   s.end(req.file.buffer)

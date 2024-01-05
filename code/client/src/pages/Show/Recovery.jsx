@@ -19,6 +19,7 @@ import Spin from 'antd/es/spin'
 import api from '../../api'
 import EmailValidator from 'email-validator'
 import SignupAccount from '../Create/SignupAccount'
+import { unwrapErrpr } from '../../handler'
 
 const Recovery = ({ address }) => {
   const dispatch = useDispatch()
@@ -71,7 +72,7 @@ const Recovery = ({ address }) => {
       return { filename, blob }
     } catch (ex) {
       console.error(ex)
-      message.error('Failed to encode recovery file data. Error:', ex.toString())
+      message.error('Failed to encode recovery file data. Error:', unwrapErrpr(ex))
     }
   }
   const exportRecovery = async () => {
@@ -85,8 +86,8 @@ const Recovery = ({ address }) => {
     data.append('file', blob)
     data.append('root', root)
     const onUploadProgress = (p) => {
-      console.log('Upload progress: ', p.position / p.total)
-      setCloudBackupProgress(p.position / p.total)
+      // console.log('Upload progress: ', p, p.loaded / p.total)
+      setCloudBackupProgress(p.loaded / p.total)
     }
     try {
       await api.backend.upload({
@@ -100,7 +101,7 @@ const Recovery = ({ address }) => {
       })
       setCloudBackupDone(true)
     } catch (ex) {
-      message.error(`Cloud backup upload failed. Error: ${ex.toString()}`)
+      message.error(`Cloud backup upload failed. Error: ${unwrapErrpr(ex)}`)
       setCloudBackupProgress(0)
       setCloudBackupDone(false)
     }
@@ -118,7 +119,7 @@ const Recovery = ({ address }) => {
       setCloudBackupExpired(exist && (root !== backupRoot))
     }
     checkBackupInfo().catch((ex) => {
-      message.error('Unable to check backup info')
+      message.error(`Unable to check backup info: ${unwrapErrpr(ex)}`)
       console.error(ex)
     })
   }, [cloudBackupDone, address, root])
@@ -183,8 +184,8 @@ const Recovery = ({ address }) => {
               />
             </Row>
             <Row justify='space-between' style={{ width: '100%', marginTop: 16, marginBottom: 16 }}>
-              <Button size='large' shape='round' onClick={() => setShowSignup(true)}>Signup New Account</Button>
-              <Button size='large' shape='round' type='primary' onClick={doCloudBackup} disabled={cloudBackupProgress > 0}>
+              <Button size='large' shape='round' onClick={() => setShowSignup(true)}>Sign Up New Account</Button>
+              <Button size='large' shape='round' type='primary' onClick={doCloudBackup} disabled={cloudBackupDone || cloudBackupProgress > 0}>
                 Make Cloud Backup {!cloudBackupDone && cloudBackupProgress > 0 &&
                   <>
                     <Spin style={{ marginLeft: 8, marginRight: 8 }} />
