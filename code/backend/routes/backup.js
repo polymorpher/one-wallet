@@ -155,8 +155,11 @@ router.post('/info', async (req, res) => {
     return res.status(StatusCodes.BAD_REQUEST).json({ error: 'address is missing', address })
   }
   const backup = await Backup.get(address)
+  if (!backup) {
+    return res.json({ exist: false })
+  }
   const { timeUpdated, isPublic } = backup
-  res.json({ timeUpdated, isPublic })
+  res.json({ timeUpdated, isPublic, exist: true })
 })
 
 module.exports = router

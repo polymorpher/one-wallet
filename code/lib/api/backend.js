@@ -16,18 +16,39 @@ const backendApis = {
     const { data: { success, user } } = await backendBase.post('/login', { username, password })
     return { success, user }
   },
-  download: async ({ email, username, password, encrypted }) => {
-    const { data } = await backendBase.post('/backup/download', { email, username, password, encrypted }, { responseType: 'blob' })
+  download: async ({ email, username, password, address }) => {
+    const { data } = await backendBase.post('/backup/download', { email, username, password, address }, { responseType: 'blob' })
     return data
   },
-  downloadPublic: async ({ username }) => {
-    const { data } = await backendBase.post('/backup/download-public', { username }, { responseType: 'blob' })
+  downloadPublic: async ({ address }) => {
+    const { data } = await backendBase.post('/backup/download-public', { address }, { responseType: 'blob' })
     return data
   },
-  list: async ({ email, username, password }) => {
-    const { data: { plain, encrypted } } = await backendBase.post('/backup/list', { email, username, password })
-    return { plain, encrypted }
-  }
+  listByEmail: async ({ email, password }) => {
+    const { data } = await backendBase.post('/backup/list-by-email', { email, password })
+    return data
+  },
+  listByUsername: async ({ username, password }) => {
+    const { data } = await backendBase.post('/backup/list-by-username', { username, password })
+    return data
+  },
+  info: async ({ address }) => {
+    const { data: { exist, timeUpdated, isPublic } } = await backendBase.post('/backup/info', { address })
+    return { exist, timeUpdated, isPublic }
+  },
+  // data should be FormData (native in browser, package form-data in node.js)
+  upload: async ({ address, data, username, password, email, onUploadProgress }) => {
+    return backendBase.post('/backup/upload', data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        ...(username && { 'X-ONEWALLET-USERNAME': username }),
+        ...(password && { 'X-ONEWALLET-PASSWORD': password }),
+        ...(email && { 'X-ONEWALLET-EMAIL': email }),
+        ...(address && { 'X-ONEWALLET-ADDRESS': address }),
+      },
+      onUploadProgress: onUploadProgress
+    })
+  },
 
 }
 module.exports = backendApis
