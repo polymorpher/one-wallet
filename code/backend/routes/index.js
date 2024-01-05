@@ -50,7 +50,7 @@ router.post('/login', limiter(), async (req, res) => {
     return res.status(StatusCodes.BAD_REQUEST).json({ error: 'need username,password' })
   }
   try {
-    const u = await User.verify({ username, password })
+    const u = await User.verifyByUsername({ username, password })
     if (!u) {
       return res.status(StatusCodes.NOT_FOUND).send()
     }

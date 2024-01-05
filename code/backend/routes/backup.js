@@ -6,6 +6,8 @@ const config = require('../config')
 const Storage = require('../src/data/storage').client()
 const Multer = require('multer')
 const path = require('path')
+const { Backup } = require('../src/data/backup')
+const { HttpStatusCode } = require('axios')
 const multer = Multer({
   storage: Multer.memoryStorage(),
   limits: {
@@ -15,41 +17,52 @@ const multer = Multer({
 
 const bucket = Storage.bucket(config.storage.bucket)
 
-const authed = async (req, res, next) => {
+const authed = (allowUsername = true, allowEmail = true) => async (req, res, next) => {
   req.auth = req.auth || {}
   let { email, username, password } = req.body
-  if (!username) {
+  email = email ?? req.header('X-ONEWALLET-EMAIL')
+  username = username ?? req.header('X-ONEWALLET-USERNAME')
+  password = password ?? req.header('X-ONEWALLET-PASSWORD')
+  // console.log({ email, username, password })
+  if (!username && allowEmail) {
     const users = await User.verifyByEmail({ email, password })
     if (!(users?.length > 0)) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: 'not found' })
+      return res.status(StatusCodes.NOT_FOUND).json({ error: 'not found by email', email })
     }
-    req.auth.users = users
     req.auth.email = email
     req.auth.fromEmail = true
     return next()
   }
-  const u = await User.verify({ username, password })
+  if (!allowUsername) {
+    return res.status(StatusCodes.NOT_FOUND).json({ error: 'user not found by email' })
+  }
+  const u = await User.verifyByUsername({ username, password })
   if (!u) {
     return res.status(StatusCodes.NOT_FOUND).json({ error: 'username/password not found' })
   }
-  if (email && (u.email !== email)) {
-    return res.status(StatusCodes.NOT_FOUND).json({ error: 'email not matching' })
-  }
-  req.auth.users = [u]
+  req.auth.user = u
   req.auth.email = u.email
   next()
 }
 
-router.post('/upload', authed, multer.single('file'), async (req, res, next) => {
+router.post('/upload', authed(), multer.single('file'), async (req, res, next) => {
   if (!req.file) {
     res.status(400).send('No file uploaded.')
     return
   }
-  const { encrypted } = req.body
-  const [{ email, username }] = req.auth.users
-  const publicSuffix = encrypted ? ':public' : ''
-  const blob = bucket.file(`${email}:${username}${publicSuffix}.backup`)
+  const address = req.header('X-ONEWALLET-ADDRESS')?.toLowerCase()
+  if (!address) {
+    res.status(400).send('No address provided.')
+    return
+  }
+  const { isPublic } = req.body
+  console.log({ isPublic, address, file: req.file })
+  const email = req.auth.email
+  const username = req.auth.fromEmail ? '' : req.auth.user.username
+  const publicSuffix = isPublic ? ':public' : ''
+  const blob = bucket.file(`${email}:${address}${publicSuffix}.backup`)
   const s = blob.createWriteStream()
+  await Backup.addNew({ address, username, email, isPublic })
   s.on('error', err => next(err))
   s.on('finish', () => res.json({ success: true }))
   s.end(req.file.buffer)
@@ -65,44 +78,85 @@ const streamDownload = (filename, res) => {
   s.pipe(res)
 }
 
-router.post('/download', authed, async (req, res) => {
-  const { encrypted } = req.body
-  const [{ email, username }] = req.auth.users
-  const publicSuffix = encrypted ? ':public' : ''
-  const filename = `${email}:${username}${publicSuffix}.backup`
+router.post('/download', authed(), async (req, res) => {
+  const address = req.body?.address?.toLowerCase()
+  if (req.auth.fromEmail && !address) {
+    res.status(400).send('Requires address when username is not provided')
+    return
+  }
+  let backup
+  if (req.auth.fromEmail) {
+    const email = req.auth.email
+    backup = await Backup.checkAddressByEmail({ email, address })
+    if (!backup) {
+      res.status(HttpStatusCode.Unauthorized).json({ error: 'address and email does not match', address, email })
+      return
+    }
+  } else {
+    const username = req.auth.user.username
+    backup = await Backup.checkAddressByUsername({ username, address })
+    if (!backup) {
+      res.status(HttpStatusCode.Unauthorized).json({ error: 'address and username does not match', address, username })
+      return
+    }
+  }
+  const publicSuffix = backup.isPublic ? ':public' : ''
+  const filename = `${backup.email}:${address}${publicSuffix}.backup`
   streamDownload(filename, res)
 })
 
 router.post('/download-public', async (req, res) => {
-  const { username } = req.body
-  const [u] = await User.find(['username', username])
-  if (!u) {
-    return res.status(StatusCodes.NOT_FOUND).json({ error: 'user does not exist', username })
+  const { address } = req.body
+  const backup = await Backup.get(address?.toLowerCase())
+  if (!backup || !backup?.isPublic) {
+    return res.status(StatusCodes.NOT_FOUND).json({ error: 'backup at address does not exist or is not public', address })
   }
-  const filename = `${u.email}:${username}:public.backup`
+  const filename = `${backup.email}:${backup.address}:public.backup`
   const [exists] = await bucket.file(filename).exists()
   if (!exists) {
-    return res.status(StatusCodes.NOT_FOUND).json({ error: 'backup does not exist', username })
+    return res.status(StatusCodes.NOT_FOUND).json({ error: 'backup does not exist', address })
   }
   streamDownload(filename, res)
 })
 
-router.post('/list', authed, async (req, res) => {
+// list by email
+router.post('/list-files', authed(false), async (req, res) => {
   const prefix = req.auth.email
   const [files] = await bucket.getFiles({ prefix })
-  const usernameMap = Object.fromEntries(req.auth.users.map(u => [u.username, true]))
   const parsedFiles = files.map(e => {
     const ext = path.extname(e.name)
     const base = path.basename(e.name, ext)
-    const [email, username, encrypted] = base.split(':')
-    return { email, username, encrypted, file: e }
+    const [email, address, isPublic] = base.split(':')
+    return { email, address, isPublic, file: e }
   })
-  const plain = parsedFiles.filter(e => usernameMap[e.username] && !e.encrypted)
-  const encrypted = parsedFiles.filter(e => usernameMap[e.username] && e.encrypted)
+  const publicBackups = parsedFiles.filter(e => !e.isPublic)
+  const privateBackups = parsedFiles.filter(e => e.isPublic)
   return res.json({
-    plain: plain.map(e => e.username),
-    encrypted: encrypted.map(e => e.username),
+    publicBackups: publicBackups.map(e => e.address),
+    privateBackups: privateBackups.map(e => e.address),
   })
+})
+
+router.post('/list-by-email', authed(false), async (req, res) => {
+  const email = req.auth.email
+  const backups = await Backup.lookupByEmail({ email })
+  res.json({ backups })
+})
+
+router.post('/list-by-username', authed(true, false), async (req, res) => {
+  const username = req.auth.user.username
+  const backups = await Backup.lookupByEmail({ username })
+  res.json({ backups })
+})
+
+router.post('/info', async (req, res) => {
+  let address = req.body.address?.toLowerCase()
+  if (!address) {
+    return res.status(StatusCodes.BAD_REQUEST).json({ error: 'address is missing', address })
+  }
+  const backup = await Backup.get(address)
+  const { timeUpdated, isPublic } = backup
+  res.json({ timeUpdated, isPublic })
 })
 
 module.exports = router
