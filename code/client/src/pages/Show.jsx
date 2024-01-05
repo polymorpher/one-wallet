@@ -41,6 +41,7 @@ import Stake from './Show/Stake/Stake'
 import Unstake from './Show/Stake/Unstake'
 import TransactionViewer from './Show/TransactionViewer'
 import CollectStakeReward from './Show/Stake/CollectStakeReward'
+import WalletConnectRedirect from './Show/WalletConnectRedirect'
 
 const tabList = [
   { key: 'coins', tab: 'Coins' },
@@ -60,6 +61,7 @@ const tabList = [
       return network.startsWith('harmony')
     }
   },
+  { key: 'wc', tab: 'Wallet Connect' },
 ]
 
 const SectionList = [
@@ -174,6 +176,7 @@ const Show = () => {
           {activeTab === 'call' && <Call address={address} headless />}
           {activeTab === 'sign' && <Sign address={address} headless />}
           {activeTab === 'history' && <TransactionViewer address={address} />}
+          {activeTab === 'wc' && <WalletConnectRedirect address={address} />}
           <Upgrade address={address} prompt={command === 'upgrade'} onClose={showStartScreen} />
           <CheckForwardState address={address} onClose={() => history.push(Paths.wallets)} />
           <CheckRoots address={address} onClose={() => history.push(Paths.wallets)} />
