@@ -18,6 +18,7 @@ import CheckOutlined from '@ant-design/icons/CheckOutlined'
 import Spin from 'antd/es/spin'
 import api from '../../api'
 import EmailValidator from 'email-validator'
+import SignupAccount from '../Create/SignupAccount'
 
 const Recovery = ({ address }) => {
   const dispatch = useDispatch()
@@ -39,6 +40,7 @@ const Recovery = ({ address }) => {
   const [username, setUsername] = useState('')
   const isUserNameEmail = EmailValidator.validate(username)
   const [password, setPassword] = useState('')
+  const [showSignup, setShowSignup] = useState(false)
 
   const showRecovery = () => { history.push(Paths.showAddress(oneAddress, 'recover')) }
 
@@ -156,7 +158,7 @@ const Recovery = ({ address }) => {
         </Col>
       </Row>
       <form action='#' onSubmit={doCloudBackup}>
-        {cloudBackupPanelVisible && (
+        {cloudBackupPanelVisible && !showSignup && (
           <>
             <Row style={{ display: 'flex', width: '100%', columnGap: 16 }}>
               <InputBox
@@ -180,8 +182,9 @@ const Recovery = ({ address }) => {
                 onChange={({ target: { value } }) => setPassword(value)}
               />
             </Row>
-            <Row justify='center' style={{ width: '100%', marginTop: 16, marginBottom: 16 }}>
-              <Button size='large' shape='round' onClick={doCloudBackup} disabled={cloudBackupProgress > 0}>
+            <Row justify='space-between' style={{ width: '100%', marginTop: 16, marginBottom: 16 }}>
+              <Button size='large' shape='round' onClick={() => setShowSignup(true)}>Signup New Account</Button>
+              <Button size='large' shape='round' type='primary' onClick={doCloudBackup} disabled={cloudBackupProgress > 0}>
                 Make Cloud Backup {!cloudBackupDone && cloudBackupProgress > 0 &&
                   <>
                     <Spin style={{ marginLeft: 8, marginRight: 8 }} />
@@ -191,6 +194,7 @@ const Recovery = ({ address }) => {
             </Row>
           </>)}
       </form>
+      {showSignup && <SignupAccount name={wallet.name} address={address} effectiveTime={wallet.effectiveTime} onSignupSuccess={() => setShowSignup(false)} />}
       {cloudBackupExist && !cloudBackupExpired && <Text style={{ color: 'green' }}>A cloud backup of the recovery file was made on {new Date(cloudBackupTime).toLocaleString()}</Text>}
       {cloudBackupExist && cloudBackupExpired && <Text style={{ color: 'red' }}>The recovery file's cloud backup is expired (made on {new Date(cloudBackupTime).toLocaleString()})</Text>}
       {!isRecoveryFileSupported &&
