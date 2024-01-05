@@ -31,11 +31,11 @@ const NFTDashboard = ({ address }) => {
 
   return (
     <Space direction='vertical' style={{ width: '100%' }}>
-      <Title level={2}>Purchase Collectibles</Title>
-      <TallRow justify='center'>
-        <Button onClick={() => setSection(sections.davinci)} type='primary' shape='round' size='large'>Buy from daVinci</Button>
-      </TallRow>
-      <Divider />
+      {/* <Title level={2}>Purchase Collectibles</Title> */}
+      {/* <TallRow justify='center'> */}
+      {/*  <Button onClick={() => setSection(sections.davinci)} type='primary' shape='round' size='large'>Buy from daVinci</Button> */}
+      {/* </TallRow> */}
+      {/* <Divider /> */}
       <Title level={2}>Your Collectibles</Title>
       <NFTGrid address={address} />
     </Space>
