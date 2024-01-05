@@ -179,7 +179,7 @@ const parseCommits = (result) => {
   return commits
 }
 const api = {
-  ...backendApis,
+  backend: backendApis,
   web: {
     get: async ({ link, options }) => {
       const { data } = await axios.get(link, options)
