@@ -42,7 +42,7 @@ const SignupAccount = ({ seed, name, address, effectiveTime, setAllowOTPAutoFill
   const isSafariTest = isSafari()
 
   const setupCode = () => {
-    isSafariTest && Modal.confirm({
+    isSafariTest && seed && Modal.confirm({
       title: 'Safari users',
       closable: true,
       content: (
