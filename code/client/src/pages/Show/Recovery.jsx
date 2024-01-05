@@ -6,7 +6,7 @@ import Space from 'antd/es/space'
 import util, { downloadBlob, useWindowDimensions } from '../../util'
 import WalletAddress from '../../components/WalletAddress'
 import WarningOutlined from '@ant-design/icons/WarningOutlined'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import Paths from '../../constants/paths'
 import { useHistory } from 'react-router'
@@ -24,7 +24,7 @@ const Recovery = ({ address }) => {
   const history = useHistory()
   const wallets = useSelector(state => state.wallet)
   const wallet = wallets[address] || {}
-  const { lastResortAddress, majorVersion, innerRoots } = wallet
+  const { lastResortAddress, majorVersion, innerRoots, root } = wallet
   const { isMobile } = useWindowDimensions()
   const oneLastResort = util.safeOneAddress(lastResortAddress)
   const oneAddress = util.safeOneAddress(address)
@@ -81,6 +81,7 @@ const Recovery = ({ address }) => {
     const { blob } = await createRecoveryBlob()
     const data = new FormData()
     data.append('file', blob)
+    data.append('root', root)
     const onUploadProgress = (p) => {
       console.log('Upload progress: ', p.position / p.total)
       setCloudBackupProgress(p.position / p.total)
@@ -91,6 +92,8 @@ const Recovery = ({ address }) => {
         username: isUserNameEmail ? undefined : username,
         email: isUserNameEmail ? username : undefined,
         password,
+        root,
+        address,
         onUploadProgress
       })
       setCloudBackupDone(true)
@@ -101,9 +104,22 @@ const Recovery = ({ address }) => {
     }
   }
 
-  const checkBackupExist = () => {
-
-  }
+  useEffect(() => {
+    if (!address || !root) {
+      return
+    }
+    const checkBackupInfo = async () => {
+      const { timeUpdated, exist, root: backupRoot } = await api.backend.info({ address })
+      setCloudBackupTime(timeUpdated)
+      setCloudBackupExist(exist)
+      console.log({ backupRoot, root })
+      setCloudBackupExpired(exist && (root !== backupRoot))
+    }
+    checkBackupInfo().catch((ex) => {
+      message.error('Unable to check backup info')
+      console.error(ex)
+    })
+  }, [cloudBackupDone, address, root])
 
   return (
     <Space direction='vertical' size='large' style={{ width: '100%' }}>

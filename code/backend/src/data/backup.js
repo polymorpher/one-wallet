@@ -2,7 +2,7 @@ const { GenericBuilder } = require('./generic')
 const BackupPrototype = GenericBuilder('backup')
 const Backup = ({
   ...BackupPrototype,
-  addNew: async ({ address, username, email, isPublic }) => {
+  addNew: async ({ address, username, email, isPublic, root }) => {
     address = address?.toLowerCase()
     if (!address) {
       return
@@ -11,9 +11,20 @@ const Backup = ({
     const details = {
       username,
       email,
+      root,
       isPublic: !!isPublic
     }
     return BackupPrototype.add(address, details)
+  },
+  hasDuplicate: async ({ address, root }) => {
+    if (!address || !root) {
+      return true
+    }
+    const u = await BackupPrototype.find(['address', address], ['root', root])
+    if (u) {
+      return true
+    }
+    return false
   },
   lookupByEmail: async ({ email }) => {
     if (!email) {

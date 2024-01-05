@@ -33,8 +33,8 @@ const backendApis = {
     return data
   },
   info: async ({ address }) => {
-    const { data: { exist, timeUpdated, isPublic } } = await backendBase.post('/backup/info', { address })
-    return { exist, timeUpdated, isPublic }
+    const { data: { exist, timeUpdated, isPublic, root } } = await backendBase.post('/backup/info', { address })
+    return { exist, timeUpdated, isPublic, root }
   },
   // data should be FormData (native in browser, package form-data in node.js)
   upload: async ({ address, data, username, password, email, onUploadProgress }) => {

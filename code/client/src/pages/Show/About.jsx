@@ -25,7 +25,6 @@ const { Title, Text } = Typography
 
 const About = ({ address }) => {
   const dispatch = useDispatch()
-  const price = useSelector(state => state.global.price)
   const history = useHistory()
   const { isMobile } = useWindowDimensions()
   const wallets = useSelector(state => state.wallet)

@@ -47,22 +47,31 @@ const authed = (allowUsername = true, allowEmail = true) => async (req, res, nex
 
 router.post('/upload', authed(), multer.single('file'), async (req, res, next) => {
   if (!req.file) {
-    res.status(400).send('No file uploaded.')
+    res.status(StatusCodes.BAD_REQUEST).json({ error: 'No file uploaded.' })
     return
   }
   const address = req.header('X-ONEWALLET-ADDRESS')?.toLowerCase()
   if (!address) {
-    res.status(400).send('No address provided.')
+    res.status(StatusCodes.BAD_REQUEST).json({ error: 'No address provided.' })
     return
   }
-  const { isPublic } = req.body
-  console.log({ isPublic, address, file: req.file })
+  const { isPublic, root } = req.body
+  if (!root) {
+    res.status(StatusCodes.BAD_REQUEST).json({ error: 'No root provided.' })
+    return
+  }
+  const hasDuplicate = await Backup.hasDuplicate({ address, root })
+  if (hasDuplicate) {
+    res.status(StatusCodes.CONFLICT).json({ error: 'Address and root already has backup', address, root })
+    return
+  }
+  console.log({ isPublic, root, address, file: req.file })
   const email = req.auth.email
   const username = req.auth.fromEmail ? '' : req.auth.user.username
   const publicSuffix = isPublic ? ':public' : ''
   const blob = bucket.file(`${email}:${address}${publicSuffix}.backup`)
   const s = blob.createWriteStream()
-  await Backup.addNew({ address, username, email, isPublic })
+  await Backup.addNew({ address, username, email, isPublic, root })
   s.on('error', err => next(err))
   s.on('finish', () => res.json({ success: true }))
   s.end(req.file.buffer)
@@ -81,7 +90,7 @@ const streamDownload = (filename, res) => {
 router.post('/download', authed(), async (req, res) => {
   const address = req.body?.address?.toLowerCase()
   if (req.auth.fromEmail && !address) {
-    res.status(400).send('Requires address when username is not provided')
+    res.status(StatusCodes.BAD_REQUEST).json({ error: 'Requires address when username is not provided' })
     return
   }
   let backup
@@ -158,8 +167,8 @@ router.post('/info', async (req, res) => {
   if (!backup) {
     return res.json({ exist: false })
   }
-  const { timeUpdated, isPublic } = backup
-  res.json({ timeUpdated, isPublic, exist: true })
+  const { timeUpdated, isPublic, root } = backup
+  res.json({ timeUpdated, isPublic, root, exist: true })
 })
 
 module.exports = router
