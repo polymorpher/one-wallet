@@ -28,6 +28,7 @@ import { useTheme, getColorPalette } from '../theme'
 import { StatsInfo, LineDivider } from './StatsInfo'
 import { globalActions } from '../state/modules/global'
 import { SiderLink } from './Text'
+import { WalletOutlined } from '@ant-design/icons'
 
 const mobileMenuItemStyle = {
   padding: '0 10px',
@@ -78,7 +79,7 @@ const DeskstopSiderMenu = ({ action, nav, ...args }) => {
       </Menu>
       <LineDivider />
       <Menu theme='dark' mode='inline' selectable={false}>
-        <Menu.Item key='pro' icon={<DollarOutlined />}><SiderLink style={{ color: null }} href='https://modulo.so'>Pro Version</SiderLink></Menu.Item>
+        <Menu.Item key='pro' icon={<WalletOutlined />}><SiderLink style={{ color: null }} href='https://modulo.so'>About modulo.so</SiderLink></Menu.Item>
         <Menu.Item key='bug' icon={<GithubOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/issues'>Bug Report</SiderLink></Menu.Item>
         <Menu.Item key='audit' icon={<AuditOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/tree/master/audits'>Audits</SiderLink></Menu.Item>
         <Menu.Item key='wiki' icon={<InfoCircleOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/wiki'>Wiki</SiderLink></Menu.Item>
@@ -148,7 +149,7 @@ const DeskstopSiderMenuV2 = ({ nav, ...args }) => {
       </Menu>
       <LineDivider />
       <Menu theme={theme} mode='inline' className='secondary-menu' onClick={nav} selectedKeys={[action]} style={{ color: secondaryTextColor, textTransform: 'uppercase' }}>
-        <Menu.Item key='external/pro'><SiderLink href='https://modulo.so'>Pro Version</SiderLink></Menu.Item>
+        <Menu.Item key='external/pro'><SiderLink href='https://modulo.so'>About modulo.so</SiderLink></Menu.Item>
         <Menu.Item key='external/audit'><SiderLink href='https://github.com/polymorpher/one-wallet/tree/master/audits'>Audits</SiderLink></Menu.Item>
         <Menu.Item key='external/wiki'><SiderLink href='https://github.com/polymorpher/one-wallet/wiki'>Wiki</SiderLink></Menu.Item>
         <Menu.Item key='external/bug'><SiderLink href='https://github.com/polymorpher/one-wallet/issues'>Bugs</SiderLink></Menu.Item>
