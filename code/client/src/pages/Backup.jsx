@@ -3,7 +3,7 @@ import { useHistory } from 'react-router'
 import { api } from '../../../lib/api'
 import AnimatedSection from '../components/AnimatedSection'
 import Row from 'antd/es/row'
-import { InputBox, InputPassword } from '../components/Text'
+import { Heading, InputBox, InputPassword, SiderLink, Text } from '../components/Text'
 import Button from 'antd/es/button'
 import Spin from 'antd/es/spin'
 import CheckOutlined from '@ant-design/icons/CheckOutlined'
@@ -14,9 +14,10 @@ import { unwrapErrpr } from '../handler'
 import message from '../message'
 import Space from 'antd/es/space'
 import WalletAddress from '../components/WalletAddress'
+import Divider from 'antd/es/divider'
+import Paths from '../constants/paths'
 
 const Backup = () => {
-  const history = useHistory()
   const [backups, setBackups] = useState([])
   const [pending, setPending] = useState(false)
   const [username, setUsername] = useState('')
@@ -64,13 +65,15 @@ const Backup = () => {
       title: 'Address',
       dataIndex: 'id',
       key: 'address',
-      render: (text, record) => {
+      // eslint-disable-next-line react/display-name
+      render: (text) => {
         return <WalletAddress address={text} shorten addressStyle={{ padding: 0 }} alwaysShowOptions />
       }
     },
     {
       title: 'Action',
       key: 'action',
+      // eslint-disable-next-line react/display-name
       render: (text, record) => {
         return (
           <Space>
@@ -106,6 +109,11 @@ const Backup = () => {
 
   return (
     <AnimatedSection wide>
+      <Space direction='vertical' size='large' style={{ width: '100%', marginBottom: 32 }}>
+        <Heading>Backups</Heading>
+        <Text>Here, you can login and lookup recovery file backups you made under your account. If you use email to login, all backups associated with the email can be downloaded. If you use username (wallet id) to login, only the backup for that wallet will be available </Text>
+        <Text>You can use the recovery files to <SiderLink href={Paths.restore}>restore a wallet</SiderLink> (choose second option)</Text>
+      </Space>
       <form action='#' onSubmit={doLookup}>
         <Row style={{ display: 'flex', width: '100%', columnGap: 16 }}>
           <InputBox
@@ -137,6 +145,7 @@ const Backup = () => {
       </form>
       {/* {backups?.length > 0 && ( */}
       <Table
+        style={{ marginTop: 32 }}
         dataSource={backups}
         columns={columns}
         loading={pending}
