@@ -62,21 +62,21 @@ const Restore = () => {
       {section === Sections.Choose &&
         <AnimatedSection>
           <Space direction='vertical' size='large' style={{ width: '100%' }}>
-            <Heading>Scan authenticator seed QR code</Heading>
+            <Heading>Scan authenticator export QR code</Heading>
             <Button shape='round' size='large' type='primary' onClick={() => setSection(Sections.ScanQR)} icon={<ScanOutlined />}>Scan Now</Button>
-            <Hint>Classic restore method. Requires webcam. Scan seed QR code exported from your authenticator (Google and Aegis Authenticator only)</Hint>
+            <Hint>Export QR Code from Authenticator, scan using webcam, or provide secret directly (Best with Google / Aegis / Raivo Authenticator)</Hint>
           </Space>
           <Divider><Hint>Or</Hint></Divider>
           <Space direction='vertical' size='large' style={{ width: '100%' }}>
-            <Heading>Use verification codes + recovery file</Heading>
+            <Heading>Use recovery file and authenticator</Heading>
             <Button shape='round' size='large' type='primary' onClick={() => setSection(Sections.SyncRecoveryFile)} icon={<FieldBinaryOutlined />}>Begin</Button>
-            <Hint>New method. Works with all authenticators. You need (1) wallet recovery file (2) your authenticator. Provide 6-digit verification code for 6 times (30 seconds each time). Setup a new authenticator code after that.</Hint>
+            <Hint>Upload recovery file and provide 6-digit verification codes for 6 times. Setup a new authenticator code after this.</Hint>
           </Space>
           <Divider><Hint>Or</Hint></Divider>
           <Space direction='vertical' size='large'>
             <Heading>Sync 1wallet across devices</Heading>
             <LocalImport />
-            <Hint>Requires the same 1wallet from another device. Does not require authenticator. To use this, you need to export .1wallet file under "About" tab from another device. For best security, you should delete the .1wallet file after that.</Hint>
+            <Hint>Export .1wallet file under "About" tab from another device. Does not require authenticator. It is recommended to delete the file after this.</Hint>
           </Space>
         </AnimatedSection>}
       {section === Sections.ScanQR &&

@@ -18,7 +18,7 @@ const WalletAuth = () => {
   const dispatch = useDispatch()
   const location = useLocation()
   const match = useRouteMatch(Paths.auth)
-  const { action } = match ? match.params : {}
+  const { action, address } = match ? match.params : {}
 
   const qs = querystring.parse(location.search)
   const callback = qs.callback && Buffer.from(qs.callback, 'base64').toString()
@@ -41,7 +41,7 @@ const WalletAuth = () => {
   }, [network])
 
   if (action === 'walletconnect') {
-    return <WalletConnect wcSesssionUri={wc} />
+    return <WalletConnect wcSesssionUri={wc} from={address} />
     // return <></>
   }
 

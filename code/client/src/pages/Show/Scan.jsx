@@ -50,7 +50,7 @@ const Scan = ({ address }) => {
     <>
       <Row style={{ width: '100%', marginTop: 16 }} justify='center'>
         <Space direction='vertical' style={{ textAlign: 'center' }}>
-          <Text>Scan 1wallet QR code</Text>
+          <Text>Scan 1wallet QR code to send funds</Text>
           <QrCodeScanner style={{ minWidth: 300 }} shouldInit onScan={onScan} />
         </Space>
       </Row>

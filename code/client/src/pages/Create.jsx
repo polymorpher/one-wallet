@@ -26,7 +26,6 @@ import WalletConstants from '../constants/wallet'
 import util, { useWindowDimensions, OSType, generateOtpSeed } from '../util'
 import { handleAPIError, handleAddressError } from '../handler'
 import { Hint, Heading, InputBox, Warning, Text, Link } from '../components/Text'
-import { getAddress } from '@harmony-js/crypto'
 import AddressInput from '../components/AddressInput'
 import WalletCreateProgress from '../components/WalletCreateProgress'
 import { TallRow } from '../components/Grid'
@@ -548,7 +547,7 @@ const DoneSection = ({ address }) => {
         <Heading>You are all set!</Heading>
         <Space direction='vertical' size='small'>
           <Hint>Wallet Address</Hint>
-          <Text>{address && getAddress(address).bech32}</Text>
+          <Text>{address && util.safeOneAddress(address)}</Text>
         </Space>
         <Button style={{ marginTop: 32 }} disabled={!address} type='primary' shape='round' size='large' onClick={() => history.push(Paths.showAddress(address))}>Go to My Wallet</Button>
       </Space>

@@ -18,5 +18,10 @@ const config = {
     mockPort: 9000,
     namespace: 'backend'
   },
+  storage: {
+    projectId: process.env.GCP_PROJECT,
+    cred: !process.env.GCP_CRED_PATH ? {} : require(process.env.GCP_CRED_PATH),
+    bucket: process.env.GCP_BUCKET,
+  },
 }
 module.exports = config

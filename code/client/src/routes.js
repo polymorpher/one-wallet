@@ -25,6 +25,7 @@ import config from './config'
 import util, { useWindowDimensions } from './util'
 import Unwrap from './pages/Unwrap'
 import cacheActions from './state/modules/cache/actions'
+import Backup from './pages/Backup'
 
 const LocalRoutes = () => {
   const dispatch = useDispatch()
@@ -89,6 +90,7 @@ const LocalRoutes = () => {
             <Route path={Paths.create2} render={() => <CreatePage expertMode showRecovery />} />
             <Route path={Paths.wallets} component={ListPage} />
             <Route path={Paths.restore} component={RestorePage} />
+            <Route path={Paths.backup} component={Backup} />
             <Route path={Paths.address} component={AddressDetailPage} exact />
             {!v2ui && <Route path={Paths.show} component={ShowPage} />}
             <Route path={Paths.tools} component={ToolsPage} />

@@ -20,12 +20,12 @@ import { deleteWalletLocally } from '../../storage/util'
 import LocalExport from '../../components/LocalExport'
 import { api } from '../../../../lib/api'
 import ONEUtil from '../../../../lib/util'
+import QrcodeOutlined from "@ant-design/icons/QrcodeOutlined";
 
 const { Title, Text } = Typography
 
 const About = ({ address }) => {
   const dispatch = useDispatch()
-  const price = useSelector(state => state.global.price)
   const history = useHistory()
   const { isMobile } = useWindowDimensions()
   const wallets = useSelector(state => state.wallet)
@@ -89,6 +89,12 @@ const About = ({ address }) => {
             <Text>{wallet.majorVersion}.{wallet.minorVersion}</Text>
           </Col>
         </TallRow>}
+      <TallRow align='middle'>
+        <Col span={isMobile ? 24 : 12}> <Title level={3}>QR Code</Title></Col>
+        <Col>
+          <Button style={{ padding: 0, border: 'none' }} size='large' onClick={() => history.push(Paths.showAddress(address, 'qr'))}><QrcodeOutlined style={{ fontSize: 32 }} /></Button>
+        </Col>
+      </TallRow>
       <>
         {backlinks.map((backlink, i) =>
           <TallRow style={{ alignItems: 'baseline' }} key={`backlink-${i}}`}>

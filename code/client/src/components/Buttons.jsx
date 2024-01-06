@@ -1,5 +1,6 @@
 import styled, { keyframes } from 'styled-components'
 import Button from 'antd/es/button'
+import Image from 'antd/es/image'
 import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import React from 'react'
 import { useTheme, getColorPalette } from '../theme'
@@ -24,3 +25,30 @@ export const SecondaryButton = ({ ...args }) => {
   const { secondaryButtonBgColor, buttonTextColor } = getColorPalette(useTheme())
   return <Button {...args} style={{ ...args.style, backgroundColor: secondaryButtonBgColor, color: buttonTextColor }} />
 }
+
+export const HoverButton = styled(Button)`
+  border: none;
+  &:hover{
+    background: #d9d9d9;
+    border-radius: 8px;
+  }
+`
+
+export const ClickableIconImage = styled(Image)`
+  padding: 8px;
+  border: none;
+  &:hover{
+    background: #d9d9d9;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+`
+export const ClickableIconWrapper = styled.div`
+  padding: 8px;
+  border: none;
+  &:hover{
+    background: #d9d9d9;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+`

@@ -57,11 +57,11 @@ const SupportedMethods = [
 
 const devOnlyMethods = ['eth_sign']
 
-const WalletConnect = ({ wcSesssionUri }) => {
+const WalletConnect = ({ wcSesssionUri, from }) => {
   // const dispatch = useDispatch()
   const wallets = useSelector(state => state.wallet)
-  const walletList = Object.keys(wallets).filter(addr => util.safeNormalizedAddress(addr))
-  const [selectedAddress, setSelectedAddress] = useState({ value: walletList[0]?.address, label: walletList[0]?.name })
+  const selectedWallet = from ? Object.values(wallets).find(e => e.address?.toLowerCase() === from.toLowerCase()) : Object.values(wallets)[1]
+  const [selectedAddress, setSelectedAddress] = useState({ value: selectedWallet?.address, label: selectedWallet?.name })
   const [loading, setLoading] = useState(false)
   const [connecting, setConnecting] = useState(false)
   const [isScanMode, setScanMode] = useState(false)

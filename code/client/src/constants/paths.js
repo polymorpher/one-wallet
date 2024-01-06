@@ -9,6 +9,7 @@ export default {
   create2: base + '/create2', // expert mode
   wallets: base + '/wallets',
   restore: base + '/restore',
+  backup: base + '/backup',
   address: base + '/contacts/:address',
   addressDetail: (address) => base + `/contacts/${address}`,
   tools: base + '/tools',

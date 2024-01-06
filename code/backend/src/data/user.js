@@ -21,17 +21,27 @@ const User = ({
     }
     return UserPrototype.add(id, details)
   },
-  verify: async ({ username, password }) => {
+  verifyByUsername: async ({ username, password }) => {
     if (!password || !username) {
       return false
     }
     const passwordHash = ONEUtil.hexView(ONEUtil.keccak(`${password}|${config.secret}`))
     const [u] = await UserPrototype.find(['username', username], ['passwordHash', passwordHash])
-    // console.log(u)
     if (!u || (u.passwordHash !== passwordHash) || (u.username !== username)) {
       return false
     }
     return u
+  },
+  verifyByEmail: async ({ email, password }) => {
+    if (!password || !email) {
+      return false
+    }
+    const passwordHash = ONEUtil.hexView(ONEUtil.keccak(`${password}|${config.secret}`))
+    const users = await UserPrototype.find(['email', email], ['passwordHash', passwordHash])
+    if (!(users.length > 0)) {
+      return false
+    }
+    return users
   }
 })
 

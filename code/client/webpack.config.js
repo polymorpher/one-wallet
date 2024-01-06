@@ -5,6 +5,7 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const Dotenv = require('dotenv-webpack')
+const Polyfill = require('node-polyfill-webpack-plugin')
 
 module.exports = {
   devServer: {
@@ -103,13 +104,13 @@ module.exports = {
     modules: [path.resolve(__dirname, 'node_modules'), 'node_modules'],
     extensions: ['.jsx', '.js'],
     fallback: {
-      stream: require.resolve('stream-browserify'),
+      // stream: require.resolve('stream-browserify'),
       // TODO: remove later, after web3 is removed from dependency (for ethereum compatibility)
-      http: require.resolve('stream-http'),
-      fs: false,
-      os: require.resolve('os-browserify/browser'),
-      https: require.resolve('https-browserify'),
-      crypto: require.resolve('crypto-browserify')
+      // http: require.resolve('stream-http'),
+      // fs: false,
+      // os: require.resolve('os-browserify/browser'),
+      // https: require.resolve('https-browserify'),
+      // crypto: require.resolve('crypto-browserify')
     }
   },
   node: {
@@ -119,6 +120,7 @@ module.exports = {
   },
   plugins: [
     new Dotenv(),
+    new Polyfill(),
     new webpack.EnvironmentPlugin({
       PUBLIC_URL: '',
       NETWORK: '',

@@ -3,6 +3,7 @@ const config = require('../config/provider').getConfig()
 const { Contract } = require('web3-eth-contract')
 const isEqual = require('lodash/fp/isEqual')
 const { Web3 } = require('web3')
+const backendApis = require('./backend')
 const ONEWalletContractAbi = require('../../build/abi/IONEWallet.json')
 const IONEWalletFactoryHelper = require('../../build/abi/IONEWalletFactoryHelper.json')
 const IERC20 = require('../../build/abi/IERC20.json')
@@ -51,11 +52,6 @@ let base = axios.create({
 let rpcBase = axios.create({
   baseURL: config.networks[apiConfig.network].url,
   timeout: TIMEOUT,
-})
-
-let backendBase = axios.create({
-  baseURL: config.backend.url,
-  timeout: 10000,
 })
 
 const initAPI = (store) => {
@@ -183,6 +179,7 @@ const parseCommits = (result) => {
   return commits
 }
 const api = {
+  backend: backendApis,
   web: {
     get: async ({ link, options }) => {
       const { data } = await axios.get(link, options)
@@ -1030,12 +1027,6 @@ const api = {
       return new BN(result.slice(2), 16).toNumber()
     }
   },
-  backend: {
-    signup: async ({ username, password, email }) => {
-      const { data: { success, error } } = await backendBase.post('/signup', { username, password, email })
-      return { success, error }
-    }
-  }
 }
 
 if (typeof window !== 'undefined') {

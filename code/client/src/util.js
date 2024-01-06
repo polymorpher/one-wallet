@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { HarmonyAddress } from '@harmony-js/crypto'
 import isInteger from 'lodash/fp/isInteger'
 import values from 'lodash/fp/values'
 import ONEUtil from '../../lib/util'
@@ -9,6 +8,7 @@ import WalletConstants from './constants/wallet'
 import BN from 'bn.js'
 import config from './config'
 import ONENames from '../../lib/names'
+import { isBech32Address, toBech32, toChecksum } from '../../lib/bech32'
 
 const util = {
   // TODO: rewrite using BN to achieve 100% precision
@@ -69,7 +69,7 @@ const util = {
       return
     }
     try {
-      address = new HarmonyAddress(address).checksum
+      address = toChecksum(address)
     } catch (ex) {
       const err = (address.startsWith('one') && AddressError.InvalidBech32Address(ex)) ||
         (address.startsWith('0x') && AddressError.InvalidHexAddress(ex)) || AddressError.Unknown(ex)
@@ -90,7 +90,10 @@ const util = {
   },
 
   oneAddress: (address) => {
-    return new HarmonyAddress(address).bech32
+    if (isBech32Address(address)) {
+      return address
+    }
+    return toBech32(address)
   },
 
   safeOneAddress: (address, trace) => {
@@ -423,6 +426,19 @@ export const useWaitExecution = (func, runCondition, wait, dependencies) => {
 export const isSafari = () => {
   const s = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
   return (!!window.safari) || s
+}
+
+export const downloadBlob = (data, filename = 'data.1wallet') => {
+  const href = URL.createObjectURL(data)
+  const link = document.createElement('a')
+  link.href = href
+  link.setAttribute('download', filename) // or any other extension
+  document.body.appendChild(link)
+  link.click()
+
+  // clean up "a" element & remove ObjectURL
+  document.body.removeChild(link)
+  URL.revokeObjectURL(href)
 }
 
 if (window) {

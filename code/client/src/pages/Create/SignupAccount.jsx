@@ -25,7 +25,7 @@ const genUsername = ({ name, address, effectiveTime }) => {
   return `${prefix}_${suffix}`
 }
 
-const SignupAccount = ({ seed, name, address, effectiveTime, setAllowOTPAutoFill }) => {
+const SignupAccount = ({ seed, name, address, effectiveTime, setAllowOTPAutoFill, onSignupSuccess }) => {
   const history = useHistory()
   const { isMobile } = useWindowDimensions()
   const [username, setUsername] = useState(genUsername({ name, address, effectiveTime }))
@@ -42,14 +42,13 @@ const SignupAccount = ({ seed, name, address, effectiveTime, setAllowOTPAutoFill
   const isSafariTest = isSafari()
 
   const setupCode = () => {
-    isSafariTest && Modal.confirm({
+    isSafariTest && seed && Modal.confirm({
       title: 'Safari users',
       closable: true,
       content: (
         <Space direction='vertical' style={{ width: '100%' }}>
-          <Text>If you want to let Safari (on all devices) autofill verification codes, instead of using Google Authenticator</Text>
-          <Text>Please allow the browser to save your password and to open "System Preferences", then select the username you just created and save the "verification code".</Text>
-          <Text>This is OPTIONAL. If you don't want to use it, just click cancel.</Text>
+          <Text>iOS / macOS has OPTIONAL built-in support for verification code. To use that</Text>
+          <Text>(1) Save password in browser (2) Open "System Preferences" (3) Find the new username and save the verification code</Text>
         </Space>
       ),
       onOk: () => {
@@ -89,7 +88,7 @@ const SignupAccount = ({ seed, name, address, effectiveTime, setAllowOTPAutoFill
         setSuccess(true)
         setError('')
         isSafariTest && setupCode()
-
+        onSignupSuccess && onSignupSuccess()
         // window.open(getQRCodeUri(seed, otpDisplayName, OTPUriMode.APPLE, host), '_self')
       }
     } catch (ex) {
@@ -168,7 +167,7 @@ const SignupAccount = ({ seed, name, address, effectiveTime, setAllowOTPAutoFill
             <Text>- Sync Wallets <Tooltip title={'Backup and restore your wallets using the cloud. Cloud backups are encrypted. Even when they are compromised, hackers won\'t be able to access your wallets without verification codes from authenticators'}><QuestionCircleOutlined /></Tooltip></Text>
             <Text>- Autofill Verification Code <Tooltip title='only available in Safari on macOS / iOS. Instead of using Google Authenticator, you may setup verification codes in saved passwords, and use system built-in security (e.g. FaceID / Fingerprint) to autofill the verification code'><QuestionCircleOutlined /></Tooltip></Text>
             <Text>- Alerts (Coming Soon) <Tooltip title='You can get email alerts when your wallet makes transactions meeting your custom criteria.'><QuestionCircleOutlined /></Tooltip></Text>
-            <Text>These services are currently centralized, but they are open source and will be decentralized soon.</Text>
+            {/* <Text>These services are currently centralized, but they are open source and will be decentralized soon.</Text> */}
           </Space>
         </Row>
       </form>
