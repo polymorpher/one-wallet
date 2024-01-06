@@ -68,7 +68,7 @@ const Restore = () => {
           </Space>
           <Divider><Hint>Or</Hint></Divider>
           <Space direction='vertical' size='large' style={{ width: '100%' }}>
-            <Heading>Use recovery file and 6x6 codes</Heading>
+            <Heading>Use recovery file and authenticator</Heading>
             <Button shape='round' size='large' type='primary' onClick={() => setSection(Sections.SyncRecoveryFile)} icon={<FieldBinaryOutlined />}>Begin</Button>
             <Hint>Upload recovery file and provide 6-digit verification codes for 6 times. Setup a new authenticator code after this.</Hint>
           </Space>
