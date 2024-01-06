@@ -67,7 +67,7 @@ const SyncRecoveryFile = ({ onSynced, onCancel }) => {
       </Upload>
       <Hint>Your wallet recovery file ends with file extension <Text style={{ color: 'red' }}>.recover1wallet</Text></Hint>
       <Hint>If you backed up your recovery file to the cloud before, you may download your backup files after <SiderLink href={Paths.backup}>login here</SiderLink></Hint>
-      <Button size='large' shape='round' type='text' onClick={onCancel} style={{ marginTop: 32 }} danger>Cancel</Button>
+      <Button size='large' shape='round' type='text' onClick={onCancel} style={{ marginLeft: -24, marginTop: 32 }} danger>Cancel</Button>
     </Space>
   )
 }
