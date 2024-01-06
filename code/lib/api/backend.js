@@ -17,11 +17,14 @@ const backendApis = {
     return { success, user }
   },
   download: async ({ email, username, password, address, onDownloadProgress }) => {
-    const { data } = await backendBase.post('/backup/download', { email, username, password, address }, { responseType: 'blob', onDownloadProgress })
+    const { data } = await backendBase.post('/backup/download',
+      { email, username, password, address },
+      { responseType: 'blob', onDownloadProgress, timeout: 300000 })
     return data
   },
-  downloadPublic: async ({ address }) => {
-    const { data } = await backendBase.post('/backup/download-public', { address }, { responseType: 'blob' })
+  downloadPublic: async ({ address, onDownloadProgress }) => {
+    const { data } = await backendBase.post('/backup/download-public', { address },
+      { responseType: 'blob', onDownloadProgress, timeout: 300000 })
     return data
   },
   listByEmail: async ({ email, password }) => {
@@ -46,7 +49,8 @@ const backendApis = {
         ...(email && { 'X-ONEWALLET-EMAIL': email }),
         ...(address && { 'X-ONEWALLET-ADDRESS': address }),
       },
-      onUploadProgress: onUploadProgress
+      onUploadProgress: onUploadProgress,
+      timeout: 300000
     })
   },
 
