@@ -16,8 +16,8 @@ const backendApis = {
     const { data: { success, user } } = await backendBase.post('/login', { username, password })
     return { success, user }
   },
-  download: async ({ email, username, password, address }) => {
-    const { data } = await backendBase.post('/backup/download', { email, username, password, address }, { responseType: 'blob' })
+  download: async ({ email, username, password, address, onDownloadProgress }) => {
+    const { data } = await backendBase.post('/backup/download', { email, username, password, address }, { responseType: 'blob', onDownloadProgress })
     return data
   },
   downloadPublic: async ({ address }) => {
