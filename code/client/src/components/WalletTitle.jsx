@@ -12,13 +12,16 @@ import { useHistory } from 'react-router'
 import api from '../api'
 import { useDispatch, useSelector } from 'react-redux'
 import { walletActions } from '../state/modules/wallet'
-import QrcodeOutlined from '@ant-design/icons/QrcodeOutlined'
 import ScanOutlined from '@ant-design/icons/ScanOutlined'
 import WarningTwoTone from '@ant-design/icons/WarningTwoTone'
 import { Warning } from './Text'
 import BN from 'bn.js'
+import Image from 'antd/es/image'
+import WCLogo from '../../assets/wc.png'
+import { ClickableIconWrapper } from './Buttons'
+
 const { Title, Text } = Typography
-const WalletTitle = ({ address, onQrCodeClick, onScanClick, noWarning }) => {
+const WalletTitle = ({ address, onScanClick, noWarning }) => {
   const dispatch = useDispatch()
   const history = useHistory()
   const wallets = useSelector(state => state.wallet)
@@ -61,16 +64,19 @@ const WalletTitle = ({ address, onQrCodeClick, onScanClick, noWarning }) => {
 
   return (
     <Space direction='vertical' style={{ width: '100%' }}>
-      <Row justify='space-between' align='top' style={{ marginBottom: isMobile ? 0 : 16 }}>
-        <Space size='small' align='baseline' direction='vertical'>
-          <Space align='center' size='large'>
-            <Title level={isMobile ? 4 : 2} style={{ marginBottom: 0 }}>{wallet.name}</Title>
-            <Button style={{ padding: 0, border: 'none' }} size='large' onClick={onQrCodeClick}><QrcodeOutlined style={{ fontSize: 32 }} /></Button>
-          </Space>
+      <Row justify='space-between' align='middle' style={{ marginBottom: isMobile ? 0 : 16 }}>
+        <Space align='center' size='large' style={{ lineHeight: 0 }}>
+          <Title level={isMobile ? 4 : 2} style={{ marginBottom: 0 }}>{wallet.name}</Title>
+          <Tooltip title='Connect the wallet with dApp'>
+            <ClickableIconWrapper>
+              <Image
+                preview={false} src={WCLogo} style={{ height: 48 }}
+                onClick={() => history.push(Paths.doAuth('walletconnect', address))}
+              />
+            </ClickableIconWrapper>
+          </Tooltip>
         </Space>
-        <Space>
-          <Button style={{ padding: 0, border: 'none' }} size='large' onClick={onScanClick}><ScanOutlined style={{ fontSize: 32 }} /></Button>
-        </Space>
+        <ClickableIconWrapper onClick={onScanClick}><ScanOutlined style={{ fontSize: 32 }} /></ClickableIconWrapper>
       </Row>
       <Space direction={isMobile ? 'vertical' : 'horizontal'} size='small' align='start' style={{ marginLeft: -16 }}>
         <WalletAddress

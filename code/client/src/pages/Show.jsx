@@ -45,15 +45,11 @@ import WalletConnectRedirect from './Show/WalletConnectRedirect'
 
 const tabList = [
   { key: 'coins', tab: 'Coins' },
-  { key: 'nft', tab: 'Collectibles' },
+  { key: 'nft', tab: 'NFT' },
+  { key: 'gift', tab: 'Gift' },
   { key: 'about', tab: 'About' },
   { key: 'help', tab: 'Recover' },
   // { key: 'swap', tab: 'Swap' },
-  { key: 'gift', tab: 'Gift' },
-  { key: 'call', tab: 'Call', dev: true, expert: true },
-  { key: 'sign', tab: 'Sign', dev: true, expert: true },
-  { key: 'qr' },
-  { key: 'scan' },
   {
     key: 'history',
     tab: 'History',
@@ -61,7 +57,12 @@ const tabList = [
       return network.startsWith('harmony')
     }
   },
-  { key: 'wc', tab: 'Wallet Connect' },
+  { key: 'call', tab: 'Call', dev: true, expert: true },
+  { key: 'sign', tab: 'Sign', dev: true, expert: true },
+  { key: 'qr' },
+  { key: 'scan' },
+
+  // { key: 'wc', tab: 'Wallet Connect' },
 ]
 
 const SectionList = [
@@ -157,7 +158,7 @@ const Show = () => {
     <>
       {!section &&
         <AnimatedSection
-          title={<WalletTitle address={address} onQrCodeClick={() => showTab('qr')} onScanClick={() => showTab('scan')} />}
+          title={<WalletTitle address={address} onScanClick={() => showTab('scan')} />}
           tabList={displayTabList}
           activeTabKey={activeTab}
           onTabChange={key => showTab(key)}
