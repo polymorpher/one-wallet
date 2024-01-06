@@ -83,7 +83,10 @@ router.post('/upload', authed(), multer.single('file'), async (req, res, next) =
   s.end(req.file.buffer)
 })
 
-const streamDownload = (filename, res) => {
+const streamDownload = async (filename, res) => {
+  const [metadata] = await bucket.file(filename).getMetadata()
+  // console.log(`${filename} has size ${metadata.size}`, metadata)
+  res.set('Content-Length', metadata.size)
   const s = bucket.file(filename).createReadStream()
   s.on('error', error => {
     console.error(error)
@@ -155,6 +158,7 @@ router.post('/list-files', authed(false), async (req, res) => {
 router.post('/list-by-email', authed(false), async (req, res) => {
   const email = req.auth.email
   const backups = await Backup.lookupByEmail({ email })
+  console.log(backups)
   res.json({ backups })
 })
 
