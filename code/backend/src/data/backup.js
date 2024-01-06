@@ -33,13 +33,15 @@ const Backup = ({
     if (!email) {
       return []
     }
-    return BackupPrototype.find(['email', email])
+    const backups = await BackupPrototype.find(['email', email])
+    return backups.map(b => ({ ...b, address: b.id }))
   },
   lookupByUsername: async ({ username }) => {
     if (!username) {
       return []
     }
-    return BackupPrototype.find(['username', username])
+    const backups = await BackupPrototype.find(['username', username])
+    return backups.map(b => ({ ...b, address: b.id }))
   },
   checkAddressByEmail: async ({ email, address }) => {
     if (!email || !address) {

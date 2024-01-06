@@ -160,7 +160,7 @@ router.post('/list-by-email', authed(false), async (req, res) => {
 
 router.post('/list-by-username', authed(true, false), async (req, res) => {
   const username = req.auth.user.username
-  const backups = await Backup.lookupByEmail({ username })
+  const backups = await Backup.lookupByUsername({ username })
   res.json({ backups })
 })
 
