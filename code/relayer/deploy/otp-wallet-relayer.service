@@ -7,8 +7,8 @@ After=network.target
 Environment=PORT=80 HTTPS_PORT=443
 Type=simple
 User=worker
-WorkingDirectory=/opt/worker/one-wallet/code/relayer
-ExecStart=/usr/bin/node /opt/worker/one-wallet/code/relayer/bin/run.js
+WorkingDirectory=/opt/one-wallet/code/relayer
+ExecStart=/usr/bin/node /opt/one-wallet/code/relayer/bin/run.js
 Restart=on-failure
 
 [Install]
