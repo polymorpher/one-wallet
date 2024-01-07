@@ -139,7 +139,8 @@ module.exports = {
       inject: true,
       filename: 'index.html',
       template: 'assets/index.html',
-      favicon: 'assets/1wallet.png',
+      favicon: process.env.FAVICON ?? 'assets/logo-300.png',
+      title: process.env.TITLE ?? 'Dev: OTP Wallet | By Modulo.so',
       environment: process.env.NODE_ENV,
       hash: true
     }),
