@@ -1,3 +1,5 @@
 /dist
 /build.sh
 /deploy.sh
+/build-*.sh
+/deploy-*.sh

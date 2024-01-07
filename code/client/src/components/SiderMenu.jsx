@@ -12,7 +12,8 @@ import GithubOutlined from '@ant-design/icons/GithubOutlined'
 import InfoCircleOutlined from '@ant-design/icons/InfoCircleOutlined'
 import ToolOutlined from '@ant-design/icons/ToolOutlined'
 import HarmonyLogo from '../assets/harmony.svg'
-import OneWalletLogo from '../assets/1walletlogo.svg'
+// import ModuloLogoLong from '../assets/logo-300-text-white.png'
+import ModuloLogo from '../assets/logo-300-text-short-white.png'
 import OverviewIcon from '../assets/icons/overview.svg?el'
 import AssetsIcon from '../assets/icons/assets.svg?el'
 import NFTIcon from '../assets/icons/nft.svg?el'
@@ -34,6 +35,12 @@ const mobileMenuItemStyle = {
   fontSize: 12
 }
 
+const Logos = {
+  harmony: HarmonyLogo,
+  modulo: ModuloLogo,
+}
+const Logo = Logos[config.logoId] ?? ModuloLogo
+
 const MobileSiderMenu = ({ action, nav, ...args }) => {
   const theme = useTheme()
   return (
@@ -47,7 +54,7 @@ const MobileSiderMenu = ({ action, nav, ...args }) => {
       <Menu.Item key='wallets' style={mobileMenuItemStyle} icon={<UnorderedListOutlined />}>Wallets</Menu.Item>
       <Menu.Item key='restore' style={mobileMenuItemStyle} icon={<HistoryOutlined />}>Restore</Menu.Item>
       <Menu.Item key='backup' style={mobileMenuItemStyle} icon={<CloudOutlined />}>Backup</Menu.Item>
-      <Menu.Item key='about' style={mobileMenuItemStyle} icon={<WalletOutlined />}><SiderLink style={{ color: null }} href='https://modulo.so'>modulo.so</SiderLink></Menu.Item>
+      <Menu.Item key='about' style={mobileMenuItemStyle} icon={<WalletOutlined />}><SiderLink style={{ color: null }} href='https://modulo.so'>Modulo</SiderLink></Menu.Item>
       <Menu.Item key='bug' style={mobileMenuItemStyle} icon={<GithubOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/issues'>Bug Report</SiderLink></Menu.Item>
       <Menu.Item key='audit' style={mobileMenuItemStyle} icon={<AuditOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/tree/master/audits'>Audits</SiderLink></Menu.Item>
       <Menu.Item key='wiki' style={mobileMenuItemStyle} icon={<InfoCircleOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/wiki'>Wiki</SiderLink></Menu.Item>
@@ -57,18 +64,16 @@ const MobileSiderMenu = ({ action, nav, ...args }) => {
 }
 
 const DeskstopSiderMenu = ({ action, nav, ...args }) => {
-  const history = useHistory()
-
   return (
     <Layout.Sider collapsed={false} {...args} theme='dark'>
       {/* <Image src='/assets/harmony.svg' /> */}
       <Row justify='center'>
-        <SiderLink href='https://harmony.one/'>
-          <Image preview={false} src={HarmonyLogo} style={{ cursor: 'pointer', padding: 32 }} onClick={() => history.push('/')} />
+        <SiderLink href={config.logoLink}>
+          <Image preview={false} src={Logo} style={{ cursor: 'pointer', padding: 32 }} />
         </SiderLink>
       </Row>
 
-      <Row justify='center' style={{ marginBottom: 24 }}><SiderLink style={{ color: 'white' }} href='https://github.com/polymorpher/one-wallet'>{config.appName} {config.version}</SiderLink></Row>
+      <Row justify='center' style={{ marginBottom: 24 }}><SiderLink style={{ color: 'white' }} href={config.appLink}>{config.appName} {config.version}</SiderLink></Row>
 
       <StatsInfo />
 
@@ -80,7 +85,7 @@ const DeskstopSiderMenu = ({ action, nav, ...args }) => {
       </Menu>
       <LineDivider />
       <Menu theme='dark' mode='inline' selectable={false}>
-        <Menu.Item key='pro' icon={<WalletOutlined />}><SiderLink style={{ color: null }} href='https://modulo.so'>About modulo.so</SiderLink></Menu.Item>
+        <Menu.Item key='pro' icon={<WalletOutlined />}><SiderLink style={{ color: null }} href='https://modulo.so'>About Modulo</SiderLink></Menu.Item>
         <Menu.Item key='bug' icon={<GithubOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/issues'>Bug Report</SiderLink></Menu.Item>
         <Menu.Item key='audit' icon={<AuditOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/tree/master/audits'>Audits</SiderLink></Menu.Item>
         <Menu.Item key='wiki' icon={<InfoCircleOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/wiki'>Wiki</SiderLink></Menu.Item>
@@ -119,7 +124,6 @@ const RouteActionMap = {
 }
 
 const DeskstopSiderMenuV2 = ({ nav, ...args }) => {
-  const history = useHistory()
   const theme = useTheme()
   const match = useRouteMatch(Paths.matchStructure)
   const { category, section } = match ? match.params : {}
@@ -131,12 +135,12 @@ const DeskstopSiderMenuV2 = ({ nav, ...args }) => {
   return (
     <Layout.Sider collapsed={false} {...args} theme={theme} style={{ color: primaryTextColor }}>
       <Row justify='center'>
-        <SiderLink href='https://harmony.one/'>
-          <Image preview={false} src={OneWalletLogo} style={{ cursor: 'pointer', padding: 32 }} onClick={() => history.push('/')} />
+        <SiderLink href={config.logoLink}>
+          <Image preview={false} src={Logo} style={{ cursor: 'pointer', padding: 32 }} />
         </SiderLink>
       </Row>
 
-      <Row justify='center' style={{ marginBottom: 24 }}><SiderLink href='https://harmony.one/1wallet'>{config.appName} {config.version}</SiderLink></Row>
+      <Row justify='center' style={{ marginBottom: 24 }}><SiderLink href={config.appLink}>{config.appName} {config.version}</SiderLink></Row>
 
       <Menu theme={theme} mode='inline' onClick={nav} selectedKeys={[action]}>
         {[
@@ -150,7 +154,7 @@ const DeskstopSiderMenuV2 = ({ nav, ...args }) => {
       </Menu>
       <LineDivider />
       <Menu theme={theme} mode='inline' className='secondary-menu' onClick={nav} selectedKeys={[action]} style={{ color: secondaryTextColor, textTransform: 'uppercase' }}>
-        <Menu.Item key='external/pro'><SiderLink href='https://modulo.so'>About modulo.so</SiderLink></Menu.Item>
+        <Menu.Item key='external/pro'><SiderLink href='https://modulo.so'>About Modulo</SiderLink></Menu.Item>
         <Menu.Item key='external/audit'><SiderLink href='https://github.com/polymorpher/one-wallet/tree/master/audits'>Audits</SiderLink></Menu.Item>
         <Menu.Item key='external/wiki'><SiderLink href='https://github.com/polymorpher/one-wallet/wiki'>Wiki</SiderLink></Menu.Item>
         <Menu.Item key='external/bug'><SiderLink href='https://github.com/polymorpher/one-wallet/issues'>Bugs</SiderLink></Menu.Item>
