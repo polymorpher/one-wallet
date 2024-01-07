@@ -131,6 +131,10 @@ module.exports = {
       SENTRY_DSN: '', // dev
       LOCAL_RELAYER_URL: '',
       ROOT_URL: '',
+      LOGO_ID: '',
+      LOGO_LINK: '',
+      APP_LINK: '',
+      APP_NAME: '',
     }),
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],

@@ -2,11 +2,11 @@ const Constants = require('../constants')
 const DEBUG = process.env.DEBUG
 
 module.exports = {
-  appId: process.env.APP_ID ?? 'ONEWallet',
-  appName: process.env.APP_NAME ?? 'OTP Wallet',
-  logoId: process.env.LOGO_ID ?? 'modulo',
-  logoLink: process.env.LOGO_LINK ?? 'https://modulo.so',
-  appLink: process.env.APP_LINK ?? 'https://otpwallet.xyz/',
+  appId: process.env.APP_ID || 'ONEWallet',
+  appName: process.env.APP_NAME || 'OTP Wallet',
+  logoId: process.env.LOGO_ID || 'modulo',
+  logoLink: process.env.LOGO_LINK || 'https://modulo.so',
+  appLink: process.env.APP_LINK || 'https://otpwallet.xyz/',
   version: `v0.${Constants.MajorVersion}.${Constants.MinorVersion}`,
   lastLibraryUpdateVersion: `v0.${Constants.MajorVersion}.1`,
   // lastLibraryUpdateVersion: `v0.16.0`, // use this for manual override
