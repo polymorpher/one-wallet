@@ -1,2 +1,2 @@
 #!/bin/sh
-journalctl -u onewallet-relayer
+journalctl -u otp-wallet-relayer -f -n 1000

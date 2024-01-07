@@ -8,3 +8,4 @@ backup.eslintrc.js
 /deploy/cp-contracts.sh
 /scripts/upload-cache.sh
 /scripts/download-cache.sh
+/scripts/upload-build.sh

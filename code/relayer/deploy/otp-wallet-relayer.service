@@ -1,0 +1,15 @@
+[Unit]
+Description=OTP Wallet Relayer
+Documentation=https://docs.otpwallet.xyz
+After=network.target
+
+[Service]
+Environment=PORT=80 HTTPS_PORT=443
+Type=simple
+User=worker
+WorkingDirectory=/opt/worker/one-wallet/code/relayer
+ExecStart=/usr/bin/node /opt/worker/one-wallet/code/relayer/bin/run.js
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

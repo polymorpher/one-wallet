@@ -1,5 +1,5 @@
 #!/bin/sh
-sudo cp onewallet-relayer.service /etc/systemd/system/onewallet-relayer.service
-sudo systemctl start onewallet-relayer
-sudo systemctl enable onewallet-relayer
-systemctl status onewallet-relayer
+sudo cp otp-wallet-relayer.service /etc/systemd/system/otp-wallet-relayer.service
+sudo systemctl start otp-wallet-relayer
+sudo systemctl enable otp-wallet-relayer
+systemctl status otp-wallet-relayer
