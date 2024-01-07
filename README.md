@@ -1,18 +1,12 @@
-# 1wallet core + web app / wallet infrastructure / modulo.so OTP Wallet infrastructure
+# Modulo OTP Wallet | 1wallet on Harmony
 
-**Disclaimer**: Issues or suggestions related to the iOS app implementation (Timeless) should not be reported to this repository or the developers here. If you experience any issue with that app or any frontend implementation other than 1wallet.crazy.one, please consult with the corresponding app's developers accordingly.  
+The project started as an open source project, known as 1wallet on Harmony. At some stage it evolved into the [OTP Wallet](https://app.otpwallet.xyz) part of [Modulo](https://modulo.so), a solution for secure, frictionless, programmable non-custodial wallet infrastructure.
 
-### wallet infrastructure (1wallet core + web app)
-
-The wallet infrastructure (1wallet core + web app) is an open source project, consisting of the core (libraries, contracts, tests), the relayer backend, a web-browser based client, and potentially another browser-extension based client (in development). You may use it as the infrastructure to build your own wallet or applications, but we are not responsible for any theft, loss, or security issues. We will not be providing any guidance or service, beyond issues which we deem to be of public interest (at our discretion).
-
-### Modulo (Pro / commercial version)
-
-For businesses requiring guidance for integration, security protection, loss prevention, service-level agreements, reliable APIs, cross-chain use cases, or custom solutions, please checkout Modulo (https://modulo.so) - Advanced infrastructure for building secure, frictionless, programmable crypto wallets. 
+The open source project assumes no responsibility for theft, loss, or security issues. Use it at your own risk. For commercial concerns, please contact Modulo. Examples of commercial concerns are: guidance for integration, security protection, loss prevention, service-level agreements, reliable APIs, cross-chain use cases, or custom solutions.
 
 ## Overview
 
-1wallet is designed for people who want the best and the latest from the world of crypto, but do not want to deal with senseless "mnemonic words", "private keys", or "seed phrases". 
+1wallet (OTP Wallet) is designed for people who want the best and the latest from the world of crypto, but do not want to deal with senseless "mnemonic words", "private keys", or "seed phrases". 
 
 You don't need to be technical to use 1wallet. It is:
 
@@ -21,7 +15,9 @@ You don't need to be technical to use 1wallet. It is:
 - **Durable**: easily restore wallet by scanning QR code exported by Google Authenticator, or recover funds using another wallet.
 - **Smart**: configurable spending limit, composable security, and auto-recover mechanisms. Imagine a (physical) wallet that has an embedded computer - it can do a lot more than a plain old wallet that only carries your money around.   
 
-Try it at https://1wallet.crazy.one
+Try it at
+- https://app.otpwallet.xyz (Universal Version) 
+- https://1wallet.crazy.one (Harmony Special Version)
 
 ## Technical Blurb
 
