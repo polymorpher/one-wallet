@@ -63,8 +63,8 @@ module.exports = {
       }
     }),
     hiddenstate: {
-      name: 'Test Relayer',
-      url: 'https://relayer.onewallet.hiddenstate.xyz'
+      name: 'Modulo.so Relayer',
+      url: 'https://relayer.otpwallet.xyz'
     }
   },
   backend: {
