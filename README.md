@@ -1,6 +1,6 @@
 # Modulo OTP Wallet | 1wallet on Harmony
 
-The project started as an open source project, known as 1wallet on Harmony. At some stage it evolved into the [OTP Wallet](https://app.otpwallet.xyz) part of [Modulo](https://modulo.so), a solution for secure, frictionless, programmable non-custodial wallet infrastructure.
+The project started as an open source project, known as **1wallet** on Harmony. It was sponsored by Harmony and developed for use on Harmony. Later, it evolved into the [OTP Wallet](https://app.otpwallet.xyz) part of [Modulo](https://modulo.so), a solution for secure, frictionless, programmable non-custodial wallet infrastructure.
 
 The open source project assumes no responsibility for theft, loss, or security issues. Use it at your own risk. For commercial concerns, please contact Modulo. Examples of commercial concerns are: guidance for integration, security protection, loss prevention, service-level agreements, reliable APIs, cross-chain use cases, or custom solutions.
 
