@@ -190,7 +190,8 @@ const api = {
       return headers
     }
   },
-  web3,
+  web3: () => web3,
+  Web3,
   binance: {
     getPrice: async () => {
       const { data } = await axios.get('https://api.binance.us/api/v3/ticker/24hr?symbol=ONEUSDT')
@@ -766,6 +767,8 @@ const api = {
 
   // utilities around tokens
   tokens: {
+    getTokenContract,
+    getTokenMetadataContract,
     batchGetMetadata: async (tokens) => {
       return Promise.all(tokens.map(async (t) => {
         try {

@@ -2,6 +2,7 @@ import React from 'react'
 import Card from 'antd/es/card'
 import Row from 'antd/es/row'
 import Space from 'antd/es/space'
+import styled from 'styled-components'
 
 const CardStyle = {
   backgroundColor: 'rgba(0,0,0,0.15)',
@@ -43,3 +44,7 @@ export const FloatContainer = ({ isMobile, children }) => {
     </Card>
   )
 }
+
+export const Spacer = styled.div`
+  height: ${props => props.$height || '32px'}
+`

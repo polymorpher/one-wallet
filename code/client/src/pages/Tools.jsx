@@ -24,12 +24,14 @@ import MetaMaskAdd from '../../assets/metamask-add.png'
 import MetaMaskAddS1 from '../../assets/metamask-s1-add.jpg'
 import MetaMaskSwitch from '../../assets/metamask-switch.png'
 import MetaMaskSwitchS1 from '../../assets/metamask-s1-switch.jpg'
+import RescueNFT from './Tools/RescueNFT'
 const { Text, Title } = Typography
 
 const Sections = {
   SushiEncoder: 'safe-sushi',
   MetamaskAdd: 'metamask-add',
   MetamaskAddS1: 'metamask-add-s1',
+  RescueNFT: 'rescue-nft',
   Home: '',
 }
 
@@ -38,6 +40,7 @@ const ToolMap = {
   '': true,
   'metamask-add': true,
   'metamask-add-s1': true,
+  'rescue-nft': true
 }
 const SushiSwapEncoder = ({ onClose }) => {
   const [inputAmount, setInputAmount] = useState('')
@@ -290,9 +293,9 @@ const Tools = () => {
               <Button type='primary' shape='round' onClick={() => openTool(Sections.SushiEncoder)}>SushiSwap Transaction Encoder</Button>
             </Space>
             <Divider />
-            <Title level={3}>Auth</Title>
+            <Title level={3}>Rescue Compromised EOA Wallets</Title>
             <Space wrap>
-              <Button type='primary' shape='round' href='/auth/walletconnect'>Wallet Connect</Button>
+              <Button type='primary' shape='round' onClick={() => openTool(Sections.RescueNFT)}>Rescue NFTs</Button>
             </Space>
             {dev &&
               <>
@@ -302,6 +305,7 @@ const Tools = () => {
               </>}
           </Space>
         </AnimatedSection>}
+      {section === Sections.RescueNFT && <RescueNFT />}
       {section === Sections.SushiEncoder &&
         <AnimatedSection title='Harmony Safe | SushiSwap Encoder' wide>
           <SushiSwapEncoder onClose={() => openTool()} />
