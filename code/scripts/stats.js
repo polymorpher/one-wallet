@@ -58,8 +58,15 @@ const getFactoryAddress = async (deployerAddress) => {
 
 const getPredictedAddress = async ({ input, deployerAddress }) => {
   const s = 'tuple(tuple(bytes32,uint8,uint8,uint32,uint32,uint8),tuple(uint256,uint256,uint32,uint32,uint32,uint256),address,address[],tuple(bytes32,uint8,uint8,uint32,uint32,uint8)[],tuple(bytes32,uint8,uint8,uint32,uint32,uint8)[],bytes[])'
-  const args = ONEUtil.abi.decodeParameters([s], input.slice(10))
-  const identificationKeys = args[0][args[0].length - 1]
+  let args
+  try {
+    args = ONEUtil.abi.decodeParameters([s.replaceAll('tuple', '')], input.slice(10))
+  } catch (ex) {
+    console.error(ex)
+    console.error(s, input.slice(10))
+    process.exit(1)
+  }
+  const identificationKeys = args[0][args[0].__length__ - 1]
   const key = identificationKeys[0]
   if (!key) {
     return null
@@ -238,7 +245,7 @@ async function exec () {
   let totalAddresses = stats.totalAddresses || 0
   const addressMap = {}
   for (const address of RELAYER_ADDRESSES) {
-    const { balances, wallets } = await scan({ address, from: existingRelayers.includes(address) && from })
+    const { balances, wallets } = await scan({ address, from: existingRelayers.includes(address) ? from : 0 })
     const newWalletWithBalances = wallets.map((w, i) => ({ ...w, balance: balances[i] || '0' })).filter(w => !addressMap[w.address])
     newWalletWithBalances.forEach(a => {
       addressMap[a] = true
