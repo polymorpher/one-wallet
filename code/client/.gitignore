@@ -3,3 +3,5 @@
 /deploy.sh
 /build-*.sh
 /deploy-*.sh
+/dev.sh
+/dev-*.sh
