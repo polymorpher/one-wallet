@@ -134,7 +134,6 @@ module.exports = {
       LOGO_ID: '',
       LOGO_LINK: '',
       APP_LINK: '',
-      APP_NAME: '',
     }),
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],

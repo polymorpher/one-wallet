@@ -31,6 +31,7 @@ const RescueNFT = () => {
   const [keyMatch, setKeyMatch] = useState(null)
   const [selectedToken, setSelectedToken] = useState({ tokenAddress: '', tokenID: '' })
   const [gasPrice, setGasPrice] = useState(100e+9)
+  const [gasMultiplier, setGasMultiplier] = useState(15)
   const network = useSelector(state => state.global.network)
 
   async function init () {
@@ -116,12 +117,12 @@ const RescueNFT = () => {
       if (selectedToken.type.toLowerCase() === 'erc721') {
         receipt = await contract.methods.safeTransferFrom(account.address, destAddress, selectedToken.tokenID).send({
           from: account.address,
-          gasPrice: gasPrice * 15,
+          gasPrice: gasPrice * gasMultiplier,
         })
       } else {
         receipt = await contract.methods.safeTransferFrom(account.address, destAddress, selectedToken.tokenID, selectedToken.amount).send({
           from: account.address,
-          gasPrice: gasPrice * 15,
+          gasPrice: gasPrice * gasMultiplier,
         })
       }
       return receipt
@@ -191,14 +192,23 @@ const RescueNFT = () => {
   return (
     <AnimatedSection wide>
       <Space direction='vertical' style={{ width: '100%' }}>
+        <Text>This tool is designed for victims whose wallet got drained by hackers and have a drain-bot attached to the wallet. The victim still has NFTs left in their wallet, which they want to move to other wallets. Victims are unable to do anything by themselves because when a drain bot is attached to the victim's wallet, any fund sent to that wallet will be quickly transferred to a hacker's wallet, causing victim's transactions to fail for unable to pay gas. </Text>
+        <Spacer />
         <Steps direction='vertical'>
-          <Steps.Step title='Connect' description={destAddress ? <Text>Connected MetaMask: {destAddress}</Text> : <Button shape='round' onClick={connect}>Connect MetaMask</Button>} />
+          <Steps.Step
+            title='Connect' description={(
+              <Space direction='vertical'>
+                {destAddress ? <Text>Connected MetaMask: {destAddress}</Text> : <Button shape='round' onClick={connect}> Connect MetaMask</Button>}
+                <Text>This wallet will receive the rescued NFTs</Text>
+              </Space>
+          )}
+          />
           <Steps.Step title='Recharge' description={<Button shape='round' onClick={() => sendFund()} disabled={!keyMatch || !destAddress}>Send 1 ONE from MetaMask</Button>} />
           <Steps.Step
             title='Rescue' description={
               <Space direction='vertical'>
-                <Text>Spam on this immediately after recharging, until you see green success prompt</Text>
                 <Button shape='round' type='primary' onClick={() => tryRescueWrapper()} disabled={!keyMatch || !destAddress}>Rescue Selected NFT</Button>
+                <Text>Spam this button immediately after recharging, until you see green success prompt</Text>
               </Space>
           }
           />
@@ -218,11 +228,15 @@ const RescueNFT = () => {
           addressValue={inputAddress}
           setAddressCallback={setInputAddress}
         />
-        <Hint style={{ fontSize: 12, color: '#aaa' }}>(equivalent to {util.safeNormalizedAddress(inputAddress.value)})</Hint>
+        <Hint style={{ fontSize: 12, color: '#aaa' }}>(equivalent to {util.safeNormalizedAddress(inputAddress.value) ?? 'N/A'})</Hint>
         <Spacer />
         <Hint>Compromised Wallet's Private Key</Hint>
         <InputBox type='password' margin='auto' style={{ width: '100%' }} value={privateKey} onChange={({ target: { value } }) => setPrivateKey(value)} placeholder='Private key of the compromised wallet' />
         {keyMatch !== null && <Text style={{ color: keyMatch ? 'green' : 'red' }}>{keyMatch ? 'Key matches with address' : 'Key does not match provided address'}</Text>}
+        <Spacer />
+        <Hint>Gas Price Multiplier</Hint>
+        <InputBox margin='auto' value={gasMultiplier} onChange={({ target: { value } }) => setGasMultiplier(Number(value) || 0)} />
+        <Hint style={{ fontSize: 12, color: '#aaa' }}>Actual gas price for transaction will be network minimum gas price (normally 100 gwei) multiplied by the multiplier. Rescue transaction's gas price must be above what is used by the hacker's drain bot to be effective. Check explorer to find out what the hacker has used. </Hint>
         <Spacer />
         <Hint>ERC721 owned</Hint>
         <Table
