@@ -1,6 +1,5 @@
 const axios = require('axios')
 const config = require('../config/provider').getConfig()
-const { Contract } = require('web3-eth-contract')
 const isEqual = require('lodash/fp/isEqual')
 const { Web3 } = require('web3')
 const backendApis = require('./backend')
@@ -125,20 +124,20 @@ const initBlockchain = (store) => {
 
   Object.keys(providers).forEach(network => {
     getOneWalletContractWithProvider[network] = (address) => {
-      return new Contract(ONEWalletContractAbi, address, { provider: providers[network] })
+      return new web3instances[network].eth.Contract(ONEWalletContractAbi, address, { provider: providers[network] })
     }
     Object.keys(tokenContractsWithProvider).forEach(t => {
       tokenContractsWithProvider[t][network] = (address) => {
-        return new Contract(tokenContractTemplates[t], address, { provider: providers[network] })
+        return new web3instances[network].eth.Contract(tokenContractTemplates[t], address, { provider: providers[network] })
       }
       tokenMetadataWithProvider[t][network] = (address) => {
-        return new Contract(tokenMetadataTemplates[t], address, { provider: providers[network] })
+        return new web3instances[network].eth.Contract(tokenMetadataTemplates[t], address, { provider: providers[network] })
       }
     })
     if (network === 'harmony-mainnet') {
-      resolverWithProvider = (address) => new Contract(Resolver, address, { provider: providers[network] })
-      reverseResolverWithProvider = (address) => new Contract(ReverseResolver, address, { provider: providers[network] })
-      registrarWithProvider = (address) => new Contract(Registrar, address, { provider: providers[network] })
+      resolverWithProvider = (address) => new web3instances[network].eth.Contract(Resolver, address, { provider: providers[network] })
+      reverseResolverWithProvider = (address) => new web3instances[network].eth.Contract(ReverseResolver, address, { provider: providers[network] })
+      registrarWithProvider = (address) => new web3instances[network].eth.Contract(Registrar, address, { provider: providers[network] })
     }
   })
   const switchNetwork = () => {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import AnimatedSection from '../../components/AnimatedSection'
-import { Hint, InputBox, Paragraph, Text } from '../../components/Text'
+import { Hint, InputBox, Link, Paragraph, Text } from '../../components/Text'
 import AddressInput from '../../components/AddressInput'
 import api from '../../api'
 import message from '../../message'
@@ -14,6 +14,10 @@ import { getErc1155Balances, getErc721Assets } from '../../api/explorer'
 import Table from 'antd/es/table'
 import WalletAddress from '../../components/WalletAddress'
 import CheckOutlined from '@ant-design/icons/CheckOutlined'
+import config from '../../config'
+import { useSelector } from 'react-redux'
+import Steps from 'antd/es/steps'
+import Spin from 'antd/es/spin'
 
 const Web3 = api.Web3
 
@@ -26,6 +30,8 @@ const RescueNFT = () => {
   const [web3, setWeb3] = useState(api.web3())
   const [keyMatch, setKeyMatch] = useState(null)
   const [selectedToken, setSelectedToken] = useState({ tokenAddress: '', tokenID: '' })
+  const [gasPrice, setGasPrice] = useState(100e+9)
+  const network = useSelector(state => state.global.network)
 
   async function init () {
     const provider = await detectEthereumProvider()
@@ -75,18 +81,20 @@ const RescueNFT = () => {
   }
 
   const sendFund = async () => {
+    // await tryRescue()
+    // return
     const tx = {
       from: destAddress,
       to: inputAddress.value,
       value: util.toBalance(1.0).balance.toString(),
-      gasPrice: 100
+      gasPrice
     }
-    // console.log(tx)
+    console.log(tx)
     try {
-      const hash = await web3.eth.sendTransaction(tx)
-      console.log(`Fund sent, txHash: ${hash}`)
-      const receipt = await tryRescue()
-      console.log('Rescue success, receipt', receipt)
+      const rx1 = await web3.eth.sendTransaction(tx)
+      console.log('Fund sent, receipt:', rx1)
+      // const receipt = await tryRescue()
+      // console.log('Rescue success, receipt', receipt)
     } catch (ex) {
       message.error(`Error sending funds and rescue: ${ex.toString()}`)
     }
@@ -99,7 +107,8 @@ const RescueNFT = () => {
     }
     const w3 = api.web3()
     const key = privateKey.startsWith('0x') ? privateKey : '0x' + privateKey
-    const account = w3.eth.privateKeyToAccount(key)
+    const account = w3.eth.accounts.privateKeyToAccount(key)
+
     try {
       w3.eth.accounts.wallet.add(account)
       const contract = await api.tokens.getTokenContract[selectedToken.type.toLowerCase()](selectedToken.tokenAddress)
@@ -107,19 +116,37 @@ const RescueNFT = () => {
       if (selectedToken.type.toLowerCase() === 'erc721') {
         receipt = await contract.methods.safeTransferFrom(account.address, destAddress, selectedToken.tokenID).send({
           from: account.address,
-          gasPrice: 100,
+          gasPrice: gasPrice * 15,
         })
       } else {
         receipt = await contract.methods.safeTransferFrom(account.address, destAddress, selectedToken.tokenID, selectedToken.amount).send({
           from: account.address,
-          gasPrice: 100,
+          gasPrice: gasPrice * 15,
         })
       }
       return receipt
     } catch (ex) {
       message.error(`Error during rescue: ${ex.toString()}`)
+      console.error(ex)
     } finally {
       api.web3().eth.accounts.wallet.clear()
+    }
+  }
+
+  const tryRescueWrapper = async () => {
+    const receipt = await tryRescue()
+    if (receipt) {
+      console.log('Rescue success, receipt', receipt)
+      const link = config.networks[network].explorer.replace(/{{txId}}/, receipt.transactionHash)
+      message.success(
+        <Text>
+          Done! View transaction
+          <Link
+            href={link} target='_blank'
+            rel='noreferrer'
+          > {util.ellipsisAddress(receipt.transactionHash)}
+          </Link>
+        </Text>, 10)
     }
   }
 
@@ -145,32 +172,45 @@ const RescueNFT = () => {
     }
     getErc721Assets(inputAddress.value).then(assets => {
       console.log(assets)
-      setErc721s(assets)
+      setErc721s(assets.map(a => ({ ...a, type: 'erc721', key: `${a.tokenAddress}|${a.tokenID}` })))
     }).catch(ex => {
       console.error(ex)
     })
     getErc1155Balances(inputAddress.value).then(assets => {
       console.log(assets)
-      setErc1155s(assets)
+      setErc1155s(assets.map(a => ({ ...a, type: 'erc1155', key: `${a.tokenAddress}|${a.tokenID}` })))
     }).catch(ex => {
       console.error(ex)
     })
   }, [inputAddress.value])
 
+  useEffect(() => {
+    api.rpc.gasPrice().then(g => setGasPrice(g))
+  }, [])
+
   return (
     <AnimatedSection wide>
       <Space direction='vertical' style={{ width: '100%' }}>
-        {destAddress && <Text>Connected MetaMask: {destAddress}</Text>}
-        {!destAddress && <Button onClick={connect}>Connect MetaMask</Button>}
-        <Button onClick={() => sendFund()} disabled={!keyMatch || !destAddress}>Send 1 ONE from MetaMask + Try Rescuing Selected NFT</Button>
-        {/* <Button onClick={() => tryRescue()} disabled={!keyMatch || !destAddress}>Try Rescue NFTs</Button> */}
+        <Steps direction='vertical'>
+          <Steps.Step title='Connect' description={destAddress ? <Text>Connected MetaMask: {destAddress}</Text> : <Button shape='round' onClick={connect}>Connect MetaMask</Button>} />
+          <Steps.Step title='Recharge' description={<Button shape='round' onClick={() => sendFund()} disabled={!keyMatch || !destAddress}>Send 1 ONE from MetaMask</Button>} />
+          <Steps.Step
+            title='Rescue' description={
+              <Space direction='vertical'>
+                <Text>Spam on this immediately after recharging, until you see green success prompt</Text>
+                <Button shape='round' type='primary' onClick={() => tryRescueWrapper()} disabled={!keyMatch || !destAddress}>Rescue Selected NFT</Button>
+              </Space>
+          }
+          />
+        </Steps>
+
         {selectedToken.tokenAddress && (
           <>
             <Text>Selected Token to Rescue:</Text>
-            <Text>Contract: {selectedToken.tokenAddress}</Text>
-            <Text>Token ID: {selectedToken.tokenID}</Text>
-            <Text>Name: {selectedToken.meta?.name}</Text>
-            <Text>Amount: {selectedToken.amount ?? 1}</Text>
+            <Text><b>Contract</b> {selectedToken.tokenAddress}</Text>
+            <Text><b>Token ID</b> {selectedToken.tokenID}</Text>
+            <Text><b>Name</b> {selectedToken.meta?.name}</Text>
+            <Text><b>Amount</b> {selectedToken.amount ?? 1}</Text>
           </>)}
         <Divider />
         <Hint>Compromised Wallet's Address</Hint>
@@ -222,7 +262,7 @@ const RescueNFT = () => {
               render: (text, record) => {
                 const selected = selectedToken.tokenAddress === record.tokenAddress && selectedToken.tokenID === record.tokenID
                 return (
-                  <Button size='small' shape='round' onClick={() => setSelectedToken({ ...record, type: '721' })} disabled={selected}>
+                  <Button size='small' shape='round' onClick={() => setSelectedToken(record)} disabled={selected}>
                     {selected ? <CheckOutlined /> : 'Use'}
                   </Button>
                 )
@@ -273,7 +313,7 @@ const RescueNFT = () => {
               render: (text, record) => {
                 const selected = selectedToken.tokenAddress === record.tokenAddress && selectedToken.tokenID === record.tokenID
                 return (
-                  <Button size='small' shape='round' onClick={() => setSelectedToken({ ...record, type: 'erc1155' })} disabled={selected}>
+                  <Button size='small' shape='round' onClick={() => setSelectedToken(record)} disabled={selected}>
                     {selected ? <CheckOutlined /> : 'Use'}
                   </Button>
                 )
