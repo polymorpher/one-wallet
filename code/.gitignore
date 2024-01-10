@@ -129,4 +129,7 @@ build/contracts/*
 /contracts/upgrade/
 /data/addresses.csv
 /data/stats.json
+/data/stats-v-*.json
 /data/stats-histogram.csv
+/data/stats-hist-output.txt
+/data/stats-hist-output-*.txt
