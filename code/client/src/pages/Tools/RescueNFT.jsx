@@ -227,8 +227,8 @@ const RescueNFT = () => {
         <AddressInput
           addressValue={inputAddress}
           setAddressCallback={setInputAddress}
+          showHexHint
         />
-        <HintSmall>(equivalent to {util.safeNormalizedAddress(inputAddress.value) ?? 'N/A'})</HintSmall>
         <Spacer />
         <Hint>Compromised Wallet's Private Key</Hint>
         <InputBox type='password' margin='auto' style={{ width: '100%' }} value={privateKey} onChange={({ target: { value } }) => setPrivateKey(value)} placeholder='Private key of the compromised wallet' />
