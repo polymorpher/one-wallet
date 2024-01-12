@@ -7,7 +7,7 @@ export default {
   defaultSpendingLimit: 50000, // ONEs
   defaultSpendingInterval: ONEConstants.DefaultSpendingInterval,
   minDuration: 3600 * 1000 * 24 * 120,
-  maxDuration: 3600 * 1000 * 24 * 364 * 2,
+  maxDuration: 3600 * 1000 * 24 * 364 * 4,
   maxTransferAttempts: 3,
   checkCommitInterval: 5000,
   fetchBalanceFrequency: 15000,

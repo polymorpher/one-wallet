@@ -35,6 +35,8 @@ import { OtpSetup, OtpSetup2, TwoCodeOption, TwoCodeOption2 } from '../component
 import config from '../config'
 import SignupAccount from './Create/SignupAccount'
 import { useTheme, getColorPalette } from '../theme'
+import { RedoOutlined } from '@ant-design/icons'
+import Slider from 'antd/es/slider'
 
 const getGoogleAuthenticatorAppLink = (os) => {
   let link = 'https://apps.apple.com/us/app/google-authenticator/id388497605'
@@ -66,10 +68,8 @@ const Create = ({ expertMode, showRecovery }) => {
 
   // Configurations for creating the wallet - cannot be directly changed by the UI (right they cannot be changed at all)
   const setupConfig = useRef({
-    name: generateNewOtpName(),
     seed: generateOtpSeed(),
     seed2: generateOtpSeed(),
-    duration: WalletConstants.defaultDuration,
   }).current
 
   // related to state variables that may change during or after the creation process
@@ -79,6 +79,9 @@ const Create = ({ expertMode, showRecovery }) => {
     doubleOtp: false,
     otpQrCodeData: undefined,
     secondOtpQrCodeData: undefined,
+    name: generateNewOtpName(),
+    duration: WalletConstants.defaultDuration,
+    customizeSettings: expertMode ? true : null
   })
   const [otpReady, setOtpReady] = useState(false)
 
@@ -101,10 +104,10 @@ const Create = ({ expertMode, showRecovery }) => {
     (async function () {
       const factoryAddress = config.networks[network].deploy.factory
       const address = ONEUtil.predictAddress({ seed: setupConfig.seed, factoryAddress, code: ONEUtil.hexStringToBytes(code) })
-      message.debug(`Predicting wallet address ${address} using parameters: ${JSON.stringify({ seed: ONEUtil.base32Encode(setupConfig.seed), deployerAddress: factoryAddress })}; code keccak hash=${ONEUtil.hexView(ONEUtil.keccak(code))}`)
+      message.debug(`Predicting wallet address ${address} using parameters: ${JSON.stringify({ seed: ONEUtil.base32Encode(setupConfig.seed), deployerAddress: factoryAddress })}; code keccak hash=${ONEUtil.hexView(ONEUtil.keccak(code))}`, null, { console: true })
       const oneAddress = util.safeOneAddress(address)
-      const otpDisplayName = `${ONENames.nameWithTime(setupConfig.name, coreSettings.effectiveTime)} [${oneAddress}]`
-      const otpDisplayName2 = `${ONENames.nameWithTime(getSecondCodeName(setupConfig.name), coreSettings.effectiveTime)} [${oneAddress}]`
+      const otpDisplayName = `${ONENames.nameWithTime(walletState.name, coreSettings.effectiveTime)} [${oneAddress}]`
+      const otpDisplayName2 = `${ONENames.nameWithTime(getSecondCodeName(walletState.name), coreSettings.effectiveTime)} [${oneAddress}]`
       const otpUri = getQRCodeUri(setupConfig.seed, otpDisplayName, qrCodeMode)
       const secondOtpUri = getQRCodeUri(setupConfig.seed2, otpDisplayName2, qrCodeMode)
       const color = qrCodeMode === OTPUriMode.MIGRATION ? { dark: '#00008B' } : {}
@@ -113,7 +116,7 @@ const Create = ({ expertMode, showRecovery }) => {
       setWalletState(s => ({ ...s, otpQrCodeData, secondOtpQrCodeData, predictedAddress: address }))
       setOtpReady(true)
     })()
-  }, [code, network, coreSettings.effectiveTime, walletState.address, walletState.doubleOtp, qrCodeMode])
+  }, [code, network, coreSettings.effectiveTime, walletState.address, walletState.doubleOtp, walletState.name, qrCodeMode])
 
   useEffect(() => {
     if (section === sectionViews.setupOtp && worker && setupConfig.seed) {
@@ -127,7 +130,7 @@ const Create = ({ expertMode, showRecovery }) => {
           seed: setupConfig.seed,
           seed2: walletState.doubleOtp && setupConfig.seed2,
           effectiveTime: t,
-          duration: setupConfig.duration,
+          duration: walletState.duration,
           slotSize: coreSettings.slotSize,
           interval: WalletConstants.interval,
           ...securityParameters,
@@ -153,7 +156,7 @@ const Create = ({ expertMode, showRecovery }) => {
         }
       }
     }
-  }, [section, worker, walletState.doubleOtp])
+  }, [section, worker, walletState.doubleOtp, walletState.duration])
 
   useEffect(() => {
     if (!worker) {
@@ -197,6 +200,8 @@ const PrepareWalletSection = ({ expertMode, showRecovery, coreSettings, setupCon
   const [deploying, setDeploying] = useState()
   const [deployed, setDeployed] = useState(false)
 
+  const autoDeploy = !walletState.customizeSettings && !showRecovery && !expertMode
+
   const storeLayers = async () => {
     if (!coreSettings.root) {
       message.error('Cannot store credentials of the wallet. Error: Root is not set')
@@ -229,7 +234,7 @@ const PrepareWalletSection = ({ expertMode, showRecovery, coreSettings, setupCon
     setDeploying(true)
 
     const identificationKeys = [ONEUtil.getIdentificationKey(setupConfig.seed, true)]
-    const innerCores = ONEUtil.makeInnerCores({ innerTrees: coreSettings.innerTrees, effectiveTime: coreSettings.effectiveTime, duration: setupConfig.duration, slotSize: coreSettings.slotSize, interval: WalletConstants.interval })
+    const innerCores = ONEUtil.makeInnerCores({ innerTrees: coreSettings.innerTrees, effectiveTime: coreSettings.effectiveTime, duration: walletState.duration, slotSize: coreSettings.slotSize, interval: WalletConstants.interval })
 
     try {
       const { address } = await api.relayer.create({
@@ -239,7 +244,7 @@ const PrepareWalletSection = ({ expertMode, showRecovery, coreSettings, setupCon
         height: coreSettings.layers.length,
         interval: WalletConstants.interval / 1000,
         t0: coreSettings.effectiveTime / WalletConstants.interval,
-        lifespan: setupConfig.duration / WalletConstants.interval,
+        lifespan: walletState.duration / WalletConstants.interval,
         slotSize: coreSettings.slotSize,
         lastResortAddress: normalizedAddress,
         spendingLimit: ONEUtil.toFraction(spendingLimit).toString(),
@@ -247,10 +252,10 @@ const PrepareWalletSection = ({ expertMode, showRecovery, coreSettings, setupCon
       })
       // console.log('Deployed. Received contract address', address)
       const wallet = {
-        name: setupConfig.name,
+        name: walletState.name,
         address,
         root: ONEUtil.hexView(coreSettings.root),
-        duration: setupConfig.duration,
+        duration: walletState.duration,
         slotSize: coreSettings.slotSize,
         effectiveTime: coreSettings.effectiveTime,
         lastResortAddress: normalizedAddress,
@@ -265,7 +270,7 @@ const PrepareWalletSection = ({ expertMode, showRecovery, coreSettings, setupCon
         doubleOtp: walletState.doubleOtp,
         innerRoots: coreSettings.innerTrees.map(({ root }) => ONEUtil.hexView(root)),
         ...securityParameters,
-        expert: !!expertMode,
+        expert: !!expertMode || walletState.customizeSettings,
       }
       await storeLayers()
       await storeInnerLayers()
@@ -281,27 +286,27 @@ const PrepareWalletSection = ({ expertMode, showRecovery, coreSettings, setupCon
       }, 2500)
     } catch (ex) {
       handleAPIError(ex)
-      message.error('Failed to deploy 1wallet. Please try again. If it keeps happening, please report this issue.')
+      message.error(`Failed to deploy ${config.appName}. Please try again. If it keeps happening, please report this issue.`)
       setDeploying(false)
       setDeployed(false)
     }
   }
 
   useEffect(() => {
-    if (!showRecovery &&
+    if (autoDeploy &&
       coreSettings.root && coreSettings.hseed && coreSettings.slotSize && coreSettings.layers && coreSettings.innerTrees) {
       deploy()
     }
-  }, [coreSettings])
+  }, [coreSettings, autoDeploy])
 
   return (
     <AnimatedSection>
       <Row>
         <Space direction='vertical'>
-          <Heading>Prepare Your 1wallet</Heading>
+          <Heading>Prepare Your {config.appName}</Heading>
         </Space>
       </Row>
-      {expertMode &&
+      {expertMode || walletState.customizeSettings &&
         <Row style={{ marginBottom: 16 }}>
           <Space direction='vertical' size='small'>
             <Hint>Set up a spending limit:</Hint>
@@ -327,12 +332,12 @@ const PrepareWalletSection = ({ expertMode, showRecovery, coreSettings, setupCon
 
           </Space>
         </Row>}
-      {showRecovery &&
+      {showRecovery || walletState.customizeSettings &&
         <Row style={{ marginBottom: 24 }}>
           {!showRecoveryDetail &&
             <Space>
               <Button style={{ padding: 0 }} type='link' onClick={() => setShowRecoveryDetail(true)}>Set up a recovery address?</Button>
-              <Tooltip title={'It is where you could send your money to if you lost the authenticator. You don\'t have to configure this. By default it goes to 1wallet DAO'}>
+              <Tooltip title={`It is where you could send your money to if you lost the authenticator. You don't have to configure this. By default it goes to ${config.appName} DAO`}>
                 <QuestionCircleOutlined />
               </Tooltip>
 
@@ -354,13 +359,13 @@ const PrepareWalletSection = ({ expertMode, showRecovery, coreSettings, setupCon
               </Hint>
               {util.isDefaultRecoveryAddress(lastResortAddress.value) &&
                 <Warning style={{ marginTop: 24 }}>
-                  1wallet DAO can be a last resort to recover your assets. You can also use your own address.
+                  {config.appName} DAO can be a last resort to recover your assets. You can also use your own address.
                 </Warning>}
             </Space>}
         </Row>}
       <Row style={{ marginBottom: 32 }}>
         <Space direction='vertical'>
-          {showRecovery &&
+          {!autoDeploy &&
             <Space>
               <FlashyButton
                 disabled={!coreSettings.root || deploying} type='primary' shape='round' size='large'
@@ -369,26 +374,26 @@ const PrepareWalletSection = ({ expertMode, showRecovery, coreSettings, setupCon
               </FlashyButton>
               {deploying && <LoadingOutlined />}
             </Space>}
-          {!showRecovery &&
+          {autoDeploy &&
             <TallRow>
-              {(deploying || !coreSettings.root) && <Space><Text>Working on your 1wallet...</Text><LoadingOutlined /></Space>}
-              {(!deploying && coreSettings.root && deployed) && <Text>Your 1wallet is ready!</Text>}
+              {(deploying || !coreSettings.root) && <Space><Text>Putting your {config.appName} on blockchain...</Text><LoadingOutlined /></Space>}
+              {(!deploying && coreSettings.root && deployed) && <Text>Your {config.appName} is ready!</Text>}
               {(!deploying && coreSettings.root && deployed === false) && (
                 <Space direction='vertical'>
-                  <Text>There was an issue deploying your 1wallet. </Text>
+                  <Text>There was an issue deploying your {config.appName}. </Text>
                   <Space>
                     <Button shape='round' danger onClick={() => (location.href = Paths.create)}>Restart</Button>
                     <Button shape='round' type='primary' onClick={() => deploy()}>Try Again</Button>
                   </Space>
                 </Space>)}
             </TallRow>}
-          {!expertMode && <Hint>In beta, you can only spend {WalletConstants.defaultSpendingLimit} ONE per day</Hint>}
-          {!expertMode && (
+          {!expertMode && !walletState.customizeSettings && <Hint>In beta, you can only spend {WalletConstants.defaultSpendingLimit} ONE per day</Hint>}
+          {!expertMode && !walletState.customizeSettings && (
             <Button
               type='link' onClick={() => {
                 window.location.href = Paths.create2
               }} style={{ padding: 0 }}
-            >I want to create a higher limit wallet instead
+            >I want to create a customized wallet with higher limit
             </Button>)}
           {!coreSettings.root && <WalletCreateProgress progress={progress} isMobile={isMobile} progressStage={progressStage} />}
         </Space>
@@ -397,7 +402,7 @@ const PrepareWalletSection = ({ expertMode, showRecovery, coreSettings, setupCon
         <Space direction='vertical'>
           <Hint>No private key. No mnemonic.</Hint>
           <Hint>Simple and Secure.</Hint>
-          <Hint>To learn more, visit <Link href='https://github.com/polymorpher/one-wallet/wiki'>1wallet Wiki</Link></Hint>
+          <Hint>To learn more, check out our <Link href='https://docs.otpwallet.xyz'>{config.appName} documentation</Link></Hint>
         </Space>
       </Row>
     </AnimatedSection>
@@ -412,10 +417,12 @@ const SetupOtpSection = ({ expertMode, otpReady, setupConfig, walletState, setWa
   const [otp, setOtp] = useState('')
   const [step, setStep] = useState(1) // 1 -> otp, optional 2 -> second otp
   const otpRef = useRef()
-  const { name, seed, seed2 } = setupConfig
+  const { seed, seed2 } = setupConfig
+  const { name, duration } = walletState
   const { secondOtpQrCodeData, otpQrCodeData, doubleOtp } = walletState
   const [showAccount, setShowAccount] = useState(false)
   const [allowAutofill, setAllowAutoFill] = useState(false)
+  const [visualDuration, setVisualDuration] = useState(duration)
   const toggleShowAccount = (e) => {
     e && e.preventDefault()
     setShowAccount(v => !v)
@@ -462,6 +469,15 @@ const SetupOtpSection = ({ expertMode, otpReady, setupConfig, walletState, setWa
     }
   }, [otp])
 
+  useEffect(() => {
+    if (walletState.customizeSettings && !walletState.defaultWalletName) {
+      setWalletState(state => ({ ...state, defaultWalletName: state.name }))
+    }
+    if (walletState.customizeSettings !== null && !walletState.customizeSettings) {
+      setWalletState(state => ({ ...state, duration: WalletConstants.defaultDuration, name: state.defaultWalletName || ONENames.genName() }))
+    }
+  }, [walletState.customizeSettings, walletState.defaultWalletName])
+
   if (!otpReady) {
     return <Spin />
   }
@@ -472,13 +488,13 @@ const SetupOtpSection = ({ expertMode, otpReady, setupConfig, walletState, setWa
         <Space direction='vertical' style={{ width: '100%', padding: '32px 32px 16px 32px' }}>
           {step === 1 &&
             <>
-              <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
+              <Heading level={isMobile ? 4 : 2}>Create Your {config.appName}</Heading>
               <Hint>{isMobile ? 'Tap' : 'Scan'} the QR code to setup your {getGoogleAuthenticatorAppLink(os)}. {!v2ui && 'You need it to use the wallet'} </Hint>
               {buildQRCodeComponent({ seed, name: ONENames.nameWithTime(name, effectiveTime), os, isMobile, qrCodeData: otpQrCodeData })}
             </>}
           {step === 2 &&
             <>
-              <Heading>Create Your 1wallet (second code)</Heading>
+              <Heading>Create Your {config.appName} (second code)</Heading>
               <Hint align='center'>{isMobile ? 'Tap' : 'Scan'} to setup the <b>second</b> code</Hint>
               {buildQRCodeComponent({ seed: seed2, name: ONENames.nameWithTime(getSecondCodeName(name), effectiveTime), os, isMobile, qrCodeData: secondOtpQrCodeData })}
             </>}
@@ -505,7 +521,7 @@ const SetupOtpSection = ({ expertMode, otpReady, setupConfig, walletState, setWa
       <Space direction='vertical' style={{ width: '100%' }}>
         {step === 1 &&
           <>
-            <Heading level={isMobile ? 4 : 2}>Create Your 1wallet</Heading>
+            <Heading level={isMobile ? 4 : 2}>Create Your {config.appName}</Heading>
             <Hint>{isMobile ? 'Tap' : 'Scan'} the QR code to setup OTP {getGoogleAuthenticatorAppLink(os)} for the wallet</Hint>
             <Hint>Optional: <Link href='#' onClick={toggleShowAccount}>sign-up</Link> to enable backup, alerts, verification code autofill</Hint>
             {showAccount && <SignupAccount seed={seed} name={name} address={walletState.predictedAddress} effectiveTime={effectiveTime} setAllowOTPAutoFill={setAllowAutoFill} />}
@@ -513,7 +529,7 @@ const SetupOtpSection = ({ expertMode, otpReady, setupConfig, walletState, setWa
           </>}
         {step === 2 &&
           <>
-            <Heading>Create Your 1wallet (second code)</Heading>
+            <Heading>Create Your {config.appName} (second code)</Heading>
             <Hint align='center'>{isMobile ? 'Tap' : 'Scan'} to setup the <b>second</b> code</Hint>
             {buildQRCodeComponent({ seed: seed2, name: ONENames.nameWithTime(getSecondCodeName(name), effectiveTime), os, isMobile, qrCodeData: secondOtpQrCodeData })}
           </>}
@@ -526,16 +542,58 @@ const SetupOtpSection = ({ expertMode, otpReady, setupConfig, walletState, setWa
         </Space>)}
       {step === 2 &&
         <OtpSetup isMobile={isMobile} otpRef={otpRef} otpValue={otp} setOtpValue={setOtp} name={ONENames.nameWithTime(getSecondCodeName(name), effectiveTime)} />}
-      <Space style={{ marginTop: 32, justifyContent: 'center', display: 'flex' }}>
-        <Hint>Code prompting wrong authenticator app?</Hint>
+      <Space style={{ marginTop: 32, justifyContent: 'space-between', display: 'flex' }}>
+        <Hint>Default: wallet has random name, expires in 9 months</Hint>
         <Button
-          style={{ color: 'darkblue' }}
           shape='round'
-          onClick={() => setQrCodeMode(OTPUriMode.MIGRATION)} disabled={qrCodeMode === OTPUriMode.MIGRATION}
+          onClick={() => setWalletState(state => ({ ...state, customizeSettings: !state.customizeSettings }))}
         >
-          Use Google Auth QR {qrCodeMode === OTPUriMode.MIGRATION && <CheckOutlined />}
+          {walletState.customizeSettings ? 'Use Default' : 'Customize'}
         </Button>
       </Space>
+      {walletState.customizeSettings && (
+        <Space direction='vertical' style={{ width: '100%' }}>
+          <Row align='middle' style={{ width: '100%', columnGap: 16 }}>
+            <Hint>Wallet Name</Hint>
+            <InputBox
+              prefix={<Button type='text' onClick={() => setWalletState(state => ({ ...state, name: ONENames.genName() }))}><RedoOutlined /></Button>}
+              value={name} onChange={({ target: { value } }) => {
+                console.log(ONENames.AllowedWalletNames.test(value))
+                if (!ONENames.AllowedWalletNames.test(value)) {
+                  message.error('Only letters, digits, - and _ symbols are allowed')
+                  return
+                }
+
+                setWalletState(state => ({ ...state, name: value }))
+              }}
+              style={{ padding: 0, flex: 1 }}
+            />
+          </Row>
+          <Row align='middle' style={{ width: '100%', columnGap: 16 }}>
+            <Hint>Lifespan</Hint>
+            <Slider
+              style={{ flex: 1, minWidth: 160 }}
+              value={visualDuration}
+              onChange={(v) => setVisualDuration(v)}
+              tooltipVisible={false}
+              onAfterChange={(v) => setWalletState(state => ({ ...state, duration: v }))}
+              min={WalletConstants.minDuration} max={WalletConstants.maxDuration}
+            />
+            <Hint style={{ width: 144 }}>{humanizeDuration(visualDuration, { units: ['y', 'mo'], round: true })}</Hint>
+          </Row>
+          <Hint>(longer is slower to create)</Hint>
+        </Space>)}
+      {isMobile && (
+        <Space style={{ marginTop: 32, justifyContent: 'space-between', display: 'flex' }}>
+          <Hint>Code prompting wrong authenticator app?</Hint>
+          <Button
+            style={{ color: 'darkblue' }}
+            shape='round'
+            onClick={() => setQrCodeMode(OTPUriMode.MIGRATION)} disabled={qrCodeMode === OTPUriMode.MIGRATION}
+          >
+            Use Google Auth QR {qrCodeMode === OTPUriMode.MIGRATION && <CheckOutlined />}
+          </Button>
+        </Space>)}
     </AnimatedSection>
   )
 }

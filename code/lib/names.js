@@ -2081,4 +2081,6 @@ const nameWithTime = (name, effectiveTime) => {
   return (name + ' ' + genTimeString(effectiveTime)).trim()
 }
 
-module.exports = { randomWord, genName, genTimeString, nameWithTime }
+const AllowedWalletNames = /^[ 0-9a-zA-Z_-]+$/
+
+module.exports = { randomWord, genName, genTimeString, nameWithTime, AllowedWalletNames }
