@@ -17,20 +17,19 @@ import WalletAddress from '../../components/WalletAddress'
 import message from '../../message'
 const { Text } = Typography
 
-const AddressDetail = () => {
+const ContactDetail = () => {
   const dispatch = useDispatch()
   const history = useHistory()
   const location = useLocation()
   const [label, setLabel] = useState()
   const [contact, setContact] = useState()
-  const { isMobile } = useWindowDimensions()
   const knownAddresses = useSelector(
     (state) => state.global.knownAddresses || {},
   )
 
   const deleteKnownAddress = () => {
     dispatch(globalActions.deleteKnownAddress(contact.address))
-    message.error('Address deleted')
+    message.error('Contact deleted')
     setTimeout(() => {
       history.goBack()
     }, 500)
@@ -40,18 +39,18 @@ const AddressDetail = () => {
     dispatch(
       globalActions.setKnownAddress({
         ...contact,
-        label: label,
+        label,
       }),
     )
-    message.success(`Address label updated to ${label}`)
+    message.success(`Contact label updated to ${label}`)
     history.goBack()
   }
 
   useEffect(() => {
-    const m = matchPath(location.pathname, { path: Paths.address })
+    const m = matchPath(location.pathname, { path: Paths.contact })
     const { address } = m?.params || {}
     if (!knownAddresses[address]) {
-      message.error('Address not found in local state')
+      message.error('Contact not found')
       setTimeout(() => {
         history.goBack()
       }, 500)
@@ -66,7 +65,7 @@ const AddressDetail = () => {
       <Space direction='vertical' size='large' style={{ width: '100%' }}>
         <Space align='baseline' size='large'>
           <Label ultraWide>
-            <Hint>Label</Hint>
+            <Hint>Name</Hint>
           </Label>
           <InputBox
             margin='auto'
@@ -117,4 +116,4 @@ const AddressDetail = () => {
   )
 }
 
-export default AddressDetail
+export default ContactDetail

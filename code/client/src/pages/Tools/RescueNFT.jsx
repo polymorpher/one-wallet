@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import AnimatedSection from '../../components/AnimatedSection'
-import { Hint, InputBox, Link, Paragraph, Text } from '../../components/Text'
+import { Hint, HintSmall, InputBox, Link, Paragraph, Text } from '../../components/Text'
 import AddressInput from '../../components/AddressInput'
 import api from '../../api'
 import message from '../../message'
@@ -228,7 +228,7 @@ const RescueNFT = () => {
           addressValue={inputAddress}
           setAddressCallback={setInputAddress}
         />
-        <Hint style={{ fontSize: 12, color: '#aaa' }}>(equivalent to {util.safeNormalizedAddress(inputAddress.value) ?? 'N/A'})</Hint>
+        <HintSmall>(equivalent to {util.safeNormalizedAddress(inputAddress.value) ?? 'N/A'})</HintSmall>
         <Spacer />
         <Hint>Compromised Wallet's Private Key</Hint>
         <InputBox type='password' margin='auto' style={{ width: '100%' }} value={privateKey} onChange={({ target: { value } }) => setPrivateKey(value)} placeholder='Private key of the compromised wallet' />

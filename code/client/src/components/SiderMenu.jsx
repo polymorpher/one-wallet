@@ -28,7 +28,7 @@ import { useTheme, getColorPalette } from '../theme'
 import { StatsInfo, LineDivider } from './StatsInfo'
 import { globalActions } from '../state/modules/global'
 import { SiderLink } from './Text'
-import { CloudOutlined, WalletOutlined } from '@ant-design/icons'
+import { CloudOutlined, ContactsOutlined, WalletOutlined } from '@ant-design/icons'
 
 const mobileMenuItemStyle = {
   padding: '0 10px',
@@ -54,6 +54,7 @@ const MobileSiderMenu = ({ action, nav, ...args }) => {
       <Menu.Item key='wallets' style={mobileMenuItemStyle} icon={<UnorderedListOutlined />}>Wallets</Menu.Item>
       <Menu.Item key='restore' style={mobileMenuItemStyle} icon={<HistoryOutlined />}>Restore</Menu.Item>
       <Menu.Item key='backup' style={mobileMenuItemStyle} icon={<CloudOutlined />}>Backup</Menu.Item>
+      <Menu.Item key='contacts' style={mobileMenuItemStyle} icon={<ContactsOutlined />}>Contacts</Menu.Item>
       <Menu.Item key='about' style={mobileMenuItemStyle} icon={<WalletOutlined />}><SiderLink style={{ color: null }} href='https://modulo.so'>Modulo</SiderLink></Menu.Item>
       <Menu.Item key='bug' style={mobileMenuItemStyle} icon={<GithubOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/issues'>Bug Report</SiderLink></Menu.Item>
       <Menu.Item key='audit' style={mobileMenuItemStyle} icon={<AuditOutlined />}><SiderLink style={{ color: null }} href='https://github.com/polymorpher/one-wallet/tree/master/audits'>Audits</SiderLink></Menu.Item>
@@ -82,6 +83,7 @@ const DeskstopSiderMenu = ({ action, nav, ...args }) => {
         <Menu.Item key='wallets' icon={<UnorderedListOutlined />}>Wallets</Menu.Item>
         <Menu.Item key='restore' icon={<HistoryOutlined />}>Restore</Menu.Item>
         <Menu.Item key='backup' icon={<CloudOutlined />}>Backup</Menu.Item>
+        <Menu.Item key='contacts' icon={<ContactsOutlined />}>Contacts</Menu.Item>
       </Menu>
       <LineDivider />
       <Menu theme='dark' mode='inline' selectable={false}>

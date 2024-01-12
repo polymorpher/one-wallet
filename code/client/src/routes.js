@@ -13,7 +13,7 @@ import { ERC20GridV2 } from './components/ERC20Grid'
 import { SwapV2 } from './pages/Show/Swap'
 import { StakeV2 } from './pages/Show/Stake/Stake'
 import CreatePage from './pages/Create'
-import AddressDetailPage from './pages/Contacts/AddressDetail'
+import ContactDetailPage from './pages/Contacts/ContactDetail'
 import ListPage from './pages/List'
 import RestorePage from './pages/Restore'
 import ShowPage from './pages/Show'
@@ -26,6 +26,7 @@ import util, { useWindowDimensions } from './util'
 import Unwrap from './pages/Unwrap'
 import cacheActions from './state/modules/cache/actions'
 import Backup from './pages/Backup'
+import Contacts from './pages/Contacts'
 
 const LocalRoutes = () => {
   const dispatch = useDispatch()
@@ -91,7 +92,8 @@ const LocalRoutes = () => {
             <Route path={Paths.wallets} component={ListPage} />
             <Route path={Paths.restore} component={RestorePage} />
             <Route path={Paths.backup} component={Backup} />
-            <Route path={Paths.address} component={AddressDetailPage} exact />
+            <Route path={Paths.contact} component={ContactDetailPage} exact />
+            <Route path={Paths.contacts} component={Contacts} exact />
             {!v2ui && <Route path={Paths.show} component={ShowPage} />}
             <Route path={Paths.tools} component={ToolsPage} />
             <Route path={Paths.unwrap} component={Unwrap} />

@@ -23,6 +23,11 @@ export const Hint = styled(Text).attrs((props) => ({ type: 'secondary', ...props
   color: ${props => props.color ?? '#888888'};
 `
 
+export const HintSmall = styled(Hint)`
+  font-size: 12px;
+  color: #aaa;
+`
+
 export const InputBox = styled(Input).attrs(({ $num, $decimal, type, autoComplete, ...props }) => ({
   size: props.size || 'large',
   autoComplete,

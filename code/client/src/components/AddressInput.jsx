@@ -22,6 +22,7 @@ import isEmpty from 'lodash/fp/isEmpty'
 import ONEConstants from '../../../lib/constants'
 import QrCodeScanner from './QrCodeScanner'
 import { useHistory } from 'react-router'
+import { HintSmall } from './Text'
 
 const { Text } = Typography
 
@@ -46,7 +47,7 @@ const ScanButton = ({ isMobile, showQrCodeScanner, setShowQrCodeScanner }) => {
  * Renders address input that provides type ahead search for any known addresses.
  * Known addresses are addresses that have been entered by user for at least once.
  */
-const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSelectOptions, disableManualInput, disabled, style, allowTemp, useHex }) => {
+const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSelectOptions, disableManualInput, disabled, style, allowTemp, useHex, showHexHint }) => {
   const dispatch = useDispatch()
   const history = useHistory()
   const state = useRef({ last: undefined, lastTime: Date.now() }).current
@@ -338,7 +339,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
                 <Button
                   key='edit'
                   type='text' style={{ textAlign: 'left', height: '50px', padding: 8 }} onClick={(e) => {
-                    history.push(Paths.addressDetail(address))
+                    history.push(Paths.showContact(address))
                     e.stopPropagation()
                     return false
                   }}
@@ -375,7 +376,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
       <Space direction='vertical' style={{ width: '100%' }}>
         <Select
           suffixIcon={<ScanButton isMobile={isMobile} setShowQrCodeScanner={setShowQrCodeScanner} showQrCodeScanner={showQrCodeScanner} />}
-          placeholder={useHex ? '0x...' : 'one1......'}
+          placeholder='0x... / one1...'
           labelInValue
           style={{
             width: isMobile ? '100%' : 500,
@@ -433,6 +434,7 @@ const AddressInput = ({ setAddressCallback, currentWallet, addressValue, extraSe
           }
         </Select>
         {showQrCodeScanner && <QrCodeScanner shouldInit onScan={onScan} />}
+        {showHexHint && <HintSmall>(equivalent to {util.safeNormalizedAddress(addressValue.value) ?? 'N/A'})</HintSmall>}
       </Space>
     </>
   )
