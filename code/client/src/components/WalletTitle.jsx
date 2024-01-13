@@ -70,7 +70,7 @@ const WalletTitle = ({ address, onScanClick, noWarning }) => {
           <Tooltip title='Connect the wallet with dApp'>
             <ClickableIconWrapper>
               <Image
-                preview={false} src={WCLogo} style={{ height: 48 }}
+                preview={false} src={WCLogo} style={{ height: 48, width: 48 }}
                 onClick={() => history.push(Paths.doAuth('walletconnect', address))}
               />
             </ClickableIconWrapper>
