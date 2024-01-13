@@ -25,7 +25,7 @@ import { balanceActions } from '../state/modules/balance'
 import WalletConstants from '../constants/wallet'
 import util, { useWindowDimensions, OSType, generateOtpSeed } from '../util'
 import { handleAPIError, handleAddressError } from '../handler'
-import { Hint, Heading, InputBox, Warning, Text, Link } from '../components/Text'
+import {Hint, Heading, InputBox, Warning, Text, Link, Paragraph} from '../components/Text'
 import AddressInput from '../components/AddressInput'
 import WalletCreateProgress from '../components/WalletCreateProgress'
 import { TallRow } from '../components/Grid'
@@ -99,6 +99,7 @@ const Create = ({ expertMode, showRecovery }) => {
 
   useEffect(() => {
     if (!code || !coreSettings.effectiveTime) {
+      console.log({ code, effectiveTime: coreSettings.effectiveTime })
       return
     }
     (async function () {
@@ -479,7 +480,15 @@ const SetupOtpSection = ({ expertMode, otpReady, setupConfig, walletState, setWa
   }, [walletState.customizeSettings, walletState.defaultWalletName])
 
   if (!otpReady) {
-    return <Spin />
+    return (
+      <AnimatedSection wide>
+        <Space direction='vertical' style={{ width: '100%', textAlign: 'center' }} size='large'>
+          <Spin size='large' />
+          <Paragraph style={{ marginTop: 48, fontSize: 18 }}>Loading data from blockchain...</Paragraph>
+          <Text>If this takes a long time, please check the network status</Text>
+        </Space>
+      </AnimatedSection>
+    )
   }
 
   if (v2ui) {
