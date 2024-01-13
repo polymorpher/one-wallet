@@ -25,7 +25,7 @@ import { balanceActions } from '../state/modules/balance'
 import WalletConstants from '../constants/wallet'
 import util, { useWindowDimensions, OSType, generateOtpSeed } from '../util'
 import { handleAPIError, handleAddressError } from '../handler'
-import {Hint, Heading, InputBox, Warning, Text, Link, Paragraph} from '../components/Text'
+import { Hint, Heading, InputBox, Warning, Text, Link, Paragraph, SiderLink } from '../components/Text'
 import AddressInput from '../components/AddressInput'
 import WalletCreateProgress from '../components/WalletCreateProgress'
 import { TallRow } from '../components/Grid'
@@ -38,11 +38,15 @@ import { useTheme, getColorPalette } from '../theme'
 import { RedoOutlined } from '@ant-design/icons'
 import Slider from 'antd/es/slider'
 
-const getGoogleAuthenticatorAppLink = (os) => {
+const getGoogleAuthenticatorUrl = (os) => {
   let link = 'https://apps.apple.com/us/app/google-authenticator/id388497605'
   if (os === OSType.Android) {
     link = 'https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2'
   }
+  return link
+}
+const getGoogleAuthenticatorAppLink = (os) => {
+  const link = getGoogleAuthenticatorUrl(os)
   return <Link href={link} target='_blank' rel='noreferrer'>authenticator</Link>
 }
 
@@ -534,13 +538,13 @@ const SetupOtpSection = ({ expertMode, otpReady, setupConfig, walletState, setWa
             <Hint>{isMobile ? 'Tap' : 'Scan'} the QR code to setup OTP {getGoogleAuthenticatorAppLink(os)} for the wallet</Hint>
             <Hint>Optional: <Link href='#' onClick={toggleShowAccount}>sign-up</Link> to enable backup, alerts, verification code autofill</Hint>
             {showAccount && <SignupAccount seed={seed} name={name} address={walletState.predictedAddress} effectiveTime={effectiveTime} setAllowOTPAutoFill={setAllowAutoFill} />}
-            {buildQRCodeComponent({ seed, name: ONENames.nameWithTime(name, effectiveTime), os, isMobile, qrCodeData: otpQrCodeData })}
+            {buildQRCodeComponent({ seed, name: ONENames.nameWithTime(name, effectiveTime), os, isMobile, qrCodeData: otpQrCodeData, qrCodeMode })}
           </>}
         {step === 2 &&
           <>
             <Heading>Create Your {config.appName} (second code)</Heading>
             <Hint align='center'>{isMobile ? 'Tap' : 'Scan'} to setup the <b>second</b> code</Hint>
-            {buildQRCodeComponent({ seed: seed2, name: ONENames.nameWithTime(getSecondCodeName(name), effectiveTime), os, isMobile, qrCodeData: secondOtpQrCodeData })}
+            {buildQRCodeComponent({ seed: seed2, name: ONENames.nameWithTime(getSecondCodeName(name), effectiveTime), os, isMobile, qrCodeData: secondOtpQrCodeData, qrCodeMode })}
           </>}
       </Space>
       {step === 1 && (
@@ -603,6 +607,13 @@ const SetupOtpSection = ({ expertMode, otpReady, setupConfig, walletState, setWa
             Use Google Auth QR {qrCodeMode === OTPUriMode.MIGRATION && <CheckOutlined />}
           </Button>
         </Space>)}
+      {isMobile && (
+        <Space style={{ marginTop: 32 }} direction='vertical'>
+          <Hint>
+            Or go to "Password Options" (after tapping the QR code) and switch verification code app to <SiderLink href={getGoogleAuthenticatorUrl(os)}>Google Authenticator</SiderLink>, or <SiderLink href='https://raivo-otp.com/'>Raivo</SiderLink>, or <SiderLink href='https://getaegis.app/'>Aegis</SiderLink>
+          </Hint>
+        </Space>
+      )}
     </AnimatedSection>
   )
 }

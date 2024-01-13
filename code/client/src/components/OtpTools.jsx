@@ -96,7 +96,7 @@ export const getQRCodeUri = (otpSeed, otpDisplayName, mode = OTPUriMode.STANDARD
 }
 
 // not constructing qrCodeData on the fly (from seed) because generating a PNG takes noticeable amount of time. Caller needs to make sure qrCodeData is consistent with seed
-export const buildQRCodeComponent = ({ seed, name, os, isMobile, qrCodeData }) => {
+export const buildQRCodeComponent = ({ seed, name, os, isMobile, qrCodeData, qrCodeMode }) => {
   const image = (url) =>
     <Image
       src={qrCodeData}
@@ -107,12 +107,12 @@ export const buildQRCodeComponent = ({ seed, name, os, isMobile, qrCodeData }) =
     />
   let href
   if (os === OSType.iOS) {
-    href = getQRCodeUri(seed, name, OTPUriMode.MIGRATION)
+    href = getQRCodeUri(seed, name, qrCodeMode ?? OTPUriMode.MIGRATION)
   } else if (os === OSType.Android) {
     href = getQRCodeUri(seed, name, OTPUriMode.STANDARD)
   } else if (isMobile) {
     // To test in more devices
-    href = getQRCodeUri(seed, name, OTPUriMode.MIGRATION)
+    href = getQRCodeUri(seed, name, qrCodeMode ?? OTPUriMode.MIGRATION)
   }
 
   return (
