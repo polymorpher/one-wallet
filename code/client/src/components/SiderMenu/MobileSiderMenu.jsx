@@ -20,6 +20,7 @@ export const MobileSiderMenu = ({ action, nav, ...args }) => {
       mode='horizontal'
       onClick={nav}
       selectedKeys={[action]}
+
     >
       <Menu.Item key='create' style={mobileMenuItemStyle} icon={<PlusCircleOutlined />}>Create</Menu.Item>
       <Menu.Item key='wallets' style={mobileMenuItemStyle} icon={<UnorderedListOutlined />}>Wallets</Menu.Item>
