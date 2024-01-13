@@ -27,6 +27,8 @@ import Unwrap from './pages/Unwrap'
 import cacheActions from './state/modules/cache/actions'
 import Backup from './pages/Backup'
 import Contacts from './pages/Contacts'
+import querystring from 'query-string'
+import message from './message'
 
 const LocalRoutes = () => {
   const dispatch = useDispatch()
@@ -37,7 +39,7 @@ const LocalRoutes = () => {
   const selectedAddress = useSelector(state => state.global.selectedWallet)
   const networkWallets = util.filterNetworkWallets(wallets, network)
   const { isMobile } = useWindowDimensions()
-
+  const qs = querystring.parse(location.search)
   const needCodeUpdate = useSelector(state => state.cache.needCodeUpdate)
   const clientVersion = useSelector(state => state.cache.clientVersion[network])
 
@@ -51,6 +53,13 @@ const LocalRoutes = () => {
       dispatch(cacheActions.fetchCode({ network }))
     }
   }, [needCodeUpdate, clientVersion])
+
+  useEffect(() => {
+    if (isMobile && !qs.standalone && !window.navigator.standalone) {
+      message.info(`Please install ${config.appName} as an app: Click "Share" button then "Add to Home Screen"`, 120)
+      message.info(`Please open ${config.appName} from home screen app. Otherwise, iOS deletes your idle wallets after 7 days`, 120)
+    }
+  }, [])
 
   return (
     <Layout
