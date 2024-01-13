@@ -162,7 +162,8 @@ module.exports = {
       favicon: process.env.FAVICON ?? 'assets/modulo/logo.png',
       title: process.env.TITLE ?? 'Dev: OTP Wallet | By Modulo.so',
       environment: process.env.NODE_ENV,
-      hash: true
+      hash: true,
+      minify: { conservativeCollapse: true }
     }),
 
     new webpack.ProvidePlugin({
