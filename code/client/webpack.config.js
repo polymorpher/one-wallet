@@ -154,6 +154,7 @@ module.exports = {
       templateParameters: {
         manifestFile: process.env.MANIFEST ?? 'modulo/app.webmanifest',
         splashScreenContent,
+        appIcon: process.env.APP_ICON ?? 'modulo/icons/apple-icon-180.png',
       },
       inject: true,
       filename: 'index.html',

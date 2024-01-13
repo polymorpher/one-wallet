@@ -18,10 +18,10 @@
 
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#000000">
     <meta name="apple-touch-fullscreen" content="yes">
-    <link rel="apple-touch-icon" href="<%= htmlWebpackPlugin.files.favicon%>">
+    <link rel="apple-touch-icon" href="<%= appIcon%>">
 
     <% for (var css in htmlWebpackPlugin.files.css) { %>
     <link href="<%= htmlWebpackPlugin.files.css[css] %>" rel="stylesheet">
