@@ -29,14 +29,20 @@ const Warnings = ({ address }) => {
         // This also servers as reminder for each new wallet that user creates, so they don't accidentally forget
         // to save the wallet address for future references.
         !wallet.acknowledgedToSaveAddress &&
-          <Warning info>
+          <Warning info style={{ marginTop: 16, marginBottom: 24 }}>
             <Space direction='vertical' style={{ width: '100%' }}>
               <Text>
-                Tips: you can save your address as a QR code so you won't lose it
+                Tips: you can backup your recovery files
               </Text>
               <Row justify='space-between' style={{ flexWrap: 'wrap' }}>
                 <Button shape='round' type='text' danger onClick={confirmNoteDownAddress}>Dismiss</Button>
-                <Button shape='round' type='primary' onClick={() => history.push(Paths.showAddress(address, 'qr'))}>Save Now</Button>
+                <Button
+                  shape='round' type='primary' onClick={() => {
+                    confirmNoteDownAddress()
+                    history.push(Paths.showAddress(address, 'save'))
+                  }}
+                >Learn More
+                </Button>
               </Row>
             </Space>
             <br />

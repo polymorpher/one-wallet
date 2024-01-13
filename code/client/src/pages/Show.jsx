@@ -48,11 +48,11 @@ const tabList = [
   { key: 'nft', tab: 'NFT' },
   { key: 'gift', tab: 'Gift' },
   { key: 'about', tab: 'About' },
-  { key: 'help', tab: 'Recover' },
+  { key: 'save', tab: 'Safety' },
   // { key: 'swap', tab: 'Swap' },
   {
     key: 'history',
-    tab: 'History',
+    tab: 'Log',
     requireNetwork (network) {
       return network.startsWith('harmony')
     }
@@ -169,7 +169,7 @@ const Show = () => {
           {activeTab === 'coins' && <Balance address={address} />}
           {activeTab === 'coins' && <ERC20Grid address={address} />}
           {activeTab === 'nft' && <NFTDashboard address={address} />}
-          {activeTab === 'help' && <Recovery address={address} />}
+          {activeTab === 'save' && <Recovery address={address} />}
           {activeTab === 'swap' && <Swap address={address} />}
           {activeTab === 'gift' && <Gift address={address} />}
           {activeTab === 'qr' && <QRCode address={address} name={wallet.name} />}

@@ -8,12 +8,9 @@ import Row from 'antd/es/row'
 import Space from 'antd/es/space'
 import Typography from 'antd/es/typography'
 import util from '../../util'
-import { walletActions } from '../../state/modules/wallet'
-import { useDispatch } from 'react-redux'
 const { Text } = Typography
 
 const QRCode = ({ address, name }) => {
-  const dispatch = useDispatch()
   const [qrCodeData, setQRCodeData] = useState()
   const ref = useRef()
   useEffect(() => {
@@ -35,7 +32,6 @@ const QRCode = ({ address, name }) => {
     })
   }
   const onCapture = async () => {
-    dispatch(walletActions.userAcknowledgedToSaveAddress({ address }))
     const blob = await capture()
     const element = document.createElement('a')
     element.href = URL.createObjectURL(blob)

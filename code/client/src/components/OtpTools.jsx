@@ -19,7 +19,7 @@ export const parseOAuthOTP = (url) => {
     const secret = parsedUrl.searchParams.get('secret')
     const issuer2 = parsedUrl.searchParams.get('issuer')
     const issuer = m[1] || issuer2
-    if (issuer !== 'ONE Wallet' && issuer !== 'Harmony' && issuer !== '1wallet') {
+    if (issuer !== 'ONE Wallet' && issuer !== 'Harmony' && issuer !== '1wallet' && issuer !== config.appName) {
       message.error('Invalid issuer of the recovery QR code. Expecting `1wallet` or `Harmony`')
       return null
     }
@@ -65,7 +65,7 @@ export const OTPUriMode = {
   APPLE: 3,
 }
 
-export const getQRCodeUri = (otpSeed, otpDisplayName, mode = OTPUriMode.STANDARD, issuer = 'Harmony') => {
+export const getQRCodeUri = (otpSeed, otpDisplayName, mode = OTPUriMode.STANDARD, issuer = config.appName) => {
   if (mode === OTPUriMode.STANDARD) {
     // otpauth://TYPE/LABEL?PARAMETERS
     return `otpauth://totp/${otpDisplayName}?secret=${ONEUtil.base32Encode(otpSeed)}&issuer=${issuer}`
