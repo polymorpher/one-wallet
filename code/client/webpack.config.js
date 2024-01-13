@@ -6,6 +6,9 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const Dotenv = require('dotenv-webpack')
 const Polyfill = require('node-polyfill-webpack-plugin')
+const fs = require('fs')
+
+const splashScreenContent = fs.readFileSync(process.env.SPLASH || './assets/modulo/splash.html', { encoding: 'utf-8' })
 
 module.exports = {
   devServer: {
@@ -139,21 +142,28 @@ module.exports = {
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],
     }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'assets/flags', to: 'flags' },
+        { from: 'assets/1wallet', to: '1wallet' },
+        { from: 'assets/modulo', to: 'modulo' }
+      ],
+      options: { concurrency: 50 },
+    }),
     new HtmlWebpackPlugin({
+      templateParameters: {
+        manifestFile: process.env.MANIFEST ?? 'modulo/app.webmanifest',
+        splashScreenContent,
+      },
       inject: true,
       filename: 'index.html',
       template: 'assets/index.html',
-      favicon: process.env.FAVICON ?? 'assets/logo-300.png',
+      favicon: process.env.FAVICON ?? 'assets/modulo/logo.png',
       title: process.env.TITLE ?? 'Dev: OTP Wallet | By Modulo.so',
       environment: process.env.NODE_ENV,
       hash: true
     }),
-    new CopyWebpackPlugin({
-      patterns: [
-        { from: 'assets/flags', to: 'flags' }
-      ],
-      options: { concurrency: 50 },
-    }),
+
     new webpack.ProvidePlugin({
       process: 'process/browser',
     }),
