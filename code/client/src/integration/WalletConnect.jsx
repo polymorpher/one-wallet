@@ -113,7 +113,7 @@ const WalletConnect = ({ wcSesssionUri, from }) => {
               },
             },
           })
-          // console.log('wcSession', wcSession)
+          // console.log('wcSession approved', wcSession)
           setWcSession(wcSession)
           setError(undefined)
         } catch (error) {
@@ -155,6 +155,7 @@ const WalletConnect = ({ wcSesssionUri, from }) => {
 
         const w3w = await Web3Wallet.init({
           core,
+          name: 'OTPWallet',
           metadata: {
             description: 'OTP Wallet',
             url: 'https://otpwallet.xyz',
@@ -170,7 +171,7 @@ const WalletConnect = ({ wcSesssionUri, from }) => {
         setLoading(false)
       }
     }
-    initWalletConnect()
+    initWalletConnect().catch(console.error)
   }, [])
 
   // session_request needs to be a separate Effect because a valid wcSession should be present

@@ -999,12 +999,12 @@ const api = {
       return new BN(result.slice(2), 16).toNumber()
     },
 
-    simulateCall: async ({ transaction }) => {
+    simulateCall: async ({ transaction, id = 1 }) => {
       const { data: { result } } = await rpcBase.post('', {
         jsonrpc: '2.0',
         method: 'eth_call',
-        params: [transaction],
-        id: 1
+        params: [transaction, 'latest'],
+        id,
       })
       return result
     },

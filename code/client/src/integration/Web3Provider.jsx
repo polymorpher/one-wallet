@@ -173,7 +173,9 @@ export const SimpleWeb3Provider = ({ defaultAddress } = {}) => {
     } else if (method === 'eth_estimateGas') {
       return await api.rpc.getEstimateGas({ transaction: params[0] })
     } else if (method === 'eth_call') {
-      return await api.rpc.simulateCall({ transaction: params[0] })
+      const res = await api.rpc.simulateCall({ transaction: params[0], id })
+      // console.log('eth_call res:', res)
+      return res
     } else if (method === 'eth_getLogs') {
       return await api.rpc.getLogs({ filter: params[0] })
     } else if (method === 'eth_gasPrice') {
