@@ -438,7 +438,7 @@ const computeForwardHash = ({ address }) => computeSetRecoveryAddressHash({ addr
 const computeDestOnlyHash = ({ dest }) => computeSetRecoveryAddressHash({ address: dest })
 
 const encodeDisplaceDataHex = ({ core, innerCores, identificationKey }) => {
-  return Util.abi.encodeParameters(['tuple(bytes32,uint8,uint8,uint32,uint32,uint8)', 'tuple[](bytes32,uint8,uint8,uint32,uint32,uint8)', 'bytes'], [core, innerCores, identificationKey])
+  return Util.abi.encodeParameters(['tuple(bytes32,uint8,uint8,uint32,uint32,uint8)', 'tuple(bytes32,uint8,uint8,uint32,uint32,uint8)[]', 'bytes'], [core, innerCores, identificationKey])
 }
 
 // TODO: organize this and make it hierarchical

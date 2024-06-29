@@ -6,25 +6,29 @@ import { OSType } from '../util'
 import React from 'react'
 import config from '../config'
 import ONEUtil from '../../../lib/util'
-const OAUTH_OTP_PATTERN = /otpauth:\/\/totp\/([a-zA-Z0-9]+)(%3A|:)(.+)\?.+/
+// const OAUTH_OTP_PATTERN = /otpauth:\/\/totp\/([a-zA-Z0-9:]+)(%3A|:)(.+)\?.+/
+const OAUTH_OTP_PATTERN = /otpauth:\/\/totp\/([a-zA-Z0-9:-\\%]+)(%3A|:)(.+)\?.+/
 export const parseOAuthOTP = (url) => {
   // console.log(url)
+  url = decodeURIComponent(url)
   const m = url.match(OAUTH_OTP_PATTERN)
   if (!m) {
     message.error('Invalid account transfer QR code')
+    console.log(url)
     return null
   }
   try {
     const parsedUrl = new URL(url)
     const secret = parsedUrl.searchParams.get('secret')
     const issuer2 = parsedUrl.searchParams.get('issuer')
-    const issuer = m[1] || issuer2
+    const issuer = decodeURIComponent(m[1] || issuer2)
     if (issuer !== 'ONE Wallet' && issuer !== 'Harmony' && issuer !== '1wallet' && issuer !== config.appName) {
-      message.error('Invalid issuer of the recovery QR code. Expecting `1wallet` or `Harmony`')
+      message.error(`Invalid issuer of the recovery QR code. Expecting [1wallet] or [Harmony] or ${config.appName}`)
       return null
     }
     // return { name: decodeURIComponent(m[3]), secret }
-    return { name: decodeURIComponent(m[3]), secret: ONEUtil.processOtpSeed(secret) }
+    // return { name: decodeURIComponent(m[3]), secret: ONEUtil.processOtpSeed(secret) }
+    return { name: decodeURIComponent(decodeURIComponent(m[3])), secret: ONEUtil.processOtpSeed(secret) }
   } catch (ex) {
     message.error('Unable to parse URL contained in QR code')
     console.error(ex)

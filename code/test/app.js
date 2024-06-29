@@ -353,7 +353,7 @@ contract('ONEWallet', (accounts) => {
     }
     operationParams = Object.keys(operationParamsObject).map((key) => operationParamsObject[key])
     operationParamsArray.push(operationParams)
-    const hexData = ONEUtil.abi.encodeParameters(['tuple[](uint8,uint8,address,uint256,address,uint256,bytes)'], [operationParamsArray])
+    const hexData = ONEUtil.abi.encodeParameters(['tuple(uint8,uint8,address,uint256,address,uint256,bytes)[]'], [operationParamsArray])
     const data = ONEUtil.hexStringToBytes(hexData)
     testTime = await TestUtil.bumpTestTime(testTime, 60)
     const { tx, currentState } = await executeAppTransaction(

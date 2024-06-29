@@ -164,7 +164,7 @@ const Extend = ({
     const f = async function () {
       const oneAddress = util.safeOneAddress(wallet?.address)
       const otpDisplayName = `${ONENames.nameWithTime(name, effectiveTime)} [${oneAddress}]`
-      const otpUri = getQRCodeUri(seed, otpDisplayName, OTPUriMode.MIGRATION)
+      const otpUri = getQRCodeUri(seed, otpDisplayName, OTPUriMode.STANDARD)
       const otpQrCodeData = await qrcode.toDataURL(otpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       setQRCodeData(otpQrCodeData)
     }
@@ -177,7 +177,7 @@ const Extend = ({
     const f = async function () {
       const oneAddress = util.safeOneAddress(wallet?.address)
       const otpDisplayName2 = `${ONENames.nameWithTime(getSecondCodeName(name), effectiveTime)} [${oneAddress}]`
-      const secondOtpUri = getQRCodeUri(seed2, otpDisplayName2, OTPUriMode.MIGRATION)
+      const secondOtpUri = getQRCodeUri(seed2, otpDisplayName2, OTPUriMode.STANDARD)
       const secondOtpQrCodeData = await qrcode.toDataURL(secondOtpUri, { errorCorrectionLevel: 'low', width: isMobile ? 192 : 256 })
       setSecondOtpQrCodeData(secondOtpQrCodeData)
     }
@@ -251,7 +251,8 @@ const Extend = ({
     const newInnerCores = ONEUtil.makeInnerCores({ innerTrees: newCoreParams.innerTrees, effectiveTime, duration, slotSize, interval: WalletConstants.interval })
     const newCore = ONEUtil.makeCore({ effectiveTime, duration, interval: WalletConstants.interval, height: newCoreParams.layers.length, slotSize, root: newCoreParams.root })
     // console.log({ effectiveTime, newCore, newInnerCores, identificationKey })
-    const encodedData = ONEUtil.abi.encodeParameters(['tuple(bytes32,uint8,uint8,uint32,uint32,uint8)', 'tuple[](bytes32,uint8,uint8,uint32,uint32,uint8)', 'bytes'], [newCore, newInnerCores, identificationKey])
+    console.log([newCore, newInnerCores, identificationKey])
+    const encodedData = ONEUtil.abi.encodeParameters(['tuple(bytes32,uint8,uint8,uint32,uint32,uint8)', 'tuple(bytes32,uint8,uint8,uint32,uint32,uint8)[]', 'bytes'], [newCore, newInnerCores, identificationKey])
     const args = { ...ONEConstants.NullOperationParams, data: encodedData, operationType: ONEConstants.OperationType.DISPLACE }
 
     SmartFlows.commitReveal({
