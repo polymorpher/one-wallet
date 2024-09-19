@@ -11,7 +11,7 @@ export WEBAPP_NAME="1wallet"
 export LOGO_ID="harmony"
 export LOGO_LINK="https://harmony.one"
 export APP_LINK="https://harmony.one/1wallet"
-export FAVICON="assets/1wallet.png"
+export FAVICON="assets/1wallet/logo.png"
 export TITLE="Harmony 1wallet | By Modulo.so"
 
 yarn debug
